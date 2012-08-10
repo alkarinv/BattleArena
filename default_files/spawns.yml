@@ -1,0 +1,4 @@
+spawnGroups:
+    wolfPack:
+        wolf: speed:4 4
+        tamed_wolf: speed:2 1

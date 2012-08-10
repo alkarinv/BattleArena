@@ -1,0 +1,43 @@
+skirmish:
+    prefix: '&9[Skirmish] &f'
+    prestart: '&6Your match starts in %s seconds!'
+    prestart2v2: '&6Match! &8%s&6&e[%s]&6 vs &8%s&6&e[%s]&6'
+    server_victory2v2: '&8%s&6&e[%s]&e defeated &8%s&6&e[%s]&e in the arena!'
+
+match:
+    prefix: '&6[Arena] &f'
+    prestart: '&6Your arena match starts in %s seconds.'
+    prestart2v2: '&6Your arena match against &8%s&6&e[%s]&6 starts in %s seconds.'
+    server_prestart2v2: '&6Match! &8%s&6&e[%s]&6 vs &8%s&6&e[%s]&6'
+    server_prestart_with_visitor2v2: '&6Match! &8%s&6[%s]&6&e vs &8%s&6&e[%s]&6: &e/watch %s'
+    start: '&eFight!!!!'
+    server_victory2v2: '&8%s&6[%s] &e(%s:%s)&e defeated &8%s&6[%s] &e(%s:%s)&f in the arena!'
+    
+    victor_message2v2_1: "&eYou have won your arena match against &8%s&6[%s]"
+    victor_message2v2_2: "&eTotal Win/Loss: &e(%s:%s)"
+    victor_message2v2_3: "&eRecord against &8%s&f: &e(%s:%s)"
+    victor_message2v2_4: "&eYou have &6%s&e seconds to collect your loot"
+    loser_message2v2_1: "&eYou have lost your arena match against &8%s&6[%s]"
+    loser_message2v2_2: "&eTotal Win/Loss: &6(%s:%s)"
+    loser_message2v2_3: "&eRecord against &8%s&f: &e(%s:%s)"
+    loser_message2v2_4: "&eLife left:%s"
+    your_team_not_ready: "&6You were not ready and therefore have been removed from the queue"
+    other_team_not_ready: "&6The other team was not ready, you have been returned to the front of the queue"
+
+help:
+    prefix: '&e[Usage]&f '
+    arena_list: "&6/arena list :&f See arenas"
+    arena_check: "&6/arena check :&f See where you are in the queue"
+    arena_join: "&6/arena join :&f Enter into the arena queue"
+    arena_leave: "&6/arena leave :&f Leave the queue"
+    arena_top: "&6/arena top [x] [type]:&f See the top gladiators"
+    arena_delete: "&6/arena delete <arenaname>"
+    arena_create: "&6/arena create <name> <team size range> <Team1 loc> <Team2 loc> [Visitor loc]"
+    arena_create2: "   &eExample:&f /arena create MainArena 1+ 3:3:3 4:4:4 5:5:5"
+    arena_alter: "&6/arena alter <arenaname> <type|size|1|2|3> <value>"
+    arena_alter2: "   where &f1,2: changes team1/2 location 3: changes visitor location"
+    arena_cancel: "&6/arena cancel <arenaname>"
+    team_create: "&6/team create <player2> <player3> ...."
+    team_join: "&6/team join :&f join a team if you are invited to one"
+    team_leave: "&6/team leave :&f leave a team if you are in one"
+

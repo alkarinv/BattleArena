@@ -1,0 +1,16 @@
+classes:
+    gladiator:
+        items: # ignored if options doesnt have "giveItems"
+            - iron_sword: sharpness:2 1
+            - bow: 1
+            - tnt: 3
+            - arrow: 32
+            - leather_helm: 1
+            - leather_chest: prot:3 1
+            - leather_leggings: 1
+            - leather_boot: 1
+            - bread: 5
+        enchants:
+            - speed:1:900
+            - resistance:1:900
+            

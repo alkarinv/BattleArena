@@ -1,0 +1,51 @@
+name: BattleArena
+version: 3.5.1
+author: Alkarin
+
+description: Arena system for BattleCraft
+softdepend: [BattleTracker, MassDisguise, BattleEventTracker, Vault, MultiInv, Herochat, HavocKits]
+loadbefore: [ hGames, HavocSpleef, CTF]
+main: mc.alk.arena.BattleArena
+commands:
+    team:
+        description: Team commands
+        usage: /team <create|join|leave|decline> [arguments]
+    arena:
+        description: Arena commands
+        usage: /arena <create|alter|join|leave|top...> [arguments]
+    skirmish:
+        description: Skirmish commands
+        usage: /arena <join|leave> [arguments]
+    battleground:
+        aliases: [bg,battlegrounds]
+        description: battleground commands
+        usage: /arena <join|leave> [arguments]
+    watch:
+        description: watch a fight
+        usage: /watch <arenaName | leave>
+    duel:
+        description: duel another team
+        usage: /watch <arenaName | leave>
+    tourney:
+        description: Create a tournament
+        usage: /tourney
+    colliseum:
+        aliases: [col]
+        description: Colliseum commands
+        usage: /col
+    freeforall:
+        aliases: [ffa]
+        description: join a ffa 
+        usage: /ffa     
+    deathMatch:
+        aliases: [dm]
+        description: join a dm 
+        usage: /dm 
+    arenaAlter:
+        aliases: [arenaEdit,aa]
+    battleArenaDebug:
+        aliases: [bad]
+        description: Debugging Commands
+        usage: /bad
+
+
