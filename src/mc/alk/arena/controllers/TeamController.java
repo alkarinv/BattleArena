@@ -237,6 +237,7 @@ public class TeamController  implements Listener {
 	 * @return
 	 */
 	public List<TeamHandler> getHandlers(Team t) {
+		if (t == null) return null; /// null returns null
 		return inEvent.get(t);
 	}
 

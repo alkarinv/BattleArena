@@ -95,7 +95,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		sendMessage(sender,ChatColor.GOLD + ft.toString());
 		//		teamc.teamJoin(p);
 		if (ft.hasAllPlayers()){
-			ft.sendMessage("&2Your team is now complete.  you can now join an bukkitEvent or arena");
+			ft.sendMessage("&2Your team is now complete.  you can now join an event or arena");
 			teamc.removeFormingTeam(ft);
 			teamc.addSelfTeam(ft);
 //			TeamController.createTeam(ft.getPlayers(), teamc);
