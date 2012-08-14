@@ -65,7 +65,7 @@ public class BattleArena extends JavaPlugin{
 //	private BAEntityListener entityListener;
 
 	private final BAPluginListener pluginListener = new BAPluginListener();
-	ArenaControllerSerializer yacs = new ArenaControllerSerializer();
+	private ArenaControllerSerializer yacs;
 
 	public void onEnable() {
 		plugin = this;
@@ -80,6 +80,7 @@ public class BattleArena extends JavaPlugin{
 		File dir = getDataFolder();
 		if (!dir.exists()){
 			dir.mkdirs();}
+		yacs = new ArenaControllerSerializer();
 
 		// Register our events
 		Bukkit.getServer().getPluginManager().registerEvents(playerListener, this);

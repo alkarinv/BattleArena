@@ -491,7 +491,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		vc.playerLeft(player);
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(suppressCastWarnings=true)
 	public void onPlayerDeath(PlayerDeathEvent event, Player target){
 		if (isWon()){
 			return;}
@@ -520,7 +520,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		playerDeath(target,killer);
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(suppressCastWarnings=true)
 	public void onEntityDamage(EntityDamageEvent event, Player target) {
 //		System.out.println("onEntityDamage  " + event + "   target=" + target);
 		TransitionOptions to = tops.getOptions(state);

@@ -19,9 +19,16 @@ public class ArenaControllerSerializer {
 	public static YamlConfiguration config = new YamlConfiguration();
 	static File f;
 
-	public void load(){
+	public ArenaControllerSerializer(){
 		try {
 			f = new File(BattleArena.getSelf().getDataFolder()+"/arenaplayers.yml");
+			if (!f.exists())
+				f.createNewFile();
+		} catch (Exception e){e.printStackTrace();}		
+	}
+	
+	public void load(){
+		try {
 			config.load(f);
 		} catch (Exception e){e.printStackTrace();}
 

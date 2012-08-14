@@ -85,10 +85,11 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		Selection sel = wep.getSelection(p);
 		if (sel == null)
 			return MessageController.sendMessage(sender, ChatColor.RED + "Please select the protection area first.");
-		ProtectedRegion region = pc.addRegion(p, sel, idPrefix+a.getName());
+		String regionName = idPrefix+a.getName();
+		ProtectedRegion region = pc.addRegion(p, sel, regionName);
 		if (region == null)
 			return MessageController.sendMessage(sender, ChatColor.RED + "Selected region could not be made");
-		a.addRegion(region);
+		a.addRegion(regionName);
 		ac.updateArena(a);
 		return MessageController.sendMessage(sender, ChatColor.GREEN + "Region added to " + a.getName());
 	}

@@ -168,7 +168,7 @@ battleground:
     type: battleground
     database: bg
     prefix: "&c[Battleground]&e"
-    victoryCondition: time
+    victoryCondition: highestKills
     matchTime: 60
     minTeams: 2
     minTeamSize: 5
@@ -211,7 +211,7 @@ colliseum:
     command: col
     type: colliseum
     database: col
-    victoryCondition: time
+    victoryCondition: highestKills
     matchTime: 60
     minTeams: 4
     preReqs:
@@ -289,7 +289,7 @@ deathMatch:
     enabled: true
     command: dm
     type: deathMatch
-    victoryCondition: time
+    victoryCondition: highestKills
     database: dm
     prefix: "&8[DeathMatch]&e"
     preReqs:

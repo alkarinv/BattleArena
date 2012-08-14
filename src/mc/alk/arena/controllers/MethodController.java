@@ -196,10 +196,10 @@ public class MethodController {
 					System.err.println("[BattleArena] "+arenaListener+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
 							bukkitEvent.getCanonicalName()+"returns no player, and no entities. Class="+arenaListener);
 					return;
-				} else if (getLivingMethod != null){
+				} else if (getLivingMethod != null && !meh.suppressCastWarnings()){
 					System.out.println("[BattleArena] Warning. "+arenaListener+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
 							bukkitEvent.getCanonicalName()+" returns only a living entity. Cast to Player will be attempted at runtime");					
-				} else if (getEntityMethod != null){
+				} else if (getEntityMethod != null && !meh.suppressCastWarnings()){
 					System.out.println("[BattleArena] Warning. "+arenaListener+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
 							bukkitEvent.getCanonicalName()+" returns only an Entity. Cast to Player will be attempted at runtime");
 				}

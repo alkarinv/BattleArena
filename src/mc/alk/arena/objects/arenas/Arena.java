@@ -25,8 +25,6 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-
 public class Arena implements ArenaListener {
 	protected String name;
 
@@ -42,7 +40,7 @@ public class Arena implements ArenaListener {
 	protected Map<Long, TimedSpawn> timedSpawns = null; /// Item/mob/other spawn events
 	protected SpawnController spawnController = null;
 
-	protected ProtectedRegion region;
+	protected String wgRegionName;
 	protected Match match = null;
 
 	/**
@@ -204,26 +202,26 @@ public class Arena implements ArenaListener {
 
 	/**
 	 * TeamJoinResult a Protected Region (only available with worldguard)
-	 * @param region
+	 * @param wgRegionName
 	 */
-	public void addRegion(ProtectedRegion region) {
-		this.region = region;
+	public void addRegion(String regionName) {
+		this.wgRegionName = regionName;
 	}
 
 	/**
-	 * does this arena have a worlguard region attached 
+	 * does this arena have a worlguard wgRegionName attached 
 	 * @returns
 	 */
 	public boolean hasRegion() {
-		return region != null;
+		return wgRegionName != null;
 	}
 
 	/**
-	 * Get the worldguard region for this arena
+	 * Get the worldguard wgRegionName for this arena
 	 * @return
 	 */
-	public ProtectedRegion getRegion() {
-		return region;
+	public String getRegion() {
+		return wgRegionName;
 	}
 
 	/**

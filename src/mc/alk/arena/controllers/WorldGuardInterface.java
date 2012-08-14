@@ -1,11 +1,15 @@
 package mc.alk.arena.controllers;
 
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
+/**
+ * Stub class for future expansion
+ * @author alkarin
+ *
+ */
 public class WorldGuardInterface {
 
-	public static void clearRegion(ProtectedRegion pr) {
-		
+	public static void clearRegion(String protectedRegionName) {
+ 
 	}
 
 }

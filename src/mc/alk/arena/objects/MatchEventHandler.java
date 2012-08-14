@@ -10,4 +10,5 @@ public @interface MatchEventHandler {
 	MatchState end() default MatchState.NONE;
 	MatchEventPriority priority() default MatchEventPriority.NORMAL;
 	boolean needsPlayer() default true;
+	boolean suppressCastWarnings() default false;
 }

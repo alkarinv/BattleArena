@@ -40,7 +40,7 @@ public class NDeaths extends VictoryCondition{
 		playerDeath(p,team);
 	}
 	
-	@MatchEventHandler
+	@MatchEventHandler(suppressCastWarnings=true)
 	public void playerDeathEvent(PlayerDeathEvent event, Player p) {
 //		System.out.println("DEAD Player " + event.getEntity());
 		Team team = match.getTeam(p);
