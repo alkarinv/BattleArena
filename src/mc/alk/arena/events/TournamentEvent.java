@@ -6,6 +6,7 @@ import java.util.TreeMap;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.events.util.NeverWouldJoinException;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.match.PerformTransition;
@@ -27,7 +28,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import com.alk.battleEventTracker.BattleEventTracker;
-import com.alk.controllers.MC;
 
 public class TournamentEvent extends Event {
 	public long timeBetweenRounds;
@@ -101,7 +101,7 @@ public class TournamentEvent extends Event {
 			aliveTeams.add(t);
 		}
 		if (!silent)
-			server.broadcastMessage(Log.colorChat(prefix+"&6 " + teams.size() + " &e" +MC.getTeamsOrPlayers(teams.size())+
+			server.broadcastMessage(Log.colorChat(prefix+"&6 " + teams.size() + " &e" +MessageController.getTeamsOrPlayers(teams.size())+
 				" will compete in a &6"+nrounds+"&e round tournament"));
 		if (preliminary_round){			
 			makePreliminaryRound();			
@@ -261,7 +261,7 @@ public class TournamentEvent extends Event {
 		int nrounds = getNRounds(size);
 		int idealteam = (int) Math.pow(2, nrounds);
 		if (size > 2 && size % idealteam == 0){
-			if (!silent) Bukkit.broadcastMessage(Log.colorChat(prefix+"&6" + size +" "+MC.getTeamsOrPlayers(teams.size())+
+			if (!silent) Bukkit.broadcastMessage(Log.colorChat(prefix+"&6" + size +" "+MessageController.getTeamsOrPlayers(teams.size())+
 					"&e have joined, Current tournament will have &6" + nrounds+"&e rounds"));
 		}			
 	}

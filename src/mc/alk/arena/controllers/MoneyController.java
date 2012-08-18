@@ -70,8 +70,9 @@ public class MoneyController implements Listener{
     		if (controller != null) {
     			RegisteredServiceProvider<Economy> economyProvider = Bukkit.getServer().
     					getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-    			if (economyProvider==null){
+    			if (economyProvider==null || economyProvider.getProvider() == null){
     				MoneyController.economy = null;
+    				Log.warn(BattleArena.getPName() +" found no economy plugin. Attempts to use money in arenas might result in errors.");
     				return;
     			}
     			MoneyController.economy = economyProvider.getProvider();

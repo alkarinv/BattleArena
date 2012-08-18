@@ -24,12 +24,28 @@ classes:
             - bow: flame:2 power:3 punch:2 1
             - arrow: 32
             - leather_helm: 1
-            - leather_chest: prot:3 1
+            - iron_chest: prot:3 1
             - leather_leggings: 1
             - leather_boots: 1
             - 373;8229: 1 # potion of healing 2
             - 373;8193: 1 # potion of regen
             - 373;16396: 1 # splash potion of harming 1
+    monk:
+        items:
+            - leather_helm: 1
+            - leather_chest: 1
+            - leather_leggings: 1
+            - leather_boots: 1
+            - 373;8229: 2 # potion of healing 2
+            - 373;8193: 2 # potion of regen
+            - 373;16396: 3 # splash potion of harming 1
+        enchants:
+            - strength:3:900 # increase attack power
+            - speed:2:900 # increase movement
+            - haste:3:900 # increase attack speed
+            - resistance:2:900 # reduce damage taken
+            - jump:2:900 # jump 2 blocks higher than normal
+            - regen:1:900 # regen life
             
 ## default Match Options (these can be overridden by each match type)
 defaultMatchOptions:
@@ -125,26 +141,19 @@ arena:
     onJoin:
         options: [pvpOff]
     preReqs:
-        options: [clearInventory, money=0]
-    onSpawn:
-        options: [deEnchant, giveItems, hunger=20, health=20]
-        items:
-           - diamond_sword: sharp:1 1
-           - bow: 1
-           - arrow: 32
-           - diamond_helm: 1
-           - diamond_chest: 1
-           - diamond_leggings: 1
-           - diamond_boots: 1
-           - 373;8229: 1 # potion of healing 2
-           - 373;8193: 1 # potion of regen
-           - 373;16396: 1 # splash potion of harming 1
+        options: [clearInventory]
     onStart:
         options: [teleportIn, pvpOn,blockBreakOff]
+    onSpawn:
+        options: [deEnchant, giveItems, hunger=20, health=20]
+        giveClass:
+            default: gladiator
+        items: # ignored if options doesnt have "giveItems"
+            - bread: 5
     onComplete:
         options: [teleportOut, clearInventory]
     winner:
-        options: [money=0, health=20, hunger=20]
+        options: [health=20, hunger=20]
 
 ### Skirmish 
 skirmish:
@@ -154,11 +163,11 @@ skirmish:
     rated: false
     prefix: "&b[Skirmish]&e"
     onStart:
-        options: [teleportIn, pvpOn,blockBreakOff]
+        options: [teleportIn, pvpOn, blockBreakOff]
     onComplete:
-        options: [teleportOut, clearInventory]
+        options: [teleportOut]
     winner:
-        options: [money=0, health=20, hunger=20]
+        options: [health=20, hunger=20]
  
 
 ### BattleGround
@@ -179,15 +188,12 @@ battleground:
         options: [pvpOff]
     onPrestart:
         options: [pvpOff, teleportIn, giveItems, deEnchant, disguiseAllAs=ArenaGuy]
+        giveClass:
+            default: gladiator
+            team1: archer
+            team2: monk
+            team3: gladiator
         items: # ignored if options doesnt have "giveItems"
-            - iron_sword: sharpness:1 1
-            - bow: 1
-            - tnt: 3
-            - arrow: 32
-            - leather_helm: 1
-            - leather_chest: 1
-            - leather_leggings: 1
-            - leather_boot: 1
             - bread: 5
     onStart:
         options: [pvpOn]
