@@ -19,8 +19,7 @@ public @interface MCCommand {
     
     boolean inGame() default false;
     int[] online() default {}; /// Implies inGame = true
-    int[] ints() default {};
-        
+//    boolean playerSender() default false;
     String usage() default "";
     String usageNode() default ""; 
 	String perm() default ""; /// permission node
@@ -28,7 +27,5 @@ public @interface MCCommand {
 
 	boolean selection() default false;	/// Selected arena
 
-	int[] arenas() default {};
-
-	boolean mp() default false;    
+	int[] arenas() default {};    
 }

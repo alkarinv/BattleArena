@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.BattleArenaController;
@@ -12,6 +15,7 @@ import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.events.AlwaysJoinRAE;
@@ -27,6 +31,7 @@ import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.BAPluginListener;
 import mc.alk.arena.match.Match;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
@@ -42,6 +47,7 @@ import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -215,4 +221,9 @@ public class BattleArena extends JavaPlugin{
 		ArenaSerializer.loadAllArenas();		
 	}
 
+	public static ArenaPlayer toArenaPlayer(Player player) {return PlayerController.toArenaPlayer(player);}
+	public static Set<ArenaPlayer> toArenaPlayerSet(Collection<Player> players) {return PlayerController.toArenaPlayerSet(players);}
+	public static List<ArenaPlayer> toArenaPlayerList(Collection<Player> players) {return PlayerController.toArenaPlayerList(players);}
+	public static Set<Player> toPlayerSet(Collection<ArenaPlayer> players) {return PlayerController.toPlayerSet(players);}
+	public static List<Player> toPlayerList(Collection<ArenaPlayer> players) {return PlayerController.toPlayerList(players);}
 }

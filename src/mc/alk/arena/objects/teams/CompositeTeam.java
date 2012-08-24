@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.bukkit.entity.Player;
+import mc.alk.arena.objects.ArenaPlayer;
 
 /**
  * Class that is a collection of other teams 
@@ -20,7 +20,7 @@ public class CompositeTeam extends Team{
 		isPickupTeam = true;
 	}
 
-	protected CompositeTeam(Set<Player> tplayers) {
+	protected CompositeTeam(Set<ArenaPlayer> tplayers) {
 		super(tplayers);
 		isPickupTeam=true;
 	}
@@ -53,7 +53,7 @@ public class CompositeTeam extends Team{
 			createName();
 	}
 
-	public void removePlayer(Player p) {
+	public void removePlayer(ArenaPlayer p) {
 		for (Team t: oldTeams){
 			if (t.hasMember(p)){
 				oldTeams.remove(t);

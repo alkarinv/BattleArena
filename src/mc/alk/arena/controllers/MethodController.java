@@ -13,6 +13,7 @@ import java.util.Set;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchEventHandler;
 import mc.alk.arena.objects.MatchEventMethod;
 import mc.alk.arena.objects.MatchState;
@@ -42,14 +43,14 @@ public class MethodController {
 		return listeners;
 	}
 
-	public static void updateMatchBukkitEvents(ArenaListener arenaListener, MatchState matchState, Set<Player> players) {
+	public static void updateMatchBukkitEvents(ArenaListener arenaListener, MatchState matchState, Set<String> players) {
 		try {
 			Map<Class<? extends Event>,List<MatchEventMethod>> map = getMethods(arenaListener);
 			if (map == null){
 				Log.err(arenaListener +" has no registered methods");
 				return;
 			}
-			Collection<Player> newplayers = players != null ? new ArrayList<Player>(players) : null;
+			Collection<String> newplayers = players != null ? new ArrayList<String>(players) : null;
 			for (Class<? extends Event> event: map.keySet()){
 				updateEventListener(arenaListener,matchState, newplayers, map, event);				
 			}
@@ -58,15 +59,15 @@ public class MethodController {
 		}
 	}
 
-	public static void updateAllEventListeners(ArenaListener arenaListener, MatchState matchState, Player player){
+	public static void updateAllEventListeners(ArenaListener arenaListener, MatchState matchState, ArenaPlayer player){
 		try {
 			Map<Class<? extends Event>,List<MatchEventMethod>> map = getMethods(arenaListener);
 			if (map == null){
 				Log.err(arenaListener +" has no registered methods");
 				return;
 			}
-			List<Player> players = new ArrayList<Player>();
-			players.add(player);
+			List<String> players = new ArrayList<String>();
+			players.add(player.getName());
 			for (Class<? extends Event> event: map.keySet()){
 				updateEventListener(arenaListener,matchState, players, map, event);				
 			}
@@ -76,15 +77,15 @@ public class MethodController {
 	}
 
 	public static void updateEventListeners(ArenaListener arenaListener, MatchState matchState,
-			Player player, Class<? extends Event>... events) {
+			ArenaPlayer player, Class<? extends Event>... events) {
 		try {
 			Map<Class<? extends Event>,List<MatchEventMethod>> map = getMethods(arenaListener);
 			if (map == null){
 				System.err.println(arenaListener +" has no registered methods");
 				return;
 			}
-			List<Player> players = new ArrayList<Player>();
-			players.add(player);
+			List<String> players = new ArrayList<String>();
+			players.add(player.getName());
 			for (Class<? extends Event> event: events){
 				updateEventListener(arenaListener,matchState,players, map, event);				
 			}
@@ -93,7 +94,7 @@ public class MethodController {
 		}		
 	}
 
-	private static void updateEventListener(ArenaListener arenaListener, MatchState matchState, Collection<Player> players,
+	private static void updateEventListener(ArenaListener arenaListener, MatchState matchState, Collection<String> players,
 			Map<Class<? extends Event>, List<MatchEventMethod>> map, final Class<? extends Event> event) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("updateEventListener "+  event +"    " + matchState);
 		final List<MatchEventMethod> at = map.get(event);

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MessageController;
+import mc.alk.arena.objects.ArenaPlayer;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -96,7 +97,7 @@ public class MessageUtil {
 		return true;
 	}
 	
-	public static void sendMessage(Set<Player> players, String message) {
+	public static void sendPlayerMessage(Set<Player> players, String message) {
 		final String msg = MessageController.colorChat(message);
 		for (Player p: players){
 			p.sendMessage(msg);
@@ -114,4 +115,15 @@ public class MessageUtil {
 	public static String teamsOrPlayers(int nPlayersPerTeam){return nPlayersPerTeam > 1? "inEvent" : "players";}
 	public static String playerOrPlayers(int n) {return n> 1? "players" : "player";}
 
+
+	public static boolean sendMessage(final ArenaPlayer player, final String message) {
+		return sendMessage(player.getPlayer(),message);
+	}
+
+	public static void sendMessage(Set<ArenaPlayer> players, String message) {
+		final String msg = MessageController.colorChat(message);
+		for (ArenaPlayer p: players){
+			p.getPlayer().sendMessage(msg);
+		}
+	}
 }

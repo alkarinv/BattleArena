@@ -7,10 +7,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.SpawnController;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
@@ -22,7 +24,6 @@ import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public class Arena implements ArenaListener {
@@ -258,7 +259,7 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * return a list of inEvent inside this match
+	 * return a list of teams inside this match
 	 * @return
 	 */
 	public List<Team> getTeams(){
@@ -266,7 +267,7 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * Return a list of alive inEvent inside this match
+	 * Return a list of live teams inside this match
 	 * @return
 	 */
 	public List<Team> getAliveTeams(){
@@ -274,18 +275,26 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * Return a list of alive inEvent inside this match
+	 * Return a list of living arena players inside this match
 	 * @return
 	 */
-	public Set<Player> getAlivePlayers(){
+	public Set<ArenaPlayer> getAlivePlayers(){
 		return match == null ? null : match.getAlivePlayers();
+	}
+	
+	/**
+	 * Return a list of alive bukkit players inside this match
+	 * @return
+	 */
+	public Set<Player> getAliveBukkitPlayers(){
+		return match == null ? null : BattleArena.toPlayerSet(match.getAlivePlayers());
 	}
 
 	/**
 	 * Return the team of this player
 	 * @return
 	 */
-	public Team getTeam(OfflinePlayer p){
+	public Team getTeam(ArenaPlayer p){
 		return match == null ? null : match.getTeam(p);
 	}
 
@@ -386,7 +395,7 @@ public class Arena implements ArenaListener {
 	 * @param p the player
 	 * @param t the team they are on
 	 */
-	public void onJoin(Player p, Team t){}
+	public void onJoin(ArenaPlayer p, Team t){}
 
 	/**
 	 * Called when a player is leaving the match ( via typing a command usually) , 
@@ -394,7 +403,7 @@ public class Arena implements ArenaListener {
 	 * @param p the player
 	 * @param t the team they were on
 	 */
-	public void onLeave(Player p, Team t) {}
+	public void onLeave(ArenaPlayer p, Team t) {}
 
 	/**
 	 * Called before the match starts
@@ -427,21 +436,21 @@ public class Arena implements ArenaListener {
 	 * @param Player p
 	 * @param team : the team they were in
 	 */
-	public void onEnter(Player p, Team team) {}
+	public void onEnter(ArenaPlayer p, Team team) {}
 
 	/**
 	 * Called if a player is teleported into a waiting room before a match
 	 * @param Player p
 	 * @param team: the team they are in
 	 */
-	public void onEnterWaitRoom(Player p, Team team) {}
+	public void onEnterWaitRoom(ArenaPlayer p, Team team) {}
 
 	/**
 	 * Called when a player is exiting the match (usually through a death)
 	 * @param p
 	 * @param team : the team they were in
 	 */
-	public void onExit(Player p, Team team) {}
+	public void onExit(ArenaPlayer p, Team team) {}
 
 	public boolean matches(MatchParams q) {
 		boolean matches = getParameters().matches(q);

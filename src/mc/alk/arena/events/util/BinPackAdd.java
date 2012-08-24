@@ -59,4 +59,5 @@ public class BinPackAdd extends TeamJoinHandler {
 	public String toString(){
 		return "["+event.getName() +":JH:BinPackAdd]";
 	}
+
 }

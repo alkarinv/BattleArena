@@ -6,12 +6,11 @@ import java.util.Set;
 
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.events.Event;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
-
-import org.bukkit.entity.Player;
 
 public abstract class TeamJoinHandler implements TeamHandler {
 
@@ -56,10 +55,10 @@ public abstract class TeamJoinHandler implements TeamHandler {
 	
 	public abstract TeamJoinResult joiningTeam(Team team);
 
-	public boolean canLeave(Player p) {
+	public boolean canLeave(ArenaPlayer p) {
 		return true;
 	}
-	public boolean leave(Player p) {
+	public boolean leave(ArenaPlayer p) {
 		for (Team t: pickupTeams){
 			if (t.hasMember(p)){
 				pickupTeams.remove(t);
@@ -69,8 +68,8 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		return true;
 	}
 	
-	public Set<Player> getExcludedPlayers() {
-		Set<Player> tplayers = new HashSet<Player>();
+	public Set<ArenaPlayer> getExcludedPlayers() {
+		Set<ArenaPlayer> tplayers = new HashSet<ArenaPlayer>();
 		for (Team t: pickupTeams){
 			tplayers.addAll(t.getPlayers());}
 		return tplayers;

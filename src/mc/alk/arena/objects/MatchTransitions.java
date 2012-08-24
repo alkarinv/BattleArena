@@ -5,8 +5,6 @@ import java.util.HashMap;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
 
-import org.bukkit.entity.Player;
-
 public class MatchTransitions {
 	HashMap<MatchState,TransitionOptions> ops = new HashMap<MatchState,TransitionOptions>();
 	
@@ -43,7 +41,7 @@ public class MatchTransitions {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).getNotReadyMsg(header): null;
 	}
 
-	public String getRequiredString(Player p, String header) {
+	public String getRequiredString(ArenaPlayer p, String header) {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).getNotReadyMsg(p,header): null;
 	}
 	
@@ -63,7 +61,7 @@ public class MatchTransitions {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).hasMoney() : false;
 	}
 
-	public boolean playerReady(Player p) {
+	public boolean playerReady(ArenaPlayer p) {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).playerReady(p): true;
 	}
 
@@ -71,7 +69,7 @@ public class MatchTransitions {
 		TransitionOptions to = ops.get(MatchState.PREREQS);
 		if (to == null)
 			return true;
-		for (Player p: t.getPlayers()){
+		for (ArenaPlayer p: t.getPlayers()){
 			if (!to.playerReady(p))
 				return false;
 		}

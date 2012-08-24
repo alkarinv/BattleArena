@@ -6,10 +6,9 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
-
-import org.bukkit.entity.Player;
 
 
 public class TeamQueue extends LinkedList<Team>{
@@ -21,7 +20,7 @@ public class TeamQueue extends LinkedList<Team>{
 		this.mp = new MatchParams(q);
 	}
 
-	public boolean contains(Player p){
+	public boolean contains(ArenaPlayer p){
 		for (Team t: this){
 			if (t.hasMember(p)) 
 				return true;
@@ -29,7 +28,7 @@ public class TeamQueue extends LinkedList<Team>{
 		return false;
 	}
 
-	public Team remove(Player p){
+	public Team remove(ArenaPlayer p){
 		for (Team t: this){
 			if (t.hasMember(p)){
 				this.remove(t);
@@ -38,7 +37,7 @@ public class TeamQueue extends LinkedList<Team>{
 		}
 		return null;
 	}
-	public int indexOf(Player p){
+	public int indexOf(ArenaPlayer p){
 		for (int i=0;i < this.size();i++){
 			Team t = this.get(i);
 			if (t.hasMember(p))

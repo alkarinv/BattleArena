@@ -10,6 +10,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.OnMatchComplete;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.ParamTeamPair;
@@ -18,8 +19,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
-
-import org.bukkit.entity.Player;
+import mc.alk.arena.util.Util;
 
 
 public class ArenaMatchQueue {
@@ -275,7 +275,7 @@ public class ArenaMatchQueue {
 		return null;
 	}
 
-	public synchronized boolean isInQue(Player p) {
+	public synchronized boolean isInQue(ArenaPlayer p) {
 		for (TeamQueue tq : tqs.values()){
 			if (tq != null && tq.contains(p)) return true;
 		}
@@ -292,7 +292,7 @@ public class ArenaMatchQueue {
 		return tq.size();
 	}
 
-	public synchronized ParamTeamPair removeFromQue(Player p) {
+	public synchronized ParamTeamPair removeFromQue(ArenaPlayer p) {
 		for (TeamQueue tq : tqs.values()){
 			if (tq != null && tq.contains(p)){
 				Team t = tq.remove(p);
@@ -309,7 +309,7 @@ public class ArenaMatchQueue {
 		return null;
 	}
 
-	public QPosTeamPair getQuePos(Player p) {
+	public QPosTeamPair getQuePos(ArenaPlayer p) {
 		int pos; 
 		for (TeamQueue tq : tqs.values()){
 			pos = tq.indexOf(p);

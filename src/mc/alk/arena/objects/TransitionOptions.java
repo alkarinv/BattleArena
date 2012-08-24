@@ -12,7 +12,6 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.ArmorLevel;
 import mc.alk.arena.util.Util;
 
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -111,7 +110,7 @@ public class TransitionOptions {
 	public String getDisguiseAllAs() {return disguiseAllAs;}
 	public Boolean undisguise() {return options.contains(TransitionOption.UNDISGUISE);}
 	
-	public boolean playerReady(Player p) {
+	public boolean playerReady(ArenaPlayer p) {
 		if (p==null || !p.isOnline() || p.isDead())
 			return false;
 		if (needsItems()){
@@ -128,7 +127,7 @@ public class TransitionOptions {
 //		}
 		if (needsArmor()){
 //			System.out.println(" needs armor  hasArmor=" + InventoryUtil.hasArmor(p));
-			if (!InventoryUtil.hasArmor(p))
+			if (!InventoryUtil.hasArmor(p.getPlayer()))
 				return false;
 		}
 //		System.out.println(" my options are " + options);
@@ -159,7 +158,7 @@ public class TransitionOptions {
 		return hasSomething ? sb.toString() : null; 
 	}
 
-	public String getNotReadyMsg(Player p, String headerMsg) {
+	public String getNotReadyMsg(ArenaPlayer p, String headerMsg) {
 //		System.out.println(" Here in getNot ready msg with " + p.getName());
 		StringBuilder sb = new StringBuilder(headerMsg);
 		boolean isReady = true;
@@ -175,13 +174,13 @@ public class TransitionOptions {
 	        }
 		}
 		if (clearInventory()){
-			if (InventoryUtil.hasAnyItem(p)){
+			if (InventoryUtil.hasAnyItem(p.getPlayer())){
 				sb.append("&5 -&e a &6Clear Inventory\n");
         		isReady = false;
 			}
 		}
 		if (needsArmor()){
-			if (!InventoryUtil.hasArmor(p)){
+			if (!InventoryUtil.hasArmor(p.getPlayer())){
 				sb.append("&&5 - &6Armor\n");
         		isReady = false;
 			}

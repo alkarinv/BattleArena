@@ -5,6 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.events.util.NeverWouldJoinException;
 import mc.alk.arena.events.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.match.Match;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.teams.Team;
@@ -14,8 +15,6 @@ import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Countdown;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.WLT;
-
-import org.bukkit.entity.Player;
 
 import com.alk.battleEventTracker.BattleEventTracker;
 
@@ -82,7 +81,7 @@ public class ReservedArenaEvent extends Event {
 		if (bti != null){
 			BTInterface.addRecord(bti, victor.getPlayers(), am.getLosers(), WLT.WIN);			
 		}
-		Integer elo = (int) ((bti != null) ? BTInterface.loadRecord(bti, victor).getElo() : Defaults.DEFAULT_ELO);
+		Integer elo = (int) ((bti != null) ? BTInterface.loadRecord(bti, victor).getRanking() : Defaults.DEFAULT_ELO);
 
 		mc.sendEventWon(victor, elo);
 		endEvent();
@@ -97,7 +96,7 @@ public class ReservedArenaEvent extends Event {
 			arenaMatch.onJoin(tjr.team);
 			break;
 		case ADDED_TO_EXISTING:
-			for (Player p : t.getPlayers()){/// subsequent times, just the new players
+			for (ArenaPlayer p : t.getPlayers()){/// subsequent times, just the new players
 				/// dont call arenaMatch.onJoin(Team), as part of the team might already be in arena
 				arenaMatch.playerAddedToTeam(p,tjr.team);}
 			break;
@@ -145,7 +144,7 @@ public class ReservedArenaEvent extends Event {
 	}
 
 	@Override
-	public boolean canLeave(Player p) {
+	public boolean canLeave(ArenaPlayer p) {
 		return !isRunning();
 	}
 
@@ -155,7 +154,7 @@ public class ReservedArenaEvent extends Event {
 	}
 
 	@Override
-	public boolean leave(Player p){
+	public boolean leave(ArenaPlayer p){
 		Team t = getTeam(p);
 		if (t==null) /// they arent in this bukkitEvent
 			return true;

@@ -9,21 +9,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
 
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 
-/// TODO this now needs to register generically or something
 public class TeamController  implements Listener {
 	static final boolean DEBUG = false;
 	static Map<Team,List<TeamHandler>> inEvent = new ConcurrentHashMap<Team,List<TeamHandler>>();
@@ -35,12 +33,12 @@ public class TeamController  implements Listener {
 		this.bac = bac;
 	}
 
-	public static Team getTeam(OfflinePlayer p) {
+	public static Team getTeam(ArenaPlayer p) {
 		return inEvent(p);
 	}
 
 
-	public static Team inEvent(OfflinePlayer p) {
+	public static Team inEvent(ArenaPlayer p) {
 		synchronized(inEvent){
 			for (Team t: inEvent.keySet()){
 				if (t.hasMember(p))
@@ -50,7 +48,7 @@ public class TeamController  implements Listener {
 		return null;
 	}
 
-	public Team getSelfTeam(OfflinePlayer pl) {
+	public Team getSelfTeam(ArenaPlayer pl) {
 		for (Team t: selfFormedTeams){
 			if (t.hasMember(pl))
 				return t;
@@ -67,7 +65,7 @@ public class TeamController  implements Listener {
 	}
 
 
-	private void leaveSelfTeam(Player p) {
+	private void leaveSelfTeam(ArenaPlayer p) {
 		Team t = getFormingTeam(p);
 		if (t != null && formingTeams.remove(t)){
 			t.sendMessage("&cYou're team has been disbanded as &6" + p.getDisplayName()+"&c has left minecraft");
@@ -80,7 +78,7 @@ public class TeamController  implements Listener {
 		}
 	}
 
-	private static void playerLeft(Player p) {
+	private static void playerLeft(ArenaPlayer p) {
 		Team t = inEvent(p);
 		if (t == null ){
 			return;}
@@ -102,21 +100,23 @@ public class TeamController  implements Listener {
 	
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
-		playerLeft(event.getPlayer());
-		leaveSelfTeam(event.getPlayer());
+		ArenaPlayer ap = PlayerController.toArenaPlayer(event.getPlayer());
+		playerLeft(ap);
+		leaveSelfTeam(ap);
 	}
 
 	@EventHandler
 	public void onPlayerKick(PlayerKickEvent event) {
-		playerLeft(event.getPlayer());
-		leaveSelfTeam(event.getPlayer());
+		ArenaPlayer ap = PlayerController.toArenaPlayer(event.getPlayer());
+		playerLeft(ap);
+		leaveSelfTeam(ap);
 	}
 
 	public Map<Team,List<TeamHandler>> getTeams() {
 		return inEvent;
 	}
 
-	public boolean inFormingTeam(OfflinePlayer p) {
+	public boolean inFormingTeam(ArenaPlayer p) {
 		for (FormingTeam ft: formingTeams){
 			if (ft.hasMember(p)){
 				return true;}
@@ -124,7 +124,7 @@ public class TeamController  implements Listener {
 		return false;
 	}
 
-	public FormingTeam getFormingTeam(OfflinePlayer p) {
+	public FormingTeam getFormingTeam(ArenaPlayer p) {
 		for (FormingTeam ft: formingTeams){
 			if (ft.hasMember(p)){
 				return ft;}
@@ -140,7 +140,7 @@ public class TeamController  implements Listener {
 		formingTeams.remove(ft);
 	}
 
-	public Map<TeamHandler,Team> getTeamMap(OfflinePlayer p){
+	public Map<TeamHandler,Team> getTeamMap(ArenaPlayer p){
 		HashMap<TeamHandler,Team> map = new HashMap<TeamHandler,Team>();
 		synchronized(inEvent){
 			for (Team t: inEvent.keySet()){
@@ -153,7 +153,7 @@ public class TeamController  implements Listener {
 		return map;
 	}
 
-	public static Team createTeam(Player p, TeamHandler th) {
+	public static Team createTeam(ArenaPlayer p, TeamHandler th) {
 		if (DEBUG) System.out.println("------- createTeam " + p.getName() + ": " + th);
 		Team t = TeamFactory.createTeam(p);
 		List<TeamHandler> ths = new ArrayList<TeamHandler>();
@@ -162,7 +162,7 @@ public class TeamController  implements Listener {
 		return t;
 	}
 
-	public static Team createTeam(Set<Player> players, TeamHandler th) {
+	public static Team createTeam(Set<ArenaPlayer> players, TeamHandler th) {
 		if (DEBUG) System.out.println("------- createTeam " + players.size() + ": " + th);
 		Team t = TeamFactory.createTeam(players);
 		List<TeamHandler> ths = new ArrayList<TeamHandler>();
@@ -184,7 +184,7 @@ public class TeamController  implements Listener {
 		}
 	}
 
-	public static Team createTeam(Player p) {
+	public static Team createTeam(ArenaPlayer p) {
 		if (DEBUG) System.out.println("------- createTeam sans handler " + p.getName());
 		return TeamFactory.createTeam(p);
 	}
@@ -201,7 +201,7 @@ public class TeamController  implements Listener {
 		}
 	}
 
-	public static CompositeTeam createCompositeTeam(Set<Player> players) {
+	public static CompositeTeam createCompositeTeam(Set<ArenaPlayer> players) {
 		if (DEBUG) System.out.println("------- createCompositeTeam " + players.size());
 		return TeamFactory.createCompositeTeam(players);
 	}
@@ -218,7 +218,7 @@ public class TeamController  implements Listener {
 		return "[TeamController]";
 	}
 
-	public List<TeamHandler> getHandlers(Player p) {
+	public List<TeamHandler> getHandlers(ArenaPlayer p) {
 		List<TeamHandler> handlers = new ArrayList<TeamHandler>();
 		synchronized(inEvent){
 			for (Team t: inEvent.keySet()){

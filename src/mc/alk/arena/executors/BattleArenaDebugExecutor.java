@@ -6,27 +6,23 @@ import java.util.HashMap;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaDebugger;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.match.PerformTransition;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MapOfHash;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.Util;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
-import com.alk.controllers.MC;
 
 public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public BattleArenaDebugExecutor(){}
@@ -43,9 +39,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 
 	@MCCommand( cmds = {"enableDebugging"}, op=true,min=3, usage="enableDebugging <code section> <on off>")
-	public void enableDebugging(CommandSender sender, Command command, String label, Object[] args){
-		final String section = (String) args[1];
-		final boolean on = ((String) args[2]).equals("on");
+	public void enableDebugging(CommandSender sender, String section, Boolean on){
+
 		if (section.equalsIgnoreCase("transitions")){
 			PerformTransition.debug=on;
 		} else if(section.equalsIgnoreCase("virtualplayer")){
@@ -57,26 +52,22 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		sendMessage(sender, "&2Debugging for &6" + section +"&2 now &6" + on);
 	}
 
-	@MCCommand( cmds = {"giveTeam","gt"}, online={1}, ints={2}, op=true, usage="giveTeam <player> <team index>")
-	public boolean giveTeamHelmOther(CommandSender sender, Command command, String label, Object[] args){
-		Player p = (Player) args[1];
-		Integer index = (Integer) args[2];
+	@MCCommand( cmds = {"giveTeam","gt"}, online={1}, op=true, usage="giveTeam <player> <team index>")
+	public boolean giveTeamHelmOther(CommandSender sender, ArenaPlayer p, Integer index){
 		TeamUtil.setTeamHead(index, p);
 		return sendMessage(sender, p.getName() +" Given team " + index);
 	}
 	
-	@MCCommand( cmds = {"giveTeam","gt"}, inGame=true, op=true, ints={1}, usage="giveTeam <team index>")
-	public boolean giveTeamHelm(CommandSender sender, Command command, String label, Object[] args){
-		Player p = (Player) sender;
-		Integer index = (Integer) args[1];
+	@MCCommand( cmds = {"giveTeam","gt"}, inGame=true, op=true, usage="giveTeam <team index>")
+	public boolean giveTeamHelm(ArenaPlayer p, Integer index){
 		if (index < 0){
-			p.setDisplayName(p.getName());
-			return sendMessage(sender, "&2Removing Team. &6/bad giveTeam <index> &2 to give a team name");
+			p.getPlayer().setDisplayName(p.getName());
+			return sendMessage(p, "&2Removing Team. &6/bad giveTeam <index> &2 to give a team name");
 		}
 		TeamUtil.setTeamHead(index, p);
 		String tname = TeamUtil.createTeamName(index);
-		p.setDisplayName(tname);
-		return sendMessage(sender, "&2Giving team " +index);
+		p.getPlayer().setDisplayName(tname);
+		return sendMessage(p, "&2Giving team " +index);
 	}
 
 	@MCCommand( cmds = {"giveHelm","gh"}, inGame=true, op=true, exact=2, usage="giveHelm <item>")
@@ -98,11 +89,11 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		HashMap<Type, BukkitEventListener> types = MethodController.getEventListeners();
 		for (BukkitEventListener bel: types.values()){
 			Collection<ArenaListener> lists = bel.getMatchListeners();
-			MapOfHash<Player,ArenaListener> lists2 = bel.getListeners();
+			MapOfHash<String,ArenaListener> lists2 = bel.getListeners();
 			String str = Util.toCommaDelimitedString(bel.getPlayers());
 			sendMessage(sender, "Event " + bel.getEvent() +", players="+str);
-			for (Player p : lists2.keySet()){
-				sendMessage(sender, bel.getEvent() +"  " + p.getName() +"  Listener  " + lists2.get(p));
+			for (String p : lists2.keySet()){
+				sendMessage(sender, bel.getEvent() +"  " + p +"  Listener  " + lists2.get(p));
 			}
 
 			for (ArenaListener al : lists){
@@ -113,12 +104,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 	
 	@MCCommand(cmds={"addKill"}, op=true,min=2,usage="addKill <player>")
-	public boolean arenaAddKill(CommandSender sender, Command cmd, String commandLabel, Object[] args) {
-		OfflinePlayer pl = Util.findPlayer((String)args[1]); 
-		if (pl == null){
-			MC.sendMessage(sender,"&ePlayer &6" + args[1] +"&e not online.  checking offline player="+args[1]);}
-		pl = Bukkit.getOfflinePlayer((String)args[1]); 
-
+	public boolean arenaAddKill(CommandSender sender, ArenaPlayer pl) {
 		Match am = ac.getMatch(pl);
 		if (am == null){
 			return sendMessage(sender,"&ePlayer " + pl.getName() +" is not in a match");}
@@ -127,26 +113,20 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 
 
-	@MCCommand(cmds={"hidespawns"}, inGame=true, admin=true, arenas={1}, usage="hidespawns <arena>")
-	public boolean arenaHideSpawns(CommandSender sender, Command cmd, String commandLabel, Object[] args) {
-		Arena arena = (Arena) args[1];
+	@MCCommand(cmds={"hidespawns"}, admin=true, usage="hidespawns <arena>")
+	public boolean arenaHideSpawns(CommandSender sender, Arena arena) {
 		ArenaDebugger ad = ArenaDebugger.getDebugger(arena);
 		ad.hideSpawns();
 		ArenaDebugger.removeDebugger(ad);
 		return sendMessage(sender,ChatColor.YELLOW+ "You are hiding spawns for " + arena.getName());
 	}
 
-	@MCCommand(cmds={"showspawns"}, inGame=true, admin=true, arenas={1}, usage="showspawns <arena>")
-	public boolean arenaShowSpawns(CommandSender sender, Command cmd, String commandLabel, Object[] args) {
-		Arena arena = (Arena) args[1];
+	@MCCommand(cmds={"showspawns"}, admin=true, usage="showspawns <arena>")
+	public boolean arenaShowSpawns(CommandSender sender, Arena arena) {
 		ArenaDebugger ad = ArenaDebugger.getDebugger(arena);
 		ad.hideSpawns();
 		ad.showSpawns();
 		return sendMessage(sender,ChatColor.GREEN+ "You are showing spawns for " + arena.getName());
-	}
-
-	public static boolean sendMessage(final CommandSender sender, final String msg){
-		return MessageController.sendMessage(sender, msg);
 	}
 
 }

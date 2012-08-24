@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.listeners.MatchListener;
 import mc.alk.arena.match.Match;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.ParamTeamPair;
@@ -21,8 +22,6 @@ import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.tournament.Matchup;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 
 public class BattleArenaController implements OnMatchComplete, Runnable, TeamHandler{
@@ -81,8 +80,8 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 			} else {
 				try { ml.matchComplete(am);} catch(Exception e){};				
 			}
-		}
-		amq.add(am.getArena());
+		}		
+		amq.add(allarenas.get(am.getArena().getName())); /// add it back into the queue
 	}
 
 	public void updateArena(Arena arena) {
@@ -108,9 +107,9 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		}
 		return qpp;
 	}
-	public boolean isInQue(Player p) {return amq.isInQue(p);}
-	public QPosTeamPair getCurrentQuePos(Player p) {return amq.getQuePos(p);}
-	public ParamTeamPair removeFromQue(Player p) {return amq.removeFromQue(p);}
+	public boolean isInQue(ArenaPlayer p) {return amq.isInQue(p);}
+	public QPosTeamPair getCurrentQuePos(ArenaPlayer p) {return amq.getQuePos(p);}
+	public ParamTeamPair removeFromQue(ArenaPlayer p) {return amq.removeFromQue(p);}
 	public ParamTeamPair removeFromQue(Team t) {return amq.removeFromQue(t);}
 	public void addMatchup(Matchup m) {amq.addMatchup(m);}
 	public Arena reserveArena(Arena arena) {return amq.reserveArena(arena);}
@@ -138,13 +137,13 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 	/**
 	 * We dont care if they leave queues
 	 */
-	public boolean canLeave(Player p) {
+	public boolean canLeave(ArenaPlayer p) {
 		return true;
 	}
 	/**
 	 * If they are in a queue, take them out
 	 */
-	public boolean leave(Player p) {
+	public boolean leave(ArenaPlayer p) {
 		ParamTeamPair ptp = removeFromQue(p);
 		if (ptp != null){
 			ptp.team.sendMessage("&cYour team has left the queue b/c &6"+p.getDisplayName()+"c has left");			
@@ -179,7 +178,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 				cancelMatch(am);
 				Arena a = am.getArena();
 				if (a != null)
-					amq.add(a);
+					amq.add(allarenas.get(a.getName()));
 			}
 			running_matches.clear();
 		}
@@ -189,33 +188,23 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		for (Match am: running_matches){
 			if (am.getArena().getName().equals(arena.getName())){
 				cancelMatch(am);
-				removeMatch(am);
-				Arena a = am.getArena();
-				if (a != null)
-					amq.add(allarenas.get(a.getName()));
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public boolean cancelMatch(Player p) {
+	public boolean cancelMatch(ArenaPlayer p) {
 		Match am = getMatch(p);
 		if (am==null)
 			return false;
 		cancelMatch(am);
-		removeMatch(am);
-		Arena a = am.getArena();
-		if (a != null){
-			amq.add(allarenas.get(a.getName()));
-			return true;
-		}
-		return false;
+		return true;
 	}
 
 	public void cancelMatch(Team team) {
-		Set<Player> ps = team.getPlayers();
-		for (Player p : ps){
+		Set<ArenaPlayer> ps = team.getPlayers();
+		for (ArenaPlayer p : ps){
 			cancelMatch(p);
 			return;
 		}
@@ -226,16 +215,6 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		for (Team t: am.getTeams()){
 			t.sendMessage("&4!!!&e This arena match has been cancelled");
 		}
-		List<MatchListener> mls = null;
-		synchronized(matchListeners){
-			 mls = new ArrayList<MatchListener>(matchListeners);			
-		}
-		/// Notify all Listeners that this match is finished
-		for (MatchListener ml: mls){
-			try { ml.matchCancelled(am);} catch(Exception e){};
-		}
-
-		amq.add(am.getArena());
 	}
 
 	public Match getArenaMatch(Arena a) {
@@ -249,7 +228,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		return null;
 	}
 
-	public Match getMatch(OfflinePlayer p) {
+	public Match getMatch(ArenaPlayer p) {
 		synchronized(running_matches){
 			for (Match am: running_matches){
 				if (am.hasPlayer(p)){

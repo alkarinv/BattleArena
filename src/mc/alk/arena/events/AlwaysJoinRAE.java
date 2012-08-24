@@ -1,9 +1,8 @@
 package mc.alk.arena.events;
 
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
-
-import org.bukkit.entity.Player;
 
 
 public class AlwaysJoinRAE extends ReservedArenaEvent {
@@ -12,7 +11,7 @@ public class AlwaysJoinRAE extends ReservedArenaEvent {
 	}
 
 	@Override
-	public boolean canLeave(Player p) {
+	public boolean canLeave(ArenaPlayer p) {
 		/// you can enter and leave at any time
 		return true;
 	}

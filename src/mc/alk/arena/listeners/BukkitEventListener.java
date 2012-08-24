@@ -7,7 +7,9 @@ import java.util.List;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MethodController;
+import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchEventMethod;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.teams.Team;
@@ -24,21 +26,21 @@ import org.bukkit.event.Event;
  *
  */
 public class BukkitEventListener extends BEventListener{
-	public MapOfHash<Player,ArenaListener> listeners = new MapOfHash<Player,ArenaListener>();
+	public MapOfHash<String,ArenaListener> listeners = new MapOfHash<String,ArenaListener>();
 	public HashSet<ArenaListener> mlisteners = new HashSet<ArenaListener>();
 
 	final Method getPlayerMethod;
 	public boolean hasListeners(){
 		return (!listeners.isEmpty() || !mlisteners.isEmpty()); 
 	}
-	public MapOfHash<Player,ArenaListener> getListeners(){
+	public MapOfHash<String,ArenaListener> getListeners(){
 		return listeners;
 	}
 	public HashSet<ArenaListener> getMatchListeners(){
 		return mlisteners;
 	}
 
-	public Collection<Player> getPlayers(){
+	public Collection<String> getPlayers(){
 		return listeners.keySet();
 	}
 	public BukkitEventListener(final Class<? extends Event> bukkitEvent, Method getPlayerMethod) {
@@ -47,20 +49,20 @@ public class BukkitEventListener extends BEventListener{
 		this.getPlayerMethod = getPlayerMethod;
 	}
 
-	public void addListener(ArenaListener arenaListener, MatchState matchState, MatchEventMethod mem, Collection<Player> players) {
+	public void addListener(ArenaListener arenaListener, MatchState matchState, MatchEventMethod mem, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("    adding listener " + matchState +"   players="+players+"   mem="+mem);
 		if (players != null && mem.getPlayerMethod() != null){
-			for (Player player: players){
+			for (String player: players){
 				addSPListener(player, arenaListener);}
 		} else {
 			addMatchListener(arenaListener);
 		}
 	}
 
-	public void removeListener(ArenaListener arenaListener, MatchState matchState, MatchEventMethod mem, Collection<Player> players) {
+	public void removeListener(ArenaListener arenaListener, MatchState matchState, MatchEventMethod mem, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("    removing listener " + matchState +"   player="+players+"   mem="+mem);
 		if (players != null && mem.getPlayerMethod() != null){
-			for (Player player: players){
+			for (String player: players){
 				removeSPListener(player, arenaListener);}
 		} else {
 			removeMatchListener(arenaListener);
@@ -83,7 +85,7 @@ public class BukkitEventListener extends BEventListener{
 		mlisteners.add(spl);
 	}
 
-	public boolean removeSPListener(Player p, ArenaListener spl) {
+	public boolean removeSPListener(String p, ArenaListener spl) {
 		final boolean removed = listeners.remove(p,spl);
 		if (removed && !hasListeners()){
 			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STOPPING LISTEN " + bukkitEvent);			
@@ -91,11 +93,11 @@ public class BukkitEventListener extends BEventListener{
 		return removed;
 	}
 
-	public void addSPListener(Player p, ArenaListener spl) {
+	public void addSPListener(String p, ArenaListener spl) {
 		if (!hasListeners()){
 			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STARTING LISTEN " + bukkitEvent);			
 			startSpecificPlayerListening();}
-		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS now listening for player " + p.getName() +"   " + bukkitEvent);			
+		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS now listening for player " + p +"   " + bukkitEvent);			
 		listeners.add(p,spl);
 	}
 
@@ -109,7 +111,7 @@ public class BukkitEventListener extends BEventListener{
 		if (!(entity instanceof Player))
 			return;
 		final Player p = (Player) entity;
-		HashSet<ArenaListener> spls = listeners.getSafe(p);
+		HashSet<ArenaListener> spls = listeners.getSafe(p.getName());
 		if (spls == null){
 //			if (Defaults.DEBUG_EVENTS) System.out.println("   NO SPLS listening for player " + p.getName());			
 			return;
@@ -127,12 +129,15 @@ public class BukkitEventListener extends BEventListener{
 				os[0] = event;
 
 				try {
+					ArenaPlayer arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;
 					for (int i=1;i< types.length;i++){
 						final Class<?> t = types[i];
 						if (Player.class.isAssignableFrom(t)){
 							os[i] = p;
 						} else if (Team.class.isAssignableFrom(t)){
-							os[i] = TeamController.getTeam(p);
+							os[i] = TeamController.getTeam(arenaPlayer);
+						} else if (ArenaPlayer.class.isAssignableFrom(t)){
+							os[i] = arenaPlayer;
 						}
 					}
 					method.getMethod().invoke(spl, os); /// Invoke the listening arenalisteners method

@@ -4,42 +4,41 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.controllers.MessageController;
-
-import org.bukkit.entity.Player;
+import mc.alk.arena.objects.ArenaPlayer;
 
 
 
 public class FormingTeam extends Team{
-	Set<Player> joined_players = new HashSet<Player>();
+	Set<ArenaPlayer> joined_players = new HashSet<ArenaPlayer>();
 
-	public FormingTeam(Player p, Set<Player> teammates) {
+	public FormingTeam(ArenaPlayer p, Set<ArenaPlayer> teammates) {
 		super(p,teammates);
 		joined_players.add(p);
 	}
 
-	public void joinTeam(Player p){joined_players.add(p);}
-	public Set<Player> getJoinedPlayers() {return joined_players;}
+	public void joinTeam(ArenaPlayer p){joined_players.add(p);}
+	public Set<ArenaPlayer> getJoinedPlayers() {return joined_players;}
 
-	public boolean hasJoined(Player p) {return joined_players.contains(p);}
-	public boolean isJoining(Player p) {return !hasJoined(p);}
+	public boolean hasJoined(ArenaPlayer p) {return joined_players.contains(p);}
+	public boolean isJoining(ArenaPlayer p) {return !hasJoined(p);}
 
-	public Set<Player> getUnjoinedPlayers() {
+	public Set<ArenaPlayer> getUnjoinedPlayers() {
 		if (hasAllPlayers()) return null;
-		Set<Player> ps = new HashSet<Player>(players);
+		Set<ArenaPlayer> ps = new HashSet<ArenaPlayer>(players);
 		ps.removeAll(joined_players);
 		return ps;
 	}
 	
 	public void sendJoinedPlayersMessage(String message) {
-		for (Player p: joined_players){
+		for (ArenaPlayer p: joined_players){
 			MessageController.sendMessage(p, message);
 		}
 	}
 	public void sendUnjoinedPlayersMessage(String message) {
-		Set<Player> unjoined = getUnjoinedPlayers();
+		Set<ArenaPlayer> unjoined = getUnjoinedPlayers();
 		if (unjoined == null)
 			return;
-		for (Player p: unjoined){
+		for (ArenaPlayer p: unjoined){
 			MessageController.sendMessage(p, message);
 		}
 	}

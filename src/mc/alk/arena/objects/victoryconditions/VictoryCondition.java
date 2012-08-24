@@ -2,9 +2,8 @@ package mc.alk.arena.objects.victoryconditions;
 
 import java.util.List;
 
-import org.bukkit.entity.Player;
-
 import mc.alk.arena.match.Match;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
 
@@ -51,6 +50,6 @@ public abstract class VictoryCondition extends ChangeStateCondition  {
 		return "[VC "+vt.getName()+"]";
 	}
 
-	public abstract void playerLeft(Player p);
+	public abstract void playerLeft(ArenaPlayer p);
 
 }

@@ -7,45 +7,44 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.controllers.MessageController;
+import mc.alk.arena.objects.ArenaPlayer;
 
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-
-
 
 public class Team {
 	static int count = 0;
 
-	protected Set<Player> players = new HashSet<Player>();
-	protected Set<Player> deadplayers = new HashSet<Player>();
+	protected Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
+	protected Set<ArenaPlayer> deadplayers = new HashSet<ArenaPlayer>();
 
 	protected String name =null; /// Internal name of this team
 	protected String displayName =null; /// Display name
 	final int id = count++; /// id
 
-	HashMap<OfflinePlayer, Integer> kills = new HashMap<OfflinePlayer,Integer>();
-	HashMap<OfflinePlayer, Integer> deaths = new HashMap<OfflinePlayer,Integer>();
+	HashMap<ArenaPlayer, Integer> kills = new HashMap<ArenaPlayer,Integer>();
+	HashMap<ArenaPlayer, Integer> deaths = new HashMap<ArenaPlayer,Integer>();
 
 	/// Pickup inEvent are transient in nature, once the match end they disband
 	protected boolean isPickupTeam = false;
 	/// This is only so that teleports can be done to slightly different places for each player
 	protected HashMap<String,Integer> playerIndexes = new HashMap<String,Integer>();
+
 	/**
 	 * Default Constructor
 	 */
 	public Team(){}
 	
-	protected Team(Player p) {
+	protected Team(ArenaPlayer p) {
 		players.add(p);
 		createName();
 	}
 
-	protected Team(Set<Player> teammates) {
+	protected Team(Set<ArenaPlayer> teammates) {
 		this.players.addAll(teammates);
 		createName();
 	}
 
-	protected Team(Player p, Set<Player> teammates) {
+	protected Team(ArenaPlayer p, Set<ArenaPlayer> teammates) {
 		players.add(p);
 		players.addAll(teammates);
 		createName();
@@ -55,7 +54,7 @@ public class Team {
 		/// Sort the names and then append them together
 		playerIndexes.clear();
 		ArrayList<String> list = new ArrayList<String>();
-		for (Player p:players){list.add(p.getName());}
+		for (ArenaPlayer p:players){list.add(p.getName());}
 		Collections.sort(list);
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
@@ -69,28 +68,35 @@ public class Team {
 		name= sb.toString();
 	}
 
-	public Set<Player> getPlayers() {return players;}
-	public Set<Player> getDeadPlayers() {return deadplayers;}
-	public Set<Player> getLivingPlayers() {
-		Set<Player> living = new HashSet<Player>();
-		for (Player p : players){
+	public Set<ArenaPlayer> getPlayers() {return players;}
+	public Set<Player> getBukkitPlayers() {
+		Set<Player> ps = new HashSet<Player>();
+		for (ArenaPlayer ap: players){
+			ps.add(ap.getPlayer());
+		}
+		return ps;
+	}
+	public Set<ArenaPlayer> getDeadPlayers() {return deadplayers;}
+	public Set<ArenaPlayer> getLivingPlayers() {
+		Set<ArenaPlayer> living = new HashSet<ArenaPlayer>();
+		for (ArenaPlayer p : players){
 			if (hasAliveMember(p) && p.isOnline()){
 				living.add(p);}
 		}
 		return living;
 	}
-	public boolean wouldBeDeadWithout(Player p) {
-		Set<Player> living = getLivingPlayers();
+	public boolean wouldBeDeadWithout(ArenaPlayer p) {
+		Set<ArenaPlayer> living = getLivingPlayers();
 		living.remove(p);
 		return living.isEmpty();
 	}
 
-	public boolean hasMember(OfflinePlayer p) {return players.contains(p);}
-	public boolean hasAliveMember(OfflinePlayer p) {return players.contains(p) && !deadplayers.contains(p);}
+	public boolean hasMember(ArenaPlayer p) {return players.contains(p);}
+	public boolean hasAliveMember(ArenaPlayer p) {return players.contains(p) && !deadplayers.contains(p);}
 	public boolean isPickupTeam() {return isPickupTeam;}
 	public void setPickupTeam(boolean isPickupTeam) {this.isPickupTeam = isPickupTeam;}
-	public void setHealth(int health) {for (Player p: players){p.setHealth(health);}}
-	public void setHunger(int hunger) {for (Player p: players){p.setFoodLevel(hunger);}}
+	public void setHealth(int health) {for (ArenaPlayer p: players){p.setHealth(health);}}
+	public void setHunger(int hunger) {for (ArenaPlayer p: players){p.setFoodLevel(hunger);}}
 	public String getName() {return name;}
 	public int getId(){ return id;}
 	public void setName(String name) {this.name = name;}
@@ -102,14 +108,14 @@ public class Team {
 		kills.clear();
 	}
 
-	public void addDeath(OfflinePlayer teamMemberWhoDied) {
+	public void addDeath(ArenaPlayer teamMemberWhoDied) {
 		Integer d = deaths.get(teamMemberWhoDied);
 		if (d == null){
 			d = 0;} 
 		deaths.put(teamMemberWhoDied, ++d);
 	}
 
-	public void addKill(OfflinePlayer teamMemberWhoKilled){
+	public void addKill(ArenaPlayer teamMemberWhoKilled){
 		Integer d = kills.get(teamMemberWhoKilled);
 		if (d == null){
 			d = 0;} 
@@ -128,11 +134,11 @@ public class Team {
 				return nkills;
 	}
 
-	public int getNDeaths(Player p) {
+	public int getNDeaths(ArenaPlayer p) {
 		return deaths.get(p);
 	}
 
-	public int getNKills(Player p) {
+	public int getNKills(ArenaPlayer p) {
 		return kills.get(p);
 	}
 
@@ -141,7 +147,7 @@ public class Team {
 	 * @param p
 	 * @return whether all players are dead
 	 */
-	public boolean killMember(Player p) {
+	public boolean killMember(ArenaPlayer p) {
 		if (!hasMember(p))
 			return false;
 		deadplayers.add(p);
@@ -149,7 +155,7 @@ public class Team {
 	}
 
 	public boolean allPlayersOffline() {
-		for (Player p: players){
+		for (ArenaPlayer p: players){
 			if (p.isOnline())
 				return false;
 		}
@@ -157,11 +163,11 @@ public class Team {
 	}
 
 	public void sendMessage(String message) {
-		for (Player p: players){
+		for (ArenaPlayer p: players){
 			MessageController.sendMessage(p, message);}
 	}
-	public void sendToOtherMembers(Player player, String message) {
-		for (Player p: players){
+	public void sendToOtherMembers(ArenaPlayer player, String message) {
+		for (ArenaPlayer p: players){
 			if (!p.equals(player))
 				sendMessage(message);}
 	}
@@ -178,17 +184,17 @@ public class Team {
 	public void setDisplayName(String n){displayName = n;}
 	public String toString(){return "["+getDisplayName()+"]";}
 
-	public String getTeamInfo(Set<Player> insideMatch){
+	public String getTeamInfo(Set<String> insideMatch){
 
 		StringBuilder sb = new StringBuilder("&eTeam: ");
 		if (displayName != null) sb.append(displayName); 
 		sb.append( " " + (isDead() ? "&4dead" : "&aalive")+"&e, ");
 
-		for (Player p: players){
+		for (ArenaPlayer p: players){
 			sb.append("&6"+p.getName());
 			boolean isAlive = hasAliveMember(p);
 			boolean online = p.isOnline();
-			final String inmatch = insideMatch == null? "": ((insideMatch.contains(p)) ? "&e(in)" : "&4(out)");
+			final String inmatch = insideMatch == null? "": ((insideMatch.contains(p.getName())) ? "&e(in)" : "&4(out)");
 			final int k = kills.containsKey(p) ? kills.get(p) : 0;
 			final int d = deaths.containsKey(p) ? deaths.get(p) : 0;
 			sb.append("&e(&c"+k+"&e,&7"+d+"&e)");
@@ -198,13 +204,13 @@ public class Team {
 		return sb.toString();
 	}
 
-	public int getPlayerIndex(Player p) {
+	public int getPlayerIndex(ArenaPlayer p) {
 		return playerIndexes.get(p.getName());
 	}
 
 	public String getTeamSummary() {
 		StringBuilder sb = new StringBuilder("&6"+getDisplayName());
-		for (Player p: players){
+		for (ArenaPlayer p: players){
 			final int k = kills.containsKey(p) ? kills.get(p) : 0;
 			final int d = deaths.containsKey(p) ? deaths.get(p) : 0;
 			sb.append("&e(&c"+k+"&e,&7"+d+"&e)");
@@ -212,10 +218,10 @@ public class Team {
 		return sb.toString();
 	}
 
-	public String getOtherNames(Player player) {
+	public String getOtherNames(ArenaPlayer player) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
-		for (Player p: players){
+		for (ArenaPlayer p: players){
 			if (p.equals(player))
 				continue;
 			if (!first) sb.append(", ");

@@ -12,6 +12,7 @@ import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.WorldGuardInterface;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.TransitionOptions;
@@ -23,7 +24,6 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.TeamUtil;
 
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
@@ -49,7 +49,7 @@ public class PerformTransition {
 	}
 
 	public static boolean transition(Match am, final MatchState transition, Team team, boolean onlyInMatch) {
-		final Set<Player> validPlayers = team.getPlayers();
+		final Set<ArenaPlayer> validPlayers = team.getPlayers();
 		//		System.out.println(transition +"  " + team +"      arena=" + arena);
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo);
@@ -59,7 +59,7 @@ public class PerformTransition {
 		/// Check for requirements if we are going to teleport in, or they are joining
 		final boolean teleportIn = mo.shouldTeleportIn();
 		if (transition == MatchState.ONJOIN || teleportIn){
-			Set<Player> stillAlive = am.checkReady(team,mo);
+			Set<ArenaPlayer> stillAlive = am.checkReady(team,mo);
 			validPlayers.retainAll(stillAlive);
 		}
 
@@ -67,13 +67,13 @@ public class PerformTransition {
 		if (validPlayers.isEmpty())
 			return false;
 
-		for (Player p : validPlayers){
+		for (ArenaPlayer p : validPlayers){
 			transition(am, transition,p,team, onlyInMatch);
 		}
 		return true;
 	}
 
-	public static boolean transition(final Match am, final MatchState transition, final Player p, 
+	public static boolean transition(final Match am, final MatchState transition, final ArenaPlayer p, 
 			final Team team, final boolean onlyInMatch) {
 		if (debug) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +p.getName() +
 				" ops="+am.tops.getOptions(transition));
@@ -100,6 +100,7 @@ public class PerformTransition {
 		final int teamIndex = am.indexOf(team);
 		/// Clear the arena region
 		if (mo.shouldClearRegion() && am.getArena().hasRegion()) WorldGuardInterface.clearRegion(am.getArena().getRegion());
+		final Set<ArenaPlayer> players = am.getAlivePlayers();
 		final boolean dead = !p.isOnline() || p.isDead();
 		if (teleportWaitRoom){ /// Teleport waiting room
 			/// EnterWaitRoom is supposed to happen before the teleport in bukkitEvent, but it depends on the result of a teleport
@@ -107,7 +108,7 @@ public class PerformTransition {
 			if (!dead) am.enterWaitRoom(p); 
 			final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),team.getPlayerIndex(p));
 			//			final Location l = am.getWaitRoomSpawn(teamIndex,false);
-			TeleportController.teleportPlayer(p, l, true, true, false);
+			TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false,players);
 		}
 
 		/// Teleport In
@@ -117,11 +118,11 @@ public class PerformTransition {
 			if (!dead) am.enterArena(p);
 			final Location l = jitter(am.getTeamSpawn(teamIndex,false),team.getPlayerIndex(p));
 			//			final Location l = am.getTeamSpawn(teamIndex,false);
-			TeleportController.teleportPlayer(p, l, true, true, false);
+			TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false,players);
 		}
 		/// Teleport out
 		else if (teleportOut && insideArena){ /// Lets not teleport people out who are already out(like dead ppl)
-			TeleportController.teleportPlayer(p, am.oldlocs.get(p), false, false, wipeInventory);
+			TeleportController.teleportPlayer(p.getPlayer(), am.oldlocs.get(p.getName()), false, false, wipeInventory,players);
 			/// supposed to happen after the teleport out bukkitEvent.. so delay till next tick so we can complete this transition
 			/// before starting the onLeave transition
 			Plugin plugin = BattleArena.getSelf();
@@ -145,7 +146,7 @@ public class PerformTransition {
 		if (mo.restoreExperience()) { am.psc.restoreExperience(p);}
 		if (mo.restoreItems()){
 			if (am.woolTeams && insideArena){
-				TeamUtil.removeTeamHead(teamIndex, p);}
+				TeamUtil.removeTeamHead(teamIndex, p.getPlayer());}
 
 			if (debug)  System.out.println("   "+transition+" transition restoring items");
 			am.psc.restoreItems(p);
@@ -153,16 +154,16 @@ public class PerformTransition {
 
 		if (!p.isOnline()){ /// only check after the teleports, just dont give items etc
 			return true;}
-		if (wipeInventory){ InventoryUtil.clearInventory(p);}
+		if (wipeInventory){ InventoryUtil.clearInventory(p.getPlayer());}
 		if (mo.storeExperience()){ am.psc.storeExperience(p);}
 		if (mo.storeItems()) { am.psc.storeItems(p);}
 		if (health != null) p.setHealth(health);
 		if (hunger != null) p.setFoodLevel(hunger);
-		try{if (mo.deEnchant() != null && mo.deEnchant()) EffectUtil.unenchantAll(p);} catch (Exception e){}
-		if (BattleArena.md != null && undisguise != null && undisguise) {MassDisguise.undisguise(p);}
-		if (BattleArena.md != null && disguiseAllAs != null) {MassDisguise.disguisePlayer(p, disguiseAllAs);}
+		try{if (mo.deEnchant() != null && mo.deEnchant()) EffectUtil.unenchantAll(p.getPlayer());} catch (Exception e){}
+		if (BattleArena.md != null && undisguise != null && undisguise) {MassDisguise.undisguise(p.getPlayer());}
+		if (BattleArena.md != null && disguiseAllAs != null) {MassDisguise.disguisePlayer(p.getPlayer(), disguiseAllAs);}
 		if (mo.getMoney() != null) {MoneyController.add(p.getName(), mo.getMoney());}
-		if (mo.getExperience() != null) {p.giveExp(mo.getExperience());}
+		if (mo.getExperience() != null) {p.getPlayer().giveExp(mo.getExperience());}
 		if (mo.woolTeams() && am.getParams().getMinTeamSize() >1){
 			if (insideArena){
 				TeamUtil.setTeamHead(teamIndex, p);}
@@ -188,7 +189,7 @@ public class PerformTransition {
 			}
 		}
 
-		try{if (effects != null) EffectUtil.enchantPlayer(p, effects);} catch (Exception e){}
+		try{if (effects != null) EffectUtil.enchantPlayer(p.getPlayer(), effects);} catch (Exception e){}
 		if (items != null) {
 			giveSyncedItems(transition, p, items,teamIndex, am.woolTeams, insideArena);
 		}
@@ -203,12 +204,12 @@ public class PerformTransition {
 		return true;
 	}
 
-	private static void giveSyncedItems(final MatchState ms, final Player p, final List<ItemStack> items,
+	private static void giveSyncedItems(final MatchState ms, final ArenaPlayer p, final List<ItemStack> items,
 			final int teamIndex,final boolean woolTeams, final boolean insideArena) {
 		if (woolTeams && insideArena){
 			TeamUtil.setTeamHead(teamIndex, p);}
 		if (debug)  System.out.println("   "+ms+" transition giving items to " + p.getName());
-		InventoryUtil.addItemsToInventory(p,items,woolTeams);
+		InventoryUtil.addItemsToInventory(p.getPlayer(),items,woolTeams);
 	}
 	private static ArenaClass getArenaClass(TransitionOptions mo, final int teamIndex) {
 		Map<Integer,ArenaClass> classes = mo.getClasses();

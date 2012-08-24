@@ -2,6 +2,7 @@ package mc.alk.arena.util;
 
 import java.util.HashMap;
 
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
 
 import org.bukkit.DyeColor;
@@ -74,7 +75,7 @@ public class TeamUtil {
 	}
 	
 	public static void setTeamHead(final int color, Team team) {
-		for (Player p: team.getPlayers()){
+		for (ArenaPlayer p: team.getPlayers()){
 			setTeamHead(color,p);
 		}
 	}
@@ -85,7 +86,8 @@ public class TeamUtil {
 			return teamHeads.get(index % teamHeads.size()).is;}
 	}
 	@SuppressWarnings("deprecation")
-	public static void setTeamHead(final int index, Player p) {
+	public static void setTeamHead(final int index, ArenaPlayer player) {
+		Player p = player.getPlayer();
 		if (p.isOnline() && !p.isDead()){
 			ItemStack is = p.getInventory().getHelmet();
 			ItemStack item = getTeamHead(index);

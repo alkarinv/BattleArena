@@ -19,6 +19,7 @@ import mc.alk.arena.events.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.listeners.MatchListener;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.TransitionOptions;
@@ -30,9 +31,6 @@ import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Countdown.CountdownCallback;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.TimeUtil;
-
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 
 public abstract class Event implements MatchListener, CountdownCallback, TeamHandler{
@@ -91,8 +89,8 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	}
 
 	public void startEvent() {
-		Set<Player> excludedPlayers = getExcludedPlayers();
-		for (Player p : excludedPlayers){
+		Set<ArenaPlayer> excludedPlayers = getExcludedPlayers();
+		for (ArenaPlayer p : excludedPlayers){
 			p.sendMessage(Log.colorChat(prefix+"&6 &5There werent enough players to create a &6" + getTeamSize() +"&5 person team"));
 		}
 		joinHandler.deconstruct();
@@ -137,12 +135,12 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		return isOpen();
 	}
 
-	public abstract boolean canLeave(Player p);
+	public abstract boolean canLeave(ArenaPlayer p);
 
 	/**
 	 * Called when a player leaves minecraft.. we cant stop them so deal with it
 	 */	
-	public boolean leave(Player p) {
+	public boolean leave(ArenaPlayer p) {
 		Team t = getTeam(p);
 		if (t==null) /// they arent in this bukkitEvent
 			return true;
@@ -227,7 +225,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		}
 	}
 
-	public Team getTeam(OfflinePlayer p) {
+	public Team getTeam(ArenaPlayer p) {
 		for (Team tt : teams){
 			if (tt.hasMember(p)){
 				return tt;}
@@ -249,12 +247,12 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		return null;
 	}
 
-	protected Set<Player> getExcludedPlayers() {
+	protected Set<ArenaPlayer> getExcludedPlayers() {
 		return joinHandler == null ? null :  joinHandler.getExcludedPlayers();
 	}
 
 
-	public boolean hasPlayer(Player p) {
+	public boolean hasPlayer(ArenaPlayer p) {
 		for (Team t: teams){
 			if (t.hasMember(p))
 				return true;
@@ -313,7 +311,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 
 	public void setParamInst(MatchParams pi) {this.matchParams = pi;}
 	public Set<Team> getTeams(){return teams;}
-	public boolean canLeaveTeam(Player p) {return canLeave(p);}
+	public boolean canLeaveTeam(ArenaPlayer p) {return canLeave(p);}
 	public String getState() {return state.toString();}
 
 
@@ -344,8 +342,8 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	 * if bukkitEvent is open will return those players still waiting for a team as well
 	 * @return
 	 */
-	private Set<Player> getPlayers() {
-		Set<Player> players = new HashSet<Player>();
+	private Set<ArenaPlayer> getPlayers() {
+		Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
 		for (Team t: getTeams()){
 			players.addAll(t.getPlayers());}
 		if (isOpen() && joinHandler != null){
@@ -364,7 +362,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		return "[" + getName()+":"+id+"]";
 	}
 
-	public boolean waitingToJoin(Player p) {
+	public boolean waitingToJoin(ArenaPlayer p) {
 		return joinHandler == null ? false : joinHandler.getExcludedPlayers().contains(p);
 	}
 }

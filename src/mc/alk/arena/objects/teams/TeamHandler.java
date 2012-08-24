@@ -1,6 +1,6 @@
 package mc.alk.arena.objects.teams;
 
-import org.bukkit.entity.Player;
+import mc.alk.arena.objects.ArenaPlayer;
 
 public interface TeamHandler {
 //	/*
@@ -8,6 +8,6 @@ public interface TeamHandler {
 //	 */
 //	public boolean onPlayerExit(Player p,Team team);
 
-	public boolean canLeave(Player p);
-	public boolean leave(Player p);
+	public boolean canLeave(ArenaPlayer p);
+	public boolean leave(ArenaPlayer p);
 }

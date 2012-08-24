@@ -8,9 +8,11 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.MessageController;
+import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.PlayerStoreController.PInv;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
@@ -27,7 +29,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import com.alk.virtualPlayer.VirtualPlayers;
-import com.alkmoeba.havockits.GiveKitEvent;
 
 
 /**
@@ -44,9 +45,9 @@ public class BAPlayerListener implements Listener  {
 	public static HashMap<String,Integer> clearWool= new HashMap<String,Integer>();
 	public static HashMap<String,Location> tp = new HashMap<String,Location>();
 
-	public static HashMap<Player,Integer> expRestore = new HashMap<Player,Integer>();
-	public static HashMap<Player,PInv> itemRestore = new HashMap<Player,PInv>();
-	public static HashMap<Player,String> messagesOnRespawn = new HashMap<Player,String>();
+	public static HashMap<String,Integer> expRestore = new HashMap<String,Integer>();
+	public static HashMap<String,PInv> itemRestore = new HashMap<String,PInv>();
+	public static HashMap<String,String> messagesOnRespawn = new HashMap<String,String>();
 
 	BattleArenaController bac;
 
@@ -83,7 +84,7 @@ public class BAPlayerListener implements Listener  {
 
 	private void playerReturned(Player p, PlayerRespawnEvent event) {
 		final String name = p.getName();
-		final String msg = messagesOnRespawn.remove(p);
+		final String msg = messagesOnRespawn.remove(p.getName());
 		if (msg != null){
 			MessageController.sendMessage(p, msg);
 		}
@@ -113,8 +114,8 @@ public class BAPlayerListener implements Listener  {
 			tp.remove(name);
 		}
 
-		if (expRestore.containsKey(p)){
-			final int exp = expRestore.remove(p);
+		if (expRestore.containsKey(p.getName())){
+			final int exp = expRestore.remove(p.getName());
 			//			System.out.println("restoring exp to " +p.getName()+"   exp="+ exp);
 			Plugin plugin = BattleArena.getSelf();
 			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
@@ -128,7 +129,7 @@ public class BAPlayerListener implements Listener  {
 				}
 			});
 		}
-		if (itemRestore.containsKey(p)){
+		if (itemRestore.containsKey(p.getName())){
 			Plugin plugin = BattleArena.getSelf();
 			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
@@ -137,8 +138,10 @@ public class BAPlayerListener implements Listener  {
 					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);} 
 					else {pl = Bukkit.getPlayer(name);}
 					if (pl != null){
-						PInv pinv = itemRestore.remove(pl);
-						PlayerStoreController.setInventory(pl, pinv);
+						
+						PInv pinv = itemRestore.remove(pl.getName());
+						ArenaPlayer ap = PlayerController.toArenaPlayer(pl);
+						PlayerStoreController.setInventory(ap, pinv);
 					}
 				}
 			});
@@ -150,31 +153,31 @@ public class BAPlayerListener implements Listener  {
 //		}
 	}
 
-	public static void killOnReenter(Player p, boolean wipeInventory) {
-		if (wipeInventory) clearInventory.add(p.getName());
-		die.add(p.getName());
+	public static void killOnReenter(String playerName, boolean wipeInventory) {
+		if (wipeInventory) clearInventory.add(playerName);
+		die.add(playerName);
 	}
-	public static void teleportOnReenter(Player p, Location loc, boolean wipeInventory) {
-		if (wipeInventory) clearInventory.add(p.getName());
-		tp.put(p.getName(),loc);
-	}
-
-	public static void addMessageOnReenter(Player p, String string) {
-		messagesOnRespawn.put(p, string);
-	}
-	public static void restoreExpOnReenter(Player p, Integer f) {
-		if (expRestore.containsKey(p)){
-			f += expRestore.get(p);}
-		expRestore.put(p, f);
+	public static void teleportOnReenter(String playerName, Location loc, boolean wipeInventory) {
+		if (wipeInventory) clearInventory.add(playerName);
+		tp.put(playerName,loc);
 	}
 
-	public static void restoreItemsOnReenter(Player p, PInv pinv) {
-		itemRestore.put(p,pinv);
+	public static void addMessageOnReenter(String playerName, String string) {
+		messagesOnRespawn.put(playerName, string);
+	}
+	public static void restoreExpOnReenter(String playerName, Integer f) {
+		if (expRestore.containsKey(playerName)){
+			f += expRestore.get(playerName);}
+		expRestore.put(playerName, f);
 	}
 
-	public static void clearWoolOnReenter(Player p, int color) {
-		if (p==null || color == -1)
+	public static void restoreItemsOnReenter(String playerName, PInv pinv) {
+		itemRestore.put(playerName,pinv);
+	}
+
+	public static void clearWoolOnReenter(String playerName, int color) {
+		if (playerName==null || color == -1)
 			return;
-		clearWool.put(p.getName(), color);
+		clearWool.put(playerName, color);
 	}
 }

@@ -19,6 +19,7 @@ import mc.alk.arena.controllers.OnMatchComplete;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BAPlayerListener;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchEventHandler;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
@@ -45,7 +46,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -71,14 +71,14 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	final Arena arena; /// The arena we are using
 
 	List<Team> teams = new ArrayList<Team>(); /// Our inEvent
-	Set<Player> visitors = new HashSet<Player>(); /// Who is watching
+	Set<String> visitors = new HashSet<String>(); /// Who is watching
 	MatchState state = MatchState.NONE;/// State of the match
 	VictoryCondition vc = null; // Under what conditions does a victory occur
 	Countdown timer = null; /// Timer for when victory condition is time based
 	MatchResult matchResult; /// Results for this match
-	Map<Player, Location> oldlocs = null; /// Locations where the players came from before entering arena
-	Set<Player> insideArena = new HashSet<Player>(); /// who is still inside arena area
-	Set<Player> insideWaitRoom = new HashSet<Player>(); /// who is still inside the wait room
+	Map<String, Location> oldlocs = null; /// Locations where the players came from before entering arena
+	Set<String> insideArena = new HashSet<String>(); /// who is still inside arena area
+	Set<String> insideWaitRoom = new HashSet<String>(); /// who is still inside the wait room
 	MatchTransitions tops = null; /// Our match options for this arena match
 	PlayerStoreController psc = new PlayerStoreController(); /// Store items and exp for players if specified
 	OnMatchComplete matchComplete;  /// Function to call once match is complete
@@ -103,7 +103,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		this.arena = arena;
 		this.matchComplete = omc;
 		this.mc = new MessageController(this);
-		this.oldlocs = new HashMap<Player,Location>();
+		this.oldlocs = new HashMap<String,Location>();
 		this.teams = new ArrayList<Team>();
 		this.tops = mp.getTransitionOptions();
 		arena.setMatch(this);
@@ -130,7 +130,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 			MethodController.updateMatchBukkitEvents(al, matchState, insideArena);
 		}
 	}
-	private void updateBukkitEvents(MatchState matchState,Player player){
+	private void updateBukkitEvents(MatchState matchState,ArenaPlayer player){
 		if (Defaults.DEBUG_EVENTS)System.out.println(matchState+"------------------------------ Updating " + player.getName());
 		for (ArenaListener al : arenaListeners){
 			if (Defaults.DEBUG_EVENTS)System.out.println(matchState+"------------------------------ Updating " + al +" " + player.getName());
@@ -150,6 +150,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	}
 
 	private void preStartMatch() {
+		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::startMatch()");
 		state = MatchState.ONPRESTART;
 		updateBukkitEvents(MatchState.ONPRESTART);
@@ -165,6 +166,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	}
 
 	private void startMatch(){
+		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
 		state = MatchState.ONSTART;
 		List<Team> competingTeams = new ArrayList<Team>();
 		final TransitionOptions mo = tops.getOptions(state);
@@ -284,7 +286,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		insideArena.clear();
 		insideWaitRoom.clear();
 		for (Team t: teams){
-			for (Player p: t.getPlayers()){
+			for (ArenaPlayer p: t.getPlayers()){
 				stopTracking(p);
 			}
 		}
@@ -305,7 +307,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	 * @param p
 	 * @param t
 	 */
-	public void playerAddedToTeam(Player p, Team t) {
+	public void playerAddedToTeam(ArenaPlayer p, Team t) {
 		if (!t.hasSetName() && t.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND){
 			t.setDisplayName(TeamUtil.createTeamName(indexOf(t)));
 		}
@@ -328,7 +330,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		startTracking(t);
 		t.setAlive();
 		t.resetScores();/// reset scores
-		for (Player p: t.getPlayers()){
+		for (ArenaPlayer p: t.getPlayers()){
 			try{arena.onJoin(p,t);}catch(Exception e){e.printStackTrace();}			
 		}
 
@@ -342,7 +344,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	public void onLeave(Team t) {
 		//		System.out.println("ArenaMatch::onLeave(Team t)=" + t +"   mo =" + tops.getOptionString());
 		teams.remove(t);
-		for (Player p: t.getPlayers()){
+		for (ArenaPlayer p: t.getPlayers()){
 			stopTracking(p);
 			try{arena.onLeave(p,t);}catch(Exception e){e.printStackTrace();}
 			vc.playerLeft(p);
@@ -350,7 +352,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		PerformTransition.transition(this, MatchState.ONCANCEL, t, false);
 	}
 
-	public void onLeave(Player p) {
+	public void onLeave(ArenaPlayer p) {
 		//		System.out.println("ArenaMatch::onLeave(Team t)=" + t +"   mo =" + tops.getOptionString());
 		Team t = getTeam(p);
 		stopTracking(p);
@@ -364,7 +366,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	 * @param team
 	 */
 	protected void startTracking(final Team team){
-		for (Player p: team.getPlayers()){
+		for (ArenaPlayer p: team.getPlayers()){
 			startTracking(p);}
 	}
 
@@ -373,7 +375,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	 * @param p
 	 */
 	@SuppressWarnings("unchecked")
-	protected void startTracking(final Player p){
+	protected void startTracking(final ArenaPlayer p){
 		final MatchState ms = MatchState.ONENTER;
 		MethodController.updateEventListeners(this, ms,p,PlayerQuitEvent.class, PlayerKickEvent.class,PlayerRespawnEvent.class);
 		MethodController.updateEventListeners(this, ms,p, PlayerCommandPreprocessEvent.class);
@@ -391,7 +393,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void stopTracking(final Player p){
+	protected void stopTracking(final ArenaPlayer p){
 		final MatchState ms = MatchState.ONLEAVE;
 		MethodController.updateEventListeners(this,ms, p,PlayerQuitEvent.class, PlayerKickEvent.class,PlayerRespawnEvent.class);
 		MethodController.updateEventListeners(this, ms,p, PlayerCommandPreprocessEvent.class);
@@ -418,11 +420,12 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	 * Player is entering arena area. Usually called from a teleportIn
 	 * @param p
 	 */
-	protected void enterWaitRoom(Player p){
-		insideWaitRoom.add(p);
+	protected void enterWaitRoom(ArenaPlayer p){
+		final String name = p.getName();
+		insideWaitRoom.add(name);
 		/// Store the point at which they entered the waitroom
-		if (!oldlocs.containsKey(p)) /// First teleportIn is the location we want
-			oldlocs.put(p, p.getLocation());
+		if (!oldlocs.containsKey(name)) /// First teleportIn is the location we want
+			oldlocs.put(name, p.getLocation());
 		BTInterface.stopTracking(p);
 		Team t = getTeam(p);
 		PerformTransition.transition(this, MatchState.ONENTERWAITROOM, p, t, false);
@@ -434,12 +437,13 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	 * @param p
 	 */
 	@SuppressWarnings("unchecked")
-	protected void enterArena(Player p){
-		insideArena.add(p);
-		insideWaitRoom.remove(p);
+	protected void enterArena(ArenaPlayer p){
+		final String name = p.getName();
+		insideArena.add(name);
+		insideWaitRoom.remove(name);
 		/// Store the point at which they entered the arena
-		if (!oldlocs.containsKey(p)) /// First teleportIn is the location we want
-			oldlocs.put(p, p.getLocation());
+		if (!oldlocs.containsKey(name)) /// First teleportIn is the location we want
+			oldlocs.put(name, p.getLocation());
 		BTInterface.stopTracking(p);
 		Team t = getTeam(p);
 
@@ -457,31 +461,31 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	 * the player disconnected, or player died and wasnt respawned in arena
 	 * @param p: Leaving player
 	 */
-	protected void leaveArena(Player p){
-		insideArena.remove(p);
-		insideWaitRoom.remove(p);
+	protected void leaveArena(ArenaPlayer p){
+		insideArena.remove(p.getName());
+		insideWaitRoom.remove(p.getName());
 		stopTracking(p);
 		Team t = getTeam(p);
 		PerformTransition.transition(this, MatchState.ONLEAVE, p, t, false);
 	}
 
 	@MatchEventHandler
-	public void onPlayerJoin(PlayerJoinEvent event, Player p){
+	public void onPlayerJoin(PlayerJoinEvent event, ArenaPlayer p){
 		//// TODO I feel like I should do something here
 	}
 
 	@MatchEventHandler
-	public void onPlayerKick(PlayerKickEvent event, Player player){
+	public void onPlayerKick(PlayerKickEvent event, ArenaPlayer player){
 		onPlayerQuit(null,player);
 	}
 
 	@MatchEventHandler
-	public void onPlayerQuit(PlayerQuitEvent event, Player player){
+	public void onPlayerQuit(PlayerQuitEvent event, ArenaPlayer player){
 //		System.out.println(this+"onPlayerQuit = " + player.getName() + "  " +matchResult.matchComplete()  +" :" + state);
 		if (isWon()){ 
 			return;}
 		if (woolTeams)
-			BAPlayerListener.clearWoolOnReenter(player, teams.indexOf(getTeam(player)));
+			BAPlayerListener.clearWoolOnReenter(player.getName(), teams.indexOf(getTeam(player)));
 		/// If they are just in the arena waiting for match to start
 		if (state == MatchState.ONOPEN)
 			return;
@@ -492,13 +496,13 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true)
-	public void onPlayerDeath(PlayerDeathEvent event, Player target){
+	public void onPlayerDeath(PlayerDeathEvent event, ArenaPlayer target){
 		if (isWon()){
 			return;}
 //		System.out.println(this+"!!!!! onPlayerDeath = " + target.getName() + "  complete=" +matchResult.matchComplete()  +
 //				": inside=" + insideArena.contains(target));
 		//		target.getLastDamageCause();
-		Player killer = null;
+		ArenaPlayer killer = null;
 		/// Handle Drops from bukkitEvent
 		if (clearsInventoryOnDeath){ /// Very important for deathmatches.. otherwise tons of items on floor
 			try {event.getDrops().clear();} catch (Exception e){}
@@ -521,7 +525,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true)
-	public void onEntityDamage(EntityDamageEvent event, Player target) {
+	public void onEntityDamage(EntityDamageEvent event, ArenaPlayer target) {
 //		System.out.println("onEntityDamage  " + event + "   target=" + target);
 		TransitionOptions to = tops.getOptions(state);
 		if (to == null)
@@ -530,7 +534,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		//		if (size > q.getSize()) Log.warn("[BattleArena] onPlayerDamage  pvp=" + pvp+ "  " + damager.getName()+  ":" + target.getName() + " " +q);
 		if (pvp == null)
 			return;
-		Player damager=null;
+		ArenaPlayer damager=null;
 		switch(pvp){
 		case ON:
 			Team targetTeam = getTeam(target);
@@ -565,7 +569,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	}	
 
 	@MatchEventHandler
-	public void onPlayerRespawn(PlayerRespawnEvent event, final Player p){
+	public void onPlayerRespawn(PlayerRespawnEvent event, final ArenaPlayer p){
 //		System.out.println("!!!!!!!!!!!! onPlayerRespawn " + p.getName() +"  loc = " + oldlocs.get(p) +"   " + state+
 //				" matchComplete = " + matchResult.matchComplete() +"  mo=" );
 		if (isWon()){ 
@@ -594,7 +598,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 				}
 			});
 		} else { /// This player is now out of the system now that we have given the ondeath effects
-			Location l = oldlocs.get(p);
+			Location l = oldlocs.get(p.getName());
 			if (l != null)
 				event.setRespawnLocation(l);
 			stopTracking(p);
@@ -602,7 +606,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	}
 
 	@MatchEventHandler
-	public void onPlayerBlockBreak(BlockBreakEvent event, Player p){
+	public void onPlayerBlockBreak(BlockBreakEvent event, ArenaPlayer p){
 		TransitionOptions to = tops.getOptions(state);
 		if (to==null)
 			return;
@@ -612,7 +616,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	}
 
 	@MatchEventHandler
-	public void onPlayerBlockPlace(BlockPlaceEvent event, Player p){
+	public void onPlayerBlockPlace(BlockPlaceEvent event, ArenaPlayer p){
 		TransitionOptions to = tops.getOptions(state);
 		if (to==null)
 			return;
@@ -622,7 +626,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	}
 
 	@MatchEventHandler
-	public void onPlayerInventoryClick(InventoryClickEvent event, Player p) {
+	public void onPlayerInventoryClick(InventoryClickEvent event, ArenaPlayer p) {
 		if (woolTeams && event.getSlot() == 39/*Helm Slot*/)
 			event.setCancelled(true);
 	}
@@ -641,6 +645,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		final Player p = event.getPlayer();
 		if (event.getPlayer().isOp())
 			return;
+
 		String msg = event.getMessage();
 		final int index = msg.indexOf(' ');
 		if (index != -1){
@@ -659,14 +664,14 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	 * @param target
 	 * @param killer
 	 */
-	private synchronized void playerDeath(Player target, Player killer){
+	private synchronized void playerDeath(ArenaPlayer target, ArenaPlayer killer){
 		/// Handle our dead target
 		Team t = getTeam(target);
 		t.addDeath(target);
 
 		if (!respawns){
 			leaveArena(target);
-			BAPlayerListener.teleportOnReenter(target, oldlocs.get(target),false);
+			BAPlayerListener.teleportOnReenter(target.getName(), oldlocs.get(target.getName()),false);
 		}
 
 		/// Now deal with the killer
@@ -683,25 +688,25 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	 * @param p
 	 * @param wipeInventory
 	 */
-	private void killPlayer(Player p, boolean wipeInventory){
+	private void killPlayer(ArenaPlayer p, boolean wipeInventory){
 		if (p.isOnline()){
 			/// when a player leaves when Quitting, p can be online, then offline for setHealth
 			/// This leads to a minecraft bug, shoudnt be our responsibility but ofc we need to account for it
 			try {
 				if (wipeInventory)
-					InventoryUtil.clearInventory(p);
+					InventoryUtil.clearInventory(p.getPlayer());
 				p.setHealth(0);
-				BAPlayerListener.teleportOnReenter(p, oldlocs.get(p),false);
+				BAPlayerListener.teleportOnReenter(p.getName(), oldlocs.get(p.getName()),false);
 			} catch (Exception e){ /// If it fails, kill em when they get back
 			}
 		} else {
-			BAPlayerListener.teleportOnReenter(p, oldlocs.get(p),false);
-			BAPlayerListener.killOnReenter(p,wipeInventory);
+			BAPlayerListener.teleportOnReenter(p.getName(), oldlocs.get(p.getName()),false);
+			BAPlayerListener.killOnReenter(p.getName(),wipeInventory);
 			playerDeath(p,null);			
 		}
 	}
 
-	public void setVictor(OfflinePlayer p){
+	public void setVictor(ArenaPlayer p){
 		Team t = getTeam(p);
 		if (t != null) setVictor(t);
 	}
@@ -715,19 +720,19 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		teamVictory();
 	}
 
-	public Team getTeam(OfflinePlayer p) {
+	public Team getTeam(ArenaPlayer p) {
 		for (Team t: teams) {
 			if (t.hasMember(p)) return t;}
 		return null;
 	}
 
-	public boolean hasPlayer(OfflinePlayer p) {
+	public boolean hasPlayer(ArenaPlayer p) {
 		for (Team t: teams) {
 			if (t.hasMember(p)) return true;}
 		return false;
 	}
 
-	public boolean hasAlivePlayer(OfflinePlayer p) {
+	public boolean hasAlivePlayer(ArenaPlayer p) {
 		for (Team t: teams) {
 			if (t.hasAliveMember(p)) return true;}
 		return false;
@@ -759,9 +764,9 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		}
 		return alive;
 	}
-
-	public Set<Player> getAlivePlayers() {
-		HashSet<Player> players = new HashSet<Player>();
+		
+	public Set<ArenaPlayer> getAlivePlayers() {
+		HashSet<ArenaPlayer> players = new HashSet<ArenaPlayer>();
 		for (Team t: teams){
 			if (t.isDead())
 				continue;
@@ -769,7 +774,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		}
 		return players;
 	}
-
+	
 	public Location getTeamSpawn(Team t, boolean random){
 		return random ? arena.getRandomSpawnLoc(): arena.getSpawnLoc(teams.indexOf(t)); 
 	}
@@ -782,24 +787,24 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	public MatchResult getResult(){return matchResult;}
 	public Team getVictor() {return matchResult.getVictor();}
 	public Set<Team> getLosers() {return matchResult.getLosers();}
-	public Map<Player,Location> getOldLocations() {return oldlocs;}
+	public Map<String,Location> getOldLocations() {return oldlocs;}
 	public int indexOf(Team t){return teams.indexOf(t);}
 	/// For debugging events
-	public void addKill(OfflinePlayer player) {
+	public void addKill(ArenaPlayer player) {
 		Team t = getTeam(player);
 		t.addKill(player);
 	}
-	public boolean insideArena(Player p){
-		return insideArena.contains(p);
+	public boolean insideArena(ArenaPlayer p){
+		return insideArena.contains(p.getName());
 	}
 
 
-	protected Set<Player> checkReady(final Team t, TransitionOptions mo) {
-		Set<Player> alive = new HashSet<Player>();
-		for (Player p : t.getPlayers()){
+	protected Set<ArenaPlayer> checkReady(final Team t, TransitionOptions mo) {
+		Set<ArenaPlayer> alive = new HashSet<ArenaPlayer>();
+		for (ArenaPlayer p : t.getPlayers()){
 			boolean shouldKill = false;
 			boolean online = p.isOnline();
-			boolean inmatch = insideArena.contains(p);
+			boolean inmatch = insideArena.contains(p.getName());
 			final String pname = p.getDisplayName();
 
 			if (Defaults.DEBUG) System.out.println(p.getName()+"  online=" + online +" isready="+tops.playerReady(p));
@@ -817,7 +822,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 				MessageController.sendMessage(p,"&eYou were &4killed&e bc of the following. ");
 				String notReady = tops.getRequiredString(p,"&eYou needed");
 				MessageController.sendMessage(p,notReady);
-				BAPlayerListener.addMessageOnReenter(p,"&eYou were &4killed&e bc of the following. "+notReady);
+				BAPlayerListener.addMessageOnReenter(p.getName(),"&eYou were &4killed&e bc of the following. "+notReady);
 				//				Log.warn("[BattleArena] " + p.getName() +"  killed for " + notReady);
 				shouldKill = true;
 			}

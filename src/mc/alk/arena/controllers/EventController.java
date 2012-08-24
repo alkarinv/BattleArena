@@ -3,9 +3,8 @@ package mc.alk.arena.controllers;
 import java.util.HashMap;
 
 import mc.alk.arena.events.Event;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
-
-import org.bukkit.OfflinePlayer;
 
 
 public class EventController {
@@ -13,7 +12,7 @@ public class EventController {
 
 	public EventController(){}
 	
-	public static Event insideEvent(OfflinePlayer p) {
+	public static Event insideEvent(ArenaPlayer p) {
 		for (Event evt : registeredEvents.values()){
 			Team t = evt.getTeam(p);
 			if (t != null)

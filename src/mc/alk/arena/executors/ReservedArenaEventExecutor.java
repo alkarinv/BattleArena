@@ -12,7 +12,6 @@ import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 public class ReservedArenaEventExecutor extends EventExecutor{
@@ -44,14 +43,14 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 	}
 
 	@MCCommand(cmds={"open","auto"}, admin=true, order=1)
-	public boolean open(CommandSender sender, Command command, String commandLabel, Object[] args) {
+	public boolean open(CommandSender sender, String[] args) {
 		if (!(event instanceof ReservedArenaEvent)){
 			return sendMessage(sender,"&4The bukkitEvent " + event.getName() +" is not type ReservedArenaEvent");			
 		}
 		ReservedArenaEvent rae = (ReservedArenaEvent) event;
 		MatchParams mp = rae.getParams();
 
-		boolean auto = ((String)args[0]).equals("auto");
+		boolean auto = args[0].equals("auto");
 		final String openStr = (auto?"auto" : "open");
 		final String cmd = mp.getCommand();
 		if (args.length < 4){
@@ -62,15 +61,15 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		if (rae.isRunning() || rae.isOpen()){
 			return sendMessage(sender,"&cA "+cmd+" is already &6" + rae.getState());
 		}
-		Rating rated = Rating.fromString((String)args[1]);
+		Rating rated = Rating.fromString(args[1]);
 		if (rated == Rating.UNKNOWN){
 			return sendMessage(sender,"&6"+args[1] +" &cNot a valid "+cmd+" type.  &6Rated &eor &6Unrated");}
 
-		MinMax teamSize = Util.getMinMax((String) args[2]);
+		MinMax teamSize = Util.getMinMax(args[2]);
 		if (teamSize == null){
 			return sendMessage(sender,"&cCouldnt parse teamSize &6"+args[2]);}
 
-		MinMax nTeams = Util.getMinMax((String) args[3]);
+		MinMax nTeams = Util.getMinMax(args[3]);
 		if (nTeams == null){
 			return sendMessage(sender,"&cCouldnt parse number of inEvent &6"+args[3]);}
 		MatchParams specificparams = new MatchParams(mp);
@@ -80,7 +79,7 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		Arena arena;
 		boolean autoFindArena = false;
 		if (args.length> 4){
-			arena = getArena((String)args[4]);			
+			arena = getArena(args[4]);			
 			if (arena == null){
 				return sendMessage(sender,"&cCouldnt find arena &6"+args[4]);}
 		} else {

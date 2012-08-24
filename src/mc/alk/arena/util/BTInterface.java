@@ -8,6 +8,8 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.tracker.Tracker;
@@ -35,10 +37,10 @@ public class BTInterface {
 		return valid;
 	}
 	public static Stat getRecord(TrackerInterface bti, Team t){
-		return bti.getRecord(t.getPlayers());
+		return bti.getRecord(t.getBukkitPlayers());
 	}
 	public static Stat loadRecord(TrackerInterface bti, Team t){
-		return bti.loadRecord(t.getPlayers());
+		return bti.loadRecord(t.getBukkitPlayers());
 	}
 	public static TrackerInterface getInterface(MatchParams sq){
 		if (sq == null)
@@ -47,20 +49,21 @@ public class BTInterface {
 		return db == null ? null : btis.get(db);
 	}
 
-	public static void addRecord(TrackerInterface bti, Set<Player> players, Collection<Team> losers, WLT win) {
+	public static void addRecord(TrackerInterface bti, Set<ArenaPlayer> players, Collection<Team> losers, WLT win) {
 		if (bti == null)
 			return;
 		try{
+			Set<Player> winningPlayers = PlayerController.toPlayerSet(players);
 			if (losers.size() == 1){
 				Set<Player> losingPlayers = new HashSet<Player>();
-				for (Team t: losers){losingPlayers.addAll(t.getPlayers());}
-				bti.addTeamRecord(players, losingPlayers, WLT.WIN);						
+				for (Team t: losers){losingPlayers.addAll(t.getBukkitPlayers());}
+				bti.addTeamRecord(winningPlayers, losingPlayers, WLT.WIN);						
 			} else {
 				Collection<Collection<Player>> plosers = new ArrayList<Collection<Player>>();
 				for (Team t: losers){
-					plosers.add(t.getPlayers());
+					plosers.add(t.getBukkitPlayers());
 				}
-				bti.addRecordGroup(players, plosers, WLT.WIN);			
+				bti.addRecordGroup(winningPlayers, plosers, WLT.WIN);			
 			} 
 		} catch(Exception e){
 			e.printStackTrace();
@@ -92,13 +95,13 @@ public class BTInterface {
 		}
 	}
 
-	public static void resumeTracking(Player p) {
+	public static void resumeTracking(ArenaPlayer p) {
 		if (aBTI != null)
-			aBTI.resumeTracking(p);		
+			aBTI.resumeTracking(p.getName());		
 	}
-	public static void stopTracking(Player p) {
+	public static void stopTracking(ArenaPlayer p) {
 		if (aBTI != null)
-			aBTI.stopTracking(p);		
+			aBTI.stopTracking(p.getName());		
 	}
 	public static void resumeTracking(Set<Player> players) {
 		if (aBTI != null)
@@ -113,7 +116,7 @@ public class BTInterface {
 	}
 	public Integer getElo(Team t) {
 		Stat s = getRecord(ti,t);
-		return (int) (s == null ? Defaults.DEFAULT_ELO : s.getElo());
+		return (int) (s == null ? Defaults.DEFAULT_ELO : s.getRanking());
 	}
 	public Stat loadRecord(Team team) {
 		return BTInterface.loadRecord(ti, team);

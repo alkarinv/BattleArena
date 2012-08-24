@@ -3,9 +3,8 @@ package mc.alk.arena.objects.victoryconditions;
 import java.util.List;
 import java.util.Random;
 
-import org.bukkit.entity.Player;
-
 import mc.alk.arena.match.Match;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.VictoryUtil;
 
@@ -37,29 +36,13 @@ public class HighestKills extends VictoryCondition{
 
 	public void timeInterval(int remaining) {}
 	
-//
-//	@Override
-//	public boolean needsMobDeathEvents() {
-//		return false;
-//	}
-//
-//	@Override
-//	public boolean needsBlockEvents() {
-//		return false;
-//	}
-//	
-//	@Override
-//	public boolean needsItemPickupEvents() {
-//		return false;
-//	}
-	
 	@Override
 	public boolean hasTimeVictory() {
 		return true;
 	}
 
 	@Override
-	public void playerLeft(Player p) {
+	public void playerLeft(ArenaPlayer p) {
 		/// Get to do nothing, 
 	}
 

@@ -10,6 +10,7 @@ import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.events.util.NeverWouldJoinException;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.match.PerformTransition;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.teams.Team;
@@ -24,7 +25,6 @@ import mc.alk.tracker.objects.Stat;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import com.alk.battleEventTracker.BattleEventTracker;
@@ -87,7 +87,7 @@ public class TournamentEvent extends Event {
 			Double elo = Defaults.DEFAULT_ELO;
 			if (bti != null){
 				Stat s = BTInterface.loadRecord(bti, t);
-				if (s!= null) elo= (double) s.getElo();
+				if (s!= null) elo= (double) s.getRanking();
 			}
 			while (sortTeams.containsKey(elo)){elo+= 0.0001;}
 			sortTeams.put(elo, t);
@@ -238,8 +238,8 @@ public class TournamentEvent extends Event {
 			if (m.getTeams().size() == 2){
 				Team t1 = m.getTeam(0);
 				Team t2 = m.getTeam(1);
-				Double elo1 = (bti != null) ? BTInterface.loadRecord(bti, t1).getElo() : Defaults.DEFAULT_ELO;
-				Double elo2 = (bti != null) ? BTInterface.loadRecord(bti, t2).getElo() : Defaults.DEFAULT_ELO;
+				Double elo1 = (bti != null) ? BTInterface.loadRecord(bti, t1).getRanking() : Defaults.DEFAULT_ELO;
+				Double elo2 = (bti != null) ? BTInterface.loadRecord(bti, t2).getRanking() : Defaults.DEFAULT_ELO;
 				//				System.out.println("team1 stat= " + bti.loadRecord(t1.getPlayers()));
 				broadcast(prefix + "&e "+ strround +": &8"+t1.getDisplayName() +"&6["+ elo1+"]" +
 						"&e vs &8" +t2.getDisplayName() +"&6["+ elo2+"]");							
@@ -272,7 +272,7 @@ public class TournamentEvent extends Event {
 	}
 
 	@Override
-	public boolean canLeave(Player p) {
+	public boolean canLeave(ArenaPlayer p) {
 		Team t = getTeam(p);
 		return isOpen() || (t != null && !aliveTeams.contains(t));
 	}

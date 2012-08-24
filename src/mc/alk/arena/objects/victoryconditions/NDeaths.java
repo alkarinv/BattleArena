@@ -1,10 +1,10 @@
 package mc.alk.arena.objects.victoryconditions;
 
 import mc.alk.arena.match.Match;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchEventHandler;
 import mc.alk.arena.objects.teams.Team;
 
-import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -19,20 +19,20 @@ public class NDeaths extends VictoryCondition{
 	}
 
 	@MatchEventHandler
-	public void onPlayerQuit(PlayerQuitEvent event) {
-		killPlayer(event.getPlayer());		
+	public void onPlayerQuit(PlayerQuitEvent event, ArenaPlayer p) {
+		killPlayer(p);		
 	}
 	@MatchEventHandler
-	public void onPlayerKick(PlayerKickEvent event) {
-		killPlayer(event.getPlayer());		
+	public void onPlayerKick(PlayerKickEvent event, ArenaPlayer p) {
+		killPlayer(p);		
 	}
 	
 	@Override
-	public void playerLeft(Player p) {
+	public void playerLeft(ArenaPlayer p) {
 		killPlayer(p);
 	}
 
-	protected void killPlayer(Player p){
+	protected void killPlayer(ArenaPlayer p){
 		Team team = match.getTeam(p);
 		if (team == null)
 			return;
@@ -41,14 +41,14 @@ public class NDeaths extends VictoryCondition{
 	}
 	
 	@MatchEventHandler(suppressCastWarnings=true)
-	public void playerDeathEvent(PlayerDeathEvent event, Player p) {
+	public void playerDeathEvent(PlayerDeathEvent event, ArenaPlayer p) {
 //		System.out.println("DEAD Player " + event.getEntity());
 		Team team = match.getTeam(p);
 		playerDeath(p,team);		
 	}
 
 	
-	private void playerDeath(Player p,Team team) {
+	private void playerDeath(ArenaPlayer p,Team team) {
 		if (match.isWon()){
 			match.unregister(this);
 			return;

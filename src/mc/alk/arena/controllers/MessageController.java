@@ -7,6 +7,7 @@ import java.util.Set;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.events.Event;
 import mc.alk.arena.match.Match;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.teams.Team;
@@ -16,12 +17,11 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
 import mc.alk.tracker.TrackerInterface;
-import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.objects.Stat;
+import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.entity.Player;
 
 import com.dthielke.herochat.Channel;
 
@@ -117,7 +117,7 @@ public class MessageController extends MessageUtil implements MatchMessageHandle
 					if (orvictor != null){
 						vWinsOver= orvictor.wins; lWinsOver= orvictor.losses;
 					}				
-					vElo = tsvictor.getElo(); lElo = tsloser.getElo();				
+					vElo = tsvictor.getRanking(); lElo = tsloser.getRanking();				
 				}
 			}
 			if (bos.broadcastOnVictory()){
@@ -142,7 +142,7 @@ public class MessageController extends MessageUtil implements MatchMessageHandle
 			loser.sendMessage(getMessageNP("match","loser_message2v2_3",victor.getDisplayName(),lWinsOver, vWinsOver));
 			StringBuilder sb = new StringBuilder();
 			boolean first = true;
-			for (Player p : victor.getPlayers()){
+			for (ArenaPlayer p : victor.getPlayers()){
 				if (!victor.hasAliveMember(p))
 					continue;
 				if (!first) sb.append(", ");
@@ -189,13 +189,13 @@ public class MessageController extends MessageUtil implements MatchMessageHandle
 		TrackerInterface bti = BTInterface.getInterface(mp);
 		for (Team t: teams){
 			if (!first) sb.append("&e, ");
-			Integer elo = (int) ((bti != null) ? BTInterface.loadRecord(bti, t).getElo() : Defaults.DEFAULT_ELO);
+			Integer elo = (int) ((bti != null) ? BTInterface.loadRecord(bti, t).getRanking() : Defaults.DEFAULT_ELO);
 			sb.append("&c"+t.getDisplayName()+"&6(" + elo +")");
 			first = false;
 		}
 		final String msg = colorChat("&eParticipants: " + sb.toString());
 		for (Team t: teams){
-			for (Player p: t.getPlayers()){
+			for (ArenaPlayer p: t.getPlayers()){
 				p.sendMessage(msg);
 			}
 		}
@@ -216,14 +216,14 @@ public class MessageController extends MessageUtil implements MatchMessageHandle
 		}		
 	}
 
-	public void sendEventCancelledDueToLackOfPlayers(Set<Player> competingPlayers) {
+	public void sendEventCancelledDueToLackOfPlayers(Set<ArenaPlayer> competingPlayers) {
 		MessageController.sendMessage(competingPlayers,mp.getPrefix()+"&e The bukkitEvent has been cancelled b/c there weren't enough inEvent");		
 		
 	}
 	public void sendTeamJoinedEvent(Team t) {
 		t.sendMessage("&eYou have joined the &6" + mp.getName());		
 	}
-	public void sendPlayerJoinedEvent(Player p) {
+	public void sendPlayerJoinedEvent(ArenaPlayer p) {
 		sendMessage(p,"&eYou have joined the &6" + mp.getName());		
 	}
 	
@@ -245,4 +245,6 @@ public class MessageController extends MessageUtil implements MatchMessageHandle
 		match.sendMessage(msg);		
 	}
 	public void sendTimeExpired() {}
+	
+	
 }

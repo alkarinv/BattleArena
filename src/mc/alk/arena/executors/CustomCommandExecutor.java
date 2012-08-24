@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -16,11 +17,13 @@ import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -33,11 +36,21 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	private HashMap<String,TreeMap<Integer,MethodWrapper>> methods = new HashMap<String,TreeMap<Integer,MethodWrapper>>();
 	public static final int SELF = -2; /// Which index defines the sender
 	protected HashMap<MCCommand, String> usage = new HashMap<MCCommand, String>();
-	
+
 	protected BattleArenaController ac;
 	protected EventController ec;
 	protected ArenaEditor aec;
-	
+
+	static interface Converter{
+		Object convert(Object arg);
+	}
+	private static Map<Class<?>,Converter> cmdMap = new HashMap<Class<?>,Converter>();
+	static {
+		cmdMap.put(CommandSender.class, new Converter() {public Object convert(Object arg) { return arg; }});
+		cmdMap.put(Command.class, new Converter() {public Object convert(Object arg) { return arg; }});
+
+	}
+
 	/**
 	 * Custom arguments class so that we can return a modified arguments
 	 */
@@ -47,7 +60,9 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	}
 
 	protected static class MethodWrapper{
-		public MethodWrapper(Object obj, Method method){this.obj = obj; this.method = method;}
+		public MethodWrapper(Object obj, Method method){
+			this.obj = obj; this.method = method;
+		}
 		Object obj; /// Object the method belongs to
 		Method method; /// Method
 	}
@@ -57,7 +72,9 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	 * What to display when this happens
 	 * @param sender
 	 */
-	protected abstract void showHelp(CommandSender sender, Command command);
+	protected void showHelp(CommandSender sender, Command command){
+		help(sender,command,null);
+	}
 
 	protected CustomCommandExecutor(){
 		addMethods(this, getClass().getMethods());
@@ -71,7 +88,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			MCCommand mc = method.getAnnotation(MCCommand.class);
 			if (mc == null)
 				continue;
-//			System.out.println("adding method " + method);
+
 			/// For each of the cmds, store them with the method
 			for (String cmd : mc.cmds()){
 				cmd = cmd.toLowerCase();
@@ -82,6 +99,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				int order = mc.order() != -1? mc.order() : Integer.MAX_VALUE-mthds.size();
 				mthds.put(order, new MethodWrapper(obj,method));
 				methods.put(cmd, mthds);
+
 			}
 			/// TeamJoinResult in the usages, for showing help messages
 			if (MessageController.hasMessage("usage", mc.cmds()[0])){
@@ -116,13 +134,23 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			if (mccmd.op() && !isOp || mccmd.admin() && !sender.hasPermission(Defaults.ARENA_ADMIN)) /// no op, no pass
 				continue;
 			try {
-				Arguments newArgs= verifyArgs(mccmd,sender,command, label, args);
+				Arguments newArgs= verifyArgs(mwrapper,mccmd,sender,command, label, args);
+				//				Object[] lists = new Object[5];
+				//				lists[0] = sender;
+				//				lists[1] = newArgs.mp;
+				//				lists[2] = command;
+				//				lists[3] = label;
+				//				lists[4] = newArgs.args;
+				//				for (int i=4;i<lists.length;i++){
+				//					lists[i] = newArgs.args[i-4];
+				//				}
+				mwrapper.method.invoke(mwrapper.obj,newArgs.args);
 				/// Invoke our arenaMethods
-				if (newArgs.mp != null){
-					mwrapper.method.invoke(mwrapper.obj,sender,newArgs.mp, command,label, newArgs.args);					
-				} else {
-					mwrapper.method.invoke(mwrapper.obj,sender,command,label, newArgs.args);					
-				}
+				//				if (newArgs.mp != null){
+				//					mwrapper.method.invoke(mwrapper.obj,sender,newArgs.mp, command,label, newArgs.args);					
+				//				} else {
+				//					mwrapper.method.invoke(mwrapper.obj,sender,command,label, newArgs.args);					
+				//				}
 				success = true;
 				break; /// success on one
 			} catch (InvalidArgumentException e){
@@ -151,14 +179,14 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	}
 
 	static final String ONLY_INGAME =ChatColor.RED+"You need to be in game to use this command";
-	private Arguments verifyArgs(MCCommand cmd, CommandSender sender, Command command, String label, String[] args) 
-			throws InvalidArgumentException{
+	private Arguments verifyArgs(MethodWrapper mwrapper, MCCommand cmd, 
+			CommandSender sender, Command command, String label, String[] args) throws InvalidArgumentException{
 		if (DEBUG)System.out.println("verifyArgs " + cmd +" sender=" +sender+", label=" + label+" args="+args);
+		int strIndex = 1/*skip the label*/, objIndex = 0;
 
-		Arguments newArgs = new Arguments(); /// Our return value
-		Object[] objs = new Object[args.length]; /// Our new array of castable arguments
-		System.arraycopy( args, 0, objs, 0, args.length );
-		newArgs.args = objs; /// Set our return object with the new castable arguments
+		/// Check our permissions
+		if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
+			throw new InvalidArgumentException(MessageController.getMessage("main", "no_permission"));
 
 		/// Verify min number of arguments
 		if (args.length < cmd.min()){
@@ -174,48 +202,79 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		}
 		final boolean isPlayer = sender instanceof Player;
 		final boolean isOp = (isPlayer && sender.isOp()) || sender == null || sender instanceof ConsoleCommandSender;
+
 		if (cmd.op() && !isOp)
 			throw new InvalidArgumentException(ChatColor.RED +"You need to be op to use this command");
 		if (cmd.admin() && !isOp && (isPlayer && !sender.hasPermission(Defaults.ARENA_ADMIN)))
 			throw new InvalidArgumentException(ChatColor.RED +"You need to be an Admin to use this command");
 
+		/// the first ArenaPlayer or Player parameter is the sender
+//		boolean getSenderAsPlayer = cmd.playerSender();
+		boolean getSenderAsPlayer = cmd.inGame();
+
 		/// In game check
-		if (cmd.inGame() && !isPlayer){
+		if (cmd.inGame() && !isPlayer || getSenderAsPlayer && !isPlayer){
 			throw new InvalidArgumentException(ONLY_INGAME);			
 		}
 
-		/// Verify ints
-		if (cmd.ints().length > 0){
-			for (int intIndex: cmd.ints()){
-				if (intIndex >= args.length)
-					throw new InvalidArgumentException("IntegerIndex out of range. ");
-				try {
-					objs[intIndex] = Integer.parseInt(args[intIndex]);
-				}catch (NumberFormatException e){
-					throw new InvalidArgumentException(ChatColor.RED+(String)args[1]+" is not a valid integer.");
+		Arguments newArgs = new Arguments(); /// Our return value
+		Object[] objs = new Object[mwrapper.method.getParameterTypes().length]; /// Our new array of castable arguments
+		//		System.arraycopy( args, 0, objs, 0, args.length );
+		newArgs.args = objs; /// Set our return object with the new castable arguments
+		for (Class<?> theclass : mwrapper.method.getParameterTypes()){
+			if (strIndex > args.length) /// out of arguments
+				break;
+			//			System.out.println(objIndex + " : " + strIndex +"  !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + theclass.getCanonicalName());
+			if (CommandSender.class == theclass){
+				objs[objIndex] = sender;
+			} else if (Command.class == theclass){
+				objs[objIndex] = command;				
+			} else if (Player.class ==theclass){
+				if (getSenderAsPlayer){
+					objs[objIndex] = sender;
+					getSenderAsPlayer = false;
+				} else {
+					objs[objIndex] = verifyPlayer(args[strIndex++]);
 				}
+			} else if (OfflinePlayer.class ==theclass){
+				objs[objIndex] = verifyOfflinePlayer(args[strIndex++]);
+			} else if (ArenaPlayer.class == theclass){
+				if (getSenderAsPlayer){
+					objs[objIndex] = BattleArena.toArenaPlayer((Player)sender);
+					getSenderAsPlayer = false;
+				} else {
+					objs[objIndex] = verifyArenaPlayer(args[strIndex++]);
+				}
+			} else if (MatchParams.class == theclass){
+				objs[objIndex] = verifyMatchParams(command);
+			} else if (Arena.class == theclass){
+				objs[objIndex] = verifyArena(args[strIndex++]);
+			} else if (String.class == theclass){
+				objs[objIndex] = args[strIndex++]; 
+			} else if (Integer.class == theclass){
+				objs[objIndex] = verifyInteger(args[strIndex++]);
+			} else if (String[].class == theclass){
+				objs[objIndex] = args;
+			} else if (Object[].class == theclass){
+				objs[objIndex] = args;
+			} else if (Boolean.class == theclass){
+				objs[objIndex] = Boolean.parseBoolean(args[strIndex++]);
+			} else if (Object.class == theclass){
+				objs[objIndex] = args[strIndex++];
 			}
+//			System.out.println(objIndex + " : " + strIndex + "  " + objs[objIndex] +" !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + theclass.getCanonicalName());
+
+			objIndex++;
 		}
+
 		/// Verify alphanumeric
 		if (cmd.alphanum().length > 0){
 			for (int index: cmd.alphanum()){
 				if (index >= args.length)
 					throw new InvalidArgumentException("String Index out of range. ");
 				if (!args[index].matches("[a-zA-Z0-9_]*")) {
-					throw new InvalidArgumentException("&earguments can be only alphanumeric with underscores");
+					throw new InvalidArgumentException("&eargument '"+args[index]+"' can only be alphanumeric with underscores");
 				}
-			}
-		}
-		
-		/// Verify arena
-		if (cmd.arenas().length > 0){
-			for (int index: cmd.arenas()){
-				if (index >= args.length)
-					throw new InvalidArgumentException("Arena Index out of range. ");
-				Arena arena = ac.getArena(args[index]);
-				if (arena == null){
-					throw new InvalidArgumentException("That arena doesnt exist ");}
-				objs[index] = arena;
 			}
 		}
 
@@ -251,39 +310,61 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				}
 			}
 		}
-		
-		if (cmd.selection()){
-			if (!isPlayer){
-				throw new InvalidArgumentException(ChatColor.RED + "You can only use this command in game");
-			}
-			CurrentSelection cs = aec.getCurrentSelection((Player)sender);
-			if (cs == null)
-				throw new InvalidArgumentException(ChatColor.RED + "You need to select an arena first");
 
-			if (System.currentTimeMillis() - cs.lastUsed > 60000){
-				throw new InvalidArgumentException(ChatColor.RED + "its been over a minute since you selected an arena, reselect it");
-			}
-		}
-
-		/// Check our permissions
-		if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
-			throw new InvalidArgumentException(MessageController.getMessage("main", "no_permission"));
-		
-		if (cmd.mp()){
-			MatchParams mp = ParamController.getMatchParams(command.getName());
-			if (mp == null){
-				for (String alias : command.getAliases()){
-					mp = ParamController.getMatchParams(alias);
-					if (mp != null)
-						break;
-				}
-			}					
-			if (mp == null){
-				throw new InvalidArgumentException(ChatColor.RED + "Match parameters for a &6" + command.getName()+"&c can't be found");				
-			}
-			newArgs.mp = mp;
-		}
 		return newArgs; /// Success
+	}
+
+	private OfflinePlayer verifyOfflinePlayer(String name) throws InvalidArgumentException {
+		OfflinePlayer p = Util.findOfflinePlayer(name);
+		if (p == null)
+			throw new InvalidArgumentException("Player " + name+" can not be found");
+		return p;
+	}
+
+	private ArenaPlayer verifyArenaPlayer(String name) throws InvalidArgumentException {
+		Player p = Util.findPlayer(name);
+		if (p == null || !p.isOnline())
+			throw new InvalidArgumentException(name+" is not online ");
+		return BattleArena.toArenaPlayer(p);
+	}
+
+	private Player verifyPlayer(String name) throws InvalidArgumentException {
+		Player p = Util.findPlayer(name);
+		if (p == null || !p.isOnline())
+			throw new InvalidArgumentException(name+" is not online ");
+		return p;
+	}
+
+	private Arena verifyArena(String name) throws InvalidArgumentException {
+		Arena arena = ac.getArena(name);
+		if (arena == null){
+			throw new InvalidArgumentException("Arena '" +name+"' doesnt exist" );}
+		return arena;
+	}
+
+	private MatchParams verifyMatchParams(Command command) throws InvalidArgumentException {
+		MatchParams mp = ParamController.getMatchParams(command.getName());
+		System.out.println("verfiy mp = " + mp);
+		if (mp != null){
+			return mp;
+		} else {
+			for (String alias : command.getAliases()){
+				mp = ParamController.getMatchParams(alias);
+				if (mp != null)
+					return mp;
+			}
+		}
+
+		throw new InvalidArgumentException(ChatColor.RED + "Match parameters for a &6" + command.getName()+"&c can't be found");
+	}
+
+	private Integer verifyInteger(Object object) throws InvalidArgumentException {
+		/// Verify ints
+		try {
+			return Integer.parseInt(object.toString());
+		}catch (NumberFormatException e){
+			throw new InvalidArgumentException(ChatColor.RED+(String)object+" is not a valid integer.");
+		}
 	}
 
 	private String getUsage(Command c, MCCommand cmd) {
@@ -366,4 +447,11 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		}
 	}
 
+	public static boolean sendMessage(CommandSender sender, String msg){
+		return MessageController.sendMessage(sender, msg);
+	}
+
+	public static boolean sendMessage(ArenaPlayer player, String msg){
+		return MessageController.sendMessage(player, msg);
+	}
 }
