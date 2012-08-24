@@ -151,7 +151,7 @@ arena:
         items: # ignored if options doesnt have "giveItems"
             - bread: 5
     onComplete:
-        options: [teleportOut, clearInventory]
+        options: [teleportOut, deEnchant, clearInventory]
     winner:
         options: [health=20, hunger=20]
 
