@@ -13,6 +13,7 @@ DeathMatch
 Tournament ( bracket tournament for any number of teams )
 
 Versions.
+3.5.5 : Switched over to ArenaPlayers
 3.4.7.0 : Now checks that a player is both online and alive before onEnter events
 3.4.6.3 : Fixes for cancelling RAE's affecting other events
 3.4.0.0 : Better API like support.  More functions individual event listeners
