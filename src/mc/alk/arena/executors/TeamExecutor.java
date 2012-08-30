@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -36,18 +37,18 @@ public class TeamExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"list"},admin=true,usage="list")
 	public boolean teamList(CommandSender sender) {
 		StringBuilder sb = new StringBuilder();
-		Map<Team,List<TeamHandler>> teams = teamc.getTeams();
+		Map<Team,CopyOnWriteArrayList<TeamHandler>> teams = teamc.getTeams();
 
 		for (Team t: teams.keySet()){
 			sb.append(t.getTeamInfo(null)+"\n");}
-		sb.append("&e# of inEvent = &6" + teams.size());
+		sb.append("&e# of players = &6" + teams.size());
 		return sendMessage(sender,sb.toString());
 	}
 
 	@MCCommand(cmds={"listDetailed"},op=true,usage="listDetailed")
 	public boolean teamListDetails(CommandSender sender) {
 		StringBuilder sb = new StringBuilder();
-		Map<Team,List<TeamHandler>> teams = teamc.getTeams();
+		Map<Team,CopyOnWriteArrayList<TeamHandler>> teams = teamc.getTeams();
 
 		for (Team t: teams.keySet()){
 			sb.append(t.getTeamInfo(null));
@@ -60,7 +61,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 				sb.append(th);}
 			sb.append("\n");
 		}
-		sb.append("&e# of inEvent = &6" + teams.size());
+		sb.append("&e# of players = &6" + teams.size());
 		return sendMessage(sender,sb.toString());
 	}
 
@@ -79,7 +80,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		
 //		Event ae = EventController.insideEvent(p);
 //		if (ae != null){
-//			return sendMessage(sender, "&eYou need to leave the bukkitEvent first. &6/" + ae.getCommand()+" leave");
+//			return sendMessage(sender, "&eYou need to leave the event first. &6/" + ae.getCommand()+" leave");
 //		}
 
 		if (!teamc.inFormingTeam(player)){
@@ -138,7 +139,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 			if (Defaults.DEBUG){System.out.println("player=" + player.getName());}
 			Team t = teamc.getSelfTeam(p);
 			if (t!= null || !bae.canJoin(p)){
-				sendMessage(player,"&6"+ p.getName() + "&e is already part of a team or is in an bukkitEvent");
+				sendMessage(player,"&6"+ p.getName() + "&e is already part of a team or is in an Event");
 				return sendMessage(player,"&eCreate team &4cancelled!");
 			}
 			if (teamc.inFormingTeam(p)){
@@ -206,7 +207,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		}
 		
 		/// If in a self made team, let them disband it regardless
-		/// This will cause the team to try and leave the bukkitEvent, queue, or whatever
+		/// This will cause the team to try and leave the event, queue, or whatever
 		Team t = teamc.getSelfTeam(player);
 		if (t== null){
 			return sendMessage(player,"&eYou aren't part of a team");}

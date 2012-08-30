@@ -16,6 +16,11 @@ public class ParamController {
 		types.put(pi.getName(), pi);
 		types.put(pi.getCommand(), pi);
 	}
+	public static void removeMatchType(MatchParams pi) {
+		types.remove(pi.getName());
+		types.remove(pi.getCommand());
+	}
+
 	public static Collection<MatchParams> getAllParams(){
 		return types.values();
 	}

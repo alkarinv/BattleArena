@@ -20,7 +20,7 @@ import org.bukkit.plugin.Plugin;
 
 
 public class SpawnController {
-	static final boolean DEBUG = true;
+	static final boolean DEBUG = false;
 	static CaseInsensitiveMap<SpawnInstance> allSpawns = new CaseInsensitiveMap<SpawnInstance>();
 	PriorityQueue<NextSpawn> spawnQ = null;
 	Plugin plugin = null;

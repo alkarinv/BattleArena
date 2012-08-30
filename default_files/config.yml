@@ -93,7 +93,7 @@ defaultMatchOptions:
 
 ### Prizes
 # winner: given to the winner after onComplete
-# losers: given to the losers after onComplete
+# losers: given to the losers after onCompletete
 # firstPlace: (for tourneys) given to winner after tournament complete
 # participants: (for tourneys) given to all participants(except winner) after tournament complete
 

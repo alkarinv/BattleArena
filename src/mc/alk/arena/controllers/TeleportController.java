@@ -12,6 +12,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -45,10 +46,12 @@ public class TeleportController {
 		}
 		teleport(p,loc);
 		for(ArenaPlayer p2 : matchPlayers) {
-			if(!p2.getPlayer().canSee(p)) {
+//			if(!p2.getPlayer().canSee(p)) {
 				p2.getPlayer().showPlayer(p);
-				return;
-			}
+//			}
+//			if (!p.canSee(p2.getPlayer())){
+				p.showPlayer(p2.getPlayer());
+//			}
 		}
 
 
@@ -103,5 +106,14 @@ public class TeleportController {
 		}
 		if (!p.teleport(loc)){
 			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + p.getName() + " loc=" + loc);}
+		final int rtime = rand.nextInt(10);
+//		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+//
+//			@Override
+//			public void run() {
+//				p.teleport(loc);
+//			}
+//			
+//		}, rtime);
 	}
 }

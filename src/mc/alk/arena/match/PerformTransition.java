@@ -12,8 +12,8 @@ import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.WorldGuardInterface;
-import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaClass;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
@@ -38,7 +38,7 @@ public class PerformTransition {
 	 * Perform a transition 
 	 * @param Match, which match to perform the transition on
 	 * @param transition: which transition are we doing
-	 * @param inEvent: which inEvent to affect
+	 * @param teams: which teams to affect
 	 * @param onlyInArena: only perform the actions on people still in the arena
 	 */
 	public static void transition(Match am, MatchState transition, Collection<Team> teams, boolean onlyInArena){
@@ -50,9 +50,8 @@ public class PerformTransition {
 
 	public static boolean transition(Match am, final MatchState transition, Team team, boolean onlyInMatch) {
 		final Set<ArenaPlayer> validPlayers = team.getPlayers();
-		//		System.out.println(transition +"  " + team +"      arena=" + arena);
 		final TransitionOptions mo = am.tops.getOptions(transition);
-		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo);
+		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo + " arena="+arena);
 		if (mo == null)
 			return true;
 
@@ -77,7 +76,6 @@ public class PerformTransition {
 			final Team team, final boolean onlyInMatch) {
 		if (debug) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +p.getName() +
 				" ops="+am.tops.getOptions(transition));
-		//		FileLogger.log("doMatchTransitionEffects " + transition + " Player= " +p.getName() +"  am="+am +"   arena=" + am.arena +" pvp="+am.moc.getOptions(transition));
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		if (mo == null){
 			return true;}
@@ -103,7 +101,7 @@ public class PerformTransition {
 		final Set<ArenaPlayer> players = am.getAlivePlayers();
 		final boolean dead = !p.isOnline() || p.isDead();
 		if (teleportWaitRoom){ /// Teleport waiting room
-			/// EnterWaitRoom is supposed to happen before the teleport in bukkitEvent, but it depends on the result of a teleport
+			/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
 			/// Since we cant really tell the eventual result.. do our best guess
 			if (!dead) am.enterWaitRoom(p); 
 			final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),team.getPlayerIndex(p));
@@ -113,7 +111,7 @@ public class PerformTransition {
 
 		/// Teleport In
 		if (teleportIn && transition != MatchState.ONSPAWN){ /// only tpin, respawn tps happen elsewhere
-			/// enterArena is supposed to happen before the teleport in bukkitEvent, but it depends on the result of a teleport
+			/// enterArena is supposed to happen before the teleport in Event, but it depends on the result of a teleport
 			/// Since we cant really tell the eventual result.. do our best guess
 			if (!dead) am.enterArena(p);
 			final Location l = jitter(am.getTeamSpawn(teamIndex,false),team.getPlayerIndex(p));
@@ -123,7 +121,7 @@ public class PerformTransition {
 		/// Teleport out
 		else if (teleportOut && insideArena){ /// Lets not teleport people out who are already out(like dead ppl)
 			TeleportController.teleportPlayer(p.getPlayer(), am.oldlocs.get(p.getName()), false, false, wipeInventory,players);
-			/// supposed to happen after the teleport out bukkitEvent.. so delay till next tick so we can complete this transition
+			/// supposed to happen after the teleport out Event.. so delay till next tick so we can complete this transition
 			/// before starting the onLeave transition
 			Plugin plugin = BattleArena.getSelf();
 			if (plugin.isEnabled()){
@@ -200,7 +198,6 @@ public class PerformTransition {
 		if (teleportIn){
 			transition(am, MatchState.ONSPAWN, p, team, false);
 		}
-		//		FileLogger.log(transition+ " --- doMatchTransitionEffects Player= " +p.getName() + "  am="+am +"   arena=" + am.arena);
 		return true;
 	}
 

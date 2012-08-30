@@ -1,0 +1,32 @@
+## for more help configuring see the wiki
+## https://github.com/alkarinv/BattleArena/wiki
+## Change this file to customize your event
+
+<name>:
+    enabled: true
+    database: <name> # or delete if you dont want wins/losses/top, needs BattleTracker
+    rated: true # if database is enabled
+    prefix: "&6[<name>]&e"
+    cmd: <cmd>
+    ### You can delete any stages/transitions that have no options
+    ### for a list of options see wiki
+    preReqs: ## Prerequisites for joining
+        options: []
+    onOpen:  ## opening the event
+        options: [pvpOff]
+    onJoin:  ## when they join the event
+        options: [teleportIn, woolTeams]
+    onPreStart: ## x seconds before onStart
+        options: [pvpOff]
+    onStart: ## Starting
+        options: [pvpOn]
+    onSpawn: ## what happens when a player spawns
+        options: [hunger=20, health=20]
+    onDeath: ## what happens when a player dies
+        options: []
+    onComplete: ## what happens when things end
+        options: [teleportOut]
+    winner: ## what to give the winner
+        options: [health=20, hunger=20]
+    losers: ## what to give the losers
+        options: []

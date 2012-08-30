@@ -22,17 +22,17 @@ import org.bukkit.inventory.ItemStack;
 
 
 public class SpawnSerializer {
-	public static YamlConfiguration config = new YamlConfiguration();
-	static File f = new File(BattleArena.getSelf().getDataFolder()+"/spawns.yml");;
+	public YamlConfiguration config = new YamlConfiguration();
+	File f = new File(BattleArena.getSelf().getDataFolder()+"/spawns.yml");;
 
 
 	public void setConfig(File f){
-		ConfigSerializer.f = f;
+		this.f = f;
 		config = new YamlConfiguration();
 		loadAll();
 	}
 
-	public static void loadAll(){
+	public void loadAll(){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
 
 		ConfigurationSection as = config.getConfigurationSection("spawnGroups");

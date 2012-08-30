@@ -14,9 +14,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	String prettyName;
 	VictoryType vc = null;
 	Integer matchTime, intervalTime;
-	public int hashCode() { 
-		return ((arenaType.ordinal()) << 27) +(rating.ordinal() << 25) + (minTeams<<12)+(vc.ordinal() << 8) + minTeamSize;
-	}
+
 
 	public MatchParams(ArenaType at, Rating rating, VictoryType vc) {
 		super(at,rating);
@@ -68,16 +66,9 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		return sb.toString();
 	}
 
-	public boolean equals(Object other) {
-		if (this == other) return true;
-		if (!(other instanceof MatchParams)) return false;
-		return this.hashCode() == ((MatchParams) other).hashCode();
-	}
-
 
 	public int compareTo(MatchParams other) {
 		Integer hash = this.hashCode();
-//		System.out.println("compareTo()="+(hash.compareTo(other.hashCode()))+"   " + this.toString() +"  and " + other);
 		return hash.compareTo(other.hashCode());
 	}
 
@@ -110,6 +101,18 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	public void setIntervalTime(Integer intervalTime) {
 		this.intervalTime = intervalTime;
+	}
+
+	@Override
+	public int hashCode() {
+		return ((arenaType.ordinal()) << 27) +(rating.ordinal() << 25) + (minTeams<<12)+(vc.ordinal() << 8) + minTeamSize;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) return true;
+		if (!(other instanceof MatchParams)) return false;
+		return this.hashCode() == ((MatchParams) other).hashCode();
 	}
 
 }

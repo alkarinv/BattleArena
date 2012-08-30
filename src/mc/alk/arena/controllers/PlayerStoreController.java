@@ -5,6 +5,7 @@ import java.util.HashMap;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.match.PerformTransition;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
 
@@ -43,7 +44,7 @@ public class PlayerStoreController {
 	@SuppressWarnings("deprecation")
 	public void storeExperience(ArenaPlayer player) {
 		Player p = player.getPlayer();
-		int exp = p.getTotalExperience();
+		int exp = ExpUtil.getTotalExperience(p);
 		final String name = p.getName();
 		FileLogger.log("storing exp for = " + p.getName() +" exp="+ exp +"   online=" + p.isOnline() +"   isdead=" +p.isDead());
 		if (exp == 0)
@@ -51,9 +52,9 @@ public class PlayerStoreController {
 		if (expmap.containsKey(name)){
 			exp += expmap.get(name);}
 		expmap.put(name, exp);
-		p.setExp(0);
-		p.setLevel(0);
 		p.setTotalExperience(0);
+		p.setLevel(0);
+		p.setExp(0);
 		try{
 			p.updateInventory();
 		} catch(Exception e){
@@ -65,7 +66,7 @@ public class PlayerStoreController {
 		if (!expmap.containsKey(p.getName()))
 			return;
 		Integer exp = expmap.remove(p.getName());
-		FileLogger.log("restoring exp for = " + p.getName() +" exp="+ exp +"   online=" + p.isOnline() +"   isdead=" +p.isDead());
+		FileLogger.log("restoring exp for = "+p.getName()+" exp="+exp+",curexp="+p.getPlayer().getTotalExperience()+",online=" + p.isOnline() +"   isdead=" +p.isDead());
 		if (p.isOnline() && !p.isDead()){
 			p.getPlayer().giveExp(exp);
 		} else {
@@ -134,8 +135,7 @@ public class PlayerStoreController {
 	@SuppressWarnings("deprecation")
 	public static void setInventory(ArenaPlayer p, PInv pinv) {
 		FileLogger.log("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
-		if (PerformTransition.debug)
-			System.out.println("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
+		if (PerformTransition.debug) System.out.println("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
 		PlayerInventory inv = p.getPlayer().getInventory();
 		inv.setArmorContents(pinv.armor);
 		inv.setContents(pinv.contents);

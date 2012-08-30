@@ -46,7 +46,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	enum EventState{CLOSED,OPEN,RUNNING, FINISHED};
 	EventState state = EventState.CLOSED;
 	MatchParams matchParams= null;
-	Countdown timer = null; /// Timer till bukkitEvent starts, think about moving this to executor, or eventcontroller
+	Countdown timer = null; /// Timer till Event starts, think about moving this to executor, or eventcontroller
 
 	Set<Team> teams = new HashSet<Team>();
 	ArrayList<Round> rounds = new ArrayList<Round>();
@@ -54,8 +54,8 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	boolean silent = false;
 
 	public Event(MatchParams params) {
-		this.matchParams = new MatchParams(params); /// matchParams will change when an new bukkitEvent is called
-		this.mc = new MessageController(this);
+		setParamInst(params);
+		 /// matchParams will change when an new Event is called
 		this.ac = BattleArena.getBAC();
 		this.prefix = params.getPrefix();
 		this.command = params.getCommand();
@@ -63,15 +63,13 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	}
 
 	public void openEvent(MatchParams params) throws NeverWouldJoinException {
-		matchParams = new MatchParams(params);
-		if (params.getMaxTeams() != ArenaParams.MAX){ /// we have a finite set of inEvent
-			joinHandler = new AddToLeastFullTeam(this);	/// lets try and add players to all inEvent first
+		setParamInst(params);
+		if (params.getMaxTeams() != ArenaParams.MAX){ /// we have a finite set of players
+			joinHandler = new AddToLeastFullTeam(this);	/// lets try and add players to all players first
 		} else { /// finite team size
 			joinHandler = new BinPackAdd(this);
 		}
-
 		ac.addMatchListener(this);
-		mc = new MessageController(this);
 		stopTimer();
 		teams.clear();
 		state = EventState.OPEN;
@@ -79,13 +77,18 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 			mc.sendEventOpenMsg();
 	}
 
-	public void autoEvent(MatchParams params,int seconds) throws NeverWouldJoinException {
+	public void autoEvent(MatchParams params,int secondsTillStart,int announcementInterval) throws NeverWouldJoinException {
 		openEvent(params);
 		TimeUtil.testClock();
 		if (!silent)
-			mc.sendCountdownTillEvent(seconds);
-		
-		timer = new Countdown(BattleArena.getSelf(),seconds, Defaults.ANNOUNCE_EVENT_INTERVAL, this);
+			mc.sendCountdownTillEvent(secondsTillStart);
+	
+		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);
+	}
+
+	public void setParamInst(MatchParams matchParams) {
+		this.matchParams = new MatchParams(matchParams);
+		mc = new MessageController(this);
 	}
 
 	public void startEvent() {
@@ -142,13 +145,13 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	 */	
 	public boolean leave(ArenaPlayer p) {
 		Team t = getTeam(p);
-		if (t==null) /// they arent in this bukkitEvent
+		if (t==null) /// they arent in this Event
 			return true;
 		if (!isRunning()){
 			removeTeam(t);
 			return true;
 		} else {
-			return false; /// we wont let them go.. they are part of this bukkitEvent
+			return false; /// we wont let them go.. they are part of this Event
 		}
 	}
 
@@ -202,7 +205,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	}
 	
 	/**
-	 * Set a Message handler to override default bukkitEvent messages
+	 * Set a Message handler to override default Event messages
 	 * @param mc
 	 */
 	public void setMessageHandler(EventMessageHandler mc){
@@ -210,7 +213,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	}
 
 	/**
-	 * Return the Message Handler for this bukkitEvent
+	 * Return the Message Handler for this Event
 	 * @return
 	 */
 	public EventMessageHandler getMessageHandler(){
@@ -275,13 +278,13 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	}
 
 	/**
-	 * Show Results from the previous bukkitEvent
+	 * Show Results from the previous Event
 	 * @return
 	 */
 	public String getResultString() {
 		StringBuilder sb = new StringBuilder();
 		if (rounds == null){
-			return "&eThere are no results from the previous bukkitEvent";
+			return "&eThere are no results from the previous Event";
 		}
 		if (!isFinished() && !isClosed()){
 			sb.append("&eEvent is still &6" + state + "\n");			
@@ -309,14 +312,13 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		return sb.toString();
 	}
 
-	public void setParamInst(MatchParams pi) {this.matchParams = pi;}
 	public Set<Team> getTeams(){return teams;}
 	public boolean canLeaveTeam(ArenaPlayer p) {return canLeave(p);}
 	public String getState() {return state.toString();}
 
 
 	/**
-	 * Broadcast to all inEvent in the bukkitEvent
+	 * Broadcast to all players in the Event
 	 */
 	public void broadcast(String msg){for (Team t : teams){t.sendMessage(msg);}}
 
@@ -338,8 +340,8 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	}
 
 	/**
-	 * Get all players in the bukkitEvent
-	 * if bukkitEvent is open will return those players still waiting for a team as well
+	 * Get all players in the Event
+	 * if Event is open will return those players still waiting for a team as well
 	 * @return
 	 */
 	private Set<ArenaPlayer> getPlayers() {

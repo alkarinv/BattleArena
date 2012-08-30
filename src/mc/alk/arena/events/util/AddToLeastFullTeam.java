@@ -16,7 +16,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 	public AddToLeastFullTeam(Event event) throws NeverWouldJoinException{
 		super(event);
 		if (maxTeams == ArenaParams.MAX)
-			throw new NeverWouldJoinException("If you add players by adding them to the next team in the list, there must be a finite number of inEvent");
+			throw new NeverWouldJoinException("If you add players by adding them to the next team in the list, there must be a finite number of players");
 	}
 
 	public TeamJoinResult joiningTeam(Team team) {
@@ -30,7 +30,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 			event.addTeam(ct);
 			//			System.out.println("Adding team " + ct +"  ct size = " + ct.size() +"   teamSize=" + inEvent.size());
 			return new TeamJoinResult(TeamJoinStatus.ADDED, 0, ct);
-		} else { /// we are full up on inEvent.. try to add them to another team
+		} else { /// we are full up on players.. try to add them to another team
 			/// Try to fit them with an existing team
 			List<Team> sortedBySize = new ArrayList<Team>(teams);
 			Collections.sort(sortedBySize, new TeamSizeComparator());

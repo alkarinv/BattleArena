@@ -34,7 +34,7 @@ public class EventExecutor extends BAExecutor{
 	public boolean eventOptions(CommandSender sender) {
 		MatchParams mp = event.getParams();
 		if (mp == null){
-			sendMessage(sender,"&eNo match options for this bukkitEvent yet");
+			sendMessage(sender,"&eNo match options for this Event yet");
 			return true;
 		}
 		MatchTransitions tops = mp.getTransitionOptions();
@@ -72,7 +72,12 @@ public class EventExecutor extends BAExecutor{
 		event.startEvent();
 		return sendMessage(sender,"&2You have started the &6" + name);
 	}
-
+	
+	@MCCommand(cmds={"announce"},admin=true,usage="announce")
+	public boolean eventAnnounce(CommandSender sender,String[] args) {
+		return true;
+	}
+	
 	@MCCommand(cmds={"info"},usage="info", order=2)
 	public boolean eventInfo(CommandSender sender){
 		if (!event.isOpen() && !event.isRunning()){
@@ -123,12 +128,11 @@ public class EventExecutor extends BAExecutor{
 			return MessageController.sendMessage(p,notReadyMsg);
 		}
 		Team t = teamc.getSelfTeam(p);
-//		System.out.println(" t size=" + sq.getTeamSizeRange() +"   in team = " + t +"   ");
 		if (t==null){
 			t = TeamController.createTeam(p); }
 
 		if (sq.getMaxTeamSize() < t.size()){
-			return sendMessage(p,"&cThis bukkitEvent can only support inEvent up to &6" + sq.getSize()+"&e your team has &6"+t.size());}
+			return sendMessage(p,"&cThis Event can only support up to &6" + sq.getSize()+"&e your team has &6"+t.size());}
 
 		if (!event.canJoin(t)){
 			return true;}
@@ -148,7 +152,7 @@ public class EventExecutor extends BAExecutor{
 		case WAITING_FOR_PLAYERS:
 			final int remaining = ar.n;
 			sendMessage(p,"&eYou have joined the &6" + event.getDetailedName());
-			sendMessage(p,"&eYou will enter the bukkitEvent when &6" +remaining+"&e more "+MessageUtil.playerOrPlayers(remaining)+
+			sendMessage(p,"&eYou will enter the Event when &6" +remaining+"&e more "+MessageUtil.playerOrPlayers(remaining)+
 					"&e have joined to make your team");
 			break;
 		}

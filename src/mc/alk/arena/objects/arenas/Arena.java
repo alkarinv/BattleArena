@@ -54,7 +54,6 @@ public class Arena implements ArenaListener {
 		this.ap = ap;
 		visitorlocations = new HashMap<Player,Location>();
 		locs = new TreeMap<Integer,Location>();
-//		this.addMethods(this, this.getClass().getMethods());
 	}
 
 	/**
@@ -234,7 +233,7 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * TeamJoinResult a timed spawn bukkitEvent to this arena
+	 * TeamJoinResult a timed spawn Event to this arena
 	 */
 	public void addTimedSpawn(TimedSpawn s) {
 		if (timedSpawns == null){
@@ -338,7 +337,7 @@ public class Arena implements ArenaListener {
 
 	public String toSummaryString(){
 		StringBuilder sb = new StringBuilder("&4" + name+" &e type=&6"+ap.getType());
-		sb.append(" &eTeamSizes:&6"+ap.getTeamSizeRange()+"&e, #inEvent:&6"+ap.getNTeamRange());
+		sb.append(" &eTeamSizes:&6"+ap.getTeamSizeRange()+"&e, #players:&6"+ap.getNTeamRange());
 		sb.append("&e #spawns:&6" +locs.size() +"&e 1stSpawn:&6");
 		for (Integer i: locs.keySet() ){
 			Location l = locs.get(i);
@@ -391,7 +390,7 @@ public class Arena implements ArenaListener {
 	public void onOpen() {}
 
 	/**
-	 * Called when a player joins the bukkitEvent
+	 * Called when a player joins the Event
 	 * @param p the player
 	 * @param t the team they are on
 	 */

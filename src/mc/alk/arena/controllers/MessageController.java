@@ -69,7 +69,7 @@ public class MessageController extends MessageUtil implements MatchMessageHandle
 			if (bos.broadcastOnPrestart()){
 				String msg = null;
 				if (mp.isRated()){
-					msg = colorChat(mp.getPrefix()+getMessageNP("match", "server_prestart2v2",t1.getDisplayName(),t1Elo, t2.getDisplayName(),t2Elo));
+					msg = colorChat(mp.getPrefix()+" "+getMessageNP("match", "server_prestart2v2",t1.getDisplayName(),t1Elo, t2.getDisplayName(),t2Elo));
 				} else {
 					msg = getMessageAddPrefix(mp.getPrefix(),"skirmish", "prestart2v2", t1.getDisplayName(),t1Elo,t2.getDisplayName(), t2Elo);
 				}
@@ -150,7 +150,8 @@ public class MessageController extends MessageUtil implements MatchMessageHandle
 			}
 			loser.sendMessage(getMessageNP("match","loser_message2v2_4",sb.toString()));
 		}	else {
-			victor.sendMessage("&eYou have vanquished all foes!! and have &6"+q.getSecondsToLoot()+"&e matchEndTime to loot!");
+//			victor.sendMessage("&eYou have vanquished all foes!! and have &6"+q.getSecondsToLoot()+"&e matchEndTime to loot!");
+			victor.sendMessage("&eYou have vanquished all foes!! match will end in " + q.getSecondsToLoot());
 			for (Team loser: losers){
 				loser.sendMessage("&eYou have been vanquished by &6" + victor.getDisplayName()+"&e!!!");
 			}
@@ -208,7 +209,7 @@ public class MessageController extends MessageUtil implements MatchMessageHandle
 	public void sendEventOpenMsg() {
 		final String prefix = mp.getPrefix();
 		Server server = Bukkit.getServer();
-		server.broadcastMessage(Log.colorChat(prefix + "&e A " + mp.toPrettyString() +" bukkitEvent is opening!"));
+		server.broadcastMessage(Log.colorChat(prefix + "&e A " + mp.toPrettyString() +" Event is opening!"));
 		server.broadcastMessage(Log.colorChat(prefix + "&e Type &6/" + mp.getCommand()+" join&e, or &6/" + mp.getCommand()+" info &efor info"));			
 		if (mp.getSize() > 1){
 			server.broadcastMessage(Log.colorChat(prefix + "&e You can join solo and you will be matched up, or you can create a team"));	
@@ -217,7 +218,7 @@ public class MessageController extends MessageUtil implements MatchMessageHandle
 	}
 
 	public void sendEventCancelledDueToLackOfPlayers(Set<ArenaPlayer> competingPlayers) {
-		MessageController.sendMessage(competingPlayers,mp.getPrefix()+"&e The bukkitEvent has been cancelled b/c there weren't enough inEvent");		
+		MessageController.sendMessage(competingPlayers,mp.getPrefix()+"&e The Event has been cancelled b/c there weren't enough players");		
 		
 	}
 	public void sendTeamJoinedEvent(Team t) {

@@ -108,7 +108,7 @@ public class MethodController {
 			if (mem.getBeginState() == matchState){
 				BukkitEventListener bel = getCreate(event,mem);
 				bel.addListener(arenaListener,matchState, mem,players);					
-			} else if (mem.getEndState() == matchState) {
+			} else if (mem.getEndState() == matchState || mem.getCancelState() == matchState) {
 				BukkitEventListener bel = listeners.get(event);
 				if (bel != null){
 					bel.removeListener(arenaListener, matchState,mem,players);
@@ -117,7 +117,6 @@ public class MethodController {
 					}
 				}
 			}
-
 		}
 	}
 
@@ -125,7 +124,6 @@ public class MethodController {
 
 	private static BukkitEventListener getCreate(Class<? extends Event> event, MatchEventMethod mem){
 		BukkitEventListener gel = listeners.get(event);
-		System.out.println();
 		if (Defaults.DEBUG_EVENTS) System.out.println("***************************** checking for " + event);
 		if (gel == null){
 			if (Defaults.DEBUG_EVENTS) System.out.println("***************************** making new gel for type " + event);
@@ -143,6 +141,13 @@ public class MethodController {
 			return null;
 		return typeMap.get(event.getClass());
 	}
+	public static List<MatchEventMethod> getMethods(ArenaListener ael, Class<? extends Event> eventClass) {
+		HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap = arenaMethods.get(ael.getClass());
+		if (Defaults.DEBUG_EVENTS) System.out.println("!! getEvent "+ael.getClass()+ "   methods="+(typeMap==null?"null" :typeMap.size()));
+		if (typeMap == null)
+			return null;
+		return typeMap.get(eventClass);
+	}
 
 	public static Map<Class<? extends Event>,List<MatchEventMethod>> getMethods(ArenaListener ael) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("!!!! getEvent "+ael.getClass()+" contains=" + arenaMethods.containsKey(ael.getClass()));
@@ -158,7 +163,7 @@ public class MethodController {
 			MatchEventHandler meh = method.getAnnotation(MatchEventHandler.class);
 			if (meh == null)
 				continue;
-			MatchState beginState = meh.begin(),endState = meh.end();
+			MatchState beginState = meh.begin(),endState = meh.end(), cancelState = MatchState.NONE;
 			boolean needsTeamOrPlayer = false;
 			/// Make sure there is some sort of bukkit bukkitEvent here
 			Class<?>[] classes = method.getParameterTypes();
@@ -221,11 +226,12 @@ public class MethodController {
 				if (beginState == MatchState.NONE) beginState = MatchState.ONENTER;
 				if (endState == MatchState.NONE) endState = MatchState.ONLEAVE;
 				
-				mths.add(new MatchEventMethod(method, bukkitEvent,getPlayerMethod,beginState, endState, meh.priority()));				
+				mths.add(new MatchEventMethod(method, bukkitEvent,getPlayerMethod,beginState, endState,endState, meh.priority()));				
 			} else {				
 				if (beginState == MatchState.NONE) beginState = MatchState.ONOPEN;
 				if (endState == MatchState.NONE) endState = MatchState.ONCOMPLETE;
-				mths.add(new MatchEventMethod(method, bukkitEvent,beginState,endState,meh.priority()));
+				if (cancelState == MatchState.NONE) endState = MatchState.ONCANCEL;
+				mths.add(new MatchEventMethod(method, bukkitEvent,beginState,endState,cancelState, meh.priority()));
 			}
 			Collections.sort(mths);
 		}

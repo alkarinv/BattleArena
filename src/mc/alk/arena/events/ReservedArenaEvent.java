@@ -17,6 +17,7 @@ import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.WLT;
 
 import com.alk.battleEventTracker.BattleEventTracker;
+import com.alk.battleEventTracker.Log;
 
 public class ReservedArenaEvent extends Event {
 	public ReservedArenaEvent(MatchParams params) {
@@ -24,15 +25,10 @@ public class ReservedArenaEvent extends Event {
 	}
 
 	Match arenaMatch;	
-
-	public void autoEvent(MatchParams mp, Arena arena, int seconds) throws NeverWouldJoinException {
-		openEvent(mp,arena);
-		if (!silent)
-			mc.sendCountdownTillEvent(seconds);
-		/// Set a countdown to announce updates every minute
-		timer = new Countdown(BattleArena.getSelf(),seconds, Defaults.ANNOUNCE_EVENT_INTERVAL, this);
-		
-	}
+	/// Run continuously members
+	boolean runContinuously = false;
+	int secondsTillNext = Defaults.AUTO_EVENT_COUNTDOWN_TIME;
+	int announcementInterval = Defaults.ANNOUNCE_EVENT_INTERVAL;
 
 	public void openEvent(MatchParams mp, Arena arena) throws NeverWouldJoinException {
 		super.openEvent(mp);
@@ -43,6 +39,23 @@ public class ReservedArenaEvent extends Event {
 		ac.openMatch(arenaMatch);
 		arenaMatch.onJoin(teams);
 	}
+	
+	public void autoEvent(MatchParams mp, Arena arena, int secondsTillStart, int announcementInterval) throws NeverWouldJoinException {
+		openEvent(mp,arena);
+		if (!silent)
+			mc.sendCountdownTillEvent(secondsTillStart);
+		/// Set a countdown to announce updates every minute
+		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);	
+	}
+
+	
+	public void runContinuously(MatchParams mp, Arena arena,int secondsTillNext, int announcementInterval) throws NeverWouldJoinException {
+		autoEvent(mp,arena,secondsTillNext,announcementInterval);
+		runContinuously = true;
+		this.secondsTillNext = secondsTillNext; 
+		this.announcementInterval = announcementInterval;
+	}
+
 
 	@Override
 	public void startEvent() {
@@ -54,8 +67,11 @@ public class ReservedArenaEvent extends Event {
 		makeNextRound();
 		startRound();
 	}
+
 	@Override
 	public void matchCancelled(Match am){
+		runContinuously = false;
+
 		if (!isRunning()) /// redundant call? can this happen anymore?
 			return ;
 		if (arenaMatch != am)
@@ -85,6 +101,19 @@ public class ReservedArenaEvent extends Event {
 
 		mc.sendEventWon(victor, elo);
 		endEvent();
+		if (runContinuously){
+			Arena arena = ac.getArenaByMatchParams(matchParams);
+			if (arena == null){
+				Log.err("&cCouldnt find an arena matching the params &6"+matchParams.toPrettyString()+". Stopping continuous run");
+				return;
+			}
+
+			try {
+				autoEvent(matchParams,arena,secondsTillNext,announcementInterval);
+			} catch (NeverWouldJoinException e) {
+				Log.err("&cCouldn't restart event " +matchParams.toPrettyString() +". " + e.getMessage());
+			}
+		}
 	}
 
 	@Override
@@ -156,7 +185,7 @@ public class ReservedArenaEvent extends Event {
 	@Override
 	public boolean leave(ArenaPlayer p){
 		Team t = getTeam(p);
-		if (t==null) /// they arent in this bukkitEvent
+		if (t==null) /// they arent in this Event
 			return true;
 
 		boolean canLeave = super.leave(p);

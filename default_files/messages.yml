@@ -10,7 +10,7 @@ match:
     prestart2v2: '&6Your arena match against &8%s&6&e[%s]&6 starts in %s seconds.'
     server_prestart2v2: '&6Match! &8%s&6&e[%s]&6 vs &8%s&6&e[%s]&6'
     server_prestart_with_visitor2v2: '&6Match! &8%s&6[%s]&6&e vs &8%s&6&e[%s]&6: &e/watch %s'
-    start: '&eFight!!!!'
+    start: '&4********** &eFight!!!! &4**********'
     server_victory2v2: '&8%s&6[%s] &e(%s:%s)&e defeated &8%s&6[%s] &e(%s:%s)&f in the arena!'
     
     victor_message2v2_1: "&eYou have won your arena match against &8%s&6[%s]"

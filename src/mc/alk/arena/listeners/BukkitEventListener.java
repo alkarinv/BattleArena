@@ -17,7 +17,10 @@ import mc.alk.arena.util.MapOfHash;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 
 
 /**
@@ -103,7 +106,15 @@ public class BukkitEventListener extends BEventListener{
 
 	@Override
 	public void doSpecificPlayerEvent(Event event){
-//		System.out.println("Event " +event + "   " + bukkitEvent + "  " + getPlayerMethod);
+		if (Defaults.DEBUG_EVENTS) System.out.println("Event " +event + "   " + bukkitEvent + "  " + getPlayerMethod);
+		/// Need special handling of Methods that have 2 entities involved, as either entity may be in a match
+		if (event instanceof EntityDamageByEntityEvent){
+			doEntityDamageByEntityEvent((EntityDamageByEntityEvent)event);
+			return;
+		} else if (event instanceof EntityDamageEvent){
+			doEntityDamageEvent((EntityDamageEvent)event);
+			return;
+		}
 		if (event.getClass() != bukkitEvent) /// This can happen with subclasses such as PlayerDeathEvent and EntityDeathEvent
 			return;
 		final Entity entity = getEntityFromMethod(event, getPlayerMethod);
@@ -111,16 +122,27 @@ public class BukkitEventListener extends BEventListener{
 		if (!(entity instanceof Player))
 			return;
 		final Player p = (Player) entity;
+		callListeners(event, p);
+	}
+	
+	private void callListeners(Event event, final Player p) {
 		HashSet<ArenaListener> spls = listeners.getSafe(p.getName());
 		if (spls == null){
-//			if (Defaults.DEBUG_EVENTS) System.out.println("   NO SPLS listening for player " + p.getName());			
+			if (Defaults.DEBUG_EVENTS) System.out.println("   NO SPLS listening for player " + p.getName());			
 			return;
 		}
 		/// For each ArenaListener class that is listening
 		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS splisteners .get " + spls);
 		for (ArenaListener spl: spls){
 			List<MatchEventMethod> methods = MethodController.getMethods(spl,event);
-//			if (Defaults.DEBUG_EVENTS) System.out.println("    SPL = " + spl.getClass() +"    getting methods "+methods);
+			if (Defaults.DEBUG_EVENTS) System.out.println("    SPL = " + spl.getClass() +"    getting methods "+methods);
+			if (methods == null){
+				/// Another change for entitydamage. TODO ponder.  maybe use isassignable for some alternate way
+				if (event instanceof EntityDamageByEntityEvent){ 
+					methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
+				if (methods == null)
+					continue;
+			}
 			/// For each of the splisteners methods that deal with this BukkitEvent
 			for(MatchEventMethod method: methods){
 				final Class<?>[] types = method.getMethod().getParameterTypes();
@@ -148,9 +170,58 @@ public class BukkitEventListener extends BEventListener{
 		}
 	}
 
+	private void doEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
+//		System.out.println("[BattleArena] doEntityDamageByEntityEvent :" + event.getEntity() +"  " + event.getDamager());
+
+		if (event.getEntity() instanceof Player){
+			callListeners(event, (Player) event.getEntity());	
+			return;
+		}
+		if (event.getDamager() instanceof Player){
+			callListeners(event, (Player) event.getDamager());
+			return;
+		}
+		
+		Player player = null;
+		if (event.getDamager() instanceof Projectile){ /// we have some sort of projectile, maybe shot by a player?
+				Projectile proj = (Projectile) event.getDamager();
+				if (proj.getShooter() instanceof Player){ /// projectile was shot by a player
+					player= (Player) proj.getShooter();
+				} 
+		}
+		if (player != null){
+			callListeners(event, player);
+			return;
+		}
+		/// Else the target wasnt a player, and the shooter wasnt a player.. nothing to do
+	}
+
+	private void doEntityDamageEvent(EntityDamageEvent event) {
+//		System.out.println("[BattleArena] doEntityDamageEvent :" + event.getEntity() +"   " + event.getCause());
+		if (event.getEntity() instanceof Player){
+			callListeners(event, (Player) event.getEntity());	
+			return;
+		}
+
+		EntityDamageEvent lastDamage = event.getEntity().getLastDamageCause();
+		Player damager = null;
+		if (lastDamage != null){
+			Entity entity = lastDamage.getEntity();
+			if (entity instanceof Player){
+				damager = (Player) entity;
+			} else if (entity instanceof Projectile){
+				if (((Projectile)entity).getShooter() instanceof Player)
+					damager =(Player) ((Projectile)entity).getShooter(); 
+			}
+		}
+		if (damager != null){
+			callListeners(event, damager);	
+		}
+	}
+
 	@Override
 	public void doMatchEvent(Event event){
-		System.out.println("MatchEvent " +event + "   " + bukkitEvent + "  " + getPlayerMethod);
+		if (Defaults.DEBUG_EVENTS) System.out.println("MatchEvent " +event + "   " + bukkitEvent + "  " + getPlayerMethod);
 
 		if (event.getClass() != bukkitEvent) /// This can happen with subclasses such as PlayerDeathEvent and EntityDeathEvent
 			return;
@@ -172,7 +243,6 @@ public class BukkitEventListener extends BEventListener{
 	}
 	private Entity getEntityFromMethod(final Event event, final Method method) {
 		try{
-//			 System.out.println("event " + event +"   method = " + method);
 			Object o = method.invoke(event);
 			if (o instanceof Entity)
 				return (Entity) o;

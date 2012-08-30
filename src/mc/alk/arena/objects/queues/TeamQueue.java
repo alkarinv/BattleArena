@@ -51,9 +51,17 @@ public class TeamQueue extends LinkedList<Team>{
 	}
 	
 	public List<Team> sortBySize(){return TeamQueue.sortBySize(this);}	
+	public int getNPlayers(){
+		ArrayList<Team> teams = new ArrayList<Team>(this);
+		int count =0;
+		for (Team t: teams){
+			count += t.size();
+		}
+		return count;
+	}
 	/**
-	 * This is a semi stable sort, inEvent of the same size will retain their order in the queue
-	 * Preference is given to larger inEvent
+	 * This is a semi stable sort, teams of the same size will retain their order in the queue
+	 * Preference is given to larger teams
 	 * @param tq
 	 * @return
 	 */

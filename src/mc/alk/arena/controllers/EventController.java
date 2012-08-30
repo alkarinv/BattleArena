@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import mc.alk.arena.events.Event;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
 
 
@@ -36,5 +37,4 @@ public class EventController {
 			evt.cancelEvent();
 		}
 	}
-
 }

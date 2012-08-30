@@ -24,8 +24,8 @@ public class TeamUtil {
 	}
 	static public final HashMap<Integer, TeamHead> teamHeads = new HashMap<Integer, TeamHead>(); 
 	static{
-		teamHeads.put(0, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.RED.ordinal()), "&4Red"));
-		teamHeads.put(1, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.BLUE.ordinal()), "&1Blue"));
+		teamHeads.put(0, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.RED.ordinal()), "&cRed")); // &4 was hard to see
+		teamHeads.put(1, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.BLUE.ordinal()), "&bBlue")); // &2 was hard to see
 		teamHeads.put(2, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.WHITE.ordinal()), "&fWhite"));
 		teamHeads.put(3, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.BLACK.ordinal()), "&0Black"));
 		teamHeads.put(4, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.ORANGE.ordinal()), "&6Gold"));

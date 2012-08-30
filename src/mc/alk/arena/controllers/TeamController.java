@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.CompositeTeam;
@@ -24,7 +25,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class TeamController  implements Listener {
 	static final boolean DEBUG = false;
-	static Map<Team,List<TeamHandler>> inEvent = new ConcurrentHashMap<Team,List<TeamHandler>>();
+	static Map<Team,CopyOnWriteArrayList<TeamHandler>> handlers = new ConcurrentHashMap<Team,CopyOnWriteArrayList<TeamHandler>>();
 	HashSet<Team> selfFormedTeams = new HashSet<Team>();
 	HashSet<FormingTeam> formingTeams = new HashSet<FormingTeam>();
 	BattleArenaController bac;
@@ -39,8 +40,8 @@ public class TeamController  implements Listener {
 
 
 	public static Team inEvent(ArenaPlayer p) {
-		synchronized(inEvent){
-			for (Team t: inEvent.keySet()){
+		synchronized(handlers){
+			for (Team t: handlers.keySet()){
 				if (t.hasMember(p))
 					return t;
 			}
@@ -82,22 +83,36 @@ public class TeamController  implements Listener {
 		Team t = inEvent(p);
 		if (t == null ){
 			return;}
-
-		synchronized(inEvent){
-			List<TeamHandler> list = inEvent.get(t);
+		List<TeamHandler> unused = new ArrayList<TeamHandler>();
+		synchronized(handlers){
+			List<TeamHandler> list = handlers.get(t);
 			if (list == null){
 				return;}
-			TeamHandler th;
-			Iterator<TeamHandler> iter = list.iterator();
-			while (iter.hasNext()){
-				th = iter.next();
-				if (DEBUG) System.out.println("  checking " + p.getName() +"    " +t +" th=" + th);
-				if (th.leave(p)){ /// they are finished with the player, no longer need to keep them around
-					iter.remove();}
-			}				
+			synchronized(list){
+				TeamHandler th;
+				Iterator<TeamHandler> iter = list.iterator();
+				while (iter.hasNext()){
+					try{
+						th = iter.next();
+						if (th.leave(p)){ /// they are finished with the player, no longer need to keep them around
+//							iter.remove();
+							unused.add(th);
+						}
+					} catch(Exception e){
+						e.printStackTrace();
+						System.err.println("DIDNT FIX");
+					}
+				}
+			}
+			list.retainAll(unused);
+			if (list.isEmpty())
+				handlers.remove(t);
+
 		}
+
+		//		logHandlerList("player left " + p.getPlayer().getName());
 	}
-	
+
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		ArenaPlayer ap = PlayerController.toArenaPlayer(event.getPlayer());
@@ -112,8 +127,8 @@ public class TeamController  implements Listener {
 		leaveSelfTeam(ap);
 	}
 
-	public Map<Team,List<TeamHandler>> getTeams() {
-		return inEvent;
+	public Map<Team,CopyOnWriteArrayList<TeamHandler>> getTeams() {
+		return handlers;
 	}
 
 	public boolean inFormingTeam(ArenaPlayer p) {
@@ -142,46 +157,55 @@ public class TeamController  implements Listener {
 
 	public Map<TeamHandler,Team> getTeamMap(ArenaPlayer p){
 		HashMap<TeamHandler,Team> map = new HashMap<TeamHandler,Team>();
-		synchronized(inEvent){
-			for (Team t: inEvent.keySet()){
+		synchronized(handlers){
+			for (Team t: handlers.keySet()){
 				if (!t.hasMember(p)){
 					continue;}
-				for (TeamHandler th: inEvent.get(t)){
-					map.put(th,t);}
+				List<TeamHandler> ths = handlers.get(t);
+				synchronized(ths){
+					for (TeamHandler th: ths){
+						map.put(th,t);}				
+				}
 			}
 		}
 		return map;
 	}
-
-	public static Team createTeam(ArenaPlayer p, TeamHandler th) {
-		if (DEBUG) System.out.println("------- createTeam " + p.getName() + ": " + th);
-		Team t = TeamFactory.createTeam(p);
-		List<TeamHandler> ths = new ArrayList<TeamHandler>();
-		ths.add(th);
-		inEvent.put(t, ths);
-		return t;
-	}
-
-	public static Team createTeam(Set<ArenaPlayer> players, TeamHandler th) {
-		if (DEBUG) System.out.println("------- createTeam " + players.size() + ": " + th);
-		Team t = TeamFactory.createTeam(players);
-		List<TeamHandler> ths = new ArrayList<TeamHandler>();
-		ths.add(th);
-		inEvent.put(t, ths);
-		return t;
-	}
+	//
+	//	public static Team createTe3am(ArenaPlayer p, TeamHandler th) {
+	//		if (DEBUG) System.out.println("------- createTeam " + p.getName() + ": " + th);
+	//		Team t = TeamFactory.createTeam(p);
+	//		List<TeamHandler> ths = new ArrayList<TeamHandler>();
+	//		ths.add(th);
+	//		handlers.put(t, ths);
+	//		return t;
+	//	}
+	//
+	//	public static Team createT3eam(Set<ArenaPlayer> players, TeamHandler th) {
+	//		if (DEBUG) System.out.println("------- createTeam " + players.size() + ": " + th);
+	//		Team t = TeamFactory.createTeam(players);
+	//		List<TeamHandler> ths = new ArrayList<TeamHandler>();
+	//		ths.add(th);
+	//		handlers.put(t, ths);
+	//		return t;
+	//	}
 
 	public static void addTeamHandler(Team t, TeamHandler th) {
 		if (DEBUG) System.out.println("------- addTeamHandler " + t + ": " + th);
-		List<TeamHandler> ths = inEvent.get(t);
+		CopyOnWriteArrayList<TeamHandler> ths = handlers.get(t);
 		if (ths == null){
-			ths = new ArrayList<TeamHandler>();
-			inEvent.put(t, ths);
+//			ths = Collections.synchronizedList(new ArrayList<TeamHandler>());
+			ths = new CopyOnWriteArrayList<TeamHandler>();
+//			ths = new ArrayList<TeamHandler>();
+			synchronized(handlers){
+				handlers.put(t, ths);
+			}
 		}
 		if (ths != null){
 			if (!ths.contains(th))
 				ths.add(th);
 		}
+
+		//		logHandlerList("addTeamHandler " + t + "   " + th);
 	}
 
 	public static Team createTeam(ArenaPlayer p) {
@@ -191,15 +215,27 @@ public class TeamController  implements Listener {
 
 	public static void removeTeam(Team t, TeamHandler th) {
 		if (DEBUG) System.out.println("------- removing team="+t+" and handler =" + th);
-		List<TeamHandler> ths = inEvent.get(t);
+		List<TeamHandler> ths = handlers.get(t);
 		if (ths != null){
 			ths.remove(th);
 			if (ths.isEmpty())
-				inEvent.remove(t);
+				handlers.remove(t);
 		} else {
-			inEvent.remove(t);
+			handlers.remove(t);
 		}
+		//		logHandlerList("removeTeam " + t +"   " + th);
 	}
+
+	//	private static void logHandlerList(String msg) {
+	//		FileLogger.log(msg);
+	//		synchronized (handlers){
+	//			for (Team t : handlers.keySet()){
+	//				for (TeamHandler th: handlers.get(t)){
+	//					FileLogger.log(" t " + t +"   th = " + th);
+	//				}
+	//			}			
+	//		}		
+	//	}
 
 	public static CompositeTeam createCompositeTeam(Set<ArenaPlayer> players) {
 		if (DEBUG) System.out.println("------- createCompositeTeam " + players.size());
@@ -219,15 +255,15 @@ public class TeamController  implements Listener {
 	}
 
 	public List<TeamHandler> getHandlers(ArenaPlayer p) {
-		List<TeamHandler> handlers = new ArrayList<TeamHandler>();
-		synchronized(inEvent){
-			for (Team t: inEvent.keySet()){
+		List<TeamHandler> hs = new ArrayList<TeamHandler>();
+		synchronized(handlers){
+			for (Team t: handlers.keySet()){
 				if (t.hasMember(p)){
-					handlers.addAll(inEvent.get(t));
+					hs.addAll(handlers.get(t));
 				}
 			}			
 		}
-		return handlers;
+		return hs;
 	}
 
 	/**
@@ -238,7 +274,7 @@ public class TeamController  implements Listener {
 	 */
 	public List<TeamHandler> getHandlers(Team t) {
 		if (t == null) return null; /// null returns null
-		return inEvent.get(t);
+		return handlers.get(t);
 	}
 
 

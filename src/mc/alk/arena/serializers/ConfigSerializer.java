@@ -1,6 +1,7 @@
 package mc.alk.arena.serializers;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,12 +23,10 @@ import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
-import mc.alk.arena.serializers.BroadcastOptions.BroadcastOption;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.EffectUtil.EffectWithArgs;
 import mc.alk.arena.util.InventoryUtil;
-import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
@@ -42,15 +41,17 @@ import org.bukkit.inventory.ItemStack;
  *
  */
 public class ConfigSerializer {
-	public static YamlConfiguration config;
-	static File f = null;
+	YamlConfiguration config;
+	File f = null;
+	static HashMap<ArenaType, ConfigSerializer> configs = new HashMap<ArenaType, ConfigSerializer>();
 
-	public static boolean getBoolean(String node) {return config.getBoolean(node, false);}
-	public static  String getString(String node) {return config.getString(node,null);}
-	public static  String getString(String node,String def) {return config.getString(node,def);}
-	public static int getInt(String node,int i) {return config.getInt(node, i);}
-	public static double getDouble(String node, double d) {return config.getDouble(node, d);}
-
+	public boolean getBoolean(String node) {return config.getBoolean(node, false);}
+	public String getString(String node) {return config.getString(node,null);}
+	public String getString(String node,String def) {return config.getString(node,def);}
+	public int getInt(String node,int i) {return config.getInt(node, i);}
+	public double getDouble(String node, double d) {return config.getDouble(node, d);}
+	public ConfigurationSection getConfigurationSection(String path) {return config.getConfigurationSection(path);}
+	
 	public static class ConfigException extends Exception{
 		private static final long serialVersionUID = 1L;
 		public ConfigException(String s){super(s);}
@@ -59,30 +60,53 @@ public class ConfigSerializer {
 	public ConfigSerializer(){
 
 	}
-	public void setConfig(File f){
-		ConfigSerializer.f = f;
-		config = new YamlConfiguration();
-		loadAll();
+	
+	public void setConfig(ArenaType at, String f){
+		setConfig(at, new File(f));
 	}
 
-	public static void loadAll(){
-		try {config.load(f);} catch (Exception e){e.printStackTrace();}
-		parseDefaultMatchOptions(config.getConfigurationSection("defaultMatchOptions"));
-		loadClasses(config.getConfigurationSection("classes"));
-		Defaults.MONEY_STR = config.getString("moneyName");
-		String[] defaultArenaTypes = {"arena","skirmish","colliseum","freeForAll","deathMatch","tourney","battleground"};
-
-		/// Now initialize the specific settings
-		for (String defaultType: defaultArenaTypes){
+	public void setConfig(ArenaType at, File f){
+		this.f = f;
+		if (!f.exists()){
 			try {
-				setType(defaultType,config.getConfigurationSection(defaultType));
-			} catch (Exception e) {
-				Log.err("Couldnt configure arenaType " + defaultType+". " + e.getMessage());
+				f.createNewFile();
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-	}
 
+		config = new YamlConfiguration();
+		try {
+			config.load(f);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (at != null){ /// Other plugins using BattleArena, the name is the matchType or eventType name
+			configs.put(at, this);}
+	}
+	public void reloadFile(){
+		try {
+			config.load(f);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+	}
+	public static void reloadConfig(ArenaType arenaType) {
+		final String name = arenaType.getName();
+		ConfigSerializer cs = configs.get(arenaType);
+		if (cs == null){
+			Log.err("Couldnt find the serializer for " + name);
+			return;
+		}
+		try {
+			cs.reloadFile();
+			ConfigSerializer.setTypeConfig(name,cs.getConfigurationSection(name));
+		} catch (ConfigException e) {
+			e.printStackTrace();
+			Log.err("Error reloading " + name);
+		}
+	}
+	
 	public static void loadClasses(ConfigurationSection cs) {
 		if (cs == null){
 			Log.info(BattleArena.getPName() +" configuration section is null");
@@ -114,48 +138,7 @@ public class ConfigSerializer {
 		return new ArenaClass(cs.getName(),items,effects);
 	}
 
-	private static void parseDefaultMatchOptions(ConfigurationSection cs) {
-		Defaults.SECONDS_TILL_MATCH = cs.getInt("secondsTillMatch", 20);
-		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", 20);
-		Defaults.MATCH_TIME = cs.getInt("matchTime", 120/*matchEndTime*/);
-		Defaults.AUTO_EVENT_COUNTDOWN_TIME = cs.getInt("eventCountdownTime",180);
-		Defaults.ANNOUNCE_EVENT_INTERVAL = cs.getInt("eventCountdownInterval", 60);
-		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", 30);
-		parseAnnouncementOptions(cs.getConfigurationSection("announcements"));
-		Log.info(BattleArena.getPName()+" BroadcastOptions announceOnPrestart=" + BroadcastOptions.bcOnPrestart +
-				" usingHerchat="+(BroadcastOptions.getOnPrestartChannel()!=null));
-		Log.info(BattleArena.getPName()+" BroadcastOptions announceOnVictory=" + BroadcastOptions.bcOnVictory +
-				" usingHerchat="+(BroadcastOptions.getOnVictoryChannel()!=null));
-	}
-
-	private static void parseAnnouncementOptions(ConfigurationSection cs) {
-		if (cs == null){
-			Log.err("announcements are null ");
-			return;
-		}
-		BroadcastOptions an = new BroadcastOptions();
-		Set<String> keys = cs.getKeys(false);
-		for (String key: keys){
-			MatchState ms = MatchState.fromName(key);
-			//			System.out.println("contains " +key + "  ms=" + ms);
-			if (ms == null){
-				Log.err("Couldnt recognize matchstate " + key +" in the announcement options");
-				continue;
-			}
-			List<String> list = cs.getStringList(key);
-			for (String s: list){
-				KeyValue<String,String> kv = KeyValue.split(s,"=");
-				BroadcastOption bo = BroadcastOption.fromName(kv.key);
-				if (bo == null){
-					Log.err("Couldnt recognize BroadcastOption " + s);
-					continue;					
-				}
-				an.setBroadcastOption(ms, bo,kv.value);
-			}
-		}
-	}
-
-	public static void setType(final String name, ConfigurationSection cs) throws ConfigException {
+	public static void setTypeConfig(final String name, ConfigurationSection cs) throws ConfigException {
 		if (cs == null){
 			Log.err("[BattleArena] configSerializer can't load " + name +" with a config section of " + cs);
 			return;
@@ -163,7 +146,16 @@ public class ConfigSerializer {
 		//		System.out.println(" Setting up " + cs.getCurrentPath() +"   name=" +name);
 		/// Set up match options.. specifying defaults where not specified
 		/// Set Arena Type
-		ArenaType at = cs.contains("type") ? ArenaType.fromString(cs.getString("type")) : ArenaType.VERSUS; 
+		ArenaType at;
+		if (cs.contains("arenaType")){
+			at = ArenaType.fromString(cs.getString("arenaType"));
+		} else if (cs.contains("type")){ /// old config option for setting arenaType
+			at = ArenaType.fromString(cs.getString("type"));
+		} else {
+			at = ArenaType.fromString(cs.getName()); /// Get it from the configuration section name
+			if (at == null)
+				at = ArenaType.VERSUS; /// Default arena Type
+		}
 		if (at == null)
 			throw new ConfigException("Could not parse arena type: valid types. " + ArenaType.getValidList());
 
@@ -186,7 +178,7 @@ public class ConfigSerializer {
 					+"valid types are " + VictoryType.getValidList());}
 		
 
-		/// Number of inEvent and team sizes
+		/// Number of teams and team sizes
 		Integer minTeams = cs.contains("minTeams") ? cs.getInt("minTeams") : 2;
 		Integer maxTeams = cs.contains("maxTeams") ? cs.getInt("maxTeams") : ArenaParams.MAX;
 		Integer minTeamSize = cs.contains("minTeamSize") ? cs.getInt("minTeamSize") : 1;
@@ -216,7 +208,7 @@ public class ConfigSerializer {
 		sb.append(name.substring(1,name.length()));
 		pi.setName(sb.toString());
 
-		pi.setCommand( cs.contains("command") ? cs.getString("command") : name);  
+		pi.setCommand( cs.contains("command") ? cs.getString("command") : name);
 		pi.setPrefix( cs.contains("prefix") ? cs.getString("prefix") : "&6["+name+"]");  
 		pi.setMinTeams(minTeams);
 		pi.setMaxTeams(maxTeams);
@@ -240,7 +232,6 @@ public class ConfigSerializer {
 			pi.setDBName(dbName);
 			BTInterface.addBTI(pi);
 		}
-		ParamController.addMatchType(pi);
 
 
 		MatchTransitions allTops = new MatchTransitions();
@@ -260,7 +251,7 @@ public class ConfigSerializer {
 					tops.addOption(TransitionOption.STOREITEMS);
 				}
 				break;
-			case ONLEAVE: /// By Default on leave gets to restore
+			case ONLEAVE: /// By Default on leave gets to restore items and exp
 				if (tops == null) tops = new TransitionOptions();
 				tops.addOption(TransitionOption.RESTOREEXPERIENCE);
 				if (allTops.needsClearInventory())
@@ -285,8 +276,11 @@ public class ConfigSerializer {
 				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
 			}
 			allTops.addTransition(transition,tops);
-		}
+		}		
 		pi.setALLTOPS(allTops);
+		ParamController.removeMatchType(pi);
+		ParamController.addMatchType(pi);
+
 		Log.info(BattleArena.getPName()+" registering match =" + pi);
 
 	}
@@ -392,4 +386,6 @@ public class ConfigSerializer {
 		}
 		return items;
 	}
+
+
 }

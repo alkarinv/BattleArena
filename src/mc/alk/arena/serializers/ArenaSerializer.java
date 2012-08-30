@@ -2,9 +2,9 @@ package mc.alk.arena.serializers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,14 +35,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class ArenaSerializer {
 	static BattleArenaController arenaController;
-	static HashMap<JavaPlugin, List<ArenaSerializer>> configs = new HashMap<JavaPlugin, List<ArenaSerializer>>();
+	static HashMap<Plugin, Set<ArenaSerializer>> configs = new HashMap<Plugin, Set<ArenaSerializer>>();
+
 	YamlConfiguration config;
 	File f = null;
+	/// Which plugin does this ArenaSerializer belong to
 	JavaPlugin plugin;
 
 	public static void setBAC(BattleArenaController bac){
 		arenaController = bac;
 	}
+
 	public ArenaSerializer(JavaPlugin plugin, String path){
 		this.plugin = plugin;
 		this.f = new File(path);
@@ -53,46 +56,73 @@ public class ArenaSerializer {
 				e.printStackTrace();
 			}
 		}
+
 		config = new YamlConfiguration();
-		List<ArenaSerializer> paths = configs.get(plugin);
-		if (paths == null){
-			paths = new ArrayList<ArenaSerializer>();
+		Set<ArenaSerializer> paths = configs.get(plugin);
+		if (paths == null){ 
+			paths = new HashSet<ArenaSerializer>();
 			configs.put(plugin, paths);
+		} else { /// check to see if we have this path already
+			for (ArenaSerializer as : paths){
+				if (as.f.getPath().equals(this.f.getPath())){
+					return;}
+			}
 		}
 		paths.add(this);
-		loadArenas();
 	}
 
 	public static void loadAllArenas(){
 		for (Plugin plugin: configs.keySet()){
 			for (ArenaSerializer serializer: configs.get(plugin)){
-				serializer.loadArenas();
+				serializer.loadArenas(plugin);
 			}
 		}
 	}
 
-	public void loadArenas(){
-		try {config.load(f);} catch (Exception e){e.printStackTrace();}
-		//		Log.info("Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
-		loadArenas(BattleArena.getBAC(), config);
+	public static void loadAllArenas(Plugin plugin, ArenaType arenaType){
+		Set<ArenaSerializer> serializers = configs.get(plugin);
+		if (serializers == null || serializers.isEmpty()){
+			Log.err(plugin.getName() +" has no arenas to load");
+			return;
+		}
+
+		for (ArenaSerializer serializer: serializers){
+			serializer.loadArenas(plugin,arenaType);
+		}
 	}
 
-	public static void loadArenas(BattleArenaController bac, ConfigurationSection cs){
+	public void loadArenas(Plugin plugin){
+		try {config.load(f);} catch (Exception e){e.printStackTrace();}
+		Log.info(plugin.getName()+ " Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
+		loadArenas(plugin, BattleArena.getBAC(), config,null);
+	}
+	
+	public void loadArenas(Plugin plugin, ArenaType arenaType){
+		try {config.load(f);} catch (Exception e){e.printStackTrace();}
+		Log.info(plugin.getName()+ " Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
+		loadArenas(plugin, BattleArena.getBAC(), config, arenaType);
+	}
+
+	protected static void loadArenas(Plugin plugin, BattleArenaController bac, ConfigurationSection cs, ArenaType arenaType){
+		final String pname = "["+plugin.getName()+"] ";
 		if (cs == null){
-			Log.info("Configuration section is null");
+			Log.info(pname+"Configuration section is null");
 			return;
 		}
 		ConfigurationSection as = cs.getConfigurationSection("arenas");
 		if (as == null){
-			Log.info("Arena section is empty in config cs=" + cs.getCurrentPath());
+			Log.info(pname+"Arena section is empty in config cs=" + cs.getCurrentPath());
 			return;
 		}
 		Set<String> keys = as.getKeys(false);
-		StringBuilder loadedArenas = new StringBuilder(BattleArena.getPName()+"Successfully loaded arenas");
-		StringBuilder failedArenas = new StringBuilder(BattleArena.getPName()+"Failed loading arenas");
+		StringBuilder loadedArenas = new StringBuilder(pname+"Successfully loaded arenas");
+		StringBuilder failedArenas = new StringBuilder(pname+"Failed loading arenas");
 		boolean hasFailed = false, hasAny = false;
 		for (String name : keys){
-			//			System.out.println("Loading arena " + name);
+			if (arenaType != null){ /// Are we looking for 1 particular arena type to load				
+				if (!cs.getString("arenas."+name+".type","").equalsIgnoreCase(arenaType.getName())){
+					continue;}
+			}
 			if (loadArena(bac,cs.getConfigurationSection("arenas."+name))){
 				hasAny = true;
 				loadedArenas.append(","+name);
@@ -104,7 +134,7 @@ public class ArenaSerializer {
 		if (hasAny)
 			Log.info(loadedArenas.toString());
 		else 
-			Log.info(BattleArena.getPName() + "No arenas found");
+			Log.info(pname + "No arenas found");
 		if (hasFailed)
 			Log.info(failedArenas.toString());
 	}
@@ -140,9 +170,9 @@ public class ArenaSerializer {
 
 		ArenaType atype = ArenaType.fromString(cs.getString("type"));
 		if (atype==null){
-			Log.err( name + " Arena type not found");
+			Log.err(" Arena type not found for " + name);
 			return false;
-//			atype = ArenaType.DEFAULT;
+			//			atype = ArenaType.DEFAULT;
 		}
 
 		ArenaParams q = new ArenaParams(minTeamSize,maxTeamSize,atype);
@@ -170,7 +200,7 @@ public class ArenaSerializer {
 			for (Integer i: locs.keySet()){
 				arena.setSpawnLoc(i, locs.get(i));}
 		}
-		
+
 		/// Wait room spawns
 		loccs = cs.getConfigurationSection("waitRoomLocations");
 		locs = SerializerUtil.parseLocations(loccs);
@@ -178,7 +208,7 @@ public class ArenaSerializer {
 			for (Integer i: locs.keySet()){
 				arena.setWaitRoomSpawnLoc(i, locs.get(i));}
 		}
-		
+
 		/// Item/mob/group spawns
 		ConfigurationSection spawncs = cs.getConfigurationSection("spawns");
 		if (spawncs != null){
@@ -220,7 +250,6 @@ public class ArenaSerializer {
 				continue;
 			}
 
-			//			amap.put("name", arena.getName().toLowerCase());
 			amap.put("type", arena.getArenaType().getName());
 			amap.put("teamSize", arena.getParameters().getTeamSizeRange());
 			amap.put("nTeams", arena.getParameters().getNTeamRange());
@@ -263,7 +292,7 @@ public class ArenaSerializer {
 		}
 		SerializerUtil.expandMapIntoConfig(maincs, map);
 	}
-	
+
 	protected void saveArenas() {
 		saveArenas(false);
 	}
@@ -288,6 +317,7 @@ public class ArenaSerializer {
 		Location loc = SerializerUtil.getLocation(cs.getString("loc"));
 		List<SpawnInstance> spawns = SpawnSerializer.parseSpawnable(SpawnSerializer.convertToStringList(cs.getString("spawn")));
 		//		System.out.println("Parsing spawn " + st + " loc=" + loc +"  spawn = " + spawns.get(0));
+		
 		spawns.get(0).setLocation(loc);
 		TimedSpawn ts = new TimedSpawn(st.i1,st.i2, st.i3,spawns.get(0));
 		return ts;

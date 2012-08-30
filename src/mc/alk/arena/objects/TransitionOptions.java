@@ -22,7 +22,7 @@ public class TransitionOptions {
 		RESPAWN ("respawn"), RANDOMRESPAWN ("randomRespawn"),
 		CLEARINVENTORY ("clearInventory"), NEEDARMOR ("needArmor"),CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter"), 
 		NEEDITEMS ("needItems"), GIVEITEMS("giveItems"), GIVECLASS("giveClass"),
-		HEALTH("health"), HUNGER("hunger"), 
+		HEALTH("health"), HUNGER("hunger"),
 		MONEY("money"), EXPERIENCE("experience"),
 		PVPON("pvpOn"), PVPOFF("pvpOff"),INVINCIBLE("invincible"),
 		BLOCKBREAKOFF("blockBreakOff"), BLOCKBREAKON("blockBreakOn"),
@@ -220,7 +220,8 @@ public class TransitionOptions {
 		if (hasEffects()){
 			hasSomething = true;
 	        for (EffectWithArgs ewa : getEffects()){
-	        	sb.append("&5 - &b"+ ewa.getCommonName()+":"+(ewa.strength+1));
+	        	if (ewa != null)
+	        		sb.append("&5 - &b"+ ewa.getCommonName()+":"+(ewa.strength+1));
 	        }
 		}
 

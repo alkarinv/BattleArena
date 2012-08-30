@@ -30,6 +30,7 @@ import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Util;
@@ -44,6 +45,7 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 /**
  * 
@@ -102,7 +104,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 	}
 
 	@MCCommand(cmds={"join"},inGame=true,usage="join")
-	public boolean join(ArenaPlayer player, MatchParams mp) {
+	public boolean join(ArenaPlayer player, MatchParams mp, String args[]) {
 		/// Check if this match type is disabled
 		if (disabled.contains(mp.getName())){
 			sendMessage(player, "&cThe &6" + mp.getName()+"&c is currently disabled");
@@ -116,20 +118,21 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Check Perms
 		if (!(player.hasPermission("arena."+mp.getCommand()+".join"))){
 			return sendMessage(player, "&cYou don't have permission to join a &6" + mp.getCommand());}
-		
+
 		/// Can the player join this match/event at this moment?
 		if (!canJoin(player)){
 			return true;}
-		
+
 		/// Make a team for the new Player
 		Team t = teamc.getSelfTeam(player);
 		if (t==null)
 			t = TeamController.createTeam(player);
-		final int teamSize = t == null ? 1 : t.size();
-
+		final int teamSize = getWantedTeamSize(player,t,mp,args[args.length - 1]);
+		if (teamSize <= 0)
+			return true;
 		mp.setTeamSize(teamSize);
-		
-		/// Find a valid arena
+
+		/// Check to make sure at least one arena can be joined at some time
 		Arena arena = ac.getArenaByMatchParams(mp);
 		if (arena == null){
 			return sendMessage(player,"A valid arena has not been built for a " + mp.toPrettyString());}
@@ -156,13 +159,66 @@ public class BAExecutor extends CustomCommandExecutor  {
 			t.sendMessage("&eYou have joined the queue for the &6"+ mp.toPrettyString()+ " &e.");
 			int nplayers = mp.getMinTeams()*mp.getMinTeamSize();
 			if (qpp.pos < nplayers && qpp.pos > 0){
-				t.sendMessage("&ePosition: &6" + qpp.pos +"&e. match will start when &6" + nplayers+"&e players join");				
+				t.sendMessage("&ePosition: &6" + qpp.pos +"&e. Match start when &6" + nplayers+"&e players join. &6"+qpp.playersInQueue+"/"+nplayers);				
 			} else if (qpp.pos > 0){				
 				t.sendMessage("&ePosition: &6" + qpp.pos +"&e. your match will start when an arena is free");				
 			} else {
 				t.sendMessage("&eYour match will start when an arena is free");				
 			}
 		}
+		return true;
+	}
+
+	/**
+	 * Check to see what size of team the player should join based on their team, preferences, and the MatchParams
+	 * @param player
+	 * @param t
+	 * @param mp
+	 * @param string
+	 * @return
+	 */
+	private int getWantedTeamSize(ArenaPlayer player, Team t, MatchParams mp, String string) {
+		/// Check to see if the user has specified a wanted team size
+		MinMax mm = Util.getMinMax(string);
+		final int min = mp.getMinTeamSize();
+		final int max = mp.getMaxTeamSize();
+		if (mm != null){
+			if (mm.min > max){ /// They want a team size that is greater than what is offered by this match type
+				sendMessage(player, "&cYou wanted to join with a team of &6" + mm.min+"&c players");
+				sendMessage(player, "&cBut this match type only supports up to &6"+max+"&c players per team");
+				return -1;
+			}
+			return mm.min;
+		}
+		if (t.size() > max){
+			sendMessage(player, "&cYour team has &6" + t.size()+"&c players");
+			sendMessage(player, "&cBut this match type only supports up to &6"+max+"&c players per team");
+			return -1;
+		}
+		/// Are they joining a match that needs more people than their team has
+		if (t.size() < min)
+			return min;
+		
+		/// They are good with their current team size
+		return t.size();
+	}
+
+	@MCCommand(cmds={"leave"}, inGame=true, usage="leave")
+	public boolean leave(ArenaPlayer p) {
+		if (!canLeave(p)){
+			return true;
+		}
+		/// Are they even in a queue?
+		if(!(ac.isInQue(p))){
+			return sendMessage(p,"&eYou are not currently in a queue, use /arena join");}
+		Team t = teamc.getSelfTeam(p); /// They are in the queue, they are part of a team
+		ParamTeamPair qtp = ac.removeFromQue(p);
+		if (t!= null && t.size() > 1){
+			t.sendMessage("&6The team has left the &6"+qtp.q.getName()+" queue&e. &6"+ p.getName() +"&e issued the command");	
+		} else {
+			sendMessage(p,"&eYou have left the queue for the &6" + qtp.q.getName() );	
+		}
+		refundFee(qtp.q, t);
 		return true;
 	}
 
@@ -290,30 +346,13 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return true;
 	}
 
-	@MCCommand(cmds={"leave"}, inGame=true, usage="leave")
-	public boolean arenaLeave(ArenaPlayer p) {
-		if (!canLeave(p)){
-			return true;
-		}
-		/// Are they even in a queue?
-		if(!(ac.isInQue(p))){
-			return sendMessage(p,"&eYou are not currently in a queue, use /arena join");}
-		Team t = teamc.getSelfTeam(p); /// They are in the queue, they are part of a team
-		ParamTeamPair qtp = ac.removeFromQue(p);
-		if (t!= null && t.size() > 1){
-			t.sendMessage("&6The team has left the &6"+qtp.q.getName()+" queue&e. &6"+ p.getName() +"&e issued the command");	
-		} else {
-			sendMessage(p,"&eYou have left the queue for the &6" + qtp.q.getName() );	
-		}
-		refundFee(qtp.q, t);
-		return true;
-	}
 
 	@MCCommand(cmds={"check"}, inGame=true, usage="check")
 	public boolean arenaCheck(ArenaPlayer p) {
 		if(ac.isInQue(p)){
 			QPosTeamPair qpp = ac.getCurrentQuePos(p);
-			return sendMessage(p,"&eArena Queue Position: " + qpp.q.toPrettyString() + " " + (qpp.pos+1));
+			return sendMessage(p,"&e"+qpp.q.toPrettyString()+"&e Queue Position: "+
+					" &6" + (qpp.pos+1) +"&e. &6"+qpp.playersInQueue+" &eplayers in queue");
 		}
 		return sendMessage(p,"&eYou are currently not in any arena queues.");
 	}
@@ -331,11 +370,16 @@ public class BAExecutor extends CustomCommandExecutor  {
 	}
 
 	@MCCommand(cmds={"reload"}, admin=true)
-	public boolean arenaReload(CommandSender sender) {
-		ac.removeAllArenas();
-		ConfigSerializer.loadAll();
-		MessageController.load();
-		BattleArena.getSelf().loadArenas();
+	public boolean arenaReload(CommandSender sender, MatchParams mp) {		
+		Plugin plugin = mp.getType().getPlugin();
+		ac.removeAllArenas(mp.getType());
+		if (plugin == BattleArena.getSelf()){
+			MessageController.load();
+			BattleArena.getSelf().reloadConfig();			
+		} else {
+			ConfigSerializer.reloadConfig(mp.getType());
+		}
+		ArenaSerializer.loadAllArenas(plugin, mp.getType());
 		return sendMessage(sender,"&eArena ymls reloaded");
 	}
 
@@ -467,7 +511,6 @@ public class BAExecutor extends CustomCommandExecutor  {
 			ac.addArena(arena);
 			sendMessage(sender,"&2visitor spawn location set to location=&6" + Util.getLocString(loc));
 		} else if (changetype.equalsIgnoreCase("waitroom") || changetype.equalsIgnoreCase("wr")){
-//			System.out.println(" value = " + value);
 			try{locindex = Integer.parseInt(value);}catch(Exception e){}
 			if (locindex <= 0)
 				return sendMessage(sender,"&cWait room spawn location &6" + value+"&c needs to be an integer. 1,2,..,x");
@@ -488,7 +531,6 @@ public class BAExecutor extends CustomCommandExecutor  {
 	@MCCommand(cmds={"create"}, admin=true, min=2,usage="create <arena name> [team size] [# teams]")
 	public boolean arenaCreate(CommandSender sender, MatchParams mp, String name, String[] args) {
 		if (Defaults.DEBUG) for (int i =0;i<args.length;i++){System.out.println("args=" + i + "   " + args[i]);}
-
 		final String strTeamSize = args.length>2 ? (String) args[2] : "1+";
 		final String strNTeams = args.length>3 ? (String) args[3] : "2+";
 
@@ -514,6 +556,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		sendMessage(sender,"&2You have created the arena &6" + arena);
 		sendMessage(sender,"&2A spawn point has been created where you are standing");
 		sendMessage(sender,"&2You can add/change spawn points using &6/arena alter " + arena.getName()+" <1,2,...,x : which spawn>");
+		BattleArena.getSelf().saveArenas();
 		return true;
 	}
 
@@ -531,13 +574,14 @@ public class BAExecutor extends CustomCommandExecutor  {
 			}
 			as.add(arena);			
 		}
-
+		if (arenasbytype.isEmpty()){
+			sendMessage(sender,"There are no arenas for type " + mp.getName());}
 		for (ArenaType at : arenasbytype.keySet()){
 			if (!all && !at.matches(mp.getType()))
 				continue;
 			Collection<Arena> as = arenasbytype.get(at);
 			if (!as.isEmpty()){
-				sendMessage(sender,"------ Arenas for bukkitEvent type " + at.toString()+" ------");			
+				sendMessage(sender,"------ Arenas for Event type " + at.toString()+" ------");			
 				for (Arena arena : as){
 					sendMessage(sender,arena.toSummaryString());
 				}				
@@ -548,12 +592,24 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return sendMessage(sender,"&6/arena info <arenaname>&e: for details on an arena");	
 	}
 
+	@MCCommand(cmds={"purgeQueue"}, admin=true)
+	public boolean arenaPurgeQueue(CommandSender sender) {
+		try {
+			ac.purgeQueue();
+		} catch (Exception e){
+			e.printStackTrace();
+			sendMessage(sender,"&4error purging queue");
+			return true;
+		}
+		sendMessage(sender,"&2Queue purged");
+		return true;
+	}
+
 
 	public Location parseLocation(CommandSender sender, String svl) {
 		if (!(sender instanceof Player))
 			return null;
 		Player p = (Player) sender;
-		//		System.out.println(" location=" + svl);
 		if (svl == null)
 			return null;
 		String as[] = svl.split(":");
@@ -582,7 +638,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			return false;
 		}
 
-		/// Let the Arena bukkitEvent controllers handle people inside of events
+		/// Let the Arena Event controllers handle people inside of events
 		Event aec = insideEvent(p);
 		if (aec != null && !aec.canLeave(p)){
 			sendMessage(p, "&eYou can't leave the &6"+aec.getName()+"&e while its &6"+aec.getState());
@@ -596,7 +652,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Inside an Event?
 		Event ae = insideEvent(p);
 		if (ae != null){
-			sendMessage(p, "&eYou need to leave the bukkitEvent first. &6/" + ae.getCommand()+" leave");
+			sendMessage(p, "&eYou need to leave the Event first. &6/" + ae.getCommand()+" leave");
 			return false;
 		}
 		/// Inside the queue waiting for a match?
@@ -680,7 +736,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		}
 		return true;
 	}
-	
+
 	protected Arena getArena(String name){
 		return ac.getArena(name);
 	}

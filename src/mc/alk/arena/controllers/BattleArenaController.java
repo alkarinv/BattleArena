@@ -11,6 +11,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.listeners.MatchListener;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.ParamTeamPair;
@@ -52,8 +53,8 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		synchronized(running_matches){
 			running_matches.add(match);
 		}
-		/// BattleArena controller only tracks the inEvent while they are in the queue
-		/// now that a match is starting the inEvent are no longer our responsibility
+		/// BattleArena controller only tracks the players while they are in the queue
+		/// now that a match is starting the players are no longer our responsibility
 		for (Team t : match.getTeams()){
 			TeamController.removeTeam(t, this);}
 		match.open();
@@ -73,6 +74,8 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		synchronized(matchListeners){
 			 mls = new ArrayList<MatchListener>(matchListeners);			
 		}
+		for (Team t : am.getTeams()){ /// Do I need to really do this?
+			TeamController.removeTeam(t, this);}
 		/// Notify all Listeners that this match is finished
 		for (MatchListener ml: mls){
 			if (am.getMatchState() == MatchState.ONCANCEL){
@@ -81,7 +84,10 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 				try { ml.matchComplete(am);} catch(Exception e){};				
 			}
 		}		
-		amq.add(allarenas.get(am.getArena().getName())); /// add it back into the queue
+		Arena arena = allarenas.get(am.getArena().getName());
+		if (arena != null)
+			amq.add(arena); /// add it back into the queue
+
 	}
 
 	public void updateArena(Arena arena) {
@@ -100,8 +106,8 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 	public void removeMatchListener(MatchListener ml) {matchListeners.remove(ml);}
 
 	public Map<String, Arena> getArenas(){return allarenas;}
-	public QPosTeamPair addToQue(Team t1, MatchParams q) {
-		QPosTeamPair qpp = amq.add(t1,q);
+	public QPosTeamPair addToQue(Team t1, MatchParams mp) {
+		QPosTeamPair qpp = amq.add(t1,mp);
 		if (qpp != null && qpp.pos >=0){
 			TeamController.addTeamHandler(t1,this);
 		}
@@ -109,8 +115,15 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 	}
 	public boolean isInQue(ArenaPlayer p) {return amq.isInQue(p);}
 	public QPosTeamPair getCurrentQuePos(ArenaPlayer p) {return amq.getQuePos(p);}
-	public ParamTeamPair removeFromQue(ArenaPlayer p) {return amq.removeFromQue(p);}
-	public ParamTeamPair removeFromQue(Team t) {return amq.removeFromQue(t);}
+	public ParamTeamPair removeFromQue(ArenaPlayer p) {
+		Team t = TeamController.getTeam(p);
+		TeamController.removeTeam(t, this);
+		return amq.removeFromQue(p);
+	}
+	public ParamTeamPair removeFromQue(Team t) {
+		TeamController.removeTeam(t, this);
+		return amq.removeFromQue(t);
+	}
 	public void addMatchup(Matchup m) {amq.addMatchup(m);}
 	public Arena reserveArena(Arena arena) {return amq.reserveArena(arena);}
 	public Arena getArena(String arenaName) {return allarenas.get(arenaName);}
@@ -140,19 +153,6 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 	public boolean canLeave(ArenaPlayer p) {
 		return true;
 	}
-	/**
-	 * If they are in a queue, take them out
-	 */
-	public boolean leave(ArenaPlayer p) {
-		ParamTeamPair ptp = removeFromQue(p);
-		if (ptp != null){
-			ptp.team.sendMessage("&cYour team has left the queue b/c &6"+p.getDisplayName()+"c has left");			
-		}
-		/// else they are in a match, but those will be dealt with by the match itself
-		/// In all cases, we no longer have to worry about this player or their team
-		return true;
-	}
-
 	public boolean hasArenaSize(int i) {return getArenaBySize(i) != null;}
 	public Arena getArenaBySize(int i) {
 		for (Arena a : allarenas.values()){
@@ -177,13 +177,29 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 			for (Match am: running_matches){
 				cancelMatch(am);
 				Arena a = am.getArena();
-				if (a != null)
-					amq.add(allarenas.get(a.getName()));
+				if (a != null){
+					Arena arena = allarenas.get(a.getName());
+					if (arena == null)
+						amq.add(arena);
+				}
 			}
 			running_matches.clear();
 		}
 	}
 	
+	/**
+	 * If they are in a queue, take them out
+	 */
+	public boolean leave(ArenaPlayer p) {
+		ParamTeamPair ptp = removeFromQue(p);
+		if (ptp != null){
+			ptp.team.sendMessage("&cYour team has left the queue b/c &6"+p.getDisplayName()+"c has left");			
+		}
+		/// else they are in a match, but those will be dealt with by the match itself
+		/// In all cases, we no longer have to worry about this player or their team
+		return true;
+	}
+
 	public boolean cancelMatch(Arena arena) {
 		for (Match am: running_matches){
 			if (am.getArena().getName().equals(arena.getName())){
@@ -260,6 +276,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		return sb.toString();
 	}
 
+
 	public void removeAllArenas() {
 		synchronized(running_matches){
 			for (Match am: running_matches){
@@ -275,6 +292,26 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		amq.resume();
 		
 	}
+	public void removeAllArenas(ArenaType arenaType) {
+		synchronized(running_matches){
+			for (Match am: running_matches){
+				if (am.getArena().getArenaType() == arenaType)
+					am.cancelMatch();
+			}
+		}
+
+		amq.stop();
+		amq.removeAllArenas(arenaType);
+		synchronized(allarenas){
+			for (String aName: allarenas.keySet()){
+				Arena a = allarenas.get(aName);
+				if (a.getArenaType() == arenaType)
+					allarenas.remove(aName);
+			}
+		}
+		amq.resume();
+		
+	}
 
 	public void cancelAllArenas() {
 		synchronized(running_matches){
@@ -282,6 +319,11 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 				am.cancelMatch();
 			}			
 		}
+	}
+
+	public void purgeQueue() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

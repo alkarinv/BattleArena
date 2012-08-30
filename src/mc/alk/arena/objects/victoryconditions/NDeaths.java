@@ -42,7 +42,6 @@ public class NDeaths extends VictoryCondition{
 	
 	@MatchEventHandler(suppressCastWarnings=true)
 	public void playerDeathEvent(PlayerDeathEvent event, ArenaPlayer p) {
-//		System.out.println("DEAD Player " + event.getEntity());
 		Team team = match.getTeam(p);
 		playerDeath(p,team);		
 	}
@@ -56,8 +55,6 @@ public class NDeaths extends VictoryCondition{
 		if (!match.isStarted())
 			return;
 		
-//		System.out.println("checkPlayerDeath Team t =" + p.getName() +"  "+ team +"  dead="+team.isDead());
-//		System.out.println("IDSDKFJDKFJDKJF " +team+ "  " + team.getDeadPlayers().size() +"   " + team.getPlayers().size());
 		team.addDeath(p);
 		if (team.getNDeaths(p) >= ndeaths){
 			team.killMember(p);}
@@ -67,12 +64,9 @@ public class NDeaths extends VictoryCondition{
 
 		/// Killing this player killed the team
 		Team leftAlive = null;
-		/// Iterate over the inEvent to see if we have one team left standing
+		/// Iterate over the players to see if we have one team left standing
 		
 		for (Team t: match.getTeams()){
-//			System.out.println("    checkPlayerDeath Team t =" + t +"  dead="+t.isDead());
-//			System.out.println("     SDKFJDKFJDKJF " +t+ "  " + t.getDeadPlayers().size() +"   " + t.getPlayers().size());
-
 			if (t.isDead())
 				continue;
 			if (leftAlive != null) /// obviously more than one team is still in the match

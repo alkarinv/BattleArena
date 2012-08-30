@@ -24,7 +24,7 @@ public class Team {
 	HashMap<ArenaPlayer, Integer> kills = new HashMap<ArenaPlayer,Integer>();
 	HashMap<ArenaPlayer, Integer> deaths = new HashMap<ArenaPlayer,Integer>();
 
-	/// Pickup inEvent are transient in nature, once the match end they disband
+	/// Pickup teams are transient in nature, once the match end they disband
 	protected boolean isPickupTeam = false;
 	/// This is only so that teleports can be done to slightly different places for each player
 	protected HashMap<String,Integer> playerIndexes = new HashMap<String,Integer>();

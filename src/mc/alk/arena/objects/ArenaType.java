@@ -2,7 +2,6 @@ package mc.alk.arena.objects;
 
 import java.lang.reflect.Constructor;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Set;
 
 import mc.alk.arena.controllers.MethodController;
@@ -12,12 +11,11 @@ import mc.alk.arena.util.CaseInsensitiveMap;
 import org.bukkit.plugin.Plugin;
 
 public class ArenaType implements Comparable<ArenaType>{
-	static public LinkedHashMap<String,Class<?>> classes = new LinkedHashMap<String,Class<?>>();
+	static public CaseInsensitiveMap<Class<?>> classes = new CaseInsensitiveMap<Class<?>>();
 	static public CaseInsensitiveMap<ArenaType> types = new CaseInsensitiveMap<ArenaType>();
 
 	public static ArenaType ANY = null;
 	public static ArenaType VERSUS = null;
-	//	public static ArenaType DEFAULT = null;
 	static int count = 0;
 
 	final String name;
@@ -26,21 +24,19 @@ public class ArenaType implements Comparable<ArenaType>{
 	Set<ArenaType> compatibleTypes = null;
 
 	private ArenaType(final String name,Plugin plugin){
-		this.name = name.toUpperCase();
+		this.name = name;
 		this.ownerPlugin = plugin;
-
 		if (!types.containsKey(name))
 			types.put(name,this);
 
-		if (name.equals("ANY")) ANY = this;
-		//		else if (name.equals("VERSUS")) { VERSUS = this; DEFAULT=this;}
-		else if (name.equals("VERSUS")) { VERSUS = this;}
+		if (name.equalsIgnoreCase("ANY")) ANY = this;
+		else if (name.equalsIgnoreCase("VERSUS")) { VERSUS = this;}
 	}
 
 	public static ArenaType fromString(final String arenatype) {
 		if (arenatype==null)
 			return null;
-		return types.get(arenatype);
+		return types.get(arenatype.toUpperCase());
 	}
 
 	public String toString(){
@@ -82,14 +78,15 @@ public class ArenaType implements Comparable<ArenaType>{
 		return sb.toString();
 	}
 
-	public static void register(String arenaType, Class<? extends Arena> c, Plugin plugin) {
-		arenaType = arenaType.toUpperCase();
-		if (!classes.containsKey(arenaType))
-			classes.put(arenaType, c);
-		if (!types.containsKey(arenaType)){
+	public static ArenaType register(String arenaType, Class<? extends Arena> c, Plugin plugin) {
+		final String uarenaType = arenaType.toUpperCase();
+		if (!classes.containsKey(uarenaType))
+			classes.put(uarenaType, c);
+		if (!types.containsKey(uarenaType)){
 			new ArenaType(arenaType,plugin);
 		}
 		MethodController.addMethods(c,c.getMethods());
+		return types.get(uarenaType);
 	}
 
 
@@ -169,4 +166,5 @@ public class ArenaType implements Comparable<ArenaType>{
 		}
 		compatibleTypes.add(at);
 	}
+
 }

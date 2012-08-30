@@ -3,6 +3,7 @@ package mc.alk.arena.util;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.objects.ArenaPlayer;
 
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -26,6 +27,25 @@ public class DmgDeathUtil {
 			return null;
 		} else { /// Killer is a player
 			return PlayerController.toArenaPlayer((Player) edbee.getDamager());
+		}
+	}
+
+	public static ArenaPlayer getPlayerCause(Entity lastDamageCause) {
+		if (lastDamageCause instanceof Projectile) { /// we have some sort of projectile
+//			System.out.println("Projectile ");
+			Projectile proj = (Projectile) lastDamageCause;
+			if (proj.getShooter() instanceof Player){ /// projectile was shot by a player
+//				System.out.println("Projectile player " + proj.getShooter());
+
+				return PlayerController.toArenaPlayer((Player) proj.getShooter());
+			} else { /// projectile shot by some mob, or other source, get out of here
+				return null;
+			}
+		} else if (! (lastDamageCause instanceof Player)) { /// killer not player
+			return null;
+		} else { /// Killer is a player
+//			System.out.println("killer player " + lastDamageCause);
+			return PlayerController.toArenaPlayer((Player) lastDamageCause);
 		}
 	}
 

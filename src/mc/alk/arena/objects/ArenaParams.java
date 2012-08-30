@@ -110,21 +110,6 @@ public class ArenaParams {
 	public ArenaType getType() {return arenaType;}
 
 	public void setType(ArenaType type) {this.arenaType = type;}
-	public void setTeamSize(int size) {
-		preferredMinTeamSize = preferredMaxTeamSize = minTeamSize = maxTeamSize = size;
-		calcMaxPlayers();
-	}
-
-	public void setTeamSizes(MinMax mm) {
-		preferredMinTeamSize = minTeamSize = mm.min;
-		preferredMaxTeamSize = maxTeamSize = mm.max;
-		calcMaxPlayers();
-	}
-	public void setNTeams(MinMax mm) {
-		minTeams = mm.min;
-		maxTeams = mm.max;
-		calcMaxPlayers();
-	}
 
 	public boolean matches(final ArenaParams q) {
 		//		System.out.println(this +"    other = " +q + "   atmatches="+((arenaType == null || q.arenaType == null) || arenaType.matches(q.arenaType)));
@@ -153,6 +138,21 @@ public class ArenaParams {
 
 	public boolean matchesTeamSize(int i) {
 		return (minTeamSize==ANY || i>= minTeamSize && i<= maxTeamSize);
+	}
+	public void setTeamSize(int size) {
+		preferredMinTeamSize = preferredMaxTeamSize = minTeamSize = maxTeamSize = size;
+		calcMaxPlayers();
+	}
+
+	public void setTeamSizes(MinMax mm) {
+		preferredMinTeamSize = minTeamSize = mm.min;
+		preferredMaxTeamSize = maxTeamSize = mm.max;
+		calcMaxPlayers();
+	}
+	public void setNTeams(MinMax mm) {
+		minTeams = mm.min;
+		maxTeams = mm.max;
+		calcMaxPlayers();
 	}
 
 	public int getMaxPlayers(){return maxNumberPlayers;}

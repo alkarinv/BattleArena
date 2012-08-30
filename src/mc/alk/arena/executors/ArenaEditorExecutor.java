@@ -33,9 +33,8 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		this.aac = BattleArena.getArenaEditor();
 	}
 
-	@MCCommand(cmds={"select","sel"}, inGame=true, min=2, arenas={1}, op=true, usage="sel <arena>")
-	public boolean arenaSelect(CommandSender sender, Command cmd, String commandLabel, Object[] args) {
-		Arena arena = (Arena) args[1];
+	@MCCommand(cmds={"select","sel"}, inGame=true, op=true)
+	public boolean arenaSelect(CommandSender sender, Arena arena) {
 		aac.setCurrentArena((Player) sender, arena);
 		return MessageController.sendMessage(sender,"You have selected " + arena.getName());
 	}

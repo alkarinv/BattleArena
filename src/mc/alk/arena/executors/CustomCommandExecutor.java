@@ -108,8 +108,38 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				usage.put(mc, MessageController.getMessage("usage",mc.usageNode()));
 			} else if (!mc.usage().isEmpty()){
 				usage.put(mc, mc.usage());
+			} else { /// Generate a automatic usage string
+				usage.put(mc, createUsage(method));
 			}
 		}
+	}
+
+	private String createUsage(Method method) {
+		MCCommand cmd = method.getAnnotation(MCCommand.class);
+		StringBuilder sb = new StringBuilder(cmd.cmds()[0] +" ");
+		for (Class<?> theclass : method.getParameterTypes()){
+			if (Player.class ==theclass){
+				sb.append("<player> ");
+			} else if (OfflinePlayer.class ==theclass){
+				sb.append("<player> ");
+			} else if (ArenaPlayer.class == theclass){
+				sb.append("<player> ");
+			} else if (Arena.class == theclass){
+				sb.append("<arena> ");
+			} else if (String.class == theclass){
+				sb.append("<string> ");
+			} else if (Integer.class == theclass){
+				sb.append("<int> ");
+			} else if (Object[].class == theclass){
+				sb.append("[string ... ]");
+			} else if (Boolean.class == theclass){
+				sb.append("<true|false> ");
+			} else if (Object.class == theclass){
+				sb.append("<string> ");
+			}
+		}
+
+		return sb.toString();
 	}
 
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -135,22 +165,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				continue;
 			try {
 				Arguments newArgs= verifyArgs(mwrapper,mccmd,sender,command, label, args);
-				//				Object[] lists = new Object[5];
-				//				lists[0] = sender;
-				//				lists[1] = newArgs.mp;
-				//				lists[2] = command;
-				//				lists[3] = label;
-				//				lists[4] = newArgs.args;
-				//				for (int i=4;i<lists.length;i++){
-				//					lists[i] = newArgs.args[i-4];
-				//				}
 				mwrapper.method.invoke(mwrapper.obj,newArgs.args);
-				/// Invoke our arenaMethods
-				//				if (newArgs.mp != null){
-				//					mwrapper.method.invoke(mwrapper.obj,sender,newArgs.mp, command,label, newArgs.args);					
-				//				} else {
-				//					mwrapper.method.invoke(mwrapper.obj,sender,command,label, newArgs.args);					
-				//				}
 				success = true;
 				break; /// success on one
 			} catch (InvalidArgumentException e){
@@ -209,7 +224,6 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			throw new InvalidArgumentException(ChatColor.RED +"You need to be an Admin to use this command");
 
 		/// the first ArenaPlayer or Player parameter is the sender
-//		boolean getSenderAsPlayer = cmd.playerSender();
 		boolean getSenderAsPlayer = cmd.inGame();
 
 		/// In game check
@@ -222,8 +236,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		//		System.arraycopy( args, 0, objs, 0, args.length );
 		newArgs.args = objs; /// Set our return object with the new castable arguments
 		for (Class<?> theclass : mwrapper.method.getParameterTypes()){
-			if (strIndex > args.length) /// out of arguments
-				break;
+			try{
 			//			System.out.println(objIndex + " : " + strIndex +"  !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + theclass.getCanonicalName());
 			if (CommandSender.class == theclass){
 				objs[objIndex] = sender;
@@ -254,13 +267,16 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			} else if (Integer.class == theclass){
 				objs[objIndex] = verifyInteger(args[strIndex++]);
 			} else if (String[].class == theclass){
-				objs[objIndex] = args;
+				objs[objIndex] = args; 
 			} else if (Object[].class == theclass){
 				objs[objIndex] = args;
 			} else if (Boolean.class == theclass){
 				objs[objIndex] = Boolean.parseBoolean(args[strIndex++]);
 			} else if (Object.class == theclass){
 				objs[objIndex] = args[strIndex++];
+			}
+			} catch (ArrayIndexOutOfBoundsException e){
+				throw new InvalidArgumentException("You didnt supply enough arguments for this method");
 			}
 //			System.out.println(objIndex + " : " + strIndex + "  " + objs[objIndex] +" !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + theclass.getCanonicalName());
 
@@ -344,7 +360,6 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 
 	private MatchParams verifyMatchParams(Command command) throws InvalidArgumentException {
 		MatchParams mp = ParamController.getMatchParams(command.getName());
-		System.out.println("verfiy mp = " + mp);
 		if (mp != null){
 			return mp;
 		} else {
@@ -368,12 +383,13 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	}
 
 	private String getUsage(Command c, MCCommand cmd) {
-		if (!cmd.usageNode().isEmpty())
+		if (!cmd.usageNode().isEmpty()) /// Get from usage message node
 			return MessageController.getMessage("usage",cmd.usageNode());
-		if (!cmd.usage().isEmpty())
-			return "&6"+c.getName()+":&e" + cmd.usage();
-		/// By Default try to return the message under this commands name in "usage.cmd"
-		return MessageController.getMessage("usage", cmd.cmds()[0]);
+		if (!cmd.usage().isEmpty()) /// Get from usage
+			return "&6"+c.getName()+" " + cmd.usage();
+		if (MessageController.hasMessage("usage", cmd.cmds()[0])) /// Maybe a default message node??
+			return MessageController.getMessage("usage", cmd.cmds()[0]);
+		return "&6/"+c.getName()+" " + usage.get(cmd); /// Return the usage from our map
 	}
 
 
@@ -455,3 +471,4 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		return MessageController.sendMessage(player, msg);
 	}
 }
+

@@ -88,7 +88,7 @@ public class BAPlayerListener implements Listener  {
 		if (msg != null){
 			MessageController.sendMessage(p, msg);
 		}
-//		System.out.println(" playerReturned bukkitEvent player = " + p.getName() +"  " + bukkitEvent);
+//		System.out.println(" playerReturned event player = " + p.getName() +"  " + event);
 
 		if (die.remove(name)){
 			MessageController.sendMessage(p, "&eYou have been killed by the Arena for not being online");

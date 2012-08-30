@@ -13,6 +13,7 @@ import mc.alk.arena.match.Match;
 import mc.alk.arena.match.PerformTransition;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MapOfHash;
 import mc.alk.arena.util.TeamUtil;
@@ -84,8 +85,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 	
 
-	@MCCommand( cmds = {"showListeners","sl"}, op=true, exact=1, usage="showListeners")
-	public boolean showListeners(CommandSender sender, Command command, String label, Object[] args) {
+	@MCCommand( cmds = {"showListeners","sl"}, op=true, usage="showListeners")
+	public boolean showListeners(CommandSender sender) {
 		HashMap<Type, BukkitEventListener> types = MethodController.getEventListeners();
 		for (BukkitEventListener bel: types.values()){
 			Collection<ArenaListener> lists = bel.getMatchListeners();
@@ -127,6 +128,11 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		ad.hideSpawns();
 		ad.showSpawns();
 		return sendMessage(sender,ChatColor.GREEN+ "You are showing spawns for " + arena.getName());
+	}
+
+	@MCCommand(cmds={"getExp"}, inGame=true, admin=true)
+	public boolean getExp(Player player) {
+		return sendMessage(player,ChatColor.GREEN+ "Experience  " + player.getTotalExperience() +" " + ExpUtil.getTotalExperience(player));
 	}
 
 }
