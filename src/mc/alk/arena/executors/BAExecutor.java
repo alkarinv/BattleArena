@@ -10,17 +10,16 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.EventController;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.controllers.messaging.MatchMessageImpl;
 import mc.alk.arena.events.Event;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.ParamTeamPair;
@@ -28,6 +27,7 @@ import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.ArenaSerializer;
@@ -116,7 +116,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 			}
 		}
 		/// Check Perms
-		if (!(player.hasPermission("arena."+mp.getCommand()+".join"))){
+		if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".join") && 
+				!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".join") ){
 			return sendMessage(player, "&cYou don't have permission to join a &6" + mp.getCommand());}
 
 		/// Can the player join this match/event at this moment?
@@ -130,6 +131,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		final int teamSize = getWantedTeamSize(player,t,mp,args[args.length - 1]);
 		if (teamSize <= 0)
 			return true;
+		mp = new MatchParams(mp);
 		mp.setTeamSize(teamSize);
 
 		/// Check to make sure at least one arena can be joined at some time
@@ -158,7 +160,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		} else {
 			t.sendMessage("&eYou have joined the queue for the &6"+ mp.toPrettyString()+ " &e.");
 			int nplayers = mp.getMinTeams()*mp.getMinTeamSize();
-			if (qpp.pos < nplayers && qpp.pos > 0){
+			if (qpp.playersInQueue < nplayers && qpp.pos > 0){
 				t.sendMessage("&ePosition: &6" + qpp.pos +"&e. Match start when &6" + nplayers+"&e players join. &6"+qpp.playersInQueue+"/"+nplayers);				
 			} else if (qpp.pos > 0){				
 				t.sendMessage("&ePosition: &6" + qpp.pos +"&e. your match will start when an arena is free");				
@@ -195,6 +197,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			sendMessage(player, "&cBut this match type only supports up to &6"+max+"&c players per team");
 			return -1;
 		}
+		
 		/// Are they joining a match that needs more people than their team has
 		if (t.size() < min)
 			return min;
@@ -364,8 +367,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 	}
 
 	@MCCommand(cmds={"save"}, admin=true)
-	public boolean arenaSave(CommandSender sender, Command cmd, String commandLabel, Object[] args) {
-		BattleArena.getSelf().saveArenas(true);
+	public boolean arenaSave(CommandSender sender) {
+		BattleArena.saveArenas(true);
 		return sendMessage(sender,"&eArenas saved");
 	}
 
@@ -374,7 +377,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		Plugin plugin = mp.getType().getPlugin();
 		ac.removeAllArenas(mp.getType());
 		if (plugin == BattleArena.getSelf()){
-			MessageController.load();
+			MatchMessageImpl.load();
 			BattleArena.getSelf().reloadConfig();			
 		} else {
 			ConfigSerializer.reloadConfig(mp.getType());
@@ -524,7 +527,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			sendMessage(sender,"&cType &6"+ changetype + "&c not found. Valid options are type|size|1|2|3...");
 			return true;
 		}
-		BattleArena.getSelf().saveArenas();
+		BattleArena.saveArenas();
 		return true;
 	}
 
@@ -556,7 +559,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		sendMessage(sender,"&2You have created the arena &6" + arena);
 		sendMessage(sender,"&2A spawn point has been created where you are standing");
 		sendMessage(sender,"&2You can add/change spawn points using &6/arena alter " + arena.getName()+" <1,2,...,x : which spawn>");
-		BattleArena.getSelf().saveArenas();
+		BattleArena.saveArenas();
 		return true;
 	}
 
@@ -591,11 +594,14 @@ public class BAExecutor extends CustomCommandExecutor  {
 			sendMessage(sender,"&6/arena list all: &e to see all arenas");			
 		return sendMessage(sender,"&6/arena info <arenaname>&e: for details on an arena");	
 	}
-
-	@MCCommand(cmds={"purgeQueue"}, admin=true)
+	
+	@MCCommand(cmds={"purgeQueue"}, op=true)
 	public boolean arenaPurgeQueue(CommandSender sender) {
 		try {
-			ac.purgeQueue();
+			Collection<Team> teams = ac.purgeQueue();
+			for (Team t: teams){
+				t.sendMessage("&eYou have been &cremoved&e from the queue by an administrator");
+			}
 		} catch (Exception e){
 			e.printStackTrace();
 			sendMessage(sender,"&4error purging queue");

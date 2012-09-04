@@ -13,6 +13,7 @@ DeathMatch
 Tournament ( bracket tournament for any number of teams )
 
 Versions.
+3.6.1.5 : Start of new messaging system. Bug fixes
 3.6.1 : Fixes for odd sized match setups.. like 3 teams of 5
 3.6.0 : Concurrency fix that was causing many things to go wrong, including players not leaving matches correctly
 3.5.6 : Fix for Bukkit bug causing incorrect exp to get stored after a player enchants an item

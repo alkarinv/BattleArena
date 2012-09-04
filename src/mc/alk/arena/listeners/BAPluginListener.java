@@ -2,7 +2,7 @@ package mc.alk.arena.listeners;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.serializers.BroadcastOptions;
+import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.tracker.Tracker;
@@ -45,10 +45,10 @@ public class BAPluginListener implements Listener {
 	}
 
 	public void loadHeroChat(){
-		if (BroadcastOptions.hc == null){
+		if (AnnouncementOptions.hc == null){
 			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Herochat");
 			if (plugin != null) {
-				BroadcastOptions.setHerochat((Herochat) plugin);
+				AnnouncementOptions.setHerochat((Herochat) plugin);
 			} else {
 				Log.info("[BattleArena] Herochat not detected, ignoring Herochat channel options");
 			}

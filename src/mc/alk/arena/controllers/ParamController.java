@@ -34,12 +34,17 @@ public class ParamController {
 	public static MatchParams getMatchParams(String type){
 		return types.get(type);
 	}
-	
+
 	/**
-	 * Alias for getMatchParams
+	 * Return a copy of the found matchparams
+	 * @param type
+	 * @return
 	 */
-	public static MatchParams findParamInst(String type) {
-		return getMatchParams(type);
+	public static MatchParams getMatchParamCopy(String type){
+		MatchParams mp = types.get(type);
+		if (mp == null)
+			return null;
+		return new MatchParams(mp);
 	}
 
 	public static String getAvaibleTypes(Set<String> disabled) {

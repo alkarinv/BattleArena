@@ -26,7 +26,7 @@ public class NDeaths extends VictoryCondition{
 	public void onPlayerKick(PlayerKickEvent event, ArenaPlayer p) {
 		killPlayer(p);		
 	}
-	
+
 	@Override
 	public void playerLeft(ArenaPlayer p) {
 		killPlayer(p);
@@ -39,33 +39,33 @@ public class NDeaths extends VictoryCondition{
 		team.killMember(p);
 		playerDeath(p,team);
 	}
-	
+
 	@MatchEventHandler(suppressCastWarnings=true)
 	public void playerDeathEvent(PlayerDeathEvent event, ArenaPlayer p) {
 		Team team = match.getTeam(p);
 		playerDeath(p,team);		
 	}
 
-	
+
 	private void playerDeath(ArenaPlayer p,Team team) {
 		if (match.isWon()){
-			match.unregister(this);
+			//			match.unregister(this);
 			return;
 		}
 		if (!match.isStarted())
 			return;
-		
+
 		team.addDeath(p);
 		if (team.getNDeaths(p) >= ndeaths){
 			team.killMember(p);}
-		
+
 		if (!team.isDead()){ /// killing the player didnt even kill the team, definitely no victory here
 			return;}
 
 		/// Killing this player killed the team
 		Team leftAlive = null;
 		/// Iterate over the players to see if we have one team left standing
-		
+
 		for (Team t: match.getTeams()){
 			if (t.isDead())
 				continue;
@@ -81,6 +81,4 @@ public class NDeaths extends VictoryCondition{
 	public boolean hasTimeVictory() {
 		return false;
 	}
-
-
 }

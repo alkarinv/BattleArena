@@ -5,10 +5,10 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.events.ReservedArenaEvent;
 import mc.alk.arena.events.util.NeverWouldJoinException;
 import mc.alk.arena.objects.ArenaParams;
-import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
@@ -129,7 +129,7 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 			if (arena == null){
 				return sendMessage(sender,"&c Arena &6" +arenaName+"&c is currently in use, you'll have to wait till its free");}
 		}
-		arena = ArenaType.createArena(arena);
+//		arena = ArenaType.createArena(arena);
 		if (!arena.valid()){
 			return sendMessage(sender,"&c Arena is not valid.");}
 		arena.setParameters(specificparams);

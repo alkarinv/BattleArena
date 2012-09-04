@@ -5,14 +5,14 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.ArenaDebugger;
 import mc.alk.arena.controllers.MethodController;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.match.PerformTransition;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MapOfHash;
@@ -37,11 +37,9 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public void help(CommandSender sender, Command command, String label, Object[] args){
 		super.help(sender, command, args);
 	}
-
-
-	@MCCommand( cmds = {"enableDebugging"}, op=true,min=3, usage="enableDebugging <code section> <on off>")
+	
+	@MCCommand( cmds = {"enableDebugging"}, op=true,min=3, usage="enableDebugging <code section> <true | false>")
 	public void enableDebugging(CommandSender sender, String section, Boolean on){
-
 		if (section.equalsIgnoreCase("transitions")){
 			PerformTransition.debug=on;
 		} else if(section.equalsIgnoreCase("virtualplayer")){
@@ -114,25 +112,17 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 
 
-	@MCCommand(cmds={"hidespawns"}, admin=true, usage="hidespawns <arena>")
-	public boolean arenaHideSpawns(CommandSender sender, Arena arena) {
-		ArenaDebugger ad = ArenaDebugger.getDebugger(arena);
-		ad.hideSpawns();
-		ArenaDebugger.removeDebugger(ad);
-		return sendMessage(sender,ChatColor.YELLOW+ "You are hiding spawns for " + arena.getName());
-	}
-
-	@MCCommand(cmds={"showspawns"}, admin=true, usage="showspawns <arena>")
-	public boolean arenaShowSpawns(CommandSender sender, Arena arena) {
-		ArenaDebugger ad = ArenaDebugger.getDebugger(arena);
-		ad.hideSpawns();
-		ad.showSpawns();
-		return sendMessage(sender,ChatColor.GREEN+ "You are showing spawns for " + arena.getName());
-	}
-
 	@MCCommand(cmds={"getExp"}, inGame=true, admin=true)
 	public boolean getExp(Player player) {
 		return sendMessage(player,ChatColor.GREEN+ "Experience  " + player.getTotalExperience() +" " + ExpUtil.getTotalExperience(player));
+	}
+
+	@MCCommand(cmds={"showMatchParams"}, admin=true)
+	public boolean showMatchParams(CommandSender sender, String paramName) {
+		MatchParams mp = ParamController.getMatchParams(paramName);
+		if (mp == null){
+			return sendMessage(sender, "&cCouldn't find matchparams mp=" + paramName);}
+		return sendMessage(sender, mp.toString());
 	}
 
 }

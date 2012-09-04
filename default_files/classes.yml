@@ -1,16 +1,45 @@
+### You can add new classes here
 classes:
     gladiator:
-        items: # ignored if options doesnt have "giveItems"
-            - iron_sword: sharpness:2 1
+        items:
+            - diamond_sword: sharp:1 1
             - bow: 1
-            - tnt: 3
             - arrow: 32
-            - leather_helm: 1
-            - leather_chest: prot:3 1
-            - leather_leggings: 1
-            - leather_boot: 1
-            - bread: 5
+            - diamond_helm: 1
+            - diamond_chest: 1
+            - diamond_leggings: 1
+            - diamond_boots: 1
+            - 373;8229: 1 # potion of healing 2
+            - 373;8193: 1 # potion of regen
+            - 373;16396: 1 # splash potion of harming 1
         enchants:
             - speed:1:900
             - resistance:1:900
-            
+    archer:
+        items:
+            - iron_sword: sharp:1 1
+            - bow: flame:2 power:3 punch:2 1
+            - arrow: 32
+            - leather_helm: 1
+            - iron_chest: prot:3 1
+            - leather_leggings: 1
+            - leather_boots: 1
+            - 373;8229: 1 # potion of healing 2
+            - 373;8193: 1 # potion of regen
+            - 373;16396: 1 # splash potion of harming 1
+    monk:
+        items:
+            - leather_helm: 1
+            - leather_chest: 1
+            - leather_leggings: 1
+            - leather_boots: 1
+            - 373;8229: 2 # potion of healing 2
+            - 373;8193: 2 # potion of regen
+            - 373;16396: 3 # splash potion of harming 1
+        enchants:
+            - strength:3:900 # increase attack power
+            - speed:2:900 # increase movement
+            - haste:3:900 # increase attack speed
+            - resistance:2:900 # reduce damage taken
+            - jump:2:900 # jump 2 blocks higher than normal
+            - regen:1:900 # regen life

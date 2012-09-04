@@ -12,13 +12,13 @@ import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.EventController;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.controllers.messaging.MatchMessageImpl;
 import mc.alk.arena.events.AlwaysJoinRAE;
 import mc.alk.arena.events.Event;
 import mc.alk.arena.events.ReservedArenaEvent;
@@ -34,17 +34,19 @@ import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.BAPluginListener;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
 import mc.alk.arena.objects.victoryconditions.LastManStanding;
 import mc.alk.arena.objects.victoryconditions.NDeaths;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.serializers.ArenaControllerSerializer;
 import mc.alk.arena.serializers.ArenaSerializer;
+import mc.alk.arena.serializers.BAClassesSerializer;
 import mc.alk.arena.serializers.BAConfigSerializer;
 import mc.alk.arena.serializers.SpawnSerializer;
+import mc.alk.arena.serializers.UpdateYamlFiles;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.Log;
 
@@ -69,12 +71,13 @@ public class BattleArena extends JavaPlugin{
 	private final static ArenaEditor aac = new ArenaEditor();
 	private final static BAExecutor commandExecutor = new BAExecutor();
 	private final static APIRegistrationController apiRegistrationController = new APIRegistrationController();
-	
+
 	private final BAPlayerListener playerListener = new BAPlayerListener(arenaController);
 
 	private final BAPluginListener pluginListener = new BAPluginListener();
 	private ArenaControllerSerializer yacs;
 	private static final BAConfigSerializer cc = new BAConfigSerializer();
+	private static final BAClassesSerializer bacs = new BAClassesSerializer();
 
 	public void onEnable() {
 		plugin = this;
@@ -116,17 +119,22 @@ public class BattleArena extends JavaPlugin{
 		ArenaSerializer.setBAC(arenaController);
 		ArenaSerializer as = new ArenaSerializer(this, getDataFolder()+"/arenas.yml");
 		as.loadArenas(this);
-		
+
 		SpawnSerializer ss = new SpawnSerializer();
 		ss.setConfig(load("/default_files/spawns.yml",dir.getPath() +"/spawns.yml"));
 		yacs.load();
-		
+
 		cc.setConfig(null,load("/default_files/config.yml",dir.getPath() +"/config.yml"));
+		UpdateYamlFiles.updateConfig(cc); /// Update our config if necessary
+
+		bacs.setConfig(load("/default_files/classes.yml",dir.getPath() +"/classes.yml"));
+		bacs.loadAll();
+
 		cc.loadAll();
 		MoneyController.setup();
 
-		MessageController.setConfig(load(Defaults.DEFAULT_MESSAGES_FILE, Defaults.MESSAGES_FILE));
-		MessageController.load();
+		MatchMessageImpl.setConfig(load(Defaults.DEFAULT_MESSAGES_FILE, Defaults.MESSAGES_FILE));
+		MatchMessageImpl.load();
 
 		/// Set our commands
 		getCommand("arena").setExecutor(commandExecutor);
@@ -156,31 +164,43 @@ public class BattleArena extends JavaPlugin{
 		MatchParams mp = null;
 
 		/// Tournament, multi round matches
-		mp = ParamController.findParamInst("tourney");
+		mp = ParamController.getMatchParamCopy("tourney");
 		if (mp != null){
 			TournamentEvent tourney = new TournamentEvent(mp);
 			EventController.addEvent(tourney);
-			getCommand("tourney").setExecutor(new TournamentExecutor(tourney));
+			try{
+				getCommand("tourney").setExecutor(new TournamentExecutor(tourney));
+			} catch (Exception e){
+				Log.err("command tourney not found");				
+			}
 		} else {
 			Log.err("Tournament type not found");
 		}
 
 		/// Reserve an arena.  Hold people in the area till ffa starts
-		mp = ParamController.findParamInst("FreeForAll");
+		mp = ParamController.getMatchParamCopy("FreeForAll");
 		if (mp != null){
 			ReservedArenaEvent event = new ReservedArenaEvent(mp);
 			EventController.addEvent(event);
-			getCommand("ffa").setExecutor(new ReservedArenaEventExecutor(event));
+			try{
+				getCommand("ffa").setExecutor(new ReservedArenaEventExecutor(event));
+			} catch (Exception e){
+				Log.err("command ffa not found");
+			}
 		} else {
 			Log.err("FFA type not found");
 		}
 
 		/// Reserve an arena.  Let people join and enter at will
-		mp = ParamController.findParamInst("DeathMatch");
+		mp = ParamController.getMatchParamCopy("DeathMatch");
 		if (mp != null){
 			ReservedArenaEvent event = new AlwaysJoinRAE(mp);
 			EventController.addEvent(event);
-			getCommand("dm").setExecutor(new ReservedArenaEventExecutor(event));
+			try{
+				getCommand("dm").setExecutor(new ReservedArenaEventExecutor(event));
+			} catch (Exception e){
+				Log.err("command dm not found");
+			}
 		} else {
 			Log.err("DM type not found");
 		}
@@ -213,7 +233,7 @@ public class BattleArena extends JavaPlugin{
 	public static Event getEvent(String name){return EventController.getEvent(name);}
 	public static ArenaEditor getArenaEditor() {return aac;}
 	public static BAExecutor getBAExecutor() {return commandExecutor;}
-	
+
 	@Override
 	/**
 	 * Reload our own config
@@ -221,6 +241,7 @@ public class BattleArena extends JavaPlugin{
 	public void reloadConfig(){
 		super.reloadConfig();
 		cc.loadAll();
+		bacs.loadAll();
 	}
 
 	public static String getVersion() {
@@ -230,8 +251,8 @@ public class BattleArena extends JavaPlugin{
 		return "[" + pluginname+"]";
 	}
 
-	public void saveArenas() {ArenaSerializer.saveAllArenas(false);	}
-	public void saveArenas(boolean log) {ArenaSerializer.saveAllArenas(log);	}
+	public static void saveArenas() {ArenaSerializer.saveAllArenas(false);	}
+	public static void saveArenas(boolean log) {ArenaSerializer.saveAllArenas(log);	}
 
 	public void loadArenas() {
 		ArenaSerializer.loadAllArenas();
@@ -242,7 +263,7 @@ public class BattleArena extends JavaPlugin{
 	public static List<ArenaPlayer> toArenaPlayerList(Collection<Player> players) {return PlayerController.toArenaPlayerList(players);}
 	public static Set<Player> toPlayerSet(Collection<ArenaPlayer> players) {return PlayerController.toPlayerSet(players);}
 	public static List<Player> toPlayerList(Collection<ArenaPlayer> players) {return PlayerController.toPlayerList(players);}
-	
+
 	public static void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
 		apiRegistrationController.registerMatchType(plugin, name, cmd, arenaClass);
 	}
@@ -253,8 +274,10 @@ public class BattleArena extends JavaPlugin{
 	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
 		apiRegistrationController.registerEventType(plugin,name,cmd,arenaClass);
 	}
-	
+
 	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor){
 		apiRegistrationController.registerEventType(plugin,name,cmd,arenaClass,executor);
 	}
+
+	public static Arena getArena(String arenaName) {return BattleArena.getBAC().getArena(arenaName);}
 }

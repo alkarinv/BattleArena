@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.controllers.ArenaDebugger;
 import mc.alk.arena.controllers.ArenaEditor;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.ProtectionController;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.serializers.SpawnSerializer;
+import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -36,7 +37,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"select","sel"}, inGame=true, op=true)
 	public boolean arenaSelect(CommandSender sender, Arena arena) {
 		aac.setCurrentArena((Player) sender, arena);
-		return MessageController.sendMessage(sender,"You have selected " + arena.getName());
+		return MessageUtil.sendMessage(sender,"You have selected " + arena.getName());
 	}
 
 	@MCCommand(cmds={"as","addspawn"}, selection=true, op=true, min=2,
@@ -46,7 +47,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		Arena a = aac.getArena(p);
 		SpawnInstance spawn = parseSpawn(args);
 		if (spawn == null){
-			return MessageController.sendMessage(sender,"Couldnt recognize spawn " + args[1]);			
+			return MessageUtil.sendMessage(sender,"Couldnt recognize spawn " + args[1]);			
 		}
 		Location l = p.getLocation();
 		spawn.setLocation(l);
@@ -54,7 +55,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		
 		a.addTimedSpawn(ts);
 		ac.updateArena(a);
-		return MessageController.sendMessage(sender, "&6"+a.getName()+ "&e now has spawn " + spawn);
+		return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e now has spawn " + spawn);
 	}
 
 	private SpawnInstance parseSpawn(Object[] args) {
@@ -83,18 +84,30 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		Arena a = aac.getArena(p);
 		Selection sel = wep.getSelection(p);
 		if (sel == null)
-			return MessageController.sendMessage(sender, ChatColor.RED + "Please select the protection area first.");
+			return MessageUtil.sendMessage(sender, ChatColor.RED + "Please select the protection area first.");
 		String regionName = idPrefix+a.getName();
 		ProtectedRegion region = pc.addRegion(p, sel, regionName);
 		if (region == null)
-			return MessageController.sendMessage(sender, ChatColor.RED + "Selected region could not be made");
+			return MessageUtil.sendMessage(sender, ChatColor.RED + "Selected region could not be made");
 		a.addRegion(regionName);
 		ac.updateArena(a);
-		return MessageController.sendMessage(sender, ChatColor.GREEN + "Region added to " + a.getName());
+		return MessageUtil.sendMessage(sender, ChatColor.GREEN + "Region added to " + a.getName());
 	}
 
-	public void showHelp(CommandSender sender, Command command){
-		help(sender,command,null,null);
+	@MCCommand(cmds={"hidespawns"}, admin=true, usage="hidespawns <arena>")
+	public boolean arenaHideSpawns(CommandSender sender, Arena arena) {
+		ArenaDebugger ad = ArenaDebugger.getDebugger(arena);
+		ad.hideSpawns();
+		ArenaDebugger.removeDebugger(ad);
+		return sendMessage(sender,ChatColor.YELLOW+ "You are hiding spawns for " + arena.getName());
+	}
+
+	@MCCommand(cmds={"showspawns"}, admin=true, usage="showspawns <arena>")
+	public boolean arenaShowSpawns(CommandSender sender, Arena arena) {
+		ArenaDebugger ad = ArenaDebugger.getDebugger(arena);
+		ad.hideSpawns();
+		ad.showSpawns();
+		return sendMessage(sender,ChatColor.GREEN+ "You are showing spawns for " + arena.getName());
 	}
 
 	@MCCommand( cmds = {"help","?"})

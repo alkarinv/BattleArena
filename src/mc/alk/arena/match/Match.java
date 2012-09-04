@@ -12,11 +12,12 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.MatchMessageHandler;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.OnMatchComplete;
 import mc.alk.arena.controllers.PlayerStoreController;
+import mc.alk.arena.controllers.TeamController;
+import mc.alk.arena.controllers.messaging.MatchMessageHandler;
+import mc.alk.arena.controllers.messaging.MatchMessager;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -30,15 +31,15 @@ import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Countdown.CountdownCallback;
 import mc.alk.arena.util.DmgDeathUtil;
-import mc.alk.arena.util.FileLogger;
-import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.WLT;
@@ -57,14 +58,13 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 
-public class Match implements Runnable, CountdownCallback, ArenaListener {
+public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHandler {
 
 	public enum PlayerState{OUTOFMATCH,INMATCH};
 	static int count =0;
@@ -98,7 +98,8 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 
 	Random rand = new Random(); /// Our randomizer
 
-	MatchMessageHandler mc; /// Our message instance
+	MatchMessager mc; /// Our message instance
+
 	public Match(Arena arena, OnMatchComplete omc, MatchParams mp) {
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::" + mp);
 		plugin = BattleArena.getSelf();
@@ -106,7 +107,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		this.arena = arena;
 		arenaListeners.add(arena);
 		this.matchComplete = omc;
-		this.mc = new MessageController(this);
+		this.mc = new MatchMessager(this);
 		this.oldlocs = new HashMap<String,Location>();
 		this.teams = new ArrayList<Team>();
 		this.tops = mp.getTransitionOptions();
@@ -159,7 +160,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		updateBukkitEvents(MatchState.ONPRESTART);
 		PerformTransition.transition(this, MatchState.ONPRESTART, teams, true);
 		try{arena.onPrestart();}catch(Exception e){e.printStackTrace();}
-		try{mc.sendOnPreStartMsg(teams, arena);} catch(Exception e){e.printStackTrace();}
+		try{mc.sendOnPreStartMsg(teams);}catch(Exception e){e.printStackTrace();}
 		/// Schedule the start of the match
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
@@ -186,7 +187,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 			PerformTransition.transition(this, state,competingTeams, true);
 			try{arena.startSpawns();}catch(Exception e){e.printStackTrace();}
 			try{arena.onStart();}catch(Exception e){e.printStackTrace();}
-			mc.sendOnStartMsg(teams);
+			try{mc.sendOnStartMsg(teams);}catch(Exception e){e.printStackTrace();}
 			if (timeVictory){				
 				timer = new Countdown(plugin,vc.matchEndTime(), vc.matchUpdateInterval(), this);}
 		} else if (nCompetingTeams==1){
@@ -208,12 +209,12 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	private synchronized void teamVictory() {
 		/// this might be called multiple times as multiple players might meet the victory condition within a small
 		/// window of time.  But only let the first one through
-		if (state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE) 
+		if (state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL) 
 			return;
 		state = MatchState.ONVICTORY;
-		/// Call the rest after a 0 tick wait, ensure the calling arenaMethods complete before the
+		/// Call the rest after a 2 tick wait to ensure the calling arenaMethods complete before the
 		/// victory conditions start rolling in
-		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new MatchVictory(this));
+		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new MatchVictory(this),2L);
 	}
 
 	class MatchVictory implements Runnable{
@@ -230,7 +231,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 				//		System.out.println("vicotry and my pi = " + q);
 				if (bti != null && mp.isRated()){
 					BTInterface.addRecord(bti,victor.getPlayers(),losers,WLT.WIN);}				
-				try{mc.sendOnVictoryMsg(victor, losers, mp);} catch (Exception e){e.printStackTrace();}
+				try{mc.sendOnVictoryMsg(victor, losers);}catch(Exception e){e.printStackTrace();}
 			}
 			updateBukkitEvents(MatchState.ONVICTORY);
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
@@ -246,7 +247,6 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		MatchCompleted(Match am){this.am = am;}
 
 		public void run() {
-			//			state = MatchState.FINISHED;
 			state = MatchState.ONCOMPLETE;
 			cancelTimers();
 			final Team victor = am.getVictor();
@@ -265,7 +265,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 					try{arena.onComplete();}catch(Exception e){e.printStackTrace();}
 					matchComplete.matchComplete(am); /// Call BattleArenaController and say we are completely done
 					updateBukkitEvents(MatchState.ONCOMPLETE);
-					deconstruct();					
+					deconstruct();	
 				}
 			});
 		}
@@ -288,6 +288,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		insideArena.clear();
 		insideWaitRoom.clear();
 		for (Team t: teams){
+			TeamController.removeTeam(t, this);
 			for (ArenaPlayer p: t.getPlayers()){
 				stopTracking(p);
 			}
@@ -319,6 +320,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 
 	public void onJoin(Collection<Team> teams){
 		for (Team t: teams){
+			TeamController.addTeamHandler(t, this);
 			onJoin(t);}
 	}
 
@@ -331,11 +333,30 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		startTracking(t);
 		t.setAlive();
 		t.resetScores();/// reset scores
+		TeamController.addTeamHandler(t, this);
 		for (ArenaPlayer p: t.getPlayers()){
 			try{arena.onJoin(p,t);}catch(Exception e){e.printStackTrace();}			
 		}
 
 		PerformTransition.transition(this, MatchState.ONJOIN, t, true);
+	}
+
+	/**
+	 * TeamHandler override
+	 * Players can always leave, they just might be killed for doing so
+	 */
+	@Override
+	public boolean canLeave(ArenaPlayer p) {
+		return true;
+	}
+
+	/**
+	 * TeamHandler override
+	 * We already handle leaving in other methods. 
+	 */
+	@Override
+	public boolean leave(ArenaPlayer p) {
+		return true;
 	}
 
 	/**
@@ -345,6 +366,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	public void onLeave(Team t) {
 		//		System.out.println("ArenaMatch::onLeave(Team t)=" + t +"   mo =" + tops.getOptionString());
 		teams.remove(t);
+		TeamController.removeTeam(t, this);
 		for (ArenaPlayer p: t.getPlayers()){
 			stopTracking(p);
 			try{arena.onLeave(p,t);}catch(Exception e){e.printStackTrace();}
@@ -378,7 +400,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	@SuppressWarnings("unchecked")
 	protected void startTracking(final ArenaPlayer p){
 		final MatchState ms = MatchState.ONENTER;
-		MethodController.updateEventListeners(this, ms,p,PlayerQuitEvent.class, PlayerKickEvent.class,PlayerRespawnEvent.class);
+		MethodController.updateEventListeners(this, ms,p,PlayerQuitEvent.class,PlayerRespawnEvent.class);
 		MethodController.updateEventListeners(this, ms,p, PlayerCommandPreprocessEvent.class);
 		if (needsDamageEvents){
 			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);			
@@ -396,7 +418,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	@SuppressWarnings("unchecked")
 	protected void stopTracking(final ArenaPlayer p){
 		final MatchState ms = MatchState.ONLEAVE;
-		MethodController.updateEventListeners(this,ms, p,PlayerQuitEvent.class, PlayerKickEvent.class,PlayerRespawnEvent.class);
+		MethodController.updateEventListeners(this,ms, p,PlayerQuitEvent.class,PlayerRespawnEvent.class);
 		MethodController.updateEventListeners(this, ms,p, PlayerCommandPreprocessEvent.class);
 		if (needsDamageEvents){
 			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);			
@@ -471,44 +493,46 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	}
 
 	@MatchEventHandler
-	public void onPlayerJoin(PlayerJoinEvent event, ArenaPlayer p){
+	public void onPlayerJoin(PlayerJoinEvent event, ArenaPlayer player){
 		//// TODO I feel like I should do something here
 	}
 
-	@MatchEventHandler
-	public void onPlayerKick(PlayerKickEvent event, ArenaPlayer player){
-		onPlayerQuit(null,player);
-	}
+//	@MatchEventHandler
+//	public void onPlayerKick(PlayerKickEvent event, ArenaPlayer player){
+//		onPlayerQuit(null,player);
+//	}
 
 	@MatchEventHandler
 	public void onPlayerQuit(PlayerQuitEvent event, ArenaPlayer player){
 //		System.out.println(this+"onPlayerQuit = " + player.getName() + "  " +matchResult.matchComplete()  +" :" + state);
-		if (isWon()){ 
-			return;}
 		if (woolTeams)
 			BAPlayerListener.clearWoolOnReenter(player.getName(), teams.indexOf(getTeam(player)));
 		/// If they are just in the arena waiting for match to start
-		if (state == MatchState.ONOPEN)
-			return;
+		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL || state == MatchState.ONOPEN){ 
+			return;}
 		/// kill player will teleport them out, which makes them leaveArena(p)
 		/// This ensures that onExit is called for both player kicked, quit, and player disconnected  
-		killPlayer(player,clearsInventory); 
+//		killPlayer(player,clearsInventory);
+		Team t = getTeam(player);
+		PerformTransition.transition(this, MatchState.ONCOMPLETE, player, t, true);
+		
 		vc.playerLeft(player);
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true)
 	public void onPlayerDeath(PlayerDeathEvent event, ArenaPlayer target){
-		if (isWon()){
-			return;}
 //		System.out.println(this+"!!!!! onPlayerDeath = " + target.getName() + "  complete=" +matchResult.matchComplete()  +
-//				": inside=" + insideArena.contains(target));
+//				": inside=" + insideArena.contains(target.getName()) +"   clearInv?=" + clearsInventoryOnDeath +"   " + isWon());
+		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE || !insideArena.contains(target.getName())){
+			return;}
 		//		target.getLastDamageCause();
-		ArenaPlayer killer = null;
+//		ArenaPlayer killer = null;
+		Team t = getTeam(target);
 		/// Handle Drops from bukkitEvent
 		if (clearsInventoryOnDeath){ /// Very important for deathmatches.. otherwise tons of items on floor
 			try {event.getDrops().clear();} catch (Exception e){}
 		} else if (woolTeams){  /// Get rid of the wool from teams so it doesnt drop
-			int color = teams.indexOf(getTeam(target));
+			int color = teams.indexOf(t);
 			//				System.out.println("resetting wool team " + target.getName() +" color  ");
 			List<ItemStack> items = event.getDrops();
 			for (ItemStack is : items){
@@ -521,8 +545,10 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 					break;
 				}
 			}
-		}			
-		playerDeath(target,killer);
+		}
+		if (!respawns){
+			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);			
+		}
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true)
@@ -532,14 +558,6 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		
 		ArenaPlayer target = BattleArena.toArenaPlayer((Player) event.getEntity());
 		TransitionOptions to = tops.getOptions(state);
-//		try{
-//		FileLogger.log("[BattleArena] onPlayerDamage :" + target.getName() + " " +to + "   " +
-//		state  +"  " + event.getEntity().getLastDamageCause() +"   " +event.getCause());
-//		}catch(Exception e){}
-//		System.out.println("[BattleArena] onPlayerDamage :" + target.getName() +
-//				" " +to + "   " + state  +"  " + event.getEntity().getLastDamageCause() + "  " + event.getCause());
-//		System.out.println("[BattleArena] onPlayerDamage2 :" + event.getEventName() +
-//				" " + (event instanceof EntityDamageByEntityEvent));
 		if (to == null)
 			return;
 		final PVPState pvp = to.getPVP();
@@ -563,14 +581,6 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 			Team targetTeam = getTeam(target);
 			if (targetTeam == null || !targetTeam.hasAliveMember(target)) /// We dont care about dead players
 				return;
-//			if (targetTeam.size() > 1){
-//				System.out.println("[BattleArena] onPlayerDamage :" + target.getName() +
-//				" " +to + "   " + state  +"  " + event.getEntity().getLastDamageCause() + "  " + event.getCause());
-//				System.out.println("[BattleArena] onPlayerDamage2 :" + event.getEventName() +
-//				" " + (event instanceof EntityDamageByEntityEvent));
-//				System.out.println("[BattleArena] onPlayerDamage3 :" + target.getName() + " " +to + "   " + state  +"  " +
-//						event.getEntity().getLastDamageCause() + " dmger" + damagerEntity);
-//			}
 			damager = DmgDeathUtil.getPlayerCause(damagerEntity);
 			if (damager == null){ /// damage from some source, its not pvp though. so we dont care
 				return;}
@@ -590,13 +600,10 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 			}
 			break;
 		}
-		//		System.out.println(state +"     target " + target.getName() +"    " + damager +"     " + pvp);
 	}	
 
 	@MatchEventHandler
 	public void onPlayerRespawn(PlayerRespawnEvent event, final ArenaPlayer p){
-//		System.out.println("!!!!!!!!!!!! onPlayerRespawn " + p.getName() +"  loc = " + oldlocs.get(p) +"   " + state+
-//				" matchComplete = " + matchResult.matchComplete() +"  mo=" );
 		if (isWon()){ 
 			return;}
 		final TransitionOptions mo = tops.getOptions(MatchState.ONDEATH);
@@ -681,54 +688,6 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 		}
 	}
 
-	/**
-	 * This adds the stats into the team for a kill/death
-	 * It also teleports the player out
-	 * @param target
-	 * @param killer
-	 */
-	private synchronized void playerDeath(ArenaPlayer target, ArenaPlayer killer){
-		/// Handle our dead target
-		Team t = getTeam(target);
-		t.addDeath(target);
-
-		if (!respawns){
-			leaveArena(target);
-			BAPlayerListener.teleportOnReenter(target.getName(), oldlocs.get(target.getName()),false);
-		}
-
-		/// Now deal with the killer
-		if (killer != null){
-			t = getTeam(killer);
-			if (t != null){
-				t.addKill(killer);
-			}
-		}
-	}
-
-	/**
-	 * Called from onPlayerQuit or if they couldnt be teleported in b/c of a lack of requirements 
-	 * @param p
-	 * @param wipeInventory
-	 */
-	private void killPlayer(ArenaPlayer p, boolean wipeInventory){
-		if (p.isOnline()){
-			/// when a player leaves when Quitting, p can be online, then offline for setHealth
-			/// This leads to a minecraft bug, shoudnt be our responsibility but ofc we need to account for it
-			try {
-				if (wipeInventory)
-					InventoryUtil.clearInventory(p.getPlayer());
-				p.setHealth(0);
-				BAPlayerListener.teleportOnReenter(p.getName(), oldlocs.get(p.getName()),false);
-			} catch (Exception e){ /// If it fails, kill em when they get back
-			}
-		} else {
-			BAPlayerListener.teleportOnReenter(p.getName(), oldlocs.get(p.getName()),false);
-			BAPlayerListener.killOnReenter(p.getName(),wipeInventory);
-			playerDeath(p,null);			
-		}
-	}
-
 	public void setVictor(ArenaPlayer p){
 		Team t = getTeam(p);
 		if (t != null) setVictor(t);
@@ -759,8 +718,8 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 			if (t.hasAliveMember(p)) return true;}
 		return false;
 	}
-	public void setMessageHandler(MatchMessageHandler mc){this.mc = mc;}
-	public MatchMessageHandler getMessageHandler(){return mc;}
+	public void setMessageHandler(MatchMessageHandler mc){this.mc.setMessageHandler(mc);}
+	public MatchMessageHandler getMessageHandler(){return mc.getMessageHandler();}
 
 	public void setVictoryCondition(VictoryCondition vc){
 		this.vc = vc;
@@ -840,15 +799,15 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 				shouldKill = true;
 			} else if (!inmatch && !tops.playerReady(p)){ /// Players are about to be teleported into arena
 				t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for not being ready");
-				MessageController.sendMessage(p,"&eYou were &4killed&e bc of the following. ");
+				MessageUtil.sendMessage(p,"&eYou were &4killed&e bc of the following. ");
 				String notReady = tops.getRequiredString(p,"&eYou needed");
-				MessageController.sendMessage(p,notReady);
+				MessageUtil.sendMessage(p,notReady);
 				BAPlayerListener.addMessageOnReenter(p.getName(),"&eYou were &4killed&e bc of the following. "+notReady);
 				//				Log.warn("[BattleArena] " + p.getName() +"  killed for " + notReady);
 				shouldKill = true;
 			}
 			if (shouldKill){
-				killPlayer(p,false);
+				try{p.setHealth(0);} catch (Exception e){}
 			} else {
 				alive.add(p);
 			}
@@ -859,10 +818,10 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	public boolean intervalTick(int remaining){
 		if (remaining <= 0){
 			vc.timeExpired();
-			mc.sendTimeExpired();
+			try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
 		} else {
 			vc.timeInterval(remaining);
-			mc.sendOnIntervalMsg(remaining);
+			try{mc.sendOnIntervalMsg(remaining);}catch(Exception e){e.printStackTrace();}
 		}	
 		return true;
 	}
@@ -897,15 +856,9 @@ public class Match implements Runnable, CountdownCallback, ArenaListener {
 	public String toString(){
 		StringBuilder sb = new StringBuilder("[Match:"+id+":" + arena.getName() +" ,"); 
 		for (Team t: teams){
-			sb.append("["+t.getDisplayName() + "] ,");
-		}
+			sb.append("["+t.getDisplayName() + "] ,");}
 		sb.append("]");
 		return sb.toString();
 	}
-
-	public void unregister(ArenaListener arenaListener) {
-
-	}
-
 
 }

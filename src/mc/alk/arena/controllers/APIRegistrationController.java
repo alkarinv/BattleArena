@@ -13,18 +13,23 @@ import mc.alk.arena.events.ReservedArenaEvent;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
-import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.util.Log;
 
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class APIRegistrationController {
 
 	private void init(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, boolean match){
+		if (plugin == null){
+			Log.err("Plugin can not be null");
+			return;
+		}
 		/// Create our plugin folder if its not there
 		File dir = plugin.getDataFolder();
 		if (!dir.exists()){
@@ -86,7 +91,15 @@ public class APIRegistrationController {
 		init(plugin,name,cmd,arenaClass,true);
 
 		/// Set up command executors
-		plugin.getCommand(cmd).setExecutor(executor);
+		registerCommand(plugin, cmd, executor);
+	}
+
+	private void registerCommand(JavaPlugin plugin, String cmd, CommandExecutor executor) {
+		try{
+			plugin.getCommand(cmd).setExecutor(executor);
+		} catch(Exception e){
+			Log.err(plugin.getName() + " command " + cmd +" was not found. Did you register it in your plugin.yml?");
+		}
 	}
 
 
@@ -96,13 +109,13 @@ public class APIRegistrationController {
 
 	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor) {
 		init(plugin,name,cmd,arenaClass,false);
-		MatchParams mp = ParamController.findParamInst(name);
+		MatchParams mp = ParamController.getMatchParamCopy(name);
 		if (mp != null){
 			/// TODO this should probably get what event based off of what executor, maybe a map?
 			ReservedArenaEvent event = new ReservedArenaEvent(mp);
 			EventController.addEvent(event);
 			executor.setEvent(event);
-			plugin.getCommand(cmd).setExecutor(executor);
+			registerCommand(plugin, cmd, executor);
 		} else {
 			Log.err(name+" type not found");
 		}
@@ -111,7 +124,7 @@ public class APIRegistrationController {
 	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, 
 			Event event, EventExecutor executor) {
 		init(plugin,name,cmd,arenaClass,false);
-		MatchParams mp = ParamController.findParamInst(name);
+		MatchParams mp = ParamController.getMatchParams(name);
 		if (mp != null){
 			EventController.addEvent(event);
 			executor.setEvent(event);

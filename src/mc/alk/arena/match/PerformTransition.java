@@ -8,7 +8,6 @@ import java.util.Random;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.WorldGuardInterface;
@@ -21,7 +20,10 @@ import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.EffectUtil.EffectWithArgs;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
+import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
@@ -51,7 +53,7 @@ public class PerformTransition {
 	public static boolean transition(Match am, final MatchState transition, Team team, boolean onlyInMatch) {
 		final Set<ArenaPlayer> validPlayers = team.getPlayers();
 		final TransitionOptions mo = am.tops.getOptions(transition);
-		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo + " arena="+arena);
+//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo );
 		if (mo == null)
 			return true;
 
@@ -74,8 +76,10 @@ public class PerformTransition {
 
 	public static boolean transition(final Match am, final MatchState transition, final ArenaPlayer p, 
 			final Team team, final boolean onlyInMatch) {
+//		if (transition == MatchState.ONLEAVE || transition == MatchState.ONCOMPLETE)
+//			Util.printStackTrace();
 		if (debug) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +p.getName() +
-				" ops="+am.tops.getOptions(transition));
+				" ops="+am.tops.getOptions(transition) +"  inArena="+am.insideArena(p));
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		if (mo == null){
 			return true;}
@@ -137,7 +141,7 @@ public class PerformTransition {
 		} else if (transition == MatchState.ONPRESTART && !insideArena){
 			/// Warn players about requirements
 			if (!am.tops.playerReady(p)){
-				MessageController.sendMessage(p, am.tops.getRequiredString(p,"&eRemember you still need the following"));}
+				MessageUtil.sendMessage(p, am.tops.getRequiredString(p,"&eRemember you still need the following"));}
 		}
 
 		/// If the player is offline, still restore their exp and items
@@ -194,7 +198,7 @@ public class PerformTransition {
 
 		String prizeMsg = mo.getPrizeMsg(null);
 		if (prizeMsg != null)
-			MessageController.sendMessage(p,"&eYou have been given \n"+prizeMsg);
+			MessageUtil.sendMessage(p,"&eYou have been given \n"+prizeMsg);
 		if (teleportIn){
 			transition(am, MatchState.ONSPAWN, p, team, false);
 		}

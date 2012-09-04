@@ -8,8 +8,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.VictoryUtil;
 
-
-
 public class HighestKills extends VictoryCondition{
 	public HighestKills(Match match) {
 		super(match);

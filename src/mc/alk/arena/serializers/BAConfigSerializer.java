@@ -3,10 +3,10 @@ package mc.alk.arena.serializers;
 import java.util.List;
 import java.util.Set;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.serializers.BroadcastOptions.BroadcastOption;
+import mc.alk.arena.objects.messaging.AnnouncementOptions;
+import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
 
@@ -17,7 +17,8 @@ public class BAConfigSerializer extends ConfigSerializer{
 	public void loadAll(){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
 		parseDefaultMatchOptions(config.getConfigurationSection("defaultMatchOptions"));
-		loadClasses(config.getConfigurationSection("classes"));
+		/// This is here for backwards compatibility with old configs
+		BAClassesSerializer.loadClasses(config.getConfigurationSection("classes"));
 		Defaults.MONEY_STR = config.getString("moneyName");
 		String[] defaultArenaTypes = {"arena","skirmish","colliseum","freeForAll","deathMatch","tourney","battleground"};
 
@@ -39,19 +40,20 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.AUTO_EVENT_COUNTDOWN_TIME = cs.getInt("eventCountdownTime",180);
 		Defaults.ANNOUNCE_EVENT_INTERVAL = cs.getInt("eventCountdownInterval", 60);
 		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", 30);
-		parseAnnouncementOptions(cs.getConfigurationSection("announcements"));
-		Log.info(BattleArena.getPName()+" BroadcastOptions announceOnPrestart=" + BroadcastOptions.bcOnPrestart +
-				" usingHerchat="+(BroadcastOptions.getOnPrestartChannel()!=null));
-		Log.info(BattleArena.getPName()+" BroadcastOptions announceOnVictory=" + BroadcastOptions.bcOnVictory +
-				" usingHerchat="+(BroadcastOptions.getOnVictoryChannel()!=null));
+		AnnouncementOptions bo = parseAnnouncementOptions(cs.getConfigurationSection("announcements"));
+		AnnouncementOptions.setDefaultOptions(bo);
+//		Log.info(BattleArena.getPName()+" AnnouncementOptions announceOnPrestart=" + AnnouncementOptions.bcOnPrestart +
+//				" usingHerchat="+(AnnouncementOptions.getOnPrestartChannel()!=null));
+//		Log.info(BattleArena.getPName()+" AnnouncementOptions announceOnVictory=" + AnnouncementOptions.bcOnVictory +
+//				" usingHerchat="+(AnnouncementOptions.getOnVictoryChannel()!=null));
 	}
 
-	private static void parseAnnouncementOptions(ConfigurationSection cs) {
+	public static AnnouncementOptions parseAnnouncementOptions(ConfigurationSection cs) {
 		if (cs == null){
 			Log.err("announcements are null ");
-			return;
+			return null;
 		}
-		BroadcastOptions an = new BroadcastOptions();
+		AnnouncementOptions an = new AnnouncementOptions();
 		Set<String> keys = cs.getKeys(false);
 		for (String key: keys){
 			MatchState ms = MatchState.fromName(key);
@@ -63,13 +65,16 @@ public class BAConfigSerializer extends ConfigSerializer{
 			List<String> list = cs.getStringList(key);
 			for (String s: list){
 				KeyValue<String,String> kv = KeyValue.split(s,"=");
-				BroadcastOption bo = BroadcastOption.fromName(kv.key);
+				AnnouncementOption bo = AnnouncementOption.fromName(kv.key);
 				if (bo == null){
-					Log.err("Couldnt recognize BroadcastOption " + s);
+					Log.err("Couldnt recognize AnnouncementOption " + s);
 					continue;					
 				}
+//				System.out.println("!!!!! Setting broadcast option " +ms +"  " + bo + "  " + kv.value);
 				an.setBroadcastOption(ms, bo,kv.value);
 			}
 		}
+		return an;
 	}
+
 }

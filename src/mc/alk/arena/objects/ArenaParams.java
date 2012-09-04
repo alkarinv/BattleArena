@@ -1,6 +1,7 @@
 package mc.alk.arena.objects;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
@@ -62,7 +63,7 @@ public class ArenaParams {
 		calcMaxPlayers();
 	}
 
-	public void setALLTOPS(MatchTransitions allTops) {
+	public void setAllTransitionOptions(MatchTransitions allTops) {
 		this.allTops = allTops;
 	}
 	public MatchTransitions getTransitionOptions(){
@@ -90,15 +91,6 @@ public class ArenaParams {
 		}
 	}
 
-	public String toPrettyString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("&e"+arenaType.toPrettyString(minTeamSize));
-		return sb.toString();
-	}
-
-	public String toString(){
-		return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
-	}
 	public static String rangeString(final int min,final int max){
 		if (max == MAX){ return min+"+";} /// Example: 2+
 		if (min == max){ return min+"";} /// Example: 2	
@@ -123,6 +115,7 @@ public class ArenaParams {
 	public boolean matchesNTeams(final ArenaParams q) {
 		return matchesNTeams(q.getMinTeams());
 	}
+	
 	public boolean matchesNTeams(int nteams) {
 		return ( (minTeams <= nteams && maxTeams>=nteams) || minTeams==ANY || nteams==ANY);
 	}
@@ -130,7 +123,6 @@ public class ArenaParams {
 	public boolean valid() {
 		return (arenaType != null && minTeamSize >= 0 && maxTeamSize >= 0 && minTeamSize <= maxTeamSize);
 	}
-
 
 	public boolean matchesTeamSize(final ArenaParams q) {
 		return (this.minTeamSize <= q.minTeamSize ) && (this.maxTeamSize == MAX  || this.maxTeamSize >= q.maxTeamSize);
@@ -227,5 +219,14 @@ public class ArenaParams {
 	public String getDBName(){
 		return dbName;
 	}
+	
+	public String toPrettyString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("&e"+arenaType.toPrettyString(minTeamSize));
+		return sb.toString();
+	}
 
+	public String toString(){
+		return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
+	}
 }

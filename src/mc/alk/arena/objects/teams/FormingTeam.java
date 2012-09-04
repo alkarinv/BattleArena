@@ -3,8 +3,8 @@ package mc.alk.arena.objects.teams;
 import java.util.HashSet;
 import java.util.Set;
 
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.util.MessageUtil;
 
 
 
@@ -31,7 +31,7 @@ public class FormingTeam extends Team{
 	
 	public void sendJoinedPlayersMessage(String message) {
 		for (ArenaPlayer p: joined_players){
-			MessageController.sendMessage(p, message);
+			MessageUtil.sendMessage(p, message);
 		}
 	}
 	public void sendUnjoinedPlayersMessage(String message) {
@@ -39,7 +39,7 @@ public class FormingTeam extends Team{
 		if (unjoined == null)
 			return;
 		for (ArenaPlayer p: unjoined){
-			MessageController.sendMessage(p, message);
+			MessageUtil.sendMessage(p, message);
 		}
 	}
 	

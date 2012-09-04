@@ -162,6 +162,11 @@ public class InventoryUtil {
 		return count;
 	}
 
+	   /**
+     * Return a item stack from a given string
+     * @param name
+     * @return
+     */
 	public static ItemStack getItemStack(String name) {
 		if (name == null || name.isEmpty())
 			return null;
@@ -380,38 +385,14 @@ public class InventoryUtil {
 	}
 
 	public static void clearInventory(Player p) {
+//		System.out.println("Clearing inventory of " + p.getName());
 		try{
 			PlayerInventory inv = p.getInventory();
 			closeInventory(p);
-			EntityHuman eh = ((CraftPlayer)p).getHandle();
 			if (inv != null){
 				inv.clear();
 				inv.setArmorContents(null);
 				inv.setItemInHand(null);
-				try {
-					/// get rid of items inside the crafting square
-					ContainerPlayer cp = (ContainerPlayer) eh.defaultContainer;
-					int size = cp.craftInventory.getContents().length;
-
-					for (int i=0;i< size;i++){
-						cp.craftInventory.setItem(i, null);
-					}
-					/// Check for a workbench, dispenser
-					/// No need for this now, closing inventory before this does the trick
-					//				Container container = (Container) eh.activeContainer;
-					//				size = container.e.size();
-					//				for (int i=0;i< size;i++){
-					//					net.minecraft.server.ItemStack is = container.a(i);
-					//					if (is != null && is.id != 0){
-					//						is.id =0;
-					//						is.count =0;
-					//					}
-					//						
-					//				}
-
-				} catch (Exception e){
-					e.printStackTrace();
-				}
 			}
 		} catch(Exception ee){
 			ee.printStackTrace();
@@ -546,7 +527,7 @@ public class InventoryUtil {
 	 */
 	public static String getItemString(ItemStack is) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(is.getType().toString() +":"+(byte)is.getData().getData()+" ");
+		sb.append(is.getType().toString() +":"+(byte)is.getDurability()+" ");
 		Map<Enchantment,Integer> encs = is.getEnchantments();
 		for (Enchantment enc : encs.keySet()){
 			sb.append(enc.getName() + ":" + encs.get(enc)+" ");
@@ -583,5 +564,18 @@ public class InventoryUtil {
 
 	public static ItemStack getWool(int color) {
 		return new ItemStack(Material.WOOL,1,(short) color);
+	}
+
+	public static void printInventory(Player p) {
+		PlayerInventory pi = p.getInventory();
+		System.out.println("Inventory of "+p.getName());
+		for (ItemStack is: pi.getContents()){
+			if (is != null && is.getType() != Material.AIR){
+				System.out.println(getCommonName(is));}
+		}
+		for (ItemStack is: pi.getArmorContents()){
+			if (is != null && is.getType() != Material.AIR){
+				System.out.println(getCommonName(is));}
+		}
 	}
 }

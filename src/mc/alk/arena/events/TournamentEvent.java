@@ -6,7 +6,6 @@ import java.util.TreeMap;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.events.util.NeverWouldJoinException;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.match.PerformTransition;
@@ -18,6 +17,7 @@ import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.tracker.TrackerInterface;
@@ -101,7 +101,7 @@ public class TournamentEvent extends Event {
 			aliveTeams.add(t);
 		}
 		if (!silent)
-			server.broadcastMessage(Log.colorChat(prefix+"&6 " + teams.size() + " &e" +MessageController.getTeamsOrPlayers(teams.size())+
+			server.broadcastMessage(Log.colorChat(prefix+"&6 " + teams.size() + " &e" +MessageUtil.getTeamsOrPlayers(teams.size())+
 				" will compete in a &6"+nrounds+"&e round tournament"));
 		if (preliminary_round){			
 			makePreliminaryRound();			
@@ -261,7 +261,7 @@ public class TournamentEvent extends Event {
 		int nrounds = getNRounds(size);
 		int idealteam = (int) Math.pow(2, nrounds);
 		if (size > 2 && size % idealteam == 0){
-			if (!silent) Bukkit.broadcastMessage(Log.colorChat(prefix+"&6" + size +" "+MessageController.getTeamsOrPlayers(teams.size())+
+			if (!silent) Bukkit.broadcastMessage(Log.colorChat(prefix+"&6" + size +" "+MessageUtil.getTeamsOrPlayers(teams.size())+
 					"&e have joined, Current tournament will have &6" + nrounds+"&e rounds"));
 		}			
 	}

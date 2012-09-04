@@ -9,8 +9,8 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.EventMessageHandler;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.TeamController;
+import mc.alk.arena.controllers.messaging.EventMessageImpl;
 import mc.alk.arena.events.util.AddToLeastFullTeam;
 import mc.alk.arena.events.util.BinPackAdd;
 import mc.alk.arena.events.util.NeverWouldJoinException;
@@ -88,7 +88,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 
 	public void setParamInst(MatchParams matchParams) {
 		this.matchParams = new MatchParams(matchParams);
-		mc = new MessageController(this);
+		mc = new EventMessageImpl(this);
 	}
 
 	public void startEvent() {

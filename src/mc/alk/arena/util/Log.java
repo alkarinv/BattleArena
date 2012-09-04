@@ -5,7 +5,8 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 
 public class Log {
-
+	public static final boolean debug = true;
+	
 	private static Logger log = Bukkit.getLogger() != null ? Bukkit.getLogger() : Logger.getLogger("Arena");
 
 	public static void info(String msg){
@@ -30,5 +31,7 @@ public class Log {
     public static String colorChat(String msg) {
         return msg.replaceAll("&", Character.toString((char) 167));
     }
-
+    public static void debug(String msg){
+    	System.out.println(msg);
+    }
 }

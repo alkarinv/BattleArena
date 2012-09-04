@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,7 +38,6 @@ public class TeamController  implements Listener {
 	public static Team getTeam(ArenaPlayer p) {
 		return inEvent(p);
 	}
-
 
 	public static Team inEvent(ArenaPlayer p) {
 		synchronized(handlers){
@@ -213,17 +213,23 @@ public class TeamController  implements Listener {
 		return TeamFactory.createTeam(p);
 	}
 
-	public static void removeTeam(Team t, TeamHandler th) {
-		if (DEBUG) System.out.println("------- removing team="+t+" and handler =" + th);
+	public static void removeTeam(Team t, TeamHandler teamHandler) {
+		if (DEBUG) System.out.println("------- removing team="+t+" and handler =" + teamHandler);
 		List<TeamHandler> ths = handlers.get(t);
 		if (ths != null){
-			ths.remove(th);
+			ths.remove(teamHandler);
 			if (ths.isEmpty())
 				handlers.remove(t);
 		} else {
 			handlers.remove(t);
 		}
 		//		logHandlerList("removeTeam " + t +"   " + th);
+	}
+
+	public static void removeTeams(Collection<Team> teams, TeamHandler teamHandler) {
+		for (Team t: teams){
+			removeTeam(t,teamHandler);
+		}
 	}
 
 	//	private static void logHandlerList(String msg) {

@@ -1,6 +1,7 @@
 package mc.alk.arena.objects.queues;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -12,11 +13,11 @@ import mc.alk.arena.controllers.OnMatchComplete;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -66,11 +67,11 @@ public class ArenaMatchQueue {
 			notifyIfNeeded();
 	}
 
-	public synchronized QPosTeamPair add(final Team t1, final MatchParams q) {
+	public synchronized QPosTeamPair add(final Team t1, final MatchParams mp) {
 		if (!ready_matches.isEmpty())
 			notifyAll();
 
-		TeamQueue tq = getTeamQ(q);
+		TeamQueue tq = getTeamQ(mp);
 
 		if (tq == null){
 			return null;}
@@ -78,7 +79,7 @@ public class ArenaMatchQueue {
 		tq.addLast(t1);
 		if (!suspend)
 			notifyIfNeeded(tq);
-		QPosTeamPair qtp = new QPosTeamPair(q,tq.size(),tq.getNPlayers(),t1);
+		QPosTeamPair qtp = new QPosTeamPair(mp,tq.size(),tq.getNPlayers(),t1);
 		return qtp;
 	}
 
@@ -159,7 +160,8 @@ public class ArenaMatchQueue {
 
 				mtq.remove(matchup);
 				arenaqueue.remove(a);
-				final Match m = new Match(ArenaType.createArena(a), omc, matchup.getSpecificQ());
+//				final Match m = new Match(ArenaType.createArena(a), omc, matchup.getSpecificQ());
+				final Match m = new Match(a, omc, matchup.getSpecificQ());
 				m.onJoin(teams);
 				return m;
 			}
@@ -196,7 +198,7 @@ public class ArenaMatchQueue {
 				if (a == null || !a.valid() || !a.matches(mp))
 					continue;
 				//				final ArenaParams ap = a.getParameters();
-				//				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + MessageController.decolorChat(a.toString())+
+				//				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
 				//						"   tq=" + tq +" matches=" + ap.matches(mp) +"  mp="+mp+", --- ap="+ap +"    "+tq.size()+" <? "+ap.getMinTeams());
 				/// Does our specific setting fit with this arena
 				List<Team> qteams = null;
@@ -238,7 +240,8 @@ public class ArenaMatchQueue {
 					}
 					tq.removeAll(oteams); /// remove all competing teams from the q
 					arenaqueue.remove(a);
-					final Match m = new Match(ArenaType.createArena(a), omc, tq.getMatchParams());
+//					final Match m = new Match(ArenaType.createArena(a), omc, tq.getMatchParams());
+					final Match m = new Match(a, omc, tq.getMatchParams());
 					m.onJoin(teams);
 					return m;
 				}
@@ -330,7 +333,24 @@ public class ArenaMatchQueue {
 		suspend = false;
 		notifyAll();
 	}
-
+	
+	public synchronized Collection<Team> purgeQueue(){
+		List<Team> teams = new ArrayList<Team>();
+		synchronized(tqs){
+			for (MatchParams tq : tqs.keySet()){
+				teams.addAll(tqs.get(tq));}
+			tqs.clear();
+		}
+		synchronized(mtqs){
+			for (MatchParams mtq : mtqs.keySet()){
+				for (Matchup t: mtqs.get(mtq)){
+					teams.addAll(t.getTeams());}
+			}
+			mtqs.clear();
+		}
+		return teams;
+	}
+	
 	public Arena getNextArena(MatchParams mp) {
 		synchronized(arenaqueue){ 
 			for (Arena a : arenaqueue){

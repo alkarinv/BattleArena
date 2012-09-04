@@ -13,7 +13,6 @@ import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
@@ -21,6 +20,7 @@ import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.serializers.Persist;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;
@@ -41,48 +41,33 @@ public class Arena implements ArenaListener {
 	protected Map<Long, TimedSpawn> timedSpawns = null; /// Item/mob/other spawn events
 	protected SpawnController spawnController = null;
 
-	protected String wgRegionName;
 	protected Match match = null;
 
+	@Persist
+	protected String wgRegionName;
+
 	/**
-	 * Construct a new arena from a name and parameters
-	 * @param name
-	 * @param ap
+	 * Arena constructor
 	 */
-	public Arena (String name, ArenaParams ap){
-		this.name = name;
-		this.ap = ap;
+	public Arena(){
 		visitorlocations = new HashMap<Player,Location>();
 		locs = new TreeMap<Integer,Location>();
 	}
-
+	
 	/**
-	 * Copy constructor
-	 * @param arena
+	 * Called after the object has been loaded with persistable data  
+	 * Subclasses can override to initialize their own values right after construction
+	 * Or subclasses can override the default constructor 
 	 */
-	public Arena(Arena arena) {
-		this.name = arena.getName();
-		this.ap = arena.getParameters();
-		this.locs = new TreeMap<Integer,Location>();
-		this.locs.putAll(arena.locs);
-		this.visitorlocations = new HashMap<Player,Location>();
-		this.visitorlocations.putAll(arena.visitorlocations);
-		this.vloc = arena.vloc;
-		if (arena.wrlocs != null)
-			this.wrlocs = new TreeMap<Integer,Location>(arena.wrlocs);
-		if (arena.getTimedSpawns() != null){
-			timedSpawns = new HashMap<Long,TimedSpawn>();
-			timedSpawns.putAll(arena.getTimedSpawns());
-		}
-	}
-
+	public void init(){}
+	
 	/**
 	 * Returns the spawn location of this index
 	 * @param index
 	 * @return
 	 */
 	public Location getSpawnLoc(int index){
-		if (locs == null)
+		if (locs == null || locs.isEmpty())
 			return null;
 		if (index >= locs.size())
 			index %= locs.size();
@@ -95,7 +80,7 @@ public class Arena implements ArenaListener {
 	 * @return
 	 */
 	public Location getWaitRoomSpawnLoc(int index){
-		if (wrlocs == null)
+		if (wrlocs == null || wrlocs.isEmpty())
 			return null;
 		if (index >= wrlocs.size())
 			index %= wrlocs.size();
@@ -163,6 +148,12 @@ public class Arena implements ArenaListener {
 	 * @return
 	 */
 	public ArenaParams getParameters() {return ap;}
+
+	/**
+	 * Set the name of this arena
+	 * @param arenaName
+	 */
+	public void setName(String arenaName) {this.name = arenaName;}
 
 	/**
 	 * Get the name of this arena
@@ -250,6 +241,29 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
+	 * Get which match this arena belongs to
+	 */
+	public Match setMatch() {
+		return match;
+	}
+
+	/**
+	 * set the winning team, this will also cause the match to be ended
+	 * @param team
+	 */
+	protected void setWinner(Team team) {
+		match.setVictor(team);
+	}
+
+	/**
+	 * set the winning player, this will also cause the match to be ended
+	 * @param team
+	 */
+	protected void setWinner(ArenaPlayer player) {
+		match.setVictor(player);
+	}
+
+	/**
 	 * Get the current state of the match
 	 * @return
 	 */
@@ -317,17 +331,24 @@ public class Arena implements ArenaListener {
 	}
 
 
+	/**
+	 * Arena printing
+	 */
 	public String toString(){
 		return toSummaryString();
 	}
 	
+	/**
+	 * return detailed arena details (includes bukkit coloring)
+	 * @return
+	 */
 	public String toDetailedString(){
 		StringBuilder sb = new StringBuilder("&6" + name+" &e");
 		sb.append(headerString());
 		sb.append("&e, #Teams:&6"+ap.getNTeamRange());
 		sb.append("&e, #spawns:&6" +locs.size() +"\n");
-		sb.append("&eteamSpawnLocs=&b"+locationsString()+"\n");
-		sb.append("&ewrSpawnLocs=&b"+wrlocationsString()+"\n");
+		sb.append("&eteamSpawnLocs=&b"+getSpawnLocationString()+"\n");
+		sb.append("&ewrSpawnLocs=&b"+getWaitroomLocationString()+"\n");
 		if (timedSpawns != null){
 			sb.append("&e#itemSpawns:&6" +locs.size() +"\n");
 			//			sb.append(itemSpawnString());
@@ -335,6 +356,10 @@ public class Arena implements ArenaListener {
 		return sb.toString();
 	}
 
+	/**
+	 * return arena summary string (includes bukkit coloring)
+	 * @return
+	 */
 	public String toSummaryString(){
 		StringBuilder sb = new StringBuilder("&4" + name+" &e type=&6"+ap.getType());
 		sb.append(" &eTeamSizes:&6"+ap.getTeamSizeRange()+"&e, #players:&6"+ap.getNTeamRange());
@@ -349,7 +374,11 @@ public class Arena implements ArenaListener {
 		return sb.toString();
 	}
 
-	public String locationsString(){
+	/**
+	 * Return a string of appended spawn locations
+	 * @return
+	 */
+	public String getSpawnLocationString(){
 		StringBuilder sb = new StringBuilder();
 		for (Integer i: locs.keySet() ){
 			Location l = locs.get(i);
@@ -357,7 +386,12 @@ public class Arena implements ArenaListener {
 		}
 		return sb.toString();
 	}
-	public String wrlocationsString(){
+	
+	/**
+	 * Return a string of appended waitroom spawn locations
+	 * @return
+	 */
+	public String getWaitroomLocationString(){
 		StringBuilder sb = new StringBuilder();
 		if (wrlocs == null)
 			return sb.toString();
@@ -451,11 +485,16 @@ public class Arena implements ArenaListener {
 	 */
 	public void onExit(ArenaPlayer p, Team team) {}
 
-	public boolean matches(MatchParams q) {
-		boolean matches = getParameters().matches(q);
+	/**
+	 * Checks to see whether this arena has paramaters that match the given matchparams
+	 * @param matchParams
+	 * @return
+	 */
+	public boolean matches(MatchParams matchParams) {
+		boolean matches = getParameters().matches(matchParams);
 		if (!matches)
 			return false;
-		final MatchTransitions tops = q.getTransitionOptions();
+		final MatchTransitions tops = matchParams.getTransitionOptions();
 		if (tops == null)
 			return true;
 		final boolean mo = tops.hasOptions(TransitionOption.TELEPORTWAITROOM);
@@ -463,4 +502,6 @@ public class Arena implements ArenaListener {
 			return false;
 		return true;
 	}
+
+
 }

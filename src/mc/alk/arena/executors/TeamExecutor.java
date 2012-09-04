@@ -240,7 +240,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 //				ae.leave(pl);
 //				t.sendMessage("&eThe team has left the &6" + ae.getName());
 //			} else {
-//				return MC.sendMessage(pl, "&eYou can't leave the &6" +ae.getName()+"&e while its " + ae.getState());
+//				return MatchMessager.sendMessage(pl, "&eYou can't leave the &6" +ae.getName()+"&e while its " + ae.getState());
 //			}
 //		} 
 //		if (!bae.canLeave(sender, pl)){

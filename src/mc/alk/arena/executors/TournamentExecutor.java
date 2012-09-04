@@ -56,10 +56,9 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 				return sendMessage(sender,"&cCouldnt parse number of teams &6"+args[3]+".&e Needs an integer or range. &68, 2+, 2-10, etc");}			
 		}
 		/// Params
-		MatchParams mp = ParamController.getMatchParams((String) args[4]);
+		MatchParams mp = ParamController.getMatchParamCopy((String) args[4]);
 		if (mp == null){
 			return sendMessage(sender,"&cCouldn't find parameters for &6"+args[4]);}
-		mp = new MatchParams(mp);
 		/// now we can finally make our tourney event
 		
 		mp.setTeamSizes(teamSize);

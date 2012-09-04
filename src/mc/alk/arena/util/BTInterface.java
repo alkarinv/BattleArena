@@ -37,10 +37,10 @@ public class BTInterface {
 		return valid;
 	}
 	public static Stat getRecord(TrackerInterface bti, Team t){
-		return bti.getRecord(t.getBukkitPlayers());
+		try{return bti.getRecord(t.getBukkitPlayers());} catch(Exception e){e.printStackTrace();return null;}
 	}
 	public static Stat loadRecord(TrackerInterface bti, Team t){
-		return bti.loadRecord(t.getBukkitPlayers());
+		try{return bti.loadRecord(t.getBukkitPlayers());} catch(Exception e){e.printStackTrace();return null;}
 	}
 	public static TrackerInterface getInterface(MatchParams sq){
 		if (sq == null)

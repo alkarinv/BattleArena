@@ -1,7 +1,6 @@
 package mc.alk.arena.serializers;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,13 +14,14 @@ import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
-import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
+import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.EffectUtil;
@@ -32,7 +32,6 @@ import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -40,25 +39,12 @@ import org.bukkit.inventory.ItemStack;
  * @author alkarin
  *
  */
-public class ConfigSerializer {
-	YamlConfiguration config;
-	File f = null;
+public class ConfigSerializer extends BaseSerializer{
 	static HashMap<ArenaType, ConfigSerializer> configs = new HashMap<ArenaType, ConfigSerializer>();
 
-	public boolean getBoolean(String node) {return config.getBoolean(node, false);}
-	public String getString(String node) {return config.getString(node,null);}
-	public String getString(String node,String def) {return config.getString(node,def);}
-	public int getInt(String node,int i) {return config.getInt(node, i);}
-	public double getDouble(String node, double d) {return config.getDouble(node, d);}
-	public ConfigurationSection getConfigurationSection(String path) {return config.getConfigurationSection(path);}
-	
 	public static class ConfigException extends Exception{
 		private static final long serialVersionUID = 1L;
 		public ConfigException(String s){super(s);}
-	}
-
-	public ConfigSerializer(){
-
 	}
 	
 	public void setConfig(ArenaType at, String f){
@@ -66,31 +52,11 @@ public class ConfigSerializer {
 	}
 
 	public void setConfig(ArenaType at, File f){
-		this.f = f;
-		if (!f.exists()){
-			try {
-				f.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		config = new YamlConfiguration();
-		try {
-			config.load(f);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		super.setConfig(f);
 		if (at != null){ /// Other plugins using BattleArena, the name is the matchType or eventType name
 			configs.put(at, this);}
 	}
-	public void reloadFile(){
-		try {
-			config.load(f);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		
-	}
+	
 	public static void reloadConfig(ArenaType arenaType) {
 		final String name = arenaType.getName();
 		ConfigSerializer cs = configs.get(arenaType);
@@ -107,37 +73,6 @@ public class ConfigSerializer {
 		}
 	}
 	
-	public static void loadClasses(ConfigurationSection cs) {
-		if (cs == null){
-			Log.info(BattleArena.getPName() +" configuration section is null");
-			return;}
-		StringBuilder sb = new StringBuilder();
-		Set<String> keys = cs.getKeys(false);
-		boolean first = true;
-		for (String className : keys){
-			ArenaClass ac = parseArenaClass(cs.getConfigurationSection(className));
-			if (ac == null)
-				continue;
-			if (first) first = false;
-			else sb.append(", ");
-			sb.append(ac.getName());
-			ArenaClassController.addClass(ac);
-		}
-		if (first){
-			Log.info(BattleArena.getPName() +" no predefined classes found. inside of " + cs.getCurrentPath());
-		} else {
-			Log.info(BattleArena.getPName()+" registering classes: " +sb.toString());
-		}
-	}
-
-	private static ArenaClass parseArenaClass(ConfigurationSection cs) {
-		List<ItemStack> items = null;
-		List<EffectWithArgs> effects = null;
-		if (cs.contains("items")){ items = getItemList(cs,"items");}
-		if (cs.contains("enchants")){ effects = getEffectList(cs,"enchants");}
-		return new ArenaClass(cs.getName(),items,effects);
-	}
-
 	public static void setTypeConfig(final String name, ConfigurationSection cs) throws ConfigException {
 		if (cs == null){
 			Log.err("[BattleArena] configSerializer can't load " + name +" with a config section of " + cs);
@@ -226,6 +161,10 @@ public class ConfigSerializer {
 //		pi.setIntervalTime(cs.contains("eventCountdownInterval") ? cs.getInt("eventCountdownInterval") : Defaults.ANNOUNCE_EVENT_INTERVAL);
 		pi.setIntervalTime(cs.contains("matchUpdateInterval") ? cs.getInt("matchUpdateInterval") : Defaults.MATCH_UPDATE_INTERVAL);
 
+		if (cs.contains("announcements")){
+			AnnouncementOptions bo = BAConfigSerializer.parseAnnouncementOptions(cs.getConfigurationSection("announcements"));
+			pi.setAnnouncementOptions(bo);
+		}
 		/// TeamJoinResult in tracking for this match type
 		String dbName = cs.getString("database");
 		if (dbName != null){
@@ -277,7 +216,7 @@ public class ConfigSerializer {
 			}
 			allTops.addTransition(transition,tops);
 		}		
-		pi.setALLTOPS(allTops);
+		pi.setAllTransitionOptions(allTops);
 		ParamController.removeMatchType(pi);
 		ParamController.addMatchType(pi);
 

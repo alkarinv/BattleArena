@@ -1,52 +1,7 @@
+configVersion: 1.1
 ## What is the money on this server called
 moneyName: Gold
 
-### You can add new classes here
-classes:
-    gladiator:
-        items:
-            - diamond_sword: sharp:1 1
-            - bow: 1
-            - arrow: 32
-            - diamond_helm: 1
-            - diamond_chest: 1
-            - diamond_leggings: 1
-            - diamond_boots: 1
-            - 373;8229: 1 # potion of healing 2
-            - 373;8193: 1 # potion of regen
-            - 373;16396: 1 # splash potion of harming 1
-        enchants:
-            - speed:1:900
-            - resistance:1:900
-    archer:
-        items:
-            - iron_sword: sharp:1 1
-            - bow: flame:2 power:3 punch:2 1
-            - arrow: 32
-            - leather_helm: 1
-            - iron_chest: prot:3 1
-            - leather_leggings: 1
-            - leather_boots: 1
-            - 373;8229: 1 # potion of healing 2
-            - 373;8193: 1 # potion of regen
-            - 373;16396: 1 # splash potion of harming 1
-    monk:
-        items:
-            - leather_helm: 1
-            - leather_chest: 1
-            - leather_leggings: 1
-            - leather_boots: 1
-            - 373;8229: 2 # potion of healing 2
-            - 373;8193: 2 # potion of regen
-            - 373;16396: 3 # splash potion of harming 1
-        enchants:
-            - strength:3:900 # increase attack power
-            - speed:2:900 # increase movement
-            - haste:3:900 # increase attack speed
-            - resistance:2:900 # reduce damage taken
-            - jump:2:900 # jump 2 blocks higher than normal
-            - regen:1:900 # regen life
-            
 ## default Match Options (these can be overridden by each match type)
 defaultMatchOptions:
     secondsTillMatch: 3 ## Time between onPrestart and onStart
@@ -54,16 +9,19 @@ defaultMatchOptions:
     matchTime: 120 ## How long do timed matches last, (in seconds)
     matchUpdateInterval: 30 ## For timed matched, how long between sending players match updates
 
+    ### Match Announcements
+    ## these only affect the broadcasts to the server or channel, not the messages the fighting players receive
+    ## announce : announce these messages 
+    ## dontannounce : dont announce these messages
+    ## server : use herochat with the channel specified
+    ## herochat=<channel> : use herochat with the channel specified
+    announcements:
+        onPreStart: [ announce, server ]  ## match going to happen soon, example 'P1[p1Elo] vs P2[p2elo]'
+        onVictory:  [ announce, server ] ## match has been won, exmaple 'P1[p1elo] has defeated P2[p2elo]'
+
+defaultEventOptions:
     eventCountdownTime: 180 ## How long before announcing an automated event and its start
     eventCountdownInterval: 60 ## How often will it announce a reminder that its open and you can join
-
-    ### Match Announcements
-    ## these only affect the broadcasts, not the messages the fighting players receive
-    ## announce : announce this message to the server
-    ## hc=<channel> : use herochat with the channel specified
-    announcements:
-        onPreStart: [announce, hc=pvp ]  ## match going to happen soon, example 'P1[p1Elo] vs P2[p2elo]'
-        onVictory: [announce, hc=pvp ] ## match has been won, exmaple 'P1[p1elo] has defeated P2[p2elo]'
 
 ### Prerequisites
 # prerequisites is what they need to have BEFORE joining, this will also be rechecked when the players teleport in

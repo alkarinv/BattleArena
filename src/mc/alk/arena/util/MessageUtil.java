@@ -2,10 +2,10 @@ package mc.alk.arena.util;
 
 import java.io.File;
 import java.util.Formatter;
+import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.objects.ArenaPlayer;
 
 import org.bukkit.command.CommandSender;
@@ -89,16 +89,16 @@ public class MessageUtil {
 		for (String msg: msgs){
 			if (p instanceof Player){
 				if (((Player) p).isOnline())
-					p.sendMessage(MessageController.colorChat(msg));			
+					p.sendMessage(colorChat(msg));			
 			} else {
-				p.sendMessage(MessageController.colorChat(msg));
+				p.sendMessage(colorChat(msg));
 			}	
 		}
 		return true;
 	}
 	
 	public static void sendPlayerMessage(Set<Player> players, String message) {
-		final String msg = MessageController.colorChat(message);
+		final String msg = colorChat(message);
 		for (Player p: players){
 			p.sendMessage(msg);
 		}
@@ -121,9 +121,22 @@ public class MessageUtil {
 	}
 
 	public static void sendMessage(Set<ArenaPlayer> players, String message) {
-		final String msg = MessageController.colorChat(message);
+		final String msg = colorChat(message);
 		for (ArenaPlayer p: players){
 			p.getPlayer().sendMessage(msg);
 		}
+	}
+	
+	public static String convertToString(List<String> strs){
+		if (strs == null)
+			return null;
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		for (String s : strs){
+			if (!first) sb.append("\n");
+			sb.append(s+"\n");
+			first = false;
+		}
+		return sb.toString();
 	}
 }

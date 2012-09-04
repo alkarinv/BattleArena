@@ -1,7 +1,6 @@
 package mc.alk.arena.executors;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.events.Event;
 import mc.alk.arena.events.util.TeamJoinHandler.TeamJoinResult;
@@ -83,7 +82,7 @@ public class EventExecutor extends BAExecutor{
 		if (!event.isOpen() && !event.isRunning()){
 			return sendMessage(sender,"&eThere is no open "+event.getCommand()+" right now");}
 		int size = event.getNteams();
-		String teamOrPlayers = MessageController.getTeamsOrPlayers(event.getTeamSize());
+		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(event.getTeamSize());
 		sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers+" that have joined");
 		StringBuilder sb = new StringBuilder(event.getInfo());
 		return sendMessage(sender,sb.toString());
@@ -104,7 +103,7 @@ public class EventExecutor extends BAExecutor{
 		if (!event.isOpen()){
 			return sendMessage(sender,"&eThere is no open &6"+event.getCommand()+"&e right now");}
 		int size = event.getNteams();
-		String teamOrPlayers = MessageController.getTeamsOrPlayers(event.getTeamSize());
+		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(event.getTeamSize());
 		return  sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers+" that have joined");
 	}
 
@@ -125,7 +124,7 @@ public class EventExecutor extends BAExecutor{
 		MatchTransitions tops = sq.getTransitionOptions();
 		if(!tops.playerReady(p)){
 			String notReadyMsg = tops.getRequiredString("&eYou need the following to compete!!!\n"); 
-			return MessageController.sendMessage(p,notReadyMsg);
+			return MessageUtil.sendMessage(p,notReadyMsg);
 		}
 		Team t = teamc.getSelfTeam(p);
 		if (t==null){

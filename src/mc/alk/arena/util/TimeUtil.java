@@ -32,7 +32,7 @@ public class TimeUtil {
                 	mult = 0.2;
                 }
                 Defaults.TICK_MULT = mult;
-//                MessageController.sendMessage(null, ChatColor.GRAY + "[BattleArena] multiplier: " + mult + "x");
+//                MatchMessageImpl.sendMessage(null, ChatColor.GRAY + "[BattleArena] multiplier: " + mult + "x");
             }
         };
         

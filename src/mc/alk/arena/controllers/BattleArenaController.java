@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,12 +12,12 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.listeners.MatchListener;
 import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
@@ -173,6 +174,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 			return;
 		stop = true;
 		amq.stop();
+		amq.purgeQueue();
 		synchronized(running_matches){
 			for (Match am: running_matches){
 				cancelMatch(am);
@@ -321,9 +323,10 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		}
 	}
 
-	public void purgeQueue() {
-		// TODO Auto-generated method stub
-		
+	public Collection<Team> purgeQueue() {
+		Collection<Team> teams = amq.purgeQueue();
+		TeamController.removeTeams(teams, this);
+		return teams;
 	}
 	
 }

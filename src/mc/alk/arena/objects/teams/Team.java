@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.entity.Player;
 
@@ -164,7 +164,7 @@ public class Team {
 
 	public void sendMessage(String message) {
 		for (ArenaPlayer p: players){
-			MessageController.sendMessage(p, message);}
+			MessageUtil.sendMessage(p, message);}
 	}
 	public void sendToOtherMembers(ArenaPlayer player, String message) {
 		for (ArenaPlayer p: players){

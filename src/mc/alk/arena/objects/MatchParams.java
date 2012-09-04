@@ -3,7 +3,10 @@ package mc.alk.arena.objects;
 import java.util.ArrayList;
 import java.util.List;
 
+import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
+import mc.alk.arena.util.MessageUtil;
 
 
 public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
@@ -14,6 +17,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	String prettyName;
 	VictoryType vc = null;
 	Integer matchTime, intervalTime;
+	AnnouncementOptions ao = null;
 
 
 	public MatchParams(ArenaType at, Rating rating, VictoryType vc) {
@@ -31,6 +35,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.vc = q.vc;
 		this.matchTime = q.matchTime;
 		this.intervalTime = q.intervalTime;
+		this.ao = q.ao;
 	}
 
 	public int getMinTeams(){return minTeams;}
@@ -50,22 +55,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		startMsgs.add(str);
 	}
 
-	public String getStartMsgs(){return convertToString(startMsgs);}
-	public String getSendMatchWillBeginMessage() {return convertToString(matchWillBeginMsgs);}
-
-	public static String convertToString(List<String> strs){
-		if (strs == null)
-			return null;
-		StringBuilder sb = new StringBuilder();
-		boolean first = true;
-		for (String s : strs){
-			if (!first) sb.append("\n");
-			sb.append(s+"\n");
-			first = false;
-		}
-		return sb.toString();
-	}
-
+	public String getStartMsgs(){return MessageUtil.convertToString(startMsgs);}
+	public String getSendMatchWillBeginMessage() {return MessageUtil.convertToString(matchWillBeginMsgs);}
 
 	public int compareTo(MatchParams other) {
 		Integer hash = this.hashCode();
@@ -78,9 +69,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	public void setVictoryCondition(VictoryType victoryCondition) {
 		this.vc = victoryCondition;
-	}
-	public String toString(){
-		return super.toString()+",vc=" + vc.getName();
 	}
 
 	public void setName(String name) {
@@ -115,4 +103,15 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		return this.hashCode() == ((MatchParams) other).hashCode();
 	}
 
+	public void setAnnouncementOptions(AnnouncementOptions announcementOptions) {
+		this.ao = announcementOptions;
+	}
+
+	public AnnouncementOptions getAnnouncementOptions() {
+		return ao;
+	}
+
+	public String toString(){
+		return super.toString()+",vc=" + vc.getName();
+	}
 }

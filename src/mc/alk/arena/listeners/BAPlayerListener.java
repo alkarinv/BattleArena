@@ -7,10 +7,10 @@ import java.util.HashSet;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.PlayerStoreController.PInv;
+import mc.alk.arena.controllers.messaging.MatchMessageImpl;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.FileLogger;
@@ -22,6 +22,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -55,7 +56,14 @@ public class BAPlayerListener implements Listener  {
 		this.bac = bac;
 	}
 	
-	@EventHandler
+	/**
+	 * 
+	 * Why priority.HIGHEST: if an exception happens after we have already set their respawn location, 
+	 * they relog in at a separate time and will not get teleported to the correct place.
+	 * As a workaround, try to handle this event last.
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		final Player p = event.getPlayer();
 		final String name = p.getName();
@@ -86,12 +94,13 @@ public class BAPlayerListener implements Listener  {
 		final String name = p.getName();
 		final String msg = messagesOnRespawn.remove(p.getName());
 		if (msg != null){
-			MessageController.sendMessage(p, msg);
+			MatchMessageImpl.sendMessage(p, msg);
 		}
-//		System.out.println(" playerReturned event player = " + p.getName() +"  " + event);
+//		System.out.println(" playerReturned event player = " + p.getName() +"  " + event +"   " + itemRestore.containsKey(p.getName()));
 
 		if (die.remove(name)){
-			MessageController.sendMessage(p, "&eYou have been killed by the Arena for not being online");
+			InventoryUtil.printInventory(p);
+			MatchMessageImpl.sendMessage(p, "&eYou have been killed by the Arena for not being online");
 			p.setHealth(0);
 			return;
 		}
@@ -133,10 +142,10 @@ public class BAPlayerListener implements Listener  {
 			Plugin plugin = BattleArena.getSelf();
 			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
-//					System.out.println("restoring items to " + name);
 					Player pl;
 					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);} 
 					else {pl = Bukkit.getPlayer(name);}
+//					System.out.println("restoring items to " + name +"   pl = " + pl);
 					if (pl != null){
 						
 						PInv pinv = itemRestore.remove(pl.getName());
@@ -153,12 +162,10 @@ public class BAPlayerListener implements Listener  {
 //		}
 	}
 
-	public static void killOnReenter(String playerName, boolean wipeInventory) {
-		if (wipeInventory) clearInventory.add(playerName);
+	public static void killOnReenter(String playerName) {
 		die.add(playerName);
 	}
-	public static void teleportOnReenter(String playerName, Location loc, boolean wipeInventory) {
-		if (wipeInventory) clearInventory.add(playerName);
+	public static void teleportOnReenter(String playerName, Location loc) {
 		tp.put(playerName,loc);
 	}
 

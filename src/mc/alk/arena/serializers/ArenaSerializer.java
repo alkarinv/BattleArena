@@ -11,10 +11,10 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.BattleArenaController;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.objects.ArenaParams;
-import mc.alk.arena.objects.ArenaType;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.Persistable;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.spawns.EntitySpawn;
 import mc.alk.arena.objects.spawns.ItemSpawn;
 import mc.alk.arena.objects.spawns.SpawnGroup;
@@ -220,6 +220,9 @@ public class ArenaSerializer {
 				arena.addTimedSpawn(s);
 			}				
 		}
+		cs = cs.getConfigurationSection("persistable");
+		Persistable.yamlToObjects(arena, cs);
+		arena.init();
 		arena.setParameters(q);
 		bac.addArena(arena);
 		return true;
@@ -245,10 +248,11 @@ public class ArenaSerializer {
 			String arenaname = arena.getName();
 
 			HashMap<String, Object> amap = new HashMap<String, Object>();
-			if (!arena.valid()){
-				Log.err(MessageController.decolorChat("Unfinished arena not being saved  name=" + arena.getName() + " details=" + arena));
-				continue;
-			}
+			/// Do we really need to cut them off?? right now I think no
+//			if (!arena.valid()){
+//				Log.err(MatchMessageImpl.decolorChat("Unfinished arena not being saved  name=" + arena.getName() + " details=" + arena));
+//				continue;
+//			}
 
 			amap.put("type", arena.getArenaType().getName());
 			amap.put("teamSize", arena.getParameters().getTeamSizeRange());
@@ -284,6 +288,11 @@ public class ArenaSerializer {
 			Location vloc = arena.getVisitorLoc();
 			if (vloc != null)
 				amap.put("vloc",SerializerUtil.getLocString(vloc));
+
+			Map<String,Object> persisted = Persistable.objectsToYamlMap(arena);
+			if (persisted != null && !persisted.isEmpty()){
+				amap.put("persistable", persisted);
+			}
 
 			map.put(arenaname, amap);
 			if (log)

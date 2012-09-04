@@ -2,7 +2,6 @@ package mc.alk.arena.controllers;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
@@ -12,7 +11,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -25,36 +23,28 @@ import org.bukkit.plugin.Plugin;
 public class TeleportController {
 	static Set<Player> teleporting = Collections.synchronizedSet(new HashSet<Player>());
 
-	static Random rand = new Random();
 	static Plugin plugin;
 
 	public static void setup(Plugin plugin){
 		TeleportController.plugin = plugin;
 	}
 
-	///TODO Keep the match players UNTIL bukkit fixes tp invisible bug
+	///TODO Keep the match players and show players UNTIL bukkit fixes tp invisible bug
 	public static void teleportPlayer(final Player p, final Location loc, boolean in, final boolean die, final boolean wipe
 			,Set<ArenaPlayer> matchPlayers){
 		if (!p.isOnline() || p.isDead()){
 			if (Defaults.DEBUG)Log.warn("[BattleArena] Offline teleporting Player=" + p.getName() + " loc=" + loc + "  " + die +":"+ wipe);
-			if (die){
-				BAPlayerListener.killOnReenter(p.getName(),wipe);
-			} else {
-				BAPlayerListener.teleportOnReenter(p.getName(),loc,wipe);
+			BAPlayerListener.teleportOnReenter(p.getName(),loc);
+			if (wipe){
+				InventoryUtil.clearInventory(p);
 			}
 			return;
 		}
 		teleport(p,loc);
 		for(ArenaPlayer p2 : matchPlayers) {
-//			if(!p2.getPlayer().canSee(p)) {
-				p2.getPlayer().showPlayer(p);
-//			}
-//			if (!p.canSee(p2.getPlayer())){
-				p.showPlayer(p2.getPlayer());
-//			}
+			p2.getPlayer().showPlayer(p);
+			p.showPlayer(p2.getPlayer());
 		}
-
-
 	}
 
 	private static void teleporting(Player player, boolean b){
@@ -106,14 +96,5 @@ public class TeleportController {
 		}
 		if (!p.teleport(loc)){
 			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + p.getName() + " loc=" + loc);}
-		final int rtime = rand.nextInt(10);
-//		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
-//
-//			@Override
-//			public void run() {
-//				p.teleport(loc);
-//			}
-//			
-//		}, rtime);
 	}
 }

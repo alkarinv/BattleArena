@@ -15,12 +15,13 @@ import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.ArenaEditor.CurrentSelection;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.EventController;
-import mc.alk.arena.controllers.MessageController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
+import mc.alk.tracker.controllers.MessageController;
 
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -102,7 +103,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 
 			}
 			/// TeamJoinResult in the usages, for showing help messages
-			if (MessageController.hasMessage("usage", mc.cmds()[0])){
+			if (MessageUtil.hasMessage("usage", mc.cmds()[0])){
 				usage.put(mc,MessageController.getMessage("usage", mc.cmds()[0]));
 			} else if (!mc.usageNode().isEmpty()){
 				usage.put(mc, MessageController.getMessage("usage",mc.usageNode()));
@@ -117,13 +118,20 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	private String createUsage(Method method) {
 		MCCommand cmd = method.getAnnotation(MCCommand.class);
 		StringBuilder sb = new StringBuilder(cmd.cmds()[0] +" ");
+		boolean firstPlayerSender = cmd.inGame();
 		for (Class<?> theclass : method.getParameterTypes()){
 			if (Player.class ==theclass){
-				sb.append("<player> ");
+				if (firstPlayerSender)
+					firstPlayerSender = false;
+				else 
+					sb.append("<player> ");
 			} else if (OfflinePlayer.class ==theclass){
 				sb.append("<player> ");
 			} else if (ArenaPlayer.class == theclass){
-				sb.append("<player> ");
+				if (firstPlayerSender)
+					firstPlayerSender = false;
+				else 
+					sb.append("<player> ");
 			} else if (Arena.class == theclass){
 				sb.append("<arena> ");
 			} else if (String.class == theclass){
@@ -151,7 +159,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		/// Find our method, and verify all the annotations
 		TreeMap<Integer,MethodWrapper> methodmap = methods.get(args[0].toLowerCase());
 		if (methodmap == null || methodmap.isEmpty()){
-			return MessageController.sendMessage(sender, "That command does not exist!");
+			return MessageUtil.sendMessage(sender, "That command does not exist!");
 		}
 
 		MCCommand mccmd = null;
@@ -179,16 +187,16 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		/// and handle all errors
 		if (!success && errs != null && !errs.isEmpty()){
 			if (errs.size() == 1){
-				MessageController.sendMessage(sender, errs.get(0).getMessage());
-				MessageController.sendMessage(sender, getUsage(command, mccmd));
+				MessageUtil.sendMessage(sender, errs.get(0).getMessage());
+				MessageUtil.sendMessage(sender, getUsage(command, mccmd));
 				return true;
 			}
 			HashSet<String> errstrings = new HashSet<String>();
 			for (InvalidArgumentException e: errs){
 				errstrings.add(e.getMessage());}
 			for (String msg : errstrings){
-				MessageController.sendMessage(sender, msg);}
-			MessageController.sendMessage(sender, getUsage(command, mccmd));
+				MessageUtil.sendMessage(sender, msg);}
+			MessageUtil.sendMessage(sender, getUsage(command, mccmd));
 		}
 		return true;
 	}
@@ -201,7 +209,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 
 		/// Check our permissions
 		if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
-			throw new InvalidArgumentException(MessageController.getMessage("main", "no_permission"));
+			throw new InvalidArgumentException(MessageUtil.getMessage("main", "no_permission"));
 
 		/// Verify min number of arguments
 		if (args.length < cmd.min()){
@@ -359,12 +367,12 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	}
 
 	private MatchParams verifyMatchParams(Command command) throws InvalidArgumentException {
-		MatchParams mp = ParamController.getMatchParams(command.getName());
+		MatchParams mp = ParamController.getMatchParamCopy(command.getName());
 		if (mp != null){
 			return mp;
 		} else {
 			for (String alias : command.getAliases()){
-				mp = ParamController.getMatchParams(alias);
+				mp = new MatchParams(ParamController.getMatchParamCopy(alias));
 				if (mp != null)
 					return mp;
 			}
@@ -387,7 +395,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			return MessageController.getMessage("usage",cmd.usageNode());
 		if (!cmd.usage().isEmpty()) /// Get from usage
 			return "&6"+c.getName()+" " + cmd.usage();
-		if (MessageController.hasMessage("usage", cmd.cmds()[0])) /// Maybe a default message node??
+		if (MessageUtil.hasMessage("usage", cmd.cmds()[0])) /// Maybe a default message node??
 			return MessageController.getMessage("usage", cmd.cmds()[0]);
 		return "&6/"+c.getName()+" " + usage.get(cmd); /// Return the usage from our map
 	}
@@ -409,7 +417,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			try{
 				page = Integer.valueOf((String) args[1]);
 			} catch (Exception e){
-				MessageController.sendMessage(sender, ChatColor.RED+" " + args[1] +" is not a number, showing help for page 1.");
+				MessageUtil.sendMessage(sender, ChatColor.RED+" " + args[1] +" is not a number, showing help for page 1.");
 			}
 		}
 
@@ -433,42 +441,42 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			npages += onlyop.size();
 		npages = (int) Math.ceil( (float)npages/LINES_PER_PAGE);
 		if (page > npages || page <= 0){
-			MessageController.sendMessage(sender, "&4That page doesnt exist, try 1-"+npages);
+			MessageUtil.sendMessage(sender, "&4That page doesnt exist, try 1-"+npages);
 			return;
 		}
 		if (command != null)
-			MessageController.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 :[Usage] /"+command.getName()+" help <page number>");
+			MessageUtil.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 :[Usage] /"+command.getName()+" help <page number>");
 		else 
-			MessageController.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 :[Usage] /cmd help <page number>");
+			MessageUtil.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 :[Usage] /cmd help <page number>");
 		int i=0;
 		for (String use : available){
 			i++;
 			if (i < (page-1) *LINES_PER_PAGE || i >= page*LINES_PER_PAGE)
 				continue;
-			MessageController.sendMessage(sender, use);
+			MessageUtil.sendMessage(sender, use);
 		}
 		for (String use : unavailable){
 			i++;
 			if (i < (page-1) *LINES_PER_PAGE || i >= page *LINES_PER_PAGE)
 				continue;
-			MessageController.sendMessage(sender, ChatColor.RED+"[Insufficient Perms] " + use);
+			MessageUtil.sendMessage(sender, ChatColor.RED+"[Insufficient Perms] " + use);
 		}
 		if (sender.isOp()){
 			for (String use : onlyop){
 				i++;
 				if (i < (page-1) *LINES_PER_PAGE || i >= page *LINES_PER_PAGE)
 					continue;
-				MessageController.sendMessage(sender, ChatColor.AQUA+"[OP only] &6"+use);
+				MessageUtil.sendMessage(sender, ChatColor.AQUA+"[OP only] &6"+use);
 			}			
 		}
 	}
 
 	public static boolean sendMessage(CommandSender sender, String msg){
-		return MessageController.sendMessage(sender, msg);
+		return MessageUtil.sendMessage(sender, msg);
 	}
 
 	public static boolean sendMessage(ArenaPlayer player, String msg){
-		return MessageController.sendMessage(player, msg);
+		return MessageUtil.sendMessage(player, msg);
 	}
 }
 
