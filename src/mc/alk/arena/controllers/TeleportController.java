@@ -42,8 +42,10 @@ public class TeleportController {
 		}
 		teleport(p,loc);
 		for(ArenaPlayer p2 : matchPlayers) {
-			p2.getPlayer().showPlayer(p);
-			p.showPlayer(p2.getPlayer());
+			for (ArenaPlayer p3 : matchPlayers){
+				p2.getPlayer().showPlayer(p3.getPlayer());
+				p3.getPlayer().showPlayer(p2.getPlayer());
+			}
 		}
 	}
 
