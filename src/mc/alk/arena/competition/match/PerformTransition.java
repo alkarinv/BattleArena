@@ -1,4 +1,4 @@
-package mc.alk.arena.match;
+package mc.alk.arena.competition.match;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,10 +20,8 @@ import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.EffectUtil.EffectWithArgs;
 import mc.alk.arena.util.InventoryUtil;
-import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
-import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
@@ -145,6 +143,7 @@ public class PerformTransition {
 		}
 
 		/// If the player is offline, still restore their exp and items
+		if (mo.hasOption(TransitionOption.RESTOREGAMEMODE)){ am.psc.restoreGamemode(p);}
 		if (mo.restoreExperience()) { am.psc.restoreExperience(p);}
 		if (mo.restoreItems()){
 			if (am.woolTeams && insideArena){
@@ -157,6 +156,7 @@ public class PerformTransition {
 		if (!p.isOnline()){ /// only check after the teleports, just dont give items etc
 			return true;}
 		if (wipeInventory){ InventoryUtil.clearInventory(p.getPlayer());}
+		if (mo.hasOption(TransitionOption.STOREGAMEMODE)){ am.psc.storeGamemode(p);}
 		if (mo.storeExperience()){ am.psc.storeExperience(p);}
 		if (mo.storeItems()) { am.psc.storeItems(p);}
 		if (health != null) p.setHealth(health);

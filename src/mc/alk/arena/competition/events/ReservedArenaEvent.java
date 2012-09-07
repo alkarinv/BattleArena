@@ -1,10 +1,10 @@
-package mc.alk.arena.events;
+package mc.alk.arena.competition.events;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.events.util.NeverWouldJoinException;
-import mc.alk.arena.events.util.TeamJoinHandler.TeamJoinResult;
-import mc.alk.arena.match.Match;
+import mc.alk.arena.competition.events.util.NeverWouldJoinException;
+import mc.alk.arena.competition.events.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
@@ -13,11 +13,10 @@ import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Countdown;
+import mc.alk.arena.util.Log;
+import mc.alk.arena.util.Util;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.WLT;
-
-import com.alk.battleEventTracker.BattleEventTracker;
-import com.alk.battleEventTracker.Log;
 
 public class ReservedArenaEvent extends Event {
 	public ReservedArenaEvent(MatchParams params) {
@@ -39,7 +38,7 @@ public class ReservedArenaEvent extends Event {
 		ac.openMatch(arenaMatch);
 		arenaMatch.onJoin(teams);
 	}
-	
+
 	public void autoEvent(MatchParams mp, Arena arena, int secondsTillStart, int announcementInterval) throws NeverWouldJoinException {
 		openEvent(mp,arena);
 		if (!silent)
@@ -48,7 +47,7 @@ public class ReservedArenaEvent extends Event {
 		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);	
 	}
 
-	
+
 	public void runContinuously(MatchParams mp, Arena arena,int secondsTillNext, int announcementInterval) throws NeverWouldJoinException {
 		autoEvent(mp,arena,secondsTillNext,announcementInterval);
 		runContinuously = true;
@@ -60,10 +59,7 @@ public class ReservedArenaEvent extends Event {
 	@Override
 	public void startEvent() {
 		super.startEvent();
-
-		//		server.broadcastMessage(Log.colorChat(prefix+"&e The " + matchParams.toPrettyString() +" is starting!"));
 		mc.sendEventStarting(teams);
-
 		makeNextRound();
 		startRound();
 	}
@@ -91,15 +87,15 @@ public class ReservedArenaEvent extends Event {
 			return;
 		}
 		m.setResult(am.getResult());
-		if (BattleArena.bet != null) BattleEventTracker.addTeamWinner(victor.getDisplayName(), getName());
+		//		if (BattleArena.bet != null) BattleEventTracker.addTeamWinner(victor.getDisplayName(), getName());
 
 		TrackerInterface bti = BTInterface.getInterface(matchParams);
 		if (bti != null){
 			BTInterface.addRecord(bti, victor.getPlayers(), am.getLosers(), WLT.WIN);			
 		}
-		Integer elo = (int) ((bti != null) ? BTInterface.loadRecord(bti, victor).getRanking() : Defaults.DEFAULT_ELO);
+		//		Integer elo = (int) ((bti != null) ? BTInterface.loadRecord(bti, victor).getRanking() : Defaults.DEFAULT_ELO);
 
-		mc.sendEventWon(victor, elo);
+		eventVictory(victor,m.getResult().getLosers());
 		endEvent();
 		if (runContinuously){
 			Arena arena = ac.getArenaByMatchParams(matchParams);
@@ -116,6 +112,7 @@ public class ReservedArenaEvent extends Event {
 		}
 	}
 
+
 	@Override
 	public TeamJoinResult joining(Team t){
 		TeamJoinResult tjr = super.joining(t);
@@ -125,9 +122,16 @@ public class ReservedArenaEvent extends Event {
 			arenaMatch.onJoin(tjr.team);
 			break;
 		case ADDED_TO_EXISTING:
-			for (ArenaPlayer p : t.getPlayers()){/// subsequent times, just the new players
-				/// dont call arenaMatch.onJoin(Team), as part of the team might already be in arena
-				arenaMatch.playerAddedToTeam(p,tjr.team);}
+			if (arenaMatch.hasTeam(t)){
+				for (ArenaPlayer p : t.getPlayers()){/// subsequent times, just the new players
+					/// dont call arenaMatch.onJoin(Team), as part of the team might already be in arena
+					arenaMatch.playerAddedToTeam(p,tjr.team);}				
+			}
+			String str = Util.playersToCommaDelimitedString(t.getPlayers());
+			for (ArenaPlayer p : t.getPlayers()){
+				tjr.team.sendToOtherMembers(p, str +" has joined the team!");
+			}										
+
 			break;
 		default:
 		}

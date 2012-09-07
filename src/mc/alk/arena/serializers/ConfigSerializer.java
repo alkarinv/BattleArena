@@ -157,13 +157,15 @@ public class ConfigSerializer extends BaseSerializer{
 		pi.setSecondsTillMatch( cs.contains("secondsTillMatch") ? cs.getInt("secondsTillMatch") : Defaults.SECONDS_TILL_MATCH);  
 
 		pi.setMatchTime(cs.contains("matchTime") ? cs.getInt("matchTime") : Defaults.MATCH_TIME);
-//		pi.setEventCound(cs.contains("eventCountdownTime") ? cs.getInt("eventCountdownTime") : Defaults.AUTO_EVENT_COUNTDOWN_TIME);
+//		pi.setEv(cs.contains("eventCountdownTime") ? cs.getInt("eventCountdownTime") : Defaults.AUTO_EVENT_COUNTDOWN_TIME);
 //		pi.setIntervalTime(cs.contains("eventCountdownInterval") ? cs.getInt("eventCountdownInterval") : Defaults.ANNOUNCE_EVENT_INTERVAL);
 		pi.setIntervalTime(cs.contains("matchUpdateInterval") ? cs.getInt("matchUpdateInterval") : Defaults.MATCH_UPDATE_INTERVAL);
 
 		if (cs.contains("announcements")){
-			AnnouncementOptions bo = BAConfigSerializer.parseAnnouncementOptions(cs.getConfigurationSection("announcements"));
-			pi.setAnnouncementOptions(bo);
+			AnnouncementOptions an = new AnnouncementOptions();
+			BAConfigSerializer.parseAnnouncementOptions(an,true,cs.getConfigurationSection("announcements"), false);
+			BAConfigSerializer.parseAnnouncementOptions(an,false,cs.getConfigurationSection("eventAnnouncements"),false);
+			pi.setAnnouncementOptions(an);
 		}
 		/// TeamJoinResult in tracking for this match type
 		String dbName = cs.getString("database");
@@ -185,6 +187,7 @@ public class ConfigSerializer extends BaseSerializer{
 			case ONENTERWAITROOM: /// as does enter wait room, these wont overwrite each other
 				if (tops == null) tops = new TransitionOptions();
 				tops.addOption(TransitionOption.STOREEXPERIENCE);
+				tops.addOption(TransitionOption.STOREGAMEMODE);
 				if (allTops.needsClearInventory()){
 					tops.addOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
 					tops.addOption(TransitionOption.STOREITEMS);
@@ -193,6 +196,7 @@ public class ConfigSerializer extends BaseSerializer{
 			case ONLEAVE: /// By Default on leave gets to restore items and exp
 				if (tops == null) tops = new TransitionOptions();
 				tops.addOption(TransitionOption.RESTOREEXPERIENCE);
+				tops.addOption(TransitionOption.RESTOREGAMEMODE);
 				if (allTops.needsClearInventory())
 					tops.addOption(TransitionOption.RESTOREITEMS);
 				break;
@@ -208,9 +212,6 @@ public class ConfigSerializer extends BaseSerializer{
 //			TOC.setOptions(transition, pi,tops);
 			if (transition == MatchState.ONCOMPLETE){
 				TransitionOptions cancelOps = new TransitionOptions(tops);
-//				cancelOps.addOption(TransitionOption.RESTOREEXPERIENCE);
-//				if (allTops.needsClearInventory())
-//					cancelOps.addOption(TransitionOption.RESTOREITEMS);
 				allTops.addTransition(MatchState.ONCANCEL, cancelOps);
 				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
 			}

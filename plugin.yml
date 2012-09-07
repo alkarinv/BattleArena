@@ -1,10 +1,9 @@
 name: BattleArena
-version: 3.6.2
+version: 3.6.3
 author: Alkarin
 
 description: Arena system for BattleCraft
 softdepend: [BattleTracker, MassDisguise, BattleEventTracker, Vault, MultiInv, Herochat, HavocKits]
-loadbefore: [ hGames, HavocSpleef, CTF, ArenaSpleef]
 main: mc.alk.arena.BattleArena
 commands:
     team:

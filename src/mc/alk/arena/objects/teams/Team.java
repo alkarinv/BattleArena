@@ -80,7 +80,7 @@ public class Team {
 	public Set<ArenaPlayer> getLivingPlayers() {
 		Set<ArenaPlayer> living = new HashSet<ArenaPlayer>();
 		for (ArenaPlayer p : players){
-			if (hasAliveMember(p) && p.isOnline()){
+			if (hasAliveMember(p)){
 				living.add(p);}
 		}
 		return living;
@@ -88,7 +88,12 @@ public class Team {
 	public boolean wouldBeDeadWithout(ArenaPlayer p) {
 		Set<ArenaPlayer> living = getLivingPlayers();
 		living.remove(p);
-		return living.isEmpty();
+		int offline = 0;
+		for (ArenaPlayer ap: living){
+			if (!ap.isOnline())
+				offline++;
+		}
+		return living.isEmpty() || living.size() <= offline;
 	}
 
 	public boolean hasMember(ArenaPlayer p) {return players.contains(p);}
@@ -101,7 +106,17 @@ public class Team {
 	public int getId(){ return id;}
 	public void setName(String name) {this.name = name;}
 	public void setAlive() {deadplayers.clear();}
-	public boolean isDead() {return deadplayers.size() >= players.size();}
+	public boolean isDead() {
+		if (deadplayers.size() >= players.size())
+			return true;
+		Set<ArenaPlayer> living = getLivingPlayers();
+		int offline = 0;
+		for (ArenaPlayer ap: living){
+			if (!ap.isOnline())
+				offline++;
+		}
+		return living.isEmpty() || living.size() <= offline;
+	}
 	public int size() {return players.size();}
 	public void resetScores() {
 		deaths.clear();
@@ -169,7 +184,7 @@ public class Team {
 	public void sendToOtherMembers(ArenaPlayer player, String message) {
 		for (ArenaPlayer p: players){
 			if (!p.equals(player))
-				sendMessage(message);}
+				MessageUtil.sendMessage(p, message);}
 	}
 
 	public boolean equals(Object other) {
@@ -198,7 +213,7 @@ public class Team {
 			final int k = kills.containsKey(p) ? kills.get(p) : 0;
 			final int d = deaths.containsKey(p) ? deaths.get(p) : 0;
 			sb.append("&e(&c"+k+"&e,&7"+d+"&e)");
-			sb.append("&e:" + (isAlive ? "&ahealth="+p.getHealth() : "&4dead") +
+			sb.append("&e:" + (isAlive ? "&ah="+p.getHealth() : "&40") +
 					((!online) ? "&4(O)" : "")+inmatch+"&e ");
 		}
 		return sb.toString();

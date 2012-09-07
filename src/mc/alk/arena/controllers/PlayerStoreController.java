@@ -2,13 +2,14 @@ package mc.alk.arena.controllers;
 
 import java.util.HashMap;
 
+import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.listeners.BAPlayerListener;
-import mc.alk.arena.match.PerformTransition;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
-import mc.alk.arena.util.Log;
 
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -37,6 +38,7 @@ public class PlayerStoreController {
 	 */
 	final HashMap <String, Integer> expmap = new HashMap<String,Integer>();
 	final HashMap <String, PInv> itemmap = new HashMap<String,PInv>();
+	final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
 
 	public static class PInv {
 		ItemStack[] contents;
@@ -154,4 +156,18 @@ public class PlayerStoreController {
 		}
 	}
 
+	public void storeGamemode(ArenaPlayer p) {
+		boolean ignoreMultiInv = Defaults.PLUGIN_MULTI_INV && BattleArena.getSelf().isEnabled() ;
+		if (ignoreMultiInv){
+			/// Give the multiinv permission node to ignore this player, do it for 3 ticks
+			p.getPlayer().addAttachment(BattleArena.getSelf(), Defaults.MULTI_INV_IGNORE_NODE, true, 3);
+		}
+		gamemode.put(p.getName(), p.getPlayer().getGameMode());
+	}
+
+	public void restoreGamemode(ArenaPlayer p) {
+		GameMode gm = gamemode.remove(p.getName());
+		if (gm != null && gm != p.getPlayer().getGameMode())
+			p.getPlayer().setGameMode(gm);
+	}
 }

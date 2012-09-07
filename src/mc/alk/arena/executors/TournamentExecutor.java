@@ -1,9 +1,11 @@
 package mc.alk.arena.executors;
 
+import java.util.List;
+
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.events.TournamentEvent;
+import mc.alk.arena.competition.events.util.NeverWouldJoinException;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.events.TournamentEvent;
-import mc.alk.arena.events.util.NeverWouldJoinException;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Rating;
@@ -67,8 +69,12 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 		/// Check to see if at least 1 arena matches these conditions
 		Arena a = ac.getArenaByMatchParams(mp);
 		if (a ==null){
-			sendMessage(sender,"&cThere are no arenas that can handle the parameters you specified");
-			return sendMessage(sender,"&cMatch params = " + mp);
+			List<String> reasons = ac.getNotMachingArenaReasons(mp);
+			sendMessage(sender,"&cCouldnt find an arena matching the params &6"+mp);
+			for (String reason: reasons){
+				sendMessage(sender,reason);					
+			}
+			return true;
 		}
 		try {
 			if (auto){

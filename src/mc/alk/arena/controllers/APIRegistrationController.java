@@ -8,8 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import mc.alk.arena.events.Event;
-import mc.alk.arena.events.ReservedArenaEvent;
+import mc.alk.arena.BattleArena;
+import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.competition.events.ReservedArenaEvent;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
@@ -18,6 +19,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
+import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.command.CommandExecutor;
@@ -46,9 +48,16 @@ public class APIRegistrationController {
 		String configFileName = name+"Config.yml";
 		File f = new File(dir.getPath()+"/"+configFileName);
 		if (!f.exists()){
-			loadDefaultConfig(name,cmd, f, match);
-		}
+			loadDefaultConfig(name,cmd, f, match);}
+
 		cc.setConfig(at, dir.getPath()+"/"+configFileName);
+
+		/// Make a message serializer for this event, and make the messages.yml file if it doesnt exist
+		String fileName = match ? "defaultMatchMessages.yml": "defaultEventMessages.yml";  
+		MessageSerializer ms = new MessageSerializer(name);
+		ms.setConfig(BattleArena.getSelf().load("/default_files/"+fileName, plugin.getDataFolder()+"/"+name+"Messages.yml"));
+		ms.loadAll();
+		MessageSerializer.addMessageSerializer(name,ms);
 
 		try {
 			ConfigSerializer.setTypeConfig(name,cc.getConfigurationSection(name));

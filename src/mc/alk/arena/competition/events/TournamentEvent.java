@@ -1,14 +1,15 @@
-package mc.alk.arena.events;
+package mc.alk.arena.competition.events;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.TreeMap;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.events.util.NeverWouldJoinException;
-import mc.alk.arena.match.Match;
-import mc.alk.arena.match.PerformTransition;
+import mc.alk.arena.competition.events.util.NeverWouldJoinException;
+import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -26,8 +27,6 @@ import mc.alk.tracker.objects.Stat;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.plugin.Plugin;
-
-import com.alk.battleEventTracker.BattleEventTracker;
 
 public class TournamentEvent extends Event {
 	public long timeBetweenRounds;
@@ -149,7 +148,10 @@ public class TournamentEvent extends Event {
 				Team t = aliveTeams.get(0);
 				if (!silent) server.broadcastMessage(Log.colorChat(prefix+"&e Congratulations to &6" + t.getDisplayName() + "&e for winning!"));
 				PerformTransition.transition(am, MatchState.FIRSTPLACE, t,false);
-				if (BattleArena.bet != null) BattleEventTracker.addTeamWinner(t.getDisplayName(), getName());
+//				if (BattleArena.bet != null) BattleEventTracker.addTeamWinner(t.getDisplayName(), getName());
+				HashSet<Team> losers = new HashSet<Team>(competingTeams);
+				losers.remove(victor);
+				eventVictory(victor,losers);
 				endEvent();
 			} else {
 				makeNextRound();

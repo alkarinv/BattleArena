@@ -3,7 +3,7 @@ package mc.alk.arena.objects.victoryconditions;
 import java.util.List;
 import java.util.Random;
 
-import mc.alk.arena.match.Match;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.VictoryUtil;

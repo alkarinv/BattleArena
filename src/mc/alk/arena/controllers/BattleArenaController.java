@@ -9,8 +9,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.listeners.MatchListener;
-import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -31,8 +31,8 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 	boolean stop = false;
 
 	private ArenaMatchQueue amq = new ArenaMatchQueue(this);
-	
-//	private HashMap<String,Event> openEvents = new HashMap<String,Event>();
+
+	//	private HashMap<String,Event> openEvents = new HashMap<String,Event>();
 	private Set<Match> running_matches = new HashSet<Match>();
 	private List<MatchListener> matchListeners = new ArrayList<MatchListener>();
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
@@ -47,7 +47,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 				openMatch(match);
 				startMatch(match);
 			}
-		}		
+		}
 	}
 
 	public void openMatch(Match match){
@@ -67,13 +67,13 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		/// So we have to schedule a sync task... again
 		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), arenaMatch);
 	}
-	
+
 	public void matchComplete(Match am) {
-//		if (Defaults.DEBUG ) System.out.println("BattleArenaController::matchComplete=" + am + ":" );
+		//		if (Defaults.DEBUG ) System.out.println("BattleArenaController::matchComplete=" + am + ":" );
 		removeMatch(am); /// handles removing match from the BArenaController
 		List<MatchListener> mls = null;
 		synchronized(matchListeners){
-			 mls = new ArrayList<MatchListener>(matchListeners);			
+			mls = new ArrayList<MatchListener>(matchListeners);			
 		}
 		for (Team t : am.getTeams()){ /// Do I need to really do this?
 			TeamController.removeTeam(t, this);}
@@ -128,7 +128,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 	public void addMatchup(Matchup m) {amq.addMatchup(m);}
 	public Arena reserveArena(Arena arena) {return amq.reserveArena(arena);}
 	public Arena getArena(String arenaName) {return allarenas.get(arenaName);}
-	
+
 	public Arena removeArena(Arena arena) {
 		Arena a = amq.removeArena(arena);
 		if (a != null){
@@ -136,7 +136,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		}
 		return a;
 	}
-	
+
 	public Arena nextArenaByMatchParams(MatchParams mp){
 		return amq.getNextArena(mp);
 	}
@@ -146,6 +146,28 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 				return a;}
 		}
 		return null;
+	}
+
+
+	public List<String> getNotMachingArenaReasons(MatchParams mp) {
+		List<String> reasons = new ArrayList<String>();
+		for (Arena a : allarenas.values()){
+			if (a.getArenaType() != mp.getType()){
+				continue;
+			}
+			if (!a.valid()){
+				for (String reason : a.getInvalidReasons()){
+					reasons.add("&e"+a.getName() +":&c" + reason);
+				}
+			}
+			if (!a.matches(mp)){
+				for (String reason : a.getNotMatchReasons(mp)){
+					reasons.add("&e"+a.getName() +":&c" + reason);
+				}
+
+			}
+		}
+		return reasons;
 	}
 
 	/**
@@ -188,7 +210,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 			running_matches.clear();
 		}
 	}
-	
+
 	/**
 	 * If they are in a queue, take them out
 	 */
@@ -211,7 +233,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		}
 		return false;
 	}
-	
+
 	public boolean cancelMatch(ArenaPlayer p) {
 		Match am = getMatch(p);
 		if (am==null)
@@ -292,7 +314,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 			allarenas.clear();
 		}
 		amq.resume();
-		
+
 	}
 	public void removeAllArenas(ArenaType arenaType) {
 		synchronized(running_matches){
@@ -312,7 +334,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 			}
 		}
 		amq.resume();
-		
+
 	}
 
 	public void cancelAllArenas() {
@@ -328,5 +350,6 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		TeamController.removeTeams(teams, this);
 		return teams;
 	}
-	
+
+
 }

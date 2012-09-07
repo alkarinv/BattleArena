@@ -19,6 +19,7 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.tracker.controllers.MessageController;
@@ -103,7 +104,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 
 			}
 			/// TeamJoinResult in the usages, for showing help messages
-			if (MessageUtil.hasMessage("usage", mc.cmds()[0])){
+			if (MessageSerializer.hasMessage("usage", mc.cmds()[0])){
 				usage.put(mc,MessageController.getMessage("usage", mc.cmds()[0]));
 			} else if (!mc.usageNode().isEmpty()){
 				usage.put(mc, MessageController.getMessage("usage",mc.usageNode()));
@@ -209,7 +210,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 
 		/// Check our permissions
 		if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
-			throw new InvalidArgumentException(MessageUtil.getMessage("main", "no_permission"));
+			throw new InvalidArgumentException(MessageSerializer.getDefaultMessage("main", "no_permission"));
 
 		/// Verify min number of arguments
 		if (args.length < cmd.min()){
@@ -395,7 +396,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			return MessageController.getMessage("usage",cmd.usageNode());
 		if (!cmd.usage().isEmpty()) /// Get from usage
 			return "&6"+c.getName()+" " + cmd.usage();
-		if (MessageUtil.hasMessage("usage", cmd.cmds()[0])) /// Maybe a default message node??
+		if (MessageSerializer.hasMessage("usage", cmd.cmds()[0])) /// Maybe a default message node??
 			return MessageController.getMessage("usage", cmd.cmds()[0]);
 		return "&6/"+c.getName()+" " + usage.get(cmd); /// Return the usage from our map
 	}

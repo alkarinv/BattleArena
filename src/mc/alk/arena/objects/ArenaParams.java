@@ -1,5 +1,9 @@
 package mc.alk.arena.objects;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.Util;
@@ -103,27 +107,49 @@ public class ArenaParams {
 
 	public void setType(ArenaType type) {this.arenaType = type;}
 
-	public boolean matches(final ArenaParams q) {
+	public boolean matches(final ArenaParams ap) {
 		//		System.out.println(this +"    other = " +q + "   atmatches="+((arenaType == null || q.arenaType == null) || arenaType.matches(q.arenaType)));
 		//		System.out.println(this +"    other = " +q + matchesTeamSize(q));
 		//		System.out.println(this +"    other = " +q + matchesNTeams(q.getMinTeams()));
-		return ( ((arenaType == null || q.arenaType == null) || arenaType.matches(q.arenaType)) && 
-				matchesTeamSize(q) && 
-				matchesNTeams(q.getMinTeams()));
+		return ( ((arenaType == null || ap.arenaType == null) || arenaType.matches(ap.arenaType)) && 
+				matchesTeamSize(ap) && 
+				matchesNTeams(ap.getMinTeams()));
 	}
+	
 
-	public boolean matchesNTeams(final ArenaParams q) {
-		return matchesNTeams(q.getMinTeams());
+	public boolean matchesNTeams(final ArenaParams ap) {
+		return matchesNTeams(ap.getMinTeams());
 	}
 	
 	public boolean matchesNTeams(int nteams) {
 		return ( (minTeams <= nteams && maxTeams>=nteams) || minTeams==ANY || nteams==ANY);
 	}
 
+	public Collection<String> getInvalidMatchReasons(ArenaParams ap) {
+		List<String> reasons = new ArrayList<String>();
+		if (arenaType == null) reasons.add("ArenaType is null");
+		if (ap.arenaType == null) reasons.add("Passed params have an arenaType of null");
+		reasons.addAll(arenaType.getInvalidMatchReasons(ap.getType()));
+		if (!matchesNTeams(ap.getMinTeams())) reasons.add("Arena accepts nteams="+minTeams+"-"+maxTeams+
+				". you requested "+ap.getMinTeams());
+		if (!matchesTeamSize(ap)) reasons.add("Arena accepts teamSize="+minTeamSize+"-"+maxTeamSize+
+				". you requested "+ap.getMinTeamSize());		
+		return reasons;
+	}
+	
 	public boolean valid() {
-		return (arenaType != null && minTeamSize >= 0 && maxTeamSize >= 0 && minTeamSize <= maxTeamSize);
+		return (arenaType != null && minTeamSize > 0 && maxTeamSize > 0 && minTeamSize <= maxTeamSize);
 	}
 
+	public Collection<String> getInvalidReasons() {
+		List<String> reasons = new ArrayList<String>();
+		if (arenaType == null) reasons.add("ArenaType is null");
+		if (minTeamSize <= 0) reasons.add("Min Team Size is <= 0");
+		if (maxTeamSize <= 0) reasons.add("Max Team Size is <= 0");
+		if (minTeamSize > maxTeamSize) reasons.add("Min Team Size is greater than Max Team Size " + minTeamSize+":"+ maxTeamSize);
+		return reasons;
+	}
+	
 	public boolean matchesTeamSize(final ArenaParams q) {
 		return (this.minTeamSize <= q.minTeamSize ) && (this.maxTeamSize == MAX  || this.maxTeamSize >= q.maxTeamSize);
 	}
@@ -229,4 +255,6 @@ public class ArenaParams {
 	public String toString(){
 		return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
 	}
+
+
 }

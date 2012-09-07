@@ -19,7 +19,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	Integer matchTime, intervalTime;
 	AnnouncementOptions ao = null;
 
-
 	public MatchParams(ArenaType at, Rating rating, VictoryType vc) {
 		super(at,rating);
 		this.vc = vc;

@@ -18,14 +18,13 @@ import mc.alk.arena.objects.MatchEventHandler;
 import mc.alk.arena.objects.MatchEventMethod;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.util.Log;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-
-import com.alk.util.Log;
 
 
 public class MethodController {
@@ -91,7 +90,7 @@ public class MethodController {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 	}
 
 	private static void updateEventListener(ArenaListener arenaListener, MatchState matchState, Collection<String> players,

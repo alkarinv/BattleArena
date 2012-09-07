@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
-import mc.alk.arena.match.Match;
-import mc.alk.arena.match.PerformTransition;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.ExpUtil;
@@ -119,7 +119,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 	@MCCommand(cmds={"showMatchParams"}, admin=true)
 	public boolean showMatchParams(CommandSender sender, String paramName) {
-		MatchParams mp = ParamController.getMatchParams(paramName);
+		MatchParams mp = ParamController.getMatchParamCopy(paramName);
 		if (mp == null){
 			return sendMessage(sender, "&cCouldn't find matchparams mp=" + paramName);}
 		return sendMessage(sender, mp.toString());

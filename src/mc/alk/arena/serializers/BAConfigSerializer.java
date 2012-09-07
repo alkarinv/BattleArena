@@ -16,7 +16,8 @@ public class BAConfigSerializer extends ConfigSerializer{
 	
 	public void loadAll(){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
-		parseDefaultMatchOptions(config.getConfigurationSection("defaultMatchOptions"));
+
+		parseDefaultOptions(config.getConfigurationSection("defaultOptions"));
 		/// This is here for backwards compatibility with old configs
 		BAClassesSerializer.loadClasses(config.getConfigurationSection("classes"));
 		Defaults.MONEY_STR = config.getString("moneyName");
@@ -33,27 +34,25 @@ public class BAConfigSerializer extends ConfigSerializer{
 		}
 	}
 	
-	protected static void parseDefaultMatchOptions(ConfigurationSection cs) {
+	protected static void parseDefaultOptions(ConfigurationSection cs) {
 		Defaults.SECONDS_TILL_MATCH = cs.getInt("secondsTillMatch", 20);
 		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", 20);
 		Defaults.MATCH_TIME = cs.getInt("matchTime", 120/*matchEndTime*/);
 		Defaults.AUTO_EVENT_COUNTDOWN_TIME = cs.getInt("eventCountdownTime",180);
 		Defaults.ANNOUNCE_EVENT_INTERVAL = cs.getInt("eventCountdownInterval", 60);
 		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", 30);
-		AnnouncementOptions bo = parseAnnouncementOptions(cs.getConfigurationSection("announcements"));
-		AnnouncementOptions.setDefaultOptions(bo);
-//		Log.info(BattleArena.getPName()+" AnnouncementOptions announceOnPrestart=" + AnnouncementOptions.bcOnPrestart +
-//				" usingHerchat="+(AnnouncementOptions.getOnPrestartChannel()!=null));
-//		Log.info(BattleArena.getPName()+" AnnouncementOptions announceOnVictory=" + AnnouncementOptions.bcOnVictory +
-//				" usingHerchat="+(AnnouncementOptions.getOnVictoryChannel()!=null));
+		AnnouncementOptions an = new AnnouncementOptions();
+		parseAnnouncementOptions(an,true,cs.getConfigurationSection("announcements"), true);
+		parseAnnouncementOptions(an,false,cs.getConfigurationSection("eventAnnouncements"),true);
+		AnnouncementOptions.setDefaultOptions(an);
 	}
 
-	public static AnnouncementOptions parseAnnouncementOptions(ConfigurationSection cs) {
+	public static AnnouncementOptions parseAnnouncementOptions(AnnouncementOptions an , boolean match, ConfigurationSection cs, boolean warn) {
 		if (cs == null){
-			Log.err("announcements are null ");
+			if (warn)
+				Log.err((match? "match" : "event" ) + " announcements are null. cs= ");
 			return null;
 		}
-		AnnouncementOptions an = new AnnouncementOptions();
 		Set<String> keys = cs.getKeys(false);
 		for (String key: keys){
 			MatchState ms = MatchState.fromName(key);
@@ -71,7 +70,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 					continue;					
 				}
 //				System.out.println("!!!!! Setting broadcast option " +ms +"  " + bo + "  " + kv.value);
-				an.setBroadcastOption(ms, bo,kv.value);
+				an.setBroadcastOption(match, ms, bo,kv.value);
 			}
 		}
 		return an;

@@ -26,8 +26,21 @@ public class FileLogger {
 	public FileLogger() {}
 	public static Integer count = 0;
 	public static final Integer saveEvery = 100;
-	public static final Integer maxFileSize = 10000; /// in lines
-	public static final Integer reduceToSize = 20000; /// reduce to this many lines when it exceeds maxFileSize
+	public static final Integer maxFileSize = 300000; /// in lines
+	public static final Integer reduceToSize = 100000; /// reduce to this many lines when it exceeds maxFileSize
+	public static synchronized void init(){
+		File f = new File(BattleArena.getSelf().getDataFolder()+"/log.txt");
+		int lineCount;
+		try {
+			lineCount = count(f.getAbsolutePath());
+			if (lineCount > maxFileSize){
+				f = trimFile(f,lineCount);
+			}		
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static synchronized int log(String msg) {
 		try {
 			Calendar cal = new GregorianCalendar();
@@ -64,10 +77,6 @@ public class FileLogger {
 	public static synchronized void saveAll() {
 		try {
 			File f = new File(BattleArena.getSelf().getDataFolder()+"/log.txt");
-			int lineCount = count(f.getAbsolutePath());
-			if (lineCount > maxFileSize){
-				f = trimFile(f,lineCount);
-			}
 			BufferedWriter out = new BufferedWriter(new FileWriter(f,true));
 			for (String msg : msgs){
 				out.write(msg);	
@@ -92,12 +101,15 @@ public class FileLogger {
 			while ((line = br.readLine()) != null){
 				out.write(line+"\n");
 			}
+			out.close();
+			br.close();
 			f2.renameTo(f);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return f2;
 	}
+	
 	/**
 	 * Code from 
 	 * http://stackoverflow.com/questions/453018/number-of-lines-in-a-file-in-java

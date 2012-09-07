@@ -30,6 +30,7 @@ public class TransitionOptions {
 		DISGUISEALLAS("disguiseAllAs"), UNDISGUISE("undisguise"),
 		ENCHANTS("enchants"), DEENCHANT("deEnchant"),
 		STOREEXPERIENCE("storeExperience"), RESTOREEXPERIENCE("restoreExperience"),
+		STOREGAMEMODE("storeGamemode"), RESTOREGAMEMODE("restoreGamemode"),
 		STOREITEMS("storeItems"), RESTOREITEMS("restoreItems"),
 		STORE("store"), RESTORE("restore"),
 		CLEARREGION("clearRegion"),

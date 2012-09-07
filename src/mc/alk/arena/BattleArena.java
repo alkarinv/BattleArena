@@ -4,10 +4,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import mc.alk.arena.competition.events.AlwaysJoinRAE;
+import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.competition.events.ReservedArenaEvent;
+import mc.alk.arena.competition.events.TournamentEvent;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.BattleArenaController;
@@ -18,11 +25,6 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
-import mc.alk.arena.controllers.messaging.MatchMessageImpl;
-import mc.alk.arena.events.AlwaysJoinRAE;
-import mc.alk.arena.events.Event;
-import mc.alk.arena.events.ReservedArenaEvent;
-import mc.alk.arena.events.TournamentEvent;
 import mc.alk.arena.executors.ArenaEditorExecutor;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.BattleArenaDebugExecutor;
@@ -32,7 +34,6 @@ import mc.alk.arena.executors.TeamExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.BAPluginListener;
-import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
@@ -45,8 +46,9 @@ import mc.alk.arena.serializers.ArenaControllerSerializer;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.BAClassesSerializer;
 import mc.alk.arena.serializers.BAConfigSerializer;
+import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.serializers.SpawnSerializer;
-import mc.alk.arena.serializers.UpdateYamlFiles;
+import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.Log;
 
@@ -55,7 +57,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.alk.battleEventTracker.BattleEventTracker;
 import com.alk.massDisguise.MassDisguise;
 
 public class BattleArena extends JavaPlugin{
@@ -63,15 +64,14 @@ public class BattleArena extends JavaPlugin{
 	static private String version;
 	static private BattleArena plugin;
 	static public MassDisguise md = null;
-	public static BattleEventTracker bet = null;
 
 	private final static BattleArenaController arenaController = new BattleArenaController();
 	private final static TeamController tc = new TeamController(arenaController);
 	private final static EventController ec = new EventController();
 	private final static ArenaEditor aac = new ArenaEditor();
-	private final static BAExecutor commandExecutor = new BAExecutor();
 	private final static APIRegistrationController apiRegistrationController = new APIRegistrationController();
 
+	private static BAExecutor commandExecutor;
 	private final BAPlayerListener playerListener = new BAPlayerListener(arenaController);
 
 	private final BAPluginListener pluginListener = new BAPluginListener();
@@ -85,6 +85,17 @@ public class BattleArena extends JavaPlugin{
 		pluginname = pdfFile.getName();
 		version = pdfFile.getVersion();
 		Log.info(getVersion() + " starting enable!");
+		/// For potential updates to default yml files
+		YamlFileUpdater yfu = new YamlFileUpdater();
+		
+		/// Set up our messages first before other initialization needs messages
+		MessageSerializer defaultMessages = new MessageSerializer("default");
+		defaultMessages.setConfig(load(Defaults.DEFAULT_MESSAGES_FILE, Defaults.MESSAGES_FILE));
+		yfu.updateMessageSerializer(defaultMessages); /// Update our config if necessary
+		defaultMessages.loadAll();
+		MessageSerializer.setDefaultConfig(defaultMessages);
+
+		commandExecutor = new BAExecutor();
 
 		pluginListener.loadAll(); /// try and load plugins we want
 
@@ -107,7 +118,6 @@ public class BattleArena extends JavaPlugin{
 		ArenaType.register("DeathMatch", Arena.class, this);
 		ArenaType.register("FFA", Arena.class, this);
 		ArenaType.register("Versus", Arena.class, this);
-		ArenaType.addCompatibleTypes("DeathMatch", "FFA"); /// Deathmatch arenas and FFAs are interchangeable
 
 		VictoryType.register("LastManStanding", LastManStanding.class, this);
 		VictoryType.register("HighestKills", HighestKills.class, this);
@@ -125,16 +135,13 @@ public class BattleArena extends JavaPlugin{
 		yacs.load();
 
 		cc.setConfig(null,load("/default_files/config.yml",dir.getPath() +"/config.yml"));
-		UpdateYamlFiles.updateConfig(cc); /// Update our config if necessary
+		YamlFileUpdater.updateConfig(cc); /// Update our config if necessary
 
 		bacs.setConfig(load("/default_files/classes.yml",dir.getPath() +"/classes.yml"));
 		bacs.loadAll();
 
 		cc.loadAll();
 		MoneyController.setup();
-
-		MatchMessageImpl.setConfig(load(Defaults.DEFAULT_MESSAGES_FILE, Defaults.MESSAGES_FILE));
-		MatchMessageImpl.load();
 
 		/// Set our commands
 		getCommand("arena").setExecutor(commandExecutor);
@@ -148,9 +155,25 @@ public class BattleArena extends JavaPlugin{
 
 		createEvents();
 
+		createMessageSerializers();
+		FileLogger.init(); /// shrink down log size
 		/// Start listening for players queuing
 		new Thread(arenaController).start();
 		Log.info(getVersion()+ " initialized!");
+	}
+
+	private void createMessageSerializers() {
+		File f = new File(getDataFolder()+"/messages");
+		if (!f.exists())
+			f.mkdir();
+		HashSet<String> events = new HashSet<String>(Arrays.asList("freeforall","deathmatch","tourney"));
+		for (MatchParams mp: ParamController.getAllParams()){
+			String fileName = events.contains(mp.getName().toLowerCase()) ? "defaultEventMessages.yml": "defaultMatchMessages.yml";  
+			MessageSerializer ms = new MessageSerializer(mp.getName());
+			ms.setConfig(load("/default_files/"+fileName, f.getAbsolutePath()+"/"+mp.getName()+"Messages.yml"));
+			ms.loadAll();
+			MessageSerializer.addMessageSerializer(mp.getName(),ms);
+		}		
 	}
 
 	public void onDisable() {

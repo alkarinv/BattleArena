@@ -13,8 +13,8 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.arenas.Persistable;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.arenas.Persistable;
 import mc.alk.arena.objects.spawns.EntitySpawn;
 import mc.alk.arena.objects.spawns.ItemSpawn;
 import mc.alk.arena.objects.spawns.SpawnGroup;
@@ -242,7 +242,6 @@ public class ArenaSerializer {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		for (Arena arena : arenas){
 			ArenaType at = arena.getArenaType();
-			//			System.out.println("plugin = "+ plugin +"  atplugin=" + at.getPlugin() +"    at=" + at);
 			if (at.getPlugin().getName() != plugin.getName())
 				continue;
 			String arenaname = arena.getName();

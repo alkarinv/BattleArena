@@ -1,15 +1,20 @@
-configVersion: 1.1
+configVersion: 1.2
 ## What is the money on this server called
 moneyName: Gold
 
-## default Match Options (these can be overridden by each match type)
-defaultMatchOptions:
+## default Options (these can be overridden by each match/event type)
+defaultOptions:
+    ### Match Options
     secondsTillMatch: 3 ## Time between onPrestart and onStart
     secondsToLoot: 5 ## Time after winning to run around and collect loot
     matchTime: 120 ## How long do timed matches last, (in seconds)
     matchUpdateInterval: 30 ## For timed matched, how long between sending players match updates
 
-    ### Match Announcements
+    ### Event Options
+    eventCountdownTime: 180 ## How long before announcing an automated event and its start
+    eventCountdownInterval: 60 ## How often will it announce a reminder that its open and you can join
+
+    ### Match/Event Announcements
     ## these only affect the broadcasts to the server or channel, not the messages the fighting players receive
     ## announce : announce these messages 
     ## dontannounce : dont announce these messages
@@ -17,11 +22,14 @@ defaultMatchOptions:
     ## herochat=<channel> : use herochat with the channel specified
     announcements:
         onPreStart: [ announce, server ]  ## match going to happen soon, example 'P1[p1Elo] vs P2[p2elo]'
+        onStart: [ dontannounce ]  ## match starting
         onVictory:  [ announce, server ] ## match has been won, exmaple 'P1[p1elo] has defeated P2[p2elo]'
 
-defaultEventOptions:
-    eventCountdownTime: 180 ## How long before announcing an automated event and its start
-    eventCountdownInterval: 60 ## How often will it announce a reminder that its open and you can join
+    ### Default event Announcements
+    eventAnnouncements:
+        onOpen: [ announce, server ]  ## event is now open
+        onStart: [ announce, server ]  ## event is starting
+        onVictory:  [ announce, server ] ## event has been won
 
 ### Prerequisites
 # prerequisites is what they need to have BEFORE joining, this will also be rechecked when the players teleport in
@@ -216,6 +224,8 @@ freeForAll:
     type: ffa
     database: ffa
     prefix: "&c[FFA]&e"
+    announcements: ### Override the match victory announcement as the event has one too
+        onVictory:  [ dontannounce ] 
     preReqs:
         options: [clearInventory]
     onJoin:
@@ -256,6 +266,8 @@ deathMatch:
     victoryCondition: highestKills
     database: dm
     prefix: "&8[DeathMatch]&e"
+    announcements: ### Override the match victory announcement as the event has one too
+        onVictory:  [ dontannounce ] 
     preReqs:
         options: [clearInventory]
     onJoin:

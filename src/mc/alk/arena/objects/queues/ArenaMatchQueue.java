@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.OnMatchComplete;
-import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;

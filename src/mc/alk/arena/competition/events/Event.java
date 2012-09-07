@@ -1,23 +1,31 @@
-package mc.alk.arena.events;
+package mc.alk.arena.competition.events;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.events.util.AddToLeastFullTeam;
+import mc.alk.arena.competition.events.util.BinPackAdd;
+import mc.alk.arena.competition.events.util.NeverWouldJoinException;
+import mc.alk.arena.competition.events.util.TeamJoinHandler;
+import mc.alk.arena.competition.events.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.BattleArenaController;
-import mc.alk.arena.controllers.EventMessageHandler;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeamController;
+import mc.alk.arena.controllers.messaging.EventMessageHandler;
 import mc.alk.arena.controllers.messaging.EventMessageImpl;
-import mc.alk.arena.events.util.AddToLeastFullTeam;
-import mc.alk.arena.events.util.BinPackAdd;
-import mc.alk.arena.events.util.NeverWouldJoinException;
-import mc.alk.arena.events.util.TeamJoinHandler;
-import mc.alk.arena.events.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.controllers.messaging.EventMessager;
+import mc.alk.arena.events.events.EventCancelEvent;
+import mc.alk.arena.events.events.EventOpenEvent;
+import mc.alk.arena.events.events.EventStartEvent;
+import mc.alk.arena.events.events.EventVictoryEvent;
+import mc.alk.arena.events.events.TeamJoinedEvent;
 import mc.alk.arena.listeners.MatchListener;
-import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -32,6 +40,8 @@ import mc.alk.arena.util.Countdown.CountdownCallback;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.TimeUtil;
 
+import org.bukkit.entity.Player;
+
 
 public abstract class Event implements MatchListener, CountdownCallback, TeamHandler{
 	static int eventCount = 0;
@@ -41,7 +51,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	final String prefix;
 	final String command;
 	BattleArenaController ac;
-	EventMessageHandler mc = null;
+	EventMessager mc = null;
 
 	enum EventState{CLOSED,OPEN,RUNNING, FINISHED};
 	EventState state = EventState.CLOSED;
@@ -55,11 +65,24 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 
 	public Event(MatchParams params) {
 		setParamInst(params);
-		 /// matchParams will change when an new Event is called
+		/// matchParams will change when an new Event is called
 		this.ac = BattleArena.getBAC();
 		this.prefix = params.getPrefix();
 		this.command = params.getCommand();
 		this.name = params.getName();
+	}
+
+	public void openEvent() {
+		MatchParams mp = ParamController.getMatchParamCopy(matchParams.getName());
+		mp.setMinTeams(2);
+		mp.setMaxTeams(2);
+		mp.setMinTeamSize(1);
+		mp.setMaxTeamSize(Integer.MAX_VALUE);
+		try {
+			openEvent(mp);
+		} catch (NeverWouldJoinException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void openEvent(MatchParams params) throws NeverWouldJoinException {
@@ -69,10 +92,16 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		} else { /// finite team size
 			joinHandler = new BinPackAdd(this);
 		}
+		EventOpenEvent event = new EventOpenEvent(this);
+		event.callEvent();
+		if (event.isCancelled())
+			return;
+
 		ac.addMatchListener(this);
 		stopTimer();
 		teams.clear();
 		state = EventState.OPEN;
+
 		if (!silent)
 			mc.sendEventOpenMsg();
 	}
@@ -82,13 +111,15 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		TimeUtil.testClock();
 		if (!silent)
 			mc.sendCountdownTillEvent(secondsTillStart);
-	
+
 		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);
 	}
 
 	public void setParamInst(MatchParams matchParams) {
 		this.matchParams = new MatchParams(matchParams);
-		mc = new EventMessageImpl(this);
+		if (mc == null)
+			mc = new EventMessager(this);
+		mc.setMessageHandler(new EventMessageImpl(this));
 	}
 
 	public void startEvent() {
@@ -99,11 +130,20 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		joinHandler.deconstruct();
 		joinHandler = null;
 		state = EventState.RUNNING;
+
+		new EventStartEvent(this,teams).callEvent();
 	}
+
 
 	public abstract void matchCancelled(Match am);
 
 	public abstract void matchComplete(Match am);
+
+
+	protected void eventVictory(Team victor, Collection<Team> losers) {
+		mc.sendEventVictory(victor, losers);
+		new EventVictoryEvent(this,victor,losers).callEvent();
+	}
 
 	public void stopTimer(){
 		if (timer != null){
@@ -117,10 +157,12 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		for (Team tt : teams){ /// for anyone in a match, cancel them
 			ac.cancelMatch(tt);}
 		endEvent(); /// now call the method to clean everything else up
+		new EventCancelEvent(this).callEvent();
+		mc.sendEventCancelled();
 	}
 
 	protected void endEvent() {
-		if (Defaults.DEBUG_TRACE) System.out.println("ArenaEvent::endEvent");
+		if (Defaults.DEBUG_TRACE) System.out.println("BAEvent::endEvent");
 		stopTimer();
 
 		ac.removeMatchListener(this);
@@ -168,7 +210,18 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 
 	public void addTeam(Team t){
 		TeamController.addTeamHandler(t, this);
+		new TeamJoinedEvent(this,t).callEvent();
 		teams.add(t);
+		mc.sendTeamJoinedEvent(t);
+	}
+
+	public void addTeam(Player p){
+		ArenaPlayer ap = BattleArena.toArenaPlayer(p);
+		Team t = TeamController.getTeam(ap);
+		if (t == null){
+			t = TeamController.createTeam(ap);
+		}
+		addTeam(t);
 	}
 
 	/**
@@ -177,9 +230,23 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	 * @return where the team ended up
 	 */
 	public TeamJoinResult joining(Team t){
+		TeamJoinResult tjr = null;
 		if (joinHandler == null)
-			return TeamJoinHandler.NOTOPEN;
-		return joinHandler.joiningTeam(t);
+			tjr = TeamJoinHandler.NOTOPEN;
+		else 
+			tjr = joinHandler.joiningTeam(t);
+		switch(tjr.a){
+		case ADDED:
+			break;
+		case CANT_FIT:
+			mc.sendCantFitTeam(t);
+			break;
+		case WAITING_FOR_PLAYERS:
+			mc.sendWaitingForMorePlayers(t, tjr.n);
+			break;
+		}
+
+		return tjr;
 	}
 
 	public String getName(){
@@ -203,13 +270,13 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	public void setTeamJoinHandler(TeamJoinHandler tjh){
 		this.joinHandler = tjh;
 	}
-	
+
 	/**
 	 * Set a Message handler to override default Event messages
 	 * @param mc
 	 */
-	public void setMessageHandler(EventMessageHandler mc){
-		this.mc = mc;
+	public void setMessageHandler(EventMessageHandler handler){
+		this.mc.setMessageHandler(handler);
 	}
 
 	/**
@@ -217,7 +284,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	 * @return
 	 */
 	public EventMessageHandler getMessageHandler(){
-		return mc;
+		return mc.getMessageHandler();
 	}
 
 
@@ -353,7 +420,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		}
 		return players;
 	}
-	
+
 	public void setSilent(boolean silent) {
 		this.silent = silent;
 	}

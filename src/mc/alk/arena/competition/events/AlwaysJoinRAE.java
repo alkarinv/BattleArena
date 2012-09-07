@@ -1,4 +1,4 @@
-package mc.alk.arena.events;
+package mc.alk.arena.competition.events;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;

@@ -1,4 +1,4 @@
-package mc.alk.arena.events.util;
+package mc.alk.arena.competition.events.util;
 
 public class NeverWouldJoinException extends Exception{
 	private static final long serialVersionUID = 1L;

@@ -1,11 +1,11 @@
-package mc.alk.arena.events.util;
+package mc.alk.arena.competition.events.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.events.Event;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.CompositeTeam;

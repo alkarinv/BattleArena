@@ -73,7 +73,6 @@ public class TeleportController {
 		teleporting(p,true);
 		/// Close their inventory so they arent taking things in/out
 		InventoryUtil.closeInventory(p);
-		p.setGameMode(GameMode.SURVIVAL);
 		p.setFireTicks(0);
 
 		/// Deal with vehicles
@@ -91,11 +90,14 @@ public class TeleportController {
 		/// If we are shutting down (aka isEnabled = false) multiinv will have shutdown before us
 		/// so skip the attachment and just get players out if we can
 		boolean ignoreMultiInv = Defaults.PLUGIN_MULTI_INV && BattleArena.getSelf().isEnabled() && 
-				p.getWorld().getUID() != loc.getWorld().getUID();
+				(p.getWorld().getUID() != loc.getWorld().getUID() || p.getGameMode() != GameMode.SURVIVAL) ;
 		if (ignoreMultiInv){
-			/// TeamJoinResult the multi-inv ignore this player permission node, do it for 1 tick
+			/// Give the multiinv permission node to ignore this player, do it for 3 ticks
 			p.addAttachment(plugin, Defaults.MULTI_INV_IGNORE_NODE, true, 3);
 		}
+		/// Now move the gamemode after we have dealth with multiinv
+		p.setGameMode(GameMode.SURVIVAL);
+
 		if (!p.teleport(loc)){
 			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + p.getName() + " loc=" + loc);}
 	}

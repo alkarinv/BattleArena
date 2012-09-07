@@ -23,6 +23,8 @@ public interface Channel {
 		
 		@Override
 		public void broadcast(String msg) {
+			if (msg == null || msg.trim().isEmpty())
+				return;
 			Bukkit.getServer().broadcastMessage(MessageUtil.colorChat(msg));
 		}
 	}

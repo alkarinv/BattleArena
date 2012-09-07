@@ -3,7 +3,7 @@ package mc.alk.arena.controllers.messaging;
 import java.util.Collection;
 import java.util.List;
 
-import mc.alk.arena.match.Match;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.Channel;
@@ -20,9 +20,7 @@ public class MatchMessager {
 	}
 
 	private Channel getChannel(MatchState state) {
-//		System.out.println("!!!!!!! bos  = " + (bos != null && bos.hasOption(state) ? 
-//				bos.getChannel(state) : AnnouncementOptions.getDefaultChannel(state)));
-		return bos != null && bos.hasOption(state) ? bos.getChannel(state) : AnnouncementOptions.getDefaultChannel(state);
+		return bos != null && bos.hasOption(true,state) ? bos.getChannel(true,state) : AnnouncementOptions.getDefaultChannel(true,state);
 	}
 
 	public void sendOnPreStartMsg(List<Team> teams) {

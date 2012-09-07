@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import mc.alk.arena.match.Match;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.teams.Team;
 
 public class VictoryUtil {

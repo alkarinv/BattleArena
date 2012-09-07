@@ -3,8 +3,8 @@ package mc.alk.arena.objects.victoryconditions;
 import java.lang.reflect.Constructor;
 import java.util.LinkedHashMap;
 
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.MethodController;
-import mc.alk.arena.match.Match;
 import mc.alk.arena.util.CaseInsensitiveMap;
 
 import org.bukkit.plugin.Plugin;

@@ -11,8 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import com.alk.controllers.MC;
-
 public class TeamUtil {
 
 	public static class TeamHead {
@@ -61,7 +59,7 @@ public class TeamUtil {
 		teamHeads.put(34, new TeamHead(new ItemStack(Material.SPONGE, 1), "&eSponge"));
 		for (Integer i: teamHeads.keySet()){
 			TeamHead th = teamHeads.get(i);
-			teamHeads.put(i, new TeamHead(th.is, MC.colorChat(th.name)) );
+			teamHeads.put(i, new TeamHead(th.is, MessageUtil.colorChat(th.name)) );
 		}
 	}
 

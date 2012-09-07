@@ -1,5 +1,7 @@
 package mc.alk.arena.objects.arenas;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,9 +10,9 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.SpawnController;
 import mc.alk.arena.listeners.ArenaListener;
-import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -191,6 +193,16 @@ public class Arena implements ArenaListener {
 		return (!(name == null || locs.size() <1 || locs.get(0) == null || !ap.valid() ));
 	}
 
+	public Collection<String> getInvalidReasons() {
+		List<String> reasons = new ArrayList<String>();
+		if (name == null) reasons.add("Arena name is null");
+		if (locs.size() <1) reasons.add("needs to have at least 1 spawn location");
+		if (locs.get(0) == null) reasons.add("1st spawn is set to a null location");
+		reasons.addAll(ap.getInvalidReasons());
+		return reasons;
+	}
+
+	
 	/**
 	 * TeamJoinResult a Protected Region (only available with worldguard)
 	 * @param wgRegionName
@@ -243,7 +255,7 @@ public class Arena implements ArenaListener {
 	/**
 	 * Get which match this arena belongs to
 	 */
-	public Match setMatch() {
+	public Match getMatch() {
 		return match;
 	}
 
@@ -332,49 +344,6 @@ public class Arena implements ArenaListener {
 
 
 	/**
-	 * Arena printing
-	 */
-	public String toString(){
-		return toSummaryString();
-	}
-	
-	/**
-	 * return detailed arena details (includes bukkit coloring)
-	 * @return
-	 */
-	public String toDetailedString(){
-		StringBuilder sb = new StringBuilder("&6" + name+" &e");
-		sb.append(headerString());
-		sb.append("&e, #Teams:&6"+ap.getNTeamRange());
-		sb.append("&e, #spawns:&6" +locs.size() +"\n");
-		sb.append("&eteamSpawnLocs=&b"+getSpawnLocationString()+"\n");
-		sb.append("&ewrSpawnLocs=&b"+getWaitroomLocationString()+"\n");
-		if (timedSpawns != null){
-			sb.append("&e#itemSpawns:&6" +locs.size() +"\n");
-			//			sb.append(itemSpawnString());
-		}
-		return sb.toString();
-	}
-
-	/**
-	 * return arena summary string (includes bukkit coloring)
-	 * @return
-	 */
-	public String toSummaryString(){
-		StringBuilder sb = new StringBuilder("&4" + name+" &e type=&6"+ap.getType());
-		sb.append(" &eTeamSizes:&6"+ap.getTeamSizeRange()+"&e, #players:&6"+ap.getNTeamRange());
-		sb.append("&e #spawns:&6" +locs.size() +"&e 1stSpawn:&6");
-		for (Integer i: locs.keySet() ){
-			Location l = locs.get(i);
-			if (l != null) sb.append("["+l.getWorld().getName()+":"+l.getBlockX()+":"+l.getBlockY()+":"+l.getBlockZ()+"] ");
-			break;
-		}
-		if (timedSpawns != null && !timedSpawns.isEmpty())
-			sb.append("&e#itemSpawns:&6" +locs.size());
-		return sb.toString();
-	}
-
-	/**
 	 * Return a string of appended spawn locations
 	 * @return
 	 */
@@ -419,16 +388,89 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
+	 * private Arena onOpen events, calls onOpen for subclasses to be able to override 
+	 */
+	void privateOnOpen(){
+		try{onOpen();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onPrestart events, calls onPrestart for subclasses to be able to override 
+	 */
+	void privateOnPrestart(){
+		try{onPrestart();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onStart events, calls onStart for subclasses to be able to override 
+	 */
+	void privateOnStart(){
+		startSpawns();
+		try{onStart();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onStart events, calls onStart for subclasses to be able to override 
+	 */
+	void privateOnVictory(MatchResult result){
+		stopSpawns();
+		try{onVictory(result);}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onComplete events, calls onComplete for subclasses to be able to override 
+	 */
+	void privateOnComplete(){
+		stopSpawns();
+		try{onComplete();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onCancel events, calls onCancel for subclasses to be able to override 
+	 */
+	void privateOnCancel(){
+		stopSpawns();
+		try{onCancel();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onEnter events, calls onEnter for subclasses to be able to override 
+	 */
+	void privateOnEnter(ArenaPlayer player, Team team){
+		try{onEnter(player,team);}catch(Exception e){e.printStackTrace();}
+	}
+	/**
+	 * private Arena onEnterWaitRoom events, calls onEnterWaitRoom for subclasses to be able to override 
+	 */
+	void privateOnEnterWaitRoom(ArenaPlayer player, Team team){
+		try{onEnterWaitRoom(player,team);}catch(Exception e){e.printStackTrace();}
+	}
+	/**
+	 * private Arena onJoin events, calls onJoin for subclasses to be able to override 
+	 */
+	void privateOnJoin(ArenaPlayer player, Team team){
+		try{onJoin(player,team);}catch(Exception e){e.printStackTrace();}
+	}
+	
+	/**
+	 * private Arena onLeave events, calls onLeave for subclasses to be able to override 
+	 */
+	void privateOnLeave(ArenaPlayer player, Team team){
+		try{onLeave(player,team);}catch(Exception e){e.printStackTrace();}
+	}
+
+	
+	/**
 	 * Called when the match is first opened
 	 */
-	public void onOpen() {}
+	protected void onOpen() {}
 
 	/**
 	 * Called when a player joins the Event
 	 * @param p the player
 	 * @param t the team they are on
 	 */
-	public void onJoin(ArenaPlayer p, Team t){}
+	protected void onJoin(ArenaPlayer p, Team t){}
 
 	/**
 	 * Called when a player is leaving the match ( via typing a command usually) , 
@@ -436,54 +478,54 @@ public class Arena implements ArenaListener {
 	 * @param p the player
 	 * @param t the team they were on
 	 */
-	public void onLeave(ArenaPlayer p, Team t) {}
+	protected void onLeave(ArenaPlayer p, Team t) {}
 
 	/**
 	 * Called before the match starts
 	 */
-	public void onPrestart(){}
+	protected void onPrestart(){}
 
 	/**
 	 * Called when the match starts
 	 */
-	public void onStart(){}
+	protected void onStart(){}
 
 	/**
 	 * Called after the victor team has won the match
 	 * @param victor
 	 */
-	public void onVictory(MatchResult result){}
+	protected void onVictory(MatchResult result){}
 
 	/**
 	 * Called when the match is complete
 	 */
-	public void onComplete(){}
+	protected void onComplete(){}
 
 	/**
 	 * Called when a command is given to cancel the match
 	 */
-	public void onCancel(){}
+	protected void onCancel(){}
 
 	/**
 	 * Called after a player first gets teleported into a match ( does not include a waitroom )
 	 * @param Player p
 	 * @param team : the team they were in
 	 */
-	public void onEnter(ArenaPlayer p, Team team) {}
+	protected void onEnter(ArenaPlayer p, Team team) {}
 
 	/**
 	 * Called if a player is teleported into a waiting room before a match
 	 * @param Player p
 	 * @param team: the team they are in
 	 */
-	public void onEnterWaitRoom(ArenaPlayer p, Team team) {}
+	protected void onEnterWaitRoom(ArenaPlayer p, Team team) {}
 
 	/**
 	 * Called when a player is exiting the match (usually through a death)
 	 * @param p
 	 * @param team : the team they were in
 	 */
-	public void onExit(ArenaPlayer p, Team team) {}
+	protected void onExit(ArenaPlayer p, Team team) {}
 
 	/**
 	 * Checks to see whether this arena has paramaters that match the given matchparams
@@ -502,6 +544,62 @@ public class Arena implements ArenaListener {
 			return false;
 		return true;
 	}
+	
+	public Collection<String> getNotMatchReasons(MatchParams matchParams) {
+		List<String> reasons = new ArrayList<String>();
+		reasons.addAll(getParameters().getInvalidMatchReasons(matchParams));
+		final MatchTransitions tops = matchParams.getTransitionOptions();
+		if (tops != null){
+			final boolean mo = tops.hasOptions(TransitionOption.TELEPORTWAITROOM);
+			if (mo && (wrlocs == null || wrlocs.isEmpty()))
+				reasons.add("Needs a waitroom but none has been provided");
+		}
+		return reasons;
+	}
+
+	/**
+	 * Arena printing
+	 */
+	public String toString(){
+		return toSummaryString();
+	}
+	
+	/**
+	 * return detailed arena details (includes bukkit coloring)
+	 * @return
+	 */
+	public String toDetailedString(){
+		StringBuilder sb = new StringBuilder("&6" + name+" &e");
+		sb.append(headerString());
+		sb.append("&e, #Teams:&6"+ap.getNTeamRange());
+		sb.append("&e, #spawns:&6" +locs.size() +"\n");
+		sb.append("&eteamSpawnLocs=&b"+getSpawnLocationString()+"\n");
+		sb.append("&ewrSpawnLocs=&b"+getWaitroomLocationString()+"\n");
+		if (timedSpawns != null){
+			sb.append("&e#itemSpawns:&6" +locs.size() +"\n");
+			//			sb.append(itemSpawnString());
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * return arena summary string (includes bukkit coloring)
+	 * @return
+	 */
+	public String toSummaryString(){
+		StringBuilder sb = new StringBuilder("&4" + name+" &e type=&6"+ap.getType());
+		sb.append(" &eTeamSizes:&6"+ap.getTeamSizeRange()+"&e, #players:&6"+ap.getNTeamRange());
+		sb.append("&e #spawns:&6" +locs.size() +"&e 1stSpawn:&6");
+		for (Integer i: locs.keySet() ){
+			Location l = locs.get(i);
+			if (l != null) sb.append("["+l.getWorld().getName()+":"+l.getBlockX()+":"+l.getBlockY()+":"+l.getBlockZ()+"] ");
+			break;
+		}
+		if (timedSpawns != null && !timedSpawns.isEmpty())
+			sb.append("&e#itemSpawns:&6" +locs.size());
+		return sb.toString();
+	}
+
 
 
 }

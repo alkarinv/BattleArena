@@ -2,9 +2,8 @@ package mc.alk.arena.controllers;
 
 import java.util.HashMap;
 
-import mc.alk.arena.events.Event;
+import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
 
 

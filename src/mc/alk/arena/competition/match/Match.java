@@ -1,4 +1,4 @@
-package mc.alk.arena.match;
+package mc.alk.arena.competition.match;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +30,7 @@ import mc.alk.arena.objects.PVPState;
 import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaInterface;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
@@ -65,13 +66,13 @@ import org.bukkit.plugin.Plugin;
 
 
 public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHandler {
-
 	public enum PlayerState{OUTOFMATCH,INMATCH};
 	static int count =0;
 
 	final int id = count++;
 	final MatchParams mp; /// Our parameters for this match
 	final Arena arena; /// The arena we are using
+	final ArenaInterface arenaInterface; /// Our interface to access arena methods w/o reflection
 
 	List<Team> teams = new ArrayList<Team>(); /// Our players
 	Set<String> visitors = new HashSet<String>(); /// Who is watching
@@ -105,6 +106,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		plugin = BattleArena.getSelf();
 		this.mp = mp;
 		this.arena = arena;
+		arenaInterface =new ArenaInterface(arena);
 		arenaListeners.add(arena);
 		this.matchComplete = omc;
 		this.mc = new MatchMessager(this);
@@ -129,16 +131,12 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 	}
 
 	private void updateBukkitEvents(MatchState matchState){
-		if (Defaults.DEBUG_EVENTS)System.out.println(matchState+"------------------------------ Updating ");
 		for (ArenaListener al : arenaListeners){
-			if (Defaults.DEBUG_EVENTS)System.out.println(matchState+"------------------------------ Updating " + al);
 			MethodController.updateMatchBukkitEvents(al, matchState, insideArena);
 		}
 	}
 	private void updateBukkitEvents(MatchState matchState,ArenaPlayer player){
-		if (Defaults.DEBUG_EVENTS)System.out.println(matchState+"------------------------------ Updating " + player.getName());
 		for (ArenaListener al : arenaListeners){
-			if (Defaults.DEBUG_EVENTS)System.out.println(matchState+"------------------------------ Updating " + al +" " + player.getName());
 			MethodController.updateAllEventListeners(al, matchState, player);
 		}
 	}
@@ -146,7 +144,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 	public void open(){
 		state = MatchState.ONOPEN;
 		updateBukkitEvents(MatchState.ONOPEN);
-		try{arena.onOpen();}catch(Exception e){e.printStackTrace();}
+		arenaInterface.onOpen();
 	}
 
 	public void run() {
@@ -159,7 +157,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		state = MatchState.ONPRESTART;
 		updateBukkitEvents(MatchState.ONPRESTART);
 		PerformTransition.transition(this, MatchState.ONPRESTART, teams, true);
-		try{arena.onPrestart();}catch(Exception e){e.printStackTrace();}
+		arenaInterface.onPrestart();
 		try{mc.sendOnPreStartMsg(teams);}catch(Exception e){e.printStackTrace();}
 		/// Schedule the start of the match
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
@@ -185,8 +183,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		if (nCompetingTeams >= vc.getNeededTeams()){
 			updateBukkitEvents(MatchState.ONSTART);
 			PerformTransition.transition(this, state,competingTeams, true);
-			try{arena.startSpawns();}catch(Exception e){e.printStackTrace();}
-			try{arena.onStart();}catch(Exception e){e.printStackTrace();}
+			arenaInterface.onStart();
 			try{mc.sendOnStartMsg(teams);}catch(Exception e){e.printStackTrace();}
 			if (timeVictory){				
 				timer = new Countdown(plugin,vc.matchEndTime(), vc.matchUpdateInterval(), this);}
@@ -235,8 +232,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 			}
 			updateBukkitEvents(MatchState.ONVICTORY);
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
-			try{arena.stopSpawns();}catch(Exception e){e.printStackTrace();}
-			try{arena.onVictory(getResult());}catch(Exception e){e.printStackTrace();}
+			arenaInterface.onVictory(getResult());
 			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, 
 					new MatchCompleted(am), (long) (mp.getSecondsToLoot() * 20L * Defaults.TICK_MULT));		
 		}
@@ -261,8 +257,9 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 				public void run() {
 					/// Losers and winners get handled after the match is complete
 					PerformTransition.transition(am, MatchState.LOSERS, am.getResult().getLosers(), false);
-					PerformTransition.transition(am, MatchState.WINNER, victor, false);
-					try{arena.onComplete();}catch(Exception e){e.printStackTrace();}
+					if (victor != null) /// everyone died at once??
+						PerformTransition.transition(am, MatchState.WINNER, victor, false);
+					arenaInterface.onComplete();
 					matchComplete.matchComplete(am); /// Call BattleArenaController and say we are completely done
 					updateBukkitEvents(MatchState.ONCOMPLETE);
 					deconstruct();	
@@ -273,9 +270,8 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 
 	public void cancelMatch(){
 		state = MatchState.ONCANCEL;
-		arena.onCancel();
+		arenaInterface.onCancel();
 		cancelTimers();
-		try{arena.stopSpawns();}catch(Exception e){e.printStackTrace();}
 		for (Team t : teams){
 			PerformTransition.transition(this, MatchState.ONCANCEL,t,true);
 		}
@@ -314,7 +310,12 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 			t.setDisplayName(TeamUtil.createTeamName(indexOf(t)));
 		}
 		startTracking(p);
-		try{arena.onJoin(p,t);}catch(Exception e){e.printStackTrace();}
+		arenaInterface.onJoin(p,t);
+		for (Team team : teams){
+			System.out.println("team1 = " + team +"    " + t);
+			
+		}
+
 		PerformTransition.transition(this, MatchState.ONJOIN, p,t, true);
 	}
 
@@ -335,7 +336,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		t.resetScores();/// reset scores
 		TeamController.addTeamHandler(t, this);
 		for (ArenaPlayer p: t.getPlayers()){
-			try{arena.onJoin(p,t);}catch(Exception e){e.printStackTrace();}			
+			arenaInterface.onJoin(p,t);			
 		}
 
 		PerformTransition.transition(this, MatchState.ONJOIN, t, true);
@@ -369,7 +370,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		TeamController.removeTeam(t, this);
 		for (ArenaPlayer p: t.getPlayers()){
 			stopTracking(p);
-			try{arena.onLeave(p,t);}catch(Exception e){e.printStackTrace();}
+			arenaInterface.onLeave(p,t);
 			vc.playerLeft(p);
 		}
 		PerformTransition.transition(this, MatchState.ONCANCEL, t, false);
@@ -379,7 +380,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		//		System.out.println("ArenaMatch::onLeave(Team t)=" + t +"   mo =" + tops.getOptionString());
 		Team t = getTeam(p);
 		stopTracking(p);
-		try{arena.onLeave(p,t);}catch(Exception e){e.printStackTrace();}
+		arenaInterface.onLeave(p,t);
 		PerformTransition.transition(this, MatchState.ONCANCEL, t, false);
 		vc.playerLeft(p);
 	}
@@ -452,7 +453,7 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		BTInterface.stopTracking(p);
 		Team t = getTeam(p);
 		PerformTransition.transition(this, MatchState.ONENTERWAITROOM, p, t, false);
-		try{arena.onEnterWaitRoom(p,t);} catch (Exception e){e.printStackTrace();}	
+		arenaInterface.onEnterWaitRoom(p,t);	
 	}
 
 	/**
@@ -469,9 +470,13 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 			oldlocs.put(name, p.getLocation());
 		BTInterface.stopTracking(p);
 		Team t = getTeam(p);
+		for (Team team : teams){
+			System.out.println("team3 = " + team +"    " + t);
+			
+		}
 
 		PerformTransition.transition(this, MatchState.ONENTER, p, t, false);
-		try{arena.onEnter(p,t);} catch (Exception e){e.printStackTrace();}	
+		arenaInterface.onEnter(p,t);	
 		if (woolTeams){
 			MethodController.updateEventListeners(this, MatchState.ONENTER, p,InventoryClickEvent.class);
 			TeamUtil.setTeamHead(teams.indexOf(t), t);
@@ -860,5 +865,10 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		sb.append("]");
 		return sb.toString();
 	}
+
+	public boolean hasTeam(Team team) {
+		return teams.contains(team);
+	}
+
 
 }

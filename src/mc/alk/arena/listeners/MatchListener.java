@@ -1,6 +1,6 @@
 package mc.alk.arena.listeners;
 
-import mc.alk.arena.match.Match;
+import mc.alk.arena.competition.match.Match;
 
 public interface MatchListener {
 

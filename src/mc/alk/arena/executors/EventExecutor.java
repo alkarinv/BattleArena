@@ -1,9 +1,8 @@
 package mc.alk.arena.executors;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.events.Event;
-import mc.alk.arena.events.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
@@ -46,10 +45,10 @@ public class EventExecutor extends BAExecutor{
 		if (!event.isRunning() && !event.isOpen()){
 			return sendMessage(sender,"&eA "+event.getCommand()+" is not running");
 		}
-		boolean silent = args.length >1 && args[1].equalsIgnoreCase("silent");
+//		boolean silent = args.length >1 && args[1].equalsIgnoreCase("silent");
 		event.cancelEvent();
-		if (!silent && !event.isSilent())
-			event.getMessageHandler().sendEventCancelled();
+//		if (!silent && !event.isSilent())
+//			event.getMessageHandler().sendEventCancelled();
 
 		return sendMessage(sender,"&eYou have canceled the &6" + event.getName());		
 	}
@@ -139,22 +138,7 @@ public class EventExecutor extends BAExecutor{
 		if (!checkFee(sq, p)){
 			return true;}
 		
-		TeamJoinResult ar = event.joining(t);
-		
-		switch(ar.a){
-		case ADDED:
-			event.getMessageHandler().sendPlayerJoinedEvent(p);
-			break;
-		case CANT_FIT:
-			sendMessage(p,"&cThe &6" + event.getDetailedName()+"&c is full");
-			break;
-		case WAITING_FOR_PLAYERS:
-			final int remaining = ar.n;
-			sendMessage(p,"&eYou have joined the &6" + event.getDetailedName());
-			sendMessage(p,"&eYou will enter the Event when &6" +remaining+"&e more "+MessageUtil.playerOrPlayers(remaining)+
-					"&e have joined to make your team");
-			break;
-		}
+		event.joining(t);
 		return true;
 	}
 

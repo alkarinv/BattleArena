@@ -1,12 +1,12 @@
-package mc.alk.arena.events.util;
+package mc.alk.arena.competition.events.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.competition.events.Event.TeamSizeComparator;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.events.Event;
-import mc.alk.arena.events.Event.TeamSizeComparator;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
@@ -40,7 +40,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 					CompositeTeam ct = (CompositeTeam) t;
 					ct.addTeam(team);
 					ct.finish();
-					//					System.out.println("Adding team " + ct +"  ct size = " + ct.size() +"   teamSize=" + inEvent.size());
+//					System.out.println("Adding team " + ct +"  ct size = " + ct.size() +"   team=" + t);
 					return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING, minTeamSize - t.size(),t);
 					//					return true;
 				}

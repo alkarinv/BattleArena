@@ -5,11 +5,9 @@ import java.util.Map;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.MatchState;
-
-import org.bukkit.craftbukkit.libs.jline.internal.Log;
+import mc.alk.arena.util.Log;
 
 import com.dthielke.herochat.Herochat;
-
 public class AnnouncementOptions {
 
 	public enum AnnouncementOption{
@@ -31,12 +29,15 @@ public class AnnouncementOptions {
 	
 	static AnnouncementOptions defaultOptions;
 	public static Herochat hc = null;	
-	Map<MatchState, Map<AnnouncementOption,Object>> options = new HashMap<MatchState, Map<AnnouncementOption,Object>>();
+	Map<MatchState, Map<AnnouncementOption,Object>> matchOptions = new HashMap<MatchState, Map<AnnouncementOption,Object>>();
+	Map<MatchState, Map<AnnouncementOption,Object>> eventOptions = new HashMap<MatchState, Map<AnnouncementOption,Object>>();
 
 	public static void setHerochat(Herochat hc) {
 		AnnouncementOptions.hc = hc;
 	}
-	public void setBroadcastOption(MatchState ms, AnnouncementOption bo, String value) {
+	
+	public void setBroadcastOption(boolean match, MatchState ms, AnnouncementOption bo, String value) {
+		Map<MatchState, Map<AnnouncementOption,Object>> options = match ? matchOptions : eventOptions;
 		Map<AnnouncementOption,Object> ops = options.get(ms);
 		if (ops == null){
 			ops = new HashMap<AnnouncementOption,Object>();
@@ -44,7 +45,7 @@ public class AnnouncementOptions {
 		}
 		if (bo == AnnouncementOption.HEROCHAT){
 			if (hc == null){
-				Log.error(BattleArena.getPName()+"config.yml Announcement option herochat="+value+
+				Log.err(BattleArena.getPName()+"config.yml Announcement option herochat="+value+
 						", will be ignored as HeroChat plugin is not enabled. Defaulting to Server Announcement");
 				ops.put(AnnouncementOption.SERVER, null);
 				return;
@@ -52,7 +53,7 @@ public class AnnouncementOptions {
 			
 			com.dthielke.herochat.Channel channel = Herochat.getChannelManager().getChannel(value);
 			if (channel == null){
-				Log.error(BattleArena.getPName()+"config.yml Announcement option herochat="+value+
+				Log.err(BattleArena.getPName()+"config.yml Announcement option herochat="+value+
 						", will be ignored as HeroChat channel " + value +" can not be found. Defaulting to Server Announcement");
 				ops.put(AnnouncementOption.SERVER, null);
 				return;
@@ -65,7 +66,9 @@ public class AnnouncementOptions {
 		defaultOptions = bo;
 	}
 	
-	public Channel getChannel(MatchState state) {
+	public Channel getChannel(boolean match, MatchState state) {
+		Map<MatchState, Map<AnnouncementOption,Object>> options = match ? matchOptions : eventOptions;
+
 		Map<AnnouncementOption,Object> obj = options.get(state);
 		/// Dont announce
 		if (obj == null || obj.containsKey(AnnouncementOption.DONTANNOUNCE))
@@ -89,11 +92,12 @@ public class AnnouncementOptions {
 		return Channel.ServerChannel;
 	}
 	
-	public static Channel getDefaultChannel(MatchState state) {
-		return defaultOptions.getChannel(state);
+	public static Channel getDefaultChannel(boolean match, MatchState state) {
+		return defaultOptions.getChannel(match, state);
 	}
-	public boolean hasOption(MatchState state) {
-//		System.out.println("## hasOption = " + options.containsKey(state) +"  " + state);
+	public boolean hasOption(boolean match, MatchState state) {
+//		System.out.println("## hasOption = " + matchOptions.containsKey(state) +"  " + state);
+		Map<MatchState, Map<AnnouncementOption,Object>> options = match ? matchOptions : eventOptions;
 		return options.containsKey(state);
 	}
 }

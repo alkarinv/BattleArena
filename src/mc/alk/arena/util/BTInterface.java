@@ -27,11 +27,11 @@ public class BTInterface {
 	public static TrackerInterface aBTI = null;
 	static private HashMap<String, TrackerInterface> btis = new HashMap<String, TrackerInterface>();
 	static private HashMap<String, TrackerInterface> currentInterfaces = new HashMap<String, TrackerInterface>();
-	TrackerInterface ti;
+	final TrackerInterface ti;
 	boolean valid;
 	public BTInterface(MatchParams mp){
 		ti = getInterface(mp);
-		valid = ti != null;
+		valid = battleTracker != null && ti != null;
 	}
 	public boolean isValid(){
 		return valid;

@@ -10,12 +10,12 @@ import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.PlayerStoreController.PInv;
-import mc.alk.arena.controllers.messaging.MatchMessageImpl;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -94,13 +94,13 @@ public class BAPlayerListener implements Listener  {
 		final String name = p.getName();
 		final String msg = messagesOnRespawn.remove(p.getName());
 		if (msg != null){
-			MatchMessageImpl.sendMessage(p, msg);
+			MessageUtil.sendMessage(p, msg);
 		}
 //		System.out.println(" playerReturned event player = " + p.getName() +"  " + event +"   " + itemRestore.containsKey(p.getName()));
 
 		if (die.remove(name)){
 			InventoryUtil.printInventory(p);
-			MatchMessageImpl.sendMessage(p, "&eYou have been killed by the Arena for not being online");
+			MessageUtil.sendMessage(p, "&eYou have been killed by the Arena for not being online");
 			p.setHealth(0);
 			return;
 		}

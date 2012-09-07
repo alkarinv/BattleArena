@@ -9,15 +9,14 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
-import mc.alk.arena.controllers.messaging.MatchMessageImpl;
-import mc.alk.arena.events.Event;
-import mc.alk.arena.match.Match;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -32,6 +31,7 @@ import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
+import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
@@ -137,10 +137,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Check to make sure at least one arena can be joined at some time
 		Arena arena = ac.getArenaByMatchParams(mp);
 		if (arena == null){
-			return sendMessage(player,"A valid arena has not been built for a " + mp.toPrettyString());}
+			return sendMessage(player,"&cA valid arena has not been built for a " + mp.toPrettyString());}
 		final MatchTransitions ops = mp.getTransitionOptions();
 		if (ops == null){
-			return sendMessage(player,"This match type has no valid options, contact an admin to fix ");}
+			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
 
 		/// Check ready
 		if(!ops.teamReady(t)){
@@ -154,9 +154,9 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Add them to the queue
 		QPosTeamPair qpp = ac.addToQue(t, mp);
 		if (qpp.pos== -2){
-			t.sendMessage("&eTeam queue was busy.  Try again in a sec.");
+			t.sendMessage("&cTeam queue was busy.  Try again in a sec.");
 		} else if (qpp.pos == -1){
-			t.sendMessage("&eAn arena has not been built yet for that size of team");			
+			t.sendMessage("&cAn arena has not been built yet for that size of team");			
 		} else {
 			t.sendMessage("&eYou have joined the queue for the &6"+ mp.toPrettyString()+ " &e.");
 			int nplayers = mp.getMinTeams()*mp.getMinTeamSize();
@@ -377,10 +377,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 		Plugin plugin = mp.getType().getPlugin();
 		ac.removeAllArenas(mp.getType());
 		if (plugin == BattleArena.getSelf()){
-			MatchMessageImpl.load();
-			BattleArena.getSelf().reloadConfig();			
+			MessageSerializer.loadDefaults();
+			BattleArena.getSelf().reloadConfig();
 		} else {
 			ConfigSerializer.reloadConfig(mp.getType());
+			MessageSerializer.reloadConfig(mp.getName());
 		}
 		ArenaSerializer.loadAllArenas(plugin, mp.getType());
 		return sendMessage(sender,"&eArena ymls reloaded");
@@ -444,7 +445,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 	@MCCommand(cmds={"alter"}, inGame=true, admin=true)
 	public boolean arenaAlter(CommandSender sender, Arena arena, String[] args) {
 		if (args.length < 3){
-			sendMessage(sender,ChatColor.YELLOW+ "Usage: /arena alter <arenaname> <size|type|1|2|3...|vloc|waitroom> <value>");
+			sendMessage(sender,ChatColor.YELLOW+ "Usage: /arena alter <arenaname> <teamSize|nTeams|type|1|2|3...|vloc|waitroom> <value>");
 			sendMessage(sender,ChatColor.YELLOW+ "Example: /arena alter MainArena teamSize 3+ ");
 			sendMessage(sender,ChatColor.YELLOW+ "Example: /arena alter MainArena nTeams 2 ");
 			sendMessage(sender,ChatColor.YELLOW+ "Example: /arena alter MainArena type deathmatch ");

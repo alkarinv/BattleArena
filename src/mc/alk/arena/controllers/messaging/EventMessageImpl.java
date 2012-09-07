@@ -3,20 +3,17 @@ package mc.alk.arena.controllers.messaging;
 import java.util.Collection;
 import java.util.Set;
 
-import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.EventMessageHandler;
-import mc.alk.arena.events.Event;
+import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.messaging.Channel;
+import mc.alk.arena.objects.messaging.Message;
+import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.util.BTInterface;
-import mc.alk.arena.util.Log;
+import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.TimeUtil;
-import mc.alk.tracker.TrackerInterface;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Server;
 
 
 /**
@@ -24,90 +21,113 @@ import org.bukkit.Server;
  * @author alkarin
  *
  */
-public class EventMessageImpl extends MessageUtil implements EventMessageHandler {
+public class EventMessageImpl extends MessageSerializer implements EventMessageHandler {
 
 	final MatchParams mp;
 	final Event event;
-	
+
 	public EventMessageImpl(Event e ){
+		super(e.getParams().getName());
 		this.mp = e.getParams();
 		this.event = e;
 	}
-	
+
 	@Override
-	public void sendCountdownTillEvent(int seconds) {
-		final String timeStr = TimeUtil.convertSecondsToString(seconds);
-		final String msg = mp.getPrefix()+"&eStarts in " + timeStr +", &6/"+mp.getCommand()+" join&e, &6/"+ mp.getCommand()+" info";
-		Bukkit.getServer().broadcastMessage(colorChat(msg));
-	}
-	
-	@Override
-	public void sendEventStarting(Collection<Team> teams) {
-		final int nTeams = teams.size();
-		Server server = Bukkit.getServer();
-		int minTeamSize = 1;
-		for (Team t: teams){
-			if (t.size() > 1){
-				minTeamSize = t.size();
-				break;
-			}
+	public void sendCountdownTillEvent(Channel serverChannel, int seconds) {
+		Message message = getMessage("event.countdownTillEvent");
+		Message serverMessage = getMessage("event.server_countdownTillEvent");
+		Set<MessageOption> ops = message.getOptions();
+		if (serverChannel != Channel.NullChannel){
+			ops.addAll(serverMessage.getOptions());	
 		}
-		server.broadcastMessage(colorChat(mp.getPrefix()+"&6 " + nTeams + "&e "+
-				teamsOrPlayers(minTeamSize)+" will compete in a &6"+mp.getCommand()+"&e Event!"));
-		StringBuilder sb = new StringBuilder();
-		boolean first = true;
-		TrackerInterface bti = BTInterface.getInterface(mp);
-		for (Team t: teams){
-			if (!first) sb.append("&e, ");
-			Integer elo = (int) ((bti != null) ? BTInterface.loadRecord(bti, t).getRanking() : Defaults.DEFAULT_ELO);
-			sb.append("&c"+t.getDisplayName()+"&6(" + elo +")");
-			first = false;
+		String msg = message.getMessage();
+		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), ops.size(), 0, message, ops);
+		msgf.formatCommonOptions(null,seconds);
+
+		if (serverChannel != Channel.NullChannel){
+			msg = msgf.getFormattedMessage(serverMessage);
+			serverChannel.broadcast(msg);
+		}	
+	}
+
+	@Override
+	public void sendEventStarting(Channel serverChannel, Collection<Team> teams) {
+		final String nTeamPath = getStringPathFromSize(teams.size()); 
+		Message message = getMessage("event."+ nTeamPath+".start");
+		Message serverMessage = getMessage("event."+ nTeamPath+".server_start");
+		Set<MessageOption> ops = message.getOptions();
+		if (serverChannel != Channel.NullChannel){
+			ops.addAll(serverMessage.getOptions());	
 		}
-		final String msg = colorChat("&eParticipants: " + sb.toString());
+
+		String msg = message.getMessage();
+		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), teams.size(), message, ops);
+		msgf.formatCommonOptions(teams);
 		for (Team t: teams){
-			for (ArenaPlayer p: t.getPlayers()){
-				p.sendMessage(msg);
-			}
+			msgf.formatTeamOptions(t,false);
+			msgf.formatTwoTeamsOptions(t, teams);
+			msgf.formatTeams(teams);
+			String newmsg = msgf.getFormattedMessage(message);
+			t.sendMessage(newmsg);
+		}
+
+		if (serverChannel != Channel.NullChannel){
+			msg = msgf.getFormattedMessage(serverMessage);
+			serverChannel.broadcast(msg);
 		}
 	}
-	
+
 	@Override
-	public void sendEventWon(Team victor, Integer elo) {
-		Bukkit.getServer().broadcastMessage(
-				colorChat(mp.getPrefix()+"&e Congratulations to &c"+victor.getDisplayName()+"&6("+elo+")&e for winning!!"));		
+	public void sendEventVictory(Channel serverChannel, Team victor, Collection<Team> losers) {
+		final String nTeamPath = getStringPathFromSize(losers.size()+1); 
+		sendVictory(serverChannel,victor,losers,mp,"event."+nTeamPath+".victory","event."+nTeamPath+".server_victory");
 	}
-	
+
 	@Override
-	public void sendEventOpenMsg() {
-		final String prefix = mp.getPrefix();
-		Server server = Bukkit.getServer();
-		server.broadcastMessage(Log.colorChat(prefix + "&e A " + mp.toPrettyString() +" Event is opening!"));
-		server.broadcastMessage(Log.colorChat(prefix + "&e Type &6/" + mp.getCommand()+" join&e, or &6/" + mp.getCommand()+" info &efor info"));			
-		if (mp.getSize() > 1){
-			server.broadcastMessage(Log.colorChat(prefix + "&e You can join solo and you will be matched up, or you can create a team"));	
-			server.broadcastMessage(Log.colorChat(prefix + "&e &6/team create <player1> <player2>..."));	
-		}		
-	}
-	
-	@Override
-	public void sendEventCancelledDueToLackOfPlayers(Set<ArenaPlayer> competingPlayers) {
-		EventMessageImpl.sendMessage(competingPlayers,mp.getPrefix()+"&e The Event has been cancelled b/c there weren't enough players");		
+	public void sendEventOpenMsg(Channel serverChannel) {
+		if (serverChannel == Channel.NullChannel){
+			return;
+		}
 		
+		final String nTeamPath = getStringPathFromSize(mp.getMinTeams()); 
+		Message serverMessage;
+		if (mp.getMinTeamSize() > 1)
+			serverMessage = getMessage("event."+nTeamPath+".server_open_teamSizeGreaterThanOne");
+		else 
+			serverMessage = getMessage("event."+nTeamPath+".server_open");
+		Set<MessageOption> ops = serverMessage.getOptions();
+		String msg = serverMessage.getMessage();
+		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), ops.size(), 0, serverMessage, ops);
+		msgf.formatCommonOptions(null);
+		msg = msgf.getFormattedMessage(serverMessage);
+		serverChannel.broadcast(msg);
 	}
-	
+
 	@Override
-	public void sendTeamJoinedEvent(Team t) {
-		t.sendMessage("&eYou have joined the &6" + mp.getName());		
+	public void sendEventCancelledDueToLackOfPlayers(Channel serverChannel, Set<ArenaPlayer> competingPlayers) {
+		MessageUtil.sendMessage(competingPlayers,mp.getPrefix()+"&e The Event has been cancelled b/c there weren't enough players");
 	}
-	
+
 	@Override
-	public void sendPlayerJoinedEvent(ArenaPlayer p) {
-		sendMessage(p,"&eYou have joined the &6" + mp.getName());		
+	public void sendTeamJoinedEvent(Channel serverChannel, Team t) {
+		t.sendMessage("&eYou have joined the &6" + mp.getName());
 	}
-	
+
 	@Override
-	public void sendEventCancelled() {
+	public void sendEventCancelled(Channel serverChannel) {
 		Bukkit.broadcastMessage(EventMessageImpl.colorChat(mp.getPrefix()+"&e has been cancelled!"));		
 	}
-		
+
+	@Override
+	public void sendCantFitTeam(Team t) {
+		t.sendMessage("&cThe &6" + event.getDetailedName()+"&c is full");		
+	}
+
+	@Override
+	public void sendWaitingForMorePlayers(Team team, int remaining) {
+		team.sendMessage("&eYou have joined the &6" + event.getDetailedName());
+		team.sendMessage("&eYou will enter the Event when &6" +remaining+"&e more "+MessageUtil.playerOrPlayers(remaining)+
+				"&e have joined to make your team");
+	}
+
 }

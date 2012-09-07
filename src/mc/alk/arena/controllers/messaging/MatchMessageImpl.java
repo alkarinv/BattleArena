@@ -2,18 +2,16 @@ package mc.alk.arena.controllers.messaging;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
-import mc.alk.arena.Defaults;
-import mc.alk.arena.match.Match;
-import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.messaging.Channel;
+import mc.alk.arena.objects.messaging.Message;
+import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.util.BTInterface;
-import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.tracker.objects.Stat;
-import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 
 
 /**
@@ -21,134 +19,79 @@ import mc.alk.tracker.objects.VersusRecords.VersusRecord;
  * @author alkarin
  *
  */
-public class MatchMessageImpl extends MessageUtil implements MatchMessageHandler {
-
+public class MatchMessageImpl extends MessageSerializer implements MatchMessageHandler {
 	final MatchParams mp;
 	final Match match;
-	
+	final String typeName;
 
-	public MatchMessageImpl(Match m ){
+	public MatchMessageImpl(Match m){
+		super(m.getParams().getName());
 		this.mp = m.getParams();
 		this.match = m;
+		typeName = mp.getName();
 	}
-	
+
 	@Override
 	public void sendOnPreStartMsg(Channel serverChannel,List<Team> teams) {
-		if (teams.size()==2){
-			Team t1=teams.get(0);
-			Team t2 = teams.get(1);
-			t1.sendMessage(mp.getSendMatchWillBeginMessage());
-			t2.sendMessage(mp.getSendMatchWillBeginMessage());
-
-			Integer t1Elo = Defaults.DEFAULT_ELO.intValue(), t2Elo = Defaults.DEFAULT_ELO.intValue();
-			BTInterface bti = new BTInterface(mp);
-			if (bti.isValid()){			
-				t1Elo = bti.getElo(t1);
-				t2Elo = bti.getElo(t2);
-			}
-
-			t1.sendMessage(getMessageNP("match","prestart2v2", t2.getDisplayName(),t2Elo, mp.getSecondsToLoot()));
-			t2.sendMessage(getMessageNP("match","prestart2v2", t1.getDisplayName(),t1Elo, mp.getSecondsToLoot()));
-			
-			String serverMsg = null;
-			if (mp.isRated()){
-				serverMsg = colorChat(mp.getPrefix()+" "+getMessageNP("match", "server_prestart2v2",t1.getDisplayName(),t1Elo, t2.getDisplayName(),t2Elo));
-			} else {
-				serverMsg = getMessageAddPrefix(mp.getPrefix(),"skirmish", "prestart2v2", t1.getDisplayName(),t1Elo,t2.getDisplayName(), t2Elo);
-			}
-			serverChannel.broadcast(serverMsg);
-			
-		} else {
-			for (Team t: teams){
-				t.sendMessage(mp.getSendMatchWillBeginMessage());
-				t.sendMessage(getMessageNP("match","prestart", mp.getSecondsTillMatch()));
-			}
-		}
+		sendMessageToTeams(serverChannel,teams,"prestart","server_prestart", mp.getSecondsTillMatch());
 	}
 
 	@Override
 	public void sendOnStartMsg(Channel serverChannel, List<Team> teams) {
-		for (Team t: teams){
-			t.sendMessage(getMessageNP("match", "start"));			
+		sendMessageToTeams(serverChannel,teams,"start","server_start",null);
+	}
+
+	private void sendMessageToTeams(Channel serverChannel, List<Team> teams, String path, String serverpath, Integer seconds){
+		final String nTeamPath = getStringPathFromSize(teams.size()); 
+		Message message = getMessage("match."+ nTeamPath+"."+path);
+		Message serverMessage = getMessage("match."+ nTeamPath+"."+serverpath);
+		Set<MessageOption> ops = message.getOptions();
+		if (serverChannel != Channel.NullChannel){
+			ops.addAll(serverMessage.getOptions());	
 		}
-		if (serverChannel != Channel.NullChannel)
-			serverChannel.broadcast(getMessageNP("match","start"));
+
+		String msg = message.getMessage();
+		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), teams.size(), message, ops);
+
+		msgf.formatCommonOptions(teams,seconds);
+		for (Team t: teams){
+			msgf.formatTeamOptions(t,false);
+			msgf.formatTwoTeamsOptions(t, teams);
+			msgf.formatTeams(teams);
+			String newmsg = msgf.getFormattedMessage(message);
+			t.sendMessage(newmsg);
+		}
+
+		if (serverChannel != Channel.NullChannel){
+			msg = msgf.getFormattedMessage(serverMessage);
+			serverChannel.broadcast(msg);
+		}
 	}
 	
 	@Override
 	public void sendOnVictoryMsg(Channel serverChannel, Team victor, Collection<Team> losers) {
-		//		System.out.println("sendMatchWonMessage " + victor.getName() +" " + losers +"   inside of pi="+q);
-		MatchParams q = match.getParams();
-		if (losers.size()==1){
-			Team loser  = null;
-			for (Team t: losers){loser = t;break;}
-			Integer vWins = 0, lWins = 0;
-			Integer vLosses = 0, lLosses = 0;
-			Integer vWinsOver = 0, lWinsOver = 0;
-			Integer vElo = Defaults.DEFAULT_ELO.intValue(), lElo = Defaults.DEFAULT_ELO.intValue();
-			BTInterface bti = new BTInterface(q);
-			if (bti != null && bti.isValid()){			
-				Stat tsvictor = bti.loadRecord(victor);
-				Stat tsloser = bti.loadRecord(loser);
-				if (tsvictor != null && tsloser != null){ /// Should never happen but obviously tracker has bugs
-					vWins = tsvictor.getWins(); lWins = tsloser.getWins();
-					vLosses = tsvictor.getLosses(); lLosses= tsloser.getLosses();
-					VersusRecord orvictor = tsvictor.getRecordVersus(tsloser);
-					if (orvictor != null){
-						vWinsOver= orvictor.wins; lWinsOver= orvictor.losses;
-					}				
-					vElo = tsvictor.getRanking(); lElo = tsloser.getRanking();				
-				}
-			}
-			if (serverChannel != Channel.NullChannel){
-				final String msg = getMessageAddPrefix(q.getPrefix(),"match", "server_victory2v2",
-						victor.getDisplayName(),vElo,vWins,vLosses, 
-						loser.getDisplayName(),lElo, lWins ,lLosses );
-				serverChannel.broadcast(msg);
-			}
-
-			victor.sendMessage(getMessageNP("match","victor_message2v2_1",loser.getDisplayName(), lElo));
-			victor.sendMessage(getMessageNP("match","victor_message2v2_2",vWins, vLosses));
-			victor.sendMessage(getMessageNP("match","victor_message2v2_3",loser.getDisplayName(),vWinsOver, lWinsOver));
-			victor.sendMessage(getMessageNP("match","victor_message2v2_4",mp.getSecondsToLoot()));
-
-			loser.sendMessage(getMessageNP("match","loser_message2v2_1",victor.getDisplayName(), vElo));
-			loser.sendMessage(getMessageNP("match","loser_message2v2_2",lWins, lLosses));
-			loser.sendMessage(getMessageNP("match","loser_message2v2_3",victor.getDisplayName(),lWinsOver, vWinsOver));
-			StringBuilder sb = new StringBuilder();
-			boolean first = true;
-			for (ArenaPlayer p : victor.getPlayers()){
-				if (!victor.hasAliveMember(p))
-					continue;
-				if (!first) sb.append(", ");
-				sb.append("&8" +p.getDisplayName() +"&e(&4" + p.getHealth() + "&e)" );
-			}
-			loser.sendMessage(getMessageNP("match","loser_message2v2_4",sb.toString()));
-		}	else {
-//			victor.sendMessage("&eYou have vanquished all foes!! and have &6"+q.getSecondsToLoot()+"&e matchEndTime to loot!");
-			victor.sendMessage("&eYou have vanquished all foes!! match will end in " + q.getSecondsToLoot());
-			for (Team loser: losers){
-				loser.sendMessage("&eYou have been vanquished by &6" + victor.getDisplayName()+"&e!!!");
-			}
-			BTInterface bti = new BTInterface(q);
-			if (bti.isValid()){			
-				victor.sendMessage(q.getPrefix()+"&e Your new rating is &6("+bti.getElo(victor)+")");			
-				for (Team loser: losers){
-					loser.sendMessage(q.getPrefix()+"&e Your new rating is &6("+bti.getElo(loser)+")");
-				}
-			}
-
-		}
+		final String nTeamPath = getStringPathFromSize(losers.size()+1); 
+		sendVictory(serverChannel,victor,losers,mp,"match."+nTeamPath+".victory","match."+nTeamPath+".server_victory");
 	}
 
 	public void sendYourTeamNotReadyMsg(Team t1) {
-		t1.sendMessage(getMessageNP("match","your_team_not_ready"));
+		Message message = getMessage("match"+typeName+".your_team_not_ready");
+		Set<MessageOption> ops = message.getOptions();
+
+		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), 1, message, ops);
+		msgf.formatTeamOptions(t1, false);
+		t1.sendMessage(msgf.getFormattedMessage(message));
 	}
 
 	public void sendOtherTeamNotReadyMsg(Team t1) {
-		t1.sendMessage(getMessageNP("match","other_team_not_ready"));
+		Message message = getMessage("match."+typeName+".other_team_not_ready");
+		Set<MessageOption> ops = message.getOptions();
+
+		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), 1, message, ops);
+		msgf.formatTeamOptions(t1, false);
+		t1.sendMessage(msgf.getFormattedMessage(message));
 	}
-	
+
 	public void sendOnIntervalMsg(Channel serverChannel, int remaining) {
 		Team h = match.getVictoryCondition().currentLeader();
 		TimeUtil.testClock();
@@ -164,4 +107,5 @@ public class MatchMessageImpl extends MessageUtil implements MatchMessageHandler
 	}
 	public void sendTimeExpired(Channel serverChannel) {}
 	
+
 }

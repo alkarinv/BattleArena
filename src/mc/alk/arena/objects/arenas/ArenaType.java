@@ -1,7 +1,10 @@
 package mc.alk.arena.objects.arenas;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.controllers.MethodController;
@@ -48,6 +51,12 @@ public class ArenaType implements Comparable<ArenaType>{
 		if (this == arenaType)
 			return true;
 		return (compatibleTypes==null) ? false : compatibleTypes.contains(arenaType); 
+	}
+
+	public Collection<String> getInvalidMatchReasons(ArenaType arenaType) {
+		List<String> reasons = new ArrayList<String>();
+		if (this != arenaType && this!=ANY && arenaType != ANY) reasons.add("Arena type is " + this +". You requested " + arenaType);
+		return reasons;
 	}
 
 	public String toPrettyString(int teamSize) {
@@ -168,5 +177,6 @@ public class ArenaType implements Comparable<ArenaType>{
 		}
 		compatibleTypes.add(at);
 	}
+
 
 }

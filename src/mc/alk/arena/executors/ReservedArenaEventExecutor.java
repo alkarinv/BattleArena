@@ -1,14 +1,15 @@
 package mc.alk.arena.executors;
 
+import java.util.List;
+
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.events.ReservedArenaEvent;
+import mc.alk.arena.competition.events.util.NeverWouldJoinException;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.events.ReservedArenaEvent;
-import mc.alk.arena.events.util.NeverWouldJoinException;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
@@ -49,7 +50,7 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 			return sendMessage(sender,"&4The Event " + event.getName() +" is not type ReservedArenaEvent");			
 		}
 		ReservedArenaEvent rae = (ReservedArenaEvent) event;
-		MatchParams params = ParamController.getMatchParams(event.getName());
+		MatchParams params = ParamController.getMatchParamCopy(event.getName());
 		if (params != null)
 			rae.setParamInst(params); /// Update our params from ParamController
 		MatchParams mp = rae.getParams();
@@ -102,7 +103,13 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		} else {
 			arena = ac.getArenaByMatchParams(specificparams);
 			if (arena == null){
-				return sendMessage(sender,"&cCouldnt find an arena matching the params &6"+specificparams);}
+				List<String> reasons = ac.getNotMachingArenaReasons(specificparams);
+				sendMessage(sender,"&cCouldnt find an arena matching the params &6"+specificparams);
+				for (String reason: reasons){
+					sendMessage(sender,reason);					
+				}
+				return true;
+			}
 			autoFindArena = true;
 		}
 		ArenaParams ap = arena.getParameters();
