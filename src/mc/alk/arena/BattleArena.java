@@ -38,6 +38,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.victoryconditions.ArenaControlsVictory;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
 import mc.alk.arena.objects.victoryconditions.LastManStanding;
 import mc.alk.arena.objects.victoryconditions.NDeaths;
@@ -122,6 +123,7 @@ public class BattleArena extends JavaPlugin{
 		VictoryType.register("LastManStanding", LastManStanding.class, this);
 		VictoryType.register("HighestKills", HighestKills.class, this);
 		VictoryType.register("NDeaths", NDeaths.class, this);
+		VictoryType.register("ArenaControlsVictory", ArenaControlsVictory.class, this);
 
 		MethodController.addMethods(Match.class, Match.class.getMethods());
 

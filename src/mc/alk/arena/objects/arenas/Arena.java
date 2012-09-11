@@ -545,7 +545,7 @@ public class Arena implements ArenaListener {
 		return true;
 	}
 	
-	public Collection<String> getNotMatchReasons(MatchParams matchParams) {
+	public Collection<String> getInvalidMatchReasons(MatchParams matchParams) {
 		List<String> reasons = new ArrayList<String>();
 		reasons.addAll(getParameters().getInvalidMatchReasons(matchParams));
 		final MatchTransitions tops = matchParams.getTransitionOptions();

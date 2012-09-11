@@ -13,6 +13,7 @@ import mc.alk.arena.objects.teams.Team;
 public class MatchMessager {
 	MatchMessageHandler impl;
 	final AnnouncementOptions bos;
+	boolean silent = false;
 
 	public MatchMessager(Match match){
 		this.impl = new MatchMessageImpl(match);
@@ -20,6 +21,7 @@ public class MatchMessager {
 	}
 
 	private Channel getChannel(MatchState state) {
+		if (silent) return Channel.NullChannel;
 		return bos != null && bos.hasOption(true,state) ? bos.getChannel(true,state) : AnnouncementOptions.getDefaultChannel(true,state);
 	}
 
@@ -57,5 +59,8 @@ public class MatchMessager {
 
 	public MatchMessageHandler getMessageHandler() {
 		return impl;
+	}
+	public void setSilent(boolean silent){
+		this.silent = silent;
 	}
 }

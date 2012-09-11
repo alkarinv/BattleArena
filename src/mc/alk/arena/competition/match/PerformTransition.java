@@ -74,10 +74,9 @@ public class PerformTransition {
 
 	public static boolean transition(final Match am, final MatchState transition, final ArenaPlayer p, 
 			final Team team, final boolean onlyInMatch) {
-//		if (transition == MatchState.ONLEAVE || transition == MatchState.ONCOMPLETE)
-//			Util.printStackTrace();
 		if (debug) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +p.getName() +
 				" ops="+am.tops.getOptions(transition) +"  inArena="+am.insideArena(p));
+
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		if (mo == null){
 			return true;}

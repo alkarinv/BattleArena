@@ -106,16 +106,19 @@ public class MessageSerializer extends BaseSerializer {
 		}
 	}
 	
-	protected void sendVictory(Channel serverChannel, Team victor, Collection<Team> losers, MatchParams mp, String path, String serverPath){
-		Message message = getMessage(path);
+	protected void sendVictory(Channel serverChannel, Team victor, Collection<Team> losers, MatchParams mp, String winnerpath,String loserpath, String serverPath){
+		Message winnermessage = getMessage(winnerpath);
+		Message losermessage = getMessage(loserpath);
 		Message serverMessage = getMessage(serverPath);
-		Set<MessageOption> ops = message.getOptions();
+
+		Set<MessageOption> ops = winnermessage.getOptions();
+		ops.addAll(losermessage.getOptions());
 		if (serverChannel != Channel.NullChannel){
 			ops.addAll(serverMessage.getOptions());			
 		}
 
-		String msg = message.getMessage();
-		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), losers.size()+1, message, ops);
+		String msg = losermessage.getMessage();
+		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), losers.size()+1, losermessage, ops);
 		List<Team> teams = new ArrayList<Team>(losers);
 		teams.add(victor);
 		msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
@@ -125,9 +128,12 @@ public class MessageSerializer extends BaseSerializer {
 			msgf.formatTeams(teams);
 			msgf.formatWinnerOptions(t, false);			
 			msgf.formatWinnerOptions(victor, true);
-			String newmsg = msgf.getFormattedMessage(message);
+			String newmsg = msgf.getFormattedMessage(losermessage);
 			t.sendMessage(newmsg);
 		}
+
+		msgf = new MessageFormatter(this, mp, ops.size(), losers.size()+1, winnermessage, ops);
+		msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
 		msgf.formatTeamOptions(victor,true);
 		msgf.formatTwoTeamsOptions(victor, teams);
 		msgf.formatTeams(teams);
@@ -135,7 +141,7 @@ public class MessageSerializer extends BaseSerializer {
 			msgf.formatWinnerOptions(losers.iterator().next(), false);			
 		}
 		msgf.formatWinnerOptions(victor, true);
-		String newmsg = msgf.getFormattedMessage(message);
+		String newmsg = msgf.getFormattedMessage(winnermessage);
 		victor.sendMessage(newmsg);
 
 		if (serverChannel != Channel.NullChannel){

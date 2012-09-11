@@ -20,7 +20,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 public class InventoryUtil {
-	static final String version = "InventoryUtil 2.1.3.3";
+	static final String version = "InventoryUtil 2.1.3.4";
 	static final boolean DEBUG = false;
 
 	public static class Armor{
@@ -278,6 +278,7 @@ public class InventoryUtil {
 	public static void addItemToInventory(Player player, ItemStack itemStack, int stockAmount, boolean update) {
 		addItemToInventory(player,itemStack,stockAmount,update,false);
 	}
+	
 	@SuppressWarnings("deprecation")
 	public static void addItemsToInventory(Player p, List<ItemStack> items, final boolean ignoreCustomHelmet) {
 		for (ItemStack is : items){
@@ -571,11 +572,11 @@ public class InventoryUtil {
 		System.out.println("Inventory of "+p.getName());
 		for (ItemStack is: pi.getContents()){
 			if (is != null && is.getType() != Material.AIR){
-				System.out.println(getCommonName(is));}
+				System.out.println(getCommonName(is) +"  " + is.getAmount());}
 		}
 		for (ItemStack is: pi.getArmorContents()){
 			if (is != null && is.getType() != Material.AIR){
-				System.out.println(getCommonName(is));}
+				System.out.println(getCommonName(is) +"  " + is.getAmount());}
 		}
 	}
 }

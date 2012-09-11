@@ -37,7 +37,7 @@ public class TournamentEvent extends Event {
 	ArrayList<Team> aliveTeams = new ArrayList<Team>();
 	ArrayList<Team> competingTeams = new ArrayList<Team>();
 	final MatchParams oParms ; /// Our original default params
-	
+
 	public TournamentEvent(MatchParams params) {
 		super(params);
 		oParms = params;
@@ -59,7 +59,7 @@ public class TournamentEvent extends Event {
 		mp.setTimeBetweenRounds(oParms.getTimeBetweenRounds());
 		mp.setSecondsTillMatch(oParms.getSecondsTillMatch());
 		mp.setSecondsToLoot(oParms.getSecondsToLoot());
-		
+
 		TimeUtil.testClock();
 		super.openEvent(mp);
 	}
@@ -72,8 +72,7 @@ public class TournamentEvent extends Event {
 		int osize = teams.size();
 		nrounds = getNRounds(osize);
 		int nteams = (int) Math.pow(2, nrounds);
-		if (!silent)
-			server.broadcastMessage(Log.colorChat(prefix+"&e The " + matchParams.toPrettyString() +
+		server.broadcastMessage(Log.colorChat(prefix+"&e The " + matchParams.toPrettyString() +
 				oParms.getName() + " tournament is starting!"));
 
 		preliminary_round = teams.size()!=nteams;
@@ -99,8 +98,7 @@ public class TournamentEvent extends Event {
 			teams.add(t);
 			aliveTeams.add(t);
 		}
-		if (!silent)
-			server.broadcastMessage(Log.colorChat(prefix+"&6 " + teams.size() + " &e" +MessageUtil.getTeamsOrPlayers(teams.size())+
+		server.broadcastMessage(Log.colorChat(prefix+"&6 " + teams.size() + " &e" +MessageUtil.getTeamsOrPlayers(teams.size())+
 				" will compete in a &6"+nrounds+"&e round tournament"));
 		if (preliminary_round){			
 			makePreliminaryRound();			
@@ -113,19 +111,19 @@ public class TournamentEvent extends Event {
 	@Override
 	public void matchCancelled(Match am){
 		Matchup m = getMatchup(am.getTeams().get(0),round);
-//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());	
+		//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());	
 		if (m == null){ /// This match wasnt in our tournament
 			return;}
 		cancelEvent();
 	}
-	
+
 	@Override
 	public void matchComplete(Match am) {
 		if (!isRunning())
 			return ;
 		Team victor = am.getVictor();
 		Matchup m = getMatchup(victor,round);
-//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());	
+		//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());	
 		if (m == null){ /// This match wasnt in our tournament
 			return;}
 		if (am.getMatchState() == MatchState.ONCANCEL){
@@ -146,9 +144,9 @@ public class TournamentEvent extends Event {
 				matchParams.setPrettyName("&4[Tournament]");
 				Server server = Bukkit.getServer();
 				Team t = aliveTeams.get(0);
-				if (!silent) server.broadcastMessage(Log.colorChat(prefix+"&e Congratulations to &6" + t.getDisplayName() + "&e for winning!"));
+				server.broadcastMessage(Log.colorChat(prefix+"&e Congratulations to &6" + t.getDisplayName() + "&e for winning!"));
 				PerformTransition.transition(am, MatchState.FIRSTPLACE, t,false);
-//				if (BattleArena.bet != null) BattleEventTracker.addTeamWinner(t.getDisplayName(), getName());
+				//				if (BattleArena.bet != null) BattleEventTracker.addTeamWinner(t.getDisplayName(), getName());
 				HashSet<Team> losers = new HashSet<Team>(competingTeams);
 				losers.remove(victor);
 				eventVictory(victor,losers);
@@ -252,7 +250,7 @@ public class TournamentEvent extends Event {
 		else 
 			broadcast(prefix +"&e The "+strround+" will start in &4" + timeBetweenRounds +" &eseconds!");
 	}
-	
+
 	@Override
 	public void broadcast(String msg){for (Team t : competingTeams){t.sendMessage(msg);}}
 
@@ -263,7 +261,7 @@ public class TournamentEvent extends Event {
 		int nrounds = getNRounds(size);
 		int idealteam = (int) Math.pow(2, nrounds);
 		if (size > 2 && size % idealteam == 0){
-			if (!silent) Bukkit.broadcastMessage(Log.colorChat(prefix+"&6" + size +" "+MessageUtil.getTeamsOrPlayers(teams.size())+
+			Bukkit.broadcastMessage(Log.colorChat(prefix+"&6" + size +" "+MessageUtil.getTeamsOrPlayers(teams.size())+
 					"&e have joined, Current tournament will have &6" + nrounds+"&e rounds"));
 		}			
 	}

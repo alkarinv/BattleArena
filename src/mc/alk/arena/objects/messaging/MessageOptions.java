@@ -24,6 +24,7 @@ public class MessageOptions {
 		PARTICIPANTS("{participants}"),
 		NTEAMS("{nteams}"),
 		PLAYERORTEAM("{playerorteam}"),
+		LIFELEFT("{lifeleft}"),
 		TEAMS("{teams}");
 		private String replaceString;
 

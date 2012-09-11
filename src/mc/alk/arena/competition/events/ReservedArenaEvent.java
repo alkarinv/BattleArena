@@ -41,8 +41,7 @@ public class ReservedArenaEvent extends Event {
 
 	public void autoEvent(MatchParams mp, Arena arena, int secondsTillStart, int announcementInterval) throws NeverWouldJoinException {
 		openEvent(mp,arena);
-		if (!silent)
-			mc.sendCountdownTillEvent(secondsTillStart);
+		mc.sendCountdownTillEvent(secondsTillStart);
 		/// Set a countdown to announce updates every minute
 		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);	
 	}

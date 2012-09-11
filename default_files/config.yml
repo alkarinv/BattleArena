@@ -145,34 +145,31 @@ battleground:
     prefix: "&c[Battleground]&e"
     victoryCondition: highestKills
     matchTime: 60
-    minTeams: 2
-    minTeamSize: 5
-    maxTeamSize: 5
+    minTeams: 4
+    minTeamSize: 1
+    maxTeamSize: 1
     preReqs:
         options: [clearInventory]
     onJoin:
         options: [pvpOff]
     onPrestart:
-        options: [pvpOff, teleportIn, giveItems, deEnchant, disguiseAllAs=ArenaGuy]
+        options: [pvpOff, teleportIn, giveItems, deEnchant]
         giveClass:
             default: gladiator
-            team1: archer
-            team2: monk
-            team3: gladiator
         items: # ignored if options doesnt have "giveItems"
             - bread: 5
     onStart:
         options: [pvpOn]
     onComplete:
-        options: [teleportOut, clearInventory, deEnchant, undisguise]
+        options: [teleportOut, clearInventory, deEnchant ]
     onSpawn:
-        options: [enchants, health=20, hunger=20, deEnchant, disguiseAllAs=ConfusedGuy,woolTeams]
+        options: [enchants, health=20, hunger=20, deEnchant, woolTeams]
         enchants:
             - speed:3
     onDeath:
-        options: [respawn]
+        options: [respawn, clearInventory]
     winner:
-        options: [enchants, money=1,experience=300, health=20, hunger=20]
+        options: [enchants, health=20, hunger=20]
         enchants:
             - speed:1:900
             - resistance:1:900

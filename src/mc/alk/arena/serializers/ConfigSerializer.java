@@ -57,6 +57,15 @@ public class ConfigSerializer extends BaseSerializer{
 			configs.put(at, this);}
 	}
 	
+	public static ConfigSerializer getConfig(ArenaType arenaType){
+		return configs.get(arenaType);
+	}
+
+	public static ConfigurationSection getOtherOptions(ArenaType arenaType){
+		ConfigSerializer cs = getConfig(arenaType);
+		return cs != null ? cs.getConfigurationSection(arenaType.getName()+".otherOptions") : null;
+	}
+	
 	public static void reloadConfig(ArenaType arenaType) {
 		final String name = arenaType.getName();
 		ConfigSerializer cs = configs.get(arenaType);

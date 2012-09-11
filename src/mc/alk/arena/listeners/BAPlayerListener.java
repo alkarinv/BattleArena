@@ -18,6 +18,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -48,11 +49,20 @@ public class BAPlayerListener implements Listener  {
 
 	public static HashMap<String,Integer> expRestore = new HashMap<String,Integer>();
 	public static HashMap<String,PInv> itemRestore = new HashMap<String,PInv>();
+	public static HashMap<String,GameMode> gamemodeRestore = new HashMap<String,GameMode>();
 	public static HashMap<String,String> messagesOnRespawn = new HashMap<String,String>();
 
 	BattleArenaController bac;
 
 	public BAPlayerListener(BattleArenaController bac){
+		die.clear();
+		clearInventory.clear();
+		clearWool.clear();
+		tp.clear();
+		expRestore.clear();
+		itemRestore.clear();
+		gamemodeRestore.clear();
+		messagesOnRespawn.clear();
 		this.bac = bac;
 	}
 	
@@ -99,10 +109,12 @@ public class BAPlayerListener implements Listener  {
 //		System.out.println(" playerReturned event player = " + p.getName() +"  " + event +"   " + itemRestore.containsKey(p.getName()));
 
 		if (die.remove(name)){
-			InventoryUtil.printInventory(p);
 			MessageUtil.sendMessage(p, "&eYou have been killed by the Arena for not being online");
 			p.setHealth(0);
 			return;
+		}
+		if (gamemodeRestore.containsKey(name)){
+			PlayerStoreController.restoreGameMode(p, gamemodeRestore.remove(name));
 		}
 		if (tp.containsKey(name)){
 			Location loc = tp.get(name);
@@ -186,5 +198,9 @@ public class BAPlayerListener implements Listener  {
 		if (playerName==null || color == -1)
 			return;
 		clearWool.put(playerName, color);
+	}
+
+	public static void restoreGameModeOnEnter(String playerName, GameMode gamemode) {
+		gamemodeRestore.put(playerName, gamemode);
 	}
 }

@@ -21,7 +21,7 @@ import org.bukkit.plugin.Plugin;
 
 
 public class TeleportController {
-	static Set<Player> teleporting = Collections.synchronizedSet(new HashSet<Player>());
+	static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
 
 	static Plugin plugin;
 
@@ -49,11 +49,11 @@ public class TeleportController {
 		}
 	}
 
-	private static void teleporting(Player player, boolean b){
-		if (b){
-			teleporting.add(player);
+	private static void teleporting(Player player, boolean isteleporting){
+		if (isteleporting){
+			teleporting.add(player.getName());
 		} else {
-			teleporting.remove(player);
+			teleporting.remove(player.getName());
 		}
 	}
 
@@ -64,7 +64,7 @@ public class TeleportController {
 	 */
 	@EventHandler(priority=EventPriority.HIGHEST)
 	public void onPlayerTeleport(PlayerTeleportEvent event){
-		if (teleporting.remove(event.getPlayer())){
+		if (teleporting.remove(event.getPlayer().getName())){
 			event.setCancelled(false);
 		}
 	}

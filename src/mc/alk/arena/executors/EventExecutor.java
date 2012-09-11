@@ -61,9 +61,9 @@ public class EventExecutor extends BAExecutor{
 			return sendMessage(sender,"&eType &6/"+event.getCommand()+" open <params>&e : to open one");
 		}
 		boolean forceStart = args.length > 1 && args[1].equalsIgnoreCase("force");
-		final int nteams = event.getNteams();
-		final int neededTeams = event.getParams().getMinTeams();
-		if (!forceStart && nteams < neededTeams){
+		if (!forceStart && event.hasEnoughTeams()){
+			final int nteams = event.getNteams();
+			final int neededTeams = event.getParams().getMinTeams();
 			sendMessage(sender,"&cThe "+name+" only has &6" + nteams +" &cteams and it needs &6" +neededTeams);
 			return sendMessage(sender,"&cIf you really want to start the bukkitEvent anyways. &6/"+event.getCommand()+" start force");
 		}

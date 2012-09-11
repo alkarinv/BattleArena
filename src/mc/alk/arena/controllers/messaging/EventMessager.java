@@ -14,6 +14,7 @@ import mc.alk.arena.objects.teams.Team;
 public class EventMessager {
 	EventMessageHandler impl;
 	final AnnouncementOptions bos;
+	boolean silent = false;
 
 	public EventMessager(Event event){
 		this.impl = new EventMessageImpl(event);
@@ -21,6 +22,7 @@ public class EventMessager {
 	}
 
 	private Channel getChannel(MatchState state) {
+		if (silent) return Channel.NullChannel;
 		return bos != null && bos.hasOption(false,state) ? bos.getChannel(false,state) : AnnouncementOptions.getDefaultChannel(false,state);
 	}
 
@@ -67,6 +69,8 @@ public class EventMessager {
 	public void sendWaitingForMorePlayers(Team t, int remaining) {
 		impl.sendWaitingForMorePlayers(t, remaining);		
 	}
-
+	public void setSilent(boolean silent){
+		this.silent = silent;
+	}
 
 }

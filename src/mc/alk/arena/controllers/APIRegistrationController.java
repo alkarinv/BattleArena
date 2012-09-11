@@ -23,6 +23,7 @@ import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class APIRegistrationController {
@@ -45,10 +46,11 @@ public class APIRegistrationController {
 		as.loadArenas(plugin,at);
 
 		ConfigSerializer cc = new ConfigSerializer(); /// Our config.yml
+		
 		String configFileName = name+"Config.yml";
 		File f = new File(dir.getPath()+"/"+configFileName);
 		if (!f.exists()){
-			loadDefaultConfig(name,cmd, f, match);}
+			loadDefaultConfig(plugin, name,cmd, f, match);}
 
 		cc.setConfig(at, dir.getPath()+"/"+configFileName);
 
@@ -67,11 +69,17 @@ public class APIRegistrationController {
 		}
 	}
 
-	private void loadDefaultConfig(String name, String cmd, File configFile, boolean match) {
-		String fileName = match ? "defaultMatchTypeConfig.yml" : "defaultEventTypeConfig.yml";
-		File infile = new File("/default_files/"+fileName);
+	private void loadDefaultConfig(Plugin plugin, String name, String cmd, File configFile, boolean match) {
+		InputStream inputStream = null;
+		File infile = new File("/"+name+"Config.yml");
+		/// See if the plugin has supplied a default config already, if not get a default from BattleArena
+		inputStream = plugin.getClass().getResourceAsStream(infile.getAbsolutePath());
+		if (inputStream == null){
+			String fileName = match ? "defaultMatchTypeConfig.yml" : "defaultEventTypeConfig.yml";
+			infile = new File("/default_files/"+fileName);			
+			inputStream = getClass().getResourceAsStream(infile.getAbsolutePath());
+		}
 		String line =null;
-		InputStream inputStream = getClass().getResourceAsStream(infile.getAbsolutePath());
 		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 		BufferedWriter fw =null;
 		try {

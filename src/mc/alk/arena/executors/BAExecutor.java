@@ -36,6 +36,7 @@ import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 import mc.alk.tracker.TrackerInterface;
+import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatType;
 
 import org.bukkit.ChatColor;
@@ -211,6 +212,18 @@ public class BAExecutor extends CustomCommandExecutor  {
 		if (!canLeave(p)){
 			return true;
 		}
+		Match am = ac.getMatch(p);
+		if (am != null){
+			am.onLeave(p);
+			return true;
+		}
+
+		Event aec = insideEvent(p);
+		if (aec != null){
+			aec.leave(p);
+			return true;
+		}
+
 		/// Are they even in a queue?
 		if(!(ac.isInQue(p))){
 			return sendMessage(p,"&eYou are not currently in a queue, use /arena join");}
@@ -315,6 +328,36 @@ public class BAExecutor extends CustomCommandExecutor  {
 			return sendMessage(sender,"&6Error setting ranking");
 	}
 
+	@MCCommand(cmds={"rank"}, inGame=true)
+	public boolean rank(Player sender,MatchParams mp) {
+		TrackerInterface bti = BTInterface.getInterface(mp);
+		if (bti == null){
+			return sendMessage(sender,"&eThere is no tracking for a " + mp.toPrettyString());
+		}
+		Stat stat = bti.getPlayerRecord(sender.getName());
+		Integer rank = bti.getRank(sender.getName());
+		if (rank == null)
+			rank = -1;
+		return sendMessage(sender, "&eRank:&6"+rank+"&e (&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)&6["+stat.getRanking()+"]&e" +
+				". Highest &6["+ stat.getMaxRanking()+"]&e Longest Streak &b"+stat.getMaxStreak());
+	}
+
+	@MCCommand(cmds={"rank"})
+	public boolean rankOther(CommandSender sender,MatchParams mp, OfflinePlayer player) {
+		TrackerInterface bti = BTInterface.getInterface(mp);
+		if (bti == null){
+			return sendMessage(sender,"&eThere is no tracking for a " + mp.toPrettyString());
+		}
+		Stat stat = bti.getPlayerRecord(player);
+		if (stat == null){
+			return sendMessage(sender,"&eCouldn't find stats for player " + player.getName());}
+		Integer rank = bti.getRank(player);
+		if (rank == null)
+			rank = -1;
+		return sendMessage(sender, "&eRank:&6"+rank+"&e (&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)&6["+stat.getRanking()+"]&e" +
+				". Max &6["+ stat.getMaxRanking()+"]&e Max Streak &b"+stat.getMaxStreak());
+	}
+
 	@MCCommand(cmds={"top"})
 	public boolean top(CommandSender sender,MatchParams mp, String[] args) {
 		final int length = args.length;
@@ -330,22 +373,21 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return getTop(sender, x, mp);
 	}
 
-	public boolean getTop(CommandSender sender, int x, MatchParams pi) {
+	public boolean getTop(CommandSender sender, int x, MatchParams pm) {
 		if (x < 1 || x > 100){
 			x = 5;}
-		TrackerInterface bti = BTInterface.getInterface(pi);
+		TrackerInterface bti = BTInterface.getInterface(pm);
 		if (bti == null){
-			System.err.println("BattleArena couldnt find interface for " + pi);
-			return sendMessage(sender,"&eThere is no tracking for a " + pi.toPrettyString());
+			return sendMessage(sender,"&eThere is no tracking for a " + pm.toPrettyString());
 		}
 
-		final String teamSizeStr = (pi.getMinTeamSize() > 1 ? "teamSize=&6" + pi.getMinTeamSize(): "");
-		final String arenaString = pi.getType().toPrettyString(pi.getMinTeamSize());
+		final String teamSizeStr = (pm.getMinTeamSize() > 1 ? "teamSize=&6" + pm.getMinTeamSize(): "");
+		final String arenaString = pm.getType().toPrettyString(pm.getMinTeamSize());
 
 		final String headerMsg = "&4Top {x} Gladiators in &6" +arenaString+ "&e " + teamSizeStr;
 		final String bodyMsg ="&e#{rank}&4 {name} - {wins}:{losses}&6[{ranking}]";
 
-		bti.printTopX(sender, StatType.RANKING, x, pi.getMinTeamSize(), headerMsg, bodyMsg);
+		bti.printTopX(sender, StatType.RANKING, x, pm.getMinTeamSize(), headerMsg, bodyMsg);
 		return true;
 	}
 
@@ -525,7 +567,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			ac.addArena(arena);
 			sendMessage(sender,"&2waitroom location &6" + locindex +"&2 set to location=&6" + Util.getLocString(loc));
 		} else {
-			sendMessage(sender,"&cType &6"+ changetype + "&c not found. Valid options are type|size|1|2|3...");
+			sendMessage(sender,"&cType &6"+ changetype + "&c not found. Valid options are &6type|teamSize|nTeams|1|2|3...");
 			return true;
 		}
 		BattleArena.saveArenas();
@@ -639,20 +681,21 @@ public class BAExecutor extends CustomCommandExecutor  {
 	}
 
 	public boolean canLeave(ArenaPlayer p){
-		Match am = ac.getMatch(p);
-		if (am != null){
-			sendMessage(p,ChatColor.YELLOW + "You cant leave during a match!");
-			return false;
-		}
-
-		/// Let the Arena Event controllers handle people inside of events
-		Event aec = insideEvent(p);
-		if (aec != null && !aec.canLeave(p)){
-			sendMessage(p, "&eYou can't leave the &6"+aec.getName()+"&e while its &6"+aec.getState());
-			return false;
-		}
-
 		return true;
+//		Match am = ac.getMatch(p);
+//		if (am != null){
+//			sendMessage(p,ChatColor.YELLOW + "You cant leave during a match!");
+//			return false;
+//		}
+//
+//		/// Let the Arena Event controllers handle people inside of events
+//		Event aec = insideEvent(p);
+//		if (aec != null && !aec.canLeave(p)){
+//			sendMessage(p, "&eYou can't leave the &6"+aec.getName()+"&e while its &6"+aec.getState());
+//			return false;
+//		}
+//
+//		return true;
 	}
 
 	public boolean canJoin(ArenaPlayer p) {

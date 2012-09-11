@@ -24,7 +24,7 @@ import mc.alk.arena.objects.tournament.Matchup;
 
 
 public class ArenaMatchQueue {
-	static final boolean DEBUG = true;
+	static final boolean DEBUG = false;
 
 	Map<MatchParams, TeamQueue> tqs = new HashMap<MatchParams, TeamQueue>();
 	Map<MatchParams, MatchedTeamQueue> mtqs = new HashMap<MatchParams, MatchedTeamQueue>();

@@ -71,7 +71,8 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	@Override
 	public void sendOnVictoryMsg(Channel serverChannel, Team victor, Collection<Team> losers) {
 		final String nTeamPath = getStringPathFromSize(losers.size()+1); 
-		sendVictory(serverChannel,victor,losers,mp,"match."+nTeamPath+".victory","match."+nTeamPath+".server_victory");
+		sendVictory(serverChannel,victor,losers,mp,"match."+nTeamPath+".victory","match."+nTeamPath+".loss",
+				"match."+nTeamPath+".server_victory");
 	}
 
 	public void sendYourTeamNotReadyMsg(Team t1) {

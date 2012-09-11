@@ -161,7 +161,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 				}
 			}
 			if (!a.matches(mp)){
-				for (String reason : a.getNotMatchReasons(mp)){
+				for (String reason : a.getInvalidMatchReasons(mp)){
 					reasons.add("&e"+a.getName() +":&c" + reason);
 				}
 

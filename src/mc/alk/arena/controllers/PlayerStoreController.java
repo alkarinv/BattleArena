@@ -41,8 +41,8 @@ public class PlayerStoreController {
 	final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
 
 	public static class PInv {
-		ItemStack[] contents;
-		ItemStack[] armor;
+		public ItemStack[] contents;
+		public ItemStack[] armor;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -81,7 +81,6 @@ public class PlayerStoreController {
 	public void storeItems(ArenaPlayer player) {
 		Player p = player.getPlayer();
 		final String name = p.getName();
-
 		FileLogger.log("storing items for = " + p.getName() +" contains=" + itemmap.containsKey(name));
 		if (PerformTransition.debug)  System.out.println("storing items for = " + p.getName() +" contains=" + itemmap.containsKey(name));
 
@@ -129,19 +128,56 @@ public class PlayerStoreController {
 		PInv pinv = itemmap.remove(p.getName());
 		if (pinv == null)
 			return;
-		if (p.isOnline() && !p.isDead()){
+//		if (p.isOnline() && !p.isDead()){
 			setInventory(p, pinv);
+//		} else {
+//			BAPlayerListener.restoreItemsOnReenter(p.getName(), pinv);
+//		}
+	}
+
+	public static void setInventory(ArenaPlayer p, PInv pinv) {
+		FileLogger.log("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
+		if (PerformTransition.debug) System.out.println("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
+		if (p.isOnline()){
+			setOnlineInventory(p.getPlayer(), pinv);
 		} else {
 			BAPlayerListener.restoreItemsOnReenter(p.getName(), pinv);
 		}
 	}
-
+//
+//	@SuppressWarnings("deprecation")
+//	private static void setOfflineInventory(Player p, PInv pinv) {
+//		World w = p.getWorld();
+//		System.out.println(" world = " + w);
+//		File folder = new File(Bukkit.getWorld(w.getUID()).getWorldFolder(), "players");
+//		if (!folder.exists()){
+//			Log.err("Couldnt find player folders for world " + w.getName());
+//			return;
+//		}
+//		File playerdat = new File(folder.getAbsolutePath() +"/"+p.getName()+".dat");
+//		if (!playerdat.exists()){
+//			Log.err("Couldnt find player dat file " + p.getName());
+//			return;			
+//		}
+//		final MinecraftServer server = ((CraftServer) Bukkit.getServer()).getServer();
+//		EntityPlayer ep = ((CraftPlayer) p).getHandle();
+//		WorldServer ws = server.getWorldServer(ep.dimension);
+//        final EntityPlayer entity = new EntityPlayer(server, ws, p.getName(), new ItemInWorldManager(ws));
+//        Player pl = (entity == null) ? null : (Player) entity.getBukkitEntity();
+//        if (pl != null) {
+//            pl.loadData();
+//        } else {
+//            Log.err(ChatColor.RED + "Player " + p.getName() + " not found!");
+//            return;
+//        }
+//        setOnlineInventory(pl,pinv);
+//	}
 	@SuppressWarnings("deprecation")
-	public static void setInventory(ArenaPlayer p, PInv pinv) {
-		FileLogger.log("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
-		if (PerformTransition.debug) System.out.println("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
+	private static void setOnlineInventory(Player p, PInv pinv) {
 		PlayerInventory inv = p.getPlayer().getInventory();
-		inv.setArmorContents(pinv.armor);
+		for (ItemStack is: pinv.armor){
+			InventoryUtil.addItemToInventory(p, is);
+		}
 		inv.setContents(pinv.contents);
 		try {p.getPlayer().updateInventory(); } catch (Exception e){} /// Yes this can throw errors	
 		for (ItemStack is: pinv.contents){
@@ -155,7 +191,6 @@ public class PlayerStoreController {
 			FileLogger.log("r aitemstack="+ InventoryUtil.getItemString(is));
 		}
 	}
-
 	public void storeGamemode(ArenaPlayer p) {
 		boolean ignoreMultiInv = Defaults.PLUGIN_MULTI_INV && BattleArena.getSelf().isEnabled() ;
 		if (ignoreMultiInv){
@@ -167,7 +202,24 @@ public class PlayerStoreController {
 
 	public void restoreGamemode(ArenaPlayer p) {
 		GameMode gm = gamemode.remove(p.getName());
-		if (gm != null && gm != p.getPlayer().getGameMode())
+		if (gm == null)
+			return;
+		if (!p.isOnline()){
+			BAPlayerListener.restoreGameModeOnEnter(p.getName(), gm);	
+		} else {
+			restoreGameMode(p.getPlayer(), gm);
+		}
+	}
+	
+	public static void restoreGameMode(Player p, GameMode gm){
+		if (gm != null && gm != p.getGameMode()){
+			boolean ignoreMultiInv = Defaults.PLUGIN_MULTI_INV && BattleArena.getSelf().isEnabled();
+			if (ignoreMultiInv){
+				/// Give the multiinv permission node to ignore this player, do it for 3 ticks
+				p.getPlayer().addAttachment(BattleArena.getSelf(), Defaults.MULTI_INV_IGNORE_NODE, true, 3);
+			}
 			p.getPlayer().setGameMode(gm);
+		}
+		
 	}
 }

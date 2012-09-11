@@ -13,9 +13,11 @@ import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MapOfHash;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.Util;
 
@@ -125,4 +127,13 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return sendMessage(sender, mp.toString());
 	}
 
+	@MCCommand(cmds={"invalidReason"}, op=true)
+	public boolean arenaAddKill(CommandSender sender, Arena arena) {
+		Collection<String> reasons = arena.getInvalidReasons();
+		sendMessage(sender, "&eInvalid reasons for &6" + arena.getName());
+		for (String reason: reasons){
+			MessageUtil.sendMessage(sender, reason);
+		}
+		return true;
+	}
 }

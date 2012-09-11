@@ -121,7 +121,7 @@ public class YamlFileUpdater {
 			if (version == 0){
 				fw.write("configVersion: 1.2\n");}
 			while ((line = br.readLine()) != null){
-				System.out.println((line.matches("defaultMatchOptions:.*") || line.matches("## default Match Options.*")) + " "+line);
+//				System.out.println((line.matches("defaultMatchOptions:.*") || line.matches("## default Match Options.*")) + " "+line);
 				if (line.contains("configVersion")){
 					fw.write("configVersion: 1.2\n");
 				} else if (!updatedDefaultSection && (line.matches("defaultMatchOptions:.*") || line.matches("## default Match Options.*"))){

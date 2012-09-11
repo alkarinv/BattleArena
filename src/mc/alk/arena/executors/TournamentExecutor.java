@@ -62,7 +62,8 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 		if (mp == null){
 			return sendMessage(sender,"&cCouldn't find parameters for &6"+args[4]);}
 		/// now we can finally make our tourney event
-		
+		boolean silent = args[args.length-1].toString().equalsIgnoreCase("silent");
+
 		mp.setTeamSizes(teamSize);
 		mp.setNTeams(nTeams);
 		mp.setRating(rated);
@@ -77,6 +78,7 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 			return true;
 		}
 		try {
+			if (silent) event.setSilent(silent);
 			if (auto){
 				int seconds = Defaults.AUTO_EVENT_COUNTDOWN_TIME;
 				if (args.length > 4){

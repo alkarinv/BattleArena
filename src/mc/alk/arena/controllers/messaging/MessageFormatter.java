@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
@@ -276,6 +277,26 @@ public class MessageFormatter{
 					continue;
 				replaceList[i] = tn.longName;
 				break;
+			case LIFELEFT:
+				if (!isWinner)
+					continue;
+				{
+					StringBuilder sb = new StringBuilder();
+					boolean first = true;
+					
+					for (ArenaPlayer ap: team.getLivingPlayers()){
+						if (!first) sb.append("&e, ");
+						sb.append("&6" + ap.getDisplayName()+"&e(&4" + ap.getHealth()+"&e)");
+						first = false;
+					}
+					for (ArenaPlayer ap: team.getDeadPlayers()){
+						if (!first) sb.append("&e, ");
+						sb.append("&6" + ap.getDisplayName()+"&e(&8Dead&e)");
+						first = false;
+					}
+					replaceList[i] = sb.toString();
+					break;
+				}
 			default:
 				continue;
 			}

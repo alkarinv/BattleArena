@@ -403,11 +403,9 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		final MatchState ms = MatchState.ONENTER;
 		MethodController.updateEventListeners(this, ms,p,PlayerQuitEvent.class,PlayerRespawnEvent.class);
 		MethodController.updateEventListeners(this, ms,p, PlayerCommandPreprocessEvent.class);
+		MethodController.updateEventListeners(this,ms, p,PlayerDeathEvent.class);
 		if (needsDamageEvents){
 			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);			
-		}
-		if (woolTeams || clearsInventoryOnDeath){
-			MethodController.updateEventListeners(this,ms, p,PlayerDeathEvent.class);
 		}
 		if (needsBlockEvents){
 			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);
@@ -421,11 +419,9 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		final MatchState ms = MatchState.ONLEAVE;
 		MethodController.updateEventListeners(this,ms, p,PlayerQuitEvent.class,PlayerRespawnEvent.class);
 		MethodController.updateEventListeners(this, ms,p, PlayerCommandPreprocessEvent.class);
+		MethodController.updateEventListeners(this,ms, p,PlayerDeathEvent.class);
 		if (needsDamageEvents){
 			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);			
-		}
-		if (woolTeams || clearsInventoryOnDeath){
-			MethodController.updateEventListeners(this,ms, p,PlayerDeathEvent.class);
 		}
 		if (needsBlockEvents){
 			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);}
@@ -470,10 +466,6 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 			oldlocs.put(name, p.getLocation());
 		BTInterface.stopTracking(p);
 		Team t = getTeam(p);
-		for (Team team : teams){
-			System.out.println("team3 = " + team +"    " + t);
-			
-		}
 
 		PerformTransition.transition(this, MatchState.ONENTER, p, t, false);
 		arenaInterface.onEnter(p,t);	
@@ -502,18 +494,14 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 		//// TODO I feel like I should do something here
 	}
 
-//	@MatchEventHandler
-//	public void onPlayerKick(PlayerKickEvent event, ArenaPlayer player){
-//		onPlayerQuit(null,player);
-//	}
-
 	@MatchEventHandler
 	public void onPlayerQuit(PlayerQuitEvent event, ArenaPlayer player){
-//		System.out.println(this+"onPlayerQuit = " + player.getName() + "  " +matchResult.matchComplete()  +" :" + state);
+//		System.out.println(this+"onPlayerQuit = " + player.getName() + "  " +matchResult.matchComplete()  +" :" + state + insideArena.contains(player.getName()));
 		if (woolTeams)
 			BAPlayerListener.clearWoolOnReenter(player.getName(), teams.indexOf(getTeam(player)));
-		/// If they are just in the arena waiting for match to start
-		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL || state == MatchState.ONOPEN){ 
+		/// If they are just in the arena waiting for match to start, or they havent joined yet
+		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL || 
+				state == MatchState.ONOPEN || !insideArena.contains(player.getName())){ 
 			return;}
 		/// kill player will teleport them out, which makes them leaveArena(p)
 		/// This ensures that onExit is called for both player kicked, quit, and player disconnected  
@@ -812,7 +800,9 @@ public class Match implements Runnable, CountdownCallback, ArenaListener, TeamHa
 				shouldKill = true;
 			}
 			if (shouldKill){
-				try{p.setHealth(0);} catch (Exception e){}
+				/// Really not sure, do we care about killing them on?
+				/// But do not!! just set health to 0.  if they are offline they wont lose the inv, but the inv will drop
+				/// giving them double items on reenter
 			} else {
 				alive.add(p);
 			}

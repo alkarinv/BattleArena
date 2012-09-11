@@ -61,7 +61,6 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	Set<Team> teams = new HashSet<Team>();
 	ArrayList<Round> rounds = new ArrayList<Round>();
 	TeamJoinHandler joinHandler; /// Specify out teams are allocated
-	boolean silent = false;
 
 	public Event(MatchParams params) {
 		setParamInst(params);
@@ -102,16 +101,13 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		teams.clear();
 		state = EventState.OPEN;
 
-		if (!silent)
-			mc.sendEventOpenMsg();
+		mc.sendEventOpenMsg();
 	}
 
 	public void autoEvent(MatchParams params,int secondsTillStart,int announcementInterval) throws NeverWouldJoinException {
 		openEvent(params);
 		TimeUtil.testClock();
-		if (!silent)
-			mc.sendCountdownTillEvent(secondsTillStart);
-
+		mc.sendCountdownTillEvent(secondsTillStart);
 		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);
 	}
 
@@ -321,7 +317,6 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		return joinHandler == null ? null :  joinHandler.getExcludedPlayers();
 	}
 
-
 	public boolean hasPlayer(ArenaPlayer p) {
 		for (Team t: teams){
 			if (t.hasMember(p))
@@ -335,7 +330,7 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 		boolean rated = matchParams.isRated();
 		sb.append((rated? "&4Rated" : "&aUnrated") +"&e "+name+". " );
 		sb.append("&e(&6" + state+"&e)");
-		if (matchParams != null) sb.append("&eTeam size=" + matchParams.getMinTeamSize() );
+		if (matchParams != null) sb.append("&eTeam size=" + matchParams.getTeamSizeRange() );
 		//		sb.append("&e Teams=&6 " + inEvent.size()+" &e. Alive Teams: &6" + aliveTeams.size());
 		return sb.toString();
 	}
@@ -397,11 +392,11 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 			if (matchParams.matchesNTeams(teams.size())){
 				startEvent();							
 			} else {
-				if (!silent) mc.sendEventCancelledDueToLackOfPlayers(getPlayers());
+				mc.sendEventCancelledDueToLackOfPlayers(getPlayers());
 				cancelEvent();
 			}
 		} else {
-			if (!silent) mc.sendCountdownTillEvent(remaining);
+			mc.sendCountdownTillEvent(remaining);
 		}
 		return true;
 	}
@@ -422,16 +417,18 @@ public abstract class Event implements MatchListener, CountdownCallback, TeamHan
 	}
 
 	public void setSilent(boolean silent) {
-		this.silent = silent;
+		mc.setSilent(silent);
 	}
-	public boolean isSilent(){
-		return silent;
-	}
+
 	public String toString(){
 		return "[" + getName()+":"+id+"]";
 	}
 
 	public boolean waitingToJoin(ArenaPlayer p) {
 		return joinHandler == null ? false : joinHandler.getExcludedPlayers().contains(p);
+	}
+
+	public boolean hasEnoughTeams() {
+		return getNteams() < matchParams.getMinTeams();
 	}
 }

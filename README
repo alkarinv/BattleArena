@@ -13,6 +13,7 @@ DeathMatch
 Tournament ( bracket tournament for any number of teams )
 
 Versions.
+3.6.4 : Message Fix.  Players can now leave matches/events at any time. new /arena rank. command
 3.6.3 : New Messaging system implemented.
 3.6.2 : Hooks for new api
 3.6.1.5 : Start of new messaging system. Bug fixes

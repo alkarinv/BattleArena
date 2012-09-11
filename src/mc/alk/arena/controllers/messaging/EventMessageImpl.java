@@ -80,7 +80,8 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 	@Override
 	public void sendEventVictory(Channel serverChannel, Team victor, Collection<Team> losers) {
 		final String nTeamPath = getStringPathFromSize(losers.size()+1); 
-		sendVictory(serverChannel,victor,losers,mp,"event."+nTeamPath+".victory","event."+nTeamPath+".server_victory");
+		sendVictory(serverChannel,victor,losers,mp,"event."+nTeamPath+".victory", "event."+nTeamPath+".loss",
+				"event."+nTeamPath+".server_victory");
 	}
 
 	@Override
