@@ -12,10 +12,12 @@ public class ArenaClass {
 	final String name;
 	final List<ItemStack> items;
 	final List<EffectWithArgs> effects;
-	public ArenaClass(String name, List<ItemStack> items, List<EffectWithArgs> effects){
+	final String prettyName;
+	public ArenaClass(String name, String prettyName, List<ItemStack> items, List<EffectWithArgs> effects){
 		this.name = name;
 		this.items = items;
 		this.effects = effects;
+		this.prettyName = prettyName;
 	}
 	public String getName() {
 		return name;
@@ -30,5 +32,8 @@ public class ArenaClass {
 
 	public String toString(){
 		return "[ArenaClass "+name+" items="+items +" enchants=" + effects+"]";
+	}
+	public String getPrettyName() {
+		return prettyName != null ? prettyName : name;
 	}
 }

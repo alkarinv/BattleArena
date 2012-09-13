@@ -4,16 +4,19 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.util.NeverWouldJoinException;
 import mc.alk.arena.competition.events.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.events.matches.MatchCancelledEvent;
+import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Countdown;
-import mc.alk.arena.util.Log;
 import mc.alk.arena.util.Util;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.WLT;
@@ -24,19 +27,10 @@ public class ReservedArenaEvent extends Event {
 	}
 
 	Match arenaMatch;	
-	/// Run continuously members
-	boolean runContinuously = false;
-	int secondsTillNext = Defaults.AUTO_EVENT_COUNTDOWN_TIME;
-	int announcementInterval = Defaults.ANNOUNCE_EVENT_INTERVAL;
 
 	public void openEvent(MatchParams mp, Arena arena) throws NeverWouldJoinException {
-		super.openEvent(mp);
-		rounds.clear();
-
-		matchParams.setPrettyName(prefix);
-		arenaMatch = new Match(arena, ac, mp);
-		ac.openMatch(arenaMatch);
-		arenaMatch.onJoin(teams);
+		arenaMatch = new ArenaMatch(arena, mp);
+		openEvent(mp);
 	}
 
 	public void autoEvent(MatchParams mp, Arena arena, int secondsTillStart, int announcementInterval) throws NeverWouldJoinException {
@@ -46,15 +40,21 @@ public class ReservedArenaEvent extends Event {
 		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);	
 	}
 
-
-	public void runContinuously(MatchParams mp, Arena arena,int secondsTillNext, int announcementInterval) throws NeverWouldJoinException {
-		autoEvent(mp,arena,secondsTillNext,announcementInterval);
-		runContinuously = true;
-		this.secondsTillNext = secondsTillNext; 
-		this.announcementInterval = announcementInterval;
+	public void openAllPlayersEvent(MatchParams mp, Arena arena) throws NeverWouldJoinException {
+		arenaMatch = new ArenaMatch(arena, mp);
+		super.openAllPlayersEvent(mp);
 	}
 
-
+	@Override
+	public void openEvent(MatchParams mp) throws NeverWouldJoinException{
+		super.openEvent(mp);
+		rounds.clear();
+		matchParams.setPrettyName(mp.getCommand());
+		arenaMatch.addTransitionListener(this);
+		ac.openMatch(arenaMatch);
+		arenaMatch.onJoin(teams);
+	}
+	
 	@Override
 	public void startEvent() {
 		super.startEvent();
@@ -63,52 +63,34 @@ public class ReservedArenaEvent extends Event {
 		startRound();
 	}
 
-	@Override
-	public void matchCancelled(Match am){
-		runContinuously = false;
-
-		if (!isRunning()) /// redundant call? can this happen anymore?
-			return ;
-		if (arenaMatch != am)
-			return;
-		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchCancelled " +am +"   isRunning()=" + isRunning());		
-		endEvent();
+	@TransitionEventHandler
+	public void matchCancelled(MatchCancelledEvent event){
+		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchCancelled " +arenaMatch +"   isRunning()=" + isRunning());		
+		cancelEvent();
 	}
 
-	@Override
-	public void matchComplete(Match am) {
-		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchComplete " +am +"   isRunning()=" + isRunning());
-		if (!isRunning()) /// redundant call? can this happen anymore?
-			return ;
-		Team victor = am.getVictor();
-		Matchup m = getMatchup(victor);
+	@TransitionEventHandler
+	public void matchCompleted(MatchCompletedEvent event){
+		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchComplete " +arenaMatch +"   isRunning()=" + isRunning());
+		Team victor = event.getMatch().getResult().getVictor();
+		
+		Matchup m;
+		if (victor == null)
+			m = getMatchup(event.getMatch().getResult().getLosers().iterator().next());
+		else 
+			 m = getMatchup(victor);
 		if (m == null){
 			return;
 		}
-		m.setResult(am.getResult());
-		//		if (BattleArena.bet != null) BattleEventTracker.addTeamWinner(victor.getDisplayName(), getName());
+		m.setResult(arenaMatch.getResult());
 
 		TrackerInterface bti = BTInterface.getInterface(matchParams);
-		if (bti != null){
-			BTInterface.addRecord(bti, victor.getPlayers(), am.getLosers(), WLT.WIN);			
+		if (bti != null && victor != null){
+			BTInterface.addRecord(bti, victor.getPlayers(), arenaMatch.getLosers(), WLT.WIN);			
 		}
-		//		Integer elo = (int) ((bti != null) ? BTInterface.loadRecord(bti, victor).getRanking() : Defaults.DEFAULT_ELO);
 
 		eventVictory(victor,m.getResult().getLosers());
-		endEvent();
-		if (runContinuously){
-			Arena arena = ac.getArenaByMatchParams(matchParams);
-			if (arena == null){
-				Log.err("&cCouldnt find an arena matching the params &6"+matchParams.toPrettyString()+". Stopping continuous run");
-				return;
-			}
-
-			try {
-				autoEvent(matchParams,arena,secondsTillNext,announcementInterval);
-			} catch (NeverWouldJoinException e) {
-				Log.err("&cCouldn't restart event " +matchParams.toPrettyString() +". " + e.getMessage());
-			}
-		}
+		completeEvent();
 	}
 
 
@@ -121,10 +103,11 @@ public class ReservedArenaEvent extends Event {
 			arenaMatch.onJoin(tjr.team);
 			break;
 		case ADDED_TO_EXISTING:
-			if (arenaMatch.hasTeam(t)){
+			if (arenaMatch.hasTeam(tjr.team)){
 				for (ArenaPlayer p : t.getPlayers()){/// subsequent times, just the new players
 					/// dont call arenaMatch.onJoin(Team), as part of the team might already be in arena
-					arenaMatch.playerAddedToTeam(p,tjr.team);}				
+					arenaMatch.playerAddedToTeam(p,tjr.team);
+				}				
 			}
 			String str = Util.playersToCommaDelimitedString(t.getPlayers());
 			for (ArenaPlayer p : t.getPlayers()){

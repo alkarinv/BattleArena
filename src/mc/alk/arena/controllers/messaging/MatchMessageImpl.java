@@ -93,20 +93,27 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		t1.sendMessage(msgf.getFormattedMessage(message));
 	}
 
-	public void sendOnIntervalMsg(Channel serverChannel, int remaining) {
-		Team h = match.getVictoryCondition().currentLeader();
+	public void sendOnIntervalMsg(Channel serverChannel, Team currentLeader, int remaining) {
 		TimeUtil.testClock();
 		final String timeStr = TimeUtil.convertSecondsToString(remaining);
 		String msg;
-		if (h == null){
+		if (currentLeader == null){
 			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr;			
 		} else {
 			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr +".&6"+
-					h.getDisplayName()+"&e leads with &2" + h.getNKills() +"&e kills &4"+h.getNDeaths()+"&e deaths";				
+					currentLeader.getDisplayName()+"&e leads with &2" + currentLeader.getNKills() +
+					"&e kills &4"+currentLeader.getNDeaths()+"&e deaths";				
 		}
 		match.sendMessage(msg);		
 	}
 	public void sendTimeExpired(Channel serverChannel) {}
+
+	@Override
+	public void sendOnDrawMsg(Channel serverChannel, Collection<Team> participants) {
+		final String nTeamPath = getStringPathFromSize(participants.size()); 
+		sendVictory(serverChannel,null,participants,mp,"match."+nTeamPath+".draw","match."+nTeamPath+".draw",
+				"match."+nTeamPath+".server_draw");
+	}
 	
 
 }

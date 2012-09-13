@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,11 +15,12 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchEventHandler;
-import mc.alk.arena.objects.MatchEventMethod;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.events.MatchEventMethod;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.Util;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
@@ -47,6 +49,7 @@ public class MethodController {
 			Map<Class<? extends Event>,List<MatchEventMethod>> map = getMethods(arenaListener);
 			if (map == null){
 				Log.err(arenaListener +" has no registered methods");
+				Util.printStackTrace();
 				return;
 			}
 			Collection<String> newplayers = players != null ? new ArrayList<String>(players) : null;
@@ -59,20 +62,9 @@ public class MethodController {
 	}
 
 	public static void updateAllEventListeners(ArenaListener arenaListener, MatchState matchState, ArenaPlayer player){
-		try {
-			Map<Class<? extends Event>,List<MatchEventMethod>> map = getMethods(arenaListener);
-			if (map == null){
-				Log.err(arenaListener +" has no registered methods");
-				return;
-			}
-			List<String> players = new ArrayList<String>();
-			players.add(player.getName());
-			for (Class<? extends Event> event: map.keySet()){
-				updateEventListener(arenaListener,matchState, players, map, event);				
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		Set<String> players = new HashSet<String>();
+		players.add(player.getName());
+		updateMatchBukkitEvents(arenaListener,matchState,players);
 	}
 
 	public static void updateEventListeners(ArenaListener arenaListener, MatchState matchState,
@@ -80,7 +72,8 @@ public class MethodController {
 		try {
 			Map<Class<? extends Event>,List<MatchEventMethod>> map = getMethods(arenaListener);
 			if (map == null){
-				System.err.println(arenaListener +" has no registered methods");
+				Log.err(arenaListener +" has no registered methods");
+				Util.printStackTrace();
 				return;
 			}
 			List<String> players = new ArrayList<String>();
@@ -133,12 +126,9 @@ public class MethodController {
 	}
 
 	public static List<MatchEventMethod> getMethods(ArenaListener ael, Event event) {
-		HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap = arenaMethods.get(ael.getClass());
-		if (Defaults.DEBUG_EVENTS) System.out.println("!! getEvent "+ael.getClass()+ "   methods="+(typeMap==null?"null" :typeMap.size()));
-		if (typeMap == null)
-			return null;
-		return typeMap.get(event.getClass());
+		return getMethods(ael,event.getClass());
 	}
+	
 	public static List<MatchEventMethod> getMethods(ArenaListener ael, Class<? extends Event> eventClass) {
 		HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap = arenaMethods.get(ael.getClass());
 		if (Defaults.DEBUG_EVENTS) System.out.println("!! getEvent "+ael.getClass()+ "   methods="+(typeMap==null?"null" :typeMap.size()));

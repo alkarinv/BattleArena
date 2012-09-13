@@ -11,6 +11,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
@@ -33,16 +34,13 @@ import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.BTInterface;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
-import mc.alk.tracker.TrackerInterface;
-import mc.alk.tracker.objects.Stat;
-import mc.alk.tracker.objects.StatType;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -269,14 +267,6 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return sendMessage(sender,"&2You have cancelled all matches/events");						
 	}
 
-	@MCCommand(cmds={"verify"}, op=true,usage="verify")
-	public boolean arenaVerify(CommandSender sender) {
-		String[] lines = ac.toDetailedString().split("\n");
-		for (String line : lines){
-			sendMessage(sender,line);}
-		return true;
-	}
-
 	@MCCommand(cmds={"status"}, admin=true,min=2,usage="status <arena or player>")
 	public boolean arenaStatus(CommandSender sender, String[] args) {
 		Match am = null;
@@ -310,8 +300,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 	@MCCommand(cmds={"resetElo"}, op=true, usage="resetElo")
 	public boolean resetElo(CommandSender sender, MatchParams mp){
-		TrackerInterface bti = BTInterface.getInterface(mp);
-		if (bti == null){
+		BTInterface bti = new BTInterface(mp);
+		if (!bti.isValid()){
 			return sendMessage(sender,"&eThere is no tracking for " +mp);}
 		bti.resetStats();
 		return sendMessage(sender,mp.getPrefix()+" &2Elo's and stats for &6"+mp.getName()+"&2 now reset");
@@ -319,8 +309,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 	@MCCommand(cmds={"setElo"}, admin=true, usage="setElo <player> <ranking score>")
 	public boolean setElo(CommandSender sender, MatchParams mp, OfflinePlayer player, Integer elo) {
-		TrackerInterface bti = BTInterface.getInterface(mp);
-		if (bti == null){
+		BTInterface bti = new BTInterface(mp);
+		if (!bti.isValid()){
 			return sendMessage(sender,"&eThere is no tracking for " +mp);}
 		if (bti.setRanking(player, elo))
 			return sendMessage(sender,"&6" + player.getName()+"&e now has &6" + elo +"&e ranking");
@@ -330,32 +320,22 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 	@MCCommand(cmds={"rank"}, inGame=true)
 	public boolean rank(Player sender,MatchParams mp) {
-		TrackerInterface bti = BTInterface.getInterface(mp);
-		if (bti == null){
+		BTInterface bti = new BTInterface(mp);
+		if (!bti.isValid()){
 			return sendMessage(sender,"&eThere is no tracking for a " + mp.toPrettyString());
 		}
-		Stat stat = bti.getPlayerRecord(sender.getName());
-		Integer rank = bti.getRank(sender.getName());
-		if (rank == null)
-			rank = -1;
-		return sendMessage(sender, "&eRank:&6"+rank+"&e (&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)&6["+stat.getRanking()+"]&e" +
-				". Highest &6["+ stat.getMaxRanking()+"]&e Longest Streak &b"+stat.getMaxStreak());
+		String rankMsg = bti.getRankMessage(sender);
+		return MessageUtil.sendMessage(sender, rankMsg);
 	}
 
 	@MCCommand(cmds={"rank"})
 	public boolean rankOther(CommandSender sender,MatchParams mp, OfflinePlayer player) {
-		TrackerInterface bti = BTInterface.getInterface(mp);
-		if (bti == null){
+		BTInterface bti = new BTInterface(mp);
+		if (bti.isValid()){
 			return sendMessage(sender,"&eThere is no tracking for a " + mp.toPrettyString());
 		}
-		Stat stat = bti.getPlayerRecord(player);
-		if (stat == null){
-			return sendMessage(sender,"&eCouldn't find stats for player " + player.getName());}
-		Integer rank = bti.getRank(player);
-		if (rank == null)
-			rank = -1;
-		return sendMessage(sender, "&eRank:&6"+rank+"&e (&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)&6["+stat.getRanking()+"]&e" +
-				". Max &6["+ stat.getMaxRanking()+"]&e Max Streak &b"+stat.getMaxStreak());
+		String rankMsg = bti.getRankMessage(player);
+		return MessageUtil.sendMessage(sender, rankMsg);
 	}
 
 	@MCCommand(cmds={"top"})
@@ -376,8 +356,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 	public boolean getTop(CommandSender sender, int x, MatchParams pm) {
 		if (x < 1 || x > 100){
 			x = 5;}
-		TrackerInterface bti = BTInterface.getInterface(pm);
-		if (bti == null){
+		BTInterface bti = new BTInterface(pm);
+		if (!bti.isValid()){
 			return sendMessage(sender,"&eThere is no tracking for a " + pm.toPrettyString());
 		}
 
@@ -387,7 +367,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		final String headerMsg = "&4Top {x} Gladiators in &6" +arenaString+ "&e " + teamSizeStr;
 		final String bodyMsg ="&e#{rank}&4 {name} - {wins}:{losses}&6[{ranking}]";
 
-		bti.printTopX(sender, StatType.RANKING, x, pm.getMinTeamSize(), headerMsg, bodyMsg);
+		bti.printTopX(sender, x, pm.getMinTeamSize(), headerMsg, bodyMsg);
 		return true;
 	}
 
@@ -484,95 +464,6 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return true;
 	}
 
-	@MCCommand(cmds={"alter"}, inGame=true, admin=true)
-	public boolean arenaAlter(CommandSender sender, Arena arena, String[] args) {
-		if (args.length < 3){
-			sendMessage(sender,ChatColor.YELLOW+ "Usage: /arena alter <arenaname> <teamSize|nTeams|type|1|2|3...|vloc|waitroom> <value>");
-			sendMessage(sender,ChatColor.YELLOW+ "Example: /arena alter MainArena teamSize 3+ ");
-			sendMessage(sender,ChatColor.YELLOW+ "Example: /arena alter MainArena nTeams 2 ");
-			sendMessage(sender,ChatColor.YELLOW+ "Example: /arena alter MainArena type deathmatch ");
-			sendMessage(sender,ChatColor.YELLOW+ "      or /arena alter MainArena waitroom 1 ");
-			//			sendMessage(sender,ChatColor.YELLOW+ "      or /arena alter MainArena spawnitem <itemname>:<matchEndTime between spawn> ");
-			return true;
-		}
-		String arenaName = arena.getName();
-		String changetype = args[2];
-		String value = null;
-		if (args.length > 3)
-			value = (String) args[3];
-		Player p = (Player) sender;
-		if (Defaults.DEBUG) System.out.println("alterArena " + arenaName +":" + changetype + ":" + value);
-
-		Location loc = null;
-		int locindex = -1;
-		try{locindex = Integer.parseInt(changetype);}catch(Exception e){}
-		if (changetype.equalsIgnoreCase("teamSize")){
-			final MinMax mm = Util.getMinMax(value);
-			if (mm == null){
-				sendMessage(sender,"size "+ value + " not found");
-				return true;
-			} else {
-				ac.removeArena(arena);
-				arena.getParameters().setTeamSizes(mm);
-				ac.addArena(arena);
-				sendMessage(sender,"&2Altered arena team size to &6" + value);
-			}
-		} 
-		else if (changetype.equalsIgnoreCase("nTeams")){
-			final MinMax mm = Util.getMinMax(value);
-			if (mm == null){
-				sendMessage(sender,"size "+ value + " not found");
-				return true;
-			} else {
-				ac.removeArena(arena);
-				arena.getParameters().setNTeams(mm);
-				ac.addArena(arena);
-				sendMessage(sender,"&2Altered arean number of teams to &6" + value);
-			}
-		} 
-		else if (changetype.equalsIgnoreCase("type")){
-			ArenaType t = ArenaType.fromString(value);
-			if (t == null){
-				sendMessage(sender,"&ctype &6"+ value + "&c not found. valid types=&6"+ArenaType.getValidList());
-				return true;
-			}
-			ac.removeArena(arena);
-			arena.getParameters().setType(t);
-			ac.addArena(arena);
-			sendMessage(sender,"&2Altered arena type to &6" + value);
-		} else if (locindex > 0){
-			ac.removeArena(arena);
-			loc = parseLocation(p,value);
-			if (loc == null){
-				loc = p.getLocation();}
-			arena.setSpawnLoc(locindex-1,loc);			
-			ac.addArena(arena);
-			sendMessage(sender,"&2spawn location &6" + changetype +"&2 set to location=&6" + Util.getLocString(loc));
-		} else if (changetype.equalsIgnoreCase("v")){
-			ac.removeArena(arena);
-			loc = parseLocation(p,value);
-			if (loc == null){
-				loc = p.getLocation();}
-			arena.setVisitorLoc(loc);			
-			ac.addArena(arena);
-			sendMessage(sender,"&2visitor spawn location set to location=&6" + Util.getLocString(loc));
-		} else if (changetype.equalsIgnoreCase("waitroom") || changetype.equalsIgnoreCase("wr")){
-			try{locindex = Integer.parseInt(value);}catch(Exception e){}
-			if (locindex <= 0)
-				return sendMessage(sender,"&cWait room spawn location &6" + value+"&c needs to be an integer. 1,2,..,x");
-
-			ac.removeArena(arena);
-			loc = p.getLocation();
-			arena.setWaitRoomSpawnLoc(locindex-1,loc);			
-			ac.addArena(arena);
-			sendMessage(sender,"&2waitroom location &6" + locindex +"&2 set to location=&6" + Util.getLocString(loc));
-		} else {
-			sendMessage(sender,"&cType &6"+ changetype + "&c not found. Valid options are &6type|teamSize|nTeams|1|2|3...");
-			return true;
-		}
-		BattleArena.saveArenas();
-		return true;
-	}
 
 	@MCCommand(cmds={"create"}, admin=true, min=2,usage="create <arena name> [team size] [# teams]")
 	public boolean arenaCreate(CommandSender sender, MatchParams mp, String name, String[] args) {
@@ -605,6 +496,13 @@ public class BAExecutor extends CustomCommandExecutor  {
 		BattleArena.saveArenas();
 		return true;
 	}
+	
+	@MCCommand(cmds={"alter"}, inGame=true, admin=true)
+	public boolean arenaAlter(CommandSender sender, Arena arena, String[] args) {
+		ArenaAlterController.alterArena(sender, arena, args);
+		return true;
+	}
+
 
 	@MCCommand(cmds={"list"})
 	public boolean arenaList(CommandSender sender, MatchParams mp, String[] args) {
@@ -638,48 +536,6 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return sendMessage(sender,"&6/arena info <arenaname>&e: for details on an arena");	
 	}
 	
-	@MCCommand(cmds={"purgeQueue"}, op=true)
-	public boolean arenaPurgeQueue(CommandSender sender) {
-		try {
-			Collection<Team> teams = ac.purgeQueue();
-			for (Team t: teams){
-				t.sendMessage("&eYou have been &cremoved&e from the queue by an administrator");
-			}
-		} catch (Exception e){
-			e.printStackTrace();
-			sendMessage(sender,"&4error purging queue");
-			return true;
-		}
-		sendMessage(sender,"&2Queue purged");
-		return true;
-	}
-
-
-	public Location parseLocation(CommandSender sender, String svl) {
-		if (!(sender instanceof Player))
-			return null;
-		Player p = (Player) sender;
-		if (svl == null)
-			return null;
-		String as[] = svl.split(":");
-		if (svl.contains(",")){
-			as = svl.split(",");
-		}
-		World w = p.getWorld();
-		if (w == null){
-			return null;}
-		if (as.length < 3){
-			return null;}
-		try {
-			int x = Integer.valueOf(as[0]);
-			int y = Integer.valueOf(as[1]);
-			int z = Integer.valueOf(as[2]);
-			return new Location(w,x,y,z);
-		} catch (Exception e){
-			return null;
-		}
-	}
-
 	public boolean canLeave(ArenaPlayer p){
 		return true;
 //		Match am = ac.getMatch(p);

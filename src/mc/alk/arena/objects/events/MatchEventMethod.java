@@ -1,6 +1,8 @@
-package mc.alk.arena.objects;
+package mc.alk.arena.objects.events;
 
 import java.lang.reflect.Method;
+
+import mc.alk.arena.objects.MatchState;
 
 import org.bukkit.event.Event;
 
@@ -9,9 +11,9 @@ public class MatchEventMethod implements Comparable<MatchEventMethod>{
 	final Class<? extends Event> bukkitEvent;
 	final Method getPlayerMethod;
 	final MatchState beginState, endState, cancelState;
-	final MatchEventPriority priority;
+	final EventPriority priority;
 	public MatchEventMethod(Method callMethod, Class<? extends Event> event, 
-			MatchState begin, MatchState end, MatchState cancel, MatchEventPriority priority) {
+			MatchState begin, MatchState end, MatchState cancel, EventPriority priority) {
 		this.callMethod = callMethod;
 		this.bukkitEvent = event;
 		this.getPlayerMethod = null;
@@ -21,7 +23,7 @@ public class MatchEventMethod implements Comparable<MatchEventMethod>{
 		this.priority = priority;
 	}
 	public MatchEventMethod(Method callMethod, Class<? extends Event> event, 
-			Method getPlayerMethod, MatchState begin, MatchState end, MatchState cancel, MatchEventPriority priority) {
+			Method getPlayerMethod, MatchState begin, MatchState end, MatchState cancel, EventPriority priority) {
 		this.callMethod = callMethod;
 		this.bukkitEvent = event;
 		this.getPlayerMethod = getPlayerMethod;

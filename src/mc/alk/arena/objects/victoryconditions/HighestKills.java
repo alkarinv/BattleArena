@@ -1,11 +1,9 @@
 package mc.alk.arena.objects.victoryconditions;
 
-import java.util.List;
-import java.util.Random;
-
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
+import mc.alk.arena.events.matches.MatchFindNeededTeamsEvent;
+import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.util.VictoryUtil;
 
 public class HighestKills extends VictoryCondition{
@@ -13,35 +11,14 @@ public class HighestKills extends VictoryCondition{
 		super(match);
 	}
 
-	static Random rand = new Random(); /// Our randomizer
-
-	public void timeExpired() {
-		final Team h = VictoryUtil.highestKills(match);
-		match.setVictor(h);		
+	@TransitionEventHandler
+	public void onFindCurrentLeader(MatchFindCurrentLeaderEvent event) {
+		event.setCurrentLeader(VictoryUtil.highestKills(match));
 	}
 
-	/**
-	 * Return the current leader, 
-	 * @return
-	 */
-	@Override
-	public Team currentLeader() {
-		return VictoryUtil.highestKills(match);
-	}
-	public List<List<Team>> rankings() {
-		return null;
-	}
-
-	public void timeInterval(int remaining) {}
-	
-	@Override
-	public boolean hasTimeVictory() {
-		return true;
-	}
-
-	@Override
-	public void playerLeft(ArenaPlayer p) {
-		/// Get to do nothing, 
+	@TransitionEventHandler
+	public void onNeededTeams(MatchFindNeededTeamsEvent event) {
+		event.setNeededTeams(2);
 	}
 
 }

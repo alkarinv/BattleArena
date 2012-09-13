@@ -11,6 +11,7 @@ import java.util.TreeMap;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.ArenaEditor.CurrentSelection;
 import mc.alk.arena.controllers.BattleArenaController;
@@ -277,6 +278,8 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				objs[objIndex] = verifyInteger(args[strIndex++]);
 			} else if (String[].class == theclass){
 				objs[objIndex] = args; 
+			} else if (Event.class == theclass){
+				objs[objIndex] = verifyEvent(args[strIndex++]); 
 			} else if (Object[].class == theclass){
 				objs[objIndex] = args;
 			} else if (Boolean.class == theclass){
@@ -337,6 +340,13 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		}
 
 		return newArgs; /// Success
+	}
+
+	private Event verifyEvent(String name) throws InvalidArgumentException {
+		Event event = EventController.getEvent(name);
+		if (event == null)
+			throw new InvalidArgumentException("Event " + name+" can not be found");
+		return event;
 	}
 
 	private OfflinePlayer verifyOfflinePlayer(String name) throws InvalidArgumentException {

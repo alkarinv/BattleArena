@@ -134,8 +134,6 @@ public class MessageFormatter{
 			} catch (Exception e){
 				e.printStackTrace();
 			}
-			//			Log.debug(i+" " + mop + " <-- ******* -->  " + replaceList[i]);
-
 			searchList[i] = mop.getReplaceString();
 			i++;
 		}
@@ -161,7 +159,6 @@ public class MessageFormatter{
 				continue;
 			}
 			searchList[i] = mop.getReplaceString();
-			//			Log.debug(i+" " + mop + " <-- $$$$$ -->  " + replaceList[i]);
 			i++;
 		}
 		teamIndex = i;
@@ -367,7 +364,6 @@ public class MessageFormatter{
 			}
 			searchList[i] = mop.getReplaceString();
 			replaceList[i] = repl;
-			//			Log.debug(i+" " + mop + " <-@########-->  " + repl);
 			i++;
 		}
 		return StringUtils.replaceEach(message.getMessage(), searchList, replaceList);

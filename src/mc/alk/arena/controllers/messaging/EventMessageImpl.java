@@ -131,4 +131,11 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 				"&e have joined to make your team");
 	}
 
+	@Override
+	public void sendEventDraw(Channel serverChannel, Collection<Team> participants) {
+		final String nTeamPath = getStringPathFromSize(participants.size()); 
+		sendVictory(serverChannel,null,participants,mp,"event."+nTeamPath+".draw","event."+nTeamPath+".draw",
+				"event."+nTeamPath+".server_draw");
+	}
+
 }

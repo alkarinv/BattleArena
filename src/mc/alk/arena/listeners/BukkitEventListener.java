@@ -10,8 +10,8 @@ import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchEventMethod;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.events.MatchEventMethod;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.MapOfHash;
 
@@ -146,7 +146,7 @@ public class BukkitEventListener extends BEventListener{
 			/// For each of the splisteners methods that deal with this BukkitEvent
 			for(MatchEventMethod method: methods){
 				final Class<?>[] types = method.getMethod().getParameterTypes();
-				if (Defaults.DEBUG_EVENTS) System.out.println(" method = " + method +"   method="+method +"  " + types.length);
+				if (Defaults.DEBUG_EVENTS) System.out.println(" method = " + method + "  types.length=" +types.length);
 				final Object[] os = new Object[types.length];
 				os[0] = event;
 

@@ -21,7 +21,7 @@ public class BAClassesSerializer extends BaseSerializer{
 	
 	public static void loadClasses(ConfigurationSection cs) {
 		if (cs == null){
-			Log.info(BattleArena.getPName() +" configuration section is null");
+			Log.info(BattleArena.getPName() +" has no classes");
 			return;}
 		StringBuilder sb = new StringBuilder();
 		Set<String> keys = cs.getKeys(false);
@@ -48,7 +48,8 @@ public class BAClassesSerializer extends BaseSerializer{
 		List<EffectWithArgs> effects = null;
 		if (cs.contains("items")){ items = BAConfigSerializer.getItemList(cs,"items");}
 		if (cs.contains("enchants")){ effects = BAConfigSerializer.getEffectList(cs,"enchants");}
-		return new ArenaClass(cs.getName(),items,effects);
+		String prettyName = cs.getString("prettyName", null);
+		return new ArenaClass(cs.getName(),prettyName, items,effects);
 	}
 
 }

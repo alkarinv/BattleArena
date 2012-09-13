@@ -15,9 +15,12 @@ import mc.alk.arena.objects.teams.Team;
 import mc.alk.tracker.Tracker;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.Stat;
+import mc.alk.tracker.objects.StatType;
 import mc.alk.tracker.objects.WLT;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 
@@ -36,10 +39,10 @@ public class BTInterface {
 	public boolean isValid(){
 		return valid;
 	}
-	public static Stat getRecord(TrackerInterface bti, Team t){
+	public Stat getRecord(TrackerInterface bti, Team t){
 		try{return bti.getRecord(t.getBukkitPlayers());} catch(Exception e){e.printStackTrace();return null;}
 	}
-	public static Stat loadRecord(TrackerInterface bti, Team t){
+	public Stat loadRecord(TrackerInterface bti, Team t){
 		try{return bti.loadRecord(t.getBukkitPlayers());} catch(Exception e){e.printStackTrace();return null;}
 	}
 	public static TrackerInterface getInterface(MatchParams sq){
@@ -115,11 +118,38 @@ public class BTInterface {
 		return btis.containsKey(pi.getName());
 	}
 	public Integer getElo(Team t) {
+		if (!isValid())
+			return new Integer((int) Defaults.DEFAULT_ELO);
 		Stat s = getRecord(ti,t);
 		return (int) (s == null ? Defaults.DEFAULT_ELO : s.getRanking());
 	}
 	public Stat loadRecord(Team team) {
-		return BTInterface.loadRecord(ti, team);
+		if (!isValid()) return null;
+		return loadRecord(ti, team);
+	}
+	public Stat loadRecord(OfflinePlayer player){
+		if (!isValid()) return null;
+		try{return ti.loadRecord(player);} catch(Exception e){e.printStackTrace();return null;}
+	}
+	public String getRankMessage(OfflinePlayer player) {
+		Stat stat = loadRecord(player);
+		if (stat == null){
+			return "&eCouldn't find stats for player " + player.getName();}
+		Integer rank = ti.getRank(player.getName());
+		if (rank == null)
+			rank = -1;
+		return "&eRank:&6"+rank+"&e (&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)&6["+stat.getRanking()+"]&e" +
+				". Highest &6["+ stat.getMaxRanking()+"]&e Longest Streak &b"+stat.getMaxStreak();
+//		return "";
+	}
+	public boolean setRanking(OfflinePlayer player, Integer elo) {
+		return ti.setRanking(player, elo);
+	}
+	public void resetStats() {
+		ti.resetStats();
+	}
+	public void printTopX(CommandSender sender, int x, int minTeamSize, String headerMsg, String bodyMsg) {
+		ti.printTopX(sender, StatType.RANKING, x, minTeamSize,headerMsg,bodyMsg);
 	}
 
 }

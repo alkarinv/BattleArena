@@ -121,7 +121,6 @@ public class ConfigSerializer extends BaseSerializer{
 			throw new ConfigException("Could not add the victoryCondition " +cs.getString("victoryCondition") +"\n" 
 					+"valid types are " + VictoryType.getValidList());}
 		
-
 		/// Number of teams and team sizes
 		Integer minTeams = cs.contains("minTeams") ? cs.getInt("minTeams") : 2;
 		Integer maxTeams = cs.contains("maxTeams") ? cs.getInt("maxTeams") : ArenaParams.MAX;

@@ -1,13 +1,14 @@
 package mc.alk.arena.objects.victoryconditions;
 
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.events.PlayerLeftEvent;
+import mc.alk.arena.events.matches.MatchFindNeededTeamsEvent;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchEventHandler;
+import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.teams.Team;
 
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 public class NDeaths extends VictoryCondition{
 
@@ -18,39 +19,31 @@ public class NDeaths extends VictoryCondition{
 		this.ndeaths = ndeaths;
 	}
 
-	@MatchEventHandler
-	public void onPlayerQuit(PlayerQuitEvent event, ArenaPlayer p) {
-		killPlayer(p);		
-	}
-	
-	@MatchEventHandler
-	public void onPlayerKick(PlayerKickEvent event, ArenaPlayer p) {
-		killPlayer(p);		
+	@TransitionEventHandler
+	public void onPlayerLeft(PlayerLeftEvent event) {
+		killPlayer(event.getPlayer());		
 	}
 
-	@Override
-	public void playerLeft(ArenaPlayer p) {
-		killPlayer(p);
+	@TransitionEventHandler
+	public void onNeededTeams(MatchFindNeededTeamsEvent event) {
+		event.setNeededTeams(2);
+	}
+
+	@MatchEventHandler(suppressCastWarnings=true)
+	public void playerDeathEvent(PlayerDeathEvent event, ArenaPlayer p) {
+		Team team = match.getTeam(p);
+		killPlayer(p,team);		
 	}
 
 	protected void killPlayer(ArenaPlayer p){
 		Team team = match.getTeam(p);
 		if (team == null)
 			return;
-		team.killMember(p);
-		playerDeath(p,team);
+		killPlayer(p,team);
 	}
 
-	@MatchEventHandler(suppressCastWarnings=true)
-	public void playerDeathEvent(PlayerDeathEvent event, ArenaPlayer p) {
-		Team team = match.getTeam(p);
-		playerDeath(p,team);		
-	}
-
-
-	private void playerDeath(ArenaPlayer p,Team team) {
+	private void killPlayer(ArenaPlayer p,Team team) {
 		if (match.isWon()){
-			//			match.unregister(this);
 			return;
 		}
 		if (!match.isStarted())
@@ -76,10 +69,5 @@ public class NDeaths extends VictoryCondition{
 		}
 		/// One team left alive = victory
 		match.setVictor(leftAlive);
-	}
-
-	@Override
-	public boolean hasTimeVictory() {
-		return false;
 	}
 }

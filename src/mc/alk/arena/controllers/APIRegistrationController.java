@@ -133,6 +133,7 @@ public class APIRegistrationController {
 			EventController.addEvent(event);
 			executor.setEvent(event);
 			registerCommand(plugin, cmd, executor);
+			EventController.addEventExecutor(event, executor);
 		} else {
 			Log.err(name+" type not found");
 		}
@@ -146,6 +147,7 @@ public class APIRegistrationController {
 			EventController.addEvent(event);
 			executor.setEvent(event);
 			plugin.getCommand(cmd).setExecutor(executor);
+			EventController.addEventExecutor(event, executor);
 		} else {
 			Log.err(name+" type not found");
 		}		

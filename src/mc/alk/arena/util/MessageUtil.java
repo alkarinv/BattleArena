@@ -1,5 +1,6 @@
 package mc.alk.arena.util;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +28,20 @@ public class MessageUtil extends BaseSerializer {
 		}
 		return true;
 	}
-	
+
+	public static boolean sendMessage(CommandSender p, Collection<String> msgs){
+		if (msgs ==null || msgs.isEmpty()) return true;
+		for (String msg: msgs){
+			if (p instanceof Player){
+				if (((Player) p).isOnline())
+					p.sendMessage(colorChat(msg));			
+			} else {
+				p.sendMessage(colorChat(msg));
+			}	
+		}
+		return true;
+	}
+
 	public static void sendPlayerMessage(Set<Player> players, String message) {
 		final String msg = colorChat(message);
 		for (Player p: players){

@@ -2,8 +2,12 @@ package mc.alk.arena.executors;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.competition.events.util.NeverWouldJoinException;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.EventOpenOptions;
+import mc.alk.arena.objects.EventOpenOptions.EventOpenOption;
+import mc.alk.arena.objects.EventOpenOptions.InvalidOptionException;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.teams.Team;
@@ -91,8 +95,8 @@ public class EventExecutor extends BAExecutor{
 	public boolean eventLeave(ArenaPlayer p) {
 		if (!event.waitingToJoin(p) && !event.hasPlayer(p)){
 			return sendMessage(p,"&eYou aren't inside the &6" + event.getName());}
-		if (!event.canLeave(p)){
-			return sendMessage(p,"&eYou can't leave the &6"+event.getCommand()+"&e while its "+event.getState());}
+//		if (!event.canLeave(p)){
+//			return sendMessage(p,"&eYou can't leave the &6"+event.getCommand()+"&e while its "+event.getState());}
 		event.leave(p);
 		return sendMessage(p,"&eYou have left the &6" + event.getName());
 	}
@@ -161,4 +165,38 @@ public class EventExecutor extends BAExecutor{
 		}
 		return sendMessage(sender,"&eResults for the &6" + event.getDetailedName() + "&e\n" + sb.toString());
 	}
+	
+	public static MatchParams checkOpenOptions(CommandSender sender, Event event, MatchParams mp, String[] args) {
+		if (mp == null){
+			sendMessage(sender,"&cMatch params were null");
+			return null;
+		}
+		final String cmd = mp.getCommand();
+		if (event.isRunning() || event.isOpen()){
+			sendMessage(sender,"&cA "+cmd+" is already &6" + event.getState());
+			return null;
+		}
+		if (args.length < 1){
+			sendMessage(sender,"&6/"+cmd+" <open|auto|server> [options]");
+			sendMessage(sender,"&eExample &6/ "+cmd+" auto");
+			sendMessage(sender,"&eExample &6/ "+cmd+" auto rated teamSize=1 nTeams=2+ arena=<arenaName>");
+			return null;
+		}		
+		return mp;
+	}
+	
+	public static void openEvent(Event te, MatchParams mp, EventOpenOptions eoo) throws InvalidOptionException, NeverWouldJoinException{
+		eoo.updateParams(mp);
+		//		System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
+		te.setSilent(eoo.isSilent());
+		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
+			te.openAllPlayersEvent(mp);
+		} else if (eoo.hasOption(EventOpenOption.AUTO)){
+			te.autoEvent(mp, eoo.getSecTillStart(), eoo.getInterval());
+		} else {
+			te.openEvent(mp);
+		}
+	}
+
+	
 }

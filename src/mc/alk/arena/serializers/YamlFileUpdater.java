@@ -19,10 +19,36 @@ import org.bukkit.configuration.file.FileConfiguration;
 public class YamlFileUpdater {
 
 	public static void updateConfig(BAConfigSerializer bacs){
-		updateConfigFrom0to1point1(bacs);
+		updateBaseConfig(bacs);
 	}
 
-	private static void updateConfigFrom0to1point1(BAConfigSerializer bacs) {
+	public void updateMessageSerializer(MessageSerializer ms) {
+		FileConfiguration fc = ms.getConfig();
+
+		double version = fc.getDouble("version",0);
+		File dir = BattleArena.getSelf().getDataFolder();
+		/// configVersion: 1.2, move over to new messages.yml
+		/// this will delete their previous messages.yml
+		if (version < 1.2){
+			File backupdir = new File(dir+"/backups");
+			if (!backupdir.exists()){
+				backupdir.mkdir();}
+			File msgdir = new File(dir+"/messages");
+			if (!msgdir.renameTo(new File(dir+"/backups/messages1.1"))){
+				Log.warn("Couldn't rename the messages yml");
+			}
+			File messageFile = new File(dir+"/messages.yml");
+			messageFile.renameTo(new File(dir+"/backups/messages.1.1.yml"));
+			Log.warn("Updating to messages.yml version 1.2");
+			Log.warn("If you had custom changes to messages you will have to redo them");
+			Log.warn("But the old messages are saved as backups/messages.1.1.yml");
+			Log.warn("You can override specific match/event messages inside the messages folder");
+			move("/default_files/messages.yml",dir+"/messages.yml");
+			ms.setConfig(new File(dir+"/messages.yml"));
+		}
+	}
+	
+	private static void updateBaseConfig(BAConfigSerializer bacs) {
 		File tempFile = null;
 		FileConfiguration fc = bacs.getConfig();
 		File f = bacs.getFile();
@@ -176,21 +202,7 @@ public class YamlFileUpdater {
 			e.printStackTrace();
 		}
 	}
-	public void updateMessageSerializer(MessageSerializer ms) {
-		FileConfiguration fc = ms.getConfig();
-
-		double version = fc.getDouble("version",0);
-
-		/// configVersion: 1.1, move over to new messages.yml
-		/// this will delete their previous messages.yml
-		if (version < 1.1){
-			Log.warn("Updating to messages.yml version 1.1");
-			Log.warn("If you had custom changes to messages you will have to redo them");
-			Log.warn("You can now override specific match/event messages inside the messages folder");
-			move("/default_files/messages.yml",BattleArena.getSelf().getDataFolder()+"/messages.yml");
-			ms.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/messages.yml"));
-		}
-	}
+	
 
 	public File move(String default_file, String config_file) {
 		File file = new File(config_file);

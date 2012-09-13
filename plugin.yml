@@ -1,9 +1,9 @@
 name: BattleArena
-version: 3.6.4
+version: 3.6.5
 author: Alkarin
 
 description: Arena system for BattleCraft
-softdepend: [BattleTracker, MassDisguise, BattleEventTracker, Vault, MultiInv, Herochat, HavocKits]
+softdepend: [BattleTracker, MassDisguise, Vault, MultiInv, Herochat, WorldGuard, WorldEdit]
 main: mc.alk.arena.BattleArena
 commands:
     team:
@@ -46,5 +46,9 @@ commands:
         aliases: [bad]
         description: Debugging Commands
         usage: /bad
+    battleArenaScheduler:
+        aliases: [bas]
+        description: Schedule Continuous Events
+        usage: /bas
 
 

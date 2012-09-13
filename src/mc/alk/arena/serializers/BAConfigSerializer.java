@@ -18,8 +18,6 @@ public class BAConfigSerializer extends ConfigSerializer{
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
 
 		parseDefaultOptions(config.getConfigurationSection("defaultOptions"));
-		/// This is here for backwards compatibility with old configs
-		BAClassesSerializer.loadClasses(config.getConfigurationSection("classes"));
 		Defaults.MONEY_STR = config.getString("moneyName");
 		String[] defaultArenaTypes = {"arena","skirmish","colliseum","freeForAll","deathMatch","tourney","battleground"};
 

@@ -67,17 +67,21 @@ public class VictoryType {
 		return null;
 	}
 
-	public static void register(String vcName, Class<? extends VictoryCondition> c, Plugin plugin) {
-		vcName = vcName.toUpperCase();
+	public static void register(Class<? extends VictoryCondition> vc, Plugin plugin) {
+		final String vcName = vc.getSimpleName().toUpperCase();
 		if (!classes.containsKey(vcName))
-			classes.put(vcName, c);
+			classes.put(vcName, vc);
 		if (!types.containsKey(vcName)){
 			new VictoryType(vcName,plugin);
 		}
 		/// Register our methods
-		MethodController.addMethods(c, c.getMethods());
+		MethodController.addMethods(vc, vc.getMethods());
 	}
-
+	
+	public static boolean registered(VictoryCondition vc){
+		final String vcName = vc.getClass().getSimpleName().toUpperCase();
+		return classes.containsKey(vcName) && types.containsKey(vcName);
+	}
 	public int ordinal() {
 		return id;
 	}

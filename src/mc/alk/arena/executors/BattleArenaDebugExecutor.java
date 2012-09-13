@@ -14,6 +14,7 @@ import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MapOfHash;
@@ -136,4 +137,30 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		}
 		return true;
 	}
+	
+	@MCCommand(cmds={"verify"}, op=true,usage="verify")
+	public boolean arenaVerify(CommandSender sender) {
+		String[] lines = ac.toDetailedString().split("\n");
+		for (String line : lines){
+			sendMessage(sender,line);}
+		return true;
+	}
+	
+	@MCCommand(cmds={"purgeQueue"}, op=true)
+	public boolean arenaPurgeQueue(CommandSender sender) {
+		try {
+			Collection<Team> teams = ac.purgeQueue();
+			for (Team t: teams){
+				t.sendMessage("&eYou have been &cremoved&e from the queue by an administrator");
+			}
+		} catch (Exception e){
+			e.printStackTrace();
+			sendMessage(sender,"&4error purging queue");
+			return true;
+		}
+		sendMessage(sender,"&2Queue purged");
+		return true;
+	}
+
+
 }

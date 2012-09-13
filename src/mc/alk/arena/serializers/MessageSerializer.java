@@ -3,6 +3,7 @@ package mc.alk.arena.serializers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -107,42 +108,50 @@ public class MessageSerializer extends BaseSerializer {
 	}
 	
 	protected void sendVictory(Channel serverChannel, Team victor, Collection<Team> losers, MatchParams mp, String winnerpath,String loserpath, String serverPath){
+		final int size = victor == null ? losers.size() : losers.size()+1;
 		Message winnermessage = getMessage(winnerpath);
 		Message losermessage = getMessage(loserpath);
 		Message serverMessage = getMessage(serverPath);
 
 		Set<MessageOption> ops = winnermessage.getOptions();
+		if (ops == null) 
+			ops =new HashSet<MessageOption>();
 		ops.addAll(losermessage.getOptions());
 		if (serverChannel != Channel.NullChannel){
 			ops.addAll(serverMessage.getOptions());			
 		}
 
 		String msg = losermessage.getMessage();
-		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), losers.size()+1, losermessage, ops);
+		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), size, losermessage, ops);
 		List<Team> teams = new ArrayList<Team>(losers);
-		teams.add(victor);
+		if (victor != null)
+			teams.add(victor);
+		
 		msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
 		for (Team t: losers){
 			msgf.formatTeamOptions(t,false);
 			msgf.formatTwoTeamsOptions(t, teams);
 			msgf.formatTeams(teams);
-			msgf.formatWinnerOptions(t, false);			
-			msgf.formatWinnerOptions(victor, true);
+			msgf.formatWinnerOptions(t, false);	
+			if (victor != null)
+				msgf.formatWinnerOptions(victor, true);
 			String newmsg = msgf.getFormattedMessage(losermessage);
 			t.sendMessage(newmsg);
 		}
 
-		msgf = new MessageFormatter(this, mp, ops.size(), losers.size()+1, winnermessage, ops);
-		msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
-		msgf.formatTeamOptions(victor,true);
-		msgf.formatTwoTeamsOptions(victor, teams);
-		msgf.formatTeams(teams);
-		if (!losers.isEmpty()){
-			msgf.formatWinnerOptions(losers.iterator().next(), false);			
+		if (victor != null){
+			msgf = new MessageFormatter(this, mp, ops.size(), size, winnermessage, ops);
+			msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
+			msgf.formatTeamOptions(victor,true);
+			msgf.formatTwoTeamsOptions(victor, teams);
+			msgf.formatTeams(teams);
+			if (!losers.isEmpty()){
+				msgf.formatWinnerOptions(losers.iterator().next(), false);			
+			}
+			msgf.formatWinnerOptions(victor, true);
+			String newmsg = msgf.getFormattedMessage(winnermessage);
+			victor.sendMessage(newmsg);			
 		}
-		msgf.formatWinnerOptions(victor, true);
-		String newmsg = msgf.getFormattedMessage(winnermessage);
-		victor.sendMessage(newmsg);
 
 		if (serverChannel != Channel.NullChannel){
 			msg = msgf.getFormattedMessage(serverMessage);

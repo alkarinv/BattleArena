@@ -106,12 +106,12 @@ public class ArenaSerializer {
 	protected static void loadArenas(Plugin plugin, BattleArenaController bac, ConfigurationSection cs, ArenaType arenaType){
 		final String pname = "["+plugin.getName()+"] ";
 		if (cs == null){
-			Log.info(pname+"Configuration section is null");
+			Log.info(pname+" has no arenas, cs is null");
 			return;
 		}
 		ConfigurationSection as = cs.getConfigurationSection("arenas");
 		if (as == null){
-			Log.info(pname+"Arena section is empty in config cs=" + cs.getCurrentPath());
+			Log.info(pname+"has no arenas, cs section =" + cs.getCurrentPath());
 			return;
 		}
 		Set<String> keys = as.getKeys(false);

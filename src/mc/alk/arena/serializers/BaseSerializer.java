@@ -27,6 +27,9 @@ public class BaseSerializer {
 		return f;
 	}
 
+	public void setConfig(String file){
+		setConfig(new File(file));
+	}
 	public void setConfig(File file){
 		this.f = file;
 		if (!f.exists()){

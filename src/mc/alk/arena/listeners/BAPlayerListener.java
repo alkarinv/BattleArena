@@ -6,25 +6,31 @@ import java.util.HashSet;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.PlayerStoreController.PInv;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.tracker.controllers.MessageController;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -65,7 +71,7 @@ public class BAPlayerListener implements Listener  {
 		messagesOnRespawn.clear();
 		this.bac = bac;
 	}
-	
+
 	/**
 	 * 
 	 * Why priority.HIGHEST: if an exception happens after we have already set their respawn location, 
@@ -93,7 +99,7 @@ public class BAPlayerListener implements Listener  {
 		}
 		playerReturned(p, null);
 	}
-	
+
 	@EventHandler
 	public void onPlayerRespawn(PlayerRespawnEvent event){
 		Player p = event.getPlayer();
@@ -106,7 +112,7 @@ public class BAPlayerListener implements Listener  {
 		if (msg != null){
 			MessageUtil.sendMessage(p, msg);
 		}
-//		System.out.println(" playerReturned event player = " + p.getName() +"  " + event +"   " + itemRestore.containsKey(p.getName()));
+		//		System.out.println(" playerReturned event player = " + p.getName() +"  " + event +"   " + itemRestore.containsKey(p.getName()));
 
 		if (die.remove(name)){
 			MessageUtil.sendMessage(p, "&eYou have been killed by the Arena for not being online");
@@ -119,7 +125,7 @@ public class BAPlayerListener implements Listener  {
 		if (tp.containsKey(name)){
 			Location loc = tp.get(name);
 			if (loc != null){
-//								Log.err(name + " respawn loc ="+ SerializerUtil.getLocString(loc));
+				//								Log.err(name + " respawn loc ="+ SerializerUtil.getLocString(loc));
 				if (event == null){
 					TeleportController.teleport(p, tp.get(name));
 				} else {
@@ -157,9 +163,9 @@ public class BAPlayerListener implements Listener  {
 					Player pl;
 					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);} 
 					else {pl = Bukkit.getPlayer(name);}
-//					System.out.println("restoring items to " + name +"   pl = " + pl);
+					//					System.out.println("restoring items to " + name +"   pl = " + pl);
 					if (pl != null){
-						
+
 						PInv pinv = itemRestore.remove(pl.getName());
 						ArenaPlayer ap = PlayerController.toArenaPlayer(pl);
 						PlayerStoreController.setInventory(ap, pinv);
@@ -168,10 +174,10 @@ public class BAPlayerListener implements Listener  {
 			});
 		}
 		/// TODO fix the teamHeads removal
-//		if (clearWool.containsKey(name)){
-//			int s = clearWool.remove(name);
-//			p.getInventory().remove(new ItemStack(Material.WOOL,0,(short) s));
-//		}
+		//		if (clearWool.containsKey(name)){
+		//			int s = clearWool.remove(name);
+		//			p.getInventory().remove(new ItemStack(Material.WOOL,0,(short) s));
+		//		}
 	}
 
 	public static void killOnReenter(String playerName) {
@@ -202,5 +208,48 @@ public class BAPlayerListener implements Listener  {
 
 	public static void restoreGameModeOnEnter(String playerName, GameMode gamemode) {
 		gamemodeRestore.put(playerName, gamemode);
+	}
+
+	@EventHandler
+	public void onSignChange(SignChangeEvent event){
+		if (Defaults.DEBUG_TRACE) System.out.println("onSignChange Event");
+		final Block block = event.getBlock();
+		final Material type = block.getType();
+
+		if (!(type.equals(Material.SIGN) || type.equals(Material.SIGN_POST) || type.equals(Material.WALL_SIGN))) {
+			return;}
+
+		Player p = event.getPlayer();
+
+		/// Is the sign a trade sign?
+		final boolean admin = p.isOp() || p.hasPermission(Defaults.ARENA_ADMIN);
+		String lines[] = event.getLines();
+		ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(lines[0]).replaceAll("\\*", ""));
+		if (ac == null)
+			return;
+		for (int i=1;i<lines.length;i++){
+			if (!lines[i].isEmpty()) /// other text, not our sign
+				return;
+		}
+
+		if (!admin){
+			cancelSignPlace(event,block);
+			return;
+		}
+
+		try{
+			event.setLine(0, MessageController.colorChat(ChatColor.GOLD+"*"+ac.getPrettyName()));
+		} catch (Exception e){
+			MessageController.sendMessage(p, "&cError creating Arena Class Sign");
+			e.printStackTrace();
+			cancelSignPlace(event,block);
+			return;
+		}
+	}
+
+	public static void cancelSignPlace(SignChangeEvent event, Block block){
+		event.setCancelled(true);
+		block.setType(Material.AIR);
+		block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.SIGN, 1));   	
 	}
 }

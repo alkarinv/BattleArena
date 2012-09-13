@@ -1,6 +1,7 @@
 ### You can add new classes here
 classes:
     gladiator:
+        prettyName: "&4Gladiator" ### Used for signs
         items:
             - diamond_sword: sharp:1 1
             - bow: 1

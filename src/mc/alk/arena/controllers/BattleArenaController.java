@@ -10,14 +10,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.listeners.MatchListener;
+import mc.alk.arena.events.matches.MatchFinishedEvent;
+import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
@@ -26,15 +27,12 @@ import mc.alk.arena.objects.tournament.Matchup;
 import org.bukkit.Bukkit;
 
 
-public class BattleArenaController implements OnMatchComplete, Runnable, TeamHandler{
+public class BattleArenaController implements Runnable, TeamHandler, TransitionListener{
 
 	boolean stop = false;
 
-	private ArenaMatchQueue amq = new ArenaMatchQueue(this);
-
-	//	private HashMap<String,Event> openEvents = new HashMap<String,Event>();
+	private final ArenaMatchQueue amq = new ArenaMatchQueue();
 	private Set<Match> running_matches = new HashSet<Match>();
-	private List<MatchListener> matchListeners = new ArrayList<MatchListener>();
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
 	long lastTimeCheck = 0;
 
@@ -51,6 +49,7 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 	}
 
 	public void openMatch(Match match){
+		match.addTransitionListener(this);
 		synchronized(running_matches){
 			running_matches.add(match);
 		}
@@ -68,28 +67,37 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), arenaMatch);
 	}
 
-	public void matchComplete(Match am) {
+	@TransitionEventHandler
+	public void matchFinished(MatchFinishedEvent event){
 		//		if (Defaults.DEBUG ) System.out.println("BattleArenaController::matchComplete=" + am + ":" );
-		removeMatch(am); /// handles removing match from the BArenaController
-		List<MatchListener> mls = null;
-		synchronized(matchListeners){
-			mls = new ArrayList<MatchListener>(matchListeners);			
-		}
+		Match am = event.getMatch();
+		removeMatch(am); /// handles removing running match from the BArenaController
+
 		for (Team t : am.getTeams()){ /// Do I need to really do this?
 			TeamController.removeTeam(t, this);}
-		/// Notify all Listeners that this match is finished
-		for (MatchListener ml: mls){
-			if (am.getMatchState() == MatchState.ONCANCEL){
-				try { ml.matchCancelled(am);} catch(Exception e){};
-			} else {
-				try { ml.matchComplete(am);} catch(Exception e){};				
-			}
-		}		
+
 		Arena arena = allarenas.get(am.getArena().getName());
 		if (arena != null)
 			amq.add(arena); /// add it back into the queue
-
 	}
+	
+//	public void matchComplete(Match am) {
+//		List<ArenaMatch> mls = null;
+//		synchronized(matchListeners){
+//			mls = new ArrayList<ArenaMatch>(matchListeners);			
+//		}
+//		for (Team t : am.getTeams()){ /// Do I need to really do this?
+//			TeamController.removeTeam(t, this);}
+//		/// Notify all Listeners that this match is finished
+//		for (ArenaMatch ml: mls){
+//			if (am.getMatchState() == MatchState.ONCANCEL){
+//				try { ml.matchCancelled(am);} catch(Exception e){};
+//			} else {
+//				try { ml.matchComplete(am);} catch(Exception e){};				
+//			}
+//		}		
+//
+//	}
 
 	public void updateArena(Arena arena) {
 		allarenas.put(arena.getName(), arena);
@@ -102,9 +110,6 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 		allarenas.put(arena.getName(), arena);
 		amq.add(arena);
 	}
-
-	public void addMatchListener(MatchListener ml) {matchListeners.add(ml);}
-	public void removeMatchListener(MatchListener ml) {matchListeners.remove(ml);}
 
 	public Map<String, Arena> getArenas(){return allarenas;}
 	public QPosTeamPair addToQue(Team t1, MatchParams mp) {
@@ -225,10 +230,12 @@ public class BattleArenaController implements OnMatchComplete, Runnable, TeamHan
 	}
 
 	public boolean cancelMatch(Arena arena) {
-		for (Match am: running_matches){
-			if (am.getArena().getName().equals(arena.getName())){
-				cancelMatch(am);
-				return true;
+		synchronized(running_matches){
+			for (Match am: running_matches){
+				if (am.getArena().getName().equals(arena.getName())){
+					cancelMatch(am);
+					return true;
+				}
 			}
 		}
 		return false;

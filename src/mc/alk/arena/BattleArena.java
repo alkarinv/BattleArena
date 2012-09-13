@@ -14,11 +14,13 @@ import mc.alk.arena.competition.events.AlwaysJoinRAE;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.events.ReservedArenaEvent;
 import mc.alk.arena.competition.events.TournamentEvent;
+import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.EventController;
+import mc.alk.arena.controllers.EventScheduler;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
@@ -28,6 +30,7 @@ import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.executors.ArenaEditorExecutor;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.BattleArenaDebugExecutor;
+import mc.alk.arena.executors.BattleArenaSchedulerExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.executors.TeamExecutor;
@@ -38,22 +41,25 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
-import mc.alk.arena.objects.victoryconditions.ArenaControlsVictory;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
 import mc.alk.arena.objects.victoryconditions.LastManStanding;
 import mc.alk.arena.objects.victoryconditions.NDeaths;
+import mc.alk.arena.objects.victoryconditions.TimeLimit;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.serializers.ArenaControllerSerializer;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.BAClassesSerializer;
 import mc.alk.arena.serializers.BAConfigSerializer;
+import mc.alk.arena.serializers.EventScheduleSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.serializers.SpawnSerializer;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.command.ColouredConsoleSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -79,16 +85,17 @@ public class BattleArena extends JavaPlugin{
 	private ArenaControllerSerializer yacs;
 	private static final BAConfigSerializer cc = new BAConfigSerializer();
 	private static final BAClassesSerializer bacs = new BAClassesSerializer();
+	private static final EventScheduleSerializer ess = new EventScheduleSerializer();
 
 	public void onEnable() {
 		plugin = this;
 		PluginDescriptionFile pdfFile = this.getDescription();
 		pluginname = pdfFile.getName();
 		version = pdfFile.getVersion();
-		Log.info(getVersion() + " starting enable!");
+		ColouredConsoleSender.getInstance().sendMessage(MessageUtil.colorChat("&4["+pluginname+"] &6v"+version+"&f enabling!"));
 		/// For potential updates to default yml files
 		YamlFileUpdater yfu = new YamlFileUpdater();
-		
+
 		/// Set up our messages first before other initialization needs messages
 		MessageSerializer defaultMessages = new MessageSerializer("default");
 		defaultMessages.setConfig(load(Defaults.DEFAULT_MESSAGES_FILE, Defaults.MESSAGES_FILE));
@@ -107,9 +114,9 @@ public class BattleArena extends JavaPlugin{
 		yacs = new ArenaControllerSerializer();
 
 		// Register our events
-		Bukkit.getServer().getPluginManager().registerEvents(playerListener, this);
-		Bukkit.getServer().getPluginManager().registerEvents(pluginListener, this);
-		Bukkit.getServer().getPluginManager().registerEvents(tc, this);
+		Bukkit.getPluginManager().registerEvents(playerListener, this);
+		Bukkit.getPluginManager().registerEvents(pluginListener, this);
+		Bukkit.getPluginManager().registerEvents(tc, this);
 		TeleportController.setup(this);
 
 		/// Register our different arenas
@@ -120,12 +127,13 @@ public class BattleArena extends JavaPlugin{
 		ArenaType.register("FFA", Arena.class, this);
 		ArenaType.register("Versus", Arena.class, this);
 
-		VictoryType.register("LastManStanding", LastManStanding.class, this);
-		VictoryType.register("HighestKills", HighestKills.class, this);
-		VictoryType.register("NDeaths", NDeaths.class, this);
-		VictoryType.register("ArenaControlsVictory", ArenaControlsVictory.class, this);
+		VictoryType.register(HighestKills.class, this);
+		VictoryType.register(NDeaths.class, this);
+		VictoryType.register(LastManStanding.class, this);
+		VictoryType.register(TimeLimit.class, this);
 
 		MethodController.addMethods(Match.class, Match.class.getMethods());
+		MethodController.addMethods(ArenaMatch.class, ArenaMatch.class.getMethods());
 
 		/// After registering our arenas and victories, load our configs
 		ArenaSerializer.setBAC(arenaController);
@@ -154,14 +162,22 @@ public class BattleArena extends JavaPlugin{
 		getCommand("team").setExecutor(new TeamExecutor(commandExecutor));
 		getCommand("arenaAlter").setExecutor(new ArenaEditorExecutor());
 		getCommand("battleArenaDebug").setExecutor(new BattleArenaDebugExecutor());
+		EventScheduler es = new EventScheduler();
+		getCommand("battleArenaScheduler").setExecutor(new BattleArenaSchedulerExecutor(es));
 
+		/// Create our events
 		createEvents();
+
+		/// Reload our scheduled events
+		ess.setConfig(dir.getPath() +"/scheduledEvents.yml");
+		ess.addScheduler(es);
+		ess.loadAll();
 
 		createMessageSerializers();
 		FileLogger.init(); /// shrink down log size
 		/// Start listening for players queuing
 		new Thread(arenaController).start();
-		Log.info(getVersion()+ " initialized!");
+		ColouredConsoleSender.getInstance().sendMessage(MessageUtil.colorChat("&4["+pluginname+"] &6v"+version+"&f enabled!"));
 	}
 
 	private void createMessageSerializers() {
@@ -183,6 +199,7 @@ public class BattleArena extends JavaPlugin{
 		ArenaSerializer.saveAllArenas(true);
 		yacs.save();
 		FileLogger.saveAll();
+		ess.saveScheduledEvents();
 	}
 
 	private void createEvents() {
@@ -194,7 +211,9 @@ public class BattleArena extends JavaPlugin{
 			TournamentEvent tourney = new TournamentEvent(mp);
 			EventController.addEvent(tourney);
 			try{
-				getCommand("tourney").setExecutor(new TournamentExecutor(tourney));
+				EventExecutor executor = new TournamentExecutor(tourney);
+				getCommand("tourney").setExecutor(executor);
+				EventController.addEventExecutor(tourney, executor);
 			} catch (Exception e){
 				Log.err("command tourney not found");				
 			}
@@ -208,7 +227,9 @@ public class BattleArena extends JavaPlugin{
 			ReservedArenaEvent event = new ReservedArenaEvent(mp);
 			EventController.addEvent(event);
 			try{
-				getCommand("ffa").setExecutor(new ReservedArenaEventExecutor(event));
+				EventExecutor executor = new ReservedArenaEventExecutor(event);
+				getCommand("ffa").setExecutor(executor);
+				EventController.addEventExecutor(event, executor);
 			} catch (Exception e){
 				Log.err("command ffa not found");
 			}
@@ -222,7 +243,9 @@ public class BattleArena extends JavaPlugin{
 			ReservedArenaEvent event = new AlwaysJoinRAE(mp);
 			EventController.addEvent(event);
 			try{
-				getCommand("dm").setExecutor(new ReservedArenaEventExecutor(event));
+				EventExecutor executor = new ReservedArenaEventExecutor(event);
+				getCommand("dm").setExecutor(executor);
+				EventController.addEventExecutor(event, executor);
 			} catch (Exception e){
 				Log.err("command dm not found");
 			}

@@ -47,7 +47,9 @@ public class Arena implements ArenaListener {
 
 	@Persist
 	protected String wgRegionName;
-
+	@Persist
+	protected String wgRegionWorld;
+	
 	/**
 	 * Arena constructor
 	 */
@@ -226,6 +228,14 @@ public class Arena implements ArenaListener {
 	public String getRegion() {
 		return wgRegionName;
 	}
+	/**
+	 * Get the worldguard wgRegionWolrd for this arena
+	 * @return
+	 */
+	public String getRegionWorld() {
+		return wgRegionWorld;
+	}
+
 
 	/**
 	 * Return the timed spawns for this arena

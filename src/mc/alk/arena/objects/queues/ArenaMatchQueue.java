@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.controllers.OnMatchComplete;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -32,12 +32,7 @@ public class ArenaMatchQueue {
 	ArenaQueue arenaqueue = new ArenaQueue();
 
 	LinkedList<Match> ready_matches = new LinkedList<Match>();	
-	OnMatchComplete omc;
 	boolean suspend = false;
-
-	public ArenaMatchQueue(OnMatchComplete omc){
-		this.omc = omc;
-	}
 
 	public synchronized Match getArenaMatch() {
 		try{
@@ -160,8 +155,7 @@ public class ArenaMatchQueue {
 
 				mtq.remove(matchup);
 				arenaqueue.remove(a);
-//				final Match m = new Match(ArenaType.createArena(a), omc, matchup.getSpecificQ());
-				final Match m = new Match(a, omc, matchup.getSpecificQ());
+				final Match m = new ArenaMatch(a, matchup.getSpecificQ());
 				m.onJoin(teams);
 				return m;
 			}
@@ -240,8 +234,7 @@ public class ArenaMatchQueue {
 					}
 					tq.removeAll(oteams); /// remove all competing teams from the q
 					arenaqueue.remove(a);
-//					final Match m = new Match(ArenaType.createArena(a), omc, tq.getMatchParams());
-					final Match m = new Match(a, omc, tq.getMatchParams());
+					final Match m = new ArenaMatch(a, tq.getMatchParams());
 					m.onJoin(teams);
 					return m;
 				}

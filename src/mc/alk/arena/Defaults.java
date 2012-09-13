@@ -8,7 +8,7 @@ public class Defaults {
 	
 	public static double TICK_MULT = 1.0;
 	public static String MONEY_STR = "bc";
-    public static final Double DEFAULT_ELO = 1250.0;
+    public static final double DEFAULT_ELO = 1250.0;
 
     /// How long can we keep appending player names together
     /// before reverting to team 1, team 2, etc
@@ -18,6 +18,7 @@ public class Defaults {
 	public static final boolean DEBUG = false;
 	public static final boolean DEBUG_TRACE = false;
 	public static final boolean DEBUG_EVENTS = false;
+	public static final boolean DEBUG_TEVENTS = false;
 
 	public static boolean PLUGIN_MULTI_INV = false; /// workarounds for multiinv and tping
 	public static final String MULTI_INV_IGNORE_NODE = "multiinv.exempt";
@@ -36,5 +37,6 @@ public class Defaults {
 	
 	/// TOURNEY OPTIONS
 	public static final int TIME_BETWEEN_ROUNDS = 20;
+	public static final int MAX_REGION_SIZE = 5000000;
 	
 }

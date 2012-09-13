@@ -35,42 +35,47 @@ public class EventMessager {
 	}
 
 	public void sendCountdownTillEvent(int seconds) {
-		impl.sendCountdownTillEvent(getChannel(MatchState.ONPRESTART), seconds);		
+		try{impl.sendCountdownTillEvent(getChannel(MatchState.ONPRESTART), seconds);}catch(Exception e){e.printStackTrace();}		
 	}
 
 	public void sendEventStarting(Collection<Team> teams) {
-		impl.sendEventStarting(getChannel(MatchState.ONSTART), teams);		
+		try{impl.sendEventStarting(getChannel(MatchState.ONSTART), teams);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendEventVictory(Team victor, Collection<Team> losers) {
-		impl.sendEventVictory(getChannel(MatchState.ONVICTORY), victor,losers);		
+		try{impl.sendEventVictory(getChannel(MatchState.ONVICTORY), victor,losers);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendEventOpenMsg() {
-		impl.sendEventOpenMsg(getChannel(MatchState.ONOPEN));		
+		try{impl.sendEventOpenMsg(getChannel(MatchState.ONOPEN));}catch(Exception e){e.printStackTrace();}		
 	}
 
 	public void sendEventCancelledDueToLackOfPlayers(Set<ArenaPlayer> competingPlayers) {
-		impl.sendEventCancelledDueToLackOfPlayers(getChannel(MatchState.ONCANCEL), competingPlayers);		
+		try{impl.sendEventCancelledDueToLackOfPlayers(getChannel(MatchState.ONCANCEL), competingPlayers);
+	}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendTeamJoinedEvent(Team t) {
-		impl.sendTeamJoinedEvent(getChannel(MatchState.ONJOIN),t);
+		try{impl.sendTeamJoinedEvent(getChannel(MatchState.ONJOIN),t);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendEventCancelled() {
-		impl.sendEventCancelled(getChannel(MatchState.ONCANCEL));		
+		try{impl.sendEventCancelled(getChannel(MatchState.ONCANCEL));}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendCantFitTeam(Team t) {
-		impl.sendCantFitTeam(t);		
+		try{impl.sendCantFitTeam(t);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendWaitingForMorePlayers(Team t, int remaining) {
-		impl.sendWaitingForMorePlayers(t, remaining);		
+		try{ impl.sendWaitingForMorePlayers(t, remaining);}catch(Exception e){e.printStackTrace();}
 	}
 	public void setSilent(boolean silent){
 		this.silent = silent;
+	}
+
+	public void sendEventDraw(Collection<Team> losers) {
+		try{impl.sendEventDraw(getChannel(MatchState.ONVICTORY), losers);}catch(Exception e){e.printStackTrace();}		
 	}
 
 }

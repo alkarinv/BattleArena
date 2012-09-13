@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+
+     BattleCore
+     
+     Alkarin_v
+     ====================================================================== -->
+<project name="BattleArena" default="build">
+	<description>
+            Bukkit plugin for custom events/match. API and platform for easy creation of new events/matches.
+    </description>
+
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="bin" location="bin" />
+	<property name="lib" location="../mcjars" />
+	<target name="init" depends="clean" description="create necessary folders">
+		<mkdir dir="${bin}" />
+	</target>
+	<target name="build" depends="init" description="compile the source">
+		<javac srcdir="${src}" destdir="${bin}" debug="on" debuglevel="lines,vars,source" includeantruntime="false" encoding="Cp1252">
+			<classpath>
+				<pathelement path="${lib}" />
+				<pathelement location="${lib}/commons-lang3-3.1.jar" />
+				<pathelement location="${lib}/CraftBukkit.jar" />
+				<pathelement location="${lib}/Herochat.jar" />
+				<pathelement location="${lib}/Vault.jar" />
+				<pathelement location="${lib}/Register.jar" />
+				<pathelement location="${lib}/WorldGuard.jar" />
+				<pathelement location="${lib}/WorldEdit.jar" />
+				<pathelement location="${lib}/BattleTracker.jar" />
+				<pathelement location="${lib}/VirtualPlayers.jar" />
+				<pathelement location="${lib}/MassDisguise.jar" />
+			</classpath>
+		</javac>
+		<antcall target="dist" />
+	</target>
+	<target name="dist" description="generate the distribution">
+		<jar jarfile="${bin}/BattleArena.jar" basedir="${bin}" encoding="Cp1252">
+			<zipfileset dir="." includes="*.yml" />
+			<zipfileset dir="." includes="**/default_files/**" />
+			<zipgroupfileset dir="${lib}" includes="commons-lang3-3.1.jar" />
+		</jar>
+	</target>
+	<target name="clean" description="clean up">
+		<delete dir="${bin}" />
+	</target>
+
+</project>

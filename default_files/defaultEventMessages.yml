@@ -1,4 +1,4 @@
-version: 1.1
+version: 1.2
 ### Uncomment the sections you want to customize
 ### Event and match are included b/c every event has at least 1 match
 ### but an event might have multiple matches, like a tournament.
@@ -25,7 +25,10 @@ version: 1.1
 #        start: "&6Participants: {participants}"
 #        server_start: "{eventprefix}&e {nteams} {playerorteam} will compete in a &6{eventname}&e Event!"
 #        victory: ""
+#        loss: ""
+#        draw: ""
 #        server_victory: "&e Congratulations to &6{winnerlong}&e for winning!!"
+#        server_draw: "{eventprefix}&e ended in a draw!"
 #    twoTeams: ## 1 team vs another team
 #        server_open: |
 #            {eventprefix}&e A {eventname} event is opening!
@@ -38,7 +41,10 @@ version: 1.1
 #        start: "&6Participants: {participants}"
 #        server_start: "{eventprefix}&e {nteams} {playerorteam} will compete in a &6{eventname}&e Event!"
 #        victory: ""
+#        loss: ""
+#        draw: ""
 #        server_victory: "{winnerlong}&e was victorious over {loserlong}"
+#        server_draw: "{eventprefix}&e ended in a draw!"
 #    multipleTeams: ## many teams against each other
 #        server_open: |
 #            {eventprefix}&e A {eventname} event is opening!
@@ -51,7 +57,10 @@ version: 1.1
 #        start: "&6Participants: {participants}"
 #        server_start: "{eventprefix}&e {nteams} {playerorteam} will compete in a &6{eventname}&e Event!"
 #        victory: ""
+#        loss: ""
+#        draw: ""
 #        server_victory: "&e Congratulations to &6{winnerlong}&e for winning!!"
+#        server_draw: "{eventprefix}&e ended in a draw!"
 #
 #match:    
 #    oneTeam: ### 1 team matches
@@ -66,9 +75,9 @@ version: 1.1
 #        loss: |
 #            &eYou have lost your {matchname}
 #            &eTotal Win/Loss: &e({wins}:{losses})
-#        server_victory: '{winnerlong}&e was victorious in the {matchname}!'
 #        draw: "&eThe {matchname}&e has ended in a draw"
-#        server_draw: ""
+#        server_victory: '{winnerlong}&e was victorious in the {matchname}!'
+#        server_draw: "{matchprefix} ended in a draw!"
 #    twoTeams: ## 1 team vs another team
 #        prestart: '&eYour {matchname}&e match against {otherteam} starts in {time}.'
 #        server_prestart: '&6{matchprefix} {teamshort1}&6 vs {teamshort2}&6!'
@@ -82,10 +91,10 @@ version: 1.1
 #        loss: |
 #            &eYou have lost your {matchname} match against {otherteam}
 #            &eTotal Win/Loss: &e({wins}:{losses})
-#            &eRecord against {othername}: &e({winsagainst}:{lossesagainst})
+#            &eRecord against {otherteam}: &e({winsagainst}:{lossesagainst})
 #            &eLife left:{lifeleft}
-#        server_victory: '{winnerlong}&e defeated {loserlong}!'
 #        draw: "&eThe {matchname}&e has ended in a draw"
+#        server_victory: '{winnerlong}&e defeated {loserlong}!'
 #        server_draw: '{teamlong1}&e drew {teamlong2}!'
 #    multipleTeams: ## many teams against each other
 #        prestart: '{matchprefix}&6 {matchname} starts in {time}.'
@@ -96,7 +105,6 @@ version: 1.1
 #            &eYou have vanquished all foes!
 #            &eYou have {time} until the match ends            
 #        loss: "&eYou have been vanquished by {winner}&e!!!"
-#        server_victory: "{matchprefix} {winnerlong} was victorious!"
 #        draw: "&eThe {matchname}&e has ended in a draw"
-#        server_draw: ""
-#
+#        server_victory: "{matchprefix} {winnerlong} was victorious!"
+#        server_draw: "{matchprefix} ended in a draw!"

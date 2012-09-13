@@ -5,14 +5,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 
 
 public class MatchResult{
 	Team victor =null;
 	Set<Team> losers = new HashSet<Team>();
 
-	VictoryCondition victoryCondition = null;
 	public MatchResult() {
 	}
 

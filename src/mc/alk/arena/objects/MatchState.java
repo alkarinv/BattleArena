@@ -7,6 +7,7 @@ package mc.alk.arena.objects;
  * Enum of MatchTransitions, and MatchStates
  */
 public enum MatchState {
+	DEFAULTS("defaults"),
 	ONOPEN("onOpen"), PREREQS ("preReqs"), ONJOIN ("onJoin"), ONPRESTART ("onPrestart"), ONSTART ("onStart"), ONVICTORY ("onVictory"),
 	ONCOMPLETE ("onComplete"), ONCANCEL ("onCancel"), ONDEATH ("onDeath"), ONSPAWN ("onSpawn"), WINNER ("winner"),
 	ONENTER("onEnter"), ONLEAVE("onLeave"), ONENTERWAITROOM("onEnterWaitRoom"),

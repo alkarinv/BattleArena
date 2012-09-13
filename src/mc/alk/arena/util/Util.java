@@ -7,6 +7,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -152,6 +153,17 @@ public class Util {
 				}
 			}
 			return null;
+		}
+	}
+
+	public static Player[] getOnlinePlayers() {
+		
+		if (Defaults.DEBUG_VIRTUAL){
+			Player[] online = VirtualPlayers.getOnlinePlayers();
+			Player[] realonline = Bukkit.getOnlinePlayers();
+			return ArrayUtils.addAll(online,realonline);
+		} else {
+			return Bukkit.getOnlinePlayers();
 		}
 	}
 
