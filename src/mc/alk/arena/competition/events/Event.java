@@ -169,7 +169,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		}		
 	}
 
-	public void completeEvent(){
+	public void eventCompleted(){
 		notifyListeners(new EventCompletedEvent(this));
 		endEvent();
 	}
@@ -181,7 +181,13 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		mc.sendEventCancelled();
 		endEvent(); /// now call the method to clean everything else up
 	}
-
+	
+	protected void eventCancelled(){
+		notifyListeners(new EventCancelEvent(this));
+		mc.sendEventCancelled();
+		endEvent(); 		
+	}
+	
 	protected void endEvent() {
 		if (Defaults.DEBUG_TRACE) System.out.println("BAEvent::endEvent");
 		stopTimer();

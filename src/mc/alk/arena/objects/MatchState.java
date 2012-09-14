@@ -13,7 +13,7 @@ public enum MatchState {
 	ONENTER("onEnter"), ONLEAVE("onLeave"), ONENTERWAITROOM("onEnterWaitRoom"),
 	LOSERS ("losers"), FIRSTPLACE ("firstPlace"),
 	ONMATCHINTERVAL("onMatchInterval"), ONMATCHTIMEEXPIRED("onMatchTimeExpired"),
-	NONE("None");
+	NONE("None"), ONCOUNTDOWNTOEVENT("onCountdownToEvent");
 	String name;
 	MatchState(String name){
 		this.name = name;

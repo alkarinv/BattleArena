@@ -35,7 +35,7 @@ public class EventMessager {
 	}
 
 	public void sendCountdownTillEvent(int seconds) {
-		try{impl.sendCountdownTillEvent(getChannel(MatchState.ONPRESTART), seconds);}catch(Exception e){e.printStackTrace();}		
+		try{impl.sendCountdownTillEvent(getChannel(MatchState.ONOPEN), seconds);}catch(Exception e){e.printStackTrace();}		
 	}
 
 	public void sendEventStarting(Collection<Team> teams) {

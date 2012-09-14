@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.util.Util;
@@ -48,7 +49,7 @@ public class EventOpenOptions {
 	}
 
 	HashMap<EventOpenOption,Object> options = new HashMap<EventOpenOption,Object>();
-	int announceInterval, secTillStart;
+	int announceInterval = 0, secTillStart = 0;
 
 	public static class InvalidOptionException extends Exception{
 		private static final long serialVersionUID = 1L;
@@ -179,11 +180,11 @@ public class EventOpenOptions {
 	}
 
 	public int getInterval() {
-		return announceInterval;
+		return announceInterval == 0 ? Defaults.ANNOUNCE_EVENT_INTERVAL : announceInterval;
 	}
 
 	public int getSecTillStart() {
-		return secTillStart;
+		return secTillStart == 0 ? Defaults.AUTO_EVENT_COUNTDOWN_TIME : secTillStart;
 	}
 
 	public String getOpenCmd() {

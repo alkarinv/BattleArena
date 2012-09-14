@@ -145,9 +145,8 @@ battleground:
     prefix: "&c[Battleground]&e"
     victoryCondition: highestKills
     matchTime: 60
-    minTeams: 4
-    minTeamSize: 1
-    maxTeamSize: 1
+    nTeams: 4
+    teamSize: 1
     preReqs:
         options: [clearInventory]
     onJoin:
@@ -180,9 +179,8 @@ colliseum:
     command: col
     type: colliseum
     database: col
-    victoryCondition: highestKills
-    matchTime: 60
-    minTeams: 4
+    nTeams: 4
+    teamSize: 1
     preReqs:
         options: [clearInventory]
     onJoin:

@@ -125,7 +125,7 @@ public class TournamentEvent extends Event implements Listener{
 		//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());	
 		if (m == null){ /// This match wasnt in our tournament
 			return;}
-		cancelEvent();
+		eventCancelled();
 	}
 
 	@EventHandler
@@ -183,7 +183,7 @@ public class TournamentEvent extends Event implements Listener{
 				HashSet<Team> losers = new HashSet<Team>(competingTeams);
 				losers.remove(victor);
 				eventVictory(victor,losers);
-				completeEvent();
+				eventCompleted();
 			} else {
 				makeNextRound();
 				startRound();

@@ -6,7 +6,6 @@ import mc.alk.arena.competition.events.util.NeverWouldJoinException;
 import mc.alk.arena.competition.events.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -64,12 +63,6 @@ public class ReservedArenaEvent extends Event {
 	}
 
 	@TransitionEventHandler
-	public void matchCancelled(MatchCancelledEvent event){
-		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchCancelled " +arenaMatch +"   isRunning()=" + isRunning());		
-		cancelEvent();
-	}
-
-	@TransitionEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
 		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchComplete " +arenaMatch +"   isRunning()=" + isRunning());
 		Team victor = event.getMatch().getResult().getVictor();
@@ -90,7 +83,7 @@ public class ReservedArenaEvent extends Event {
 		}
 
 		eventVictory(victor,m.getResult().getLosers());
-		completeEvent();
+		eventCompleted();
 	}
 
 
