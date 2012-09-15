@@ -135,6 +135,8 @@ public class ReservedArenaEvent extends Event {
 	}
 
 	public Matchup getMatchup(Team t){
+		if (rounds == null || rounds.isEmpty())
+			return null;
 		Round tr = rounds.get(0);
 		if (tr == null)
 			return null;

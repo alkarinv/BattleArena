@@ -1,6 +1,9 @@
 package mc.alk.arena.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,11 +165,11 @@ public class InventoryUtil {
 		return count;
 	}
 
-	   /**
-     * Return a item stack from a given string
-     * @param name
-     * @return
-     */
+	/**
+	 * Return a item stack from a given string
+	 * @param name
+	 * @return
+	 */
 	public static ItemStack getItemStack(String name) {
 		if (name == null || name.isEmpty())
 			return null;
@@ -278,7 +281,7 @@ public class InventoryUtil {
 	public static void addItemToInventory(Player player, ItemStack itemStack, int stockAmount, boolean update) {
 		addItemToInventory(player,itemStack,stockAmount,update,false);
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	public static void addItemsToInventory(Player p, List<ItemStack> items, final boolean ignoreCustomHelmet) {
 		for (ItemStack is : items){
@@ -303,7 +306,7 @@ public class InventoryUtil {
 				switch (armor.get(itemType).type){
 				case HELM: 
 					if (!empty && ignoreCustomHelmet){
-						
+
 					} else{
 						inv.setHelmet(itemStack);
 					}
@@ -386,7 +389,7 @@ public class InventoryUtil {
 	}
 
 	public static void clearInventory(Player p) {
-//		System.out.println("Clearing inventory of " + p.getName());
+		//		System.out.println("Clearing inventory of " + p.getName());
 		try{
 			PlayerInventory inv = p.getInventory();
 			closeInventory(p);
@@ -441,7 +444,7 @@ public class InventoryUtil {
 		try{
 			String split[] = str.split(" ");
 			is = InventoryUtil.getItemStack(split[0].trim());
-//			System.out.println(" split = " + split);
+			//			System.out.println(" split = " + split);
 			final int amt = split.length > 1 ? Integer.valueOf(split[split.length -1]) : 1; 
 			is.setAmount(amt);
 			for (int i = 1; i < split.length-1;i++){
@@ -579,4 +582,112 @@ public class InventoryUtil {
 				System.out.println(getCommonName(is) +"  " + is.getAmount());}
 		}
 	}
+
+	public static class ItemComparator implements Comparator<ItemStack>{
+		@Override
+		public int compare(ItemStack arg0, ItemStack arg1) {
+			if (arg0 == null && arg1 == null)
+				return 0;
+			if (arg0 == null)
+				return 1;
+			if (arg1 == null)
+				return -1;
+			Integer i = arg0.getTypeId();
+			int c = i.compareTo(arg1.getTypeId());
+			if (c!= 0)
+				return c;
+			Short s= arg0.getDurability();
+			c = s.compareTo(arg1.getDurability());
+			if (c!= 0)
+				return c;
+			i = arg0.getAmount();
+			return i.compareTo(arg1.getAmount());
+		}		
+	}
+
+	public static boolean sameItems(List<ItemStack> items, PlayerInventory inv, boolean woolTeams) {
+		ItemStack[] contents =inv.getContents();
+		ItemStack[] armor = inv.getArmorContents();
+		//// I could check size right now if it werent for "air" and null blocks in inventories
+		List<ItemStack> pitems = new ArrayList<ItemStack>();
+		pitems.addAll(Arrays.asList(contents));
+		if (woolTeams){ /// ignore helmet
+			if (inv.getBoots() != null) pitems.add(inv.getBoots());
+			if (inv.getLeggings() != null) pitems.add(inv.getLeggings());
+			if (inv.getChestplate() != null) pitems.add(inv.getChestplate());
+		} else {
+			pitems.addAll(Arrays.asList(armor));			
+		}
+		List<ItemStack> stacks = new ArrayList<ItemStack>();
+		for (ItemStack is: items){
+			if (is == null || is.getType() == Material.AIR)
+				continue;
+			while (is.getAmount() > is.getMaxStackSize()){
+				is.setAmount(is.getAmount() - is.getMaxStackSize());
+				ItemStack is2 = new ItemStack(is);
+				is.setAmount(is2.getMaxStackSize());
+				stacks.add(is2);
+			}	
+		}
+		items.addAll(stacks);
+
+		Collections.sort(items, new ItemComparator());
+		Collections.sort(pitems, new ItemComparator());
+		int i1 = 0, i2 = 0;
+		ItemStack is1, is2;
+		int nullSize1 = 0, nullSize2 = 0; /// amount of air and null
+//		int similar = 0;
+//		for (ItemStack is: items){
+//			if (is == null || is.getType() == Material.AIR){
+//				continue;}
+//			Log.debug("ITEM1  " + is);
+//
+//		}
+//		for (ItemStack is: pitems){
+//			if (is == null || is.getType() == Material.AIR){
+//				continue;}
+//			Log.debug("ITEM2  " + is);
+//
+//		}
+
+		while (i1< items.size() && i2<pitems.size()){
+			is1 = items.get(i1);
+			is2 = pitems.get(i2);
+//			System.out.println("item1 = " + is1 +" ************************  " + is2);
+			if (is1 == null || is1.getType() == Material.AIR){
+				nullSize1++;
+				continue;
+			}
+			if (is2 == null || is2.getType() == Material.AIR){
+				nullSize2++;
+				continue;
+			}
+			/// Alright, now that we dont have to worry about null or air
+			if (is1.getTypeId() != is2.getTypeId() || is1.getDurability() != is2.getDurability() ||
+					is1.getAmount() != is2.getAmount()){
+				return false;
+			}
+			else {
+//				similar++;
+			}
+			i1++; 
+			i2++;
+		}
+		for (int i=i1;i<items.size();i++){
+			is1 = items.get(i);
+			if (is1 == null || is1.getType() == Material.AIR){
+				nullSize1++;
+				continue;
+			}			
+		}
+		for (int i=i2;i<pitems.size();i++){
+			is2 = pitems.get(i);
+			if (is2 == null || is2.getType() == Material.AIR){
+				nullSize2++;
+				continue;
+			}			
+		}
+		return items.size() - nullSize1 == pitems.size() - nullSize2;
+	}
+
 }

@@ -79,6 +79,8 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 	}
 
 	public Arena openEvent(ReservedArenaEvent rae, MatchParams mp, EventOpenOptions eoo) throws InvalidOptionException, NeverWouldJoinException{
+		if (rae.isOpen())
+			throw new InvalidOptionException("The event is already open");
 		eoo.updateParams(mp);
 		Arena arena = eoo.getArena(mp);
 		//		System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);

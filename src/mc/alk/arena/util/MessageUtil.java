@@ -7,13 +7,15 @@ import java.util.Set;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.serializers.BaseSerializer;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class MessageUtil extends BaseSerializer {
 
 	public static String colorChat(String msg) {return msg.replaceAll("&", Character.toString((char) 167));}
-	public static String decolorChat(String msg) { return msg.replaceAll("&", "§").replaceAll("\\§[0-9a-zA-Z]", "");}
+	public static String decolorChat(String msg) { return ChatColor.stripColor(msg);}
+
 
 	public static boolean sendMessage(CommandSender p, String message){
 		if (message ==null || message.isEmpty()) return true;

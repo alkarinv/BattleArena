@@ -441,6 +441,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		}
 		updateBukkitEvents(ms,p);
 		/// if (woolTeams) /*do nothing*/ Wool Teams Inventory click listener is added when they get their wool team.. not here
+		p.setChosenClass(null);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -472,6 +473,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	 */
 	protected void enterWaitRoom(ArenaPlayer p){
 		final String name = p.getName();
+		insideArena.add(name);
 		insideWaitRoom.add(name);
 		/// Store the point at which they entered the waitroom
 		if (!oldlocs.containsKey(name)) /// First teleportIn is the location we want

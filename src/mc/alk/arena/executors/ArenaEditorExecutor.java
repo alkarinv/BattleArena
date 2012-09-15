@@ -1,6 +1,7 @@
 package mc.alk.arena.executors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import mc.alk.arena.BattleArena;
@@ -40,31 +41,41 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		return MessageUtil.sendMessage(sender,"You have selected " + arena.getName());
 	}
 
-	@MCCommand(cmds={"as","addspawn"}, selection=true, op=true, min=2,
+	@MCCommand(cmds={"as","addspawn"}, selection=true, inGame=true, op=true, min=2,
 			usage="/aa addspawn <mob/item/block/spawnGroup> [buffs or effects] [number] [fs=first spawn time] [rt=respawn time] [trigger=<trigger type>]")
-	public boolean arenaAddMob(CommandSender sender, Command cmd, String commandLabel, Object[] args) {
-		Player p = (Player) sender;
-		Arena a = aac.getArena(p);
-		SpawnInstance spawn = parseSpawn(args);
+	public boolean arenaAddSpawn(Player sender, String[] args) {
+		Long number = -1L;
+		try {number = Long.parseLong(args[args.length-1].toString());} 
+		catch(Exception e){
+			return MessageUtil.sendMessage(sender, "&cYou need to specify an index as the final value. &61-10000");
+		}
+		if (number == -1){
+			number = 1L;}
+		if (number <= 0 || number > 10000){
+			return MessageUtil.sendMessage(sender, "&cYou need to specify an index within the range &61-10000");}
+
+		Arena a = aac.getArena(sender);
+		SpawnInstance spawn = parseSpawn(Arrays.copyOfRange(args, 0, args.length-1));
 		if (spawn == null){
 			return MessageUtil.sendMessage(sender,"Couldnt recognize spawn " + args[1]);			
 		}
-		Location l = p.getLocation();
+		Location l = sender.getLocation();
 		spawn.setLocation(l);
 		TimedSpawn ts = new TimedSpawn(0,30,0,spawn);
-		
-		a.addTimedSpawn(ts);
+
+
+		a.addTimedSpawn(number,ts);
 		ac.updateArena(a);
-		return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e now has spawn " + spawn);
+		return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e now has spawn &6" + spawn +"&2  index=&4" + number);
 	}
 
-	private SpawnInstance parseSpawn(Object[] args) {
+	private SpawnInstance parseSpawn(String[] args) {
 		List<String> spawnArgs = new ArrayList<String>();
-//		List<EditOption> optionArgs = new ArrayList<EditOption>();
+		//		List<EditOption> optionArgs = new ArrayList<EditOption>();
 		for (int i=1;i< args.length;i++){
 			String arg = (String) args[i];
 			if (arg.contains("=")){
-				
+
 			} else {
 				spawnArgs.add(arg);
 			}
@@ -76,6 +87,9 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		if (number == -1){
 			spawnArgs.add("1");}
 		List<SpawnInstance> spawn = SpawnSerializer.parseSpawnable(spawnArgs);
+		if (spawn == null){
+			return null;
+		}
 		return spawn.get(0);
 	}
 

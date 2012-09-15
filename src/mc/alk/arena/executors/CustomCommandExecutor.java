@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -43,16 +42,6 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	protected BattleArenaController ac;
 	protected EventController ec;
 	protected ArenaEditor aec;
-
-	static interface Converter{
-		Object convert(Object arg);
-	}
-	private static Map<Class<?>,Converter> cmdMap = new HashMap<Class<?>,Converter>();
-	static {
-		cmdMap.put(CommandSender.class, new Converter() {public Object convert(Object arg) { return arg; }});
-		cmdMap.put(Command.class, new Converter() {public Object convert(Object arg) { return arg; }});
-
-	}
 
 	/**
 	 * Custom arguments class so that we can return a modified arguments

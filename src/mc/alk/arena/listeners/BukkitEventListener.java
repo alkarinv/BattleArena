@@ -19,6 +19,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
@@ -139,6 +140,8 @@ public class BukkitEventListener extends BEventListener{
 			if (methods == null){
 				/// Another change for entitydamage. TODO ponder.  maybe use isassignable for some alternate way
 				if (event instanceof EntityDamageByEntityEvent){ 
+					methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
+				else if (event instanceof EntityDamageByBlockEvent){ 
 					methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
 				if (methods == null)
 					continue;

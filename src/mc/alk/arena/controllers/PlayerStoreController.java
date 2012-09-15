@@ -192,6 +192,9 @@ public class PlayerStoreController {
 		}
 	}
 	public void storeGamemode(ArenaPlayer p) {
+		if (gamemode.containsKey(p.getName()))
+			return;
+
 		boolean ignoreMultiInv = Defaults.PLUGIN_MULTI_INV && BattleArena.getSelf().isEnabled() ;
 		if (ignoreMultiInv){
 			/// Give the multiinv permission node to ignore this player, do it for 3 ticks

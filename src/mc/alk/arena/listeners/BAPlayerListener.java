@@ -18,7 +18,6 @@ import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.tracker.controllers.MessageController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -238,9 +237,9 @@ public class BAPlayerListener implements Listener  {
 		}
 
 		try{
-			event.setLine(0, MessageController.colorChat(ChatColor.GOLD+"*"+ac.getPrettyName()));
+			event.setLine(0, MessageUtil.colorChat(ChatColor.GOLD+"*"+ac.getPrettyName()));
 		} catch (Exception e){
-			MessageController.sendMessage(p, "&cError creating Arena Class Sign");
+			MessageUtil.sendMessage(p, "&cError creating Arena Class Sign");
 			e.printStackTrace();
 			cancelSignPlace(event,block);
 			return;

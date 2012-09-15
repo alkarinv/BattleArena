@@ -246,13 +246,13 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * TeamJoinResult a timed spawn Event to this arena
+	 * add a timed spawn to this arena
 	 */
-	public void addTimedSpawn(TimedSpawn s) {
+	public void addTimedSpawn(Long num, TimedSpawn s) {
 		if (timedSpawns == null){
 			timedSpawns = new HashMap<Long,TimedSpawn>();
 		}
-		timedSpawns.put(s.getTimeToStart(), s);	
+		timedSpawns.put(num, s);	
 	}
 
 	/**
@@ -469,7 +469,14 @@ public class Arena implements ArenaListener {
 		try{onLeave(player,team);}catch(Exception e){e.printStackTrace();}
 	}
 
-	
+
+	/**
+	 * private Arena onFinish events, calls onFinish for subclasses to be able to override 
+	 */
+	void privateOnFinish(ArenaPlayer player, Team team){
+		try{onFinish();}catch(Exception e){e.printStackTrace();}
+	}
+
 	/**
 	 * Called when the match is first opened
 	 */
@@ -515,6 +522,11 @@ public class Arena implements ArenaListener {
 	 * Called when a command is given to cancel the match
 	 */
 	protected void onCancel(){}
+
+	/**
+	 * Called after a match is completed or cancelled
+	 */
+	protected void onFinish(){}
 
 	/**
 	 * Called after a player first gets teleported into a match ( does not include a waitroom )

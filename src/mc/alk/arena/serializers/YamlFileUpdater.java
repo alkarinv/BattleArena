@@ -18,10 +18,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 public class YamlFileUpdater {
 
+
 	public static void updateConfig(BAConfigSerializer bacs){
 		updateBaseConfig(bacs);
 	}
-
 	public void updateMessageSerializer(MessageSerializer ms) {
 		FileConfiguration fc = ms.getConfig();
 

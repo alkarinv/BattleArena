@@ -1,5 +1,6 @@
 package mc.alk.arena.competition.match;
 
+import java.util.HashMap;
 import java.util.List;
 
 import mc.alk.arena.BattleArena;
@@ -16,6 +17,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.DmgDeathUtil;
+import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 
@@ -37,14 +39,15 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
-import com.alk.util.InventoryUtil;
 
 public class ArenaMatch extends Match {
+	private HashMap<String, Long> userTime = new HashMap<String, Long>();
 
 	public ArenaMatch(Arena arena, MatchParams mp) {
 		super(arena, mp);
 	}
 
+	@SuppressWarnings("deprecation")
 	@MatchEventHandler
 	public void onPlayerInteract(PlayerInteractEvent event){
 		if (event.isCancelled())
@@ -54,24 +57,58 @@ public class ArenaMatch extends Match {
 			return;}
 		final Sign sign = (Sign) event.getClickedBlock().getState();
 		Action action = event.getAction();
+		if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
+			return;}
 		if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the sign
 			event.setCancelled(true);
-			return;
 		}
 
-		if (event.getAction() != Action.RIGHT_CLICK_BLOCK){
-			return;}
-		ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(sign.getLine(0)).replaceAll("\\*", ""));
+		ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(sign.getLine(0)).replace('*',' ').trim());
 		if (ac == null) /// Not a valid class sign
 			return;
+
 		final Player p = event.getPlayer();
+		final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
+
+		ArenaClass chosen = ap.getChosenClass();
+		if (chosen != null && chosen.getName().equals(ac.getName())){
+			MessageUtil.sendMessage(p, "&cYou already are a &6" + ac.getName());
+			return;
+			
+		}
+		String playerName = p.getName();
+		if(userTime.containsKey(playerName)){
+			if((System.currentTimeMillis() - userTime.get(playerName)) < 3000){
+				MessageUtil.sendMessage(p, "&cYou must wait &63&c seconds between class selects");
+				return;
+			}
+		}
+		
+		userTime.put(playerName, System.currentTimeMillis());
+		
+		final TransitionOptions mo = tops.getOptions(state);
+		/// Have They have already selected a class this match, have they changed their inventory since then?
+		/// If so, make sure they can't just select a class, drop the items, then choose another
+		if (chosen != null){ 
+			List<ItemStack> items = chosen.getItems();
+			if (mo.hasItems()){ 
+				items.addAll(mo.getItems());}
+			if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
+				MessageUtil.sendMessage(p,"&cYou can't swich classes after changing items!");
+				return;
+			}
+		}
 		/// Clear their inventory first, then give them the class and whatever items were due to them from the config
 		InventoryUtil.clearInventory(p);
-		ArenaClassController.giveItems(p, ac);
-		final TransitionOptions mo = tops.getOptions(state);
+		List<ItemStack>items = ac.getItems();
 		if (mo.hasItems()){
-			try{ InventoryUtil.addItemsToInventory(p, mo.getItems());} catch(Exception e){e.printStackTrace();}
+			items.addAll(mo.getItems());
 		}
+		try{ InventoryUtil.addItemsToInventory(p, items, true);} catch(Exception e){e.printStackTrace();}
+		ap.setChosenClass(ac);
+		try { p.updateInventory(); } catch (Exception e){}
+		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
+
 	}
 
 	@MatchEventHandler
@@ -124,7 +161,6 @@ public class ArenaMatch extends Match {
 	public void onEntityDamage(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player))
 			return;
-
 		ArenaPlayer target = BattleArena.toArenaPlayer((Player) event.getEntity());
 		TransitionOptions to = tops.getOptions(state);
 		if (to == null)

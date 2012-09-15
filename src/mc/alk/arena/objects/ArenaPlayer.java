@@ -6,8 +6,10 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.Inventory;
 
 public class ArenaPlayer {
-	private Player player;
-
+	Player player;
+	ArenaClass preferredClass;
+	ArenaClass chosenClass;
+	
 	public ArenaPlayer(Player player) {
 		this.player = player;
 	}
@@ -85,5 +87,21 @@ public class ArenaPlayer {
 		return player.hasPermission(perm);
 	}
 
+
+	public ArenaClass getPreferredClass() {
+		return preferredClass;
+	}
+
+	public void setPreferredClass(ArenaClass preferredClass) {
+		this.preferredClass = preferredClass;
+	}
+
+	public ArenaClass getChosenClass() {
+		return chosenClass;
+	}
+
+	public void setChosenClass(ArenaClass chosenClass) {
+		this.chosenClass = chosenClass;
+	}
 
 }

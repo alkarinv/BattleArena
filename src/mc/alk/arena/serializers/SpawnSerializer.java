@@ -69,7 +69,6 @@ public class SpawnSerializer {
 			for (String key: keys){				
 				List<SpawnInstance> sis = parseSpawnable(convertToStringList(cs,key));
 				if (sis != null){
-//					System.out.println("Parsed spawn = " + sis);
 					for (SpawnInstance si: sis)
 						spawns.add(si);
 				}
@@ -81,35 +80,13 @@ public class SpawnSerializer {
 		return spawns;
 	}
 
-//	public static SpawnInstance parseSpawnable(ConfigurationSection cs,String key) {
-//		try {
-//			Spawnable sg = SpawnController.getSpawnable(key);
-//			if (sg != null){
-//				int number = cs.getInt(key);	
-//				SpawnCollection col = new SpawnCollection();
-//				col.addSpawnMultiple(sg,number);
-//				return col;
-//			}
-//			if (InventoryUtil.isItem(key +": " + cs.getString(key))){
-//				ItemStack is = InventoryUtil.parseItem(key +": " + cs.getString(key));
-//				return new ItemSpawn(is);				
-//			}
-//			EntityType et = EntityUtil.parseEntity(key);
-//			if (et != null){
-//				return new EntitySpawn(et);
-//			}
-//		} catch (Exception e){
-//			Log.warn(cs.getCurrentPath()  + " couldnt parse spawnable " + key);
-//		}
-//		return null;
-//	}
-
 	public static List<String> convertToStringList(ConfigurationSection cs, String key) {
 		List<String> args = new ArrayList<String>();
 		args.add(key);
 		args.addAll(convertToStringList(cs.getString(key)));
 		return args;
 	}
+	
 	public static List<String> convertToStringList(String str) {
 //		System.out.println("String list = " + str);
 		List<String> args = new ArrayList<String>();
@@ -141,8 +118,13 @@ public class SpawnSerializer {
 					spawns.add(sg);
 				return spawns;
 			}
-			if (InventoryUtil.isItem(key +": " + value)){
-				ItemStack is = InventoryUtil.parseItem(key +": " + value);
+//			System.out.println(InventoryUtil.isItem(key)+" is item " + InventoryUtil.isItem(key+":" + value) +"     " + key+":" + value);
+			if (InventoryUtil.isItem(key)){
+				ItemStack is = InventoryUtil.parseItem(key);
+				spawns.add(new ItemSpawn(is));				
+				return spawns;				
+			} else if (InventoryUtil.isItem(key +":" + value)){
+				ItemStack is = InventoryUtil.parseItem(key +":" + value);
 				spawns.add(new ItemSpawn(is));				
 				return spawns;
 			}

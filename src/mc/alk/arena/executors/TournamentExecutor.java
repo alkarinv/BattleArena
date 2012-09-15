@@ -35,6 +35,10 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 			sendMessage(sender,"&cExample: &6/tourney auto arena");
 			return false;
 		}
+		if (event.isOpen()){
+			return sendMessage(sender,"&4The Tournament Event " + event.getName() +" is already open");
+		}
+
 		MatchParams mp = checkOpenOptions(sender,event, ParamController.getMatchParamCopy(args[1]), args);
 		EventOpenOptions eoo = null;
 		

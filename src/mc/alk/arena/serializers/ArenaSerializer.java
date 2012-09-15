@@ -217,7 +217,7 @@ public class ArenaSerializer {
 				TimedSpawn s = parseSpawnable(scs);
 				if (s == null)
 					continue;
-				arena.addTimedSpawn(s);
+				arena.addTimedSpawn(Long.parseLong(spawnStr), s);
 			}				
 		}
 		cs = cs.getConfigurationSection("persistable");
@@ -273,13 +273,12 @@ public class ArenaSerializer {
 
 			/// Timed spawns
 			Map<Long, TimedSpawn> timedSpawns = arena.getTimedSpawns();
-			Integer i = 0;
 			if (timedSpawns != null && !timedSpawns.isEmpty()){
 				HashMap<String,Object> spawnmap = new HashMap<String,Object>();				
-				for (TimedSpawn ts: timedSpawns.values() ){
-					//					System.out.println("Saving ts =" + ts);
-					HashMap<String,Object> itemSpawnMap = saveSpawnable(i++, ts);
-					spawnmap.put(i.toString(), itemSpawnMap);
+				for (Long key: timedSpawns.keySet() ){
+					TimedSpawn ts = timedSpawns.get(key);
+					HashMap<String,Object> itemSpawnMap = saveSpawnable(key, ts);
+					spawnmap.put(key.toString(), itemSpawnMap);
 				}
 				amap.put("spawns", spawnmap);		
 			}
@@ -324,7 +323,7 @@ public class ArenaSerializer {
 		SpawnTime st = parseSpawnTime(cs.getString("time"));
 		Location loc = SerializerUtil.getLocation(cs.getString("loc"));
 		List<SpawnInstance> spawns = SpawnSerializer.parseSpawnable(SpawnSerializer.convertToStringList(cs.getString("spawn")));
-		//		System.out.println("Parsing spawn " + st + " loc=" + loc +"  spawn = " + spawns.get(0));
+//				System.out.println("Parsing spawn " + st + " loc=" + loc +"  spawn = " + spawns.get(0));
 		
 		spawns.get(0).setLocation(loc);
 		TimedSpawn ts = new TimedSpawn(st.i1,st.i2, st.i3,spawns.get(0));
@@ -340,7 +339,7 @@ public class ArenaSerializer {
 		SpawnTime st = new SpawnTime(is[0],is[1],is[2]);
 		return st;
 	}
-	private static HashMap<String, Object> saveSpawnable(Integer i, TimedSpawn ts) {
+	private static HashMap<String, Object> saveSpawnable(Long i, TimedSpawn ts) {
 		HashMap<String, Object> spawnmap = new HashMap<String,Object>();
 		SpawnInstance si = ts.getSpawn();
 		String key = null;
