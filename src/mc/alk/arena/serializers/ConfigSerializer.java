@@ -20,6 +20,7 @@ import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
+import mc.alk.arena.objects.Exceptions.ConfigException;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
@@ -42,11 +43,6 @@ import org.bukkit.inventory.ItemStack;
 public class ConfigSerializer extends BaseSerializer{
 	static HashMap<ArenaType, ConfigSerializer> configs = new HashMap<ArenaType, ConfigSerializer>();
 
-	public static class ConfigException extends Exception{
-		private static final long serialVersionUID = 1L;
-		public ConfigException(String s){super(s);}
-	}
-	
 	public void setConfig(ArenaType at, String f){
 		setConfig(at, new File(f));
 	}

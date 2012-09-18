@@ -5,6 +5,7 @@ import java.util.List;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.ArenaClassController;
+import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.events.PlayerLeftEvent;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaClass;
@@ -13,6 +14,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.PVPState;
 import mc.alk.arena.objects.TransitionOptions;
+import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.Team;
@@ -21,6 +23,7 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
@@ -34,6 +37,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -74,7 +78,7 @@ public class ArenaMatch extends Match {
 		if (chosen != null && chosen.getName().equals(ac.getName())){
 			MessageUtil.sendMessage(p, "&cYou already are a &6" + ac.getName());
 			return;
-			
+
 		}
 		String playerName = p.getName();
 		if(userTime.containsKey(playerName)){
@@ -83,9 +87,9 @@ public class ArenaMatch extends Match {
 				return;
 			}
 		}
-		
+
 		userTime.put(playerName, System.currentTimeMillis());
-		
+
 		final TransitionOptions mo = tops.getOptions(state);
 		/// Have They have already selected a class this match, have they changed their inventory since then?
 		/// If so, make sure they can't just select a class, drop the items, then choose another
@@ -154,6 +158,8 @@ public class ArenaMatch extends Match {
 		}
 		if (!respawns){
 			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);			
+		} else {
+			target.setChosenClass(null); /// Allow them to rechoose their class
 		}
 	}
 
@@ -266,4 +272,22 @@ public class ArenaMatch extends Match {
 		if (woolTeams && event.getSlot() == 39/*Helm Slot*/)
 			event.setCancelled(true);
 	}
+
+	@MatchEventHandler
+	public void onPlayerMove(PlayerMoveEvent event){
+		TransitionOptions to = tops.getOptions(state);
+		if (to==null)
+			return;
+		if (to.hasOption(TransitionOption.WGNOLEAVE) && WorldGuardInterface.hasWorldGuard()){
+			/// Did we actually even move
+			if (event.getFrom().getBlockX() != event.getTo().getBlockX()
+					|| event.getFrom().getBlockY() != event.getTo().getBlockY()
+					|| event.getFrom().getBlockZ() != event.getTo().getBlockZ() &&
+					Bukkit.getWorld(arena.getRegionWorld()).getUID() == event.getTo().getWorld().getUID()) {
+				WorldGuardInterface.isLeavingArea(event.getFrom(), event.getTo(), 
+						Bukkit.getWorld(arena.getRegionWorld()), arena.getRegion());
+			}			
+		}
+	}
+
 }

@@ -10,7 +10,6 @@ import java.util.TreeMap;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.events.util.NeverWouldJoinException;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
@@ -19,6 +18,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;

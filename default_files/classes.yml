@@ -1,3 +1,5 @@
+version: 1.1
+
 ### You can add new classes here
 classes:
     gladiator:
@@ -17,6 +19,7 @@ classes:
             - speed:1:900
             - resistance:1:900
     archer:
+        prettyName: "&4Archer" ### Used for signs
         items:
             - iron_sword: sharp:1 1
             - bow: flame:2 power:3 punch:2 1
@@ -29,6 +32,7 @@ classes:
             - 373;8193: 1 # potion of regen
             - 373;16396: 1 # splash potion of harming 1
     monk:
+        prettyName: "&fMonk" ### Used for signs
         items:
             - leather_helm: 1
             - leather_chest: 1

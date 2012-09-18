@@ -1,6 +1,7 @@
 package mc.alk.arena.executors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +13,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController;
+import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
@@ -20,12 +22,16 @@ import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.Duel;
+import mc.alk.arena.objects.DuelOptions;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.TransitionOptions;
+import mc.alk.arena.objects.DuelOptions.DuelOption;
+import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.teams.FormingTeam;
@@ -35,6 +41,7 @@ import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.TimeUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
@@ -146,6 +153,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			t.sendMessage(ops.getRequiredString("&eYou need the following to join"));
 			return true;
 		}
+
 		/// Check entrance fee
 		if (!checkFee(mp, player)){
 			return true;}
@@ -196,11 +204,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 			sendMessage(player, "&cBut this match type only supports up to &6"+max+"&c players per team");
 			return -1;
 		}
-		
+
 		/// Are they joining a match that needs more people than their team has
 		if (t.size() < min)
 			return min;
-		
+
 		/// They are good with their current team size
 		return t.size();
 	}
@@ -353,21 +361,21 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return getTop(sender, x, mp);
 	}
 
-	public boolean getTop(CommandSender sender, int x, MatchParams pm) {
+	public boolean getTop(CommandSender sender, int x, MatchParams mp) {
 		if (x < 1 || x > 100){
 			x = 5;}
-		BTInterface bti = new BTInterface(pm);
+		BTInterface bti = new BTInterface(mp);
 		if (!bti.isValid()){
-			return sendMessage(sender,"&eThere is no tracking for a " + pm.toPrettyString());
+			return sendMessage(sender,"&eThere is no tracking for a " + mp.toPrettyString());
 		}
 
-		final String teamSizeStr = (pm.getMinTeamSize() > 1 ? "teamSize=&6" + pm.getMinTeamSize(): "");
-		final String arenaString = pm.getType().toPrettyString(pm.getMinTeamSize());
+		final String teamSizeStr = (mp.getMinTeamSize() > 1 ? "teamSize=&6" + mp.getMinTeamSize(): "");
+		final String arenaString = mp.getType().toPrettyString(mp.getMinTeamSize(), mp.getMaxTeamSize());
 
 		final String headerMsg = "&4Top {x} Gladiators in &6" +arenaString+ "&e " + teamSizeStr;
 		final String bodyMsg ="&e#{rank}&4 {name} - {wins}:{losses}&6[{ranking}]";
 
-		bti.printTopX(sender, x, pm.getMinTeamSize(), headerMsg, bodyMsg);
+		bti.printTopX(sender, x, mp.getMinTeamSize(), headerMsg, bodyMsg);
 		return true;
 	}
 
@@ -496,13 +504,136 @@ public class BAExecutor extends CustomCommandExecutor  {
 		BattleArena.saveArenas();
 		return true;
 	}
-	
+
 	@MCCommand(cmds={"alter"}, inGame=true, admin=true)
 	public boolean arenaAlter(CommandSender sender, Arena arena, String[] args) {
 		ArenaAlterController.alterArena(sender, arena, args);
 		return true;
 	}
 
+	@MCCommand(cmds={"rescind"},inGame=true)
+	public boolean duelRescind(ArenaPlayer player) {
+		if (!DuelController.hasChallenger(player)){
+			return sendMessage(player,"&cYou haven't challenged anyone!");}
+		Duel d = DuelController.rescind(player);
+		Team t = d.getChallengerTeam();
+		t.sendMessage("&4[Duel] &6" + player.getDisplayName()+"&2 has cancelled the duel challenge!");
+		for (ArenaPlayer ap: d.getChallengedPlayers()){
+			sendMessage(ap, "&4[Duel] &6"+player.getDisplayName()+"&2 has cancelled the duel challenge!");
+		}
+		return true;
+	}
+
+	@MCCommand(cmds={"reject"},inGame=true)
+	public boolean duelReject(ArenaPlayer player) {
+		if (!DuelController.isChallenged(player)){
+			return sendMessage(player,"&cYou haven't been invited to a duel!");}
+		Duel d = DuelController.reject(player);
+		Team t = d.getChallengerTeam();
+		String timeRem = TimeUtil.convertSecondsToString(Defaults.DUEL_CHALLENGE_INTERVAL);
+		t.sendMessage("&4[Duel] &cThe duel was cancelled as &6" + player.getDisplayName()+"&c rejected your offer");
+		t.sendMessage("&4[Duel] &cYou can challenge them again in " + timeRem);
+		for (ArenaPlayer ap: d.getChallengedPlayers()){
+			if (ap == player)
+				continue;
+			sendMessage(ap, "&4[Duel] &cThe duel was cancelled as &6" + player.getDisplayName()+"&c rejected the duel");
+		}
+		sendMessage(player, "&4[Duel] &cYou rejected the duel, you can't be challenged again for&6 "+timeRem);
+		return true;
+	}
+
+	@MCCommand(cmds={"accept"},inGame=true)
+	public boolean duelAccept(ArenaPlayer player) {
+		if (!canJoin(player)){
+			return true;}
+		if (!DuelController.isChallenged(player)){
+			return sendMessage(player,"&cYou haven't been invited to a duel!");}
+		Duel d = DuelController.accept(player);
+		Team t = d.getChallengerTeam();
+		t.sendMessage("&4[Duel] &6" + player.getDisplayName()+"&2 has accepted your duel offer!");
+		for (ArenaPlayer ap: d.getChallengedPlayers()){
+			if (ap == player)
+				continue;
+			sendMessage(ap, "&4[Duel] &6"+player.getDisplayName()+"&2 has accepted the duel offer");
+		}
+		return sendMessage(player,"&cYou have accepted the duel!");
+	}
+
+	@MCCommand(cmds={"duel"},inGame=true)
+	public boolean duel(ArenaPlayer player, MatchParams mp, String args[]) {
+		/// Can the player join this match/event at this moment?
+		if (!canJoin(player)){
+			return true;}
+		Event e = EventController.getEvent(mp.getName());
+		if (e != null){
+			return sendMessage(player,"&4[Duel] &cYou can't duel someone in an Event type!");}
+
+		/// Parse the duel options
+		DuelOptions duelOptions = null;
+		try {
+			duelOptions = DuelOptions.parseOptions(Arrays.copyOfRange(args, 1, args.length));
+		} catch (InvalidOptionException e1) {
+			return sendMessage(player, e1.getMessage());
+		}
+
+		/// Announce warnings
+		for (ArenaPlayer ap: duelOptions.getChallengedPlayers()){
+			if (!canJoin(ap)){
+				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c is in a match, event, or queue");}
+			if (DuelController.isChallenged(ap)){
+				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c already has been challenged!");}
+			Long grace = DuelController.getLastRejectTime(ap);
+			if (grace != null && System.currentTimeMillis() - grace < Defaults.DUEL_CHALLENGE_INTERVAL*1000){
+				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c can't be challenged for &6"+
+						TimeUtil.convertMillisToString(Defaults.DUEL_CHALLENGE_INTERVAL*1000 - (System.currentTimeMillis() - grace)));}
+		}
+
+		/// Get our team1
+		Team t = TeamController.getTeam(player);
+		if (t == null){
+			t = TeamController.createTeam(player);
+		}
+		mp.setMinTeams(2);
+		mp.setMaxTeams(2);
+		int size = duelOptions.getChallengedPlayers().size();
+		mp.setMinTeamSize(Math.min(t.size(), size));
+		mp.setMaxTeamSize(Math.max(t.size(), size));
+		/// set our default rating
+		mp.setRated(Defaults.DUEL_ALLOW_RATED ? mp.isRated() : false);
+		/// allow specified options to overrule
+		if (duelOptions.hasOption(DuelOption.RATED))
+			mp.setRated(true);
+		else if (duelOptions.hasOption(DuelOption.UNRATED))
+			mp.setRated(false);
+		
+		/// Check to make sure at least one arena can be joined at some time
+		Arena arena = ac.getArenaByMatchParams(mp);
+		if (arena == null){
+			return sendMessage(player,"&cA valid arena has not been built for a " + mp.toPrettyString());}
+		final MatchTransitions ops = mp.getTransitionOptions();
+		if (ops == null){
+			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
+
+		Duel duel = new Duel(mp,t, duelOptions.getChallengedPlayers());
+
+		/// Announce to the 2nd team
+		String t2 = duelOptions.getChallengedTeamString();
+		for (ArenaPlayer ap : duelOptions.getChallengedPlayers()){
+			String other = duelOptions.getOtherChallengedString(ap);
+			if (!other.isEmpty()){
+				other = "and "+other;
+			}
+			sendMessage(ap, "&4["+mp.getName()+" Duel] &6"+t.getDisplayName()+"&2 "+
+					MessageUtil.hasOrHave(t.size())+" challenged you "+other+"to a &6" + mp.getName()+" &2duel!");
+			sendMessage(ap, "&4[Duel] &2Options: &6" + duelOptions.optionsString(mp));
+			sendMessage(ap, "&4[Duel] &6/"+mp.getCommand()+" accept &2: to accept. &6"+ mp.getCommand()+" reject &e: to reject");
+		}
+
+		sendMessage(player,"&4[Duel] &2You have sent a challenge to &6" + t2);
+		sendMessage(player,"&4[Duel] &2You can rescind by typing &6/" + mp.getCommand()+" rescind");
+		DuelController.addOutstandingDuel(duel);
+		return true;
+	}
 
 	@MCCommand(cmds={"list"})
 	public boolean arenaList(CommandSender sender, MatchParams mp, String[] args) {
@@ -535,23 +666,23 @@ public class BAExecutor extends CustomCommandExecutor  {
 			sendMessage(sender,"&6/arena list all: &e to see all arenas");			
 		return sendMessage(sender,"&6/arena info <arenaname>&e: for details on an arena");	
 	}
-	
+
 	public boolean canLeave(ArenaPlayer p){
 		return true;
-//		Match am = ac.getMatch(p);
-//		if (am != null){
-//			sendMessage(p,ChatColor.YELLOW + "You cant leave during a match!");
-//			return false;
-//		}
-//
-//		/// Let the Arena Event controllers handle people inside of events
-//		Event aec = insideEvent(p);
-//		if (aec != null && !aec.canLeave(p)){
-//			sendMessage(p, "&eYou can't leave the &6"+aec.getName()+"&e while its &6"+aec.getState());
-//			return false;
-//		}
-//
-//		return true;
+		//		Match am = ac.getMatch(p);
+		//		if (am != null){
+		//			sendMessage(p,ChatColor.YELLOW + "You cant leave during a match!");
+		//			return false;
+		//		}
+		//
+		//		/// Let the Arena Event controllers handle people inside of events
+		//		Event aec = insideEvent(p);
+		//		if (aec != null && !aec.canLeave(p)){
+		//			sendMessage(p, "&eYou can't leave the &6"+aec.getName()+"&e while its &6"+aec.getState());
+		//			return false;
+		//		}
+		//
+		//		return true;
 	}
 
 	public boolean canJoin(ArenaPlayer p) {
@@ -575,6 +706,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			sendMessage(p,"&eYou are already in a match.");
 			return false;
 		}
+
 		/// Inside a forming team?
 		if (teamc.inFormingTeam(p)){
 			FormingTeam ft = teamc.getFormingTeam(p);
@@ -585,6 +717,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 				sendMessage(p,"&eYour team is not yet formed. &6/team disband&e to leave");
 				sendMessage(p,"&eYou are still missing " + Util.playersToCommaDelimitedString(ft.getUnjoinedPlayers()) + " !!");
 			}
+			return false;
+		}
+		if (DuelController.hasChallenger(p)){
+			sendMessage(p,"&cYou need to rescind your challenge first! &6/arena rescind");
 			return false;
 		}
 		return true;

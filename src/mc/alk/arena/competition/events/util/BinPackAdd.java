@@ -2,6 +2,7 @@ package mc.alk.arena.competition.events.util;
 
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.TeamController;
+import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 

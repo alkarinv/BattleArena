@@ -59,9 +59,9 @@ public class ArenaType implements Comparable<ArenaType>{
 		return reasons;
 	}
 
-	public String toPrettyString(int teamSize) {
+	public String toPrettyString(int min, int max) {
 		if (this == ArenaType.VERSUS){
-			return teamSize +"v" + teamSize;
+			return min +"v" + max;
 		} else {
 			return toString();
 		}

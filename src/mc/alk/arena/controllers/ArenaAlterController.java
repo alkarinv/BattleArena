@@ -10,6 +10,7 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
+import mc.alk.arena.util.WorldGuardUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -19,7 +20,6 @@ import org.bukkit.entity.Player;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.Selection;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 public class ArenaAlterController {
 	public enum ChangeType{
@@ -97,35 +97,42 @@ public class ArenaAlterController {
 		}
 		return true;
 	}
-	
+
 	private static boolean addWorldGuardRegion(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
 		if (!checkWorldGuard(sender)){
 			return false;}
 		Player p = (Player)sender;
-		WorldEditPlugin wep = WorldGuardInterface.getWorldEditPlugin();
+		WorldEditPlugin wep = WorldGuardUtil.getWorldEditPlugin();
 		Selection sel = wep.getSelection(p);
 		if (sel == null){
 			sendMessage(sender,"&cYou need to select a region to use this command.");
 			return false;
 		}
-		
+
 		String region = arena.getRegion();
 		World w = sel.getWorld();
-		ProtectedRegion pr = null;
-		if (region != null){
-			pr = WorldGuardInterface.getRegion(w, region);
-			WorldGuardInterface.updateProtectedRegion(sel,pr);
-		} else {
-			WorldGuardInterface.createProtectedRegion(sel, makeRegionName(arena));			
-		}
-
-		return false;
+		try{
+			String id = makeRegionName(arena);
+			if (region != null){
+				WorldGuardInterface.updateProtectedRegion(p,id);
+				sendMessage(sender,"&2Region updated! ");
+			} else {
+				WorldGuardInterface.createProtectedRegion(p, id);
+				sendMessage(sender,"&2Region added! ");
+			}
+			arena.addRegion(w.getName(), id);
+		} catch (Exception e) {
+			sendMessage(sender,"&cAdding WorldGuard region failed!");
+			sendMessage(sender, "&c" + e.getMessage());
+			e.printStackTrace();
+		}	
+		return true;
 	}
-	
+
 	public static String makeRegionName(Arena arena){
 		return "ba-"+arena.getName().toLowerCase();
 	}
-	
+
 	private static int verifySpawnLocation(CommandSender sender, String value){
 		if (!(sender instanceof Player)){
 			sendMessage(sender,"&cYou need to be in game to use this command");

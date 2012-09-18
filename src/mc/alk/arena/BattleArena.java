@@ -93,12 +93,17 @@ public class BattleArena extends JavaPlugin{
 		pluginname = pdfFile.getName();
 		version = pdfFile.getVersion();
 		ColouredConsoleSender.getInstance().sendMessage(MessageUtil.colorChat("&4["+pluginname+"] &6v"+version+"&f enabling!"));
+		/// Create our plugin folder if its not there
+		File dir = getDataFolder();
+		if (!dir.exists()){
+			dir.mkdirs();}
+
 		/// For potential updates to default yml files
 		YamlFileUpdater yfu = new YamlFileUpdater();
 
 		/// Set up our messages first before other initialization needs messages
 		MessageSerializer defaultMessages = new MessageSerializer("default");
-		defaultMessages.setConfig(load(Defaults.DEFAULT_MESSAGES_FILE, Defaults.MESSAGES_FILE));
+		defaultMessages.setConfig(load("/default_files/messages.yml", dir.getPath()+"/messages.yml"));
 		yfu.updateMessageSerializer(defaultMessages); /// Update our config if necessary
 		defaultMessages.loadAll();
 		MessageSerializer.setDefaultConfig(defaultMessages);
@@ -107,10 +112,6 @@ public class BattleArena extends JavaPlugin{
 
 		pluginListener.loadAll(); /// try and load plugins we want
 
-		/// Create our plugin folder if its not there
-		File dir = getDataFolder();
-		if (!dir.exists()){
-			dir.mkdirs();}
 		yacs = new ArenaControllerSerializer();
 
 		// Register our events
@@ -137,7 +138,7 @@ public class BattleArena extends JavaPlugin{
 
 		/// After registering our arenas and victories, load our configs
 		ArenaSerializer.setBAC(arenaController);
-		ArenaSerializer as = new ArenaSerializer(this, getDataFolder()+"/arenas.yml");
+		ArenaSerializer as = new ArenaSerializer(this, dir.getPath()+"/arenas.yml");
 		as.loadArenas(this);
 
 		SpawnSerializer ss = new SpawnSerializer();

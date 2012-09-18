@@ -2,13 +2,13 @@ package mc.alk.arena.competition.events;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.events.util.NeverWouldJoinException;
 import mc.alk.arena.competition.events.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.teams.Team;

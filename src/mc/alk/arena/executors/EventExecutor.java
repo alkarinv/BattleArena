@@ -2,14 +2,14 @@ package mc.alk.arena.executors;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.competition.events.util.NeverWouldJoinException;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventOpenOptions;
 import mc.alk.arena.objects.EventOpenOptions.EventOpenOption;
-import mc.alk.arena.objects.EventOpenOptions.InvalidOptionException;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.Exceptions.InvalidOptionException;
+import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.MessageUtil;
 

@@ -35,6 +35,7 @@ public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
 		}
 		return true;
 	}
+	
 	@MCCommand(cmds={"delete","del"}, admin=true)
 	public boolean delete(CommandSender sender, Integer index) {
 		List<EventPair> events = es.getEvents();

@@ -6,6 +6,7 @@ import java.util.List;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
@@ -50,13 +51,6 @@ public class EventOpenOptions {
 
 	HashMap<EventOpenOption,Object> options = new HashMap<EventOpenOption,Object>();
 	int announceInterval = 0, secTillStart = 0;
-
-	public static class InvalidOptionException extends Exception{
-		private static final long serialVersionUID = 1L;
-		public InvalidOptionException(String string) {
-			super(string);
-		}
-	}
 
 	public static EventOpenOptions parseOptions(String[] args) throws InvalidOptionException{
 		EventOpenOptions eoo = new EventOpenOptions();

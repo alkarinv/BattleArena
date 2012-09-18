@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import net.minecraft.server.Container;
-import net.minecraft.server.ContainerPlayer;
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityPlayer;
 
@@ -253,24 +251,24 @@ public class InventoryUtil {
 				return true;}
 		}
 
-		EntityHuman eh = ((CraftPlayer)p).getHandle();
-		try { 
-			/// check crafting square
-			ContainerPlayer cp = (ContainerPlayer) eh.defaultContainer;
-			for (net.minecraft.server.ItemStack is: cp.craftInventory.getContents()){
-				if (is != null && is.id != 0)
-					return true;
-			}
-			/// Check for a workbench
-			Container container = (Container) eh.activeContainer;
-			final int size = container.b.size();
-			for (int i=0;i< size;i++){
-				net.minecraft.server.ItemStack is = container.getSlot(i).getItem();
-				if (is != null && is.id != 0)
-					return true;
-			}
-
-		} catch (Exception e){}
+//		EntityHuman eh = ((CraftPlayer)p).getHandle();
+//		try { 
+//			/// check crafting square
+//			ContainerPlayer cp = (ContainerPlayer) eh.defaultContainer;
+//			for (net.minecraft.server.ItemStack is: cp.craftInventory.getContents()){
+//				if (is != null && is.id != 0)
+//					return true;
+//			}
+//			/// Check for a workbench
+//			Container container = (Container) eh.activeContainer;
+//			final int size = container.b.size();
+//			for (int i=0;i< size;i++){
+//				net.minecraft.server.ItemStack is = container.getSlot(i).getItem();
+//				if (is != null && is.id != 0)
+//					return true;
+//			}
+//
+//		} catch (Exception e){}
 		return false;
 	}
 
@@ -640,13 +638,11 @@ public class InventoryUtil {
 //		for (ItemStack is: items){
 //			if (is == null || is.getType() == Material.AIR){
 //				continue;}
-//			Log.debug("ITEM1  " + is);
 //
 //		}
 //		for (ItemStack is: pitems){
 //			if (is == null || is.getType() == Material.AIR){
 //				continue;}
-//			Log.debug("ITEM2  " + is);
 //
 //		}
 

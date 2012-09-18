@@ -7,7 +7,6 @@ import java.util.List;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.ArenaDebugger;
 import mc.alk.arena.controllers.ArenaEditor;
-import mc.alk.arena.controllers.ProtectionController;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.objects.spawns.TimedSpawn;
@@ -22,11 +21,10 @@ import org.bukkit.entity.Player;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.Selection;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 public class ArenaEditorExecutor extends CustomCommandExecutor {
 	public static String idPrefix = "ar_";
-	ProtectionController pc;
+//	ProtectionController pc;
 	WorldEditPlugin wep;
 	ArenaEditor aac;
 	public ArenaEditorExecutor(){
@@ -99,12 +97,12 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		Selection sel = wep.getSelection(p);
 		if (sel == null)
 			return MessageUtil.sendMessage(sender, ChatColor.RED + "Please select the protection area first.");
-		String regionName = idPrefix+a.getName();
-		ProtectedRegion region = pc.addRegion(p, sel, regionName);
-		if (region == null)
-			return MessageUtil.sendMessage(sender, ChatColor.RED + "Selected region could not be made");
-		a.addRegion(regionName);
-		ac.updateArena(a);
+//		String regionName = idPrefix+a.getName();
+//		ProtectedRegion region = pc.addRegion(p, sel, regionName);
+//		if (region == null)
+//			return MessageUtil.sendMessage(sender, ChatColor.RED + "Selected region could not be made");
+//		a.addRegion(sel.getWorld().getName(), regionName);
+//		ac.updateArena(a);
 		return MessageUtil.sendMessage(sender, ChatColor.GREEN + "Region added to " + a.getName());
 	}
 

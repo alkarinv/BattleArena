@@ -1,4 +1,4 @@
-configVersion: 1.2
+configVersion: 1.3
 ## What is the money on this server called
 moneyName: Gold
 
@@ -13,6 +13,11 @@ defaultOptions:
     ### Event Options
     eventCountdownTime: 180 ## How long before announcing an automated event and its start
     eventCountdownInterval: 60 ## How often will it announce a reminder that its open and you can join
+
+    ### Duel Options
+    allowRatedDuels: false
+    # after a player rejects a duel, how long before they can be challenged again
+    challengeInterval: 1800 # (seconds) 1800 = 30minutes
 
     ### Match/Event Announcements
     ## these only affect the broadcasts to the server or channel, not the messages the fighting players receive

@@ -33,7 +33,7 @@ public class TransitionOptions {
 		STOREGAMEMODE("storeGamemode"), RESTOREGAMEMODE("restoreGamemode"),
 		STOREITEMS("storeItems"), RESTOREITEMS("restoreItems"),
 		STORE("store"), RESTORE("restore"),
-		CLEARREGION("clearRegion"),
+		WGCLEARREGION("wgClearRegion"), WGNOLEAVE("wgNoLeave"),
 		WOOLTEAMS("woolTeams")
 		;
 		String name;
@@ -272,7 +272,7 @@ public class TransitionOptions {
 		return options;
 	}
 	public boolean shouldClearRegion() {
-		return options.contains(TransitionOption.CLEARREGION);
+		return options.contains(TransitionOption.WGCLEARREGION);
 	}
 	public void addOption(TransitionOption option) {
 		if (options==null){

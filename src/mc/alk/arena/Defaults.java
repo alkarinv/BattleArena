@@ -2,8 +2,6 @@ package mc.alk.arena;
 
 public class Defaults {
 
-	public static final String DEFAULT_MESSAGES_FILE = "/default_files/messages.yml";
-	public static final String MESSAGES_FILE = "plugins/BattleArena/messages.yml";
 	public static final String ADMIN_NODE = "arena.admin";
 	
 	public static double TICK_MULT = 1.0;
@@ -38,5 +36,12 @@ public class Defaults {
 	/// TOURNEY OPTIONS
 	public static final int TIME_BETWEEN_ROUNDS = 20;
 	public static final int MAX_REGION_SIZE = 5000000;
-	
+
+
+	/// DUEL OPTIONS
+	/// 30 minutes before people can duel a players that has rejected it once before
+	public static int DUEL_CHALLENGE_INTERVAL = 60*30; 
+
+	public static boolean DUEL_ALLOW_RATED = false;
+
 }

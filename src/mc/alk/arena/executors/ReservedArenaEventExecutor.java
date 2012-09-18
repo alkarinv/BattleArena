@@ -1,13 +1,13 @@
 package mc.alk.arena.executors;
 
 import mc.alk.arena.competition.events.ReservedArenaEvent;
-import mc.alk.arena.competition.events.util.NeverWouldJoinException;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventOpenOptions;
 import mc.alk.arena.objects.EventOpenOptions.EventOpenOption;
-import mc.alk.arena.objects.EventOpenOptions.InvalidOptionException;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.Exceptions.InvalidOptionException;
+import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.arenas.Arena;
 
 import org.bukkit.command.CommandSender;

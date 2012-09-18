@@ -80,6 +80,11 @@ public class PerformTransition {
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		if (mo == null){
 			return true;}
+		/// Options that don't affect players first
+		/// Clear the area
+		if (mo.shouldClearRegion() && WorldGuardInterface.hasWorldGuard() && am.getArena().hasRegion()) 
+			WorldGuardInterface.clearRegion(am.getArena().getRegionWorld(), am.getArena().getRegion());
+
 		final boolean teleportIn = mo.shouldTeleportIn();
 		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
 
@@ -97,8 +102,6 @@ public class PerformTransition {
 		final String disguiseAllAs = mo.getDisguiseAllAs();
 		final Boolean undisguise = mo.undisguise();
 		final int teamIndex = am.indexOf(team);
-		/// Clear the arena region
-		if (mo.shouldClearRegion() && am.getArena().hasRegion()) WorldGuardInterface.clearRegion(am.getArena().getRegion());
 		final Set<ArenaPlayer> players = am.getAlivePlayers();
 		final boolean dead = !p.isOnline() || p.isDead();
 		if (teleportWaitRoom){ /// Teleport waiting room

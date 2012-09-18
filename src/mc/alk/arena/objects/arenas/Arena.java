@@ -209,8 +209,9 @@ public class Arena implements ArenaListener {
 	 * TeamJoinResult a Protected Region (only available with worldguard)
 	 * @param wgRegionName
 	 */
-	public void addRegion(String regionName) {
+	public void addRegion(String regionWorld, String regionName) {
 		this.wgRegionName = regionName;
+		this.wgRegionWorld = regionWorld;
 	}
 
 	/**
@@ -218,7 +219,7 @@ public class Arena implements ArenaListener {
 	 * @returns
 	 */
 	public boolean hasRegion() {
-		return wgRegionName != null;
+		return wgRegionName != null && wgRegionWorld != null;
 	}
 
 	/**
@@ -621,7 +622,5 @@ public class Arena implements ArenaListener {
 			sb.append("&e#itemSpawns:&6" +locs.size());
 		return sb.toString();
 	}
-
-
 
 }

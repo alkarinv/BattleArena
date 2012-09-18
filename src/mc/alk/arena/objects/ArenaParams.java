@@ -130,10 +130,10 @@ public class ArenaParams {
 		if (arenaType == null) reasons.add("ArenaType is null");
 		if (ap.arenaType == null) reasons.add("Passed params have an arenaType of null");
 		reasons.addAll(arenaType.getInvalidMatchReasons(ap.getType()));
-		if (!matchesNTeams(ap.getMinTeams())) reasons.add("Arena accepts nteams="+minTeams+"-"+maxTeams+
-				". you requested "+ap.getMinTeams());
-		if (!matchesTeamSize(ap)) reasons.add("Arena accepts teamSize="+minTeamSize+"-"+maxTeamSize+
-				". you requested "+ap.getMinTeamSize());		
+		if (!matchesNTeams(ap.getMinTeams())) reasons.add("Arena accepts nteams="+getNTeamRange()+
+				". you requested "+ap.getNTeamRange());
+		if (!matchesTeamSize(ap)) reasons.add("Arena accepts teamSize="+getTeamSizeRange()+
+				". you requested "+ap.getTeamSizeRange());		
 		return reasons;
 	}
 	
@@ -248,7 +248,7 @@ public class ArenaParams {
 	
 	public String toPrettyString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("&e"+arenaType.toPrettyString(minTeamSize));
+		sb.append("&e"+arenaType.toPrettyString(minTeamSize, maxTeamSize));
 		return sb.toString();
 	}
 

@@ -39,6 +39,9 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.AUTO_EVENT_COUNTDOWN_TIME = cs.getInt("eventCountdownTime",180);
 		Defaults.ANNOUNCE_EVENT_INTERVAL = cs.getInt("eventCountdownInterval", 60);
 		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", 30);
+		Defaults.DUEL_ALLOW_RATED = cs.getBoolean("allowRatedDuels", false);
+		Defaults.DUEL_CHALLENGE_INTERVAL = cs.getInt("challengeInterval", 1800);
+
 		AnnouncementOptions an = new AnnouncementOptions();
 		parseAnnouncementOptions(an,true,cs.getConfigurationSection("announcements"), true);
 		parseAnnouncementOptions(an,false,cs.getConfigurationSection("eventAnnouncements"),true);

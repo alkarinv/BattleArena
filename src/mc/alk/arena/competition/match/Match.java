@@ -65,6 +65,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
@@ -95,7 +96,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath; 
-	final boolean respawns;
+	final boolean respawns, noLeave;
 	boolean woolTeams = false;
 	boolean needsMobDeaths = false, needsBlockEvents = false;
 	boolean needsItemPickups = false, needsInventoryClick = false;
@@ -122,6 +123,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		if (!(vt instanceof TimeLimit))
 			addVictoryCondition(new TimeLimit(this));
 		addVictoryCondition(vt);
+		this.noLeave = tops.hasOptions(TransitionOption.WGNOLEAVE);
 		this.woolTeams = tops.hasOptions(TransitionOption.WOOLTEAMS) && mp.getMaxTeamSize() >1;
 		this.needsBlockEvents = tops.hasOptions(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF,
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
@@ -434,11 +436,11 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		MethodController.updateEventListeners(this,ms, p,PlayerDeathEvent.class);
 		MethodController.updateEventListeners(this,ms, p,PlayerInteractEvent.class); /// for sign clicks
 		if (needsDamageEvents){
-			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);			
-		}
+			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);}
+		if (noLeave){
+			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);			}
 		if (needsBlockEvents){
-			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);
-		}
+			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);}
 		updateBukkitEvents(ms,p);
 		/// if (woolTeams) /*do nothing*/ Wool Teams Inventory click listener is added when they get their wool team.. not here
 		p.setChosenClass(null);
@@ -452,8 +454,9 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		MethodController.updateEventListeners(this,ms, p,PlayerDeathEvent.class);
 		MethodController.updateEventListeners(this,ms, p,PlayerInteractEvent.class); /// for sign clicks
 		if (needsDamageEvents){
-			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);			
-		}
+			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);			}
+		if (noLeave){
+			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);			}
 		if (needsBlockEvents){
 			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);}
 		if (woolTeams || needsInventoryClick){

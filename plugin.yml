@@ -1,5 +1,5 @@
 name: BattleArena
-version: 3.6.5
+version: 3.6.6.1
 author: Alkarin
 
 description: Arena system for BattleCraft
@@ -21,9 +21,6 @@ commands:
         usage: /arena <join|leave> [arguments]
     watch:
         description: watch a fight
-        usage: /watch <arenaName | leave>
-    duel:
-        description: duel another team
         usage: /watch <arenaName | leave>
     tourney:
         description: Create a tournament

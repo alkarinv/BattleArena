@@ -51,14 +51,11 @@ public class MessageUtil extends BaseSerializer {
 		}
 	}
 
-	public static String minuteOrMinutes(int minutes) {
-		return minutes == 1 ? "minute" : "minutes";
-	}
-	public static String getTeamsOrPlayers(int teamSize) {
-		return teamSize==1 ? "players" : "teams";
-	}
+	public static String minuteOrMinutes(int minutes) {return minutes == 1 ? "minute" : "minutes";}
+	public static String getTeamsOrPlayers(int teamSize) {return teamSize==1 ? "players" : "teams";}
 	public static String teamsOrPlayers(int nPlayersPerTeam){return nPlayersPerTeam > 1? "teams" : "players";}
 	public static String playerOrPlayers(int n) {return n> 1? "players" : "player";}
+	public static String hasOrHave(int size) {return size==1 ? "has" : "have";}
 
 
 	public static boolean sendMessage(final ArenaPlayer player, final String message) {

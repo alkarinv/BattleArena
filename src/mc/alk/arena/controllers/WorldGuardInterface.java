@@ -1,31 +1,26 @@
 package mc.alk.arena.controllers;
 
-import org.bukkit.Bukkit;
+import mc.alk.arena.util.WorldGuardUtil;
+
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.Selection;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.databases.ProtectionDatabaseException;
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
-import com.sk89q.worldguard.protection.flags.StateFlag.State;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-
 
 /**
- * Stub class for future expansion
  * @author alkarin
+ * 
+ * The key to these optional dependencies(OD) seem to be there can be no direct
+ * function call to a method that USES any of the OD classes.
+ * So this entire class is just a wrapper for functions.
+ * Also other classes should not declare variables of the OD as a class variable
  *
  */
 public class WorldGuardInterface {
-
-	public static WorldEditPlugin wep;
-	public static WorldGuardPlugin wgp;
-
+	static boolean hasWorldGuardInterface = false;
+	
+	public static void init(){
+		hasWorldGuardInterface = true;
+	}
 	public static class WorldGuardException extends Exception{
 		private static final long serialVersionUID = 1L;
 		public WorldGuardException(String msg) {
@@ -33,80 +28,32 @@ public class WorldGuardInterface {
 		}
 	}
 	public static boolean hasWorldGuard() {
-		return wgp != null && wep != null;
+		return hasWorldGuardInterface;
 	}
-	
-	public static boolean addRegion(Player sender, String id) throws Exception {
-		Selection sel = getSelection(sender);
-		World w = sel.getWorld();
-		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
-		ProtectedRegion region = mgr.getRegion(id);
 
-		region = new ProtectedCuboidRegion(id, 
-				sel.getNativeMinimumPoint().toBlockVector(), sel.getNativeMaximumPoint().toBlockVector());
-		try {
-			wgp.getRegionManager(w).addRegion(region);
-			mgr.save();
-			region.setFlag(DefaultFlag.PVP,State.DENY);
-		} catch (ProtectionDatabaseException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
+	public boolean addRegion(Player sender, String id) throws Exception {
+		return WorldGuardUtil.addRegion(sender, id);
 	}
 	
-	public static ProtectedRegion getRegion(World w, String id) {
-		return wgp.getRegionManager(w).getRegion(id);
-	}
-	
+
 	public static boolean hasRegion(World world, String id){
-		RegionManager mgr = wgp.getGlobalRegionManager().get(world);
-		return mgr.hasRegion(id);
+		return WorldGuardUtil.hasRegion(world, id);
 	}
 
-
-	public static Selection getSelection(Player player) {
-		return wep.getSelection(player);
+	public static void updateProtectedRegion(Player p, String id) throws Exception {
+		WorldGuardUtil.updateProtectedRegion(p, id);
 	}
 
-
-	public static void loadWorldGuardPlugin() {
-		Plugin plugin= Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-
-		if (plugin == null) {
-			System.out.println("[ArenaSpleef] WorldEdit not detected!");
-			return;
-		}        
-		wep = ((WorldEditPlugin) plugin);
-
-
-		plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
-
-		if (plugin == null) {
-			System.out.println("[ArenaSpleef] WorldGuard not detected!");
-			return;
-		}        
-		wgp = ((WorldGuardPlugin) plugin);
+	public static void createProtectedRegion(Player p, String id) throws Exception {
+		WorldGuardUtil.createProtectedRegion(p, id);
+	}
+	
+	public static void clearRegion(String world, String id) {
+		WorldGuardUtil.clearRegion(world, id);
 	}
 
-	public static WorldEditPlugin getWorldEditPlugin() {
-		return wep;
-	}
-
-	public static void updateProtectedRegion(Selection sel, ProtectedRegion pr) {
-//		World w = sel.getWorld();
-//		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
-//		ProtectedRegion region = mgr.getRegion(id);
-	}
-
-	public static void createProtectedRegion(Selection sel, String makeRegionName) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public static void clearRegion(String region) {
-		// TODO Auto-generated method stub
-		
+	public static void isLeavingArea(final Location from, final Location to, World w, String id) {
+		WorldGuardUtil.isLeavingArea(from , to , w, id);
 	}
 
 }
