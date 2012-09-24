@@ -2,11 +2,11 @@ package mc.alk.arena.listeners;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.WorldGuardUtil;
 import mc.alk.tracker.Tracker;
 
 import org.bukkit.Bukkit;
@@ -17,8 +17,6 @@ import org.bukkit.plugin.Plugin;
 
 import com.alk.massDisguise.MassDisguise;
 import com.dthielke.herochat.Herochat;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
 
 /**
@@ -32,26 +30,34 @@ public class BAPluginListener implements Listener {
 	public void onPluginEnable(PluginEnableEvent event) {
 		if (event.getPlugin().getName() == "BattleTracker")
 			loadBT();
-		if (event.getPlugin().getName() == "MassDisguise")
+		else if (event.getPlugin().getName() == "MassDisguise")
 			loadMD();
-		if (event.getPlugin().getName() == "MultiInv")
+		else if (event.getPlugin().getName() == "MultiInv")
 			loadMultiInv();
-		if (event.getPlugin().getName() == "Herochat")
+		else if (event.getPlugin().getName() == "Multiverse-Inventories")
+			loadMultiverseInventory();
+		else if (event.getPlugin().getName() == "Multiverse-Core")
+			loadMultiverseCore();
+		else if (event.getPlugin().getName() == "Herochat")
 			loadHeroChat();
-		if (event.getPlugin().getName() == "WorldGuard")
+		else if (event.getPlugin().getName() == "WorldGuard")
 			loadWorldGuard();
-		if (event.getPlugin().getName() == "WorldEdit")
+		else if (event.getPlugin().getName() == "WorldEdit")
 			loadWorldEdit();
-
+		else if (event.getPlugin().getName() == "MobArena")
+			loadMobArena();
 	}
 
 	public void loadAll(){
 		loadMD();
 		loadBT();
-		loadMultiInv();
 		loadHeroChat();
 		loadWorldEdit();
 		loadWorldGuard();
+		loadMultiInv();
+		loadMultiverseInventory();
+		loadMultiverseCore();
+		loadMobArena();
 	}
 
 	public void loadHeroChat(){
@@ -89,36 +95,64 @@ public class BAPluginListener implements Listener {
 	}
 
 	public void loadMultiInv(){
-		if (Defaults.PLUGIN_MULTI_INV == false){
+		if (!Defaults.PLUGIN_MULTI_INV){
 			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("MultiInv");
 			if (plugin != null) {
 				Defaults.PLUGIN_MULTI_INV=true;
-				Log.info("[BattleArena] MultiInv detected.  Implementing MultiInv teleport workarounds");
+				Log.info("[BattleArena] MultiInv detected.  Implementing teleport/gamemode workarounds");
 			} 
 		}
 	}
 
-	public void loadWorldEdit(){
-		if (Defaults.PLUGIN_MULTI_INV == false){
-			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+	public void loadMultiverseCore(){
+		if (!Defaults.PLUGIN_MULITVERSE_CORE){
+			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
 			if (plugin != null) {
-				WorldGuardUtil.wep = (WorldEditPlugin) plugin;
-				if (WorldGuardUtil.hasWorldGuard()){					
+				Defaults.PLUGIN_MULITVERSE_CORE=true;
+				Log.info("[BattleArena] Multiverse-Core detected. Implementing teleport/gamemode workarounds");
+			} 
+		}
+	}
+
+	public void loadMultiverseInventory(){
+		if (!Defaults.PLUGIN_MULITVERSE_INV){
+			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Inventories");
+			if (plugin != null) {
+				Defaults.PLUGIN_MULITVERSE_INV=true;
+				Log.info("[BattleArena] Multiverse-Inventories detected. Implementing teleport/gamemode workarounds");
+			} 
+		}
+	}
+	
+	public void loadWorldEdit(){
+		if (!Defaults.PLUGIN_MULTI_INV){
+			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+			if (plugin != null) {				
+				if (WorldGuardInterface.setWorldEdit(plugin)){					
+					WorldGuardInterface.init();
 					Log.info("[BattleArena] WorldGuard detected. WorldGuard regions now be used");
 				}
 			} 
 		}
 	}
-	
+
 	public void loadWorldGuard(){
 		if (Defaults.PLUGIN_MULTI_INV == false){
 			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
-			if (plugin != null) {
-				WorldGuardUtil.wgp = (WorldGuardPlugin) plugin;
-				if (WorldGuardUtil.hasWorldGuard()){			
+			if (plugin != null) {				
+				if (WorldGuardInterface.setWorldGuard(plugin)){					
 					WorldGuardInterface.init();
 					Log.info("[BattleArena] WorldGuard detected. WorldGuard regions now be used");
 				}
+			} 
+		}
+	}
+	public void loadMobArena(){
+		if (!MobArenaInterface.hasMobArena()){
+			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("MobArena");
+			if (plugin != null) {
+				MobArenaInterface.init(plugin);
+				Log.info("[BattleArena] MobArena detected.  Implementing no join when in MobArena");
 			} 
 		}
 	}

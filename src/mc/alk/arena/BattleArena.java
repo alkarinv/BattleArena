@@ -61,6 +61,7 @@ import mc.alk.arena.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.command.ColouredConsoleSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -163,7 +164,7 @@ public class BattleArena extends JavaPlugin{
 		getCommand("team").setExecutor(new TeamExecutor(commandExecutor));
 		getCommand("arenaAlter").setExecutor(new ArenaEditorExecutor());
 		getCommand("battleArenaDebug").setExecutor(new BattleArenaDebugExecutor());
-		EventScheduler es = new EventScheduler();
+		final EventScheduler es = new EventScheduler();
 		getCommand("battleArenaScheduler").setExecutor(new BattleArenaSchedulerExecutor(es));
 
 		/// Create our events
@@ -172,12 +173,26 @@ public class BattleArena extends JavaPlugin{
 		/// Reload our scheduled events
 		ess.setConfig(dir.getPath() +"/scheduledEvents.yml");
 		ess.addScheduler(es);
-		ess.loadAll();
 
 		createMessageSerializers();
 		FileLogger.init(); /// shrink down log size
-		/// Start listening for players queuing
+
+		/// Start listening for players queuing into matches
 		new Thread(arenaController).start();
+
+		/// Other plugins using BattleArena are going to be registering
+		/// Lets hold off on loading the scheduled events until those plugins have registered
+		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
+			@Override
+			public void run() {
+				ess.loadAll();
+				if (Defaults.START_NEXT)
+					es.startNext();
+				else if (Defaults.START_CONTINUOUS)
+					es.start();
+			}			
+		});
+
 		ColouredConsoleSender.getInstance().sendMessage(MessageUtil.colorChat("&4["+pluginname+"] &6v"+version+"&f enabled!"));
 	}
 
@@ -329,4 +344,6 @@ public class BattleArena extends JavaPlugin{
 	}
 
 	public static Arena getArena(String arenaName) {return BattleArena.getBAC().getArena(arenaName);}
+
+	public static void saveArenas(Plugin plugin) {ArenaSerializer.saveArenas(plugin);}
 }

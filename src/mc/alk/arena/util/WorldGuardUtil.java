@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.Selection;
@@ -14,7 +15,6 @@ import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-
 
 /**
  * Stub class for future expansion
@@ -129,6 +129,16 @@ public class WorldGuardUtil {
 		ProtectedRegion pr = getRegion(w, id);
     	return (!pr.contains(to.getBlockX(), to.getBlockY(), to.getBlockZ()) &&
     			pr.contains(from.getBlockX(), from.getBlockY(), from.getBlockZ()));
+	}
+
+	public static boolean setWorldGuard(Plugin plugin) {
+		wgp = (WorldGuardPlugin) plugin;
+		return hasWorldGuard();
+	}
+
+	public static boolean setWorldEdit(Plugin plugin) {
+		wep = (WorldEditPlugin) plugin;
+		return hasWorldGuard();
 	}
 
 }

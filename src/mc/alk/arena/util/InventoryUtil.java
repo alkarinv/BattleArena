@@ -328,6 +328,107 @@ public class InventoryUtil {
 			try { player.updateInventory(); } catch (Exception e){}
 	}
 
+
+    public static int first(Inventory inv, ItemStack is1) {
+        if (is1 == null) {
+            return -1;
+        }
+        ItemStack[] inventory = inv.getContents();
+        for (int i = 0; i < inventory.length; i++) {
+        	ItemStack is2 = inventory[i];
+        	if (is2 == null) continue;
+        	System.out.println("i1 = "  + is1 +"   is2="+is2);
+            if (is1.getTypeId() == is2.getTypeId() && is1.getDurability() == is2.getDurability()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    public static HashMap<Integer, ItemStack> removeItems(Inventory inv, List<ItemStack> items) {
+        return removeItem(inv, items.toArray(new ItemStack[items.size()]));
+    }
+
+    public static HashMap<Integer, ItemStack> removeItems(PlayerInventory inv, ItemStack... items) {
+    	HashMap<Integer,ItemStack> leftover = removeItem(inv,items);
+    	if (leftover.isEmpty())
+    		return leftover;
+    	for (ItemStack is1: items){
+    		ItemStack is2 = inv.getBoots();
+    		if (is2 != null && is1.getTypeId() == is2.getTypeId() && is1.getDurability() == is2.getDurability()){
+    			inv.setBoots(null);
+    			continue;
+    		}
+    		is2 = inv.getLeggings();
+    		if (is2 != null && is1.getTypeId() == is2.getTypeId() && is1.getDurability() == is2.getDurability()){
+    			inv.setLeggings(null);
+    			continue;
+    		}
+    		is2 = inv.getChestplate();
+    		if (is2 != null && is1.getTypeId() == is2.getTypeId() && is1.getDurability() == is2.getDurability()){
+    			inv.setChestplate(null);
+    			continue;
+    		}
+    		is2 = inv.getHelmet();
+    		if (is2 != null && is1.getTypeId() == is2.getTypeId() && is1.getDurability() == is2.getDurability()){
+    			inv.setHelmet(null);
+    			continue;
+    		}
+    	}
+    	/// TODO technically this is not correct as removing the armor slots should also decrease the leftover
+    	return leftover;
+    }
+    
+    /**
+     * This is nearly a direct copy of the removeItem from CraftBukkit
+     * The difference is my ItemStack == ItemStack comparison (found in first())
+     * there I change it to go by itemid and datavalue
+     * as opposed to itemid and quantity
+     * @param inv
+     * @param items
+     * @return
+     */
+    public static HashMap<Integer, ItemStack> removeItem(Inventory inv, ItemStack... items) {
+        HashMap<Integer, ItemStack> leftover = new HashMap<Integer, ItemStack>();
+
+        for (int i = 0; i < items.length; i++) {
+            ItemStack item = items[i];
+            int toDelete = item.getAmount();
+
+            while (true) {
+//            	System.out.println("inv= " + inv + "   " + items.length   + "    item=" + item);
+                int first = first(inv, item);
+//            	System.out.println("first= " + first);
+
+                // Drat! we don't have this type in the inventory
+                if (first == -1) {
+                    item.setAmount(toDelete);
+                    leftover.put(i, item);
+                    break;
+                } else {
+                    ItemStack itemStack = inv.getItem(first);
+                    int amount = itemStack.getAmount();
+
+                    if (amount <= toDelete) {
+                        toDelete -= amount;
+                        // clear the slot, all used up
+                        inv.setItem(first, null);
+                    } else {
+                        // split the stack and store
+                        itemStack.setAmount(amount - toDelete);
+                        inv.setItem(first, itemStack);
+                        toDelete = 0;
+                    }
+                }
+
+                // Bail when done
+                if (toDelete <= 0) {
+                    break;
+                }
+            }
+        }
+        return leftover;
+    }
 	private static boolean armorSlotBetter(Armor oldArmor, Armor newArmor) {
 		if (oldArmor == null || newArmor == null) /// technically we could throw an exception.. but nah
 			return false;

@@ -52,7 +52,7 @@ public class ConfigSerializer extends BaseSerializer{
 		if (at != null){ /// Other plugins using BattleArena, the name is the matchType or eventType name
 			configs.put(at, this);}
 	}
-	
+
 	public static ConfigSerializer getConfig(ArenaType arenaType){
 		return configs.get(arenaType);
 	}
@@ -61,7 +61,7 @@ public class ConfigSerializer extends BaseSerializer{
 		ConfigSerializer cs = getConfig(arenaType);
 		return cs != null ? cs.getConfigurationSection(arenaType.getName()+".otherOptions") : null;
 	}
-	
+
 	public static void reloadConfig(ArenaType arenaType) {
 		final String name = arenaType.getName();
 		ConfigSerializer cs = configs.get(arenaType);
@@ -77,7 +77,7 @@ public class ConfigSerializer extends BaseSerializer{
 			Log.err("Error reloading " + name);
 		}
 	}
-	
+
 	public static void setTypeConfig(final String name, ConfigurationSection cs) throws ConfigException {
 		if (cs == null){
 			Log.err("[BattleArena] configSerializer can't load " + name +" with a config section of " + cs);
@@ -111,12 +111,12 @@ public class ConfigSerializer extends BaseSerializer{
 		} else {
 			vt = VictoryType.DEFAULT;	
 		}
-		
+
 		// TODO make unknown types with a valid plugin name be deferred until after the other plugin is loaded
 		if (vt == null){
 			throw new ConfigException("Could not add the victoryCondition " +cs.getString("victoryCondition") +"\n" 
 					+"valid types are " + VictoryType.getValidList());}
-		
+
 		/// Number of teams and team sizes
 		Integer minTeams = cs.contains("minTeams") ? cs.getInt("minTeams") : 2;
 		Integer maxTeams = cs.contains("maxTeams") ? cs.getInt("maxTeams") : ArenaParams.MAX;
@@ -139,7 +139,6 @@ public class ConfigSerializer extends BaseSerializer{
 			pminTeamSize = mm.min;
 			pmaxTeamSize = mm.max;
 		}
-
 		MatchParams pi = new MatchParams(at, rating,vt);
 		/// Convert first letter of name to upper case
 		StringBuilder sb = new StringBuilder();
@@ -148,6 +147,8 @@ public class ConfigSerializer extends BaseSerializer{
 		pi.setName(sb.toString());
 
 		pi.setCommand( cs.contains("command") ? cs.getString("command") : name);
+		if (cs.contains("cmd")) /// turns out I used cmd in a lot of old configs.. so use both :(
+			pi.setCommand(cs.getString("cmd"));
 		pi.setPrefix( cs.contains("prefix") ? cs.getString("prefix") : "&6["+name+"]");  
 		pi.setMinTeams(minTeams);
 		pi.setMaxTeams(maxTeams);
@@ -161,8 +162,8 @@ public class ConfigSerializer extends BaseSerializer{
 		pi.setSecondsTillMatch( cs.contains("secondsTillMatch") ? cs.getInt("secondsTillMatch") : Defaults.SECONDS_TILL_MATCH);  
 
 		pi.setMatchTime(cs.contains("matchTime") ? cs.getInt("matchTime") : Defaults.MATCH_TIME);
-//		pi.setEv(cs.contains("eventCountdownTime") ? cs.getInt("eventCountdownTime") : Defaults.AUTO_EVENT_COUNTDOWN_TIME);
-//		pi.setIntervalTime(cs.contains("eventCountdownInterval") ? cs.getInt("eventCountdownInterval") : Defaults.ANNOUNCE_EVENT_INTERVAL);
+		//		pi.setEv(cs.contains("eventCountdownTime") ? cs.getInt("eventCountdownTime") : Defaults.AUTO_EVENT_COUNTDOWN_TIME);
+		//		pi.setIntervalTime(cs.contains("eventCountdownInterval") ? cs.getInt("eventCountdownInterval") : Defaults.ANNOUNCE_EVENT_INTERVAL);
 		pi.setIntervalTime(cs.contains("matchUpdateInterval") ? cs.getInt("matchUpdateInterval") : Defaults.MATCH_UPDATE_INTERVAL);
 
 		if (cs.contains("announcements")){
@@ -205,15 +206,15 @@ public class ConfigSerializer extends BaseSerializer{
 					tops.addOption(TransitionOption.RESTOREITEMS);
 				break;
 			default:
-//				if (!cs.contains(transition.toString())){
-//					TOC.removeOptions(transition,pi);}
+				//				if (!cs.contains(transition.toString())){
+				//					TOC.removeOptions(transition,pi);}
 				break;
 			}
 			if (tops == null){
 				allTops.removeOptions(transition);
 				continue;}
 			if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + transition +" "+tops);
-//			TOC.setOptions(transition, pi,tops);
+			//			TOC.setOptions(transition, pi,tops);
 			if (transition == MatchState.ONCOMPLETE){
 				TransitionOptions cancelOps = new TransitionOptions(tops);
 				allTops.addTransition(MatchState.ONCANCEL, cancelOps);
@@ -241,18 +242,37 @@ public class ConfigSerializer extends BaseSerializer{
 		for (String s : optionsstr){
 			String[] split = s.split("=");
 			split[0] = split[0].trim().toUpperCase();
-			TransitionOption to = TransitionOption.valueOf(split[0]);
+			TransitionOption to = null;
+			try{
+				to = TransitionOption.valueOf(split[0]);
+				if (to != null && to.hasValue() && split.length==1){
+					Log.err("Transition Option " + to +" needs a value! " + split[0]+"=<value>");
+					continue;
+				}
+			} catch (Exception e){
+				Log.err("Transition Option " + split[0] +" doesn't exist!");
+				continue;
+			}
+
 			options.add(to);
 			if (split.length == 1){
 				continue;
 			}
 			split[1] = split[1].trim();
-			switch(to){
-			case MONEY:tops.setMoney(Double.valueOf(split[1])); break;
-			case EXPERIENCE: tops.setGiveExperience(Integer.valueOf(split[1])); break;
-			case HEALTH: tops.setHealth(Integer.valueOf(split[1])); break;
-			case HUNGER: tops.setHunger(Integer.valueOf(split[1])); break;
-			case DISGUISEALLAS: tops.setDisguiseAllAs(split[1]); break;
+			try{
+				switch(to){
+				case MONEY:tops.setMoney(Double.valueOf(split[1])); break;
+				case EXPERIENCE: tops.setGiveExperience(Integer.valueOf(split[1])); break;
+				case HEALTH: tops.setHealth(Integer.valueOf(split[1])); break;
+				case HUNGER: tops.setHunger(Integer.valueOf(split[1])); break;
+				case DISGUISEALLAS: tops.setDisguiseAllAs(split[1]); break;
+				case WITHINDISTANCE: tops.setWithinDistance(Integer.valueOf(split[1])); break;
+				default:
+					break;
+				}
+			} catch (Exception e){
+				Log.err("Error setting the value of option " + to);
+				e.printStackTrace();
 			}
 		}
 		tops.setMatchOptions(options);

@@ -15,6 +15,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
+import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
@@ -24,13 +25,14 @@ import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.DuelOptions;
+import mc.alk.arena.objects.DuelOptions.DuelOption;
+import mc.alk.arena.objects.JoinPreferences;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.TransitionOptions;
-import mc.alk.arena.objects.DuelOptions.DuelOption;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -134,16 +136,23 @@ public class BAExecutor extends CustomCommandExecutor  {
 		Team t = teamc.getSelfTeam(player);
 		if (t==null)
 			t = TeamController.createTeam(player);
-		final int teamSize = getWantedTeamSize(player,t,mp,args[args.length - 1]);
-		if (teamSize <= 0)
+		final WantedTeamSizeResult teamSize = getWantedTeamSize(player,t,mp,args[args.length - 1]);
+		if (teamSize == null)
 			return true;
 		mp = new MatchParams(mp);
-		mp.setTeamSize(teamSize);
-
+		mp.setTeamSize(teamSize.size);
+		JoinPreferences jp = null;
 		/// Check to make sure at least one arena can be joined at some time
-		Arena arena = ac.getArenaByMatchParams(mp);
+		Arena arena = ac.getArenaByMatchParams(mp,jp);
 		if (arena == null){
-			return sendMessage(player,"&cA valid arena has not been built for a " + mp.toPrettyString());}
+			if (!teamSize.manuallySet){
+				arena = ac.getArenaByNearbyMatchParams(mp,jp);
+				mp.setMinTeamSize(arena.getParameters().getMinTeamSize());
+				mp.setMaxTeamSize(arena.getParameters().getMaxTeamSize());				
+			}
+			if (arena == null){
+				return sendMessage(player,"&cA valid arena has not been built for a " + mp.toPrettyString());}
+		}
 		final MatchTransitions ops = mp.getTransitionOptions();
 		if (ops == null){
 			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
@@ -177,7 +186,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 		}
 		return true;
 	}
-
+	static class WantedTeamSizeResult{
+		public int size;
+		public boolean manuallySet = false;
+	}
 	/**
 	 * Check to see what size of team the player should join based on their team, preferences, and the MatchParams
 	 * @param player
@@ -186,31 +198,37 @@ public class BAExecutor extends CustomCommandExecutor  {
 	 * @param string
 	 * @return
 	 */
-	private int getWantedTeamSize(ArenaPlayer player, Team t, MatchParams mp, String string) {
+	private WantedTeamSizeResult getWantedTeamSize(ArenaPlayer player, Team t, MatchParams mp, String string) {
 		/// Check to see if the user has specified a wanted team size
 		MinMax mm = Util.getMinMax(string);
 		final int min = mp.getMinTeamSize();
 		final int max = mp.getMaxTeamSize();
+		WantedTeamSizeResult result = new WantedTeamSizeResult();
 		if (mm != null){
 			if (mm.min > max){ /// They want a team size that is greater than what is offered by this match type
 				sendMessage(player, "&cYou wanted to join with a team of &6" + mm.min+"&c players");
 				sendMessage(player, "&cBut this match type only supports up to &6"+max+"&c players per team");
-				return -1;
+				return null;
 			}
-			return mm.min;
+			result.size = mm.min;
+			result.manuallySet = true;
+			return result;
 		}
 		if (t.size() > max){
 			sendMessage(player, "&cYour team has &6" + t.size()+"&c players");
 			sendMessage(player, "&cBut this match type only supports up to &6"+max+"&c players per team");
-			return -1;
+			return null;
 		}
 
 		/// Are they joining a match that needs more people than their team has
-		if (t.size() < min)
-			return min;
+		if (t.size() < min){
+			result.size = min;
+			return result;
+		}
 
 		/// They are good with their current team size
-		return t.size();
+		result.size = t.size();
+		return result;
 	}
 
 	@MCCommand(cmds={"leave"}, inGame=true, usage="leave")
@@ -414,7 +432,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			MessageSerializer.reloadConfig(mp.getName());
 		}
 		ArenaSerializer.loadAllArenas(plugin, mp.getType());
-		return sendMessage(sender,"&eArena ymls reloaded");
+		return sendMessage(sender, "&6" + plugin.getName()+"&e configuration reloaded");
 	}
 
 	@MCCommand(cmds={"info"}, exact=1, usage="info")
@@ -505,7 +523,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return true;
 	}
 
-	@MCCommand(cmds={"alter"}, inGame=true, admin=true)
+	@MCCommand(cmds={"alter"}, admin=true)
 	public boolean arenaAlter(CommandSender sender, Arena arena, String[] args) {
 		ArenaAlterController.alterArena(sender, arena, args);
 		return true;
@@ -605,9 +623,9 @@ public class BAExecutor extends CustomCommandExecutor  {
 			mp.setRated(true);
 		else if (duelOptions.hasOption(DuelOption.UNRATED))
 			mp.setRated(false);
-		
+		JoinPreferences jp = null;
 		/// Check to make sure at least one arena can be joined at some time
-		Arena arena = ac.getArenaByMatchParams(mp);
+		Arena arena = ac.getArenaByMatchParams(mp,jp);
 		if (arena == null){
 			return sendMessage(player,"&cA valid arena has not been built for a " + mp.toPrettyString());}
 		final MatchTransitions ops = mp.getTransitionOptions();
@@ -686,6 +704,13 @@ public class BAExecutor extends CustomCommandExecutor  {
 	}
 
 	public boolean canJoin(ArenaPlayer p) {
+		/// Inside MobArena?
+		if (MobArenaInterface.hasMobArena()){
+			if (MobArenaInterface.insideMobArena(p)){
+				sendMessage(p,"&cYou need to finish with MobArena first!");
+				return false;
+			}
+		}
 		/// Inside an Event?
 		Event ae = insideEvent(p);
 		if (ae != null){
@@ -786,6 +811,14 @@ public class BAExecutor extends CustomCommandExecutor  {
 	@MCCommand( cmds = {"help","?"})
 	public void help(CommandSender sender, Command command, String label, Object[] args){
 		super.help(sender, command, args);
+	}
+
+	public static boolean checkPlayer(CommandSender sender) {
+		if (!(sender instanceof Player)){
+			sendMessage(sender, "&cYou need to be online for this command!");
+			return false;
+		}
+		return true;
 	}
 
 }

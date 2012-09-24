@@ -22,9 +22,11 @@ import org.bukkit.configuration.ConfigurationSection;
 
 public class EventScheduleSerializer extends BaseSerializer {
 	EventScheduler es;
+
 	public void loadAll(){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}	
 		loadScheduledEvents(config.getConfigurationSection("events"));
+		
 	}	
 
 	public void loadScheduledEvents(ConfigurationSection cs) {

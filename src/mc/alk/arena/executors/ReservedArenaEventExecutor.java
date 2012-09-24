@@ -57,7 +57,7 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		Arena arena;
 		EventOpenOptions eoo = null;
 		try {
-			eoo = EventOpenOptions.parseOptions(args);
+			eoo = EventOpenOptions.parseOptions(args, null);
 			arena = openEvent(rae, mp, eoo);
 		} catch (InvalidOptionException e) {
 			sendMessage(sender, e.getMessage());
@@ -82,7 +82,7 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		if (rae.isOpen())
 			throw new InvalidOptionException("The event is already open");
 		eoo.updateParams(mp);
-		Arena arena = eoo.getArena(mp);
+		Arena arena = eoo.getArena(mp,null);
 		//		System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
 		arena.setParameters(mp);
 		rae.setSilent(eoo.isSilent());

@@ -1,7 +1,6 @@
 package mc.alk.arena.competition.match;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,7 +40,6 @@ import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaInterface;
-import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.victoryconditions.TimeLimit;
@@ -55,9 +53,7 @@ import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.WLT;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -83,6 +79,8 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	final TransitionMethodController tmc = new TransitionMethodController();
 
 	List<Team> teams = new ArrayList<Team>(); /// Our players
+	HashMap<Team,Integer> teamIndexes = new HashMap<Team,Integer>();
+
 	Set<String> visitors = new HashSet<String>(); /// Who is watching
 	MatchState state = MatchState.NONE;/// State of the match
 	List<VictoryCondition> vcs = new ArrayList<VictoryCondition>(); /// Under what conditions does a victory occur
@@ -171,11 +169,30 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	public void run() {
 		preStartMatch();
 	}
-	
+
 	public void addTransitionListener(TransitionListener transitionListener){
 		tmc.addListener(transitionListener);
 	}
-	
+
+	//	private void beginMatch() {
+	//		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
+	//		if (Defaults.DEBUG) System.out.println("ArenaMatch::beginMatch()");
+	//		state = MatchState.ONBEGIN;
+	//
+	//		MatchBeginEvent event= new MatchBeginEvent(this,teams);
+	//		notifyListeners(event);
+	//		updateBukkitEvents(MatchState.ONBEGIN);
+	//		PerformTransition.transition(this, MatchState.ONBEGIN, teams, true);
+	//		arenaInterface.onBegin();
+	//		try{mc.sendOnBeginMsg(teams);}catch(Exception e){e.printStackTrace();}
+	//		/// Schedule the start of the match
+	//		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+	//			public void run() {
+	//				preStartMatch();
+	//			}
+	//		}, (long) (mp.getSecondsTillMatch() * 20L * Defaults.TICK_MULT));
+	//	}
+
 	private void preStartMatch() {
 		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::startMatch()");
@@ -312,17 +329,20 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	}
 
 	private void deconstruct(){
+		/// Teleport out happens 1 tick after oncancel/oncomplete, we also must wait 1 tick
+		final Match match = this;
+		arenaInterface.onFinish();
 		insideArena.clear();
 		insideWaitRoom.clear();
 		for (Team t: teams){
-			TeamController.removeTeam(t, this);
+			TeamController.removeTeam(t, match);
 			for (ArenaPlayer p: t.getPlayers()){
 				stopTracking(p);
 			}
 		}
+		notifyListeners(new MatchFinishedEvent(match));
 		teams.clear();
 		arenaListeners.clear();
-		notifyListeners(new MatchFinishedEvent(this));
 	}
 
 	/**
@@ -357,7 +377,9 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 
 	public void onJoin(Team t) {
 		//		System.out.println(" team t= " + t.getName() +"   is joining  " + q +"  mt=" + mt+ " options=" + arena.getOptions(mt));
+		int index = teams.size();
 		teams.add(t);
+		teamIndexes.put(t, index);
 		if (!t.hasSetName() && t.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND){
 			t.setDisplayName(TeamUtil.createTeamName(indexOf(t)));
 		}
@@ -395,24 +417,14 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	 * @param t
 	 */
 	public void onLeave(Team t) {
-		//		System.out.println("ArenaMatch::onLeave(Team t)=" + t +"   mo =" + tops.getOptionString());
+		PerformTransition.transition(this, MatchState.ONCANCEL, t, false);
 		teams.remove(t);
 		TeamController.removeTeam(t, this);
-		for (ArenaPlayer p: t.getPlayers()){
-			stopTracking(p);
-			arenaInterface.onLeave(p,t);			
-			notifyListeners(new PlayerLeftEvent(p));
-		}
-		PerformTransition.transition(this, MatchState.ONCANCEL, t, false);
 	}
 
 	public void onLeave(ArenaPlayer p) {
-		//		System.out.println("ArenaMatch::onLeave(Team t)=" + t +"   mo =" + tops.getOptionString());
 		Team t = getTeam(p);
-		stopTracking(p);
-		arenaInterface.onLeave(p,t);
-		PerformTransition.transition(this, MatchState.ONCANCEL, t, false);
-		notifyListeners(new PlayerLeftEvent(p));
+		PerformTransition.transition(this, MatchState.ONCANCEL, p, t, false);
 	}
 
 	/**
@@ -522,31 +534,12 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		stopTracking(p);
 		Team t = getTeam(p);
 		PerformTransition.transition(this, MatchState.ONLEAVE, p, t, false);
+		arenaInterface.onLeave(p,t);
+		notifyListeners(new PlayerLeftEvent(p));
+		if (woolTeams)
+			PlayerStoreController.removeItem(p, TeamUtil.getTeamHead(getTeamIndex(t)));
 	}
 
-	/// TODO where should this go
-	public static final HashSet<String> disabled = 
-			new HashSet<String>(Arrays.asList( "/home", "/spawn", "/trade", "/paytrade", "/payhome", 
-					"/warp","/watch", "/sethome","/inf", "/va","/survival","/ma","/mob","/ctp","/chome","/csethome"));
-
-	@MatchEventHandler
-	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
-		if (event.isCancelled() || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL){
-			return;}
-		final Player p = event.getPlayer();
-		if (event.getPlayer().isOp())
-			return;
-
-		String msg = event.getMessage();
-		final int index = msg.indexOf(' ');
-		if (index != -1){
-			msg = msg.substring(0, index);
-		}
-		if(disabled.contains(msg)){
-			event.setCancelled(true);
-			p.sendMessage(ChatColor.RED+"You cannot use that command when you are in a match");
-		}
-	}
 
 	public void setVictor(ArenaPlayer p){
 		Team t = getTeam(p);
@@ -705,8 +698,8 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 				aliveTeams.add(t);
 		}
 		for (Team t: aliveTeams) sb.append(t.getTeamInfo(insideArena) +"\n");
-				for (Team t: deadTeams) sb.append(t.getTeamInfo(insideArena) +"\n");
-						return sb.toString();
+		for (Team t: deadTeams) sb.append(t.getTeamInfo(insideArena) +"\n");
+		return sb.toString();
 	}
 
 
@@ -737,6 +730,10 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
 		notifyListeners(event);
 		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeader());}catch(Exception e){e.printStackTrace();}		
+	}
+
+	public Integer getTeamIndex(Team t) {
+		return teamIndexes.get(t);
 	}
 
 

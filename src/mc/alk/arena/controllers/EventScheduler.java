@@ -26,6 +26,7 @@ public class EventScheduler implements Runnable, TransitionListener{
 
 	int curEvent = 0;
 	Long delay = 5L;
+	boolean continuous= false;
 	boolean running = false;
 	boolean stop = false;
 
@@ -88,9 +89,13 @@ public class EventScheduler implements Runnable, TransitionListener{
 	public void onEventFinished(EventFinishedEvent event){
 		Event e = event.getEvent();
 		e.removeTransitionListener(this);
-		/// Wait 30 sec then start the next event
-		Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, (long) (20L*30*Defaults.TICK_MULT));
-		Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"Next event will start in 30 seconds");
+		if (continuous){
+			/// Wait 30 sec then start the next event
+			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, (long) (20L*30*Defaults.TICK_MULT));
+			Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"Next event will start in 30 seconds");			
+		} else {
+			running = false;
+		}
 	}
 	
 	public boolean isRunning() {
@@ -100,6 +105,7 @@ public class EventScheduler implements Runnable, TransitionListener{
 	public void stop() {
 		stop = true;
 		running = false;
+		continuous = false;
 	}
 
 	public List<EventPair> getEvents() {
@@ -107,6 +113,15 @@ public class EventScheduler implements Runnable, TransitionListener{
 	}
 
 	public void start() {
+		continuous = true;
+		stop = false;
+		new Thread(this).start();			
+	}
+
+	public void startNext() {
+		continuous = false;
+		if (running)
+			return;
 		stop = false;
 		new Thread(this).start();			
 	}

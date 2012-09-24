@@ -13,7 +13,6 @@ import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.TimeUtil;
 
-
 /**
  * 
  * @author alkarin
@@ -29,6 +28,11 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		this.mp = m.getParams();
 		this.match = m;
 		typeName = mp.getName();
+	}
+
+	@Override
+	public void sendOnBeginMsg(Channel serverChannel,List<Team> teams) {
+		sendMessageToTeams(serverChannel,teams,"onbegin","server_onbegin", mp.getSecondsTillMatch());
 	}
 
 	@Override

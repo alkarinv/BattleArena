@@ -96,7 +96,7 @@ public class ArenaSerializer {
 		Log.info(plugin.getName()+ " Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
 		loadArenas(plugin, BattleArena.getBAC(), config,null);
 	}
-	
+
 	public void loadArenas(Plugin plugin, ArenaType arenaType){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
 		Log.info(plugin.getName()+ " Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
@@ -248,10 +248,10 @@ public class ArenaSerializer {
 
 			HashMap<String, Object> amap = new HashMap<String, Object>();
 			/// Do we really need to cut them off?? right now I think no
-//			if (!arena.valid()){
-//				Log.err(MatchMessageImpl.decolorChat("Unfinished arena not being saved  name=" + arena.getName() + " details=" + arena));
-//				continue;
-//			}
+			//			if (!arena.valid()){
+			//				Log.err(MatchMessageImpl.decolorChat("Unfinished arena not being saved  name=" + arena.getName() + " details=" + arena));
+			//				continue;
+			//			}
 
 			amap.put("type", arena.getArenaType().getName());
 			amap.put("teamSize", arena.getParameters().getTeamSizeRange());
@@ -315,6 +315,14 @@ public class ArenaSerializer {
 		}
 	}
 
+	public static void saveArenas(Plugin plugin){
+		if (!configs.containsKey(plugin))
+			return;
+		for (ArenaSerializer serializer: configs.get(plugin)){
+			serializer.saveArenas(false);
+		}
+	}
+
 	private static TimedSpawn parseSpawnable(ConfigurationSection cs) {
 		if (!cs.contains("spawn") || !cs.contains("time") || !cs.contains("loc")){
 			Log.err("configuration section cs = " + cs +"  is missing either spawn,time,or loc");
@@ -323,8 +331,8 @@ public class ArenaSerializer {
 		SpawnTime st = parseSpawnTime(cs.getString("time"));
 		Location loc = SerializerUtil.getLocation(cs.getString("loc"));
 		List<SpawnInstance> spawns = SpawnSerializer.parseSpawnable(SpawnSerializer.convertToStringList(cs.getString("spawn")));
-//				System.out.println("Parsing spawn " + st + " loc=" + loc +"  spawn = " + spawns.get(0));
-		
+		//				System.out.println("Parsing spawn " + st + " loc=" + loc +"  spawn = " + spawns.get(0));
+
 		spawns.get(0).setLocation(loc);
 		TimedSpawn ts = new TimedSpawn(st.i1,st.i2, st.i3,spawns.get(0));
 		return ts;

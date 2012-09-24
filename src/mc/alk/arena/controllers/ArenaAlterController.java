@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -80,6 +81,9 @@ public class ArenaAlterController {
 		case VLOC: success = changeVisitorSpawn(sender,arena,ac,changetype,value,otherOptions); break;			
 		case WAITROOM: success = changeWaitroomSpawn(sender,arena,ac,changetype,value,otherOptions); break;
 		case ADDREGION: success = addWorldGuardRegion(sender,arena,ac,value); break;
+		default:
+			sendMessage(sender,ChatColor.RED+ "Option: &6" + changetype+"&c does not exist. \n&cValid options are &6"+ChangeType.getValidList());
+			break;
 		}
 		if (success)
 			BattleArena.saveArenas();	
@@ -149,6 +153,8 @@ public class ArenaAlterController {
 
 	private static boolean changeWaitroomSpawn(CommandSender sender, Arena arena, BattleArenaController ac, 
 			String changetype, String value, String[] otherOptions) {
+		if (!BAExecutor.checkPlayer(sender))
+			return false;
 		int locindex = verifySpawnLocation(sender,value);
 		if (locindex == -1)
 			return false;
@@ -167,6 +173,9 @@ public class ArenaAlterController {
 
 	private static boolean changeVisitorSpawn(CommandSender sender, Arena arena, BattleArenaController ac, 
 			String changetype, String value, String[] otherOptions) {
+		if (!BAExecutor.checkPlayer(sender))
+			return false;
+
 		int locindex = verifySpawnLocation(sender,value);
 		if (locindex == -1)
 			return false;
@@ -185,6 +194,8 @@ public class ArenaAlterController {
 
 	private static boolean changeSpawn(CommandSender sender, Arena arena, BattleArenaController ac, 
 			String changetype, String value, String[] otherOptions) {
+		if (!BAExecutor.checkPlayer(sender))
+			return false;
 		int locindex = verifySpawnLocation(sender,changetype);
 		if (locindex == -1)
 			return false;

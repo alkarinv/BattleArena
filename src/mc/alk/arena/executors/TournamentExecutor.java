@@ -1,5 +1,8 @@
 package mc.alk.arena.executors;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import mc.alk.arena.competition.events.TournamentEvent;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
@@ -38,12 +41,18 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 		if (event.isOpen()){
 			return sendMessage(sender,"&4The Tournament Event " + event.getName() +" is already open");
 		}
+		MatchParams mp = ParamController.getMatchParamCopy(args[1]);
+		if (mp == null){
+			sendMessage(sender, "&6" + args[1] +"&c is not a valid match type!");
+			return sendMessage(sender,"&cCommand: &6/tourney <open|auto> <matchType> [options...]");
+		}		
+		mp = checkOpenOptions(sender,event,mp , args);
 
-		MatchParams mp = checkOpenOptions(sender,event, ParamController.getMatchParamCopy(args[1]), args);
 		EventOpenOptions eoo = null;
 		
 		try {
-			eoo = EventOpenOptions.parseOptions(args);
+			HashSet<Integer> ignoreArgs = new HashSet<Integer>(Arrays.asList(1)); /// ignore the matchType argument
+			eoo = EventOpenOptions.parseOptions(args,ignoreArgs);
 			openEvent(event, mp, eoo);
 		} catch (InvalidOptionException e) {
 			sendMessage(sender, e.getMessage());

@@ -1,11 +1,12 @@
-configVersion: 1.3
+configVersion: 1.35
 ## What is the money on this server called
 moneyName: Gold
 
 ## default Options (these can be overridden by each match/event type)
 defaultOptions:
     ### Match Options
-    secondsTillMatch: 3 ## Time between onPrestart and onStart
+    secondsTillBegin: 3 
+    secondsTillMatch: 3 
     secondsToLoot: 5 ## Time after winning to run around and collect loot
     matchTime: 120 ## How long do timed matches last, (in seconds)
     matchUpdateInterval: 30 ## For timed matched, how long between sending players match updates
@@ -18,6 +19,10 @@ defaultOptions:
     allowRatedDuels: false
     # after a player rejects a duel, how long before they can be challenged again
     challengeInterval: 1800 # (seconds) 1800 = 30minutes
+
+    ### Scheduled Event Options
+    ### Valid options [startContinuous, startNext]
+    onServerStart: []
 
     ### Match/Event Announcements
     ## these only affect the broadcasts to the server or channel, not the messages the fighting players receive

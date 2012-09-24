@@ -1,6 +1,8 @@
 package mc.alk.arena.competition.match;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import mc.alk.arena.BattleArena;
@@ -19,11 +21,14 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.DmgDeathUtil;
+import mc.alk.arena.util.EffectUtil;
+import mc.alk.arena.util.EffectUtil.EffectWithArgs;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
@@ -36,6 +41,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -56,6 +62,7 @@ public class ArenaMatch extends Match {
 	public void onPlayerInteract(PlayerInteractEvent event){
 		if (event.isCancelled())
 			return;
+
 		final Material m = event.getClickedBlock().getType();
 		if (!(m.equals(Material.SIGN) || m.equals(Material.SIGN_POST)||m.equals(Material.WALL_SIGN))){ /// Only checking for signs
 			return;}
@@ -109,10 +116,15 @@ public class ArenaMatch extends Match {
 			items.addAll(mo.getItems());
 		}
 		try{ InventoryUtil.addItemsToInventory(p, items, true);} catch(Exception e){e.printStackTrace();}
+		
+		/// Deal with effects/buffs
+		EffectUtil.unenchantAll(p);
+		List<EffectWithArgs> effects = ac.getEffects();
+		if (effects != null){
+			EffectUtil.enchantPlayer(p, effects);}
 		ap.setChosenClass(ac);
 		try { p.updateInventory(); } catch (Exception e){}
 		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
-
 	}
 
 	@MatchEventHandler
@@ -209,6 +221,8 @@ public class ArenaMatch extends Match {
 				event.setCancelled(true);
 			}
 			break;
+		default:
+			break;
 		}
 	}	
 
@@ -288,6 +302,30 @@ public class ArenaMatch extends Match {
 						Bukkit.getWorld(arena.getRegionWorld()), arena.getRegion());
 			}			
 		}
+		
 	}
+	/// TODO where should this go
+		public static final HashSet<String> disabled = 
+				new HashSet<String>(Arrays.asList( "/home", "/spawn", "/trade", "/paytrade", "/payhome", 
+						"/warp","/watch", "/sethome","/inf", "/va","/survival","/ma","/mob","/ctp","/chome","/csethome"));
 
+	@MatchEventHandler
+	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
+		if (event.isCancelled() || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL){
+			return;}
+		final Player p = event.getPlayer();
+		if (event.getPlayer().isOp())
+			return;
+
+		String msg = event.getMessage();
+		final int index = msg.indexOf(' ');
+		if (index != -1){
+			msg = msg.substring(0, index);
+		}
+		if(disabled.contains(msg)){
+			event.setCancelled(true);
+			p.sendMessage(ChatColor.RED+"You cannot use that command when you are in a match");
+		}
+	}
+	
 }

@@ -7,7 +7,7 @@
     database: <name> # or delete if you dont want wins/losses/top, needs BattleTracker
     rated: true # if database is enabled
     prefix: "&6[<name>]&e"
-    cmd: <cmd>
+    command: <cmd>
     ### You can delete any stages/transitions that have no options
     ### for a list of options see wiki
     preReqs: ## Prerequisites for joining

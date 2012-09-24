@@ -15,10 +15,12 @@ import mc.alk.arena.controllers.SpawnController;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.JoinPreferences;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.objects.teams.Team;
@@ -335,6 +337,14 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
+	 * Return the team of this player
+	 * @return
+	 */
+	public Team getTeam(Player p){
+		return match == null ? null : match.getTeam(BattleArena.toArenaPlayer(p));
+	}
+
+	/**
 	 * Start any spawns happening for this arena
 	 */
 	public void startSpawns(){
@@ -406,6 +416,13 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
+	 * private Arena onBegin events, calls onBegin for subclasses to be able to override 
+	 */
+	void privateOnBegin(){
+		try{onBegin();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
 	 * private Arena onPrestart events, calls onPrestart for subclasses to be able to override 
 	 */
 	void privateOnPrestart(){
@@ -442,6 +459,13 @@ public class Arena implements ArenaListener {
 	void privateOnCancel(){
 		stopSpawns();
 		try{onCancel();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onFinish events, calls onFinish for subclasses to be able to override 
+	 */
+	void privateOnFinish(){
+		try{onFinish();}catch(Exception e){e.printStackTrace();}
 	}
 
 	/**
@@ -499,7 +523,12 @@ public class Arena implements ArenaListener {
 	protected void onLeave(ArenaPlayer p, Team t) {}
 
 	/**
-	 * Called before the match starts
+	 * Called when the match is first called upon to begin starting
+	 */
+	protected void onBegin() {}
+
+	/**
+	 * Called after onBegin and before onStart
 	 */
 	protected void onPrestart(){}
 
@@ -553,9 +582,10 @@ public class Arena implements ArenaListener {
 	/**
 	 * Checks to see whether this arena has paramaters that match the given matchparams
 	 * @param matchParams
+	 * @param jp 
 	 * @return
 	 */
-	public boolean matches(MatchParams matchParams) {
+	public boolean matches(MatchParams matchParams, JoinPreferences jp) {
 		boolean matches = getParameters().matches(matchParams);
 		if (!matches)
 			return false;
@@ -565,10 +595,24 @@ public class Arena implements ArenaListener {
 		final boolean mo = tops.hasOptions(TransitionOption.TELEPORTWAITROOM);
 		if (mo && (wrlocs == null || wrlocs.isEmpty()))
 			return false;
+		if (jp == null)
+			return true;
+		final TransitionOptions ops = tops.getOptions(MatchState.PREREQS);
+		if (ops == null)
+			return true;
+		if (ops.hasOption(TransitionOption.WITHINDISTANCE)){
+			if (!jp.nearby(this,ops.getWithinDistance())){
+				return false;}	
+		}
+		if (ops.hasOption(TransitionOption.SAMEWORLD)){
+			if (!jp.sameWorld(this)){
+				return false;}	
+		}
+
 		return true;
 	}
 	
-	public Collection<String> getInvalidMatchReasons(MatchParams matchParams) {
+	public Collection<String> getInvalidMatchReasons(MatchParams matchParams, JoinPreferences jp) {
 		List<String> reasons = new ArrayList<String>();
 		reasons.addAll(getParameters().getInvalidMatchReasons(matchParams));
 		final MatchTransitions tops = matchParams.getTransitionOptions();
@@ -577,6 +621,20 @@ public class Arena implements ArenaListener {
 			if (mo && (wrlocs == null || wrlocs.isEmpty()))
 				reasons.add("Needs a waitroom but none has been provided");
 		}
+		if (jp == null)
+			return reasons;
+		final TransitionOptions ops = tops.getOptions(MatchState.PREREQS);
+		if (ops == null)
+			return reasons;
+		if (ops.hasOption(TransitionOption.WITHINDISTANCE)){
+			if (!jp.nearby(this,ops.getWithinDistance())){
+				reasons.add("You aren't within " + ops.getWithinDistance() +" blocks");}	
+		}
+		if (ops.hasOption(TransitionOption.SAMEWORLD)){
+			if (!jp.sameWorld(this)){
+				reasons.add("You aren't in the same world");}	
+		}
+
 		return reasons;
 	}
 

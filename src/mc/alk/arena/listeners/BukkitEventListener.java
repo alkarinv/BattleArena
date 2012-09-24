@@ -174,8 +174,6 @@ public class BukkitEventListener extends BEventListener{
 	}
 
 	private void doEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
-//		System.out.println("[BattleArena] doEntityDamageByEntityEvent :" + event.getEntity() +"  " + event.getDamager());
-
 		if (event.getEntity() instanceof Player){
 			callListeners(event, (Player) event.getEntity());	
 			return;
@@ -200,7 +198,6 @@ public class BukkitEventListener extends BEventListener{
 	}
 
 	private void doEntityDamageEvent(EntityDamageEvent event) {
-//		System.out.println("[BattleArena] doEntityDamageEvent :" + event.getEntity() +"   " + event.getCause());
 		if (event.getEntity() instanceof Player){
 			callListeners(event, (Player) event.getEntity());	
 			return;

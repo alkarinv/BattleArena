@@ -270,6 +270,8 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		case WAITING_FOR_PLAYERS:
 			mc.sendWaitingForMorePlayers(t, tjr.n);
 			break;
+		default:
+			break;
 		}
 
 		return tjr;

@@ -13,6 +13,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.JoinPreferences;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
@@ -145,16 +146,33 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	public Arena nextArenaByMatchParams(MatchParams mp){
 		return amq.getNextArena(mp);
 	}
-	public Arena getArenaByMatchParams(MatchParams mp) {
+	
+	public Arena getArenaByMatchParams(MatchParams mp, JoinPreferences jp) {
 		for (Arena a : allarenas.values()){
-			if (a.valid() && a.matches(mp)){
+			if (a.valid() && a.matches(mp,jp)){
 				return a;}
 		}
 		return null;
 	}
 
+	public Arena getArenaByNearbyMatchParams(MatchParams mp, JoinPreferences jp) {
+		Arena possible = null;
+		int sizeDif = Integer.MAX_VALUE;
+		int m1 = mp.getMinTeamSize();
+		for (Arena a : allarenas.values()){
+			if (a.valid() && a.matches(mp,jp)){
+				return a;}
+			int m2 = a.getParameters().getMinTeamSize();
+			if (m2 > m1 && m2 -m1 < sizeDif){
+				sizeDif = m2 - m1;
+				possible = a;
+			}
+		}
+		return possible;
+	}
 
-	public List<String> getNotMachingArenaReasons(MatchParams mp) {
+
+	public List<String> getNotMachingArenaReasons(MatchParams mp, JoinPreferences jp) {
 		List<String> reasons = new ArrayList<String>();
 		for (Arena a : allarenas.values()){
 			if (a.getArenaType() != mp.getType()){
@@ -165,8 +183,8 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 					reasons.add("&e"+a.getName() +":&c" + reason);
 				}
 			}
-			if (!a.matches(mp)){
-				for (String reason : a.getInvalidMatchReasons(mp)){
+			if (!a.matches(mp,jp)){
+				for (String reason : a.getInvalidMatchReasons(mp,jp)){
 					reasons.add("&e"+a.getName() +":&c" + reason);
 				}
 

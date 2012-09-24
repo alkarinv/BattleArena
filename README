@@ -13,6 +13,7 @@ DeathMatch
 Tournament ( bracket tournament for any number of teams )
 
 Versions.
+3.6.7 : Multiverse and MobArena support: new onServerStart options. 
 3.6.6 : Added WorldGuard support.  Added new Dueling option
 3.6.5.2 : Fix for item loss when using matches/events that used waitrooms.
 3.6.5 : Message Fix. Scheduled continuous events. Timeouts for matches/events.

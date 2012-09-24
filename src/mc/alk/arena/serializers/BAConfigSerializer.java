@@ -3,6 +3,7 @@ package mc.alk.arena.serializers;
 import java.util.List;
 import java.util.Set;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
@@ -13,7 +14,7 @@ import mc.alk.arena.util.Log;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class BAConfigSerializer extends ConfigSerializer{
-	
+
 	public void loadAll(){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
 
@@ -31,7 +32,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 			}
 		}
 	}
-	
+
 	protected static void parseDefaultOptions(ConfigurationSection cs) {
 		Defaults.SECONDS_TILL_MATCH = cs.getInt("secondsTillMatch", 20);
 		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", 20);
@@ -41,11 +42,23 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", 30);
 		Defaults.DUEL_ALLOW_RATED = cs.getBoolean("allowRatedDuels", false);
 		Defaults.DUEL_CHALLENGE_INTERVAL = cs.getInt("challengeInterval", 1800);
-
+		parseOnServerStartOptions(cs);
 		AnnouncementOptions an = new AnnouncementOptions();
 		parseAnnouncementOptions(an,true,cs.getConfigurationSection("announcements"), true);
 		parseAnnouncementOptions(an,false,cs.getConfigurationSection("eventAnnouncements"),true);
 		AnnouncementOptions.setDefaultOptions(an);
+	}
+
+	private static void parseOnServerStartOptions( ConfigurationSection cs) {
+		if (cs ==null || !cs.contains("onServerStart")){
+			Log.warn(BattleArena.getPName() +" No onServerStart options found");
+			return;
+		}
+		List<String> options = cs.getStringList("onServerStart");
+		for (String op : options){
+			if (op.equalsIgnoreCase("startContinuous")) Defaults.START_CONTINUOUS = true;
+			else if (op.equalsIgnoreCase("startNext")) Defaults.START_NEXT = true;
+		}
 	}
 
 	public static AnnouncementOptions parseAnnouncementOptions(AnnouncementOptions an , boolean match, ConfigurationSection cs, boolean warn) {
@@ -70,7 +83,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 					Log.err("Couldnt recognize AnnouncementOption " + s);
 					continue;					
 				}
-//				System.out.println("!!!!! Setting broadcast option " +ms +"  " + bo + "  " + kv.value);
+				//				System.out.println("!!!!! Setting broadcast option " +ms +"  " + bo + "  " + kv.value);
 				an.setBroadcastOption(match, ms, bo,kv.value);
 			}
 		}

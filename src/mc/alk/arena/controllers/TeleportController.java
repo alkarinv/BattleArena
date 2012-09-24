@@ -10,8 +10,8 @@ import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.PermissionsUtil;
 
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,11 +33,10 @@ public class TeleportController {
 	public static void teleportPlayer(final Player p, final Location loc, boolean in, final boolean die, final boolean wipe
 			,Set<ArenaPlayer> matchPlayers){
 		if (!p.isOnline() || p.isDead()){
-			if (Defaults.DEBUG)Log.warn("[BattleArena] Offline teleporting Player=" + p.getName() + " loc=" + loc + "  " + die +":"+ wipe);
+			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + p.getName() + " loc=" + loc + "  " + die +":"+ wipe);
 			BAPlayerListener.teleportOnReenter(p.getName(),loc);
 			if (wipe){
-				InventoryUtil.clearInventory(p);
-			}
+				InventoryUtil.clearInventory(p);}
 			return;
 		}
 		teleport(p,loc);
@@ -86,17 +85,12 @@ public class TeleportController {
 				loc.getWorld().loadChunk(loc.getBlock().getChunk());}
 		} catch (Exception e){}
 
-		/// Multi inv stores/restores items when changing worlds... lets not let this happen
-		/// If we are shutting down (aka isEnabled = false) multiinv will have shutdown before us
-		/// so skip the attachment and just get players out if we can
-		boolean ignoreMultiInv = Defaults.PLUGIN_MULTI_INV && BattleArena.getSelf().isEnabled() && 
-				(p.getWorld().getUID() != loc.getWorld().getUID() || p.getGameMode() != GameMode.SURVIVAL) ;
-		if (ignoreMultiInv){
-			/// Give the multiinv permission node to ignore this player, do it for 3 ticks
-			p.addAttachment(plugin, Defaults.MULTI_INV_IGNORE_NODE, true, 3);
-		}
-		/// Now move the gamemode after we have dealth with multiinv
-		p.setGameMode(GameMode.SURVIVAL);
+		/// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
+		/// or game states ... lets not let this happen
+		PermissionsUtil.givePlayerInventoryPerms(p);			
+
+//		/// Now move the gamemode after we have dealth with multiinv
+//		p.setGameMode(GameMode.SURVIVAL);
 
 		if (!p.teleport(loc)){
 			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + p.getName() + " loc=" + loc);}

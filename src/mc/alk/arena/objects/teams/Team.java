@@ -7,19 +7,20 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.JoinPreferences;
 import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.entity.Player;
 
 public class Team {
 	static int count = 0;
+	final int id = count++; /// id
 
 	protected Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
 	protected Set<ArenaPlayer> deadplayers = new HashSet<ArenaPlayer>();
 
 	protected String name =null; /// Internal name of this team
 	protected String displayName =null; /// Display name
-	final int id = count++; /// id
 
 	HashMap<ArenaPlayer, Integer> kills = new HashMap<ArenaPlayer,Integer>();
 	HashMap<ArenaPlayer, Integer> deaths = new HashMap<ArenaPlayer,Integer>();
@@ -29,11 +30,13 @@ public class Team {
 	/// This is only so that teleports can be done to slightly different places for each player
 	protected HashMap<String,Integer> playerIndexes = new HashMap<String,Integer>();
 
+	protected JoinPreferences jp;
+
 	/**
 	 * Default Constructor
 	 */
 	public Team(){}
-	
+
 	protected Team(ArenaPlayer p) {
 		players.add(p);
 		createName();
@@ -140,13 +143,13 @@ public class Team {
 	public int getNKills() {
 		int nkills = 0;
 		for (Integer i: kills.values()) nkills+=i;
-				return nkills;
+		return nkills;
 	}
 
 	public int getNDeaths() {
 		int nkills = 0;
 		for (Integer i: deaths.values()) nkills+=i;
-				return nkills;
+		return nkills;
 	}
 
 	public int getNDeaths(ArenaPlayer p) {
@@ -250,5 +253,8 @@ public class Team {
 		return displayName != null;
 	}
 
+	public JoinPreferences getJoinPreferences() {
+		return jp;
+	}
 }
 

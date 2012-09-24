@@ -69,6 +69,11 @@ public class YamlFileUpdater {
 			f = bacs.getFile();
 			to1Point3(bacs, fc, f, tempFile, version);			
 		}
+		if (version < 1.35){
+			fc = bacs.getConfig();
+			f = bacs.getFile();
+			to1Point35(bacs, fc, f, tempFile, version);			
+		}
 	}
 
 	private static void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, double version) {
@@ -244,6 +249,52 @@ public class YamlFileUpdater {
 					fw.write("    challengeInterval: 1800 # (seconds) 1800 = 30minutes\n");
 					fw.write("\n");
 					fw.write(line+"\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(f.getAbsoluteFile());
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void to1Point35(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, double version) {
+		Log.warn("BattleArena updating config to 1.35");
+
+		String line =null;
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(f));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		BufferedWriter fw =null;
+		try {
+			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
+			fw = new BufferedWriter(new FileWriter(tempFile));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		} 
+
+		try {
+			boolean updatedDefaultSection = false;
+			if (version == 0){
+				fw.write("configVersion: 1.35\n");}
+			while ((line = br.readLine()) != null){
+//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 1.35\n");
+				} else if (!updatedDefaultSection && (line.matches(".*challengeInterval.*"))){
+					fw.write(line +"\n");
+					fw.write("\n");
+					fw.write("    ### Scheduled Event Options\n");
+					fw.write("    ### Valid options [startContinuous, startNext]\n");
+					fw.write("    onServerStart: []");
+					fw.write("\n");
 				} else {
 					fw.write(line+"\n");
 				}

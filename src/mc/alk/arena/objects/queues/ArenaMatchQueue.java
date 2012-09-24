@@ -13,6 +13,7 @@ import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.JoinPreferences;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
@@ -145,9 +146,9 @@ public class ArenaMatchQueue {
 		synchronized(arenaqueue){ synchronized(mtq){
 			final MatchParams mp = mtq.getMatchParams();
 			for (Arena a : arenaqueue){
-				if (a == null || !a.valid() || !a.matches(mp))
+				if (a == null || !a.valid() || !a.matches(mp,null))
 					continue;
-				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + a  +"   mtq=" + mtq +" matches=" + a.matches(mp));
+				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + a  +"   mtq=" + mtq +" matches=" + a.matches(mp,null));
 
 				List<Team> teams = new ArrayList<Team>();
 				Matchup matchup = mtq.getFirst();
@@ -183,15 +184,13 @@ public class ArenaMatchQueue {
 		List<Team> teams = new ArrayList<Team>();
 		MatchParams mp = tq.getMatchParams();
 		final int teamSize = mp.getMinTeamSize();
-		//		final int neededPlayers = mp.getMinTeams() * teamSize; /// minTeams*minPlayers
 		/// The idea here is we iterate through all arenas
 		/// See if one matches with the type of TeamQueue that we have been given
 		/// Then we make sure those players are ready, and if not send them messages
 		synchronized(arenaqueue){ synchronized(tq){
 			for (Arena a : arenaqueue){
-				if (a == null || !a.valid() || !a.matches(mp))
+				if (a == null || !a.valid() || !a.matches(mp,null))
 					continue;
-				//				final ArenaParams ap = a.getParameters();
 				//				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
 				//						"   tq=" + tq +" matches=" + ap.matches(mp) +"  mp="+mp+", --- ap="+ap +"    "+tq.size()+" <? "+ap.getMinTeams());
 				/// Does our specific setting fit with this arena
@@ -205,7 +204,11 @@ public class ArenaMatchQueue {
 				teams.clear();
 				CompositeTeam cteam = null;
 				for (Team t : qteams){
-					if (Defaults.DEBUG) System.out.println("--"+teamSize +" " + t.size() +"  t="+t.getName() +",mp="+mp);
+					JoinPreferences jp = t.getJoinPreferences();
+					if (Defaults.DEBUG) System.out.println("--"+teamSize +" " + t.size() +"  t="+t.getName() +",mp="+mp +",jp="+ jp.matches(a));
+					if (jp != null && !jp.matches(a)){
+						continue;}
+					
 					if (t.size() > mp.getMaxTeamSize()){ /// can't use this team, they are too large.  If they are too small we can merge
 						continue;
 					} else if (t.size()== teamSize){ /// team size is just right, add them to the teams
@@ -347,7 +350,7 @@ public class ArenaMatchQueue {
 	public Arena getNextArena(MatchParams mp) {
 		synchronized(arenaqueue){ 
 			for (Arena a : arenaqueue){
-				if (!a.valid() || !a.matches(mp))
+				if (!a.valid() || !a.matches(mp,null))
 					continue;
 				arenaqueue.remove(a);
 				return a;

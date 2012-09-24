@@ -41,16 +41,21 @@ public class APIRegistrationController {
 		/// Register our arenas
 		ArenaType at = ArenaType.register(name, arenaClass, plugin);
 		Log.info(plugin.getName() +" registering arena type " +name +" using arenaClass " +arenaClass.getName());
+
 		/// Load our configs
 		ArenaSerializer as = new ArenaSerializer(plugin, plugin.getDataFolder()+"/arenas.yml"); /// arena config
 		as.loadArenas(plugin,at);
 
 		ConfigSerializer cc = new ConfigSerializer(); /// Our config.yml
-		
+
 		String configFileName = name+"Config.yml";
 		File f = new File(dir.getPath()+"/"+configFileName);
 		if (!f.exists()){
-			loadDefaultConfig(plugin, name,cmd, f, match);}
+			if (!loadDefaultConfig(plugin, name,cmd, f, match)){
+				Log.err("Config could not be loaded");
+				return;
+			}
+		}
 
 		cc.setConfig(at, dir.getPath()+"/"+configFileName);
 
@@ -69,7 +74,7 @@ public class APIRegistrationController {
 		}
 	}
 
-	private void loadDefaultConfig(Plugin plugin, String name, String cmd, File configFile, boolean match) {
+	private boolean loadDefaultConfig(Plugin plugin, String name, String cmd, File configFile, boolean match) {
 		InputStream inputStream = null;
 		File infile = new File("/"+name+"Config.yml");
 		/// See if the plugin has supplied a default config already, if not get a default from BattleArena
@@ -79,6 +84,10 @@ public class APIRegistrationController {
 			infile = new File("/default_files/"+fileName);			
 			inputStream = getClass().getResourceAsStream(infile.getAbsolutePath());
 		}
+		if (inputStream == null){
+			Log.err("No default config file could be found.  Searched for " + infile.getName());
+			return false;
+		}
 		String line =null;
 		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 		BufferedWriter fw =null;
@@ -86,7 +95,7 @@ public class APIRegistrationController {
 			fw = new BufferedWriter(new FileWriter(configFile));
 		} catch (IOException e) {
 			e.printStackTrace();
-			return;
+			return false;
 		} 
 
 		try {
@@ -97,7 +106,9 @@ public class APIRegistrationController {
 			fw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 
 	public void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass) {

@@ -5,6 +5,7 @@ import mc.alk.arena.util.WorldGuardUtil;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 /**
  * @author alkarin
@@ -54,6 +55,14 @@ public class WorldGuardInterface {
 
 	public static void isLeavingArea(final Location from, final Location to, World w, String id) {
 		WorldGuardUtil.isLeavingArea(from , to , w, id);
+	}
+
+	public static boolean setWorldGuard(Plugin plugin) {
+		return WorldGuardUtil.setWorldGuard(plugin);
+	}
+
+	public static boolean setWorldEdit(Plugin plugin) {
+		return WorldGuardUtil.setWorldEdit(plugin);
 	}
 
 }

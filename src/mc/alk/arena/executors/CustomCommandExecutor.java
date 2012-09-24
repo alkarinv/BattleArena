@@ -24,6 +24,7 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.tracker.controllers.MessageController;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -372,7 +373,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			return mp;
 		} else {
 			for (String alias : command.getAliases()){
-				mp = new MatchParams(ParamController.getMatchParamCopy(alias));
+				mp = ParamController.getMatchParamCopy(alias);
 				if (mp != null)
 					return mp;
 			}
@@ -444,10 +445,13 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			MessageUtil.sendMessage(sender, "&4That page doesnt exist, try 1-"+npages);
 			return;
 		}
-		if (command != null)
-			MessageUtil.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 :[Usage] /"+command.getName()+" help <page number>");
-		else 
-			MessageUtil.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 :[Usage] /cmd help <page number>");
+		if (command != null) {
+			String aliases = StringUtils.join(command.getAliases(),", ");
+			MessageUtil.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 : /"+command.getName()+" help <page number>");
+			MessageUtil.sendMessage(sender, "&e    command &6"+command.getName()+"&e has aliases: &6" + aliases);			
+		} else { 
+			MessageUtil.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 : /cmd help <page number>");
+		}
 		int i=0;
 		for (String use : available){
 			i++;

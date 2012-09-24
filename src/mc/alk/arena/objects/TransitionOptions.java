@@ -18,27 +18,32 @@ import org.bukkit.inventory.ItemStack;
 
 public class TransitionOptions {
 	public static enum TransitionOption{
-		TELEPORTWAITROOM("teleportWaitRoom"),TELEPORTIN ("teleportIn"), TELEPORTOUT("teleportOut"), 
-		RESPAWN ("respawn"), RANDOMRESPAWN ("randomRespawn"),
-		CLEARINVENTORY ("clearInventory"), NEEDARMOR ("needArmor"),CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter"), 
-		NEEDITEMS ("needItems"), GIVEITEMS("giveItems"), GIVECLASS("giveClass"),
-		HEALTH("health"), HUNGER("hunger"),
-		MONEY("money"), EXPERIENCE("experience"),
-		PVPON("pvpOn"), PVPOFF("pvpOff"),INVINCIBLE("invincible"),
-		BLOCKBREAKOFF("blockBreakOff"), BLOCKBREAKON("blockBreakOn"),
-		BLOCKPLACEOFF("blockPlaceOff"), BLOCKPLACEON("blockPlaceOn"),
-		DISGUISEALLAS("disguiseAllAs"), UNDISGUISE("undisguise"),
-		ENCHANTS("enchants"), DEENCHANT("deEnchant"),
-		STOREEXPERIENCE("storeExperience"), RESTOREEXPERIENCE("restoreExperience"),
-		STOREGAMEMODE("storeGamemode"), RESTOREGAMEMODE("restoreGamemode"),
-		STOREITEMS("storeItems"), RESTOREITEMS("restoreItems"),
-		STORE("store"), RESTORE("restore"),
-		WGCLEARREGION("wgClearRegion"), WGNOLEAVE("wgNoLeave"),
-		WOOLTEAMS("woolTeams")
+		TELEPORTWAITROOM("teleportWaitRoom",false),TELEPORTIN ("teleportIn",false), TELEPORTOUT("teleportOut",false),
+		TELEPORTBACK("teleportBack",false),
+		RESPAWN ("respawn",false), RANDOMRESPAWN ("randomRespawn",false),
+		CLEARINVENTORY ("clearInventory",false), NEEDARMOR ("needArmor",false),
+		CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter",false), 
+		NEEDITEMS ("needItems",false), GIVEITEMS("giveItems",false), GIVECLASS("giveClass",false),
+		HEALTH("health",true), HUNGER("hunger",true),
+		MONEY("money",true), EXPERIENCE("experience",true),
+		PVPON("pvpOn",false), PVPOFF("pvpOff",false),INVINCIBLE("invincible",false),
+		BLOCKBREAKOFF("blockBreakOff",false), BLOCKBREAKON("blockBreakOn",false),
+		BLOCKPLACEOFF("blockPlaceOff",false), BLOCKPLACEON("blockPlaceOn",false),
+		DISGUISEALLAS("disguiseAllAs",true), UNDISGUISE("undisguise",false),
+		ENCHANTS("enchants",false), DEENCHANT("deEnchant",false),
+		STOREEXPERIENCE("storeExperience",false), RESTOREEXPERIENCE("restoreExperience",false),
+		STOREGAMEMODE("storeGamemode",false), RESTOREGAMEMODE("restoreGamemode",false),
+		STOREITEMS("storeItems",false), RESTOREITEMS("restoreItems",false),
+		STORE("store",false), RESTORE("restore",false),
+		WGCLEARREGION("wgClearRegion",false), WGNOLEAVE("wgNoLeave",false),
+		WOOLTEAMS("woolTeams",false),
+		SAMEWORLD("sameWorld",false), WITHINDISTANCE("withinDistance",true)
 		;
 		String name;
-		TransitionOption(String name){this.name= name;}
+		boolean hasValue = false;
+		TransitionOption(String name,Boolean hasValue){this.name= name;this.hasValue = hasValue;}
 		public String toString(){return name;}
+		public boolean hasValue(){return true;}
 	};
 	Set<TransitionOption> options = null;
 	List<ItemStack> items = null;
@@ -49,7 +54,7 @@ public class TransitionOptions {
 	Integer health = null;
 	Integer hunger = null;
 	String disguiseAllAs = null;
-
+	Integer withinDistance = null;
 	public TransitionOptions() {
 	}
 	public TransitionOptions(TransitionOptions o) {
@@ -88,7 +93,9 @@ public class TransitionOptions {
 	public boolean hasItems() {return (items != null && (options.contains(TransitionOption.NEEDITEMS) || options.contains(TransitionOption.GIVEITEMS)) );}
 	public boolean shouldTeleportWaitRoom() {return options.contains(TransitionOption.TELEPORTWAITROOM);}
 	public boolean shouldTeleportIn() {return options.contains(TransitionOption.TELEPORTIN);}
-	public boolean shouldTeleportOut() {return options.contains(TransitionOption.TELEPORTOUT);}
+	public boolean shouldTeleportOut() {
+		return options.contains(TransitionOption.TELEPORTOUT) || options.contains(TransitionOption.TELEPORTBACK);
+	}
 
 	public boolean blockBreakOff() {return options.contains(TransitionOption.BLOCKBREAKOFF);}
 	public boolean blockPlaceOff() {return options.contains(TransitionOption.BLOCKPLACEOFF);}
@@ -327,6 +334,12 @@ public class TransitionOptions {
 		StringBuilder sb = new StringBuilder("[MatchOptions=");
 		sb.append(options +"]");
 		return sb.toString();
+	}
+	public void setWithinDistance(Integer value) {
+		withinDistance = value;
+	}
+	public int getWithinDistance() {
+		return withinDistance;
 	}
 	
 }

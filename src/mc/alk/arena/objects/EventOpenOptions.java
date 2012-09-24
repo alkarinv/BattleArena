@@ -2,6 +2,7 @@ package mc.alk.arena.objects;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -42,6 +43,8 @@ public class EventOpenOptions {
 				case ARENA:
 					val = "=<arena>";
 					break;
+				default:
+					break;
 				}
 				sb.append(r+val);
 			}
@@ -52,10 +55,13 @@ public class EventOpenOptions {
 	HashMap<EventOpenOption,Object> options = new HashMap<EventOpenOption,Object>();
 	int announceInterval = 0, secTillStart = 0;
 
-	public static EventOpenOptions parseOptions(String[] args) throws InvalidOptionException{
+	public static EventOpenOptions parseOptions(String[] args, Set<Integer> ignoreArgs) throws InvalidOptionException{
 		EventOpenOptions eoo = new EventOpenOptions();
 		HashMap<EventOpenOption,Object> ops = eoo.options;
+		int i =0;
 		for (String op: args){
+			if ( ignoreArgs != null && ignoreArgs.contains(i++))
+				continue;
 			Object obj = null;
 			String[] split = op.split("=");
 			split[0] = split[0].trim().toUpperCase();
@@ -100,7 +106,8 @@ public class EventOpenOptions {
 				obj = BattleArena.getBAC().getArena(val);
 				if (obj==null){
 					throw new InvalidOptionException("&cCouldnt find the arena &6" +val);}
-
+			default:
+				break;
 			}
 			if (obj != null)
 				ops.put(to, obj);
@@ -122,22 +129,23 @@ public class EventOpenOptions {
 
 	public void updateParams(MatchParams mp){
 		/// Rated
-		Rating rated = hasOption(EventOpenOption.UNRATED) ? Rating.UNRATED : Rating.RATED;
-
-		/// Team size
-		MinMax teamSize = hasOption(EventOpenOption.TEAMSIZE) ?  (MinMax)getOption(EventOpenOption.TEAMSIZE) : 
-			new MinMax(1,1);
+		mp.setRating(hasOption(EventOpenOption.UNRATED) ? Rating.UNRATED : Rating.RATED);
+		/// By default lets make the teamSize the min team size if max # teams not specified as a finite range
+		if (mp.getMaxTeams() == ArenaParams.MAX){ 
+			mp.setMaxTeamSize(mp.getMinTeamSize());
+		}
 
 		/// Number of Teams
-		MinMax nTeams = hasOption(EventOpenOption.NTEAMS) ? (MinMax)getOption(EventOpenOption.NTEAMS) : 
-			new MinMax(2,ArenaParams.MAX);
+		if (hasOption(EventOpenOption.NTEAMS)){
+			mp.setNTeams((MinMax)getOption(EventOpenOption.NTEAMS));
+		}
 
-		mp.setTeamSizes(teamSize);
-		mp.setNTeams(nTeams);
-		mp.setRating(rated);
+		/// Team size
+		if (hasOption(EventOpenOption.TEAMSIZE)){
+			mp.setTeamSizes((MinMax)getOption(EventOpenOption.TEAMSIZE));}		
 	}
 
-	public Arena getArena(MatchParams mp) throws InvalidOptionException{
+	public Arena getArena(MatchParams mp, JoinPreferences jp) throws InvalidOptionException{
 		BattleArenaController ac = BattleArena.getBAC();
 
 		Arena arena;
@@ -145,9 +153,9 @@ public class EventOpenOptions {
 		if (hasOption(EventOpenOption.ARENA)){
 			arena = (Arena) getOption(EventOpenOption.ARENA);
 		} else {
-			arena = ac.getArenaByMatchParams(mp);
+			arena = ac.getArenaByMatchParams(mp,jp);
 			if (arena == null){
-				List<String> reasons = ac.getNotMachingArenaReasons(mp);
+				List<String> reasons = ac.getNotMachingArenaReasons(mp,jp);
 				throw new InvalidOptionException(
 						"&cCouldnt find an arena matching the params &6"+mp +"\n" + StringUtils.join(reasons,"\n"));
 			}

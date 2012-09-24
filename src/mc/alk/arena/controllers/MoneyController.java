@@ -14,36 +14,44 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import com.nijikokun.register.payment.Methods;
 
 public class MoneyController implements Listener{
-
+	static boolean initialized = false;
 	static boolean hasVault = false;
 	static boolean hasRegister = false;
 	static boolean useVault = false;
 	public static Economy economy = null;
 
 	public static boolean hasAccount(String name) {
+		if (!initialized) return true;
 		return useVault? economy.hasAccount(name) : Methods.getMethod().hasAccount(name);
 	}
 	public static boolean hasEnough(String name, double fee) {
+		if (!initialized) return true;
 		return hasEnough(name, (float) fee);
 	}
 	public static boolean hasEnough(String name, float amount) {
+		if (!initialized) return true;
 		return useVault? economy.getBalance(name) >= amount :Methods.getMethod().getAccount(name).hasEnough(amount); 
 	}
 	public static void subtract(String name, double fee) {
+		if (!initialized) return;
 		subtract(name,(float) fee);
 	}
 	public static void subtract(String name, float amount) {
+		if (!initialized) return;
 		if (useVault) economy.withdrawPlayer(name, amount); 
 		else Methods.getMethod().getAccount(name).subtract(amount);	
 	}
 	public static void add(String name, float amount) {
+		if (!initialized) return;
 		if (useVault) economy.depositPlayer(name, amount) ;
 		else Methods.getMethod().getAccount(name).add(amount);
 	}
 	public static Double balance(String name) {
+		if (!initialized) return 0.0;
 		return useVault ? economy.getBalance(name) : Methods.getMethod().getAccount(name).balance();
 	}
 	public static void add(String name, double amount) {
+		if (!initialized) return;
 		add(name,(float)amount);
 	}
 
@@ -61,6 +69,7 @@ public class MoneyController implements Listener{
 		Plugin controller = Bukkit.getServer().getPluginManager().getPlugin("Register");
 		if (controller != null) {
 			hasRegister = true;
+			initialized = true;
 			if (!hasVault)
 				useVault = false;
 			Log.info(BattleArena.getPName() +" found economy plugin Register");
@@ -77,6 +86,7 @@ public class MoneyController implements Listener{
     			}
     			MoneyController.economy = economyProvider.getProvider();
     			useVault = hasVault = true;
+    			initialized = true;
     			Log.info(BattleArena.getPName() +" found economy plugin Vault. [Default]");
     		}
     	}

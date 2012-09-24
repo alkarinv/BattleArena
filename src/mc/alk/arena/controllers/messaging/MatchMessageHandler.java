@@ -7,6 +7,7 @@ import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.teams.Team;
 
 public interface MatchMessageHandler {
+	public void sendOnBeginMsg(Channel channel, List<Team> teams);
 	public void sendOnPreStartMsg(Channel serverChannel, List<Team> teams);
 	public void sendOnStartMsg(Channel serverChannel, List<Team> teams);
 	public void sendOnVictoryMsg(Channel serverChannel, Team victor, Collection<Team> losers);

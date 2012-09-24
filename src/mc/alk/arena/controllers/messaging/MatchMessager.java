@@ -26,6 +26,10 @@ public class MatchMessager {
 		return bos != null && bos.hasOption(true,state) ? bos.getChannel(true,state) : AnnouncementOptions.getDefaultChannel(true,state);
 	}
 
+	public void sendOnBeginMsg(List<Team> teams) {
+		try{impl.sendOnBeginMsg(getChannel(MatchState.ONBEGIN), teams);}catch(Exception e){e.printStackTrace();}
+	}
+
 	public void sendOnPreStartMsg(List<Team> teams) {
 		try{impl.sendOnPreStartMsg(getChannel(MatchState.ONPRESTART), teams);}catch(Exception e){e.printStackTrace();}
 	}

@@ -1,8 +1,10 @@
 package mc.alk.arena.listeners;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -18,6 +20,7 @@ import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.PermissionsUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -54,6 +57,7 @@ public class BAPlayerListener implements Listener  {
 
 	public static HashMap<String,Integer> expRestore = new HashMap<String,Integer>();
 	public static HashMap<String,PInv> itemRestore = new HashMap<String,PInv>();
+	public static HashMap<String,List<ItemStack>> itemRemove = new HashMap<String,List<ItemStack>>();
 	public static HashMap<String,GameMode> gamemodeRestore = new HashMap<String,GameMode>();
 	public static HashMap<String,String> messagesOnRespawn = new HashMap<String,String>();
 
@@ -105,21 +109,17 @@ public class BAPlayerListener implements Listener  {
 		playerReturned(p, event);
 	}
 
-	private void playerReturned(Player p, PlayerRespawnEvent event) {
+	private void playerReturned(final Player p, PlayerRespawnEvent event) {
 		final String name = p.getName();
 		final String msg = messagesOnRespawn.remove(p.getName());
 		if (msg != null){
 			MessageUtil.sendMessage(p, msg);
 		}
-		//		System.out.println(" playerReturned event player = " + p.getName() +"  " + event +"   " + itemRestore.containsKey(p.getName()));
 
 		if (die.remove(name)){
 			MessageUtil.sendMessage(p, "&eYou have been killed by the Arena for not being online");
 			p.setHealth(0);
 			return;
-		}
-		if (gamemodeRestore.containsKey(name)){
-			PlayerStoreController.restoreGameMode(p, gamemodeRestore.remove(name));
 		}
 		if (tp.containsKey(name)){
 			Location loc = tp.get(name);
@@ -128,10 +128,7 @@ public class BAPlayerListener implements Listener  {
 				if (event == null){
 					TeleportController.teleport(p, tp.get(name));
 				} else {
-					if (Defaults.PLUGIN_MULTI_INV){ /// teleportController does this as well, so we only need to do it for respawn
-						/// TeamJoinResult the multi-inv ignore this player permission node, do it for 3 ticks
-						p.addAttachment(BattleArena.getSelf(), Defaults.MULTI_INV_IGNORE_NODE, true, 3);
-					}
+					PermissionsUtil.givePlayerInventoryPerms(p);
 					event.setRespawnLocation(tp.get(name));
 				}
 			} else { /// this is bad, how did they get a null tp loc
@@ -139,16 +136,23 @@ public class BAPlayerListener implements Listener  {
 			}
 			tp.remove(name);
 		}
+		/// Do these after teleports
+		if (gamemodeRestore.containsKey(name)){
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+				@Override
+				public void run() {
+					PlayerStoreController.setGameMode(p, gamemodeRestore.remove(name));
+				}
+			});
+		}
 
 		if (expRestore.containsKey(p.getName())){
 			final int exp = expRestore.remove(p.getName());
-			//			System.out.println("restoring exp to " +p.getName()+"   exp="+ exp);
 			Plugin plugin = BattleArena.getSelf();
-			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
 					Player pl = Bukkit.getPlayerExact(name);
 					if (pl != null){
-						//						pl.setTotalExperience(exp);	
 						pl.giveExp(exp);
 					}
 
@@ -157,12 +161,12 @@ public class BAPlayerListener implements Listener  {
 		}
 		if (itemRestore.containsKey(p.getName())){
 			Plugin plugin = BattleArena.getSelf();
-			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
 					Player pl;
 					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);} 
 					else {pl = Bukkit.getPlayer(name);}
-					//					System.out.println("restoring items to " + name +"   pl = " + pl);
+//					System.out.println("### restoring items to " + name +"   pl = " + pl);
 					if (pl != null){
 
 						PInv pinv = itemRestore.remove(pl.getName());
@@ -172,11 +176,20 @@ public class BAPlayerListener implements Listener  {
 				}
 			});
 		}
-		/// TODO fix the teamHeads removal
-		//		if (clearWool.containsKey(name)){
-		//			int s = clearWool.remove(name);
-		//			p.getInventory().remove(new ItemStack(Material.WOOL,0,(short) s));
-		//		}
+		if (itemRemove.containsKey(p.getName())){
+			Plugin plugin = BattleArena.getSelf();
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+				public void run() {
+					Player pl;
+					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);} 
+					else {pl = Bukkit.getPlayer(name);}
+					if (pl != null){
+						List<ItemStack> items = itemRemove.remove(pl.getName());
+						PlayerStoreController.removeItems(BattleArena.toArenaPlayer(pl), items);
+					}
+				}
+			});
+		}
 	}
 
 	public static void killOnReenter(String playerName) {
@@ -250,5 +263,23 @@ public class BAPlayerListener implements Listener  {
 		event.setCancelled(true);
 		block.setType(Material.AIR);
 		block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.SIGN, 1));   	
+	}
+
+	public static void removeItemOnEnter(ArenaPlayer p, ItemStack is) {
+		List<ItemStack> items = itemRemove.get(p.getName());
+		if (items == null){
+			items = new ArrayList<ItemStack>();
+			itemRemove.put(p.getName(), items);
+		}
+		items.add(is);
+	}
+
+	public static void removeItemsOnEnter(ArenaPlayer p, List<ItemStack> itemsToRemove) {
+		List<ItemStack> items = itemRemove.get(p.getName());
+		if (items == null){
+			items = new ArrayList<ItemStack>();
+			itemRemove.put(p.getName(), items);
+		}
+		items.addAll(itemsToRemove);		
 	}
 }

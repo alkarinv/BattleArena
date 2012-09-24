@@ -83,4 +83,18 @@ public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
 		}
 		return sendMessage(sender, "&2Scheduled events are now &4stopped!");
 	}
+	
+	@MCCommand(cmds={"startNext"}, admin=true)
+	public boolean startNext(CommandSender sender) {
+		List<EventPair> events = es.getEvents();
+		if (events == null || events.isEmpty()){
+			return sendMessage(sender, "&cNo &4BattleArena&c events have been scheduled");}
+
+		if (es.isRunning()){
+			return sendMessage(sender, "&cScheduled events are already running!");
+		} else {
+			es.startNext();
+		}
+		return sendMessage(sender, "&2Next Scheduled event is now starting");
+	}
 }

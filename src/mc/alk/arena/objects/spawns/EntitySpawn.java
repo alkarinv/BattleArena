@@ -29,7 +29,7 @@ public class EntitySpawn extends SpawnInstance{
 		}
 		uids.clear();
 		for (int i=0;i< number;i++){
-			uids.add(loc.getWorld().spawnCreature(loc, et));}
+			uids.add((LivingEntity)loc.getWorld().spawnEntity(loc, et));}
 		return spawnId;
 	}
 

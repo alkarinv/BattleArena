@@ -63,6 +63,7 @@ public class FileLogger {
 			Formatter form = new Formatter(buf);
 			form.format(node, varArgs);
 			msgs.add(sdf.format(cal.getTime()).toString() + "," + buf.toString() +"\n");
+			form.close();
 			return msgs.size();
 		} catch(Exception e){
 			e.printStackTrace();

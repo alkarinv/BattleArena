@@ -1,15 +1,16 @@
 package mc.alk.arena.controllers;
 
 import java.util.HashMap;
+import java.util.List;
 
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.Log;
+import mc.alk.arena.util.PermissionsUtil;
 
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -124,54 +125,23 @@ public class PlayerStoreController {
 	}
 
 	public void restoreItems(ArenaPlayer p) {
-		if (PerformTransition.debug)  System.out.println("   "+p.getName()+" psc conatins=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
+		if (PerformTransition.debug)  System.out.println("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
 		PInv pinv = itemmap.remove(p.getName());
 		if (pinv == null)
 			return;
-//		if (p.isOnline() && !p.isDead()){
-			setInventory(p, pinv);
-//		} else {
-//			BAPlayerListener.restoreItemsOnReenter(p.getName(), pinv);
-//		}
+		setInventory(p, pinv);
 	}
 
 	public static void setInventory(ArenaPlayer p, PInv pinv) {
 		FileLogger.log("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
-		if (PerformTransition.debug) System.out.println("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
-		if (p.isOnline()){
+		if (PerformTransition.debug) Log.info("restoring items for " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
+		if (p.isOnline() && !p.isDead()){
 			setOnlineInventory(p.getPlayer(), pinv);
 		} else {
 			BAPlayerListener.restoreItemsOnReenter(p.getName(), pinv);
 		}
 	}
-//
-//	@SuppressWarnings("deprecation")
-//	private static void setOfflineInventory(Player p, PInv pinv) {
-//		World w = p.getWorld();
-//		System.out.println(" world = " + w);
-//		File folder = new File(Bukkit.getWorld(w.getUID()).getWorldFolder(), "players");
-//		if (!folder.exists()){
-//			Log.err("Couldnt find player folders for world " + w.getName());
-//			return;
-//		}
-//		File playerdat = new File(folder.getAbsolutePath() +"/"+p.getName()+".dat");
-//		if (!playerdat.exists()){
-//			Log.err("Couldnt find player dat file " + p.getName());
-//			return;			
-//		}
-//		final MinecraftServer server = ((CraftServer) Bukkit.getServer()).getServer();
-//		EntityPlayer ep = ((CraftPlayer) p).getHandle();
-//		WorldServer ws = server.getWorldServer(ep.dimension);
-//        final EntityPlayer entity = new EntityPlayer(server, ws, p.getName(), new ItemInWorldManager(ws));
-//        Player pl = (entity == null) ? null : (Player) entity.getBukkitEntity();
-//        if (pl != null) {
-//            pl.loadData();
-//        } else {
-//            Log.err(ChatColor.RED + "Player " + p.getName() + " not found!");
-//            return;
-//        }
-//        setOnlineInventory(pl,pinv);
-//	}
+
 	@SuppressWarnings("deprecation")
 	private static void setOnlineInventory(Player p, PInv pinv) {
 		PlayerInventory inv = p.getPlayer().getInventory();
@@ -191,15 +161,13 @@ public class PlayerStoreController {
 			FileLogger.log("r aitemstack="+ InventoryUtil.getItemString(is));
 		}
 	}
+
 	public void storeGamemode(ArenaPlayer p) {
 		if (gamemode.containsKey(p.getName()))
 			return;
+		if (PerformTransition.debug)  Log.info("storing gamemode " + p.getName() +" " + p.getPlayer().getGameMode());
 
-		boolean ignoreMultiInv = Defaults.PLUGIN_MULTI_INV && BattleArena.getSelf().isEnabled() ;
-		if (ignoreMultiInv){
-			/// Give the multiinv permission node to ignore this player, do it for 3 ticks
-			p.getPlayer().addAttachment(BattleArena.getSelf(), Defaults.MULTI_INV_IGNORE_NODE, true, 3);
-		}
+		PermissionsUtil.givePlayerInventoryPerms(p);
 		gamemode.put(p.getName(), p.getPlayer().getGameMode());
 	}
 
@@ -207,22 +175,34 @@ public class PlayerStoreController {
 		GameMode gm = gamemode.remove(p.getName());
 		if (gm == null)
 			return;
-		if (!p.isOnline()){
+		if (!p.isOnline() || p.isDead()){
 			BAPlayerListener.restoreGameModeOnEnter(p.getName(), gm);	
 		} else {
-			restoreGameMode(p.getPlayer(), gm);
+			setGameMode(p.getPlayer(), gm);
+		}
+	}
+
+	public static void setGameMode(Player p, GameMode gm){
+		if (PerformTransition.debug)  Log.info("set gamemode " + p.getName() +" " + p.isOnline()+":"+p.isDead() +" gm=" +gm +"  " + p.getGameMode());
+		if (gm != null && gm != p.getGameMode()){
+			PermissionsUtil.givePlayerInventoryPerms(p);
+			p.getPlayer().setGameMode(gm);
 		}
 	}
 	
-	public static void restoreGameMode(Player p, GameMode gm){
-		if (gm != null && gm != p.getGameMode()){
-			boolean ignoreMultiInv = Defaults.PLUGIN_MULTI_INV && BattleArena.getSelf().isEnabled();
-			if (ignoreMultiInv){
-				/// Give the multiinv permission node to ignore this player, do it for 3 ticks
-				p.getPlayer().addAttachment(BattleArena.getSelf(), Defaults.MULTI_INV_IGNORE_NODE, true, 3);
-			}
-			p.getPlayer().setGameMode(gm);
-		}
-		
+	public static void removeItem(ArenaPlayer p, ItemStack is) {
+		if (p.isOnline()){
+			InventoryUtil.removeItems((PlayerInventory)p.getInventory(),is);
+		} else {
+			BAPlayerListener.removeItemOnEnter(p,is);
+		}	
+	}
+
+	public static void removeItems(ArenaPlayer p, List<ItemStack> items) {
+		if (p.isOnline()){
+			InventoryUtil.removeItems((PlayerInventory)p.getInventory(),items);
+		} else {
+			BAPlayerListener.removeItemsOnEnter(p,items);
+		}	
 	}
 }

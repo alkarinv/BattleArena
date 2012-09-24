@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 
 public class DuelOptions {
 	List<ArenaPlayer> challengedPlayers = new ArrayList<ArenaPlayer>();
-	
+
 	public static enum DuelOption{
 		ARENA,RATED, UNRATED;
 
@@ -29,6 +29,7 @@ public class DuelOptions {
 				case ARENA:
 					val = "=<arena>";
 					break;
+				default: break;
 				}
 				sb.append(r+val);
 			}
@@ -47,14 +48,14 @@ public class DuelOptions {
 			if (p != null){
 				if (!p.isOnline())
 					throw new InvalidOptionException("&cPlayer &6" + p.getDisplayName() +"&c is not online!");
-				
+
 				eoo.challengedPlayers.add(BattleArena.toArenaPlayer(p));
 				continue;
 			}
 			Object obj = null;
 			String[] split = op.split("=");
 			split[0] = split[0].trim().toUpperCase();
-			
+
 			DuelOption to = null;
 			try{
 				to = DuelOption.valueOf(split[0]);
@@ -67,8 +68,9 @@ public class DuelOptions {
 				if (!Defaults.DUEL_ALLOW_RATED)
 					throw new InvalidOptionException("&cRated duels are not allowed!");
 				break;
+			default: break;
 			}
-			
+
 			if (split.length == 1){
 				ops.put(to,null);
 				continue;
@@ -79,6 +81,7 @@ public class DuelOptions {
 				obj = BattleArena.getBAC().getArena(val);
 				if (obj==null){
 					throw new InvalidOptionException("&cCouldnt find the arena &6" +val);}
+			default: break;
 			}
 			ops.put(to, obj);
 		}

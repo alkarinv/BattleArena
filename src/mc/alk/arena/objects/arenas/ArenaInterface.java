@@ -18,10 +18,12 @@ public class ArenaInterface {
 	}
 	
 	public void onOpen(){arena.privateOnOpen();}
+	public void onBegin(){arena.privateOnBegin();}
 	public void onPrestart(){arena.privateOnPrestart();}
 	public void onStart(){arena.privateOnStart();}
 	public void onVictory(MatchResult result) {arena.privateOnVictory(result);}
 	public void onComplete(){arena.privateOnComplete();}
+	public void onFinish(){arena.privateOnFinish();}
 	public void onCancel(){arena.privateOnCancel();}
 	public void onEnter(ArenaPlayer p, Team t) {arena.privateOnEnter(p,t);}
 	public void onEnterWaitRoom(ArenaPlayer p, Team t) {arena.privateOnEnterWaitRoom(p,t);}
