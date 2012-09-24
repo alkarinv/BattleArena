@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- ====================================================================== 
 
-     BattleCore
+     BattleArena
      
      Alkarin_v
      ====================================================================== -->
@@ -22,10 +22,12 @@
 			<classpath>
 				<pathelement path="${lib}" />
 				<pathelement location="${lib}/commons-lang3-3.1.jar" />
-				<pathelement location="${lib}/CraftBukkit.jar" />
+				<pathelement location="${lib}/CraftBukkit.jar" /> 
+				<!-- <pathelement location="${lib}/craftbukkit-1.2.5-R5.0.jar" /> -->
 				<pathelement location="${lib}/Herochat.jar" />
 				<pathelement location="${lib}/Vault.jar" />
 				<pathelement location="${lib}/Register.jar" />
+				<pathelement location="${lib}/MobArena.jar" />
 				<pathelement location="${lib}/WorldGuard.jar" />
 				<pathelement location="${lib}/WorldEdit.jar" />
 				<pathelement location="${lib}/BattleTracker.jar" />
