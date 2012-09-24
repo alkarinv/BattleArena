@@ -31,11 +31,12 @@ public class NDeaths extends VictoryCondition{
 
 	@MatchEventHandler(suppressCastWarnings=true)
 	public void playerDeathEvent(PlayerDeathEvent event, ArenaPlayer p) {
-		Team team = match.getTeam(p);
-		killPlayer(p,team);		
+		killPlayer(p);		
 	}
 
 	protected void killPlayer(ArenaPlayer p){
+		if (match.isWon() || !match.isStarted()){
+			return;}
 		Team team = match.getTeam(p);
 		if (team == null)
 			return;
@@ -43,12 +44,6 @@ public class NDeaths extends VictoryCondition{
 	}
 
 	private void killPlayer(ArenaPlayer p,Team team) {
-		if (match.isWon()){
-			return;
-		}
-		if (!match.isStarted())
-			return;
-
 		team.addDeath(p);
 		if (team.getNDeaths(p) >= ndeaths){
 			team.killMember(p);}

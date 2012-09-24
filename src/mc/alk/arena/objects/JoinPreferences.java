@@ -10,12 +10,12 @@ public class JoinPreferences {
 
 	public boolean nearby(Arena arena, int distance) {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	public boolean sameWorld(Arena arena) {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 }

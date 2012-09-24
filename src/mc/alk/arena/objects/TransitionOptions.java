@@ -43,7 +43,7 @@ public class TransitionOptions {
 		boolean hasValue = false;
 		TransitionOption(String name,Boolean hasValue){this.name= name;this.hasValue = hasValue;}
 		public String toString(){return name;}
-		public boolean hasValue(){return true;}
+		public boolean hasValue(){return hasValue;}
 	};
 	Set<TransitionOption> options = null;
 	List<ItemStack> items = null;

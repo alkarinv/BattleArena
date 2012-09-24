@@ -111,7 +111,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return sendMessage(sender, "&5 valid types are = &6"+types);
 	}
 
-	@MCCommand(cmds={"join"},inGame=true,usage="join")
+	@MCCommand(cmds={"join"},inGame=true,usage="join [options]")
 	public boolean join(ArenaPlayer player, MatchParams mp, String args[]) {
 		/// Check if this match type is disabled
 		if (disabled.contains(mp.getName())){
