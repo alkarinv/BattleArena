@@ -72,7 +72,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	protected CustomCommandExecutor(){
 		addMethods(this, getClass().getMethods());
 		this.ac = BattleArena.getBAC();
-		this.ec = BattleArena.getEC();
+		this.ec = BattleArena.getEventController();
 		this.aec = BattleArena.getArenaEditor();
 	}
 

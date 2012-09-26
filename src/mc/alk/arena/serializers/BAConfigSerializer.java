@@ -20,6 +20,8 @@ public class BAConfigSerializer extends ConfigSerializer{
 
 		parseDefaultOptions(config.getConfigurationSection("defaultOptions"));
 		Defaults.MONEY_STR = config.getString("moneyName");
+		Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", false);
+
 		String[] defaultArenaTypes = {"arena","skirmish","colliseum","freeForAll","deathMatch","tourney","battleground"};
 
 		/// Now initialize the specific settings

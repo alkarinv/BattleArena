@@ -34,6 +34,7 @@ import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
+import mc.alk.arena.objects.MatchResult.WinLossDraw;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.TransitionOptions;
@@ -172,6 +173,10 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 
 	public void addTransitionListener(TransitionListener transitionListener){
 		tmc.addListener(transitionListener);
+	}
+	public void addTransitionListeners(Collection<TransitionListener> transitionListeners){
+		for (TransitionListener tl: transitionListeners){
+			tmc.addListener(tl);}
 	}
 
 	//	private void beginMatch() {
@@ -549,9 +554,14 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	public synchronized void setVictor(final Team team){
 		matchResult.setVictor(team);
 		ArrayList<Team> losers= new ArrayList<Team>(teams);
-		if (team != null)
+		if (team != null){
 			losers.remove(team);
+			matchResult.setResult(WinLossDraw.WIN);
+		} else {
+			matchResult.setResult(WinLossDraw.DRAW);
+		}
 		matchResult.setLosers(losers);
+		
 		teamVictory();
 	}
 
@@ -628,6 +638,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	public MatchResult getResult(){return matchResult;}
 	public Team getVictor() {return matchResult.getVictor();}
 	public Set<Team> getLosers() {return matchResult.getLosers();}
+	public Set<Team> getDrawers() {return matchResult.getDrawers();}
 	public Map<String,Location> getOldLocations() {return oldlocs;}
 	public int indexOf(Team t){return teams.indexOf(t);}
 	/// For debugging events
@@ -736,5 +747,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		return teamIndexes.get(t);
 	}
 
-
+	public int getID(){
+		return id;
+	}
 }

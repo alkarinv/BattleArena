@@ -3,7 +3,11 @@ package mc.alk.arena;
 public class Defaults {
 
 	public static final String ADMIN_NODE = "arena.admin";
-	
+
+	/// Use auto updating
+	public static boolean AUTO_UPDATE;
+	public static boolean REPORT_ERRORS;
+
 	public static double TICK_MULT = 1.0;
 	public static String MONEY_STR = "bc";
     public static final double DEFAULT_ELO = 1250.0;

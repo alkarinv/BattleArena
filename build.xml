@@ -33,6 +33,7 @@
 				<pathelement location="${lib}/BattleTracker.jar" />
 				<pathelement location="${lib}/VirtualPlayers.jar" />
 				<pathelement location="${lib}/MassDisguise.jar" />
+				<pathelement location="${lib}/PluginUpdater.jar" />
 			</classpath>
 		</javac>
 		<antcall target="dist" />
@@ -42,6 +43,7 @@
 			<zipfileset dir="." includes="*.yml" />
 			<zipfileset dir="." includes="**/default_files/**" />
 			<zipgroupfileset dir="${lib}" includes="commons-lang3-3.1.jar" />
+			<zipgroupfileset dir="${lib}" includes="PluginUpdater.jar" />
 		</jar>
 	</target>
 	<target name="clean" description="clean up">

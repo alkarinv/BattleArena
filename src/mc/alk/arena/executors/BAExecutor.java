@@ -61,16 +61,17 @@ import org.bukkit.plugin.Plugin;
  *
  */
 public class BAExecutor extends CustomCommandExecutor  {
-
-	TeamController teamc; 
-	EventController ec;
 	Map<String, Location> visitors = new HashMap<String, Location>();
 	Set<String> disabled = new HashSet<String>();
 
+	final TeamController teamc; 
+	final EventController ec;
+	final DuelController dc;
 	public BAExecutor(){
 		super();
-		this.ec = BattleArena.getEC();
-		this.teamc = BattleArena.getTC();
+		this.ec = BattleArena.getEventController();
+		this.teamc = BattleArena.getTeamController();
+		this.dc = BattleArena.getSelf().getDuelController();
 	}
 
 	@MCCommand(cmds={"enable"},admin=true,usage="enable")
@@ -531,9 +532,9 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 	@MCCommand(cmds={"rescind"},inGame=true)
 	public boolean duelRescind(ArenaPlayer player) {
-		if (!DuelController.hasChallenger(player)){
+		if (!dc.hasChallenger(player)){
 			return sendMessage(player,"&cYou haven't challenged anyone!");}
-		Duel d = DuelController.rescind(player);
+		Duel d = dc.rescind(player);
 		Team t = d.getChallengerTeam();
 		t.sendMessage("&4[Duel] &6" + player.getDisplayName()+"&2 has cancelled the duel challenge!");
 		for (ArenaPlayer ap: d.getChallengedPlayers()){
@@ -544,9 +545,9 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 	@MCCommand(cmds={"reject"},inGame=true)
 	public boolean duelReject(ArenaPlayer player) {
-		if (!DuelController.isChallenged(player)){
+		if (!dc.isChallenged(player)){
 			return sendMessage(player,"&cYou haven't been invited to a duel!");}
-		Duel d = DuelController.reject(player);
+		Duel d = dc.reject(player);
 		Team t = d.getChallengerTeam();
 		String timeRem = TimeUtil.convertSecondsToString(Defaults.DUEL_CHALLENGE_INTERVAL);
 		t.sendMessage("&4[Duel] &cThe duel was cancelled as &6" + player.getDisplayName()+"&c rejected your offer");
@@ -564,9 +565,21 @@ public class BAExecutor extends CustomCommandExecutor  {
 	public boolean duelAccept(ArenaPlayer player) {
 		if (!canJoin(player)){
 			return true;}
-		if (!DuelController.isChallenged(player)){
+		Duel d = dc.getDuel(player);
+		if (d == null){
 			return sendMessage(player,"&cYou haven't been invited to a duel!");}
-		Duel d = DuelController.accept(player);
+		Double wager = (Double) d.getDuelOptionValue(DuelOption.MONEY);
+		if (wager != null){
+			if (MoneyController.balance(player.getName()) < wager){
+				sendMessage(player,"&4[Duel] &cYou don't have enough money to accept the wager!");
+				dc.cancelDuel(d, "&4[Duel]&6" + player.getDisplayName()+" didn't have enough money for the wager");
+				return true;
+			}
+		}
+
+		if (dc.accept(player) == null){
+			return true;
+		}
 		Team t = d.getChallengerTeam();
 		t.sendMessage("&4[Duel] &6" + player.getDisplayName()+"&2 has accepted your duel offer!");
 		for (ArenaPlayer ap: d.getChallengedPlayers()){
@@ -593,23 +606,38 @@ public class BAExecutor extends CustomCommandExecutor  {
 		} catch (InvalidOptionException e1) {
 			return sendMessage(player, e1.getMessage());
 		}
+		Double wager = (Double) duelOptions.getOptionValue(DuelOption.MONEY);
+		if (wager != null){
+			if (MoneyController.balance(player.getName()) < wager){
+				return sendMessage(player,"&4[Duel] You can't afford that wager!");}
+		}
 
 		/// Announce warnings
 		for (ArenaPlayer ap: duelOptions.getChallengedPlayers()){
 			if (!canJoin(ap)){
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c is in a match, event, or queue");}
-			if (DuelController.isChallenged(ap)){
+			if (dc.isChallenged(ap)){
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c already has been challenged!");}
-			Long grace = DuelController.getLastRejectTime(ap);
+			Long grace = dc.getLastRejectTime(ap);
 			if (grace != null && System.currentTimeMillis() - grace < Defaults.DUEL_CHALLENGE_INTERVAL*1000){
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c can't be challenged for &6"+
 						TimeUtil.convertMillisToString(Defaults.DUEL_CHALLENGE_INTERVAL*1000 - (System.currentTimeMillis() - grace)));}
+			if (wager != null){
+				if (MoneyController.balance(ap.getName()) < wager){
+					return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c can't afford that wager!");}
+			}
 		}
 
 		/// Get our team1
 		Team t = TeamController.getTeam(player);
 		if (t == null){
 			t = TeamController.createTeam(player);
+		}
+		for (ArenaPlayer ap: t.getPlayers()){
+			if (wager != null){
+				if (MoneyController.balance(ap.getName()) < wager){
+					return sendMessage(player,"&4[Duel] Your teammate &6"+ap.getDisplayName()+"&c can't afford that wager!");}
+			}
 		}
 		mp.setMinTeams(2);
 		mp.setMaxTeams(2);
@@ -632,7 +660,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		if (ops == null){
 			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
 
-		Duel duel = new Duel(mp,t, duelOptions.getChallengedPlayers());
+		Duel duel = new Duel(mp,t, duelOptions);
 
 		/// Announce to the 2nd team
 		String t2 = duelOptions.getChallengedTeamString();
@@ -649,7 +677,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 		sendMessage(player,"&4[Duel] &2You have sent a challenge to &6" + t2);
 		sendMessage(player,"&4[Duel] &2You can rescind by typing &6/" + mp.getCommand()+" rescind");
-		DuelController.addOutstandingDuel(duel);
+		dc.addOutstandingDuel(duel);
 		return true;
 	}
 
@@ -744,7 +772,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			}
 			return false;
 		}
-		if (DuelController.hasChallenger(p)){
+		if (dc.hasChallenger(p)){
 			sendMessage(p,"&cYou need to rescind your challenge first! &6/arena rescind");
 			return false;
 		}

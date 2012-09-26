@@ -306,6 +306,7 @@ public class YamlFileUpdater {
 			e.printStackTrace();
 		}
 	}
+
 	public File move(String default_file, String config_file) {
 		File file = new File(config_file);
 		try{

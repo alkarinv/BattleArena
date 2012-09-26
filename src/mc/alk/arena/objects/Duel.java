@@ -4,17 +4,22 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import mc.alk.arena.controllers.TeamController;
+import mc.alk.arena.objects.DuelOptions.DuelOption;
 import mc.alk.arena.objects.teams.Team;
 
 public class Duel {
 	final MatchParams mp;
-	
+
 	final Team challenger;
 	final HashMap<ArenaPlayer,Boolean> challengedPlayers = new HashMap<ArenaPlayer, Boolean>();
-	public Duel(MatchParams mp, Team challenger, Collection<ArenaPlayer> challenged){
+	final DuelOptions options;
+	Double totalMoney = null;
+
+	public Duel(MatchParams mp, Team challenger, DuelOptions options){
 		this.mp = mp;
 		this.challenger = challenger;
-		for (ArenaPlayer ap: challenged){
+		this.options = options;
+		for (ArenaPlayer ap: options.getChallengedPlayers()){
 			challengedPlayers.put(ap, false);}
 	}
 
@@ -28,6 +33,14 @@ public class Duel {
 
 	public void accept(ArenaPlayer player) {
 		challengedPlayers.put(player, true);
+	}
+
+	public Double getTotalMoney() {
+		return totalMoney;
+	}
+
+	public void setTotalMoney(Double totalMoney) {
+		this.totalMoney = totalMoney;
 	}
 
 	public boolean isReady() {
@@ -53,5 +66,7 @@ public class Duel {
 	public Collection<ArenaPlayer> getChallengedPlayers() {
 		return challengedPlayers.keySet();
 	}
-
+	public Object getDuelOptionValue(DuelOption option){
+		return options.getOptionValue(option);
+	}
 }

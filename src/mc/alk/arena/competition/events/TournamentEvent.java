@@ -228,7 +228,7 @@ public class TournamentEvent extends Event implements Listener{
 	private boolean roundFinished() {
 		Round tr = rounds.get(round);
 		for (Matchup m : tr.getMatchups()){
-			if (!m.result.matchComplete())
+			if (!m.result.isFinished())
 				return false;
 		}
 		return true;

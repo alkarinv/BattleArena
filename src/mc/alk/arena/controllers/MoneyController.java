@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.util.Log;
 import net.milkbowl.vault.economy.Economy;
 
@@ -19,7 +20,9 @@ public class MoneyController implements Listener{
 	static boolean hasRegister = false;
 	static boolean useVault = false;
 	public static Economy economy = null;
-
+	public static boolean hasEconomy(){
+		return initialized;
+	}
 	public static boolean hasAccount(String name) {
 		if (!initialized) return true;
 		return useVault? economy.hasAccount(name) : Methods.getMethod().hasAccount(name);
@@ -88,6 +91,7 @@ public class MoneyController implements Listener{
     			useVault = hasVault = true;
     			initialized = true;
     			Log.info(BattleArena.getPName() +" found economy plugin Vault. [Default]");
+    			Defaults.MONEY_STR = MoneyController.economy.currencyNameSingular();
     		}
     	}
 

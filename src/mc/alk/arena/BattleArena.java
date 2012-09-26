@@ -19,6 +19,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.EventScheduler;
 import mc.alk.arena.controllers.MethodController;
@@ -57,6 +58,7 @@ import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.plugin.updater.PluginUpdater;
 
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.command.ColouredConsoleSender;
@@ -78,7 +80,7 @@ public class BattleArena extends JavaPlugin{
 	private final static EventController ec = new EventController();
 	private final static ArenaEditor aac = new ArenaEditor();
 	private final static APIRegistrationController apiRegistrationController = new APIRegistrationController();
-
+	private final DuelController dc = new DuelController();
 	private static BAExecutor commandExecutor;
 	private final BAPlayerListener playerListener = new BAPlayerListener(arenaController);
 
@@ -192,7 +194,8 @@ public class BattleArena extends JavaPlugin{
 					es.start();
 			}			
 		});
-
+		if (Defaults.AUTO_UPDATE)
+			PluginUpdater.downloadPluginUpdates(this);
 		ColouredConsoleSender.getInstance().sendMessage(MessageUtil.colorChat("&4["+pluginname+"] &6v"+version+"&f enabled!"));
 	}
 
@@ -211,11 +214,14 @@ public class BattleArena extends JavaPlugin{
 	}
 
 	public void onDisable() {
+		BattleArena.getSelf();
 		arenaController.stop();
 		ArenaSerializer.saveAllArenas(true);
 		yacs.save();
 		FileLogger.saveAll();
 		ess.saveScheduledEvents();
+		if (Defaults.AUTO_UPDATE)
+			PluginUpdater.updatePlugin(this);
 	}
 
 	private void createEvents() {
@@ -291,9 +297,9 @@ public class BattleArena extends JavaPlugin{
 
 	public static BattleArena getSelf() {return plugin;}
 	public static BattleArenaController getBAC(){return arenaController;}
-	public static TeamController getTC(){return tc;}
-	public static ArenaEditor getAE(){return aac;}
-	public static EventController getEC(){return ec;}
+	public static TeamController getTeamController(){return tc;}
+	public DuelController getDuelController(){return dc;}
+	public static EventController getEventController(){return ec;}
 	public static Event getEvent(String name){return EventController.getEvent(name);}
 	public static ArenaEditor getArenaEditor() {return aac;}
 	public static BAExecutor getBAExecutor() {return commandExecutor;}

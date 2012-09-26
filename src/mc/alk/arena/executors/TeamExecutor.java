@@ -30,7 +30,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 	BAExecutor bae;
 	public TeamExecutor(BAExecutor bae) {
 		super();
-		this.teamc = BattleArena.getTC();
+		this.teamc = BattleArena.getTeamController();
 		this.bae = bae;
 	}
 

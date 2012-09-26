@@ -93,13 +93,13 @@ public class ArenaSerializer {
 
 	public void loadArenas(Plugin plugin){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
-		Log.info(plugin.getName()+ " Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
+		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
 		loadArenas(plugin, BattleArena.getBAC(), config,null);
 	}
 
 	public void loadArenas(Plugin plugin, ArenaType arenaType){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
-		Log.info(plugin.getName()+ " Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
+		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
 		loadArenas(plugin, BattleArena.getBAC(), config, arenaType);
 	}
 
@@ -172,7 +172,6 @@ public class ArenaSerializer {
 		if (atype==null){
 			Log.err(" Arena type not found for " + name);
 			return false;
-			//			atype = ArenaType.DEFAULT;
 		}
 
 		ArenaParams q = new ArenaParams(minTeamSize,maxTeamSize,atype);

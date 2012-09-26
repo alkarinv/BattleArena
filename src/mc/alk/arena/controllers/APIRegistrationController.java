@@ -3,10 +3,12 @@ package mc.alk.arena.controllers;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.events.Event;
@@ -43,26 +45,43 @@ public class APIRegistrationController {
 		Log.info(plugin.getName() +" registering arena type " +name +" using arenaClass " +arenaClass.getName());
 
 		/// Load our configs
-		ArenaSerializer as = new ArenaSerializer(plugin, plugin.getDataFolder()+"/arenas.yml"); /// arena config
+		ArenaSerializer as = new ArenaSerializer(plugin, plugin.getDataFolder()+File.separator+"arenas.yml"); /// arena config
 		as.loadArenas(plugin,at);
 
 		ConfigSerializer cc = new ConfigSerializer(); /// Our config.yml
-
+		
 		String configFileName = name+"Config.yml";
-		File f = new File(dir.getPath()+"/"+configFileName);
-		if (!f.exists()){
-			if (!loadDefaultConfig(plugin, name,cmd, f, match)){
-				Log.err("Config could not be loaded");
-				return;
-			}
+		String fileName = match ? "defaultMatchTypeConfig.yml" : "defaultEventTypeConfig.yml";
+
+		File pluginFile = new File(dir.getPath()+File.separator+configFileName);
+		File defaultPluginFile = new File(configFileName);
+		File defaultFile = new File("default_files"+File.separator+fileName);			
+
+		if (!loadConfigFile(plugin, defaultFile, defaultPluginFile, pluginFile, name,cmd)){
+			Log.err(plugin.getName() + " " + pluginFile.getName() + " could not be loaded");
+			return;
 		}
 
-		cc.setConfig(at, dir.getPath()+"/"+configFileName);
+		cc.setConfig(at, pluginFile);
 
 		/// Make a message serializer for this event, and make the messages.yml file if it doesnt exist
-		String fileName = match ? "defaultMatchMessages.yml": "defaultEventMessages.yml";  
 		MessageSerializer ms = new MessageSerializer(name);
-		ms.setConfig(BattleArena.getSelf().load("/default_files/"+fileName, plugin.getDataFolder()+"/"+name+"Messages.yml"));
+
+		String messagesFileName = name+"Messages.yml";
+		fileName = match ? "defaultMatchMessages.yml": "defaultEventMessages.yml";
+		
+		pluginFile = new File(dir.getPath()+File.separator+messagesFileName);
+		defaultPluginFile = new File(messagesFileName);
+		defaultFile = new File("default_files"+File.separator+fileName);			
+
+		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
+			pluginFile = BattleArena.getSelf().load("/default_files/"+fileName, pluginFile.getAbsolutePath());
+			if (pluginFile == null){
+				Log.err(plugin.getName() + " " + messagesFileName+" could not be loaded");
+				return;				
+			}
+		}
+		ms.setConfig(pluginFile);
 		ms.loadAll();
 		MessageSerializer.addMessageSerializer(name,ms);
 
@@ -73,26 +92,47 @@ public class APIRegistrationController {
 			e.printStackTrace();
 		}
 	}
+	private boolean loadFile(Plugin plugin, File defaultFile, File defaultPluginFile, File pluginFile){
+		if (pluginFile.exists())
+			return true;
 
-	private boolean loadDefaultConfig(Plugin plugin, String name, String cmd, File configFile, boolean match) {
-		InputStream inputStream = null;
-		File infile = new File("/"+name+"Config.yml");
-		/// See if the plugin has supplied a default config already, if not get a default from BattleArena
-		inputStream = plugin.getClass().getResourceAsStream(infile.getAbsolutePath());
+		InputStream inputStream = getInputStream(plugin, defaultFile, defaultPluginFile);
 		if (inputStream == null){
-			String fileName = match ? "defaultMatchTypeConfig.yml" : "defaultEventTypeConfig.yml";
-			infile = new File("/default_files/"+fileName);			
-			inputStream = getClass().getResourceAsStream(infile.getAbsolutePath());
-		}
-		if (inputStream == null){
-			Log.err("No default config file could be found.  Searched for " + infile.getName());
 			return false;
 		}
+		OutputStream out = null;
+		try{
+			out=new FileOutputStream(pluginFile);
+			byte buf[]=new byte[1024];
+			int len;
+			while((len=inputStream.read(buf))>0){
+				out.write(buf,0,len);}
+		} catch (Exception e){
+			e.printStackTrace();
+		} finally{
+			if (out != null)
+				try {out.close();} catch (IOException e) {}
+			if (inputStream!=null) 
+				try {inputStream.close();} catch (IOException e) {}
+		}
+		
+		return true;
+	}
+	
+	private boolean loadConfigFile(Plugin plugin, File defaultFile, File defaultPluginFile, File pluginFile,
+			String name, String cmd) {
+		if (pluginFile.exists())
+			return true;
+		InputStream inputStream = getInputStream(plugin, defaultFile, defaultPluginFile);
+		if (inputStream == null){
+			return false;
+		}
+
 		String line =null;
 		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 		BufferedWriter fw =null;
 		try {
-			fw = new BufferedWriter(new FileWriter(configFile));
+			fw = new BufferedWriter(new FileWriter(pluginFile));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -109,6 +149,16 @@ public class APIRegistrationController {
 			return false;
 		}
 		return true;
+	}
+
+	private InputStream getInputStream(Plugin plugin, File defaultFile, File defaultPluginFile) {
+		InputStream inputStream = null;
+		/// Load from pluginJar 
+		inputStream = plugin.getClass().getClassLoader().getResourceAsStream(defaultPluginFile.getPath());
+		if (inputStream == null){ /// Load from BattleArena.jar
+			inputStream = BattleArena.getSelf().getClass().getClassLoader().getResourceAsStream(defaultFile.getPath());
+		}
+		return inputStream;
 	}
 
 	public void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass) {

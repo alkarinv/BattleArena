@@ -158,6 +158,8 @@ public class ArenaMatchQueue {
 				arenaqueue.remove(a);
 				final Match m = new ArenaMatch(a, matchup.getSpecificQ());
 				m.onJoin(teams);
+				m.addTransitionListeners(matchup.getTransitionListeners());
+				matchup.addMatch(m);
 				return m;
 			}
 		}}

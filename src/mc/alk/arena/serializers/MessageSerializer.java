@@ -52,11 +52,13 @@ public class MessageSerializer extends BaseSerializer {
 	}
 	
 	public void initMessageOptions(){
+		if (config == null)
+			return;
 		Set<String> keys = config.getKeys(true);
 		keys.remove("version");
 		for (String key: keys){
 			Object obj = config.get(key);
-			if (obj instanceof MemorySection)
+			if (obj == null || obj instanceof MemorySection)
 				continue;
 			msgOptions.put(key, new MessageOptions((String)obj));
 		}
