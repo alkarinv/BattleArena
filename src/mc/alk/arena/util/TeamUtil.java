@@ -67,7 +67,7 @@ public class TeamUtil {
 	public static void removeTeamHead(final int color, Player p) {
 		ItemStack item = getTeamHead(color);
 		final PlayerInventory inv = p.getInventory();
-		if (inv.getHelmet().getType() == item.getType()){
+		if (inv != null && inv.getHelmet() != null && inv.getHelmet().getType() == item.getType()){
 			inv.setHelmet(new ItemStack(Material.AIR));
 		}
 	}
