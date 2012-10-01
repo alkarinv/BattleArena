@@ -11,7 +11,7 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
-import mc.alk.arena.util.WorldGuardUtil;
+import mc.alk.arena.util.WorldEditUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -106,7 +106,7 @@ public class ArenaAlterController {
 		if (!checkWorldGuard(sender)){
 			return false;}
 		Player p = (Player)sender;
-		WorldEditPlugin wep = WorldGuardUtil.getWorldEditPlugin();
+		WorldEditPlugin wep = WorldEditUtil.getWorldEditPlugin();
 		Selection sel = wep.getSelection(p);
 		if (sel == null){
 			sendMessage(sender,"&cYou need to select a region to use this command.");

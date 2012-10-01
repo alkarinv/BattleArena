@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TeleportController;
@@ -18,6 +18,7 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.EffectUtil.EffectWithArgs;
 import mc.alk.arena.util.InventoryUtil;
@@ -28,12 +29,10 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
-import com.alk.massDisguise.MassDisguise;
-
 public class PerformTransition {
 
 	static Random rand = new Random();
-	public static boolean debug = false;
+//	public static boolean debug = false;
 
 	/**
 	 * Perform a transition 
@@ -75,7 +74,7 @@ public class PerformTransition {
 
 	public static boolean transition(final Match am, final MatchState transition, final ArenaPlayer p, 
 			final Team team, final boolean onlyInMatch) {
-		if (debug) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +p.getName() +
+		if (Defaults.DEBUG_TRANSITIONS) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +p.getName() +
 				" ops="+am.tops.getOptions(transition) +"  inArena="+am.insideArena(p));
 
 		final TransitionOptions mo = am.tops.getOptions(transition);
@@ -103,7 +102,7 @@ public class PerformTransition {
 		final String disguiseAllAs = mo.getDisguiseAllAs();
 		final Boolean undisguise = mo.undisguise();
 		final int teamIndex = am.indexOf(team);
-		final Set<ArenaPlayer> players = am.getAlivePlayers();
+
 		final boolean dead = !p.isOnline() || p.isDead();
 		if (teleportWaitRoom){ /// Teleport waiting room
 			/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
@@ -111,7 +110,7 @@ public class PerformTransition {
 			if (!dead) am.enterWaitRoom(p); 
 			final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),team.getPlayerIndex(p));
 			//			final Location l = am.getWaitRoomSpawn(teamIndex,false);
-			TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false,players);
+			TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false);
 		}
 
 		/// Teleport In
@@ -120,7 +119,7 @@ public class PerformTransition {
 			/// Since we cant really tell the eventual result.. do our best guess
 			if (!dead) am.enterArena(p);
 			final Location l = jitter(am.getTeamSpawn(teamIndex,false),team.getPlayerIndex(p));
-			TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false,players);
+			TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false);
 			PlayerStoreController.setGameMode(p.getPlayer(), GameMode.SURVIVAL);
 		}
 
@@ -133,8 +132,8 @@ public class PerformTransition {
 			if (health != null) p.setHealth(health);
 			if (hunger != null) p.setFoodLevel(hunger);
 			try{if (mo.deEnchant() != null && mo.deEnchant()) EffectUtil.unenchantAll(p.getPlayer());} catch (Exception e){}
-			if (BattleArena.md != null && undisguise != null && undisguise) {MassDisguise.undisguise(p.getPlayer());}
-			if (BattleArena.md != null && disguiseAllAs != null) {MassDisguise.disguisePlayer(p.getPlayer(), disguiseAllAs);}
+			if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p.getPlayer());}
+			if (DisguiseInterface.enabled() && disguiseAllAs != null) {DisguiseInterface.disguisePlayer(p.getPlayer(), disguiseAllAs);}
 			if (mo.getMoney() != null) {MoneyController.add(p.getName(), mo.getMoney());}
 			if (mo.getExperience() != null) {p.getPlayer().giveExp(mo.getExperience());}
 			if (mo.woolTeams() && am.getParams().getMinTeamSize() >1){
@@ -177,7 +176,7 @@ public class PerformTransition {
 
 		/// Teleport out, need to do this at the end so that all the onCancel/onComplete options are completed first
 		if (teleportOut && insideArena){ /// Lets not teleport people out who are already out(like dead ppl)
-			TeleportController.teleportPlayer(p.getPlayer(), am.oldlocs.get(p.getName()), false, false, wipeInventory,players);
+			TeleportController.teleportPlayer(p.getPlayer(), am.oldlocs.get(p.getName()), false, false, wipeInventory);
 			am.leaveArena(p); 
 			/// If players are outside of the match, but need requirements, warn them 
 		} else if (transition == MatchState.ONPRESTART && !insideArena){
@@ -192,7 +191,7 @@ public class PerformTransition {
 			if (am.woolTeams && insideArena){
 				TeamUtil.removeTeamHead(teamIndex, p.getPlayer());}
 
-			if (debug)  System.out.println("   "+transition+" transition restoring items");
+			if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+transition+" transition restoring items");
 			am.psc.restoreItems(p);
 		}
 
@@ -203,7 +202,7 @@ public class PerformTransition {
 			final int teamIndex,final boolean woolTeams, final boolean insideArena) {
 		if (woolTeams && insideArena){
 			TeamUtil.setTeamHead(teamIndex, p);}
-		if (debug)  System.out.println("   "+ms+" transition giving items to " + p.getName());
+		if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+ms+" transition giving items to " + p.getName());
 		InventoryUtil.addItemsToInventory(p.getPlayer(),items,woolTeams);
 	}
 	private static ArenaClass getArenaClass(TransitionOptions mo, final int teamIndex) {

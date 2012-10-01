@@ -16,11 +16,13 @@ public class Defaults {
     /// before reverting to team 1, team 2, etc
     public static final int MAX_TEAM_NAME_APPEND = 4;
  
-	public static boolean DEBUG_VIRTUAL = false;
 	public static final boolean DEBUG = false;
 	public static final boolean DEBUG_TRACE = false;
 	public static final boolean DEBUG_EVENTS = false;
 	public static final boolean DEBUG_TEVENTS = false;
+	public static boolean DEBUG_VIRTUAL = false;
+	public static boolean DEBUG_TRANSITIONS = false;
+	public static boolean DEBUG_STORAGE = false;
 
 
 	public static final String ARENA_ADMIN = "arena.admin";
@@ -57,8 +59,11 @@ public class Defaults {
 	public static boolean PLUGIN_MULTI_INV = false; /// workarounds for multiinv and tping
 	public static boolean PLUGIN_MULITVERSE_INV = false;
 	public static boolean PLUGIN_MULITVERSE_CORE = false;
+
 	public static final String MULTI_INV_IGNORE_NODE = "multiinv.exempt";
 	public static final String MULTIVERSE_INV_IGNORE_NODE = "mvinv.bypass.*";
 	public static final String MULTIVERSE_CORE_IGNORE_NODE = "mv.bypass.gamemode.*"; 
+	public static final String WORLDGUARD_BYPASS_NODE = "worldguard.region.bypass.";
+
 
 }

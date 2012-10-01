@@ -140,6 +140,7 @@ public class Util {
 
 		return lastPlayer;
 	}
+	
 	public static OfflinePlayer findOfflinePlayer(String name) {
 		OfflinePlayer p = findPlayer(name);
 		if (p != null){

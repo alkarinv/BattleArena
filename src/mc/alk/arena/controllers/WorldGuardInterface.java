@@ -1,5 +1,6 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.util.WorldEditUtil;
 import mc.alk.arena.util.WorldGuardUtil;
 
 import org.bukkit.Location;
@@ -18,7 +19,9 @@ import org.bukkit.plugin.Plugin;
  */
 public class WorldGuardInterface {
 	static boolean hasWorldGuardInterface = false;
-	
+	public static enum WorldGuardFlag{
+		ENTRY, EXIT
+	}
 	public static void init(){
 		hasWorldGuardInterface = true;
 	}
@@ -53,8 +56,8 @@ public class WorldGuardInterface {
 		WorldGuardUtil.clearRegion(world, id);
 	}
 
-	public static void isLeavingArea(final Location from, final Location to, World w, String id) {
-		WorldGuardUtil.isLeavingArea(from , to , w, id);
+	public static boolean isLeavingArea(final Location from, final Location to, World w, String id) {
+		return WorldGuardUtil.isLeavingArea(from , to , w, id);
 	}
 
 	public static boolean setWorldGuard(Plugin plugin) {
@@ -62,7 +65,22 @@ public class WorldGuardInterface {
 	}
 
 	public static boolean setWorldEdit(Plugin plugin) {
-		return WorldGuardUtil.setWorldEdit(plugin);
+		return WorldEditUtil.setWorldEdit(plugin);
+	}
+
+	public static boolean setFlag(String id, String worldName, WorldGuardFlag flag, boolean enable) {
+		return WorldGuardUtil.setFlag(id, worldName, flag, enable);
+	}
+
+	public static void allowEntry(Player player, String id, String regionWorld) {
+		WorldGuardUtil.allowEntry(player,id,regionWorld);
+	}
+
+	public static void addMember(String name, String id, String regionWorld) {
+		WorldGuardUtil.addMember(name,id, regionWorld);
+	}
+	public static void removeMember(String name, String id, String regionWorld) {
+		WorldGuardUtil.removeMember(name,id, regionWorld);
 	}
 
 }

@@ -84,6 +84,7 @@ public class BAPlayerListener implements Listener  {
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerJoin(PlayerJoinEvent event) {
+
 		final Player p = event.getPlayer();
 		final String name = p.getName();
 		if (clearInventory.remove(name)){
@@ -124,7 +125,6 @@ public class BAPlayerListener implements Listener  {
 		if (tp.containsKey(name)){
 			Location loc = tp.get(name);
 			if (loc != null){
-				//								Log.err(name + " respawn loc ="+ SerializerUtil.getLocString(loc));
 				if (event == null){
 					TeleportController.teleport(p, tp.get(name));
 				} else {

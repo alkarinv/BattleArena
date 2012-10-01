@@ -11,11 +11,11 @@ import mc.alk.arena.util.CaseInsensitiveMap;
 public class ParamController {
 	static final CaseInsensitiveMap<MatchParams> types = new CaseInsensitiveMap<MatchParams>();
 
-	
 	public static void addMatchType(MatchParams pi) {
 		types.put(pi.getName(), pi);
 		types.put(pi.getCommand(), pi);
 	}
+	
 	public static void removeMatchType(MatchParams pi) {
 		types.remove(pi.getName());
 		types.remove(pi.getCommand());
@@ -53,6 +53,8 @@ public class ParamController {
 		HashSet<MatchParams> params = new HashSet<MatchParams>();
 		params.addAll(types.values());
 		for (MatchParams mp: params){
+			if (disabled != null && disabled.contains(mp.getName()))
+				continue;
 			if (types.containsKey(mp.getName()))
 				continue;
 			if (!first) sb.append(", ");

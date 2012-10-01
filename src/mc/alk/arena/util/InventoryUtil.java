@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import mc.alk.arena.Defaults;
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityPlayer;
 
@@ -488,7 +489,7 @@ public class InventoryUtil {
 	}
 
 	public static void clearInventory(Player p) {
-		//		System.out.println("Clearing inventory of " + p.getName());
+		if(Defaults.DEBUG_STORAGE) Log.info("Clearing inventory of " + p.getName());
 		try{
 			PlayerInventory inv = p.getInventory();
 			closeInventory(p);

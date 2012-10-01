@@ -15,6 +15,7 @@ import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TransitionMethodController;
+import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
 import mc.alk.arena.controllers.messaging.MatchMessager;
 import mc.alk.arena.events.BAEvent;
@@ -95,7 +96,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath; 
-	final boolean respawns, noLeave;
+	final boolean respawns, noLeave, noEnter;
 	boolean woolTeams = false;
 	boolean needsMobDeaths = false, needsBlockEvents = false;
 	boolean needsItemPickups = false, needsInventoryClick = false;
@@ -122,6 +123,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		if (!(vt instanceof TimeLimit))
 			addVictoryCondition(new TimeLimit(this));
 		addVictoryCondition(vt);
+		this.noEnter = tops.hasOptions(TransitionOption.WGNOENTER);
 		this.noLeave = tops.hasOptions(TransitionOption.WGNOLEAVE);
 		this.woolTeams = tops.hasOptions(TransitionOption.WOOLTEAMS) && mp.getMaxTeamSize() >1;
 		this.needsBlockEvents = tops.hasOptions(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF,
@@ -428,8 +430,10 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	}
 
 	public void onLeave(ArenaPlayer p) {
-		Team t = getTeam(p);
-		PerformTransition.transition(this, MatchState.ONCANCEL, p, t, false);
+		if (insideArena(p)){ /// Only leave if they haven't already left.
+			Team t = getTeam(p);
+			PerformTransition.transition(this, MatchState.ONCANCEL, p, t, false);
+		}
 	}
 
 	/**
@@ -454,12 +458,13 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		MethodController.updateEventListeners(this,ms, p,PlayerInteractEvent.class); /// for sign clicks
 		if (needsDamageEvents){
 			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);}
+		if (WorldGuardInterface.hasWorldGuard() && arena.getRegion() != null){
+			psc.addMember(p, arena.getRegion(), arena.getRegionWorld());}
 		if (noLeave){
-			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);			}
+			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);}
 		if (needsBlockEvents){
 			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);}
 		updateBukkitEvents(ms,p);
-		/// if (woolTeams) /*do nothing*/ Wool Teams Inventory click listener is added when they get their wool team.. not here
 		p.setChosenClass(null);
 	}
 
@@ -470,10 +475,13 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		MethodController.updateEventListeners(this, ms,p, PlayerCommandPreprocessEvent.class);
 		MethodController.updateEventListeners(this,ms, p,PlayerDeathEvent.class);
 		MethodController.updateEventListeners(this,ms, p,PlayerInteractEvent.class); /// for sign clicks
+		if (WorldGuardInterface.hasWorldGuard() && arena.getRegion() != null)
+			psc.removeMember(p, arena.getRegion(), arena.getRegionWorld());
+
 		if (needsDamageEvents){
-			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);			}
+			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);}
 		if (noLeave){
-			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);			}
+			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);}
 		if (needsBlockEvents){
 			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);}
 		if (woolTeams || needsInventoryClick){
@@ -561,7 +569,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 			matchResult.setResult(WinLossDraw.DRAW);
 		}
 		matchResult.setLosers(losers);
-		
+
 		teamVictory();
 	}
 
@@ -646,6 +654,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		Team t = getTeam(player);
 		t.addKill(player);
 	}
+	
 	public boolean insideArena(ArenaPlayer p){
 		return insideArena.contains(p.getName());
 	}

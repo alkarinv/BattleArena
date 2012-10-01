@@ -3,7 +3,7 @@ package mc.alk.arena.controllers;
 import java.util.HashMap;
 import java.util.List;
 
-import mc.alk.arena.competition.match.PerformTransition;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.ExpUtil;
@@ -83,7 +83,7 @@ public class PlayerStoreController {
 		Player p = player.getPlayer();
 		final String name = p.getName();
 		FileLogger.log("storing items for = " + p.getName() +" contains=" + itemmap.containsKey(name));
-		if (PerformTransition.debug)  System.out.println("storing items for = " + p.getName() +" contains=" + itemmap.containsKey(name));
+		if (Defaults.DEBUG_STORAGE)  System.out.println("storing items for = " + p.getName() +" contains=" + itemmap.containsKey(name));
 
 		if (itemmap.containsKey(name))
 			return;
@@ -122,10 +122,11 @@ public class PlayerStoreController {
 			e.printStackTrace();
 		}
 		itemmap.put(name, pinv);
+//		InventorySerializer.saveInventory(name,pinv);
 	}
 
 	public void restoreItems(ArenaPlayer p) {
-		if (PerformTransition.debug)  System.out.println("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
+		if (Defaults.DEBUG_STORAGE)  System.out.println("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
 		PInv pinv = itemmap.remove(p.getName());
 		if (pinv == null)
 			return;
@@ -134,7 +135,7 @@ public class PlayerStoreController {
 
 	public static void setInventory(ArenaPlayer p, PInv pinv) {
 		FileLogger.log("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
-		if (PerformTransition.debug) Log.info("restoring items for " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
+		if (Defaults.DEBUG_STORAGE) Log.info("restoring items for " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
 		if (p.isOnline() && !p.isDead()){
 			setOnlineInventory(p.getPlayer(), pinv);
 		} else {
@@ -165,7 +166,7 @@ public class PlayerStoreController {
 	public void storeGamemode(ArenaPlayer p) {
 		if (gamemode.containsKey(p.getName()))
 			return;
-		if (PerformTransition.debug)  Log.info("storing gamemode " + p.getName() +" " + p.getPlayer().getGameMode());
+		if (Defaults.DEBUG_STORAGE)  Log.info("storing gamemode " + p.getName() +" " + p.getPlayer().getGameMode());
 
 		PermissionsUtil.givePlayerInventoryPerms(p);
 		gamemode.put(p.getName(), p.getPlayer().getGameMode());
@@ -183,7 +184,7 @@ public class PlayerStoreController {
 	}
 
 	public static void setGameMode(Player p, GameMode gm){
-		if (PerformTransition.debug)  Log.info("set gamemode " + p.getName() +" " + p.isOnline()+":"+p.isDead() +" gm=" +gm +"  " + p.getGameMode());
+		if (Defaults.DEBUG_STORAGE)  Log.info("set gamemode " + p.getName() +" " + p.isOnline()+":"+p.isDead() +" gm=" +gm +"  " + p.getGameMode());
 		if (gm != null && gm != p.getGameMode()){
 			PermissionsUtil.givePlayerInventoryPerms(p);
 			p.getPlayer().setGameMode(gm);
@@ -204,5 +205,18 @@ public class PlayerStoreController {
 		} else {
 			BAPlayerListener.removeItemsOnEnter(p,items);
 		}	
+	}
+
+	public void allowEntry(ArenaPlayer p, String region, String regionWorld) {
+		if (!WorldGuardInterface.hasWorldGuard()){
+			return;}
+		WorldGuardInterface.allowEntry(p.getPlayer(), region, regionWorld);
+	}
+
+	public void addMember(ArenaPlayer p, String region, String regionWorld) {
+		WorldGuardInterface.addMember(p.getName(), region, regionWorld);
+	}
+	public void removeMember(ArenaPlayer p, String region, String regionWorld) {
+		WorldGuardInterface.removeMember(p.getName(), region, regionWorld);
 	}
 }

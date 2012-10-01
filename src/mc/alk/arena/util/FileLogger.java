@@ -18,7 +18,11 @@ import java.util.Vector;
 import mc.alk.arena.BattleArena;
 
 
-
+/**
+ * 
+ * @author alkarin
+ *
+ */
 public class FileLogger {
 	static final String version ="1.0.2";
 	static Vector<String> msgs = new Vector<String>();

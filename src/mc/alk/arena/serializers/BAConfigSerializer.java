@@ -16,7 +16,7 @@ import org.bukkit.configuration.ConfigurationSection;
 public class BAConfigSerializer extends ConfigSerializer{
 
 	public void loadAll(){
-		try {config.load(f);} catch (Exception e){e.printStackTrace();}
+		try {config.load(file);} catch (Exception e){e.printStackTrace();}
 
 		parseDefaultOptions(config.getConfigurationSection("defaultOptions"));
 		Defaults.MONEY_STR = config.getString("moneyName");

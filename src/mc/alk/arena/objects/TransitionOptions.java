@@ -35,7 +35,7 @@ public class TransitionOptions {
 		STOREGAMEMODE("storeGamemode",false), RESTOREGAMEMODE("restoreGamemode",false),
 		STOREITEMS("storeItems",false), RESTOREITEMS("restoreItems",false),
 		STORE("store",false), RESTORE("restore",false),
-		WGCLEARREGION("wgClearRegion",false), WGNOLEAVE("wgNoLeave",false),
+		WGCLEARREGION("wgClearRegion",false), WGNOLEAVE("wgNoLeave",false), WGNOENTER("wgNoEnter", false),
 		WOOLTEAMS("woolTeams",false),
 		SAMEWORLD("sameWorld",false), WITHINDISTANCE("withinDistance",true)
 		;

@@ -11,7 +11,15 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.WorldGuardInterface;
+import mc.alk.arena.controllers.WorldGuardInterface.WorldGuardFlag;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.TransitionOptions;
+import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.arenas.Persistable;
@@ -173,7 +181,6 @@ public class ArenaSerializer {
 			Log.err(" Arena type not found for " + name);
 			return false;
 		}
-
 		ArenaParams q = new ArenaParams(minTeamSize,maxTeamSize,atype);
 		q.setMinTeams(minTeams);
 		q.setMaxTeams(maxTeams);
@@ -223,8 +230,28 @@ public class ArenaSerializer {
 		Persistable.yamlToObjects(arena, cs);
 		arena.init();
 		arena.setParameters(q);
+		updateRegions(arena);		
 		bac.addArena(arena);
 		return true;
+	}
+
+	private static void updateRegions(Arena arena) {
+		if (!WorldGuardInterface.hasWorldGuard())
+			return;
+		String region = arena.getRegion();
+		String worldName = arena.getRegionWorld();
+		if (region == null || worldName == null)
+			return;
+		MatchParams mp = ParamController.getMatchParamCopy(arena.getArenaType().getName());
+		if (mp == null)
+			return;
+		MatchTransitions trans = mp.getTransitionOptions();
+		if (trans == null)
+			return;
+		TransitionOptions tops = trans.getOptions(MatchState.DEFAULTS);
+		if (tops == null)
+			return;
+		WorldGuardInterface.setFlag(region,worldName, WorldGuardFlag.ENTRY, !tops.hasOption(TransitionOption.WGNOENTER));
 	}
 
 	private void saveArenas(boolean log) {

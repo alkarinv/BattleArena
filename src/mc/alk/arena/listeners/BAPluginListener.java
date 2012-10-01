@@ -1,11 +1,11 @@
 package mc.alk.arena.listeners;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.util.BTInterface;
+import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.tracker.Tracker;
 
@@ -15,7 +15,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 
-import com.alk.massDisguise.MassDisguise;
+import pgDev.bukkit.DisguiseCraft.DisguiseCraft;
+
 import com.dthielke.herochat.Herochat;
 
 
@@ -73,12 +74,12 @@ public class BAPluginListener implements Listener {
 	}
 
 	public void loadMD(){
-		if (BattleArena.md == null){
+		if (DisguiseInterface.disguiseInterface == null){
 			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("MassDisguise");
 			if (plugin != null) {
-				BattleArena.md = (MassDisguise) plugin;
+				DisguiseInterface.disguiseInterface = DisguiseCraft.getAPI();
 			} else {
-				Log.info("[BattleArena] MassDisguise not detected, ignoring disguises");
+				Log.info("[BattleArena] DisguiseCraft not detected, ignoring disguises");
 			}
 		}
 	}

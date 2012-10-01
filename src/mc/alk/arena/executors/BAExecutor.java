@@ -148,8 +148,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 		if (arena == null){
 			if (!teamSize.manuallySet){
 				arena = ac.getArenaByNearbyMatchParams(mp,jp);
-				mp.setMinTeamSize(arena.getParameters().getMinTeamSize());
-				mp.setMaxTeamSize(arena.getParameters().getMaxTeamSize());				
+				if (arena != null){
+					mp.setMinTeamSize(arena.getParameters().getMinTeamSize());
+					mp.setMaxTeamSize(arena.getParameters().getMaxTeamSize());					
+				}
 			}
 			if (arena == null){
 				return sendMessage(player,"&cA valid arena has not been built for a " + mp.toPrettyString());}

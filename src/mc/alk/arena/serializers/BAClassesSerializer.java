@@ -15,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
 public class BAClassesSerializer extends BaseSerializer{
 
 	public void loadAll(){
-		try {config.load(f);} catch (Exception e){e.printStackTrace();}
+		try {config.load(file);} catch (Exception e){e.printStackTrace();}
 		loadClasses(config.getConfigurationSection("classes"));
 	}
 	

@@ -1,5 +1,7 @@
 package mc.alk.arena.util;
 
+import mc.alk.arena.controllers.WorldGuardInterface.WorldGuardFlag;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -7,10 +9,11 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
@@ -22,9 +25,9 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
  *
  */
 public class WorldGuardUtil {	
-	public static WorldEditPlugin wep;
 	public static WorldGuardPlugin wgp;
-
+	public static boolean hasWorldGuard = false;
+	
 	public static class WorldGuardException extends Exception{
 		private static final long serialVersionUID = 1L;
 		public WorldGuardException(String msg) {
@@ -33,11 +36,11 @@ public class WorldGuardUtil {
 	}
 	
 	public static boolean hasWorldGuard() {
-		return wgp != null && wep != null;
+		return WorldEditUtil.hasWorldEdit && hasWorldGuard;
 	}
 
 	public static boolean addRegion(Player sender, String id) throws Exception {
-		Selection sel = getSelection(sender);
+		Selection sel = WorldEditUtil.getSelection(sender);
 		World w = sel.getWorld();
 		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
 		ProtectedRegion region = mgr.getRegion(id);
@@ -56,6 +59,8 @@ public class WorldGuardUtil {
 	}
 	
 	public static ProtectedRegion getRegion(World w, String id) {
+		if (w == null)
+			return null;
 		return wgp.getRegionManager(w).getRegion(id);
 	}
 
@@ -65,16 +70,8 @@ public class WorldGuardUtil {
 	}
 
 
-	public static Selection getSelection(Player player) {
-		return wep.getSelection(player);
-	}
-
-	public static WorldEditPlugin getWorldEditPlugin() {
-		return wep;
-	}
-
 	public static void updateProtectedRegion(Player p, String id) throws Exception {
-		Selection sel = wep.getSelection(p);
+		Selection sel = WorldEditUtil.getSelection(p);
 		World w = sel.getWorld();
 		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
 		mgr.removeRegion(id);
@@ -90,7 +87,7 @@ public class WorldGuardUtil {
 	}
 
 	public static ProtectedRegion createProtectedRegion(Player p, String id) throws Exception {
-		Selection sel = wep.getSelection(p);
+		Selection sel = WorldEditUtil.getSelection(p);
 		World w = sel.getWorld();
 		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
 		ProtectedRegion region = mgr.getRegion(id);
@@ -130,15 +127,77 @@ public class WorldGuardUtil {
     	return (!pr.contains(to.getBlockX(), to.getBlockY(), to.getBlockZ()) &&
     			pr.contains(from.getBlockX(), from.getBlockY(), from.getBlockZ()));
 	}
+	public static boolean setFlag(String id, String worldName, WorldGuardFlag flag, boolean enable) {
+		World w = Bukkit.getWorld(worldName);
+		if (w == null)
+			return false;
+		ProtectedRegion pr = getRegion(w, id);
+		if (pr == null)
+			return false;
+		StateFlag f = null;
+		switch (flag){
+		case ENTRY:
+			f = DefaultFlag.ENTRY;
+			break;
+		case EXIT:
+			f = DefaultFlag.EXIT;
+			break;
+
+		default:
+			return false;
+		}
+		State newState = enable ? State.ALLOW : State.DENY;
+		State state = pr.getFlag(f);
+		if (state == null || state != newState){
+			pr.setFlag(f, newState);
+		}
+		return true;
+	}
 
 	public static boolean setWorldGuard(Plugin plugin) {
 		wgp = (WorldGuardPlugin) plugin;
+		hasWorldGuard = true;
 		return hasWorldGuard();
 	}
 
-	public static boolean setWorldEdit(Plugin plugin) {
-		wep = (WorldEditPlugin) plugin;
-		return hasWorldGuard();
+	public static boolean allowEntry(Player player, String id, String regionWorld) {
+		World w = Bukkit.getWorld(regionWorld);
+		if (w == null)
+			return false;
+		ProtectedRegion pr = getRegion(w, id);
+		if (pr == null)
+			return false;
+		DefaultDomain dd = pr.getMembers();
+		dd.addPlayer(player.getName());
+		pr.setMembers(dd);
+		return true;
+	}
+
+	public static boolean addMember(String name, String id, String regionWorld) {
+		return changeMember(name,id,regionWorld,true);
+	}
+	
+	public static boolean removeMember(String name, String id, String regionWorld) {
+		return changeMember(name,id,regionWorld,false);
+	}
+	
+	private static boolean changeMember(String name, String id, String regionWorld, boolean add){
+		World w = Bukkit.getWorld(regionWorld);
+		if (w == null)
+			return false;
+		ProtectedRegion pr = getRegion(w, id);
+		if (pr == null)
+			return false;
+		
+		DefaultDomain dd = pr.getMembers();
+		if (add){
+		dd.addPlayer(name);
+		} else {
+			dd.removePlayer(name);
+		}
+		pr.setMembers(dd);
+		return true;
+
 	}
 
 }

@@ -31,7 +31,7 @@ public class MessageSerializer extends BaseSerializer {
 		MessageSerializer ms = files.get(name);
 		if (ms != null){
 			this.config = ms.config;
-			this.f = ms.f;
+			this.file = ms.file;
 			this.msgOptions = ms.msgOptions;
 		}
 	}

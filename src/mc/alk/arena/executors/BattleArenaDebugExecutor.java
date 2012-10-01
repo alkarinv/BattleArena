@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.listeners.ArenaListener;
@@ -23,6 +22,7 @@ import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -44,9 +44,11 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	@MCCommand( cmds = {"enableDebugging"}, op=true,min=3, usage="enableDebugging <code section> <true | false>")
 	public void enableDebugging(CommandSender sender, String section, Boolean on){
 		if (section.equalsIgnoreCase("transitions")){
-			PerformTransition.debug=on;
+			Defaults.DEBUG_TRANSITIONS = on;
 		} else if(section.equalsIgnoreCase("virtualplayer")){
 			Defaults.DEBUG_VIRTUAL = on;
+		} else if(section.equalsIgnoreCase("storage")){
+			Defaults.DEBUG_STORAGE = on;
 		} else {
 			sendMessage(sender, "&cDebugging couldnt find code section &6"+ section);
 			return;
@@ -144,6 +146,10 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		for (String line : lines){
 			sendMessage(sender,line);}
 		return true;
+	}
+	@MCCommand(cmds={"online"}, op=true)
+	public boolean arenaVerify(CommandSender sender, OfflinePlayer p) {
+		return sendMessage(sender, "Player " + p.getName() +"  is " + p.isOnline());
 	}
 	
 	@MCCommand(cmds={"purgeQueue"}, op=true)

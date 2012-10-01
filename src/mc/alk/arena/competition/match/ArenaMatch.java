@@ -98,6 +98,8 @@ public class ArenaMatch extends Match {
 		userTime.put(playerName, System.currentTimeMillis());
 
 		final TransitionOptions mo = tops.getOptions(state);
+		if (mo == null)
+			return;
 		/// Have They have already selected a class this match, have they changed their inventory since then?
 		/// If so, make sure they can't just select a class, drop the items, then choose another
 		if (chosen != null){ 
@@ -116,7 +118,7 @@ public class ArenaMatch extends Match {
 			items.addAll(mo.getItems());
 		}
 		try{ InventoryUtil.addItemsToInventory(p, items, true);} catch(Exception e){e.printStackTrace();}
-		
+
 		/// Deal with effects/buffs
 		EffectUtil.unenchantAll(p);
 		List<EffectWithArgs> effects = ac.getEffects();
@@ -298,16 +300,16 @@ public class ArenaMatch extends Match {
 					|| event.getFrom().getBlockY() != event.getTo().getBlockY()
 					|| event.getFrom().getBlockZ() != event.getTo().getBlockZ() &&
 					Bukkit.getWorld(arena.getRegionWorld()).getUID() == event.getTo().getWorld().getUID()) {
-				WorldGuardInterface.isLeavingArea(event.getFrom(), event.getTo(), 
-						Bukkit.getWorld(arena.getRegionWorld()), arena.getRegion());
+				if (WorldGuardInterface.isLeavingArea(event.getFrom(), event.getTo(), Bukkit.getWorld(arena.getRegionWorld()), arena.getRegion())){
+					event.setCancelled(true);}
 			}			
 		}
-		
+
 	}
 	/// TODO where should this go
-		public static final HashSet<String> disabled = 
-				new HashSet<String>(Arrays.asList( "/home", "/spawn", "/trade", "/paytrade", "/payhome", 
-						"/warp","/watch", "/sethome","/inf", "/va","/survival","/ma","/mob","/ctp","/chome","/csethome"));
+	public static final HashSet<String> disabled = 
+			new HashSet<String>(Arrays.asList( "/home", "/spawn", "/trade", "/paytrade", "/payhome", 
+					"/warp","/watch", "/sethome","/inf", "/va","/survival","/ma","/mob","/ctp","/chome","/csethome"));
 
 	@MatchEventHandler
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
@@ -327,5 +329,5 @@ public class ArenaMatch extends Match {
 			p.sendMessage(ChatColor.RED+"You cannot use that command when you are in a match");
 		}
 	}
-	
+
 }

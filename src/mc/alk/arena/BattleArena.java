@@ -67,13 +67,10 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.alk.massDisguise.MassDisguise;
-
 public class BattleArena extends JavaPlugin{
 	static private String pluginname; 
 	static private String version;
 	static private BattleArena plugin;
-	static public MassDisguise md = null;
 
 	private final static BattleArenaController arenaController = new BattleArenaController();
 	private final static TeamController tc = new TeamController(arenaController);
@@ -121,7 +118,7 @@ public class BattleArena extends JavaPlugin{
 		Bukkit.getPluginManager().registerEvents(playerListener, this);
 		Bukkit.getPluginManager().registerEvents(pluginListener, this);
 		Bukkit.getPluginManager().registerEvents(tc, this);
-		TeleportController.setup(this);
+		Bukkit.getPluginManager().registerEvents(new TeleportController(), this);
 
 		/// Register our different arenas
 		ArenaType.register("Any", Arena.class, this);
@@ -129,8 +126,10 @@ public class BattleArena extends JavaPlugin{
 		ArenaType.register("Colliseum", Arena.class, this);
 		ArenaType.register("DeathMatch", Arena.class, this);
 		ArenaType.register("FFA", Arena.class, this);
+		ArenaType.register("Arena", Arena.class, this);
+		ArenaType.register("Skirmish", Arena.class, this);
 		ArenaType.register("Versus", Arena.class, this);
-
+		
 		VictoryType.register(HighestKills.class, this);
 		VictoryType.register(NDeaths.class, this);
 		VictoryType.register(LastManStanding.class, this);
@@ -139,15 +138,7 @@ public class BattleArena extends JavaPlugin{
 		MethodController.addMethods(Match.class, Match.class.getMethods());
 		MethodController.addMethods(ArenaMatch.class, ArenaMatch.class.getMethods());
 
-		/// After registering our arenas and victories, load our configs
-		ArenaSerializer.setBAC(arenaController);
-		ArenaSerializer as = new ArenaSerializer(this, dir.getPath()+"/arenas.yml");
-		as.loadArenas(this);
-
-		SpawnSerializer ss = new SpawnSerializer();
-		ss.setConfig(load("/default_files/spawns.yml",dir.getPath() +"/spawns.yml"));
-		yacs.load();
-
+		/// Load our configs, then arenas
 		cc.setConfig(null,load("/default_files/config.yml",dir.getPath() +"/config.yml"));
 		YamlFileUpdater.updateConfig(cc); /// Update our config if necessary
 
@@ -156,6 +147,14 @@ public class BattleArena extends JavaPlugin{
 
 		cc.loadAll();
 		MoneyController.setup();
+
+		ArenaSerializer.setBAC(arenaController);
+		ArenaSerializer as = new ArenaSerializer(this, dir.getPath()+"/arenas.yml");
+		as.loadArenas(this);
+
+		SpawnSerializer ss = new SpawnSerializer();
+		ss.setConfig(load("/default_files/spawns.yml",dir.getPath() +"/spawns.yml"));
+		yacs.load();
 
 		/// Set our commands
 		getCommand("arena").setExecutor(commandExecutor);
@@ -178,7 +177,6 @@ public class BattleArena extends JavaPlugin{
 
 		createMessageSerializers();
 		FileLogger.init(); /// shrink down log size
-
 		/// Start listening for players queuing into matches
 		new Thread(arenaController).start();
 

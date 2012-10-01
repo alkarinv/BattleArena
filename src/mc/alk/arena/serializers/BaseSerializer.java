@@ -10,7 +10,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class BaseSerializer {
 
 	FileConfiguration config;
-	File f = null;
+	File file = null;
 
 	public boolean getBoolean(String node) {return config.getBoolean(node, false);}
 	public String getString(String node) {return config.getString(node,null);}
@@ -24,17 +24,17 @@ public class BaseSerializer {
 	}
 
 	public File getFile() {
-		return f;
+		return file;
 	}
 
 	public void setConfig(String file){
 		setConfig(new File(file));
 	}
 	public void setConfig(File file){
-		this.f = file;
-		if (!f.exists()){
+		this.file = file;
+		if (!file.exists()){
 			try {
-				f.createNewFile();
+				file.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -42,7 +42,7 @@ public class BaseSerializer {
 
 		config = new YamlConfiguration();
 		try {
-			config.load(f);
+			config.load(file);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -50,9 +50,16 @@ public class BaseSerializer {
 
 	public void reloadFile(){
 		try {
-			config.load(f);
+			config.load(file);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}		
+	}
+	public void save() {
+		try {
+			config.save(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

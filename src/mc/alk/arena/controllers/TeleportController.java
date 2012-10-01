@@ -1,37 +1,35 @@
 package mc.alk.arena.controllers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.listeners.BAPlayerListener;
-import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 
 
-public class TeleportController {
+public class TeleportController implements Listener{
 	static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
+    private final int TELEPORT_FIX_DELAY = 15; // ticks
 
-	static Plugin plugin;
-
-	public static void setup(Plugin plugin){
-		TeleportController.plugin = plugin;
-	}
-
-	///TODO Keep the match players and show players UNTIL bukkit fixes tp invisible bug
-	public static void teleportPlayer(final Player p, final Location loc, boolean in, final boolean die, final boolean wipe
-			,Set<ArenaPlayer> matchPlayers){
+	///TODO showPlayer doesnt, work.. attempt sending packets for avoiding invisible players
+	public static void teleportPlayer(final Player p, final Location loc, boolean in, final boolean die, final boolean wipe){
 		if (!p.isOnline() || p.isDead()){
 			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + p.getName() + " loc=" + loc + "  " + die +":"+ wipe);
 			BAPlayerListener.teleportOnReenter(p.getName(),loc);
@@ -40,14 +38,21 @@ public class TeleportController {
 			return;
 		}
 		teleport(p,loc);
-		for(ArenaPlayer p2 : matchPlayers) {
-			for (ArenaPlayer p3 : matchPlayers){
-				p2.getPlayer().showPlayer(p3.getPlayer());
-				p3.getPlayer().showPlayer(p2.getPlayer());
-			}
-		}
+//		updatePlayersWithinRadius(150,p);
 	}
-
+	
+//	private static void updatePlayersWithinRadius(int radius, Player self) {
+//		final Location l = self.getLocation();
+//	    for (Player player : Bukkit.getOnlinePlayers()) {
+//	    	if (l.getWorld().getUID() != player.getWorld().getUID() || player.getName().equals(self.getName()))
+//	    		continue;
+//	        if (l.distance(player.getLocation()) <= radius) {
+//	            CraftPlayer p = (CraftPlayer) self;
+//	            ((CraftPlayer)player).getHandle().netServerHandler.sendPacket(new Packet20NamedEntitySpawn(p.getHandle()));
+//	            ((CraftPlayer)p).getHandle().netServerHandler.sendPacket(new Packet20NamedEntitySpawn(((CraftPlayer)player).getHandle()));
+//	        }
+//	    }
+//	}
 	private static void teleporting(Player player, boolean isteleporting){
 		if (isteleporting){
 			teleporting.add(player.getName());
@@ -65,9 +70,56 @@ public class TeleportController {
 	public void onPlayerTeleport(PlayerTeleportEvent event){
 		if (teleporting.remove(event.getPlayer().getName())){
 			event.setCancelled(false);
+
+	        final Player player = event.getPlayer();
+	        final Server server = Bukkit.getServer();
+	        final Plugin plugin = BattleArena.getSelf();
+	        final int visibleDistance = server.getViewDistance() * 16;
+	        // Fix the visibility issue one tick later
+	        server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+	            @Override
+	            public void run() {
+	                // Refresh nearby clients
+	                final List<Player> nearby = getPlayersWithin(player, visibleDistance);	                
+	                // Hide every player
+	                updateEntities(player, nearby, false);
+	                // Then show them again
+	                server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+	                    @Override
+	                    public void run() {
+	                        updateEntities(player, nearby, true);
+	                    }
+	                }, 2);
+	            }
+	        }, TELEPORT_FIX_DELAY);
+	        
 		}
 	}
 
+    private void updateEntities(Player tpedPlayer, List<Player> players, boolean visible) {
+        // Hide or show every player to tpedPlayer
+        // and hide or show tpedPlayer to every player.
+        for (Player player : players) {
+            if (visible){
+                tpedPlayer.showPlayer(player);
+                player.showPlayer(tpedPlayer);
+            } else {
+                tpedPlayer.hidePlayer(player);
+                player.hidePlayer(tpedPlayer);
+            }
+        }
+    }
+    private List<Player> getPlayersWithin(Player player, int distance) {
+        List<Player> res = new ArrayList<Player>();
+        int d2 = distance * distance;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getWorld().getUID() == player.getWorld().getUID() && p != player && p.getLocation().distanceSquared(player.getLocation()) <= d2) {
+                res.add(p);
+            }
+        }
+        return res;
+    }
+    
 	public static void teleport(final Player p, final Location loc){
 		teleporting(p,true);
 		/// Close their inventory so they arent taking things in/out
@@ -88,9 +140,6 @@ public class TeleportController {
 		/// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
 		/// or game states ... lets not let this happen
 		PermissionsUtil.givePlayerInventoryPerms(p);			
-
-//		/// Now move the gamemode after we have dealth with multiinv
-//		p.setGameMode(GameMode.SURVIVAL);
 
 		if (!p.teleport(loc)){
 			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + p.getName() + " loc=" + loc);}
