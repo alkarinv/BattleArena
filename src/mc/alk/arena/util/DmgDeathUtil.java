@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 
 public class DmgDeathUtil {
 	
@@ -47,6 +48,10 @@ public class DmgDeathUtil {
 //			System.out.println("killer player " + lastDamageCause);
 			return PlayerController.toArenaPlayer((Player) lastDamageCause);
 		}
+	}
+
+	public static ArenaPlayer getPlayerCause(PlayerDeathEvent event) {
+		return getPlayerCause(event.getEntity().getLastDamageCause());
 	}
 
 }

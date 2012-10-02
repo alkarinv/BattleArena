@@ -7,6 +7,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.util.DmgDeathUtil;
 
 import org.bukkit.event.entity.PlayerDeathEvent;
 
@@ -31,6 +32,15 @@ public class NDeaths extends VictoryCondition{
 
 	@MatchEventHandler(suppressCastWarnings=true)
 	public void playerDeathEvent(PlayerDeathEvent event, ArenaPlayer p) {
+		ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
+		if (killer != null){
+			Team team = match.getTeam(p);
+			if (team != null)
+				team.addDeath(p);
+			team = match.getTeam(killer);
+			if (team != null)
+				team.addKill(killer);
+		}
 		killPlayer(p);		
 	}
 
