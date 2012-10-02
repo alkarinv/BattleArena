@@ -699,7 +699,6 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 			MessageUtil.sendMessage(p,notReady);
 			ready = false;
 		}
-		Log.debug("!!!!!!!!!!!!!!!!! " + ready +"  p= " + p.getName());
 		if (!ready){
 			t.killMember(p);
 		}

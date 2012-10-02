@@ -133,8 +133,6 @@ public class ArenaMatch extends Match {
 	@MatchEventHandler
 	public void onPlayerQuit(PlayerQuitEvent event){
 		ArenaPlayer player = BattleArena.toArenaPlayer(event.getPlayer());
-		Log.debug("Player = ======== " + player.getName());
-		Log.debug(this+"onPlayerQuit = " + player.getName() + " :" + state + insideArena.contains(player.getName()));
 		if (woolTeams)
 			BAPlayerListener.clearWoolOnReenter(player.getName(), teams.indexOf(getTeam(player)));
 		/// If they are just in the arena waiting for match to start, or they havent joined yet
