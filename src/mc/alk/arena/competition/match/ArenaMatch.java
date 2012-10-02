@@ -24,6 +24,7 @@ import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.EffectUtil.EffectWithArgs;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 
@@ -130,8 +131,10 @@ public class ArenaMatch extends Match {
 	}
 
 	@MatchEventHandler
-	public void onPlayerQuit(PlayerQuitEvent event, ArenaPlayer player){
-		//		System.out.println(this+"onPlayerQuit = " + player.getName() + "  " +matchResult.matchComplete()  +" :" + state + insideArena.contains(player.getName()));
+	public void onPlayerQuit(PlayerQuitEvent event){
+		ArenaPlayer player = BattleArena.toArenaPlayer(event.getPlayer());
+		Log.debug("Player = ======== " + player.getName());
+		Log.debug(this+"onPlayerQuit = " + player.getName() + " :" + state + insideArena.contains(player.getName()));
 		if (woolTeams)
 			BAPlayerListener.clearWoolOnReenter(player.getName(), teams.indexOf(getTeam(player)));
 		/// If they are just in the arena waiting for match to start, or they havent joined yet

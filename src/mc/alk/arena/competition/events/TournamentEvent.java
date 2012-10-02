@@ -178,11 +178,12 @@ public class TournamentEvent extends Event implements Listener{
 				Server server = Bukkit.getServer();
 				Team t = aliveTeams.get(0);
 				server.broadcastMessage(Log.colorChat(matchParams.getPrefix()+"&e Congratulations to &6" + t.getDisplayName() + "&e for winning!"));
-				PerformTransition.transition(am, MatchState.FIRSTPLACE, t,false);
 				//				if (BattleArena.bet != null) BattleEventTracker.addTeamWinner(t.getDisplayName(), getName());
 				HashSet<Team> losers = new HashSet<Team>(competingTeams);
 				losers.remove(victor);
 				eventVictory(victor,losers);
+				PerformTransition.transition(am, MatchState.FIRSTPLACE, t,false);
+				PerformTransition.transition(am, MatchState.PARTICIPANTS, losers,false);
 				eventCompleted();
 			} else {
 				makeNextRound();

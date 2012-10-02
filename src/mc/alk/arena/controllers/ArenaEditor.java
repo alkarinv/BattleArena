@@ -15,11 +15,11 @@ public class ArenaEditor {
 			this.lastUsed = used; this.arena = arena;
 		}
 	}
-	HashMap<Player, CurrentSelection> selections = new HashMap<Player,CurrentSelection>();
+	HashMap<String, CurrentSelection> selections = new HashMap<String,CurrentSelection>();
 	
 	public void setCurrentArena(Player p, Arena arena) {
 		CurrentSelection cs = new CurrentSelection(System.currentTimeMillis(), arena);
-		selections.put(p, cs);
+		selections.put(p.getName(), cs);
 	}
 
 	public Arena getArena(Player p) {

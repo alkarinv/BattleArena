@@ -21,7 +21,7 @@ public class TransitionOptions {
 		TELEPORTWAITROOM("teleportWaitRoom",false),TELEPORTIN ("teleportIn",false), TELEPORTOUT("teleportOut",false),
 		TELEPORTBACK("teleportBack",false),
 		RESPAWN ("respawn",false), RANDOMRESPAWN ("randomRespawn",false),
-		CLEARINVENTORY ("clearInventory",false), NEEDARMOR ("needArmor",false),
+		CLEARINVENTORY ("clearInventory",false), NEEDARMOR ("needArmor",false), NOINVENTORY("noInventory",false),
 		CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter",false), 
 		NEEDITEMS ("needItems",false), GIVEITEMS("giveItems",false), GIVECLASS("giveClass",false),
 		HEALTH("health",true), HUNGER("hunger",true),
@@ -93,6 +93,8 @@ public class TransitionOptions {
 	public boolean hasItems() {return (items != null && (options.contains(TransitionOption.NEEDITEMS) || options.contains(TransitionOption.GIVEITEMS)) );}
 	public boolean shouldTeleportWaitRoom() {return options.contains(TransitionOption.TELEPORTWAITROOM);}
 	public boolean shouldTeleportIn() {return options.contains(TransitionOption.TELEPORTIN);}
+	public boolean teleportsIn() {return shouldTeleportIn() || shouldTeleportWaitRoom();}
+
 	public boolean shouldTeleportOut() {
 		return options.contains(TransitionOption.TELEPORTOUT) || options.contains(TransitionOption.TELEPORTBACK);
 	}
@@ -128,13 +130,11 @@ public class TransitionOptions {
 	        		return false;
 	        }
 		}
-//		if (clearInventory()){
-////			System.out.println(" needs clearInventory  " + p.getInventory());
-//			if (InventoryUtil.hasAnyItem(p))
-//				return false;
-//		}
+		if (options.contains(TransitionOption.NOINVENTORY)){
+			if (InventoryUtil.hasAnyItem(p.getPlayer()))
+				return false;
+		}
 		if (needsArmor()){
-//			System.out.println(" needs armor  hasArmor=" + InventoryUtil.hasArmor(p));
 			if (!InventoryUtil.hasArmor(p.getPlayer()))
 				return false;
 		}
@@ -155,7 +155,7 @@ public class TransitionOptions {
 	        	sb.append("&5 - &6"+ is.getAmount() +" " + is.getData());
 	        }
 		}
-		if (clearInventory()){
+		if (options.contains(TransitionOption.NOINVENTORY)){
 			hasSomething = true;
 			sb.append("&5 - &6Clear Inventory");
 		}
@@ -181,7 +181,7 @@ public class TransitionOptions {
 	        	}
 	        }
 		}
-		if (clearInventory()){
+		if (options.contains(TransitionOption.NOINVENTORY)){
 			if (InventoryUtil.hasAnyItem(p.getPlayer())){
 				sb.append("&5 -&e a &6Clear Inventory\n");
         		isReady = false;
@@ -300,6 +300,7 @@ public class TransitionOptions {
 		String onspawn = at.getGiveString(MatchState.ONSPAWN);
 		String prizes = at.getGiveString(MatchState.WINNER);
 		String firstPlacePrizes = at.getGiveString(MatchState.FIRSTPLACE);
+		String participantPrizes = at.getGiveString(MatchState.PARTICIPANTS);
 		boolean rated = sq.isRated();
 		String teamSizes = Util.getStr(sq.getMinTeamSize(),sq.getMaxTeamSize());
 		sb.append("&eThis is "+ (rated? "a &4Rated" : "an &aUnrated") +"&e "+name+". " );
@@ -310,14 +311,17 @@ public class TransitionOptions {
 			sb.append("\n&eYou are given:");
 			if (prestart != null) sb.append(prestart);			
 			if (start != null) sb.append(start);			
-			if (onspawn != null) sb.append(onspawn);			
+			if (onspawn != null) sb.append(onspawn);
 		}
 		sb.append("\n&ePrize for &5winning&e a match:");
+		if (participantPrizes != null){	
+			sb.append("\n&ePrize for &6participation:&e "+participantPrizes);}
 		sb.append(prizes==null? "&aNone" : prizes);
 		if (firstPlacePrizes != null){			
-			sb.append("\n&ePrize for getting &51st &eplace:");
+			sb.append("\n&ePrize for getting &b1st &eplace:");
 			sb.append(firstPlacePrizes);
 		}
+		
 		return sb.toString();
 	}
 	public void setClasses(HashMap<Integer, ArenaClass> classes) {

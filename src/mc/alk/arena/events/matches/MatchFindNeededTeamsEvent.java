@@ -20,7 +20,7 @@ public class MatchFindNeededTeamsEvent extends BAEvent {
 	}
 
 	public void setNeededTeams(int neededTeams) {
-		this.neededTeams = Math.min(this.neededTeams, neededTeams);
+		this.neededTeams = Math.max(this.neededTeams, neededTeams);
 	}
 
 }

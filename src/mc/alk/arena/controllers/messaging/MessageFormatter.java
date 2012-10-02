@@ -181,15 +181,19 @@ public class MessageFormatter{
 				break;
 			case WINSAGAINST: 
 				if (bti.isValid()){
-					st1 = getStat(bti,stats,t);
-					oteam = getOtherTeam(t,teams);
-					if (oteam != null){
-						Stat st2 = getStat(bti,stats,oteam);
-						VersusRecord vr = st1.getRecordVersus(st2);
-						repl = vr.wins +"";
-					} else {
-						repl = "0";
-					}						
+					try{
+						st1 = getStat(bti,stats,t);
+						oteam = getOtherTeam(t,teams);
+						if (oteam != null){
+							Stat st2 = getStat(bti,stats,oteam);
+							VersusRecord vr = st1.getRecordVersus(st2);
+							repl = vr.wins +"";
+						} else {
+							repl = "0";
+						}						
+					} catch(Exception e){
+						e.printStackTrace();
+					}
 				} else{
 					repl = "0";
 				}
@@ -197,15 +201,19 @@ public class MessageFormatter{
 				break;
 			case LOSSESAGAINST: 
 				if (bti.isValid()){
-					st1 = getStat(bti,stats,t);
-					oteam = getOtherTeam(t,teams);
-					if (oteam != null){
-						Stat st2 = getStat(bti,stats,oteam);
-						VersusRecord vr = st1.getRecordVersus(st2);
-						repl = vr.losses +"";
-					} else {
-						repl = "0";
-					}						
+					try{
+						st1 = getStat(bti,stats,t);
+						oteam = getOtherTeam(t,teams);
+						if (oteam != null){
+							Stat st2 = getStat(bti,stats,oteam);
+							VersusRecord vr = st1.getRecordVersus(st2);
+							repl = vr.losses +"";
+						} else {
+							repl = "0";
+						}
+					} catch(Exception e){
+						e.printStackTrace();
+					}
 				} else{
 					repl = "0";
 				}
@@ -280,7 +288,7 @@ public class MessageFormatter{
 				{
 					StringBuilder sb = new StringBuilder();
 					boolean first = true;
-					
+
 					for (ArenaPlayer ap: team.getLivingPlayers()){
 						if (!first) sb.append("&e, ");
 						sb.append("&6" + ap.getDisplayName()+"&e(&4" + ap.getHealth()+"&e)");

@@ -9,7 +9,7 @@ public class Defaults {
 	public static boolean REPORT_ERRORS;
 
 	public static double TICK_MULT = 1.0;
-	public static String MONEY_STR = "bc";
+	public static String MONEY_STR = "Gold";
     public static final double DEFAULT_ELO = 1250.0;
 
     /// How long can we keep appending player names together
@@ -40,14 +40,13 @@ public class Defaults {
 	
 	/// TOURNEY OPTIONS
 	public static final int TIME_BETWEEN_ROUNDS = 20;
+
+	/// WORLDGUARD OPTIONS
 	public static final int MAX_REGION_SIZE = 5000000;
-
-
 
 	/// DUEL OPTIONS
 	/// 30 minutes before people can duel a players that has rejected it once before
 	public static int DUEL_CHALLENGE_INTERVAL = 60*30; 
-
 	public static boolean DUEL_ALLOW_RATED = false;
 
 	/// Scheduled Event Options

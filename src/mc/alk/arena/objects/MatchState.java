@@ -14,7 +14,7 @@ public enum MatchState {
 	ONFINISH("onFinish"),
 	ONDEATH ("onDeath"), ONSPAWN ("onSpawn"), WINNER ("winner"),
 	ONENTER("onEnter"), ONLEAVE("onLeave"), ONENTERWAITROOM("onEnterWaitRoom"),
-	LOSERS ("losers"), FIRSTPLACE ("firstPlace"),
+	LOSERS ("losers"), FIRSTPLACE ("firstPlace"), PARTICIPANTS("participants"),
 	ONMATCHINTERVAL("onMatchInterval"), ONMATCHTIMEEXPIRED("onMatchTimeExpired"),
 	NONE("None"), ONCOUNTDOWNTOEVENT("onCountdownToEvent");
 	

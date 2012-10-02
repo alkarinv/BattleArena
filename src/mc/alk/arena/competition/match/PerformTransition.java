@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MoneyController;
@@ -32,7 +31,7 @@ import org.bukkit.inventory.ItemStack;
 public class PerformTransition {
 
 	static Random rand = new Random();
-//	public static boolean debug = false;
+	//	public static boolean debug = false;
 
 	/**
 	 * Perform a transition 
@@ -49,24 +48,24 @@ public class PerformTransition {
 	}
 
 	public static boolean transition(Match am, final MatchState transition, Team team, boolean onlyInMatch) {
-		final Set<ArenaPlayer> validPlayers = team.getPlayers();
+		//		final Set<ArenaPlayer> validPlayers = team.getPlayers();
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo );
 		if (mo == null)
 			return true;
 
-		/// Check for requirements if we are going to teleport in, or they are joining
-		final boolean teleportIn = mo.shouldTeleportIn();
-		if (transition == MatchState.ONJOIN || teleportIn){
-			Set<ArenaPlayer> stillAlive = am.checkReady(team,mo);
-			validPlayers.retainAll(stillAlive);
-		}
+		//		/// Check for requirements if we are going to teleport in, or they are joining
+		//		final boolean teleportIn = mo.shouldTeleportIn();
+		//		if (transition == MatchState.ONJOIN || teleportIn){
+		//			Set<ArenaPlayer> stillAlive = am.checkReady(team,mo);
+		//			validPlayers.retainAll(stillAlive);
+		//		}
+		//
+		//		/// Alas no players
+		//		if (validPlayers.isEmpty())
+		//			return false;
 
-		/// Alas no players
-		if (validPlayers.isEmpty())
-			return false;
-
-		for (ArenaPlayer p : validPlayers){
+		for (ArenaPlayer p : team.getPlayers()){
 			transition(am, transition,p,team, onlyInMatch);
 		}
 		return true;
@@ -102,29 +101,37 @@ public class PerformTransition {
 		final String disguiseAllAs = mo.getDisguiseAllAs();
 		final Boolean undisguise = mo.undisguise();
 		final int teamIndex = am.indexOf(team);
-
+		boolean playerReady = p.isOnline();
 		final boolean dead = !p.isOnline() || p.isDead();
 		if (teleportWaitRoom){ /// Teleport waiting room
-			/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
-			/// Since we cant really tell the eventual result.. do our best guess
-			if (!dead) am.enterWaitRoom(p); 
-			final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),team.getPlayerIndex(p));
-			//			final Location l = am.getWaitRoomSpawn(teamIndex,false);
-			TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false);
+			if ( (insideArena || am.checkReady(p, team, mo, true)) && !dead){
+				/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
+				/// Since we cant really tell the eventual result.. do our best guess
+				am.enterWaitRoom(p); 
+				final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),team.getPlayerIndex(p));
+				//			final Location l = am.getWaitRoomSpawn(teamIndex,false);
+				TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false);				
+			} else {
+				playerReady = false;
+			}
 		}
 
 		/// Teleport In
 		if (teleportIn && transition != MatchState.ONSPAWN){ /// only tpin, respawn tps happen elsewhere
-			/// enterArena is supposed to happen before the teleport in Event, but it depends on the result of a teleport
-			/// Since we cant really tell the eventual result.. do our best guess
-			if (!dead) am.enterArena(p);
-			final Location l = jitter(am.getTeamSpawn(teamIndex,false),team.getPlayerIndex(p));
-			TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false);
-			PlayerStoreController.setGameMode(p.getPlayer(), GameMode.SURVIVAL);
+			if ((insideArena || am.checkReady(p, team, mo, true)) && !dead){
+				/// enterArena is supposed to happen before the teleport in Event, but it depends on the result of a teleport
+				/// Since we cant really tell the eventual result.. do our best guess
+				am.enterArena(p);
+				final Location l = jitter(am.getTeamSpawn(teamIndex,false),team.getPlayerIndex(p));
+				TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false);
+				PlayerStoreController.setGameMode(p.getPlayer(), GameMode.SURVIVAL);
+			} else {
+				playerReady = false;
+			}
 		}
 
 		/// Only do if player is online options
-		if (p.isOnline()){
+		if (playerReady && !dead){
 			if (wipeInventory){ InventoryUtil.clearInventory(p.getPlayer());}
 			if (mo.hasOption(TransitionOption.STOREGAMEMODE)){ am.psc.storeGamemode(p);}
 			if (mo.storeExperience()){ am.psc.storeExperience(p);}

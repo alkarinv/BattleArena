@@ -207,7 +207,7 @@ public class ArenaMatchQueue {
 				CompositeTeam cteam = null;
 				for (Team t : qteams){
 					JoinPreferences jp = t.getJoinPreferences();
-					if (Defaults.DEBUG) System.out.println("--"+teamSize +" " + t.size() +"  t="+t.getName() +",mp="+mp +",jp="+ jp.matches(a));
+					if (Defaults.DEBUG) System.out.println("--"+teamSize +" " + t.size() +"  t="+t.getName() +",mp="+mp +",jp="+ (jp == null ? "" : jp.matches(a)));
 					if (jp != null && !jp.matches(a)){
 						continue;}
 					

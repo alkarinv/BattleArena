@@ -594,6 +594,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 	@MCCommand(cmds={"duel"},inGame=true)
 	public boolean duel(ArenaPlayer player, MatchParams mp, String args[]) {
+		if (dc.isChallenged(player)){
+			sendMessage(player,"&4[Duel] &cYou have already been challenged to a duel!");
+			return sendMessage(player,"&4[Duel] &6/"+mp.getCommand()+" reject&c to cancel the duel before starting your own");
+		}
 		/// Can the player join this match/event at this moment?
 		if (!canJoin(player)){
 			return true;}

@@ -63,7 +63,7 @@ public class TimeUtil {
 			sb.append("&6"+m + "&e " + minOrMins(m)+" ");}
 		if (s > 0) {
 			has = true;
-			sb.append("&6"+s + "&e " + secOrSecs(s)+" ");}
+			sb.append("&6"+s + "&e " + secOrSecs(s));}
 		if (!has){
 			sb.append("&60 matchEndTime");
 		}

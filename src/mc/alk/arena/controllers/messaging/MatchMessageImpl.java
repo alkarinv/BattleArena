@@ -104,7 +104,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		if (currentLeader == null){
 			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr;			
 		} else {
-			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr +".&6"+
+			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr+". &6"+
 					currentLeader.getDisplayName()+"&e leads with &2" + currentLeader.getNKills() +
 					"&e kills &4"+currentLeader.getNDeaths()+"&e deaths";				
 		}

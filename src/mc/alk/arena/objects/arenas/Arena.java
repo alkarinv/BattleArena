@@ -39,7 +39,7 @@ public class Arena implements ArenaListener {
 	protected TreeMap<Integer,Location> wrlocs = null; /// wait room spawn locations
 	protected Location vloc = null;
 
-	protected Map<Player, Location> visitorlocations = null;/// tp locations for the visitors
+	protected Map<String, Location> visitorlocations = null;/// tp locations for the visitors
 	protected Random rand = new Random(); /// a random 
 
 	protected Map<Long, TimedSpawn> timedSpawns = null; /// Item/mob/other spawn events
@@ -56,7 +56,7 @@ public class Arena implements ArenaListener {
 	 * Arena constructor
 	 */
 	public Arena(){
-		visitorlocations = new HashMap<Player,Location>();
+		visitorlocations = new HashMap<String,Location>();
 		locs = new TreeMap<Integer,Location>();
 	}
 	

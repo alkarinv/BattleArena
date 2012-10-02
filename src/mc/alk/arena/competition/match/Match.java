@@ -30,7 +30,6 @@ import mc.alk.arena.events.matches.MatchPrestartEvent;
 import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.matches.MatchVictoryEvent;
 import mc.alk.arena.listeners.ArenaListener;
-import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -204,6 +203,12 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::startMatch()");
 		state = MatchState.ONPRESTART;
+		/// If we will teleport them into the arena for the first time, check to see they are ready first
+		TransitionOptions ts = tops.getOptions(state);
+		if (ts != null && ts.teleportsIn()){
+			for (Team t: teams){
+				checkReady(t,tops.getOptions(MatchState.PREREQS));				}
+		}
 
 		MatchPrestartEvent event= new MatchPrestartEvent(this,teams);
 		notifyListeners(event);
@@ -224,17 +229,22 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
 		state = MatchState.ONSTART;
 		List<Team> competingTeams = new ArrayList<Team>();
-		final TransitionOptions mo = tops.getOptions(state);
+		/// If we will teleport them into the arena for the first time, check to see they are ready first
+		TransitionOptions ts = tops.getOptions(state);
+		if (ts != null && ts.teleportsIn()){
+			for (Team t: teams){
+				checkReady(t,tops.getOptions(MatchState.PREREQS));				}
+		}
 		for (Team t: teams){
-			if (!checkReady(t,mo).isEmpty())
-				competingTeams.add(t);
+			if (!t.isDead()){
+				competingTeams.add(t);}
 		}
 		final int nCompetingTeams = competingTeams.size();
-		if (Defaults.DEBUG) Log.info("[BattleArena] competing teams = " + competingTeams +"   allteams=" + teams +"  vcs="+vcs);
 
 		MatchFindNeededTeamsEvent findevent = new MatchFindNeededTeamsEvent(this);
 		notifyListeners(findevent);
 		int neededTeams = findevent.getNeededTeams();
+		if (Defaults.DEBUG) Log.info("[BattleArena] competing teams = " + competingTeams +":"+neededTeams+"   allteams=" + teams);
 
 		if (nCompetingTeams >= neededTeams){
 			MatchStartEvent event= new MatchStartEvent(this,teams);
@@ -302,7 +312,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		public void run() {
 			state = MatchState.ONCOMPLETE;
 			final Team victor = am.getVictor();
-			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted():" + victor.getName());
+			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + victor);
 			/// ONCOMPLETE can teleport people out of the arena,
 			/// So the order of events is usually
 			/// ONCOMPLETE(half of effects) -> ONLEAVE( and all effects) -> ONCOMPLETE( rest of effects)
@@ -654,46 +664,46 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		Team t = getTeam(player);
 		t.addKill(player);
 	}
-	
+
 	public boolean insideArena(ArenaPlayer p){
 		return insideArena.contains(p.getName());
 	}
 
 	protected Set<ArenaPlayer> checkReady(final Team t, TransitionOptions mo) {
 		Set<ArenaPlayer> alive = new HashSet<ArenaPlayer>();
-		for (ArenaPlayer p : t.getPlayers()){
-			boolean shouldKill = false;
-			boolean online = p.isOnline();
-			boolean inmatch = insideArena.contains(p.getName());
-			final String pname = p.getDisplayName();
-
-			if (Defaults.DEBUG) System.out.println(p.getName()+"  online=" + online +" isready="+tops.playerReady(p));
-			if (!online){
-				//				Log.warn("[BattleArena] "+p.getName()+" killed for not being online");
-				t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for not being online");
-				shouldKill = true;
-			} else if (p.isDead()){
-				//				Log.warn("[BattleArena] "+p.getName()+" killed for not being online");
-				t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for being dead while the match starts");
-				shouldKill = true;
-			} else if (!inmatch && !tops.playerReady(p)){ /// Players are about to be teleported into arena
-				t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for not being ready");
-				MessageUtil.sendMessage(p,"&eYou were &4killed&e bc of the following. ");
-				String notReady = tops.getRequiredString(p,"&eYou needed");
-				MessageUtil.sendMessage(p,notReady);
-				BAPlayerListener.addMessageOnReenter(p.getName(),"&eYou were &4killed&e bc of the following. "+notReady);
-				//				Log.warn("[BattleArena] " + p.getName() +"  killed for " + notReady);
-				shouldKill = true;
-			}
-			if (shouldKill){
-				/// Really not sure, do we care about killing them on?
-				/// But do not!! just set health to 0.  if they are offline they wont lose the inv, but the inv will drop
-				/// giving them double items on reenter
-			} else {
-				alive.add(p);
-			}
+		for (ArenaPlayer p : t.getPlayers()){			
+			if (checkReady(p,t,mo,true)){
+				alive.add(p);}
 		}
 		return alive;
+	}
+	
+	protected boolean checkReady(ArenaPlayer p, final Team t, TransitionOptions mo, boolean announce) {
+		boolean online = p.isOnline();
+		boolean inmatch = insideArena.contains(p.getName());
+		final String pname = p.getDisplayName();
+		boolean ready = true;
+		if (Defaults.DEBUG) System.out.println(p.getName()+"  online=" + online +" isready="+tops.playerReady(p));
+		if (!online){
+			//				Log.warn("[BattleArena] "+p.getName()+" killed for not being online");
+			t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for not being online");
+			ready = false;
+		} else if (p.isDead()){
+			//				Log.warn("[BattleArena] "+p.getName()+" killed for not being online");
+			t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for being dead while the match starts");
+			ready = false;
+		} else if (!inmatch && !tops.playerReady(p)){ /// Players are about to be teleported into arena
+			t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for not being ready");
+			String notReady = tops.getRequiredString(p,"&eYou needed");
+			MessageUtil.sendMessage(p,"&eYou didn't compete because of the following.");
+			MessageUtil.sendMessage(p,notReady);
+			ready = false;
+		}
+		Log.debug("!!!!!!!!!!!!!!!!! " + ready +"  p= " + p.getName());
+		if (!ready){
+			t.killMember(p);
+		}
+		return ready;
 	}
 
 	public void sendMessage(String string) {

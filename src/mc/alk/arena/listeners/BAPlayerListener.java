@@ -21,6 +21,7 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
+import mc.alk.arena.util.Util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -126,15 +127,24 @@ public class BAPlayerListener implements Listener  {
 			Location loc = tp.get(name);
 			if (loc != null){
 				if (event == null){
-					TeleportController.teleport(p, tp.get(name));
+					Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+						@Override
+						public void run() {
+							Player pl = Bukkit.getPlayer(name);
+							if (pl != null){
+								TeleportController.teleport(p, tp.remove(name));
+							} else {
+								Util.printStackTrace();
+							}
+						}
+					});					
 				} else {
 					PermissionsUtil.givePlayerInventoryPerms(p);
-					event.setRespawnLocation(tp.get(name));
+					event.setRespawnLocation(tp.remove(name));
 				}
 			} else { /// this is bad, how did they get a null tp loc
 				Log.err(name + " respawn loc =null");
 			}
-			tp.remove(name);
 		}
 		/// Do these after teleports
 		if (gamemodeRestore.containsKey(name)){
