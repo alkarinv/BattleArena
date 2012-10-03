@@ -133,7 +133,7 @@ public class Persistable {
 						Map<Object,Object> newMap = new HashMap<Object,Object>();
 						for (String key : keyset){
 							Object k = yamlToObj(key,keyType,cs);
-							Object v = yamlToObj((String)mapcs.get(key), mapType,cs);
+							Object v = yamlToObj(mapcs.get(key).toString(), mapType,cs);
 							if (k != null && v != null)
 								newMap.put(k,v);
 						}
