@@ -168,5 +168,10 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return true;
 	}
 
+	@MCCommand(cmds={"hasPerm"}, op=true)
+	public boolean hasPerm(CommandSender sender, String perm, Player p) {
+		return sendMessage(sender, "Player " + p.getName() +"  hasPerm " + perm +" " +p.hasPermission(perm));
+	}
+
 
 }

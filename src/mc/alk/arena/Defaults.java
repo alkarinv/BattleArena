@@ -64,5 +64,5 @@ public class Defaults {
 	public static final String MULTIVERSE_CORE_IGNORE_NODE = "mv.bypass.gamemode.*"; 
 	public static final String WORLDGUARD_BYPASS_NODE = "worldguard.region.bypass.";
 
-
+	public static boolean USE_CLASS_PERMS = false;
 }

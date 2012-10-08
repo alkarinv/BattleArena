@@ -36,7 +36,8 @@ public class TransitionOptions {
 		STOREITEMS("storeItems",false), RESTOREITEMS("restoreItems",false),
 		STORE("store",false), RESTORE("restore",false),
 		WGCLEARREGION("wgClearRegion",false), WGNOLEAVE("wgNoLeave",false), WGNOENTER("wgNoEnter", false),
-		WOOLTEAMS("woolTeams",false),
+		WOOLTEAMS("woolTeams",false), 
+		ADDPERMS("addPerms", false), REMOVEPERMS("removePerms", false),
 		SAMEWORLD("sameWorld",false), WITHINDISTANCE("withinDistance",true)
 		;
 		String name;
@@ -49,14 +50,15 @@ public class TransitionOptions {
 	List<ItemStack> items = null;
 	Map<Integer,ArenaClass> classes = null;
 	List<EffectWithArgs> effects = null;
+	List<String> addPerms = null;
 	Double money =null; 
 	Integer exp = null;
 	Integer health = null;
 	Integer hunger = null;
 	String disguiseAllAs = null;
 	Integer withinDistance = null;
-	public TransitionOptions() {
-	}
+	
+	public TransitionOptions() {}
 	public TransitionOptions(TransitionOptions o) {
 		if (o == null)
 			return;
@@ -69,14 +71,15 @@ public class TransitionOptions {
 		this.health= o.health;
 		this.hunger = o.hunger;
 		this.disguiseAllAs = o.disguiseAllAs;
-		
 	}
+	
 	public void setOptions(Set<String> options) {
 		this.options =new HashSet<TransitionOption>();
 		for (String s: options){
 			this.options.add(TransitionOption.valueOf(s));
 		}
 	}
+	
 	public void setMatchOptions(Set<TransitionOption> options) {
 		this.options =new HashSet<TransitionOption>(options);
 	}
@@ -309,7 +312,7 @@ public class TransitionOptions {
 		sb.append(required==null? "&aNone" : required);
 		if (prestart != null || start !=null || onspawn != null){
 			sb.append("\n&eYou are given:");
-			if (prestart != null) sb.append(prestart);			
+			if (prestart != null) sb.append(prestart);		
 			if (start != null) sb.append(start);			
 			if (onspawn != null) sb.append(onspawn);
 		}
@@ -344,6 +347,21 @@ public class TransitionOptions {
 	}
 	public int getWithinDistance() {
 		return withinDistance;
+	}
+	
+	public void setAddPerms(List<String> list) {
+		if (list == null || list.isEmpty())
+			return;
+		addOption(TransitionOption.ADDPERMS);
+		addPerms = list;
+	}
+	
+	public List<String> getAddPerms() {
+		return addPerms;
+	}
+	/// TODO, not sure this will work properly, I really want to remove those perms that were added in another section!!
+	public List<String> getRemovePerms() {
+		return addPerms;
 	}
 	
 }

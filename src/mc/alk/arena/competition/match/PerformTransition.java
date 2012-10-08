@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PlayerStoreController;
@@ -27,6 +28,7 @@ import mc.alk.arena.util.TeamUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.PermissionAttachment;
 
 public class PerformTransition {
 
@@ -148,6 +150,8 @@ public class PerformTransition {
 					TeamUtil.setTeamHead(teamIndex, p);}
 				am.woolTeams= true;
 			}
+			if (mo.hasOption(TransitionOption.REMOVEPERMS)){ removePerms(p, mo.getRemovePerms());}
+			if (mo.hasOption(TransitionOption.ADDPERMS)){ addPerms(p, mo.getAddPerms(), 0);}
 			List<ItemStack> items = null;
 			if (mo.hasClasses()){
 				final ArenaClass ac = getArenaClass(mo,teamIndex);
@@ -203,6 +207,20 @@ public class PerformTransition {
 		}
 
 		return true;
+	}
+
+	private static void removePerms(ArenaPlayer p, List<String> perms) {
+		if (perms == null || perms.isEmpty())
+			return;
+		/// TODO complete
+	}
+
+	private static void addPerms(ArenaPlayer p, List<String> perms, int ticks) {
+		if (perms == null || perms.isEmpty())
+			return;
+		PermissionAttachment attachment = p.getPlayer().addAttachment(BattleArena.getSelf(),ticks);
+		for (String perm: perms){
+			attachment.setPermission(perm, true);}
 	}
 
 	private static void giveSyncedItems(final MatchState ms, final ArenaPlayer p, final List<ItemStack> items,

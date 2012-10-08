@@ -594,6 +594,9 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 	@MCCommand(cmds={"duel"},inGame=true)
 	public boolean duel(ArenaPlayer player, MatchParams mp, String args[]) {
+		if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".duel") && 
+				!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".duel") ){
+			return sendMessage(player, "&cYou don't have permission to duel in a &6" + mp.getCommand());}
 		if (dc.isChallenged(player)){
 			sendMessage(player,"&4[Duel] &cYou have already been challenged to a duel!");
 			return sendMessage(player,"&4[Duel] &6/"+mp.getCommand()+" reject&c to cancel the duel before starting your own");
@@ -624,6 +627,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c is in a match, event, or queue");}
 			if (dc.isChallenged(ap)){
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c already has been challenged!");}
+			if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".duel") && 
+					!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".duel") ){
+				return sendMessage(player, "&6"+ap.getDisplayName()+"&c doesn't have permission to duel in a &6" + mp.getCommand());}
+
 			Long grace = dc.getLastRejectTime(ap);
 			if (grace != null && System.currentTimeMillis() - grace < Defaults.DUEL_CHALLENGE_INTERVAL*1000){
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c can't be challenged for &6"+
