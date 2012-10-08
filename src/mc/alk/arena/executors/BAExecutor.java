@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -860,6 +861,14 @@ public class BAExecutor extends CustomCommandExecutor  {
 			return false;
 		}
 		return true;
+	}
+
+	public void setDisabled(List<String> disabled) {
+		this.disabled.addAll(disabled);
+	}
+
+	public Collection<String> getDisabled() {
+		return this.disabled;
 	}
 
 }
