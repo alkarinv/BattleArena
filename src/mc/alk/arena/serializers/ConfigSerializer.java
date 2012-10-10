@@ -256,8 +256,8 @@ public class ConfigSerializer extends BaseSerializer{
 
 			options.add(to);
 			if (split.length == 1){
-				continue;
-			}
+				continue;}
+
 			split[1] = split[1].trim();
 			try{
 				switch(to){
@@ -280,8 +280,21 @@ public class ConfigSerializer extends BaseSerializer{
 		if (cs.contains("giveClass")){ tops.setClasses(getArenaClasses(cs.getConfigurationSection("giveClass")));}
 		if (options.contains(TransitionOption.NEEDITEMS)){ tops.setItems(getItemList(cs, "items"));}
 		if (options.contains(TransitionOption.GIVEITEMS)){ tops.setItems(getItemList(cs, "items"));}
+		setPermissionSection(cs,"addPerms",tops);
 		if (options.contains(TransitionOption.ENCHANTS)){ tops.setEffects(getEffectList(cs, "enchants"));}
 		return tops;
+	}
+
+	private static void setPermissionSection(ConfigurationSection cs, String nodeString, TransitionOptions tops) {
+		if (cs == null || !cs.contains(nodeString))
+			return ;
+		List<?> olist = cs.getList(nodeString);
+		List<String> permlist = new ArrayList<String>();
+
+		for (Object perm: olist){
+			permlist.add(perm.toString());}
+
+		tops.setAddPerms(permlist);
 	}
 
 	public static HashMap<Integer,ArenaClass> getArenaClasses(ConfigurationSection cs){

@@ -54,6 +54,7 @@ import mc.alk.arena.serializers.BAConfigSerializer;
 import mc.alk.arena.serializers.EventScheduleSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.serializers.SpawnSerializer;
+import mc.alk.arena.serializers.StateFlagSerializer;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.Log;
@@ -147,7 +148,11 @@ public class BattleArena extends JavaPlugin{
 
 		cc.loadAll();
 		MoneyController.setup();
-
+		/// persist our disabled arena types
+		StateFlagSerializer sfs = new StateFlagSerializer();
+		sfs.setConfig(dir.getPath() +"/state.yml");
+		commandExecutor.setDisabled(sfs.load());
+		
 		ArenaSerializer.setBAC(arenaController);
 		ArenaSerializer as = new ArenaSerializer(this, dir.getPath()+"/arenas.yml");
 		as.loadArenas(this);
@@ -212,6 +217,10 @@ public class BattleArena extends JavaPlugin{
 	}
 
 	public void onDisable() {
+		StateFlagSerializer sfs = new StateFlagSerializer();
+		sfs.setConfig(getDataFolder().getPath() +"/state.yml");
+		sfs.save(commandExecutor.getDisabled());
+
 		BattleArena.getSelf();
 		arenaController.stop();
 		ArenaSerializer.saveAllArenas(true);

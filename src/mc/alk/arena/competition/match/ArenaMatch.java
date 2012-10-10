@@ -80,12 +80,14 @@ public class ArenaMatch extends Match {
 
 		final Player p = event.getPlayer();
 		final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
-
+		if (!p.hasPermission("arena.class.use."+ac.getName().toLowerCase())){
+			MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
+			return;			
+		}
 		ArenaClass chosen = ap.getChosenClass();
 		if (chosen != null && chosen.getName().equals(ac.getName())){
 			MessageUtil.sendMessage(p, "&cYou already are a &6" + ac.getName());
 			return;
-
 		}
 		String playerName = p.getName();
 		if(userTime.containsKey(playerName)){
