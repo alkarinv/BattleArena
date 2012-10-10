@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.SpawnController;
+import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -391,7 +392,21 @@ public class Arena implements ArenaListener {
 		}
 		return sb.toString();
 	}
-
+	
+	/**
+	 * private Arena delete events, calls delete for subclasses to be able to override 
+	 */
+	void privateDelete(){
+		try{delete();}catch(Exception e){e.printStackTrace();}
+		if (wgRegionName != null && wgRegionWorld != null && WorldGuardInterface.hasWorldGuard())
+			WorldGuardInterface.deleteRegion(wgRegionWorld, wgRegionName);
+	}
+	
+	/**
+	 * Called when an arena is deleted
+	 */
+	protected void delete(){}
+	
 	//	
 	//	public String itemSpawnString(){
 	//		if (spawnsGroups == null)

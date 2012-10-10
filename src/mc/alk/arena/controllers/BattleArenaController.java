@@ -18,6 +18,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
@@ -140,6 +141,8 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		if (a != null){
 			allarenas.remove(arena.getName());
 		}
+		ArenaInterface ai = new ArenaInterface(a);
+		ai.delete();
 		return a;
 	}
 

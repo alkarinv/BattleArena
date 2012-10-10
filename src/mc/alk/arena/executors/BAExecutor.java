@@ -21,6 +21,8 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.events.arenas.ArenaCreateEvent;
+import mc.alk.arena.events.arenas.ArenaDeleteEvent;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
@@ -405,14 +407,17 @@ public class BAExecutor extends CustomCommandExecutor  {
 	public boolean arenaCheck(ArenaPlayer p) {
 		if(ac.isInQue(p)){
 			QPosTeamPair qpp = ac.getCurrentQuePos(p);
-			return sendMessage(p,"&e"+qpp.q.toPrettyString()+"&e Queue Position: "+
-					" &6" + (qpp.pos+1) +"&e. &6"+qpp.playersInQueue+" &eplayers in queue");
+			if (qpp != null){
+				return sendMessage(p,"&e"+qpp.q.toPrettyString()+"&e Queue Position: "+
+						" &6" + (qpp.pos+1) +"&e. &6"+qpp.playersInQueue+" &eplayers in queue");				
+			}
 		}
 		return sendMessage(p,"&eYou are currently not in any arena queues.");
 	}
 
 	@MCCommand(cmds={"delete"}, admin=true, usage="delete <arena name>")
 	public boolean arenaDelete(CommandSender sender, Arena arena) {
+		new ArenaDeleteEvent(arena).callEvent();
 		ac.removeArena(arena);
 		return sendMessage(sender,ChatColor.GREEN+ "You have deleted the arena &6" + arena.getName());
 	}
@@ -515,9 +520,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 			return sendMessage(sender,"That size not recognized.  Examples: 1 or 2 or 1-5 or 2+");}
 		ap.setNTeams(mm);
 		ap.setType(mp.getType());
+
 		Arena arena = ArenaType.createArena(name, ap);
 		arena.setSpawnLoc(0, p.getLocation());
 		ac.addArena(arena);
+		new ArenaCreateEvent(arena).callEvent();
 
 		sendMessage(sender,"&2You have created the arena &6" + arena);
 		sendMessage(sender,"&2A spawn point has been created where you are standing");
@@ -753,7 +760,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		}
 		/// Inside the queue waiting for a match?
 		QPosTeamPair qpp = ac.getCurrentQuePos(p);
-		if(qpp.pos != -1){
+		if(qpp != null && qpp.pos != -1){
 			sendMessage(p,"&eYou are already in the " + qpp.q.toPrettyString() + " queue.");
 			String cmd = qpp.q.getCommand();
 			sendMessage(p,"&eType &6/"+cmd+" leave");

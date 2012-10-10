@@ -83,4 +83,8 @@ public class WorldGuardInterface {
 		WorldGuardUtil.removeMember(name,id, regionWorld);
 	}
 
+	public static void deleteRegion(String id, String worldName) {
+		WorldGuardUtil.deleteRegion(id,worldName);
+	}
+
 }

@@ -29,5 +29,5 @@ public class ArenaInterface {
 	public void onEnterWaitRoom(ArenaPlayer p, Team t) {arena.privateOnEnterWaitRoom(p,t);}
 	public void onLeave(ArenaPlayer p, Team t) {arena.privateOnLeave(p,t);}
 	public void onJoin(ArenaPlayer p, Team t) {arena.privateOnJoin(p,t);}
-
+	public void delete() {arena.privateDelete();}
 }

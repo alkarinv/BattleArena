@@ -6,6 +6,7 @@ import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.listeners.TransitionListener;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.Arena;
@@ -38,7 +39,7 @@ public class Matchup {
 		this.q = new MatchParams(sq);
 	}
 
-	public MatchParams getSpecificQ() {
+	public MatchParams getMatchParams() {
 		return q;
 	}
 
@@ -83,5 +84,34 @@ public class Matchup {
 
 	public Match getMatch(){
 		return match;
+	}
+	public Integer getPriority() {
+		Integer priority = Integer.MAX_VALUE;
+		for (Team t: teams){
+			if (t.getPriority() < priority){
+				priority = t.getPriority();}
+		}
+		return priority;
+	}
+	public boolean hasMember(ArenaPlayer p) {
+		for (Team t: teams){
+			if (t.hasMember(p))
+				return true;
+		}
+		return false;
+	}
+	public Team getTeam(ArenaPlayer p) {
+		for (Team t: teams){
+			if (t.hasMember(p))
+				return t;
+		}
+		return null;
+	}
+	public int size() {
+		int size = 0;
+		for (Team t: teams){
+			size += t.size();
+		}
+		return size;
 	}
 }

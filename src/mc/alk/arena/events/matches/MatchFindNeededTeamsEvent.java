@@ -1,18 +1,12 @@
 package mc.alk.arena.events.matches;
 
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.events.BAEvent;
 
-public class MatchFindNeededTeamsEvent extends BAEvent {
-	final Match match;
+public class MatchFindNeededTeamsEvent extends MatchEvent {
 	int neededTeams;
-	
+
 	public MatchFindNeededTeamsEvent(Match match) {
-		this.match = match;
-	}
-	
-	public Match getMatch() {
-		return match;
+		super(match);
 	}
 
 	public int getNeededTeams() {

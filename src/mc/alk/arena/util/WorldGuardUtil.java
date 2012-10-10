@@ -200,4 +200,14 @@ public class WorldGuardUtil {
 
 	}
 
+	public static void deleteRegion(String id, String worldName) {
+		World w = Bukkit.getWorld(worldName);
+		if (w == null)
+			return;
+		RegionManager mgr = wgp.getRegionManager(w);
+		if (mgr == null)
+			return;
+		mgr.removeRegion(id);
+	}
+
 }

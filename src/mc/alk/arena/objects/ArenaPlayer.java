@@ -1,5 +1,7 @@
 package mc.alk.arena.objects;
 
+import mc.alk.arena.util.PermissionsUtil;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -102,6 +104,10 @@ public class ArenaPlayer {
 
 	public void setChosenClass(ArenaClass chosenClass) {
 		this.chosenClass = chosenClass;
+	}
+
+	public int getPriority() {
+		return PermissionsUtil.getPriority(player);
 	}
 
 }

@@ -210,8 +210,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 				checkReady(t,tops.getOptions(MatchState.PREREQS));				}
 		}
 
-		MatchPrestartEvent event= new MatchPrestartEvent(this,teams);
-		notifyListeners(event);
+		notifyListeners(new MatchPrestartEvent(this,teams));
 
 		updateBukkitEvents(MatchState.ONPRESTART);
 		PerformTransition.transition(this, MatchState.ONPRESTART, teams, true);

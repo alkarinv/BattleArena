@@ -195,10 +195,9 @@ public class PerformTransition {
 		if (mo.hasOption(TransitionOption.RESTOREGAMEMODE)){ am.psc.restoreGamemode(p);}
 		if (mo.restoreExperience()) { am.psc.restoreExperience(p);}
 		if (mo.restoreItems()){
-			if (am.woolTeams && insideArena){
+			if (am.woolTeams){
 				TeamUtil.removeTeamHead(teamIndex, p.getPlayer());}
-
-			if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+transition+" transition restoring items");
+			if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+transition+" transition restoring items "+insideArena);
 			am.psc.restoreItems(p);
 		}
 

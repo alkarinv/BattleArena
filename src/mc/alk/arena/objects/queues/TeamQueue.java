@@ -1,27 +1,28 @@
 package mc.alk.arena.objects.queues;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.teams.Team;
 
 
-public class TeamQueue extends LinkedList<Team>{
+public class TeamQueue extends PriorityQueue<QueueObject>{
 	private static final long serialVersionUID = 1L;
 	MatchParams mp;
-	
-	public TeamQueue(MatchParams q){
-		super();
-		this.mp = new MatchParams(q);
+
+	public TeamQueue(MatchParams mp, TeamQueueComparator teamQueueComparator) {
+		super(10,teamQueueComparator);
+		this.mp = mp;
 	}
 
 	public boolean contains(ArenaPlayer p){
-		for (Team t: this){
+		for (QueueObject t: this){
 			if (t.hasMember(p)) 
 				return true;
 		}
@@ -29,50 +30,62 @@ public class TeamQueue extends LinkedList<Team>{
 	}
 
 	public Team remove(ArenaPlayer p){
-		for (Team t: this){
+		for (QueueObject t: this){
 			if (t.hasMember(p)){
 				this.remove(t);
-				return t;
+				return t.getTeam(p);
 			}
 		}
 		return null;
 	}
 	public int indexOf(ArenaPlayer p){
-		for (int i=0;i < this.size();i++){
-			Team t = this.get(i);
+		int i=0;
+		for (QueueObject t: this){
 			if (t.hasMember(p))
 				return i;
+			i++;
 		}
 		return -1;
 	}
+
+	public QPosTeamPair getPos(ArenaPlayer p) {
+		int i=0;
+		for (QueueObject t: this){
+			if (t.hasMember(p))
+				return new QPosTeamPair(getMatchParams(),i,getNPlayers(),t.getTeam(p));
+			i++;
+		}
+		return null;
+	}
+
 	public MatchParams getMatchParams() {return mp;}
 	public int getMinTeams() {
 		return mp.getMinTeams();
 	}
-	
-	public List<Team> sortBySize(){return TeamQueue.sortBySize(this);}	
+
 	public int getNPlayers(){
-		ArrayList<Team> teams = new ArrayList<Team>(this);
+		ArrayList<QueueObject> teams = new ArrayList<QueueObject>(this);
 		int count =0;
-		for (Team t: teams){
+		for (QueueObject t: teams){
 			count += t.size();
 		}
 		return count;
 	}
-	/**
-	 * This is a semi stable sort, teams of the same size will retain their order in the queue
-	 * Preference is given to larger teams
-	 * @param tq
-	 * @return
-	 */
-	public static List<Team> sortBySize(TeamQueue tq){
-		ArrayList<Team> teams = new ArrayList<Team>(tq);
-		Collections.sort(teams, new Comparator<Team>(){
-			public int compare(Team arg0, Team arg1) {
-				Integer size = arg0.size();
-				return size.compareTo(arg1.size());
-			}
-		});
+
+	public static class TeamQueueComparator implements Comparator<QueueObject>{
+		@Override
+		public int compare(QueueObject arg0, QueueObject arg1) {
+			Integer p1 = arg0.getPriority();
+			Integer p2 = arg1.getPriority();
+			return p1.compareTo(p2);
+		}
+	}
+
+	public Collection<? extends Team> getTeams() {
+		List<Team> teams = new ArrayList<Team>();
+		for (QueueObject team: this){
+			teams.addAll(team.getTeams());
+		}
 		return teams;
 	}
 }

@@ -19,6 +19,7 @@ import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.queues.TeamQueue.TeamQueueComparator;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -28,7 +29,6 @@ public class ArenaMatchQueue {
 	static final boolean DEBUG = false;
 
 	Map<MatchParams, TeamQueue> tqs = new HashMap<MatchParams, TeamQueue>();
-	Map<MatchParams, MatchedTeamQueue> mtqs = new HashMap<MatchParams, MatchedTeamQueue>();
 
 	ArenaQueue arenaqueue = new ArenaQueue();
 
@@ -64,40 +64,31 @@ public class ArenaMatchQueue {
 	}
 
 	public synchronized QPosTeamPair add(final Team t1, final MatchParams mp) {
-		if (!ready_matches.isEmpty())
-			notifyAll();
-
-		TeamQueue tq = getTeamQ(mp);
-
-		if (tq == null){
-			return null;}
-
-		tq.addLast(t1);
-		if (!suspend)
-			notifyIfNeeded(tq);
-		QPosTeamPair qtp = new QPosTeamPair(mp,tq.size(),tq.getNPlayers(),t1);
-		return qtp;
+		return addToQueue(new TeamQObject(t1,mp));
 	}
-
 	/**
 	 * Add a matchup of teams.  They already have all required teams, so just need to wait for an open arena
 	 * @param matchup
 	 * @return
 	 */
-	public synchronized int addMatchup(Matchup matchup) {
+	public synchronized QPosTeamPair addMatchup(Matchup matchup) {
+		return addToQueue(new MatchTeamQObject(matchup));
+	}
+
+	private synchronized QPosTeamPair addToQueue(final QueueObject to) {
 		if (!ready_matches.isEmpty())
 			notifyAll();
 
-		MatchParams q = matchup.getSpecificQ();
-		MatchedTeamQueue mtq = getMatchedTeamQ(q);
+		TeamQueue tq = getTeamQ(to.getMatchParams());
 
-		if (mtq == null){
-			return -1;}
+		if (tq == null){
+			return null;}
 
-		mtq.addLast(matchup);
+		tq.add(to);
 		if (!suspend)
-			notifyIfNeeded(mtq);
-		return mtq.size();
+			notifyIfNeeded(tq);
+		QPosTeamPair qtp = new QPosTeamPair(to.getMatchParams(),tq.size(),tq.getNPlayers(),to);
+		return qtp;		
 	}
 
 	/**
@@ -107,63 +98,12 @@ public class ArenaMatchQueue {
 	private boolean notifyIfNeeded(){
 		boolean notified = false;
 		///First try to get them from our already matched up players
-		for (MatchedTeamQueue mtq : mtqs.values()){
-			if (mtq == null || mtq.isEmpty())
-				continue;
-			notified |= notifyIfNeeded(mtq);
-		}
 		for (TeamQueue tq: tqs.values()){
-			if (tq == null || tq.size() < tq.getMinTeams())
+			if (tq == null || tq.isEmpty())
 				continue;
-
 			notified |= notifyIfNeeded(tq);
 		}
 		return notified;
-	}
-
-	private boolean notifyIfNeeded(MatchedTeamQueue mtq) {
-		if (arenaqueue.isEmpty() || mtq.isEmpty())
-			return false;
-
-		Match match = findMatch(mtq);
-		//			System.out.println("notifyIfNeeded " + tq  + " tqsize="+tq.size() + "   match=" + match);
-		if (match == null)
-			return false;
-
-		synchronized(ready_matches){
-			ready_matches.addLast(match);	
-		}
-		notifyAll();
-		return true;
-	}
-
-	private Match findMatch(MatchedTeamQueue mtq) {
-		if (Defaults.DEBUG) System.out.println("findMatch " + mtq);
-
-		/// The idea here is we iterate through all arenas
-		/// See if one matches with the type of TeamQueue that we have been given
-		/// Then we make sure those players are ready, and if not send them messages
-		synchronized(arenaqueue){ synchronized(mtq){
-			final MatchParams mp = mtq.getMatchParams();
-			for (Arena a : arenaqueue){
-				if (a == null || !a.valid() || !a.matches(mp,null))
-					continue;
-				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + a  +"   mtq=" + mtq +" matches=" + a.matches(mp,null));
-
-				List<Team> teams = new ArrayList<Team>();
-				Matchup matchup = mtq.getFirst();
-				teams.addAll(matchup.getTeams());
-
-				mtq.remove(matchup);
-				arenaqueue.remove(a);
-				final Match m = new ArenaMatch(a, matchup.getSpecificQ());
-				m.onJoin(teams);
-				m.addTransitionListeners(matchup.getTransitionListeners());
-				matchup.addMatch(m);
-				return m;
-			}
-		}}
-		return null;
 	}
 
 	private boolean notifyIfNeeded(TeamQueue tq) {
@@ -171,7 +111,7 @@ public class ArenaMatchQueue {
 			return false;
 
 		Match match = findMatch(tq);
-//		System.out.println("notifyIfNeeded " + tq  + " tqsize="+tq.size() + "   match=" + match);
+		//		System.out.println("notifyIfNeeded " + tq  + " tqsize="+tq.size() + "   match=" + match);
 		if (match == null)
 			return false;
 		synchronized(ready_matches){
@@ -196,40 +136,51 @@ public class ArenaMatchQueue {
 				//				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
 				//						"   tq=" + tq +" matches=" + ap.matches(mp) +"  mp="+mp+", --- ap="+ap +"    "+tq.size()+" <? "+ap.getMinTeams());
 				/// Does our specific setting fit with this arena
-				List<Team> qteams = null;
-				List<Team> oteams = new ArrayList<Team>();
-				if (mp.getMinTeamSize() > 1){
-					qteams = tq.sortBySize();
-				} else { 
-					qteams = tq;
-				}
+				List<QueueObject> oteams = new ArrayList<QueueObject>();
 				teams.clear();
 				CompositeTeam cteam = null;
-				for (Team t : qteams){
-					JoinPreferences jp = t.getJoinPreferences();
-					if (Defaults.DEBUG) System.out.println("--"+teamSize +" " + t.size() +"  t="+t.getName() +",mp="+mp +",jp="+ (jp == null ? "" : jp.matches(a)));
-					if (jp != null && !jp.matches(a)){
-						continue;}
-					
-					if (t.size() > mp.getMaxTeamSize()){ /// can't use this team, they are too large.  If they are too small we can merge
-						continue;
-					} else if (t.size()== teamSize){ /// team size is just right, add them to the teams
-						teams.add(t);
-						oteams.add(t);
-					} else { /// we have teams joining that need to be merged together to form a correctly sized team
-						if (cteam == null)
-							cteam = new CompositeTeam();
-						/// TODO make this a bin packing problem
-						cteam.addTeam(t);
-						oteams.add(t);
-						if (cteam.size() == teamSize){
-							teams.add(cteam);
-							cteam = null;
+				for (QueueObject tto : tq){
+					if (tto instanceof MatchTeamQObject){ /// we have our teams already
+						MatchTeamQObject to = (MatchTeamQObject) tto;
+						if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + a  +"   tq=" + tq +" matches=" + a.matches(mp,null));
+						Matchup matchup = to.getMatchup();
+						teams.addAll(to.getTeams());
+
+						tq.remove(to);
+						arenaqueue.remove(a);
+						final Match m = new ArenaMatch(a, to.getMatchParams());
+						m.onJoin(teams);
+						m.addTransitionListeners(matchup.getTransitionListeners());
+						matchup.addMatch(m);
+						return m;
+					} else {
+						TeamQObject to = (TeamQObject) tto;
+						Team t = to.getTeam();
+						JoinPreferences jp = t.getJoinPreferences();
+						if (Defaults.DEBUG) System.out.println("--"+teamSize +" " + t.size() +"  t="+t.getName() +",mp="+mp +",jp="+ (jp == null ? "" : jp.matches(a)));
+						if (jp != null && !jp.matches(a)){
+							continue;}
+
+						if (t.size() > mp.getMaxTeamSize()){ /// can't use this team, they are too large.  If they are too small we can merge
+							continue;
+						} else if (t.size()== teamSize){ /// team size is just right, add them to the teams
+							teams.add(t);
+							oteams.add(to);
+						} else { /// we have teams joining that need to be merged together to form a correctly sized team
+							if (cteam == null)
+								cteam = new CompositeTeam();
+							/// TODO make this a bin packing problem
+							cteam.addTeam(t);
+							oteams.add(to);
+							if (cteam.size() == teamSize){
+								teams.add(cteam);
+								cteam = null;
+							}
 						}
+						//						System.out.println("## teams = " + teams.size() +"   oteams="+oteams.size() +"  mp="+mp.getMinTeams());
+						if (teams.size() == mp.getMinTeams())
+							break;
 					}
-//					System.out.println("## teams = " + teams.size() );
-					if (teams.size() == mp.getMinTeams())
-						break;
 				}
 				if (teams.size() == mp.getMinTeams()){
 					for (Team t: teams){
@@ -237,13 +188,13 @@ public class ArenaMatchQueue {
 							((CompositeTeam) t).finish();
 						}
 					}
+					//					System.out.println("" + tq +"   arena=" + a);
 					tq.removeAll(oteams); /// remove all competing teams from the q
 					arenaqueue.remove(a);
 					final Match m = new ArenaMatch(a, tq.getMatchParams());
 					m.onJoin(teams);
 					return m;
-				}
-
+				}						
 			}
 		}}
 		///Found nothing matching
@@ -256,25 +207,11 @@ public class ArenaMatchQueue {
 			if (tqs.containsKey(mp)){
 				return tqs.get(mp);
 			} else {
-				TeamQueue tq = new TeamQueue(mp);
+				TeamQueue tq = new TeamQueue(mp, new TeamQueueComparator());
 				tqs.put(mp, tq);
 				return tq;
 			}
 		}
-		return null;
-	}
-
-	private MatchedTeamQueue getMatchedTeamQ(MatchParams q) {
-		final int teamSize = q.getMinTeamSize();
-		if (teamSize != ArenaParams.NONE && teamSize != ArenaParams.ANY){
-			if (mtqs.containsKey(q)){
-				return mtqs.get(q);
-			} else {
-				MatchedTeamQueue tq = new MatchedTeamQueue(q);
-				mtqs.put(q, tq);
-				return tq;
-			}
-		}	
 		return null;
 	}
 
@@ -291,7 +228,7 @@ public class ArenaMatchQueue {
 			return -1;
 		if (tq.contains(t)) /// already in queue
 			return -1;
-		tq.push(t); /// TeamJoinResult team to the end of the queue
+		tq.add(new TeamQObject(t,q)); /// TeamJoinResult team to the end of the queue
 		return tq.size();
 	}
 
@@ -304,6 +241,7 @@ public class ArenaMatchQueue {
 		}
 		return null;
 	}
+
 	public synchronized ParamTeamPair removeFromQue(Team t) {
 		for (TeamQueue tq : tqs.values()){
 			if (tq.remove(t)){
@@ -313,13 +251,16 @@ public class ArenaMatchQueue {
 	}
 
 	public QPosTeamPair getQuePos(ArenaPlayer p) {
-		int pos; 
+		//		int pos; 
 		for (TeamQueue tq : tqs.values()){
-			pos = tq.indexOf(p);
-			if (pos != -1)
-				return new QPosTeamPair(tq.getMatchParams(),pos,tq.getNPlayers(),tq.get(pos));
+			QPosTeamPair qtp = tq.getPos(p);
+			if (qtp != null)
+				return qtp;
+			//			pos = tq.indexOf(p);
+			//			if (pos != -1)
+			//				return new QPosTeamPair(tq.getMatchParams(),pos,tq.getNPlayers(),tq.get(pos));
 		}
-		return new QPosTeamPair();
+		return null;
 	}
 
 	public synchronized void stop() {
@@ -331,24 +272,19 @@ public class ArenaMatchQueue {
 		suspend = false;
 		notifyAll();
 	}
-	
+
 	public synchronized Collection<Team> purgeQueue(){
 		List<Team> teams = new ArrayList<Team>();
 		synchronized(tqs){
-			for (MatchParams tq : tqs.keySet()){
-				teams.addAll(tqs.get(tq));}
-			tqs.clear();
-		}
-		synchronized(mtqs){
-			for (MatchParams mtq : mtqs.keySet()){
-				for (Matchup t: mtqs.get(mtq)){
-					teams.addAll(t.getTeams());}
+			for (MatchParams mp : tqs.keySet()){
+				TeamQueue tq = tqs.get(mp);
+				teams.addAll(tq.getTeams());
 			}
-			mtqs.clear();
+			tqs.clear();
 		}
 		return teams;
 	}
-	
+
 	public Arena getNextArena(MatchParams mp) {
 		synchronized(arenaqueue){ 
 			for (Arena a : arenaqueue){
@@ -382,13 +318,8 @@ public class ArenaMatchQueue {
 		sb.append("------queues------- \n");
 		synchronized(tqs){
 			for (MatchParams tq : tqs.keySet()){
-				for (Team t: tqs.get(tq)){
-					sb.append(tq + " : " + t + "\n");}}}
-		sb.append("------Matched Queues------- \n");
-		synchronized(mtqs){
-			for (MatchParams mtq : mtqs.keySet()){
-				for (Matchup t: mtqs.get(mtq)){
-					sb.append(mtq + " : " + t + "\n");}}}
+				for (QueueObject t: tqs.get(tq)){
+					sb.append(tq.getName() + " : " + t + "\n");}}}
 		sb.append("------AMQ Arenas------- \n");
 		synchronized(arenaqueue){
 			for (Arena arena : arenaqueue){
