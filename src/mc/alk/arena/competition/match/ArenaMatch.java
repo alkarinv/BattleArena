@@ -1,8 +1,6 @@
 package mc.alk.arena.competition.match;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import mc.alk.arena.BattleArena;
@@ -20,6 +18,7 @@ import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.util.DisabledCommandsUtil;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.EffectUtil.EffectWithArgs;
@@ -55,80 +54,6 @@ public class ArenaMatch extends Match {
 
 	public ArenaMatch(Arena arena, MatchParams mp) {
 		super(arena, mp);
-	}
-
-	@SuppressWarnings("deprecation")
-	@MatchEventHandler
-	public void onPlayerInteract(PlayerInteractEvent event){
-		if (event.isCancelled())
-			return;
-
-		final Material m = event.getClickedBlock().getType();
-		if (!(m.equals(Material.SIGN) || m.equals(Material.SIGN_POST)||m.equals(Material.WALL_SIGN))){ /// Only checking for signs
-			return;}
-		final Sign sign = (Sign) event.getClickedBlock().getState();
-		Action action = event.getAction();
-		if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
-			return;}
-		if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the sign
-			event.setCancelled(true);
-		}
-
-		ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(sign.getLine(0)).replace('*',' ').trim());
-		if (ac == null) /// Not a valid class sign
-			return;
-
-		final Player p = event.getPlayer();
-		final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
-		if (!p.hasPermission("arena.class.use."+ac.getName().toLowerCase())){
-			MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
-			return;			
-		}
-		ArenaClass chosen = ap.getChosenClass();
-		if (chosen != null && chosen.getName().equals(ac.getName())){
-			MessageUtil.sendMessage(p, "&cYou already are a &6" + ac.getName());
-			return;
-		}
-		String playerName = p.getName();
-		if(userTime.containsKey(playerName)){
-			if((System.currentTimeMillis() - userTime.get(playerName)) < 3000){
-				MessageUtil.sendMessage(p, "&cYou must wait &63&c seconds between class selects");
-				return;
-			}
-		}
-
-		userTime.put(playerName, System.currentTimeMillis());
-
-		final TransitionOptions mo = tops.getOptions(state);
-		if (mo == null)
-			return;
-		/// Have They have already selected a class this match, have they changed their inventory since then?
-		/// If so, make sure they can't just select a class, drop the items, then choose another
-		if (chosen != null){ 
-			List<ItemStack> items = chosen.getItems();
-			if (mo.hasItems()){ 
-				items.addAll(mo.getItems());}
-			if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
-				MessageUtil.sendMessage(p,"&cYou can't swich classes after changing items!");
-				return;
-			}
-		}
-		/// Clear their inventory first, then give them the class and whatever items were due to them from the config
-		InventoryUtil.clearInventory(p);
-		List<ItemStack>items = ac.getItems();
-		if (mo.hasItems()){
-			items.addAll(mo.getItems());
-		}
-		try{ InventoryUtil.addItemsToInventory(p, items, true);} catch(Exception e){e.printStackTrace();}
-
-		/// Deal with effects/buffs
-		EffectUtil.unenchantAll(p);
-		List<EffectWithArgs> effects = ac.getEffects();
-		if (effects != null){
-			EffectUtil.enchantPlayer(p, effects);}
-		ap.setChosenClass(ac);
-		try { p.updateInventory(); } catch (Exception e){}
-		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
 	}
 
 	@MatchEventHandler
@@ -308,10 +233,7 @@ public class ArenaMatch extends Match {
 		}
 
 	}
-	/// TODO where should this go
-	public static final HashSet<String> disabled = 
-			new HashSet<String>(Arrays.asList( "/home", "/spawn", "/trade", "/paytrade", "/payhome", 
-					"/warp","/watch", "/sethome","/inf", "/va","/survival","/ma","/mob","/ctp","/chome","/csethome"));
+	
 
 	@MatchEventHandler
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
@@ -326,10 +248,83 @@ public class ArenaMatch extends Match {
 		if (index != -1){
 			msg = msg.substring(0, index);
 		}
-		if(disabled.contains(msg)){
+		if(DisabledCommandsUtil.contains(msg)){
 			event.setCancelled(true);
 			p.sendMessage(ChatColor.RED+"You cannot use that command when you are in a match");
 		}
 	}
 
+	@SuppressWarnings("deprecation")
+	@MatchEventHandler
+	public void onPlayerInteract(PlayerInteractEvent event){
+		if (event.isCancelled())
+			return;
+
+		final Material m = event.getClickedBlock().getType();
+		if (!(m.equals(Material.SIGN) || m.equals(Material.SIGN_POST)||m.equals(Material.WALL_SIGN))){ /// Only checking for signs
+			return;}
+		final Sign sign = (Sign) event.getClickedBlock().getState();
+		Action action = event.getAction();
+		if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
+			return;}
+		if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the sign
+			event.setCancelled(true);
+		}
+
+		ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(sign.getLine(0)).replace('*',' ').trim());
+		if (ac == null) /// Not a valid class sign
+			return;
+
+		final Player p = event.getPlayer();
+		final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
+		if (!p.hasPermission("arena.class.use."+ac.getName().toLowerCase())){
+			MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
+			return;			
+		}
+		ArenaClass chosen = ap.getChosenClass();
+		if (chosen != null && chosen.getName().equals(ac.getName())){
+			MessageUtil.sendMessage(p, "&cYou already are a &6" + ac.getName());
+			return;
+		}
+		String playerName = p.getName();
+		if(userTime.containsKey(playerName)){
+			if((System.currentTimeMillis() - userTime.get(playerName)) < 3000){
+				MessageUtil.sendMessage(p, "&cYou must wait &63&c seconds between class selects");
+				return;
+			}
+		}
+
+		userTime.put(playerName, System.currentTimeMillis());
+
+		final TransitionOptions mo = tops.getOptions(state);
+		if (mo == null)
+			return;
+		/// Have They have already selected a class this match, have they changed their inventory since then?
+		/// If so, make sure they can't just select a class, drop the items, then choose another
+		if (chosen != null){ 
+			List<ItemStack> items = chosen.getItems();
+			if (mo.hasItems()){ 
+				items.addAll(mo.getItems());}
+			if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
+				MessageUtil.sendMessage(p,"&cYou can't swich classes after changing items!");
+				return;
+			}
+		}
+		/// Clear their inventory first, then give them the class and whatever items were due to them from the config
+		InventoryUtil.clearInventory(p);
+		List<ItemStack>items = ac.getItems();
+		if (mo.hasItems()){
+			items.addAll(mo.getItems());
+		}
+		try{ InventoryUtil.addItemsToInventory(p, items, true);} catch(Exception e){e.printStackTrace();}
+
+		/// Deal with effects/buffs
+		EffectUtil.unenchantAll(p);
+		List<EffectWithArgs> effects = ac.getEffects();
+		if (effects != null){
+			EffectUtil.enchantPlayer(p, effects);}
+		ap.setChosenClass(ac);
+		try { p.updateInventory(); } catch (Exception e){}
+		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
+	}
 }

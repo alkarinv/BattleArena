@@ -13,6 +13,7 @@ import java.io.OutputStream;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.Log;
+import mc.alk.plugin.updater.Version;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -25,11 +26,11 @@ public class YamlFileUpdater {
 	public void updateMessageSerializer(MessageSerializer ms) {
 		FileConfiguration fc = ms.getConfig();
 
-		double version = fc.getDouble("version",0);
+		Version version = new Version(fc.getString("version","0"));
 		File dir = BattleArena.getSelf().getDataFolder();
 		/// configVersion: 1.2, move over to new messages.yml
 		/// this will delete their previous messages.yml
-		if (version < 1.2){
+		if (version.compareTo(1.2)<0){
 			File backupdir = new File(dir+"/backups");
 			if (!backupdir.exists()){
 				backupdir.mkdir();}
@@ -47,36 +48,31 @@ public class YamlFileUpdater {
 			ms.setConfig(new File(dir+"/messages.yml"));
 		}
 	}
-	
+
 	private static void updateBaseConfig(BAConfigSerializer bacs) {
 		File tempFile = null;
 		FileConfiguration fc = bacs.getConfig();
-		File f = bacs.getFile();
-
-		double version = fc.getDouble("configVersion",0);
+		Version version = new Version(fc.getString("configVersion","0"));
 
 		/// configVersion: 1.1, move over to classes.yml
-		if (version < 1.1){
-			to1Point1(bacs, fc, f, tempFile, version);
+		if (version.compareTo(1.1) <0){
+			to1Point1(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
 		}
-		if (version < 1.2){
-			fc = bacs.getConfig();
-			f = bacs.getFile();
-			to1Point2(bacs, fc, f, tempFile, version);			
+		if (version.compareTo(1.2)<0){
+			to1Point2(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
 		}
-		if (version < 1.3){
-			fc = bacs.getConfig();
-			f = bacs.getFile();
-			to1Point3(bacs, fc, f, tempFile, version);			
+		if (version.compareTo(1.3)<0){
+			to1Point3(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
 		}
-		if (version < 1.35){
-			fc = bacs.getConfig();
-			f = bacs.getFile();
-			to1Point35(bacs, fc, f, tempFile, version);			
+		if (version.compareTo(1.35)<0){
+			to1Point35(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
+		}
+		if (version.compareTo(1.4)<0){
+			to1Point4(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
 		}
 	}
 
-	private static void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, double version) {
+	private static void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
 		Log.warn("BattleArena updating config to 1.1");
 		Log.warn("Classes are now located in the classes.yml");
 		Boolean configStillHasClasses = fc.contains("classes");
@@ -102,7 +98,7 @@ public class YamlFileUpdater {
 
 		try {
 			boolean inClassSection = false;
-			if (version == 0){
+			if (version.compareTo(0)==0){
 				fw.write("configVersion: 1.1\n");
 			}
 			while ((line = br.readLine()) != null){
@@ -131,7 +127,7 @@ public class YamlFileUpdater {
 		}
 	}
 
-	private static void to1Point2(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, double version) {
+	private static void to1Point2(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
 		Log.warn("BattleArena updating config to 1.2");
 		Log.warn("You will have to remake any changes you made to defaultOptions");
 
@@ -154,10 +150,10 @@ public class YamlFileUpdater {
 		try {
 			boolean updatedDefaultSection = false;
 			boolean inDefaultSection = false;
-			if (version == 0){
+			if (version.compareTo(0)==0){
 				fw.write("configVersion: 1.2\n");}
 			while ((line = br.readLine()) != null){
-//				System.out.println((line.matches("defaultMatchOptions:.*") || line.matches("## default Match Options.*")) + " "+line);
+				//				System.out.println((line.matches("defaultMatchOptions:.*") || line.matches("## default Match Options.*")) + " "+line);
 				if (line.contains("configVersion")){
 					fw.write("configVersion: 1.2\n");
 				} else if (!updatedDefaultSection && (line.matches("defaultMatchOptions:.*") || line.matches("## default Match Options.*"))){
@@ -199,8 +195,8 @@ public class YamlFileUpdater {
 					/// dont print
 				} else if ((line.matches(".*prefix.*FFA.*") || line.matches(".*prefix.*DeathMatch.*"))){
 					fw.write(line +"\n");
-				    fw.write("    announcements: ### Override the match victory announcement as the event has one too\n");
-				    fw.write("        onVictory:  [ dontannounce ]\n");
+					fw.write("    announcements: ### Override the match victory announcement as the event has one too\n");
+					fw.write("        onVictory:  [ dontannounce ]\n");
 				} else {
 					fw.write(line+"\n");
 				}
@@ -212,9 +208,9 @@ public class YamlFileUpdater {
 			e.printStackTrace();
 		}
 	}
-	
 
-	private static void to1Point3(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, double version) {
+
+	private static void to1Point3(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
 		Log.warn("BattleArena updating config to 1.3");
 
 		String line =null;
@@ -235,10 +231,10 @@ public class YamlFileUpdater {
 
 		try {
 			boolean updatedDefaultSection = false;
-			if (version == 0){
+			if (version.compareTo(0)==0){
 				fw.write("configVersion: 1.3\n");}
 			while ((line = br.readLine()) != null){
-//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
 				if (line.contains("configVersion")){
 					fw.write("configVersion: 1.3\n");
 				} else if (!updatedDefaultSection && (line.matches(".*Event Announcements.*"))){
@@ -260,8 +256,8 @@ public class YamlFileUpdater {
 			e.printStackTrace();
 		}
 	}
-	
-	private static void to1Point35(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, double version) {
+
+	private static void to1Point35(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
 		Log.warn("BattleArena updating config to 1.35");
 
 		String line =null;
@@ -282,10 +278,10 @@ public class YamlFileUpdater {
 
 		try {
 			boolean updatedDefaultSection = false;
-			if (version == 0){
+			if (version.compareTo(0)==0){
 				fw.write("configVersion: 1.35\n");}
 			while ((line = br.readLine()) != null){
-//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
 				if (line.contains("configVersion")){
 					fw.write("configVersion: 1.35\n");
 				} else if (!updatedDefaultSection && (line.matches(".*challengeInterval.*"))){
@@ -294,6 +290,56 @@ public class YamlFileUpdater {
 					fw.write("    ### Scheduled Event Options\n");
 					fw.write("    ### Valid options [startContinuous, startNext]\n");
 					fw.write("    onServerStart: []");
+					fw.write("\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(f.getAbsoluteFile());
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void to1Point4(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
+		Log.warn("BattleArena updating config to 1.4");
+
+		String line =null;
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(f));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		BufferedWriter fw =null;
+		try {
+			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
+			fw = new BufferedWriter(new FileWriter(tempFile));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		} 
+
+		try {
+			boolean updatedDefaultSection = false;
+			if (version.compareTo(0)==0){
+				fw.write("configVersion: 1.4\n");}
+			while ((line = br.readLine()) != null){
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 1.4\n");
+				} else if (!updatedDefaultSection && (line.matches(".*moneyName:.*"))){
+					fw.write(line +"\n");
+					fw.write("\n");
+					fw.write("### Misc Options\n");
+					fw.write("# some servers like to teleport people into the floor, you can adjust the Y offset of the teleport\n");
+					fw.write("# to make them teleport higher by default, 1.0 = 1 block\n");
+					fw.write("teleportYOffset: 1.0\n");
+					fw.write("\n");
+					fw.write("# which player commands should be disabled when they enter an arena\n");
+					fw.write("disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]\n");
 					fw.write("\n");
 				} else {
 					fw.write(line+"\n");

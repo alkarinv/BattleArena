@@ -1,4 +1,4 @@
-version: 1.2
+version: 1.2.1
 
 common:
     team: '&7{name}&e'
@@ -78,7 +78,7 @@ match:
     twoTeams: ## 1 team vs another team
         prestart: '&eYour {matchname}&e match against {otherteam} starts in {time}.'
         server_prestart: '&6{matchprefix} {teamshort1}&6 vs {teamshort2}&6!'
-        start: '&4********** &eFight!!!! &4**********'
+        start: '&4 O---[{==========> &eFight &4<==========}]---O'
         server_start: ""
         victory: |
             &eYou have won your {matchname} match against {otherteam}
@@ -96,7 +96,7 @@ match:
     multipleTeams: ## many teams against each other
         prestart: '{matchprefix}&6 {matchname} starts in {time}.'
         server_prestart: '&6{matchprefix} Participants: {participants} &6'
-        start: '&4********** &eFight!!!! &4**********'
+        start: '&4 O---[{==========> &eFight &4<==========}]---O'
         server_start: ""
         victory: |
             &eYou have vanquished all foes!

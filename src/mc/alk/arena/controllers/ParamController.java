@@ -55,8 +55,6 @@ public class ParamController {
 		for (MatchParams mp: params){
 			if (disabled != null && disabled.contains(mp.getName()))
 				continue;
-			if (types.containsKey(mp.getName()))
-				continue;
 			if (!first) sb.append(", ");
 			else first = false;
 			sb.append(mp.getCommand());

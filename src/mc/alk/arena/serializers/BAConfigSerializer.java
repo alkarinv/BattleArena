@@ -8,6 +8,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
+import mc.alk.arena.util.DisabledCommandsUtil;
 import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
 
@@ -21,7 +22,8 @@ public class BAConfigSerializer extends ConfigSerializer{
 		parseDefaultOptions(config.getConfigurationSection("defaultOptions"));
 		Defaults.MONEY_STR = config.getString("moneyName");
 		Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", false);
-
+		Defaults.TELEPORT_Y_OFFSET = config.getDouble("teleportYOffset", 1.0);
+		DisabledCommandsUtil.addAll(config.getStringList("disabledCommands"));
 		String[] defaultArenaTypes = {"arena","skirmish","colliseum","freeForAll","deathMatch","tourney","battleground"};
 
 		/// Now initialize the specific settings

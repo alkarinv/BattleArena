@@ -91,7 +91,8 @@ public class MoneyController implements Listener{
     			useVault = hasVault = true;
     			initialized = true;
     			Log.info(BattleArena.getPName() +" found economy plugin Vault. [Default]");
-    			Defaults.MONEY_STR = MoneyController.economy.currencyNameSingular();
+    			/// Certain economy plugins don't implement this method correctly due to a NPE (I'm looking at you BOSEconomy! -_-)
+    			try{Defaults.MONEY_STR = MoneyController.economy.currencyNameSingular();} catch (Exception e){}
     		}
     	}
 

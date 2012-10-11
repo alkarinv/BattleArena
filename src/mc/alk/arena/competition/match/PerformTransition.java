@@ -239,9 +239,10 @@ public class PerformTransition {
 		return null;
 	}
 	private static Location jitter(final Location teamSpawn, int index) {
+		if (index == 0)
+			return teamSpawn;
 		index = index % 6;
 		Location loc = teamSpawn.clone();
-		loc.setY(loc.getY()+1.0);/// Try to offset for people that somehow are getting put into the floor
 
 		switch(index){
 		case 0: break;

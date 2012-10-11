@@ -338,7 +338,6 @@ public class InventoryUtil {
         for (int i = 0; i < inventory.length; i++) {
         	ItemStack is2 = inventory[i];
         	if (is2 == null) continue;
-        	System.out.println("i1 = "  + is1 +"   is2="+is2);
             if (is1.getTypeId() == is2.getTypeId() && is1.getDurability() == is2.getDurability()) {
                 return i;
             }

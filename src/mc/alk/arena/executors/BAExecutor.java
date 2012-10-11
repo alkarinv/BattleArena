@@ -109,10 +109,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return sendMessage(sender, "&5 type &6" + mp.getName() + "&5 disabled");
 	}
 
-	@MCCommand(cmds={"checkTypes"},admin=true,usage="disable")
+	@MCCommand(cmds={"enabled"},admin=true)
 	public boolean arenaCheckArenaTypes(CommandSender sender) {
 		String types = ArenaType.getValidList();
-		return sendMessage(sender, "&5 valid types are = &6"+types);
+		sendMessage(sender, "&e valid types are = &6"+types);
+		return sendMessage(sender, "&5Enabled types = &6 " + ParamController.getAvaibleTypes(disabled));
 	}
 
 	@MCCommand(cmds={"join"},inGame=true,usage="join [options]")

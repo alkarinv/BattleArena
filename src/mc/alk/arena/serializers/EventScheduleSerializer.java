@@ -51,7 +51,11 @@ public class EventScheduleSerializer extends BaseSerializer {
 	}
 	
 	public void saveScheduledEvents(){
+		if (es == null)
+			return;
 		List<EventPair> events = es.getEvents();
+		if (events == null)
+			return;
 		int i = 0;
 		Map<String,Object> map = new HashMap<String,Object>();
 		for (EventPair ep: events){

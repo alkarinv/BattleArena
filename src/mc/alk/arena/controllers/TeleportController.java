@@ -29,6 +29,7 @@ public class TeleportController implements Listener{
     private final int TELEPORT_FIX_DELAY = 15; // ticks
 
 	///TODO showPlayer doesnt, work.. attempt sending packets for avoiding invisible players
+    /// modified from the teleportFix2 found online
 	public static void teleportPlayer(final Player p, final Location loc, boolean in, final boolean die, final boolean wipe){
 		if (!p.isOnline() || p.isDead()){
 			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + p.getName() + " loc=" + loc + "  " + die +":"+ wipe);
@@ -38,21 +39,8 @@ public class TeleportController implements Listener{
 			return;
 		}
 		teleport(p,loc);
-//		updatePlayersWithinRadius(150,p);
 	}
 	
-//	private static void updatePlayersWithinRadius(int radius, Player self) {
-//		final Location l = self.getLocation();
-//	    for (Player player : Bukkit.getOnlinePlayers()) {
-//	    	if (l.getWorld().getUID() != player.getWorld().getUID() || player.getName().equals(self.getName()))
-//	    		continue;
-//	        if (l.distance(player.getLocation()) <= radius) {
-//	            CraftPlayer p = (CraftPlayer) self;
-//	            ((CraftPlayer)player).getHandle().netServerHandler.sendPacket(new Packet20NamedEntitySpawn(p.getHandle()));
-//	            ((CraftPlayer)p).getHandle().netServerHandler.sendPacket(new Packet20NamedEntitySpawn(((CraftPlayer)player).getHandle()));
-//	        }
-//	    }
-//	}
 	private static void teleporting(Player player, boolean isteleporting){
 		if (isteleporting){
 			teleporting.add(player.getName());
@@ -120,7 +108,9 @@ public class TeleportController implements Listener{
         return res;
     }
     
-	public static void teleport(final Player p, final Location loc){
+	public static void teleport(final Player p, final Location location){
+		Location loc = location.clone();
+		loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
 		teleporting(p,true);
 		/// Close their inventory so they arent taking things in/out
 		InventoryUtil.closeInventory(p);

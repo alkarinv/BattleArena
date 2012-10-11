@@ -296,7 +296,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 				try{mc.sendOnDrawMessage(losers);} catch(Exception e){e.printStackTrace();}
 			}
 			updateBukkitEvents(MatchState.ONVICTORY);
-			notifyListeners(new MatchVictoryEvent());
+			notifyListeners(new MatchVictoryEvent(am,matchResult));
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
 			arenaInterface.onVictory(getResult());
 			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, 

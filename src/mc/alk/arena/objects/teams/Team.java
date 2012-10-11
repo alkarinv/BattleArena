@@ -120,6 +120,7 @@ public class Team {
 		}
 		return living.isEmpty() || living.size() <= offline;
 	}
+
 	public int size() {return players.size();}
 	public void resetScores() {
 		deaths.clear();
@@ -265,5 +266,7 @@ public class Team {
 		}
 		return priority;
 	}
+
+
 }
 

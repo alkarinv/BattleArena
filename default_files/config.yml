@@ -1,6 +1,14 @@
-configVersion: 1.35
+configVersion: 1.4
 ## What is the money on this server called
 moneyName: Gold
+
+### Misc Options
+# some servers like to teleport people into the floor, you can adjust the Y offset of the teleport
+# to make them teleport higher by default, 1.0 = 1 block
+teleportYOffset: 1.0
+
+# which player commands should be disabled when they enter an arena
+disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]
 
 ## default Options (these can be overridden by each match/event type)
 defaultOptions:
@@ -110,7 +118,7 @@ defaultOptions:
 ### Arena
 arena:
     enabled: true
-    type: versus
+    type: arena
     database: arena
     rated: true
     prefix: "&6[Arena]&e"
@@ -135,7 +143,7 @@ arena:
 ### Skirmish 
 skirmish:
     enabled: true
-    type: versus
+    type: skirmish
     database: arena
     rated: false
     prefix: "&b[Skirmish]&e"
@@ -306,4 +314,6 @@ deathMatch:
             - speed:2:900
             - resistance:2:900
             
- 
+tourney:
+    enabled: true
+    command: tourney
