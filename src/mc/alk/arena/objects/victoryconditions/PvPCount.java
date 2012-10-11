@@ -16,12 +16,12 @@ public class PvPCount extends OneTeamLeft{
 
 	@MatchEventHandler(suppressCastWarnings=true)
 	public void playerDeathEvent(PlayerDeathEvent event, ArenaPlayer p) {
-		ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
-		if (match.isWon() || !match.isStarted()){
+		if (p==null || match.isWon() || !match.isStarted()){
 			return;}
 		Team team = match.getTeam(p);
 		if (team == null)
 			return;
+		ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
 		handleDeath(p,team, killer);
 	}
 

@@ -153,11 +153,11 @@ public class Team {
 		return nkills;
 	}
 
-	public int getNDeaths(ArenaPlayer p) {
+	public Integer getNDeaths(ArenaPlayer p) {
 		return deaths.get(p);
 	}
 
-	public int getNKills(ArenaPlayer p) {
+	public Integer getNKills(ArenaPlayer p) {
 		return kills.get(p);
 	}
 

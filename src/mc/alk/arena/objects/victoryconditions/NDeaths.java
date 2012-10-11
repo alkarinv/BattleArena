@@ -15,7 +15,8 @@ public class NDeaths extends PvPCount{
 
 	@Override
 	protected void handleDeath(ArenaPlayer p,Team team, ArenaPlayer killer) {
-		if (team.getNDeaths(p) >= maxdeaths){
+		Integer deaths = team.getNDeaths(p);
+		if (deaths != null && deaths >= maxdeaths){
 			team.killMember(p);}
 		super.handleDeath(p, team,killer);
 	}
