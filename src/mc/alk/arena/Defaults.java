@@ -52,7 +52,7 @@ public class Defaults {
 	/// Scheduled Event Options
 	public static boolean START_CONTINUOUS = false;
 	public static boolean START_NEXT = false;
-
+	public static int TIME_BETWEEN_SCHEDULED_EVENTS = 30;
 	
 	/// Workaround for gamemode switching and teleporting
 	public static boolean PLUGIN_MULTI_INV = false; /// workarounds for multiinv and tping
@@ -64,7 +64,8 @@ public class Defaults {
 	public static final String MULTIVERSE_CORE_IGNORE_NODE = "mv.bypass.gamemode.*"; 
 	public static final String WORLDGUARD_BYPASS_NODE = "worldguard.region.bypass.";
 
-	public static double TELEPORT_Y_OFFSET = 1.0;
-	/// 
-//	public static boolean USE_CLASS_PERMS = false;
+	/// MISC OPTIONS
+	public static int NUM_INV_SAVES = 5; /// number of inventory saves
+
+	public static double TELEPORT_Y_OFFSET = 1.0; /// offset for teleportation
 }

@@ -2,6 +2,8 @@ package mc.alk.arena.controllers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +15,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.JoinPreferences;
+import mc.alk.arena.objects.JoinOptions;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
@@ -34,7 +36,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	boolean stop = false;
 
 	private final ArenaMatchQueue amq = new ArenaMatchQueue();
-	private Set<Match> running_matches = new HashSet<Match>();
+	private Set<Match> running_matches = Collections.synchronizedSet(new HashSet<Match>());
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
 	long lastTimeCheck = 0;
 
@@ -150,7 +152,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		return amq.getNextArena(mp);
 	}
 	
-	public Arena getArenaByMatchParams(MatchParams mp, JoinPreferences jp) {
+	public Arena getArenaByMatchParams(MatchParams mp, JoinOptions jp) {
 		for (Arena a : allarenas.values()){
 			if (a.valid() && a.matches(mp,jp)){
 				return a;}
@@ -158,7 +160,16 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		return null;
 	}
 
-	public Arena getArenaByNearbyMatchParams(MatchParams mp, JoinPreferences jp) {
+	public List<Arena> getArenas(MatchParams mp) {
+		List<Arena> arenas = new ArrayList<Arena>();
+		for (Arena a : allarenas.values()){
+			if (a.valid() && a.matches(mp,null)){
+				arenas.add(a);}
+		}
+		return arenas;
+	}
+
+	public Arena getArenaByNearbyMatchParams(MatchParams mp, JoinOptions jp) {
 		Arena possible = null;
 		int sizeDif = Integer.MAX_VALUE;
 		int m1 = mp.getMinTeamSize();
@@ -175,22 +186,23 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	}
 
 
-	public List<String> getNotMachingArenaReasons(MatchParams mp, JoinPreferences jp) {
-		List<String> reasons = new ArrayList<String>();
+	public Map<Arena,List<String>> getNotMachingArenaReasons(MatchParams mp, JoinOptions jp) {
+		Map<Arena,List<String>> reasons = new HashMap<Arena, List<String>>();
 		for (Arena a : allarenas.values()){
 			if (a.getArenaType() != mp.getType()){
 				continue;
 			}
+			if (jp != null && !jp.matches(a))
+				continue;
 			if (!a.valid()){
-				for (String reason : a.getInvalidReasons()){
-					reasons.add("&e"+a.getName() +":&c" + reason);
-				}
-			}
+				reasons.put(a, a.getInvalidReasons());}			
 			if (!a.matches(mp,jp)){
-				for (String reason : a.getInvalidMatchReasons(mp,jp)){
-					reasons.add("&e"+a.getName() +":&c" + reason);
+				List<String> rs = reasons.get(a);
+				if (rs == null){
+					reasons.put(a, a.getInvalidMatchReasons(mp, jp));	
+				} else {
+					rs.addAll(a.getInvalidMatchReasons(mp, jp));
 				}
-
 			}
 		}
 		return reasons;

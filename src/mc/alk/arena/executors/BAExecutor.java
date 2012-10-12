@@ -29,13 +29,15 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.DuelOptions;
 import mc.alk.arena.objects.DuelOptions.DuelOption;
-import mc.alk.arena.objects.JoinPreferences;
+import mc.alk.arena.objects.JoinOptions;
+import mc.alk.arena.objects.JoinOptions.JoinOption;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.TransitionOptions;
+import mc.alk.arena.objects.WantedTeamSizeResult;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -118,6 +120,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 	@MCCommand(cmds={"join"},inGame=true,usage="join [options]")
 	public boolean join(ArenaPlayer player, MatchParams mp, String args[]) {
+		return join(player,mp,args,false);
+	}
+
+	public boolean join(ArenaPlayer player, MatchParams mp, String args[], boolean adminJoin){
 		/// Check if this match type is disabled
 		if (disabled.contains(mp.getName())){
 			sendMessage(player, "&cThe &6" + mp.getName()+"&c is currently disabled");
@@ -141,16 +147,23 @@ public class BAExecutor extends CustomCommandExecutor  {
 		Team t = teamc.getSelfTeam(player);
 		if (t==null)
 			t = TeamController.createTeam(player);
-		final WantedTeamSizeResult teamSize = getWantedTeamSize(player,t,mp,args[args.length - 1]);
-		if (teamSize == null)
-			return true;
 		mp = new MatchParams(mp);
-		mp.setTeamSize(teamSize.size);
-		JoinPreferences jp = null;
+		JoinOptions jp;
+		WantedTeamSizeResult wtsr = null;
+		try {
+			jp = JoinOptions.parseOptions(mp,t, player, Arrays.copyOfRange(args, 1, args.length));
+			wtsr = (WantedTeamSizeResult) jp.getOption(JoinOption.TEAMSIZE);
+			mp.setTeamSize(wtsr.size);
+		} catch (InvalidOptionException e) {
+			return sendMessage(player, e.getMessage());
+		} catch (Exception e){
+			e.printStackTrace();
+			jp = null;
+		}
 		/// Check to make sure at least one arena can be joined at some time
 		Arena arena = ac.getArenaByMatchParams(mp,jp);
 		if (arena == null){
-			if (!teamSize.manuallySet){
+			if (!wtsr.manuallySet){
 				arena = ac.getArenaByNearbyMatchParams(mp,jp);
 				if (arena != null){
 					mp.setMinTeamSize(arena.getParameters().getMinTeamSize());
@@ -158,7 +171,16 @@ public class BAExecutor extends CustomCommandExecutor  {
 				}
 			}
 			if (arena == null){
-				return sendMessage(player,"&cA valid arena has not been built for a " + mp.toPrettyString());}
+				Map<Arena, List<String>> reasons = ac.getNotMachingArenaReasons(mp, jp);				
+				if (!reasons.isEmpty()){
+					for (Arena a : reasons.keySet()){
+						List<String> rs = reasons.get(a);
+						if (!rs.isEmpty())
+							return sendMessage(player,"&c"+rs.get(0));	
+					}
+				} 
+				return sendMessage(player,"&cA valid "+ mp.toPrettyString()+"&c arena has not been built");					
+			}
 		}
 		final MatchTransitions ops = mp.getTransitionOptions();
 		if (ops == null){
@@ -193,50 +215,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 		}
 		return true;
 	}
-	static class WantedTeamSizeResult{
-		public int size;
-		public boolean manuallySet = false;
-	}
-	/**
-	 * Check to see what size of team the player should join based on their team, preferences, and the MatchParams
-	 * @param player
-	 * @param t
-	 * @param mp
-	 * @param string
-	 * @return
-	 */
-	private WantedTeamSizeResult getWantedTeamSize(ArenaPlayer player, Team t, MatchParams mp, String string) {
-		/// Check to see if the user has specified a wanted team size
-		MinMax mm = Util.getMinMax(string);
-		final int min = mp.getMinTeamSize();
-		final int max = mp.getMaxTeamSize();
-		WantedTeamSizeResult result = new WantedTeamSizeResult();
-		if (mm != null){
-			if (mm.min > max){ /// They want a team size that is greater than what is offered by this match type
-				sendMessage(player, "&cYou wanted to join with a team of &6" + mm.min+"&c players");
-				sendMessage(player, "&cBut this match type only supports up to &6"+max+"&c players per team");
-				return null;
-			}
-			result.size = mm.min;
-			result.manuallySet = true;
-			return result;
-		}
-		if (t.size() > max){
-			sendMessage(player, "&cYour team has &6" + t.size()+"&c players");
-			sendMessage(player, "&cBut this match type only supports up to &6"+max+"&c players per team");
-			return null;
-		}
 
-		/// Are they joining a match that needs more people than their team has
-		if (t.size() < min){
-			result.size = min;
-			return result;
-		}
 
-		/// They are good with their current team size
-		result.size = t.size();
-		return result;
-	}
 
 	@MCCommand(cmds={"leave"}, inGame=true, usage="leave")
 	public boolean leave(ArenaPlayer p) {
@@ -673,7 +653,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			mp.setRated(true);
 		else if (duelOptions.hasOption(DuelOption.UNRATED))
 			mp.setRated(false);
-		JoinPreferences jp = null;
+		JoinOptions jp = null;
 		/// Check to make sure at least one arena can be joined at some time
 		Arena arena = ac.getArenaByMatchParams(mp,jp);
 		if (arena == null){

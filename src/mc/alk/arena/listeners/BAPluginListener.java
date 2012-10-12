@@ -131,7 +131,7 @@ public class BAPluginListener implements Listener {
 			if (plugin != null) {				
 				if (WorldGuardInterface.setWorldEdit(plugin)){					
 					WorldGuardInterface.init();
-					Log.info("[BattleArena] WorldGuard detected. WorldGuard regions now be used");
+					Log.info("[BattleArena] WorldGuard detected. WorldGuard regions now enabled");
 				}
 			} 
 		}

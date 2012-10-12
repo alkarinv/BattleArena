@@ -39,8 +39,8 @@ public class MatchJoinOptions {
 	HashMap<MatchJoinOption,Object> options = new HashMap<MatchJoinOption,Object>();
 
 	public static MatchJoinOptions parseOptions(String[] args, Set<Integer> ignoreArgs) throws InvalidOptionException{
-		MatchJoinOptions eoo = new MatchJoinOptions();
-		HashMap<MatchJoinOption,Object> ops = eoo.options;
+		MatchJoinOptions mjo = new MatchJoinOptions();
+		HashMap<MatchJoinOption,Object> ops = mjo.options;
 		int i =0;
 		for (String op: args){
 			if ( ignoreArgs != null && ignoreArgs.contains(i++))
@@ -78,7 +78,7 @@ public class MatchJoinOptions {
 			if (obj != null)
 				ops.put(to, obj);
 		}
-		return eoo;
+		return mjo;
 	}
 
 	public Object getOption(MatchJoinOption op) {

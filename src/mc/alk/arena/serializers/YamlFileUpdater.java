@@ -23,6 +23,7 @@ public class YamlFileUpdater {
 	public static void updateConfig(BAConfigSerializer bacs){
 		updateBaseConfig(bacs);
 	}
+	
 	public void updateMessageSerializer(MessageSerializer ms) {
 		FileConfiguration fc = ms.getConfig();
 
@@ -69,6 +70,9 @@ public class YamlFileUpdater {
 		}
 		if (version.compareTo(1.4)<0){
 			to1Point4(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
+		}
+		if (version.compareTo("1.4.5")<0){
+			to1Point45(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
 		}
 	}
 
@@ -340,6 +344,62 @@ public class YamlFileUpdater {
 					fw.write("\n");
 					fw.write("# which player commands should be disabled when they enter an arena\n");
 					fw.write("disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]\n");
+					fw.write("\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(f.getAbsoluteFile());
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void to1Point45(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
+		Log.warn("BattleArena updating config to 1.4.5");
+
+		String line =null;
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(f));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		BufferedWriter fw =null;
+		try {
+			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
+			fw = new BufferedWriter(new FileWriter(tempFile));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		} 
+
+		try {
+			boolean updatedDefaultSection = false;
+			if (version.compareTo(0)==0){
+				fw.write("configVersion: 1.4.5\n\n");
+				fw.write("# Auto Update the BattleArena plugin (only works for unix/linux/mac)\n");
+				fw.write("# Updates will be retrieved from the latest plugin on the bukkit site\n");
+				fw.write("autoUpdate: true\n");
+				fw.write("\n");
+			}
+			while ((line = br.readLine()) != null){
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 1.4.5\n\n");
+					fw.write("# Auto Update the BattleArena plugin (only works for unix/linux/mac)\n");
+					fw.write("# Updates will be retrieved from the latest plugin on the bukkit site\n");
+					fw.write("autoUpdate: true\n");
+					fw.write("\n");
+				} else if (!updatedDefaultSection && (line.matches(".*teleportYOffset.*"))){
+					fw.write(line +"\n");
+					fw.write("\n");
+					fw.write("# When a player joins an arena and their inventory is stored\n");
+					fw.write("# how many old inventories should be saved\n");
+					fw.write("# put in 0 if you don't want this option\n");
+					fw.write("numberSavedInventories: 5\n");
 					fw.write("\n");
 				} else {
 					fw.write(line+"\n");

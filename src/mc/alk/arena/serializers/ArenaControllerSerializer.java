@@ -79,43 +79,49 @@ public class ArenaControllerSerializer {
 		cs = config.getConfigurationSection("restoreInv");
 		if (cs != null){
 			for (String name: cs.getKeys(false)){
-				PInv pinv = new PInv();
 				ConfigurationSection pcs = cs.getConfigurationSection(name);
-				List<ItemStack> items = new ArrayList<ItemStack>();
-				List<String> stritems = pcs.getStringList("armor");
-				for (String stritem : stritems){
-					ItemStack is;
-					try {
-						is = InventoryUtil.parseItem(stritem);
-					} catch (Exception e) {
-						System.err.println("Couldnt reparse "+stritem +" for player " + name);
-						e.printStackTrace();
-						continue;
-					}
-					items.add(is);
-				}
-				pinv.armor = items.toArray(new ItemStack[items.size()]);
-
-				items = new ArrayList<ItemStack>();
-				stritems = pcs.getStringList("contents");
-				for (String stritem : stritems){
-					ItemStack is;
-					try {
-						is = InventoryUtil.parseItem(stritem);
-					} catch (Exception e) {
-						System.err.println("Couldnt reparse "+stritem +" for player " + name);
-						e.printStackTrace();
-						continue;
-					}
-					items.add(is);
-				}
-				pinv.contents = items.toArray(new ItemStack[items.size()]);
+				PInv pinv = getInventory(pcs);
 				BAPlayerListener.restoreItemsOnReenter(name, pinv);
-			}			
-		}
-
-
+			}
+		}			
 	}
+
+	public static PInv getInventory(ConfigurationSection cs){
+			PInv pinv = new PInv();
+			List<ItemStack> items = new ArrayList<ItemStack>();
+			List<String> stritems = cs.getStringList("armor");
+			for (String stritem : stritems){
+				ItemStack is;
+				try {
+					is = InventoryUtil.parseItem(stritem);
+				} catch (Exception e) {
+					System.err.println("Couldnt reparse "+stritem +" for player " + cs.getName());
+					e.printStackTrace();
+					continue;
+				}
+				items.add(is);
+			}
+			pinv.armor = items.toArray(new ItemStack[items.size()]);
+
+			items = new ArrayList<ItemStack>();
+			stritems = cs.getStringList("contents");
+			for (String stritem : stritems){
+				ItemStack is;
+				try {
+					is = InventoryUtil.parseItem(stritem);
+				} catch (Exception e) {
+					System.err.println("Couldnt reparse "+stritem +" for player " + cs.getName());
+					e.printStackTrace();
+					continue;
+				}
+				items.add(is);
+			}
+			pinv.contents = items.toArray(new ItemStack[items.size()]);
+			return pinv;
+	}
+
+
+
 
 	public void save(){
 

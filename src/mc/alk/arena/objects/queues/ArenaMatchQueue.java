@@ -13,7 +13,7 @@ import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.JoinPreferences;
+import mc.alk.arena.objects.JoinOptions;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.ParamTeamPair;
 import mc.alk.arena.objects.QPosTeamPair;
@@ -156,7 +156,7 @@ public class ArenaMatchQueue {
 					} else {
 						TeamQObject to = (TeamQObject) tto;
 						Team t = to.getTeam();
-						JoinPreferences jp = t.getJoinPreferences();
+						JoinOptions jp = t.getJoinPreferences();
 						if (Defaults.DEBUG) System.out.println("--"+teamSize +" " + t.size() +"  t="+t.getName() +",mp="+mp +",jp="+ (jp == null ? "" : jp.matches(a)));
 						if (jp != null && !jp.matches(a)){
 							continue;}

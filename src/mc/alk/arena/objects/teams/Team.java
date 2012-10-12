@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.JoinPreferences;
+import mc.alk.arena.objects.JoinOptions;
 import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.entity.Player;
@@ -30,7 +30,7 @@ public class Team {
 	/// This is only so that teleports can be done to slightly different places for each player
 	protected HashMap<String,Integer> playerIndexes = new HashMap<String,Integer>();
 
-	protected JoinPreferences jp;
+	protected JoinOptions jp;
 
 	/**
 	 * Default Constructor
@@ -254,7 +254,7 @@ public class Team {
 		return displayName != null;
 	}
 
-	public JoinPreferences getJoinPreferences() {
+	public JoinOptions getJoinPreferences() {
 		return jp;
 	}
 

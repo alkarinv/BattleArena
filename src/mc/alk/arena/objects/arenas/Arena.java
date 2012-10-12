@@ -1,7 +1,6 @@
 package mc.alk.arena.objects.arenas;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,7 @@ import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.JoinPreferences;
+import mc.alk.arena.objects.JoinOptions;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
@@ -39,6 +38,8 @@ public class Arena implements ArenaListener {
 	protected TreeMap<Integer,Location> locs = null; /// Team spawn Locations
 	protected TreeMap<Integer,Location> wrlocs = null; /// wait room spawn locations
 	protected Location vloc = null;
+	/// If this is not null, this is where distance will be based off of, otherwise it's an area around the spawns
+	protected Location joinloc = null; 
 
 	protected Map<String, Location> visitorlocations = null;/// tp locations for the visitors
 	protected Random rand = new Random(); /// a random 
@@ -139,6 +140,14 @@ public class Arena implements ArenaListener {
 	}
 	
 	/**
+	 * Return the spot where players need to join close to
+	 * @return
+	 */
+	public Location getJoinLocation() {
+		return joinloc;
+	}
+
+	/**
 	 * Set a visitor spawn location
 	 * @param loc
 	 */
@@ -198,7 +207,7 @@ public class Arena implements ArenaListener {
 		return (!(name == null || locs.size() <1 || locs.get(0) == null || !ap.valid() ));
 	}
 
-	public Collection<String> getInvalidReasons() {
+	public List<String> getInvalidReasons() {
 		List<String> reasons = new ArrayList<String>();
 		if (name == null) reasons.add("Arena name is null");
 		if (locs.size() <1) reasons.add("needs to have at least 1 spawn location");
@@ -600,7 +609,7 @@ public class Arena implements ArenaListener {
 	 * @param jp 
 	 * @return
 	 */
-	public boolean matches(MatchParams matchParams, JoinPreferences jp) {
+	public boolean matches(MatchParams matchParams, JoinOptions jp) {
 		boolean matches = getParameters().matches(matchParams);
 		if (!matches)
 			return false;
@@ -612,9 +621,13 @@ public class Arena implements ArenaListener {
 			return false;
 		if (jp == null)
 			return true;
+		if (!jp.matches(this))
+			return false;
+		
 		final TransitionOptions ops = tops.getOptions(MatchState.PREREQS);
 		if (ops == null)
 			return true;
+		
 		if (ops.hasOption(TransitionOption.WITHINDISTANCE)){
 			if (!jp.nearby(this,ops.getWithinDistance())){
 				return false;}	
@@ -627,7 +640,7 @@ public class Arena implements ArenaListener {
 		return true;
 	}
 	
-	public Collection<String> getInvalidMatchReasons(MatchParams matchParams, JoinPreferences jp) {
+	public List<String> getInvalidMatchReasons(MatchParams matchParams, JoinOptions jp) {
 		List<String> reasons = new ArrayList<String>();
 		reasons.addAll(getParameters().getInvalidMatchReasons(matchParams));
 		final MatchTransitions tops = matchParams.getTransitionOptions();
@@ -638,6 +651,8 @@ public class Arena implements ArenaListener {
 		}
 		if (jp == null)
 			return reasons;
+		if (!jp.matches(this))
+			reasons.add("You didn't specify this arena");
 		final TransitionOptions ops = tops.getOptions(MatchState.PREREQS);
 		if (ops == null)
 			return reasons;
@@ -696,4 +711,5 @@ public class Arena implements ArenaListener {
 		return sb.toString();
 	}
 
+	
 }

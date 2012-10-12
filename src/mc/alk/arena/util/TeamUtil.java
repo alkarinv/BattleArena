@@ -5,14 +5,51 @@ import java.util.HashMap;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
 
-import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 public class TeamUtil {
-
+	static final int NTEAMS = 35;
+	static final HashMap<String,Integer> map = new HashMap<String,Integer>();
+	static {
+		map.put("RED",0);
+		map.put("BLUE",1);
+		map.put("WHITE",2);
+		map.put("BLACK",3);
+		map.put("GOLD",4);
+		map.put("GREEN",5);
+		map.put("PINK",6);
+		map.put("AQUA",7);
+		map.put("GRAY",8);
+		map.put("YELLOW",9);
+		map.put("LIME",10);
+		map.put("SILVER",11);
+		map.put("CYAN",12);
+		map.put("PURPLE",13);
+		map.put("BROWN",14);
+		map.put("MAGENTA",15);
+		map.put("ICE",16);
+		map.put("IRON",17);
+		map.put("DIAMOND",18);
+		map.put("BRICK",19);
+		map.put("GLASS",20);
+		map.put("SAND",21);
+		map.put("LEAF",22);
+		map.put("NETHER",23);
+		map.put("OBBY",24);
+		map.put("GRAVEL",25);
+		map.put("LAPIS",26);
+		map.put("MOSSY",27);
+		map.put("PUMPKIN",28);
+		map.put("SNOW",29);
+		map.put("COAL",30);
+		map.put("COBBLESTONE",31);
+		map.put("WOOD",32);
+		map.put("TNT",33);
+		map.put("SPONGE",34);
+	}
 	public static class TeamHead {
 		final ItemStack is;
 		final String name;
@@ -20,49 +57,6 @@ public class TeamUtil {
 			this.is = is; this.name = name;
 		}
 	}
-	static public final HashMap<Integer, TeamHead> teamHeads = new HashMap<Integer, TeamHead>(); 
-	static{
-		teamHeads.put(0, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.RED.ordinal()), "&cRed")); // &4 was hard to see
-		teamHeads.put(1, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.BLUE.ordinal()), "&bBlue")); // &2 was hard to see
-		teamHeads.put(2, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.WHITE.ordinal()), "&fWhite"));
-		teamHeads.put(3, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.BLACK.ordinal()), "&0Black"));
-		teamHeads.put(4, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.ORANGE.ordinal()), "&6Gold"));
-		teamHeads.put(5, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.GREEN.ordinal()), "&2Green"));
-		teamHeads.put(6, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.PINK.ordinal()), "&dPink"));
-		teamHeads.put(6, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.LIGHT_BLUE.ordinal()), "&bAqua"));
-		teamHeads.put(7, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.GRAY.ordinal()), "&8Gray"));
-		teamHeads.put(8, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.YELLOW.ordinal()), "&eYellow"));
-		teamHeads.put(9, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.LIME.ordinal()), "&aLime"));
-		teamHeads.put(10, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.SILVER.ordinal()), "&7Silver"));
-		teamHeads.put(11, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.CYAN.ordinal()), "&3Cyan"));
-		teamHeads.put(12, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.PURPLE.ordinal()), "&5Purple"));
-		teamHeads.put(13, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.BROWN.ordinal()), "&8Brown"));
-		teamHeads.put(14, new TeamHead(new ItemStack(Material.WOOL, 1,(short)DyeColor.MAGENTA.ordinal()), "&9Magenta"));
-		teamHeads.put(15, new TeamHead(new ItemStack(Material.ICE, 1) , "&9Ice"));
-		teamHeads.put(16, new TeamHead(new ItemStack(Material.IRON_BLOCK, 1), "&7Iron"));
-		teamHeads.put(18, new TeamHead(new ItemStack(Material.DIAMOND_BLOCK, 1), "&bDiamond"));
-		teamHeads.put(19, new TeamHead(new ItemStack(Material.BRICK, 1), "&cBrick"));
-		teamHeads.put(20, new TeamHead(new ItemStack(Material.GLASS, 1), "&fGlass"));
-		teamHeads.put(21, new TeamHead(new ItemStack(Material.SAND, 1), "&fSand"));
-		teamHeads.put(22, new TeamHead(new ItemStack(Material.LEAVES, 1), "&2Leaf"));
-		teamHeads.put(23, new TeamHead(new ItemStack(Material.NETHERRACK, 1), "&4Nether"));
-		teamHeads.put(24, new TeamHead(new ItemStack(Material.OBSIDIAN, 1), "&0Obby"));
-		teamHeads.put(25, new TeamHead(new ItemStack(Material.GRAVEL, 1), "&8Gravel"));
-		teamHeads.put(26, new TeamHead(new ItemStack(Material.LAPIS_BLOCK, 1), "&1Lapis"));
-		teamHeads.put(27, new TeamHead(new ItemStack(Material.MOSSY_COBBLESTONE, 1), "&2Mossy"));
-		teamHeads.put(28, new TeamHead(new ItemStack(Material.PUMPKIN, 1), "&6Pumpkin"));
-		teamHeads.put(29, new TeamHead(new ItemStack(Material.SNOW, 1), "&fSnow"));
-		teamHeads.put(30, new TeamHead(new ItemStack(Material.COAL_ORE, 1), "&7Coal"));
-		teamHeads.put(31, new TeamHead(new ItemStack(Material.COBBLESTONE, 1), "&7Cobblestone"));
-		teamHeads.put(32, new TeamHead(new ItemStack(Material.WOOD, 1), "&8Wood"));
-		teamHeads.put(33, new TeamHead(new ItemStack(Material.TNT, 1), "&cTNT"));
-		teamHeads.put(34, new TeamHead(new ItemStack(Material.SPONGE, 1), "&eSponge"));
-		for (Integer i: teamHeads.keySet()){
-			TeamHead th = teamHeads.get(i);
-			teamHeads.put(i, new TeamHead(th.is, MessageUtil.colorChat(th.name)) );
-		}
-	}
-
 
 	public static void removeTeamHead(final int color, Player p) {
 		ItemStack item = getTeamHead(color);
@@ -71,17 +65,52 @@ public class TeamUtil {
 			inv.setHelmet(new ItemStack(Material.AIR));
 		}
 	}
-	
+
 	public static void setTeamHead(final int color, Team team) {
 		for (ArenaPlayer p: team.getPlayers()){
 			setTeamHead(color,p);
 		}
 	}
-	public static ItemStack getTeamHead(final int index){
-		if (index >= 0 && index < teamHeads.size()){
-			return teamHeads.get(index).is;}
-		else{ /// really ??? thats a lot of teams, umm.. give them something
-			return teamHeads.get(index % teamHeads.size()).is;}
+	public static ItemStack getTeamHead(int index){
+		index = index % NTEAMS;
+		switch(index){
+		case 0: return new ItemStack(Material.WOOL, 1);
+		case 1: return new ItemStack(Material.WOOL, 1);
+		case 2: return new ItemStack(Material.WOOL, 1);
+		case 3: return new ItemStack(Material.WOOL, 1);
+		case 4: return new ItemStack(Material.WOOL, 1);
+		case 5: return new ItemStack(Material.WOOL, 1);
+		case 6: return new ItemStack(Material.WOOL, 1);
+		case 7: return new ItemStack(Material.WOOL, 1);
+		case 8: return new ItemStack(Material.WOOL, 1);
+		case 9: return new ItemStack(Material.WOOL, 1);
+		case 10: return new ItemStack(Material.WOOL, 1);
+		case 11: return new ItemStack(Material.WOOL, 1);
+		case 12: return new ItemStack(Material.WOOL, 1);
+		case 13: return new ItemStack(Material.WOOL, 1);
+		case 14: return new ItemStack(Material.WOOL, 1);
+		case 15: return new ItemStack(Material.WOOL, 1);
+		case 16: return new ItemStack(Material.ICE, 1);
+		case 17: return new ItemStack(Material.IRON_BLOCK, 1);
+		case 18: return new ItemStack(Material.DIAMOND_BLOCK, 1);
+		case 19: return new ItemStack(Material.BRICK, 1);
+		case 20: return new ItemStack(Material.GLASS, 1);
+		case 21: return new ItemStack(Material.SAND, 1);
+		case 22: return new ItemStack(Material.LEAVES, 1);
+		case 23: return new ItemStack(Material.NETHERRACK, 1);
+		case 24: return new ItemStack(Material.OBSIDIAN, 1);
+		case 25: return new ItemStack(Material.GRAVEL, 1);
+		case 26: return new ItemStack(Material.LAPIS_BLOCK, 1);
+		case 27: return new ItemStack(Material.MOSSY_COBBLESTONE, 1);
+		case 28: return new ItemStack(Material.PUMPKIN, 1);
+		case 29: return new ItemStack(Material.SNOW, 1);
+		case 30: return new ItemStack(Material.COAL_ORE, 1);
+		case 31: return new ItemStack(Material.COBBLESTONE, 1);
+		case 32: return new ItemStack(Material.WOOD, 1);
+		case 33: return new ItemStack(Material.TNT, 1);
+		case 34: return new ItemStack(Material.SPONGE, 1);
+		default: return null;
+		}
 	}
 	@SuppressWarnings("deprecation")
 	public static void setTeamHead(final int index, ArenaPlayer player) {
@@ -100,10 +129,49 @@ public class TeamUtil {
 		}				
 	}
 	public static String createTeamName(int index) {
-		if (index >= 0 && index < teamHeads.size()){
-			return teamHeads.get(index).name;}
-		else{ 
-			return "Team" + index;}
+		switch(index){
+		case 0: return "&cRed" ; // &4 hard to see
+		case 1: return "&bBlue"; // &2 was hard to see
+		case 2: return "&fWhite";
+		case 3: return "&0Black";
+		case 4: return "&6Gold";
+		case 5: return "&2Green";
+		case 6: return "&dPink";
+		case 7: return "&bAqua";
+		case 8: return "&8Gray";
+		case 9: return "&eYellow";
+		case 10: return "&aLime";
+		case 11: return "&7Silver";
+		case 12: return "&3Cyan";
+		case 13: return "&5Purple";
+		case 14: return "&8Brown";
+		case 15: return "&9Magenta";
+		case 16: return "&9Ice";
+		case 17: return "&7Iron";
+		case 18: return "&bDiamond";
+		case 19: return "&cBrick";
+		case 20: return "&fGlass";
+		case 21: return "&fSand";
+		case 22: return "&2Leaf";
+		case 23: return "&4Nether";
+		case 24: return "&0Obby";
+		case 25: return "&8Gravel";
+		case 26: return "&1Lapis";
+		case 27: return "&2Mossy";
+		case 28: return "&6Pumpkin";
+		case 29: return "&fSnow";
+		case 30: return "&7Coal";
+		case 31: return "&7Cobblestone";
+		case 32: return "&8Wood";
+		case 33: return "&cTNT";
+		case 34: return "&eSponge";
+		default: 
+			return "Team" + index;
+		}
+	}
+
+	public static Integer getTeamIndex(String op) {
+		return map.get(op.toUpperCase());
 	}
 
 }

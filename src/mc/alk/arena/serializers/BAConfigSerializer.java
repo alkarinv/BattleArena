@@ -23,6 +23,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.MONEY_STR = config.getString("moneyName");
 		Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", false);
 		Defaults.TELEPORT_Y_OFFSET = config.getDouble("teleportYOffset", 1.0);
+		Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", 5);
 		DisabledCommandsUtil.addAll(config.getStringList("disabledCommands"));
 		String[] defaultArenaTypes = {"arena","skirmish","colliseum","freeForAll","deathMatch","tourney","battleground"};
 
@@ -46,6 +47,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", 30);
 		Defaults.DUEL_ALLOW_RATED = cs.getBoolean("allowRatedDuels", false);
 		Defaults.DUEL_CHALLENGE_INTERVAL = cs.getInt("challengeInterval", 1800);
+		Defaults.TIME_BETWEEN_SCHEDULED_EVENTS = cs.getInt("timeBetweenScheduledEvents", 30);
 		parseOnServerStartOptions(cs);
 		AnnouncementOptions an = new AnnouncementOptions();
 		parseAnnouncementOptions(an,true,cs.getConfigurationSection("announcements"), true);

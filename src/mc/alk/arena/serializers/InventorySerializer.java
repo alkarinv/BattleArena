@@ -2,44 +2,132 @@ package mc.alk.arena.serializers;
 
 import java.io.File;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Set;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerStoreController.PInv;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.KeyValue;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class InventorySerializer {
 
-	public static void saveInventory(String name, PInv pinv) {
-		BaseSerializer serializer = getSerializer(name);
-		Date now = new Date();
-		String date = DateFormat.getDateTimeInstance( DateFormat.LONG, DateFormat.LONG).format(now);
-		System.out.println("10. " + date);
-		int curSection = serializer.config.getInt("curSection", 0);
-		serializer.config.set("curSection", (curSection +1) % 3);
-		ConfigurationSection pcs = serializer.config.createSection(curSection+"");
-		pcs.set("storedDate", date);
-		List<String> stritems = new ArrayList<String>();
-		for (ItemStack is : pinv.armor){
-			if (is == null || is.getType() == Material.AIR)
-				continue;
-			stritems.add(InventoryUtil.getItemString(is));}
-		pcs.set("armor", stritems);
+	public static List<String> getDates(final String name){
+		BaseSerializer serializer = getSerializer(name);		
+		if (serializer == null)
+			return null;
+		PriorityQueue<Long> dates = new PriorityQueue<Long>(Defaults.NUM_INV_SAVES, Collections.reverseOrder());
+		Set<String> keys = serializer.config.getKeys(false);
 
-		stritems = new ArrayList<String>();
-		for (ItemStack is : pinv.contents){
-			if (is == null || is.getType() == Material.AIR)
+		DateFormat format = DateFormat.getDateTimeInstance( DateFormat.LONG, DateFormat.LONG); 
+
+		for (String key: keys){
+			ConfigurationSection cs = serializer.config.getConfigurationSection(key);
+			if (cs == null)
 				continue;
-			stritems.add(InventoryUtil.getItemString(is));}
-		pcs.set("contents", stritems);
-		
-		serializer.save();
+			String strdate = cs.getString("storedDate");
+			Date date;
+			try {
+				date = format.parse(strdate);
+			} catch (ParseException e) {
+				e.printStackTrace();
+				continue;
+			}
+			dates.add(date.getTime());
+		}
+		List<String> strdates = new ArrayList<String>();
+		for (Long l: dates){
+			strdates.add(format.format(l));
+		}
+		return strdates;
+	}
+
+	public static PInv getInventory(final String name, int index){
+		if (index < 0 || index >= Defaults.NUM_INV_SAVES){
+			return null;}
+		BaseSerializer serializer = getSerializer(name);		
+		if (serializer == null)
+			return null;
+		PriorityQueue<KeyValue<Long,PInv>> dates = 
+				new PriorityQueue<KeyValue<Long,PInv>>(Defaults.NUM_INV_SAVES, new Comparator<KeyValue<Long,PInv>>(){
+					@Override
+					public int compare(KeyValue<Long, PInv> arg0, KeyValue<Long, PInv> arg1) {
+						return arg1.key.compareTo(arg0.key);
+					}
+				});
+		Set<String> keys = serializer.config.getKeys(false);
+
+		DateFormat format = DateFormat.getDateTimeInstance( DateFormat.LONG, DateFormat.LONG); 
+
+		for (String key: keys){
+			ConfigurationSection cs = serializer.config.getConfigurationSection(key);
+			if (cs == null)
+				continue;
+			String strdate = cs.getString("storedDate");
+			Date date;
+			try {
+				date = format.parse(strdate);
+			} catch (ParseException e) {
+				e.printStackTrace();
+				continue;
+			}
+			PInv pinv = ArenaControllerSerializer.getInventory(cs);
+			dates.add(new KeyValue<Long,PInv>(date.getTime(),pinv));
+		}
+		int i=0;
+		for (KeyValue<Long,PInv> l: dates){
+			if (i++==index)
+				return l.value;
+		}
+		return null;
+	}
+
+	public static void saveInventory(final String name, final PInv pinv) {
+		if (Defaults.NUM_INV_SAVES <= 0){
+			return;}
+		Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+			@Override
+			public void run() {
+				BaseSerializer serializer = getSerializer(name);
+				if (serializer == null)
+					return;
+				Date now = new Date();
+				String date = DateFormat.getDateTimeInstance( DateFormat.LONG, DateFormat.LONG).format(now);
+				System.out.println("10. " + date);
+				int curSection = serializer.config.getInt("curSection", 0);
+				serializer.config.set("curSection", (curSection +1) % Defaults.NUM_INV_SAVES);
+				ConfigurationSection pcs = serializer.config.createSection(curSection+"");
+				pcs.set("storedDate", date);
+				List<String> stritems = new ArrayList<String>();
+				for (ItemStack is : pinv.armor){
+					if (is == null || is.getType() == Material.AIR)
+						continue;
+					stritems.add(InventoryUtil.getItemString(is));}
+				pcs.set("armor", stritems);
+
+				stritems = new ArrayList<String>();
+				for (ItemStack is : pinv.contents){
+					if (is == null || is.getType() == Material.AIR)
+						continue;
+					stritems.add(InventoryUtil.getItemString(is));}
+				pcs.set("contents", stritems);
+				serializer.save();				
+			}
+		});
 	}
 
 	private static BaseSerializer getSerializer(String name) {
@@ -47,8 +135,25 @@ public class InventorySerializer {
 		File dir = new File(BattleArena.getSelf().getDataFolder()+"/inventories/");
 		if (!dir.exists()){
 			dir.mkdirs();}
-		bs.setConfig(dir.getPath()+"/"+name+".yml");
-		return bs;
+		return bs.setConfig(dir.getPath()+"/"+name+".yml") ? bs : null; 
+	}
+
+	@SuppressWarnings("deprecation")
+	public static boolean restoreInventory(ArenaPlayer player, Integer index) {
+		PInv pinv = getInventory(player.getName(), index);
+		if (pinv == null)
+			return false;
+		Player p = player.getPlayer();
+		for (ItemStack is: pinv.armor){
+			InventoryUtil.addItemToInventory(p, is);
+		}
+		for (ItemStack is: pinv.contents){
+			InventoryUtil.addItemToInventory(p, is);
+		}
+		try{p.updateInventory();} catch(Exception e){ /// yes this has thrown errors on me before
+			return false; /// do I really want to return false? do I care if this doesnt go through?
+		} 
+		return true;
 	}
 
 }

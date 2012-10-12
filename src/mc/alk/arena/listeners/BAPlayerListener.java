@@ -85,7 +85,6 @@ public class BAPlayerListener implements Listener  {
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerJoin(PlayerJoinEvent event) {
-
 		final Player p = event.getPlayer();
 		final String name = p.getName();
 		if (clearInventory.remove(name)){
@@ -105,7 +104,13 @@ public class BAPlayerListener implements Listener  {
 		playerReturned(p, null);
 	}
 
-	@EventHandler
+	/**
+	 * Why priority highest, some other plugins try to force respawn the player in spawn(or some other loc)
+	 * problem is if they have come from the creative world, their game mode gets reset to creative
+	 * but the other plugin force spawns them at spawn... so they now have creative in an area they shouldnt
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerRespawn(PlayerRespawnEvent event){
 		Player p = event.getPlayer();
 		playerReturned(p, event);

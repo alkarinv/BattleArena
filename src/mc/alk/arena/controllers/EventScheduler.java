@@ -79,7 +79,8 @@ public class EventScheduler implements Runnable, TransitionListener{
 			if (!success){ /// wait then start up the scheduler again in 30 seconds
 				MessageUtil.sendMessage(sender, "Event could not be started, continuing in 30 seconds");
 				MessageUtil.sendMessage(sender, "Event was " + event.getName()+"  args: " + StringUtils.join(args,","));
-				Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), scheduler, 20L*30);
+				Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), 
+						scheduler, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			} 
 			/// otherwise we wait for event is finished message
 		}
@@ -90,9 +91,9 @@ public class EventScheduler implements Runnable, TransitionListener{
 		Event e = event.getEvent();
 		e.removeTransitionListener(this);
 		if (continuous){
-			/// Wait 30 sec then start the next event
-			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, (long) (20L*30*Defaults.TICK_MULT));
-			Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"Next event will start in 30 seconds");			
+			/// Wait x sec then start the next event
+			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, (long) (20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS*Defaults.TICK_MULT));
+			Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"Next event will start in "+Defaults.TIME_BETWEEN_SCHEDULED_EVENTS+" seconds");			
 		} else {
 			running = false;
 		}

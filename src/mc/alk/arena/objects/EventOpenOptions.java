@@ -2,6 +2,7 @@ package mc.alk.arena.objects;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
@@ -145,7 +146,7 @@ public class EventOpenOptions {
 			mp.setTeamSizes((MinMax)getOption(EventOpenOption.TEAMSIZE));}		
 	}
 
-	public Arena getArena(MatchParams mp, JoinPreferences jp) throws InvalidOptionException{
+	public Arena getArena(MatchParams mp, JoinOptions jp) throws InvalidOptionException{
 		BattleArenaController ac = BattleArena.getBAC();
 
 		Arena arena;
@@ -155,9 +156,18 @@ public class EventOpenOptions {
 		} else {
 			arena = ac.getArenaByMatchParams(mp,jp);
 			if (arena == null){
-				List<String> reasons = ac.getNotMachingArenaReasons(mp,jp);
+				Map<Arena,List<String>> reasons = ac.getNotMachingArenaReasons(mp,jp);
+				StringBuilder sb = new StringBuilder();
+				boolean first = true;
+				for (Arena a : reasons.keySet()){
+					for (String reason: reasons.get(a)){
+						if (!first) sb.append(", ");
+						sb.append("&f"+a.getName()+":&e "+reason);
+						first = false;
+					}
+				}
 				throw new InvalidOptionException(
-						"&cCouldnt find an arena matching the params &6"+mp +"\n" + StringUtils.join(reasons,"\n"));
+						"&cCouldnt find an arena matching the params &6"+mp +"\n" + sb.toString());
 			}
 			autoFindArena = true;
 		}

@@ -6,6 +6,7 @@ import java.util.List;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
@@ -122,7 +123,7 @@ public class PlayerStoreController {
 			e.printStackTrace();
 		}
 		itemmap.put(name, pinv);
-//		InventorySerializer.saveInventory(name,pinv);
+		InventorySerializer.saveInventory(name,pinv);
 	}
 
 	public void restoreItems(ArenaPlayer p) {

@@ -8,12 +8,14 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.PlayerStoreController.PInv;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MapOfHash;
@@ -22,6 +24,7 @@ import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -40,7 +43,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public void help(CommandSender sender, Command command, String label, Object[] args){
 		super.help(sender, command, args);
 	}
-	
+
 	@MCCommand( cmds = {"enableDebugging"}, op=true,min=3, usage="enableDebugging <code section> <true | false>")
 	public void enableDebugging(CommandSender sender, String section, Boolean on){
 		if (section.equalsIgnoreCase("transitions")){
@@ -61,7 +64,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		TeamUtil.setTeamHead(index, p);
 		return sendMessage(sender, p.getName() +" Given team " + index);
 	}
-	
+
 	@MCCommand( cmds = {"giveTeam","gt"}, inGame=true, op=true, usage="giveTeam <team index>")
 	public boolean giveTeamHelm(ArenaPlayer p, Integer index){
 		if (index < 0){
@@ -86,7 +89,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		p.getInventory().setHelmet(is);
 		return sendMessage(sender, "&2Giving helm " +InventoryUtil.getCommonName(is));
 	}
-	
+
 
 	@MCCommand( cmds = {"showListeners","sl"}, op=true, usage="showListeners")
 	public boolean showListeners(CommandSender sender) {
@@ -106,7 +109,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		}
 		return true;
 	}
-	
+
 	@MCCommand(cmds={"addKill"}, op=true,min=2,usage="addKill <player>")
 	public boolean arenaAddKill(CommandSender sender, ArenaPlayer pl) {
 		Match am = ac.getMatch(pl);
@@ -139,7 +142,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		}
 		return true;
 	}
-	
+
 	@MCCommand(cmds={"verify"}, op=true,usage="verify")
 	public boolean arenaVerify(CommandSender sender) {
 		String[] lines = ac.toDetailedString().split("\n");
@@ -151,7 +154,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public boolean arenaVerify(CommandSender sender, OfflinePlayer p) {
 		return sendMessage(sender, "Player " + p.getName() +"  is " + p.isOnline());
 	}
-	
+
 	@MCCommand(cmds={"purgeQueue"}, op=true)
 	public boolean arenaPurgeQueue(CommandSender sender) {
 		try {
@@ -173,5 +176,53 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return sendMessage(sender, "Player " + p.getName() +"  hasPerm " + perm +" " +p.hasPermission(perm));
 	}
 
+	@MCCommand(cmds={"listInv"}, admin=true)
+	public boolean listSaves(CommandSender sender, OfflinePlayer p) {
+		Collection<String> dates = InventorySerializer.getDates(p.getName());
+		if (dates == null){
+			return sendMessage(sender, "There are no inventory saves for this player");
+		}
+		int i=0;
+		sendMessage(sender, "Most recent inventory saves");
+		for (String date: dates){
+			sendMessage(sender, ++i +" : " + date);
+		}
+		return true;
+	}
+
+	@MCCommand(cmds={"listInv"}, admin=true)
+	public boolean listSave(CommandSender sender, OfflinePlayer p, Integer index) {
+		if (index < 0 || index > Defaults.NUM_INV_SAVES){
+			return sendMessage(sender,"&c index must be between 1-"+Defaults.NUM_INV_SAVES);}
+		PInv pinv = InventorySerializer.getInventory(p.getName(), index-1);
+		if (pinv == null)
+			return sendMessage(sender, "&cThis index doesn't have an inventory!");
+		sendMessage(sender, "&6" + p.getName() +" inventory at save " + index);
+		boolean has = false;
+		for (ItemStack is: pinv.armor){
+			if (is == null || is.getType() == Material.AIR) continue;
+			sendMessage(sender, "&a armor: &6" + InventoryUtil.getItemString(is));
+			has = true;
+		}
+		for (ItemStack is: pinv.contents){
+			if (is == null || is.getType() == Material.AIR) continue;
+			sendMessage(sender, "&b inv: &6" + InventoryUtil.getItemString(is));
+			has = true;
+		}
+		if (!has){
+			sendMessage(sender, "&cThis index doesn't have any items");}
+		return true;
+	}
+
+	@MCCommand(cmds={"restoreInv"}, admin=true)
+	public boolean restoreInv(CommandSender sender, ArenaPlayer p, Integer index) {
+		if (index < 0 || index > Defaults.NUM_INV_SAVES){
+			return sendMessage(sender,"&c index must be between 1-"+Defaults.NUM_INV_SAVES);}
+		if (InventorySerializer.restoreInventory(p,index-1)){
+			return sendMessage(sender, "&2Player inventory restored");
+		} else {			
+			return sendMessage(sender, "&cPlayer inventory could not be restored");
+		}
+	}
 
 }

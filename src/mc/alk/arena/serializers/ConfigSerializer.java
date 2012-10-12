@@ -206,8 +206,6 @@ public class ConfigSerializer extends BaseSerializer{
 					tops.addOption(TransitionOption.RESTOREITEMS);
 				break;
 			default:
-				//				if (!cs.contains(transition.toString())){
-				//					TOC.removeOptions(transition,pi);}
 				break;
 			}
 			if (tops == null){

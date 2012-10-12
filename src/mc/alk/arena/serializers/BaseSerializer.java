@@ -27,16 +27,17 @@ public class BaseSerializer {
 		return file;
 	}
 
-	public void setConfig(String file){
-		setConfig(new File(file));
+	public boolean setConfig(String file){
+		return setConfig(new File(file));
 	}
-	public void setConfig(File file){
+	public boolean setConfig(File file){
 		this.file = file;
 		if (!file.exists()){
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
+				return false;
 			}
 		}
 
@@ -45,7 +46,9 @@ public class BaseSerializer {
 			config.load(file);
 		} catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 
 	public void reloadFile(){

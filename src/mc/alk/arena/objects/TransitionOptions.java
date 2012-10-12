@@ -71,6 +71,7 @@ public class TransitionOptions {
 		this.health= o.health;
 		this.hunger = o.hunger;
 		this.disguiseAllAs = o.disguiseAllAs;
+		this.withinDistance = o.withinDistance;
 	}
 	
 	public void setOptions(Set<String> options) {
@@ -345,7 +346,7 @@ public class TransitionOptions {
 	public void setWithinDistance(Integer value) {
 		withinDistance = value;
 	}
-	public int getWithinDistance() {
+	public Integer getWithinDistance() {
 		return withinDistance;
 	}
 	

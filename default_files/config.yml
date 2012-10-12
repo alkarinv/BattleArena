@@ -1,4 +1,9 @@
-configVersion: 1.4
+configVersion: 1.4.5
+
+# Auto Update the BattleArena plugin (only works for uniz/linux/mac)
+# Updates will be retrieved from the latest plugin on the bukkit site
+autoUpdate: true
+
 ## What is the money on this server called
 moneyName: Gold
 
@@ -6,6 +11,11 @@ moneyName: Gold
 # some servers like to teleport people into the floor, you can adjust the Y offset of the teleport
 # to make them teleport higher by default, 1.0 = 1 block
 teleportYOffset: 1.0
+
+# When a player joins an arena and their inventory is stored
+# how many old inventories should be saved
+# put in 0 if you don't want this option
+numberSavedInventories: 5
 
 # which player commands should be disabled when they enter an arena
 disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]
@@ -31,6 +41,7 @@ defaultOptions:
     ### Scheduled Event Options
     ### Valid options [startContinuous, startNext]
     onServerStart: []
+    timeBetweenScheduledEvents: 30 ## seconds between end of one event, and start of another
 
     ### Match/Event Announcements
     ## these only affect the broadcasts to the server or channel, not the messages the fighting players receive
