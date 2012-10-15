@@ -254,7 +254,6 @@ public class ArenaMatch extends Match {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@MatchEventHandler
 	public void onPlayerInteract(PlayerInteractEvent event){
 		if (event.isCancelled())
@@ -311,7 +310,7 @@ public class ArenaMatch extends Match {
 			}
 		}
 		/// Clear their inventory first, then give them the class and whatever items were due to them from the config
-		InventoryUtil.clearInventory(p);
+		InventoryUtil.clearInventory(p, woolTeams);
 		List<ItemStack>items = ac.getItems();
 		if (mo.hasItems()){
 			items.addAll(mo.getItems());
@@ -324,7 +323,7 @@ public class ArenaMatch extends Match {
 		if (effects != null){
 			EffectUtil.enchantPlayer(p, effects);}
 		ap.setChosenClass(ac);
-		try { p.updateInventory(); } catch (Exception e){}
+
 		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
 	}
 }

@@ -1,7 +1,6 @@
 package mc.alk.arena.listeners;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +36,6 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 
 import com.alk.virtualPlayer.VirtualPlayers;
 
@@ -48,9 +46,6 @@ import com.alk.virtualPlayer.VirtualPlayers;
  *
  */
 public class BAPlayerListener implements Listener  {
-	public static final HashSet<String> disabled = 
-			new HashSet<String>(Arrays.asList( "/home", "/spawn", "/trade", "/paytrade", "/payhome", 
-					"/warp","/watch", "/sethome","/inf", "/va","/survival","/ma","/mob","/ctp","/chome","/csethome"));
 	public static HashSet<String> die = new HashSet<String>();
 	public static HashSet<String> clearInventory= new HashSet<String>();
 	public static HashMap<String,Integer> clearWool= new HashMap<String,Integer>();
@@ -128,6 +123,8 @@ public class BAPlayerListener implements Listener  {
 			p.setHealth(0);
 			return;
 		}
+
+		/// Teleport players, or set respawn point
 		if (tp.containsKey(name)){
 			Location loc = tp.get(name);
 			if (loc != null){
@@ -142,7 +139,7 @@ public class BAPlayerListener implements Listener  {
 								Util.printStackTrace();
 							}
 						}
-					});					
+					});
 				} else {
 					PermissionsUtil.givePlayerInventoryPerms(p);
 					event.setRespawnLocation(tp.remove(name));
@@ -151,7 +148,9 @@ public class BAPlayerListener implements Listener  {
 				Log.err(name + " respawn loc =null");
 			}
 		}
+
 		/// Do these after teleports
+		/// Restore game mode
 		if (gamemodeRestore.containsKey(name)){
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
 				@Override
@@ -161,27 +160,26 @@ public class BAPlayerListener implements Listener  {
 			});
 		}
 
+		/// Exp restore
 		if (expRestore.containsKey(p.getName())){
 			final int exp = expRestore.remove(p.getName());
-			Plugin plugin = BattleArena.getSelf();
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
 					Player pl = Bukkit.getPlayerExact(name);
 					if (pl != null){
 						pl.giveExp(exp);
 					}
-
 				}
 			});
 		}
+		/// Restore Items
 		if (itemRestore.containsKey(p.getName())){
-			Plugin plugin = BattleArena.getSelf();
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
 					Player pl;
 					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);} 
 					else {pl = Bukkit.getPlayer(name);}
-//					System.out.println("### restoring items to " + name +"   pl = " + pl);
+					//					System.out.println("### restoring items to " + name +"   pl = " + pl);
 					if (pl != null){
 
 						PInv pinv = itemRestore.remove(pl.getName());
@@ -191,9 +189,9 @@ public class BAPlayerListener implements Listener  {
 				}
 			});
 		}
+		/// Remove Items
 		if (itemRemove.containsKey(p.getName())){
-			Plugin plugin = BattleArena.getSelf();
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
 					Player pl;
 					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);} 
@@ -210,6 +208,7 @@ public class BAPlayerListener implements Listener  {
 	public static void killOnReenter(String playerName) {
 		die.add(playerName);
 	}
+
 	public static void teleportOnReenter(String playerName, Location loc) {
 		tp.put(playerName,loc);
 	}
@@ -217,6 +216,7 @@ public class BAPlayerListener implements Listener  {
 	public static void addMessageOnReenter(String playerName, String string) {
 		messagesOnRespawn.put(playerName, string);
 	}
+
 	public static void restoreExpOnReenter(String playerName, Integer f) {
 		if (expRestore.containsKey(playerName)){
 			f += expRestore.get(playerName);}

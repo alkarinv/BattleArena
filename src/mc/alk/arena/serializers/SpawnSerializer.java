@@ -51,10 +51,10 @@ public class SpawnSerializer {
 
 	private static SpawnGroup parseSpawnGroup(ConfigurationSection cs) {
 		if (cs == null){
-//			System.out.println("parsing spawn group cs=" + cs);		
+			//			System.out.println("parsing spawn group cs=" + cs);		
 			return null;
 		}
-//		System.out.println("parsing spawn group " + cs.getName());
+		//		System.out.println("parsing spawn group " + cs.getName());
 		List<SpawnInstance> spawns = getSpawnList(cs);
 		SpawnGroup sg = new SpawnGroup(cs.getName());
 		sg.addSpawns(spawns);
@@ -62,7 +62,7 @@ public class SpawnSerializer {
 	}
 
 	public static ArrayList<SpawnInstance> getSpawnList(ConfigurationSection cs) {
-//		System.out.println("getSpawnList cs=" + cs.getName() +"   curpath=" + cs.getCurrentPath());
+		//		System.out.println("getSpawnList cs=" + cs.getName() +"   curpath=" + cs.getCurrentPath());
 		ArrayList<SpawnInstance> spawns = new ArrayList<SpawnInstance>();
 		try {
 			Set<String> keys = cs.getKeys(false);
@@ -86,9 +86,9 @@ public class SpawnSerializer {
 		args.addAll(convertToStringList(cs.getString(key)));
 		return args;
 	}
-	
+
 	public static List<String> convertToStringList(String str) {
-//		System.out.println("String list = " + str);
+		//		System.out.println("String list = " + str);
 		List<String> args = new ArrayList<String>();
 		str = str.replaceAll(":", " ");
 		String[] strs = str.split(" ");
@@ -109,7 +109,6 @@ public class SpawnSerializer {
 			sb.append(args.get(i));
 		}
 		final String value = sb.toString();
-//		System.out.println("key = " + key +" value = " + value);
 		try {
 			SpawnInstance sg = SpawnController.getSpawnable(key);
 			if (sg != null){
@@ -118,27 +117,26 @@ public class SpawnSerializer {
 					spawns.add(sg);
 				return spawns;
 			}
-//			System.out.println(InventoryUtil.isItem(key)+" is item " + InventoryUtil.isItem(key+":" + value) +"     " + key+":" + value);
-			if (InventoryUtil.isItem(key)){
-				ItemStack is = InventoryUtil.parseItem(key);
-				spawns.add(new ItemSpawn(is));				
-				return spawns;				
-			} else if (InventoryUtil.isItem(key +":" + value)){
-				ItemStack is = InventoryUtil.parseItem(key +":" + value);
-				spawns.add(new ItemSpawn(is));				
-				return spawns;
-			}
 			EntityType et = EntityUtil.parseEntity(key);
 			int number = 1;
 			try{number = Integer.parseInt(value);} catch(Exception e){}
 			if (et != null){
 				spawns.add(new EntitySpawn(et,number));
-				return spawns;
-			
+				return spawns;			
 			}
-		} catch (Exception e){
-			
-		}
+
+			//System.out.println(InventoryUtil.isItem(key)+" is item " + InventoryUtil.isItem(key+":" + value) +"     key=" + key+" value=" + value);
+			ItemStack is = InventoryUtil.parseItem(key);
+			if (is != null){
+				spawns.add(new ItemSpawn(is));				
+				return spawns;				
+			} 
+			is = InventoryUtil.parseItem(key+":"+ value);
+			if (is != null){
+				spawns.add(new ItemSpawn(is));				
+				return spawns;				
+			} 
+		} catch (Exception e){}
 		return null;
 	}
 

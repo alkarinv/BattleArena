@@ -441,6 +441,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	public void onLeave(ArenaPlayer p) {
 		if (insideArena(p)){ /// Only leave if they haven't already left.
 			Team t = getTeam(p);
+			t.killMember(p);
 			PerformTransition.transition(this, MatchState.ONCANCEL, p, t, false);
 		}
 	}

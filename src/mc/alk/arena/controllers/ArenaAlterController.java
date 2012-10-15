@@ -24,7 +24,7 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class ArenaAlterController {
 	public enum ChangeType{
-		NTEAMS, TEAMSIZE, WAITROOM, SPAWN, VLOC, TYPE, ADDREGION;
+		NTEAMS, TEAMSIZE, WAITROOM, SPAWNLOC, VLOC, TYPE, ADDREGION;
 
 		public static ChangeType fromName(String str){
 			str = str.toUpperCase();
@@ -34,7 +34,7 @@ public class ArenaAlterController {
 				return ct;
 			try{
 				if (Integer.valueOf(str) != null)
-					return SPAWN;
+					return SPAWNLOC;
 			} catch (Exception e){}
 			if (str.equalsIgnoreCase("wr")) return WAITROOM;
 			if (str.equalsIgnoreCase("v")) return VLOC;
@@ -77,7 +77,7 @@ public class ArenaAlterController {
 		case TEAMSIZE: success = changeTeamSize(sender, arena, ac, value); break;
 		case NTEAMS: success = changeNTeams(sender, arena, ac, value); break;
 		case TYPE: success = changeType(sender, arena, ac, value); break;
-		case SPAWN: success = changeSpawn(sender, arena, ac, changetype, value, otherOptions); break;
+		case SPAWNLOC: success = changeSpawn(sender, arena, ac, changetype, value, otherOptions); break;
 		case VLOC: success = changeVisitorSpawn(sender,arena,ac,changetype,value,otherOptions); break;			
 		case WAITROOM: success = changeWaitroomSpawn(sender,arena,ac,changetype,value,otherOptions); break;
 		case ADDREGION: success = addWorldGuardRegion(sender,arena,ac,value); break;

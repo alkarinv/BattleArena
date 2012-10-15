@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
@@ -24,22 +25,26 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 
-public class TeamController  implements Listener {
+public enum TeamController  implements Listener {
+	INSTANCE;
+
 	static final boolean DEBUG = false;
 	static Map<Team,CopyOnWriteArrayList<TeamHandler>> handlers = new ConcurrentHashMap<Team,CopyOnWriteArrayList<TeamHandler>>();
 	HashSet<Team> selfFormedTeams = new HashSet<Team>();
 	HashSet<FormingTeam> formingTeams = new HashSet<FormingTeam>();
 	BattleArenaController bac;
+	static TeamController teamController = null;
 
-	public TeamController(BattleArenaController bac) {
-		this.bac = bac;
+	private TeamController(){
+		this.bac = BattleArena.getBAC();
 	}
 
 	public static Team getTeam(ArenaPlayer p) {
-		return inEvent(p);
+		Team t = handledTeams(p);
+		return t == null ? INSTANCE.getSelfTeam(p) : t;
 	}
 
-	public static Team inEvent(ArenaPlayer p) {
+	private static Team handledTeams(ArenaPlayer p) {
 		synchronized(handlers){
 			for (Team t: handlers.keySet()){
 				if (t.hasMember(p))
@@ -80,7 +85,7 @@ public class TeamController  implements Listener {
 	}
 
 	private static void playerLeft(ArenaPlayer p) {
-		Team t = inEvent(p);
+		Team t = handledTeams(p);
 		if (t == null ){
 			return;}
 		List<TeamHandler> unused = new ArrayList<TeamHandler>();
@@ -95,7 +100,7 @@ public class TeamController  implements Listener {
 					try{
 						th = iter.next();
 						if (th.leave(p)){ /// they are finished with the player, no longer need to keep them around
-//							iter.remove();
+							//							iter.remove();
 							unused.add(th);
 						}
 					} catch(Exception e){
@@ -193,9 +198,9 @@ public class TeamController  implements Listener {
 		if (DEBUG) System.out.println("------- addTeamHandler " + t + ": " + th);
 		CopyOnWriteArrayList<TeamHandler> ths = handlers.get(t);
 		if (ths == null){
-//			ths = Collections.synchronizedList(new ArrayList<TeamHandler>());
+			//			ths = Collections.synchronizedList(new ArrayList<TeamHandler>());
 			ths = new CopyOnWriteArrayList<TeamHandler>();
-//			ths = new ArrayList<TeamHandler>();
+			//			ths = new ArrayList<TeamHandler>();
 			synchronized(handlers){
 				handlers.put(t, ths);
 			}

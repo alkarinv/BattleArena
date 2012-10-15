@@ -24,22 +24,22 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class ArenaEditorExecutor extends CustomCommandExecutor {
 	public static String idPrefix = "ar_";
-//	ProtectionController pc;
+
 	WorldEditPlugin wep;
-	ArenaEditor aac;
+	final ArenaEditor aac;
 	public ArenaEditorExecutor(){
 		super();
 		this.ac = BattleArena.getBAC();
 		this.aac = BattleArena.getArenaEditor();
 	}
 
-	@MCCommand(cmds={"select","sel"}, inGame=true, op=true)
+	@MCCommand(cmds={"select","sel"}, inGame=true, admin=true)
 	public boolean arenaSelect(CommandSender sender, Arena arena) {
 		aac.setCurrentArena((Player) sender, arena);
 		return MessageUtil.sendMessage(sender,"You have selected " + arena.getName());
 	}
 
-	@MCCommand(cmds={"as","addspawn"}, selection=true, inGame=true, op=true, min=2,
+	@MCCommand(cmds={"as","addspawn"}, selection=true, inGame=true, admin=true, min=2,
 			usage="/aa addspawn <mob/item/block/spawnGroup> [buffs or effects] [number] [fs=first spawn time] [rt=respawn time] [trigger=<trigger type>]")
 	public boolean arenaAddSpawn(Player sender, String[] args) {
 		Long number = -1L;
@@ -64,6 +64,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 
 		a.addTimedSpawn(number,ts);
 		ac.updateArena(a);
+		BattleArena.saveArenas();	
 		return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e now has spawn &6" + spawn +"&2  index=&4" + number);
 	}
 
@@ -91,18 +92,18 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		return spawn.get(0);
 	}
 
-	@MCCommand(cmds={"region","addregion","addr"}, selection=true, op=true)
+	@MCCommand(cmds={"region","addregion","addr"}, selection=true, admin=true)
 	public boolean arenaAddWorldGuardRegion(CommandSender sender, Player p, Object[] args) {
 		Arena a = aac.getArena(p);
 		Selection sel = wep.getSelection(p);
 		if (sel == null)
 			return MessageUtil.sendMessage(sender, ChatColor.RED + "Please select the protection area first.");
-//		String regionName = idPrefix+a.getName();
-//		ProtectedRegion region = pc.addRegion(p, sel, regionName);
-//		if (region == null)
-//			return MessageUtil.sendMessage(sender, ChatColor.RED + "Selected region could not be made");
-//		a.addRegion(sel.getWorld().getName(), regionName);
-//		ac.updateArena(a);
+		//		String regionName = idPrefix+a.getName();
+		//		ProtectedRegion region = pc.addRegion(p, sel, regionName);
+		//		if (region == null)
+		//			return MessageUtil.sendMessage(sender, ChatColor.RED + "Selected region could not be made");
+		//		a.addRegion(sel.getWorld().getName(), regionName);
+		//		ac.updateArena(a);
 		return MessageUtil.sendMessage(sender, ChatColor.GREEN + "Region added to " + a.getName());
 	}
 

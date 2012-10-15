@@ -1,8 +1,10 @@
 package mc.alk.arena.objects;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import mc.alk.arena.util.EffectUtil.EffectWithArgs;
+import mc.alk.arena.util.InventoryUtil;
 
 import org.bukkit.inventory.ItemStack;
 
@@ -15,7 +17,17 @@ public class ArenaClass {
 	final String prettyName;
 	public ArenaClass(String name, String prettyName, List<ItemStack> items, List<EffectWithArgs> effects){
 		this.name = name;
-		this.items = items;
+		ArrayList<ItemStack> listitems = new ArrayList<ItemStack>();
+		ArrayList<ItemStack> armoritems = new ArrayList<ItemStack>();
+		for (ItemStack is: items){
+			if (InventoryUtil.isArmor(is)){
+				armoritems.add(is);
+			} else {
+				listitems.add(is);
+			}
+		}
+		this.items = listitems;
+		this.items.addAll(armoritems);
 		this.effects = effects;
 		this.prettyName = prettyName;
 	}

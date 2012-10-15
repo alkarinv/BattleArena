@@ -89,7 +89,7 @@ public class JoinOptions {
 		jos.joinedLocation = player.getLocation();
 		HashMap<JoinOption,Object> ops = jos.options;
 		Arena arena = null;
-		String lastArg = args.length - 1 > 0 ? args[args.length-1] : "";
+		String lastArg = args.length - 1 >= 0 ? args[args.length-1] : "";
 		final WantedTeamSizeResult teamSize = WantedTeamSizeResult.getWantedTeamSize(player,t,mp,lastArg);
 		if (teamSize == null)
 			throw new InvalidOptionException("");

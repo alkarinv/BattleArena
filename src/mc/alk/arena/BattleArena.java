@@ -74,7 +74,7 @@ public class BattleArena extends JavaPlugin{
 	static private BattleArena plugin;
 
 	private final static BattleArenaController arenaController = new BattleArenaController();
-	private final static TeamController tc = new TeamController(arenaController);
+	private final static TeamController tc = TeamController.INSTANCE;
 	private final static EventController ec = new EventController();
 	private final static ArenaEditor aac = new ArenaEditor();
 	private final static APIRegistrationController apiRegistrationController = new APIRegistrationController();

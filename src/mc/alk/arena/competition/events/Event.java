@@ -215,12 +215,13 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		Team t = getTeam(p);
 		if (t==null) /// they arent in this Event
 			return true;
-		if (!isRunning()){
+//		if (!isRunning()){
 			removeTeam(t);
-			return true;
-		} else {
-			return false; /// we wont let them go.. they are part of this Event
-		}
+//		} else {
+			/// do nothing, they should be part of a match somewhere which will handle
+			/// removing them
+//		}
+		return true;
 	}
 
 	public void removeAllTeams(){

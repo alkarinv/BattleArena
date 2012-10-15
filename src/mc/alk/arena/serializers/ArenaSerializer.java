@@ -356,8 +356,12 @@ public class ArenaSerializer {
 		}
 		SpawnTime st = parseSpawnTime(cs.getString("time"));
 		Location loc = SerializerUtil.getLocation(cs.getString("loc"));
-		List<SpawnInstance> spawns = SpawnSerializer.parseSpawnable(SpawnSerializer.convertToStringList(cs.getString("spawn")));
-		//				System.out.println("Parsing spawn " + st + " loc=" + loc +"  spawn = " + spawns.get(0));
+		List<String> strings = SpawnSerializer.convertToStringList(cs.getString("spawn"));
+		if (strings == null || strings.isEmpty())
+			return null;
+		List<SpawnInstance> spawns = SpawnSerializer.parseSpawnable(strings);
+		if (spawns == null || spawns.isEmpty())
+			return null;
 
 		spawns.get(0).setLocation(loc);
 		TimedSpawn ts = new TimedSpawn(st.i1,st.i2, st.i3,spawns.get(0));
@@ -373,6 +377,7 @@ public class ArenaSerializer {
 		SpawnTime st = new SpawnTime(is[0],is[1],is[2]);
 		return st;
 	}
+
 	private static HashMap<String, Object> saveSpawnable(Long i, TimedSpawn ts) {
 		HashMap<String, Object> spawnmap = new HashMap<String,Object>();
 		SpawnInstance si = ts.getSpawn();

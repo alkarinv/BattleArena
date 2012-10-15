@@ -109,6 +109,10 @@ public class InventoryUtil {
 		return getItemAmount(inv.getContents(), is);
 	}
 
+	public static boolean isArmor(ItemStack is) {
+		return armor.get(is.getType()) != null;
+	}
+
 	public static boolean hasArmor(Player p) {
 		PlayerInventory pi= p.getInventory();
 		return(	(pi.getBoots() != null && pi.getBoots().getType() != Material.AIR) && 
@@ -174,7 +178,6 @@ public class InventoryUtil {
 			return null;
 		name = name.replace(" ", "_");
 		name = name.replace(":", ";");
-
 		int dataIndex = name.indexOf(';');
 		dataIndex = (dataIndex != -1 ? dataIndex : -1);
 		int dataValue = 0;
@@ -185,6 +188,7 @@ public class InventoryUtil {
 
 		dataValue = dataValue < 0 ? 0 : dataValue;
 		Material mat = getMat(name);
+//		System.out.println("name = " + name + "   " + mat +"    " + dataValue +"    " + dataIndex);
 
 		if (mat != null && mat != Material.AIR) {
 			return new ItemStack(mat, 0, (short) dataValue);
@@ -304,9 +308,7 @@ public class InventoryUtil {
 			if (empty || better){
 				switch (armor.get(itemType).type){
 				case HELM: 
-					if (!empty && ignoreCustomHelmet){
-
-					} else{
+					if (empty || (better && !ignoreCustomHelmet)){
 						inv.setHelmet(itemStack);
 					}
 					break;
@@ -501,6 +503,26 @@ public class InventoryUtil {
 			ee.printStackTrace();
 		}
 	}
+	public static void clearInventory(Player p, boolean skipHead) {
+		if (!skipHead){
+			clearInventory(p);
+			return;
+		}
+		if(Defaults.DEBUG_STORAGE) Log.info("Clearing inventory of " + p.getName());
+		try{
+			PlayerInventory inv = p.getInventory();
+			closeInventory(p);
+			if (inv != null){
+				inv.clear();
+				inv.setBoots(null);
+				inv.setChestplate(null);
+				inv.setLeggings(null);
+				inv.setItemInHand(null);
+			}
+		} catch(Exception ee){
+			ee.printStackTrace();
+		}
+	}
 
 	public static Object getCommonName(ItemStack is) {
 		int id = is.getTypeId();
@@ -513,31 +535,17 @@ public class InventoryUtil {
 
 
 	public static boolean isItem(String str){
-		//		System.out.println("string = " + str);
-		str = str.replaceAll("[}{]", "");
-		str = str.replaceAll("=", " ");
-		if (DEBUG) System.out.println("item=" + str);
-		ItemStack is =null;
-		try{
-			String split[] = str.split(" ");
-			is = InventoryUtil.getItemStack(split[0].trim());
-			is.setAmount(Integer.valueOf(split[split.length -1]));
-			for (int i = 1; i < split.length-1;i++){
-				EnchantmentWithLevel ewl = getEnchantment(split[i].trim());
-				try {
-					is.addEnchantment(ewl.e, ewl.lvl);
-				} catch (IllegalArgumentException iae){
-					return false;
-				}
-			}
-		} catch(Exception e){
+		try {
+			return parseItem(str) != null;
+		} catch (Exception e) {
 			return false;
 		}
-		return true;
 	}
+	
 	public static ItemStack parseItem(String str) throws Exception{
 		str = str.replaceAll("[}{]", "");
 		str = str.replaceAll("=", " ");
+//		str = str.replaceAll(":", " ");
 		if (DEBUG) System.out.println("item=" + str);
 		ItemStack is =null;
 		try{

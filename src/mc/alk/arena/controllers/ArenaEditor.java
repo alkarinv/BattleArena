@@ -6,7 +6,6 @@ import mc.alk.arena.objects.arenas.Arena;
 
 import org.bukkit.entity.Player;
 
-
 public class ArenaEditor {
 	public class CurrentSelection{
 		public long lastUsed;
@@ -15,21 +14,22 @@ public class ArenaEditor {
 			this.lastUsed = used; this.arena = arena;
 		}
 	}
+
 	HashMap<String, CurrentSelection> selections = new HashMap<String,CurrentSelection>();
-	
+
 	public void setCurrentArena(Player p, Arena arena) {
 		CurrentSelection cs = new CurrentSelection(System.currentTimeMillis(), arena);
 		selections.put(p.getName(), cs);
 	}
 
 	public Arena getArena(Player p) {
-		CurrentSelection cs = selections.get(p);
+		CurrentSelection cs = selections.get(p.getName());
 		if (cs == null)
 			return null;
 		return cs.arena;
 	}
 
 	public CurrentSelection getCurrentSelection(Player p) {
-		return selections.get(p);
+		return selections.get(p.getName());
 	}
 }
