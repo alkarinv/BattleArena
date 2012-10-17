@@ -64,7 +64,6 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		match.open();
 	}
 
-
 	public void startMatch(Match arenaMatch) {
 		/// arenaMatch run calls.... broadcastMessage ( which unfortunately is not thread safe)
 		/// So we have to schedule a sync task... again

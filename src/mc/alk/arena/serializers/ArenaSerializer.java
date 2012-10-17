@@ -393,8 +393,8 @@ public class ArenaSerializer {
 
 		} else if (si instanceof EntitySpawn){
 			EntitySpawn in = (EntitySpawn) si;
-			key = in.getEntityString();
-			value = in.getNumber() +"";
+			key = in.getEntityString() + " " + in.getNumber();
+//			value = in.getNumber() +"";
 		} else {
 
 		}

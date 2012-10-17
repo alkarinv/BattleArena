@@ -182,6 +182,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 				return sendMessage(player,"&cA valid "+ mp.toPrettyString()+"&c arena has not been built");					
 			}
 		}
+		
 		final MatchTransitions ops = mp.getTransitionOptions();
 		if (ops == null){
 			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
@@ -215,8 +216,6 @@ public class BAExecutor extends CustomCommandExecutor  {
 		}
 		return true;
 	}
-
-
 
 	@MCCommand(cmds={"leave"}, inGame=true, usage="leave")
 	public boolean leave(ArenaPlayer p) {
@@ -384,7 +383,6 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return true;
 	}
 
-
 	@MCCommand(cmds={"check"}, inGame=true, usage="check")
 	public boolean arenaCheck(ArenaPlayer p) {
 		if(ac.isInQue(p)){
@@ -401,6 +399,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 	public boolean arenaDelete(CommandSender sender, Arena arena) {
 		new ArenaDeleteEvent(arena).callEvent();
 		ac.removeArena(arena);
+		BattleArena.saveArenas();
 		return sendMessage(sender,ChatColor.GREEN+ "You have deleted the arena &6" + arena.getName());
 	}
 
@@ -481,7 +480,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 	}
 
 
-	@MCCommand(cmds={"create"}, admin=true, min=2,usage="create <arena name> [team size] [# teams]")
+	@MCCommand(cmds={"create"}, inGame=true, admin=true, min=2,usage="create <arena name> [team size] [# teams]")
 	public boolean arenaCreate(CommandSender sender, MatchParams mp, String name, String[] args) {
 		if (Defaults.DEBUG) for (int i =0;i<args.length;i++){System.out.println("args=" + i + "   " + args[i]);}
 		final String strTeamSize = args.length>2 ? (String) args[2] : "1+";

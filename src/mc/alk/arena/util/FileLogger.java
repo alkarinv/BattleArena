@@ -24,7 +24,7 @@ import mc.alk.arena.BattleArena;
  *
  */
 public class FileLogger {
-	static final String version ="1.0.2";
+	static final String version ="1.0.3";
 	static Vector<String> msgs = new Vector<String>();
 
 	public FileLogger() {}
@@ -80,24 +80,30 @@ public class FileLogger {
 	}
 
 	public static synchronized void saveAll() {
+		BufferedWriter out = null;
 		try {
 			File f = new File(BattleArena.getSelf().getDataFolder()+"/log.txt");
-			BufferedWriter out = new BufferedWriter(new FileWriter(f,true));
+			out = new BufferedWriter(new FileWriter(f,true));
 			for (String msg : msgs){
 				out.write(msg);	
 			}
 			msgs.clear();
-			out.close();
+			
 		} catch (Exception e){
 			e.printStackTrace();
+		} finally{
+			if (out != null)
+				try {out.close();} catch (IOException e) {}
 		}
 	}
 	
 	private static File trimFile(File f, int lineCount) {
 		File f2 = new File(BattleArena.getSelf().getDataFolder()+"/log2.txt");
+		BufferedWriter out = null;
+		BufferedReader br = null;
 		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter(f2,true));
-			BufferedReader br = new BufferedReader(new FileReader(f));
+			out = new BufferedWriter(new FileWriter(f2,true));
+			br = new BufferedReader(new FileReader(f));
 			int count = 0;
 			String line;
 			while (count < maxFileSize - lineCount){
@@ -106,11 +112,14 @@ public class FileLogger {
 			while ((line = br.readLine()) != null){
 				out.write(line+"\n");
 			}
-			out.close();
-			br.close();
 			f2.renameTo(f);
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally{
+			if (out != null)
+				try {out.close();} catch (IOException e) {}
+			if (br != null)
+				try {br.close();} catch (IOException e) {}
 		}
 		return f2;
 	}
@@ -140,7 +149,7 @@ public class FileLogger {
 	        }
 	        return count;
 	    } finally {
-	        is.close();
+	        try{is.close();} catch(Exception e){}
 	    }
 	}
 

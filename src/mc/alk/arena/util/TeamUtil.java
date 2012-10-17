@@ -5,6 +5,7 @@ import java.util.HashMap;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
 
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -74,22 +75,22 @@ public class TeamUtil {
 	public static ItemStack getTeamHead(int index){
 		index = index % NTEAMS;
 		switch(index){
-		case 0: return new ItemStack(Material.WOOL, 1);
-		case 1: return new ItemStack(Material.WOOL, 1);
-		case 2: return new ItemStack(Material.WOOL, 1);
-		case 3: return new ItemStack(Material.WOOL, 1);
-		case 4: return new ItemStack(Material.WOOL, 1);
-		case 5: return new ItemStack(Material.WOOL, 1);
-		case 6: return new ItemStack(Material.WOOL, 1);
-		case 7: return new ItemStack(Material.WOOL, 1);
-		case 8: return new ItemStack(Material.WOOL, 1);
-		case 9: return new ItemStack(Material.WOOL, 1);
-		case 10: return new ItemStack(Material.WOOL, 1);
-		case 11: return new ItemStack(Material.WOOL, 1);
-		case 12: return new ItemStack(Material.WOOL, 1);
-		case 13: return new ItemStack(Material.WOOL, 1);
-		case 14: return new ItemStack(Material.WOOL, 1);
-		case 15: return new ItemStack(Material.WOOL, 1);
+		case 0: return new ItemStack(Material.WOOL, 1, (short)DyeColor.RED.ordinal());
+		case 1: return new ItemStack(Material.WOOL, 1, (short)DyeColor.BLUE.ordinal());
+		case 2: return new ItemStack(Material.WOOL, 1, (short)DyeColor.WHITE.ordinal());
+		case 3: return new ItemStack(Material.WOOL, 1, (short)DyeColor.BLACK.ordinal());
+		case 4: return new ItemStack(Material.WOOL, 1, (short)DyeColor.ORANGE.ordinal());
+		case 5: return new ItemStack(Material.WOOL, 1, (short)DyeColor.GREEN.ordinal());
+		case 6: return new ItemStack(Material.WOOL, 1, (short)DyeColor.PINK.ordinal());
+		case 7: return new ItemStack(Material.WOOL, 1, (short)DyeColor.LIGHT_BLUE.ordinal());
+		case 8: return new ItemStack(Material.WOOL, 1, (short)DyeColor.GRAY.ordinal());
+		case 9: return new ItemStack(Material.WOOL, 1, (short)DyeColor.YELLOW.ordinal());
+		case 10: return new ItemStack(Material.WOOL, 1, (short)DyeColor.LIME.ordinal());
+		case 11: return new ItemStack(Material.WOOL, 1, (short)DyeColor.SILVER.ordinal());
+		case 12: return new ItemStack(Material.WOOL, 1, (short)DyeColor.CYAN.ordinal());
+		case 13: return new ItemStack(Material.WOOL, 1, (short)DyeColor.PURPLE.ordinal());
+		case 14: return new ItemStack(Material.WOOL, 1, (short)DyeColor.BROWN.ordinal());
+		case 15: return new ItemStack(Material.WOOL, 1, (short)DyeColor.MAGENTA.ordinal());
 		case 16: return new ItemStack(Material.ICE, 1);
 		case 17: return new ItemStack(Material.IRON_BLOCK, 1);
 		case 18: return new ItemStack(Material.DIAMOND_BLOCK, 1);

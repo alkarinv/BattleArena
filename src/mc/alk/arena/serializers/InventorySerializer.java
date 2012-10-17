@@ -107,7 +107,6 @@ public class InventorySerializer {
 					return;
 				Date now = new Date();
 				String date = DateFormat.getDateTimeInstance( DateFormat.LONG, DateFormat.LONG).format(now);
-				System.out.println("10. " + date);
 				int curSection = serializer.config.getInt("curSection", 0);
 				serializer.config.set("curSection", (curSection +1) % Defaults.NUM_INV_SAVES);
 				ConfigurationSection pcs = serializer.config.createSection(curSection+"");
@@ -125,7 +124,7 @@ public class InventorySerializer {
 						continue;
 					stritems.add(InventoryUtil.getItemString(is));}
 				pcs.set("contents", stritems);
-				serializer.save();				
+				serializer.save();	
 			}
 		});
 	}

@@ -151,21 +151,30 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		}
 	}
 
+	/**
+	 * As this gets calls Arena's and events which can call bukkit events 
+	 * this should be done in a synchronous fashion
+	 */
 	public void open(){
-		state = MatchState.ONOPEN;
-		MatchOpenEvent event = new MatchOpenEvent(this);
-		tmc.callListeners(event); /// Call our listeners listening to only this match
-		if (event.isCancelled()){
-			this.cancelMatch();
-			return;
-		}	
-		event.callEvent(); /// Call bukkit listeners for this event
-		if (event.isCancelled()){
-			this.cancelMatch();
-			return;
-		}
-		updateBukkitEvents(MatchState.ONOPEN);
-		arenaInterface.onOpen();
+		final Match match = this;
+		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+			@Override
+			public void run() {
+				state = MatchState.ONOPEN;
+				MatchOpenEvent event = new MatchOpenEvent(match);
+				tmc.callListeners(event); /// Call our listeners listening to only this match
+				if (event.isCancelled()){
+					match.cancelMatch();
+					return;
+				}	
+				event.callEvent(); /// Call bukkit listeners for this event
+				if (event.isCancelled()){
+					match.cancelMatch();
+					return;
+				}
+				updateBukkitEvents(MatchState.ONOPEN);
+				arenaInterface.onOpen();				
+			}});
 	}
 
 	public void run() {
@@ -290,7 +299,8 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 			TrackerInterface bti = BTInterface.getInterface(mp);			
 			if (victor != null){ /// We have a true winner
 				if (bti != null && mp.isRated()){
-					BTInterface.addRecord(bti,victor.getPlayers(),losers,WLT.WIN);}									
+					try{BTInterface.addRecord(bti,victor.getPlayers(),losers,WLT.WIN);}catch(Exception e){e.printStackTrace();}
+				}									
 				try{mc.sendOnVictoryMsg(victor, losers);}catch(Exception e){e.printStackTrace();}
 			} else { /// we have a draw
 				try{mc.sendOnDrawMessage(losers);} catch(Exception e){e.printStackTrace();}
@@ -677,7 +687,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		}
 		return alive;
 	}
-	
+
 	protected boolean checkReady(ArenaPlayer p, final Team t, TransitionOptions mo, boolean announce) {
 		boolean online = p.isOnline();
 		boolean inmatch = insideArena.contains(p.getName());

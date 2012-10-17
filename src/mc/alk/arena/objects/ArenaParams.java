@@ -33,11 +33,11 @@ public class ArenaParams {
 	String cmd;
 
 	int maxNumberPlayers = MAX;
-	
+
 	int timeBetweenRounds = Defaults.TIME_BETWEEN_ROUNDS;
 	int secondsTillMatch = Defaults.SECONDS_TILL_MATCH;
 	int secondsToLoot = Defaults.SECONDS_TO_LOOT;
-	
+
 	MatchTransitions allTops;
 	String dbName;
 
@@ -108,19 +108,17 @@ public class ArenaParams {
 	public void setType(ArenaType type) {this.arenaType = type;}
 
 	public boolean matches(final ArenaParams ap) {
-		//		System.out.println(this +"    other = " +q + "   atmatches="+((arenaType == null || q.arenaType == null) || arenaType.matches(q.arenaType)));
-		//		System.out.println(this +"    other = " +q + matchesTeamSize(q));
-		//		System.out.println(this +"    other = " +q + matchesNTeams(q.getMinTeams()));
 		return ( ((arenaType == null || ap.arenaType == null) || arenaType.matches(ap.arenaType)) && 
 				matchesTeamSize(ap) && 
-				matchesNTeams(ap.getMinTeams()));
+				matchesNTeams(ap));
 	}
-	
+
 
 	public boolean matchesNTeams(final ArenaParams ap) {
-		return matchesNTeams(ap.getMinTeams());
+		return (this.minTeams <= ap.getMinTeams() && maxTeams >= ap.getMaxTeams()) 
+				|| maxTeams == MAX  || ap.getMaxTeams() == MAX;
 	}
-	
+
 	public boolean matchesNTeams(int nteams) {
 		return ( (minTeams <= nteams && maxTeams>=nteams) || minTeams==ANY || nteams==ANY);
 	}
@@ -130,13 +128,13 @@ public class ArenaParams {
 		if (arenaType == null) reasons.add("ArenaType is null");
 		if (ap.arenaType == null) reasons.add("Passed params have an arenaType of null");
 		reasons.addAll(arenaType.getInvalidMatchReasons(ap.getType()));
-		if (!matchesNTeams(ap.getMinTeams())) reasons.add("Arena accepts nteams="+getNTeamRange()+
+		if (!matchesNTeams(ap)) reasons.add("Arena accepts nteams="+getNTeamRange()+
 				". you requested "+ap.getNTeamRange());
 		if (!matchesTeamSize(ap)) reasons.add("Arena accepts teamSize="+getTeamSizeRange()+
 				". you requested "+ap.getTeamSizeRange());		
 		return reasons;
 	}
-	
+
 	public boolean valid() {
 		return (arenaType != null && minTeamSize > 0 && maxTeamSize > 0 && minTeamSize <= maxTeamSize);
 	}
@@ -149,7 +147,7 @@ public class ArenaParams {
 		if (minTeamSize > maxTeamSize) reasons.add("Min Team Size is greater than Max Team Size " + minTeamSize+":"+ maxTeamSize);
 		return reasons;
 	}
-	
+
 	public boolean matchesTeamSize(final ArenaParams q) {
 		return (this.minTeamSize <= q.minTeamSize ) && (this.maxTeamSize == MAX  || this.maxTeamSize >= q.maxTeamSize);
 	}
@@ -238,14 +236,14 @@ public class ArenaParams {
 	public int getTimeBetweenRounds() {
 		return timeBetweenRounds;
 	}
-	
+
 	public void setDBName(String dbName) {
 		this.dbName = dbName;
 	}
 	public String getDBName(){
 		return dbName;
 	}
-	
+
 	public String toPrettyString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("&e"+arenaType.toPrettyString(minTeamSize, maxTeamSize));

@@ -22,7 +22,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 public class InventoryUtil {
-	static final String version = "InventoryUtil 2.1.3.4";
+	static final String version = "BA InventoryUtil 2.1.4";
 	static final boolean DEBUG = false;
 
 	public static class Armor{
@@ -175,25 +175,26 @@ public class InventoryUtil {
 	 */
 	public static ItemStack getItemStack(String name) {
 		if (name == null || name.isEmpty())
-			return null;
-		name = name.replace(" ", "_");
-		name = name.replace(":", ";");
-		int dataIndex = name.indexOf(';');
-		dataIndex = (dataIndex != -1 ? dataIndex : -1);
-		int dataValue = 0;
-		if (dataIndex != -1){
-			dataValue = (isInt(name.substring(dataIndex + 1)) ? Integer.parseInt(name.substring(dataIndex + 1)) : 0);
-			name = name.substring(0,dataIndex);
-		}
+    		return null;
+    	name = name.replace(" ", "_");
+    	name = name.replace(";", ":");
+    	name = name.toLowerCase();
 
-		dataValue = dataValue < 0 ? 0 : dataValue;
-		Material mat = getMat(name);
-//		System.out.println("name = " + name + "   " + mat +"    " + dataValue +"    " + dataIndex);
+    	String split[] = name.split(":");
+    	short dataValue = 0;
+    	if (split.length > 1){
+    		if (isInt(split[1])){
+    			int i = Integer.valueOf(split[1]);
+    			dataValue = (short) i;
+    			name = split[0];
+    		}
+    	}
 
-		if (mat != null && mat != Material.AIR) {
-			return new ItemStack(mat, 0, (short) dataValue);
-		}
-		return null;
+        Material mat = Material.matchMaterial(name);
+        if (mat != null && mat != Material.AIR) {
+            return new ItemStack(mat.getId(), 1, dataValue);
+        }
+        return null;
 	}
 
 	public static boolean isInt(String i) {try {Integer.parseInt(i);return true;} catch (Exception e) {return false;}}
@@ -255,25 +256,6 @@ public class InventoryUtil {
 				//				System.out.println("item=" + is);
 				return true;}
 		}
-
-//		EntityHuman eh = ((CraftPlayer)p).getHandle();
-//		try { 
-//			/// check crafting square
-//			ContainerPlayer cp = (ContainerPlayer) eh.defaultContainer;
-//			for (net.minecraft.server.ItemStack is: cp.craftInventory.getContents()){
-//				if (is != null && is.id != 0)
-//					return true;
-//			}
-//			/// Check for a workbench
-//			Container container = (Container) eh.activeContainer;
-//			final int size = container.b.size();
-//			for (int i=0;i< size;i++){
-//				net.minecraft.server.ItemStack is = container.getSlot(i).getItem();
-//				if (is != null && is.id != 0)
-//					return true;
-//			}
-//
-//		} catch (Exception e){}
 		return false;
 	}
 
@@ -545,13 +527,13 @@ public class InventoryUtil {
 	public static ItemStack parseItem(String str) throws Exception{
 		str = str.replaceAll("[}{]", "");
 		str = str.replaceAll("=", " ");
-//		str = str.replaceAll(":", " ");
 		if (DEBUG) System.out.println("item=" + str);
 		ItemStack is =null;
 		try{
 			String split[] = str.split(" ");
 			is = InventoryUtil.getItemStack(split[0].trim());
-			//			System.out.println(" split = " + split);
+			if (is == null)
+				return null;
 			final int amt = split.length > 1 ? Integer.valueOf(split[split.length -1]) : 1; 
 			is.setAmount(amt);
 			for (int i = 1; i < split.length-1;i++){
@@ -638,7 +620,7 @@ public class InventoryUtil {
 	 */
 	public static String getItemString(ItemStack is) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(is.getType().toString() +":"+(byte)is.getDurability()+" ");
+		sb.append(is.getType().toString() +":"+(short)is.getDurability()+" ");
 		Map<Enchantment,Integer> encs = is.getEnchantments();
 		for (Enchantment enc : encs.keySet()){
 			sb.append(enc.getName() + ":" + encs.get(enc)+" ");
@@ -708,7 +690,25 @@ public class InventoryUtil {
 			if (c!= 0)
 				return c;
 			i = arg0.getAmount();
-			return i.compareTo(arg1.getAmount());
+			c = i.compareTo(arg1.getAmount());
+			if (c!= 0)
+				return c;
+			Map<Enchantment, Integer> e1 = arg0.getEnchantments();
+			Map<Enchantment, Integer> e2 = arg0.getEnchantments();
+			i = e1.size();
+			c = i.compareTo(e2.size());
+			if (c!=0)
+				return c;
+			for (Enchantment e: e1.keySet()){
+				if (!e2.containsKey(e))
+					return -1;
+				Integer i1 = e1.get(e);
+				Integer i2 = e2.get(e);
+				c = i1.compareTo(i2);
+				if (c != 0)
+					return c;
+			}
+			return 0;
 		}		
 	}
 
@@ -743,22 +743,10 @@ public class InventoryUtil {
 		int i1 = 0, i2 = 0;
 		ItemStack is1, is2;
 		int nullSize1 = 0, nullSize2 = 0; /// amount of air and null
-//		int similar = 0;
-//		for (ItemStack is: items){
-//			if (is == null || is.getType() == Material.AIR){
-//				continue;}
-//
-//		}
-//		for (ItemStack is: pitems){
-//			if (is == null || is.getType() == Material.AIR){
-//				continue;}
-//
-//		}
 
 		while (i1< items.size() && i2<pitems.size()){
 			is1 = items.get(i1);
 			is2 = pitems.get(i2);
-//			System.out.println("item1 = " + is1 +" ************************  " + is2);
 			if (is1 == null || is1.getType() == Material.AIR){
 				nullSize1++;
 				continue;
@@ -768,10 +756,8 @@ public class InventoryUtil {
 				continue;
 			}
 			/// Alright, now that we dont have to worry about null or air
-			if (is1.getTypeId() != is2.getTypeId() || is1.getDurability() != is2.getDurability() ||
-					is1.getAmount() != is2.getAmount()){
+			if (!is1.equals(is2))
 				return false;
-			}
 			else {
 //				similar++;
 			}

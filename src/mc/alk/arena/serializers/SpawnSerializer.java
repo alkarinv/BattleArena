@@ -2,6 +2,7 @@ package mc.alk.arena.serializers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -88,25 +89,15 @@ public class SpawnSerializer {
 	}
 
 	public static List<String> convertToStringList(String str) {
-		//		System.out.println("String list = " + str);
-		List<String> args = new ArrayList<String>();
-		str = str.replaceAll(":", " ");
-		String[] strs = str.split(" ");
-		for (String s: strs){
-			args.add(s);
-		}
-		return args;
+		return new ArrayList<String>(Arrays.asList(str.split(" ")));
 	}
 
 	public static List<SpawnInstance> parseSpawnable(List<String> args) {
 		final String key = args.get(0);
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(key);
 		List<SpawnInstance> spawns = new ArrayList<SpawnInstance>();
-		boolean first = true;
 		for (int i=1;i< args.size();i++){
-			if (!first) sb.append(" ");
-			else first = false;
-			sb.append(args.get(i));
+			sb.append(" " + args.get(i));
 		}
 		final String value = sb.toString();
 		try {
@@ -117,25 +108,29 @@ public class SpawnSerializer {
 					spawns.add(sg);
 				return spawns;
 			}
-			EntityType et = EntityUtil.parseEntity(key);
 			int number = 1;
 			try{number = Integer.parseInt(value);} catch(Exception e){}
-			if (et != null){
+			//			System.out.println(InventoryUtil.isItem(key)+" is item " + InventoryUtil.isItem(key+":" + value) +"     key=" + key+" value=" + value);
+			ItemStack is = InventoryUtil.parseItem(value);
+			EntityType et = EntityUtil.parseEntity(key);
+			//			System.out.println("is = " + InventoryUtil.getItemString(is) +"   " + et);
+			if (is != null && et != null){
+				int keysize = key.length();
+				int isizedif = Math.abs(is.getType().name().length() - keysize);
+				int esizedif = Math.abs(et.getName().length() - keysize);
+				if (isizedif <= esizedif){
+					spawns.add(new ItemSpawn(is));
+				} else {
+					spawns.add(new EntitySpawn(et,number));
+				}
+				return spawns;
+			} else if (is != null){
+				spawns.add(new ItemSpawn(is));				
+				return spawns;				
+			}  else if (et != null){
 				spawns.add(new EntitySpawn(et,number));
 				return spawns;			
 			}
-
-			//System.out.println(InventoryUtil.isItem(key)+" is item " + InventoryUtil.isItem(key+":" + value) +"     key=" + key+" value=" + value);
-			ItemStack is = InventoryUtil.parseItem(key);
-			if (is != null){
-				spawns.add(new ItemSpawn(is));				
-				return spawns;				
-			} 
-			is = InventoryUtil.parseItem(key+":"+ value);
-			if (is != null){
-				spawns.add(new ItemSpawn(is));				
-				return spawns;				
-			} 
 		} catch (Exception e){}
 		return null;
 	}
