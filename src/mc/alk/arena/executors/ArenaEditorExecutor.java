@@ -20,7 +20,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class ArenaEditorExecutor extends CustomCommandExecutor {
 	public static String idPrefix = "ar_";
@@ -36,7 +35,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"select","sel"}, inGame=true, admin=true)
 	public boolean arenaSelect(CommandSender sender, Arena arena) {
 		aac.setCurrentArena((Player) sender, arena);
-		return MessageUtil.sendMessage(sender,"You have selected " + arena.getName());
+		return MessageUtil.sendMessage(sender,"&2You have selected arena &6" + arena.getName());
 	}
 
 	@MCCommand(cmds={"as","addspawn"}, selection=true, inGame=true, admin=true, min=2,
@@ -92,35 +91,38 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		return spawn.get(0);
 	}
 
-	@MCCommand(cmds={"region","addregion","addr"}, selection=true, admin=true)
-	public boolean arenaAddWorldGuardRegion(CommandSender sender, Player p, Object[] args) {
-		Arena a = aac.getArena(p);
-		Selection sel = wep.getSelection(p);
-		if (sel == null)
-			return MessageUtil.sendMessage(sender, ChatColor.RED + "Please select the protection area first.");
+//	@MCCommand(cmds={"region","addregion","addr"}, selection=true, admin=true)
+//	public boolean arenaAddWorldGuardRegion(CommandSender sender, Player p, Object[] args) {
+//		Arena a = aac.getArena(p);
+//		Selection sel = wep.getSelection(p);
+//		if (sel == null)
+//			return MessageUtil.sendMessage(sender, ChatColor.RED + "Please select the protection area first.");
 		//		String regionName = idPrefix+a.getName();
 		//		ProtectedRegion region = pc.addRegion(p, sel, regionName);
 		//		if (region == null)
 		//			return MessageUtil.sendMessage(sender, ChatColor.RED + "Selected region could not be made");
 		//		a.addRegion(sel.getWorld().getName(), regionName);
 		//		ac.updateArena(a);
-		return MessageUtil.sendMessage(sender, ChatColor.GREEN + "Region added to " + a.getName());
-	}
+//		return MessageUtil.sendMessage(sender, ChatColor.GREEN + "Region added to &6" + a.getName());
+//	}
 
-	@MCCommand(cmds={"hidespawns"}, admin=true, usage="hidespawns <arena>")
-	public boolean arenaHideSpawns(CommandSender sender, Arena arena) {
+	@MCCommand(cmds={"hidespawns"}, admin=true, inGame=true, selection=true, usage="hidespawns")
+	public boolean arenaHideSpawns(Player sender) {
+		Arena arena = aac.getArena(sender);
 		ArenaDebugger ad = ArenaDebugger.getDebugger(arena);
-		ad.hideSpawns();
+		ad.hideSpawns(sender);
 		ArenaDebugger.removeDebugger(ad);
-		return sendMessage(sender,ChatColor.YELLOW+ "You are hiding spawns for " + arena.getName());
+		return sendMessage(sender,ChatColor.YELLOW+ "You are hiding spawns for &6" + arena.getName());
 	}
 
-	@MCCommand(cmds={"showspawns"}, admin=true, usage="showspawns <arena>")
-	public boolean arenaShowSpawns(CommandSender sender, Arena arena) {
+	@MCCommand(cmds={"showspawns"}, admin=true, inGame=true,selection=true, usage="showspawns")
+	public boolean arenaShowSpawns(Player sender) {
+		Arena arena = aac.getArena(sender);
+
 		ArenaDebugger ad = ArenaDebugger.getDebugger(arena);
-		ad.hideSpawns();
-		ad.showSpawns();
-		return sendMessage(sender,ChatColor.GREEN+ "You are showing spawns for " + arena.getName());
+		ad.hideSpawns(sender);
+		ad.showSpawns(sender);
+		return sendMessage(sender,ChatColor.GREEN+ "You are showing spawns for &6" + arena.getName());
 	}
 
 	@MCCommand( cmds = {"help","?"})

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.CaseInsensitiveMap;
 
@@ -45,6 +46,18 @@ public class ParamController {
 		if (mp == null)
 			return null;
 		return new MatchParams(mp);
+	}
+
+	/**
+	 * Return a copy of the found event params
+	 * @param type
+	 * @return
+	 */
+	public static EventParams getEventParamCopy(String type){
+		MatchParams mp = types.get(type);
+		if (mp == null || !(mp instanceof EventParams))
+			return null;
+		return new EventParams(mp);
 	}
 
 	public static String getAvaibleTypes(Set<String> disabled) {

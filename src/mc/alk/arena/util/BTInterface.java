@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -22,7 +21,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginDescriptionFile;
 
 
 public class BTInterface {
@@ -60,6 +58,11 @@ public class BTInterface {
 			if (losers.size() == 1){
 				Set<Player> losingPlayers = new HashSet<Player>();
 				for (Team t: losers){losingPlayers.addAll(t.getBukkitPlayers());}
+				if (Defaults.DEBUG_TRACKING) System.out.println("BA Debug: addRecord ");
+				for (Player p: winningPlayers){
+					if (Defaults.DEBUG_TRACKING) System.out.println("BA Debug: winner = "+p.getName());}
+				for (Player p: losingPlayers){
+					if (Defaults.DEBUG_TRACKING) System.out.println("BA Debug: loser = "+p.getName());}
 				bti.addTeamRecord(winningPlayers, losingPlayers, WLT.WIN);						
 			} else {
 				Collection<Collection<Player>> plosers = new ArrayList<Collection<Player>>();
@@ -73,7 +76,7 @@ public class BTInterface {
 		}
 	}
 
-	public static void addBTI(MatchParams pi) {
+	public static boolean addBTI(MatchParams pi) {
 		final String dbName = pi.getDBName();
 		TrackerInterface bti = btis.get(dbName);
 		if (bti == null){
@@ -83,12 +86,12 @@ public class BTInterface {
 				battleTracker = (Tracker) Bukkit.getPluginManager().getPlugin("BattleTracker");
 				if (battleTracker == null) {
 					/// Well BattleTracker obviously isnt enabled.. not much we can do about that
-					return;
+					return false;
 				}
 				/// yay, we have it, now get our interface
 				bti = Tracker.getInterface(dbName);
-				PluginDescriptionFile pdf = BattleArena.getSelf().getDescription();
-				Log.info(pdf.getName()+" is now using BattleTracker interface '" + dbName+"'");
+//				PluginDescriptionFile pdf = BattleArena.getSelf().getDescription();
+//				Log.info(pdf.getName()+" is now using BattleTracker interface '" + dbName+"'");
 				currentInterfaces.put(dbName, bti);
 				if (aBTI == null)
 					aBTI = bti;
@@ -96,6 +99,7 @@ public class BTInterface {
 			if (Defaults.DEBUG) System.out.println("adding BTI for " + pi +"  " + dbName);
 			btis.put(dbName, bti);
 		}
+		return true;
 	}
 
 	public static void resumeTracking(ArenaPlayer p) {

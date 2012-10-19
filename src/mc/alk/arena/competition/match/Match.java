@@ -124,7 +124,8 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		addVictoryCondition(vt);
 		this.noEnter = tops.hasOptions(TransitionOption.WGNOENTER);
 		this.noLeave = tops.hasOptions(TransitionOption.WGNOLEAVE);
-		this.woolTeams = tops.hasOptions(TransitionOption.WOOLTEAMS) && mp.getMaxTeamSize() >1;
+		this.woolTeams = tops.hasOptions(TransitionOption.WOOLTEAMS) && mp.getMaxTeamSize() >1 ||
+				tops.hasOptions(TransitionOption.ALWAYSWOOLTEAMS);
 		this.needsBlockEvents = tops.hasOptions(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF,
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
 		this.needsDamageEvents = tops.hasOptions(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
@@ -300,7 +301,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 			if (victor != null){ /// We have a true winner
 				if (bti != null && mp.isRated()){
 					try{BTInterface.addRecord(bti,victor.getPlayers(),losers,WLT.WIN);}catch(Exception e){e.printStackTrace();}
-				}									
+				}
 				try{mc.sendOnVictoryMsg(victor, losers);}catch(Exception e){e.printStackTrace();}
 			} else { /// we have a draw
 				try{mc.sendOnDrawMessage(losers);} catch(Exception e){e.printStackTrace();}
@@ -449,9 +450,10 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	}
 
 	public void onLeave(ArenaPlayer p) {
+		/// remove them from the match, they don't want to be here
+		Team t = getTeam(p);
+		t.killMember(p);
 		if (insideArena(p)){ /// Only leave if they haven't already left.
-			Team t = getTeam(p);
-			t.killMember(p);
 			PerformTransition.transition(this, MatchState.ONCANCEL, p, t, false);
 		}
 	}

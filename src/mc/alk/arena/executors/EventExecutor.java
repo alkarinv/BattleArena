@@ -6,6 +6,7 @@ import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventOpenOptions;
 import mc.alk.arena.objects.EventOpenOptions.EventOpenOption;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
@@ -34,7 +35,7 @@ public class EventExecutor extends BAExecutor{
 
 	@MCCommand(cmds={"options"},admin=true, usage="options", order=2)
 	public boolean eventOptions(CommandSender sender) {
-		MatchParams mp = event.getParams();
+		EventParams mp = event.getParams();
 		if (mp == null){
 			sendMessage(sender,"&eNo match options for this Event yet");
 			return true;
@@ -112,6 +113,11 @@ public class EventExecutor extends BAExecutor{
 
 	@MCCommand(cmds={"join"},inGame=true,usage="join", order=2)
 	public boolean eventJoin(ArenaPlayer p) {
+		eventJoin(p, false);
+		return true;
+	}
+
+	private boolean eventJoin(ArenaPlayer p, boolean adminCommand) {
 		if (!(p.hasPermission("arena."+event.getCommand().toLowerCase()+".join"))){
 			return sendMessage(p, "&eYou don't have permission to join a &6" + event.getCommand());}
 		if (!event.canJoin()){
@@ -123,7 +129,7 @@ public class EventExecutor extends BAExecutor{
 			return sendMessage(p,"&eYou have already joined the and will enter when you get matched up with a team");			
 		}
 
-		MatchParams sq = event.getParams();
+		EventParams sq = event.getParams();
 		MatchTransitions tops = sq.getTransitionOptions();
 		if(!tops.playerReady(p)){
 			String notReadyMsg = tops.getRequiredString("&eYou need the following to compete!!!\n"); 
@@ -142,10 +148,10 @@ public class EventExecutor extends BAExecutor{
 		if (!checkFee(sq, p)){
 			return true;}
 		
-		event.joining(t);
+		event.joining(t);	
 		return true;
 	}
-
+	
 	@MCCommand(cmds={"status"}, usage="status", order=2)
 	public boolean eventStatus(CommandSender sender) {
 		StringBuilder sb = new StringBuilder(event.getStatus());
@@ -166,26 +172,26 @@ public class EventExecutor extends BAExecutor{
 		return sendMessage(sender,"&eResults for the &6" + event.getDetailedName() + "&e\n" + sb.toString());
 	}
 	
-	public static MatchParams checkOpenOptions(CommandSender sender, Event event, MatchParams mp, String[] args) {
+	public static boolean checkOpenOptions(CommandSender sender, Event event, MatchParams mp, String[] args) {
 		if (mp == null){
 			sendMessage(sender,"&cMatch params were null");
-			return null;
+			return false;
 		}
 		final String cmd = mp.getCommand();
 		if (event.isRunning() || event.isOpen()){
 			sendMessage(sender,"&cA "+cmd+" is already &6" + event.getState());
-			return null;
+			return false;
 		}
 		if (args.length < 1){
 			sendMessage(sender,"&6/"+cmd+" <open|auto|server> [options]");
 			sendMessage(sender,"&eExample &6/ "+cmd+" auto");
 			sendMessage(sender,"&eExample &6/ "+cmd+" auto rated teamSize=1 nTeams=2+ arena=<arenaName>");
-			return null;
+			return false;
 		}		
-		return mp;
+		return true;
 	}
 	
-	public static void openEvent(Event te, MatchParams mp, EventOpenOptions eoo) throws InvalidOptionException, NeverWouldJoinException{
+	public static void openEvent(Event te, EventParams mp, EventOpenOptions eoo) throws InvalidOptionException, NeverWouldJoinException{
 		eoo.updateParams(mp);
 		//		System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
 		te.setSilent(eoo.isSilent());

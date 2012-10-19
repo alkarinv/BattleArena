@@ -23,6 +23,7 @@ public class Defaults {
 	public static boolean DEBUG_VIRTUAL = false;
 	public static boolean DEBUG_TRANSITIONS = false;
 	public static boolean DEBUG_STORAGE = false;
+	public static boolean DEBUG_TRACKING = false;
 
 
 	public static final String ARENA_ADMIN = "arena.admin";
@@ -68,4 +69,8 @@ public class Defaults {
 	public static int NUM_INV_SAVES = 5; /// number of inventory saves
 
 	public static double TELEPORT_Y_OFFSET = 1.0; /// offset for teleportation
+	
+	/// SIGN OPTIONS
+	public static final String SIGN_PREFIX = "*";
+
 }

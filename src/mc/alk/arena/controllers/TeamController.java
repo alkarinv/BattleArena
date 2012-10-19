@@ -100,12 +100,10 @@ public enum TeamController  implements Listener {
 					try{
 						th = iter.next();
 						if (th.leave(p)){ /// they are finished with the player, no longer need to keep them around
-							//							iter.remove();
 							unused.add(th);
 						}
 					} catch(Exception e){
 						e.printStackTrace();
-						System.err.println("DIDNT FIX");
 					}
 				}
 			}
@@ -114,7 +112,6 @@ public enum TeamController  implements Listener {
 				handlers.remove(t);
 
 		}
-
 		//		logHandlerList("player left " + p.getPlayer().getName());
 	}
 

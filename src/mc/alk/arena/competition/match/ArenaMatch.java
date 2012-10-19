@@ -1,5 +1,6 @@
 package mc.alk.arena.competition.match;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -67,6 +68,7 @@ public class ArenaMatch extends Match {
 			return;}
 		///TODO Should they be killed when they come back for this trangression?
 		Team t = getTeam(player);
+		t.killMember(player);
 		PerformTransition.transition(this, MatchState.ONCOMPLETE, player, t, true);
 		notifyListeners(new PlayerLeftEvent(player));
 	}
@@ -301,8 +303,10 @@ public class ArenaMatch extends Match {
 		/// Have They have already selected a class this match, have they changed their inventory since then?
 		/// If so, make sure they can't just select a class, drop the items, then choose another
 		if (chosen != null){ 
-			List<ItemStack> items = chosen.getItems();
-			if (mo.hasItems()){ 
+			List<ItemStack> items = new ArrayList<ItemStack>();
+			if (chosen.getItems()!=null)
+				items.addAll(chosen.getItems());
+			if (mo.hasItems()){
 				items.addAll(mo.getItems());}
 			if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
 				MessageUtil.sendMessage(p,"&cYou can't swich classes after changing items!");
@@ -311,7 +315,7 @@ public class ArenaMatch extends Match {
 		}
 		/// Clear their inventory first, then give them the class and whatever items were due to them from the config
 		InventoryUtil.clearInventory(p, woolTeams);
-		List<ItemStack>items = ac.getItems();
+		List<ItemStack>items = ac.getItems()!=null? new ArrayList<ItemStack>() : null;
 		if (mo.hasItems()){
 			items.addAll(mo.getItems());
 		}

@@ -225,13 +225,13 @@ public class BAExecutor extends CustomCommandExecutor  {
 		Match am = ac.getMatch(p);
 		if (am != null){
 			am.onLeave(p);
-			return true;
+			return sendMessage(p,"&eYou have left the match &6");
 		}
 
 		Event aec = insideEvent(p);
 		if (aec != null){
 			aec.leave(p);
-			return true;
+			return sendMessage(p,"&eYou have left the "+aec.getName()+" event&6");
 		}
 
 		/// Are they even in a queue?

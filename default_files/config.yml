@@ -133,12 +133,14 @@ arena:
     database: arena
     rated: true
     prefix: "&6[Arena]&e"
+    nTeams: 2+
+    teamSize: 1+
     onJoin:
         options: [pvpOff]
     preReqs:
         options: [clearInventory]
     onStart:
-        options: [teleportIn, pvpOn, blockBreakOff]
+        options: [teleportIn, pvpOn, blockBreakOff, woolTeams]
     onSpawn:
         options: [deEnchant, giveItems, hunger=20, health=20]
         giveClass:
@@ -158,8 +160,10 @@ skirmish:
     database: arena
     rated: false
     prefix: "&b[Skirmish]&e"
+    nTeams: 2+
+    teamSize: 1+
     onStart:
-        options: [teleportIn, pvpOn, blockBreakOff]
+        options: [teleportIn, pvpOn, blockBreakOff, woolTeams]
     onComplete:
         options: [teleportOut]
     winner:
@@ -216,7 +220,7 @@ colliseum:
     onJoin:
         options: [pvpOff]
     onPrestart:
-        options: [pvpOff, teleportIn, deEnchant]
+        options: [pvpOff, teleportIn, deEnchant, woolTeams]
     onStart:
         options: [pvpOn]
     onComplete:
@@ -249,6 +253,8 @@ freeForAll:
     type: ffa
     database: ffa
     prefix: "&c[FFA]&e"
+    nTeams: 2+
+    teamSize: 1+
     announcements: ### Override the match victory announcement as the event has one too
         onVictory:  [ dontannounce ] 
     preReqs:
@@ -291,6 +297,8 @@ deathMatch:
     victoryCondition: highestKills
     database: dm
     prefix: "&8[DeathMatch]&e"
+    nTeams: 2+
+    teamSize: 1+
     announcements: ### Override the match victory announcement as the event has one too
         onVictory:  [ dontannounce ] 
     preReqs:

@@ -36,7 +36,7 @@ public class TransitionOptions {
 		STOREITEMS("storeItems",false), RESTOREITEMS("restoreItems",false),
 		STORE("store",false), RESTORE("restore",false),
 		WGCLEARREGION("wgClearRegion",false), WGNOLEAVE("wgNoLeave",false), WGNOENTER("wgNoEnter", false),
-		WOOLTEAMS("woolTeams",false), 
+		WOOLTEAMS("woolTeams",false), ALWAYSWOOLTEAMS("alwaysWoolTeams", false), 
 		ADDPERMS("addPerms", false), REMOVEPERMS("removePerms", false),
 		SAMEWORLD("sameWorld",false), WITHINDISTANCE("withinDistance",true)
 		;
@@ -277,7 +277,7 @@ public class TransitionOptions {
 	}
 
 	public boolean woolTeams() {
-		return options.contains(TransitionOption.WOOLTEAMS);
+		return options.contains(TransitionOption.WOOLTEAMS) || options.contains(TransitionOption.ALWAYSWOOLTEAMS);
 	}
 	public Set<TransitionOption> getOptions() {
 		return options;

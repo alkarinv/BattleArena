@@ -16,6 +16,7 @@ import mc.alk.arena.competition.events.ReservedArenaEvent;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -86,7 +87,8 @@ public class APIRegistrationController {
 		MessageSerializer.addMessageSerializer(name,ms);
 
 		try {
-			ConfigSerializer.setTypeConfig(name,cc.getConfigurationSection(name));
+			Log.info("["+plugin.getName()+ "] Loading config from " + cc.getFile().getAbsolutePath());
+			ConfigSerializer.setTypeConfig(name,cc.getConfigurationSection(name), match);
 		} catch (Exception e){
 			System.err.println("Error trying to load "+name+" config");
 			e.printStackTrace();
@@ -187,7 +189,7 @@ public class APIRegistrationController {
 
 	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor) {
 		init(plugin,name,cmd,arenaClass,false);
-		MatchParams mp = ParamController.getMatchParamCopy(name);
+		EventParams mp = ParamController.getEventParamCopy(name);
 		if (mp != null){
 			/// TODO this should probably get what event based off of what executor, maybe a map?
 			ReservedArenaEvent event = new ReservedArenaEvent(mp);

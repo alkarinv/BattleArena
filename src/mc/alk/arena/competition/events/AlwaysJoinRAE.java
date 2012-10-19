@@ -1,12 +1,12 @@
 package mc.alk.arena.competition.events;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.teams.Team;
 
 
 public class AlwaysJoinRAE extends ReservedArenaEvent {
-	public AlwaysJoinRAE(MatchParams params) {
+	public AlwaysJoinRAE(EventParams params) {
 		super(params);
 	}
 

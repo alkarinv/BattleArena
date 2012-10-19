@@ -22,6 +22,7 @@ import org.bukkit.plugin.Plugin;
 public class SpawnController {
 	static final boolean DEBUG = false;
 	static CaseInsensitiveMap<SpawnInstance> allSpawns = new CaseInsensitiveMap<SpawnInstance>();
+
 	PriorityQueue<NextSpawn> spawnQ = null;
 	Plugin plugin = null;
 
@@ -130,6 +131,5 @@ public class SpawnController {
 	public static SpawnInstance getSpawnable(String name) {
 		return allSpawns.get(name);
 	}
-
 
 }

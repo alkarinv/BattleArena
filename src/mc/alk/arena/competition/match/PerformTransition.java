@@ -97,7 +97,8 @@ public class PerformTransition {
 
 		final boolean wipeOnFirstEnter = !insideArena && mo.hasOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
 		final boolean wipeInventory = mo.clearInventory() || wipeOnFirstEnter;
-		List<EffectWithArgs> effects = mo.getEffects();
+		
+		List<EffectWithArgs> effects = mo.getEffects()!=null ? new ArrayList<EffectWithArgs>(mo.getEffects()) : null;
 		final Integer health = mo.getHealth();
 		final Integer hunger = mo.getHunger();
 		final String disguiseAllAs = mo.getDisguiseAllAs();

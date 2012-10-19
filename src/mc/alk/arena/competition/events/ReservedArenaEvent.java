@@ -7,7 +7,7 @@ import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.TransitionEventHandler;
@@ -21,34 +21,34 @@ import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.WLT;
 
 public class ReservedArenaEvent extends Event {
-	public ReservedArenaEvent(MatchParams params) {
+	public ReservedArenaEvent(EventParams params) {
 		super(params);
 	}
 
 	Match arenaMatch;	
 
-	public void openEvent(MatchParams mp, Arena arena) throws NeverWouldJoinException {
+	public void openEvent(EventParams mp, Arena arena) throws NeverWouldJoinException {
 		arenaMatch = new ArenaMatch(arena, mp);
 		openEvent(mp);
 	}
 
-	public void autoEvent(MatchParams mp, Arena arena, int secondsTillStart, int announcementInterval) throws NeverWouldJoinException {
+	public void autoEvent(EventParams mp, Arena arena, int secondsTillStart, int announcementInterval) throws NeverWouldJoinException {
 		openEvent(mp,arena);
 		mc.sendCountdownTillEvent(secondsTillStart);
 		/// Set a countdown to announce updates every minute
 		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);	
 	}
 
-	public void openAllPlayersEvent(MatchParams mp, Arena arena) throws NeverWouldJoinException {
+	public void openAllPlayersEvent(EventParams mp, Arena arena) throws NeverWouldJoinException {
 		arenaMatch = new ArenaMatch(arena, mp);
 		super.openAllPlayersEvent(mp);
 	}
 
 	@Override
-	public void openEvent(MatchParams mp) throws NeverWouldJoinException{
+	public void openEvent(EventParams mp) throws NeverWouldJoinException{
 		super.openEvent(mp);
 		rounds.clear();
-		matchParams.setPrettyName(mp.getCommand());
+		eventParams.setPrettyName(mp.getCommand());
 		arenaMatch.addTransitionListener(this);
 		ac.openMatch(arenaMatch);
 		arenaMatch.onJoin(teams);
@@ -77,7 +77,7 @@ public class ReservedArenaEvent extends Event {
 		}
 		m.setResult(arenaMatch.getResult());
 
-		TrackerInterface bti = BTInterface.getInterface(matchParams);
+		TrackerInterface bti = BTInterface.getInterface(eventParams);
 		if (bti != null && victor != null){
 			BTInterface.addRecord(bti, victor.getPlayers(), arenaMatch.getLosers(), WLT.WIN);			
 		}
@@ -123,7 +123,7 @@ public class ReservedArenaEvent extends Event {
 	}
 
 	private void makeNextRound() {
-		Matchup m = new Matchup(matchParams,teams);
+		Matchup m = new Matchup(eventParams,teams);
 		Round tr = new Round(0);
 		tr.addMatchup(m);
 		rounds.add(tr);

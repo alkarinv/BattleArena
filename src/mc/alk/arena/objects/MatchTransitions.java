@@ -1,9 +1,13 @@
 package mc.alk.arena.objects;
 
 import java.util.HashMap;
+import java.util.List;
 
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.util.InventoryUtil;
+
+import org.bukkit.inventory.ItemStack;
 
 public class MatchTransitions {
 	HashMap<MatchState,TransitionOptions> ops = new HashMap<MatchState,TransitionOptions>();
@@ -78,7 +82,12 @@ public class MatchTransitions {
 	public String getOptionString() {
 		StringBuilder sb = new StringBuilder();
 		for (MatchState ms : ops.keySet()){
-			sb.append(ms +" -- " + ops.get(ms));
+			sb.append(ms +" -- " + ops.get(ms)+"\n");
+			List<ItemStack> items = ops.get(ms).getItems();
+			if (items != null){
+				for (ItemStack item: items){
+					sb.append("          item - " + InventoryUtil.getItemString(item));}
+			}
 		}
 		return sb.toString();
 	}

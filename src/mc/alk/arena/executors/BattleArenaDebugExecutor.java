@@ -4,6 +4,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.MethodController;
@@ -13,7 +14,9 @@ import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.ExpUtil;
@@ -50,13 +53,15 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			Defaults.DEBUG_TRANSITIONS = on;
 		} else if(section.equalsIgnoreCase("virtualplayer")){
 			Defaults.DEBUG_VIRTUAL = on;
+		} else if(section.equalsIgnoreCase("tracking")){
+			Defaults.DEBUG_TRACKING = on;
 		} else if(section.equalsIgnoreCase("storage")){
 			Defaults.DEBUG_STORAGE = on;
 		} else {
 			sendMessage(sender, "&cDebugging couldnt find code section &6"+ section);
 			return;
 		}
-		sendMessage(sender, "&2Debugging for &6" + section +"&2 now &6" + on);
+		sendMessage(sender, "&4[BattleArena] &2debugging for &6" + section +"&2 now &6" + on);
 	}
 
 	@MCCommand( cmds = {"giveTeam","gt"}, online={1}, op=true, usage="giveTeam <player> <team index>")
@@ -127,10 +132,42 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 	@MCCommand(cmds={"showMatchParams"}, admin=true)
 	public boolean showMatchParams(CommandSender sender, String paramName) {
+		MatchParams mp = findMatchParam(sender, paramName);
+		if (mp == null)
+			return true;
+		return sendMessage(sender, mp.toString());
+	}
+
+	@MCCommand(cmds={"showConfigOptions"}, admin=true)
+	public boolean showConfigOptions(CommandSender sender, String paramName) {
+		MatchParams mp = findMatchParam(sender, paramName);
+		if (mp == null)
+			return true;
+		sendMessage(sender, mp.toString());
+		MatchTransitions mt = mp.getTransitionOptions();
+		if (mt == null){
+			return sendMessage(sender, ChatColor.RED+"MatchTransitions are null");
+		}
+		sendMessage(sender, mt.getOptionString());
+		return true;
+	}
+
+	@MCCommand(cmds={"version"}, admin=true)
+	public boolean showVersion(CommandSender sender) {
+		sendMessage(sender, BattleArena.getVersion());
+		for (ArenaType at : ArenaType.getTypes()){
+			String name = at.getPlugin().getName();
+			String version = at.getPlugin().getDescription().getVersion();
+			sendMessage(sender, at.getName() +"  " + name +"  " + version);
+		}
+		return true;
+	}
+
+	private MatchParams findMatchParam(CommandSender sender, String paramName) {
 		MatchParams mp = ParamController.getMatchParamCopy(paramName);
 		if (mp == null){
-			return sendMessage(sender, "&cCouldn't find matchparams mp=" + paramName);}
-		return sendMessage(sender, mp.toString());
+			sendMessage(sender, "&cCouldn't find matchparams mp=" + paramName);}
+		return mp;
 	}
 
 	@MCCommand(cmds={"invalidReason"}, op=true)

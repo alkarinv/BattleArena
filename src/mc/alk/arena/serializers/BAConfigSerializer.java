@@ -25,17 +25,28 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.TELEPORT_Y_OFFSET = config.getDouble("teleportYOffset", 1.0);
 		Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", 5);
 		DisabledCommandsUtil.addAll(config.getStringList("disabledCommands"));
-		String[] defaultArenaTypes = {"arena","skirmish","colliseum","freeForAll","deathMatch","tourney","battleground"};
+		String[] defaultMatchTypes = {"arena","skirmish","colliseum","battleground"};
+		String[] defaultEventTypes = {"freeForAll","deathMatch","tourney"};
 
-		/// Now initialize the specific settings
-		for (String defaultType: defaultArenaTypes){
+		/// Now initialize the specific match settings
+		for (String defaultType: defaultMatchTypes){
 			try {
-				setTypeConfig(defaultType,config.getConfigurationSection(defaultType));
+				setTypeConfig(defaultType,config.getConfigurationSection(defaultType), true);
 			} catch (Exception e) {
 				Log.err("Couldnt configure arenaType " + defaultType+". " + e.getMessage());
 				e.printStackTrace();
 			}
 		}
+		/// Now initialize the specific event settings
+		for (String defaultType: defaultEventTypes){
+			try {
+				setTypeConfig(defaultType,config.getConfigurationSection(defaultType), false);
+			} catch (Exception e) {
+				Log.err("Couldnt configure arenaType " + defaultType+". " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 	protected static void parseDefaultOptions(ConfigurationSection cs) {

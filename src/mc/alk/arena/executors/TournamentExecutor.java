@@ -7,6 +7,7 @@ import mc.alk.arena.competition.events.TournamentEvent;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventOpenOptions;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
@@ -46,14 +47,17 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 			sendMessage(sender, "&6" + args[1] +"&c is not a valid match type!");
 			return sendMessage(sender,"&cCommand: &6/tourney <open|auto> <matchType> [options...]");
 		}		
-		mp = checkOpenOptions(sender,event,mp , args);
+		if (!checkOpenOptions(sender,event,mp , args)){
+			return false;
+		}
+		EventParams ep = new EventParams(mp);
 
 		EventOpenOptions eoo = null;
 		
 		try {
 			HashSet<Integer> ignoreArgs = new HashSet<Integer>(Arrays.asList(1)); /// ignore the matchType argument
 			eoo = EventOpenOptions.parseOptions(args,ignoreArgs);
-			openEvent(event, mp, eoo);
+			openEvent(event, ep, eoo);
 		} catch (InvalidOptionException e) {
 			sendMessage(sender, e.getMessage());
 			return false;

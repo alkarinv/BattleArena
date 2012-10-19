@@ -605,7 +605,7 @@ public class Arena implements ArenaListener {
 
 	/**
 	 * Checks to see whether this arena has paramaters that match the given matchparams
-	 * @param matchParams
+	 * @param eventParams
 	 * @param jp 
 	 * @return
 	 */
@@ -709,6 +709,13 @@ public class Arena implements ArenaListener {
 		if (timedSpawns != null && !timedSpawns.isEmpty())
 			sb.append("&e#itemSpawns:&6" +locs.size());
 		return sb.toString();
+	}
+
+	public SpawnController getSpawnController() {
+		if (timedSpawns != null && !timedSpawns.isEmpty() && spawnController == null){
+			spawnController = new SpawnController(timedSpawns);
+		}
+		return spawnController;
 	}
 
 	

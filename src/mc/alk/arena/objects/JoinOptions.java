@@ -97,6 +97,8 @@ public class JoinOptions {
 		ops.put(JoinOption.TEAMSIZE, teamSize);
 		for (int i=0;i<length;i++){
 			String op = args[i];
+			if (op.isEmpty())
+				continue;
 			Object obj = null;
 			Arena a = BattleArena.getBAC().getArena(op);
 			if (a != null){

@@ -8,6 +8,8 @@ import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.MessageUtil;
 
+import org.bukkit.ChatColor;
+
 
 public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
@@ -18,8 +20,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	VictoryType vc = null;
 	Integer matchTime, intervalTime;
 	AnnouncementOptions ao = null;
-	EventParams eventParams = null;
-	
+	//	EventParams eventParams = null;
+
 	public MatchParams(ArenaType at, Rating rating, VictoryType vc) {
 		super(at,rating);
 		this.vc = vc;
@@ -95,7 +97,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public int hashCode() {
 		return ((arenaType.ordinal()) << 27) +(rating.ordinal() << 25) + (minTeams<<12)+(vc.ordinal() << 8) + minTeamSize;
 	}
-	
+
 	@Override
 	public boolean equals(Object other) {
 		if (this == other) return true;
@@ -114,4 +116,16 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public String toString(){
 		return super.toString()+",vc=" + vc.getName();
 	}
+
+	public ChatColor getColor() {
+		String lbl = prefix.replaceAll("&", "§");
+		int index = lbl.indexOf("§");
+		if (index != -1 && lbl.length() > index+2){
+			ChatColor cc = ChatColor.getByChar(lbl.charAt(index+2));
+			if (cc != null)	
+				return cc;
+		} 		
+		return ChatColor.GREEN;
+	}
+
 }

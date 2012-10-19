@@ -5,7 +5,7 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventOpenOptions;
 import mc.alk.arena.objects.EventOpenOptions.EventOpenOption;
-import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.arenas.Arena;
@@ -51,7 +51,10 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 			sendMessage(sender,"&4The Event " + event.getName() +" is not type ReservedArenaEvent");
 			return false;
 		}
-		MatchParams mp = checkOpenOptions(sender,event, ParamController.getMatchParamCopy(event.getName()), args);
+		EventParams mp = ParamController.getEventParamCopy(event.getName());
+		if (!checkOpenOptions(sender,event, mp, args)){
+			return false;
+		}
 		
 		ReservedArenaEvent rae = (ReservedArenaEvent) event;
 		Arena arena;
@@ -78,12 +81,12 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		return true;
 	}
 
-	public Arena openEvent(ReservedArenaEvent rae, MatchParams mp, EventOpenOptions eoo) throws InvalidOptionException, NeverWouldJoinException{
+	public Arena openEvent(ReservedArenaEvent rae, EventParams mp, EventOpenOptions eoo) throws InvalidOptionException, NeverWouldJoinException{
 		if (rae.isOpen())
 			throw new InvalidOptionException("The event is already open");
 		eoo.updateParams(mp);
 		Arena arena = eoo.getArena(mp,null);
-		//		System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
+		//System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
 		arena.setParameters(mp);
 		rae.setSilent(eoo.isSilent());
 		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){

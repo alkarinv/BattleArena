@@ -38,7 +38,9 @@ import mc.alk.arena.executors.TeamExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.BAPluginListener;
+import mc.alk.arena.listeners.BASignListener;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -81,8 +83,8 @@ public class BattleArena extends JavaPlugin{
 	private final DuelController dc = new DuelController();
 	private static BAExecutor commandExecutor;
 	private final BAPlayerListener playerListener = new BAPlayerListener(arenaController);
-
 	private final BAPluginListener pluginListener = new BAPluginListener();
+	private final BASignListener signListener = new BASignListener();
 	private ArenaControllerSerializer yacs;
 	private static final BAConfigSerializer cc = new BAConfigSerializer();
 	private static final BAClassesSerializer bacs = new BAClassesSerializer();
@@ -118,6 +120,7 @@ public class BattleArena extends JavaPlugin{
 		// Register our events
 		Bukkit.getPluginManager().registerEvents(playerListener, this);
 		Bukkit.getPluginManager().registerEvents(pluginListener, this);
+		Bukkit.getPluginManager().registerEvents(signListener, this);
 		Bukkit.getPluginManager().registerEvents(tc, this);
 		Bukkit.getPluginManager().registerEvents(new TeleportController(), this);
 
@@ -232,10 +235,10 @@ public class BattleArena extends JavaPlugin{
 	}
 
 	private void createEvents() {
-		MatchParams mp = null;
+		EventParams mp = null;
 
 		/// Tournament, multi round matches
-		mp = ParamController.getMatchParamCopy("tourney");
+		mp = ParamController.getEventParamCopy("tourney");
 		if (mp != null){
 			TournamentEvent tourney = new TournamentEvent(mp);
 			EventController.addEvent(tourney);
@@ -251,7 +254,7 @@ public class BattleArena extends JavaPlugin{
 		}
 
 		/// Reserve an arena.  Hold people in the area till ffa starts
-		mp = ParamController.getMatchParamCopy("FreeForAll");
+		mp = ParamController.getEventParamCopy("FreeForAll");
 		if (mp != null){
 			ReservedArenaEvent event = new ReservedArenaEvent(mp);
 			EventController.addEvent(event);
@@ -267,7 +270,7 @@ public class BattleArena extends JavaPlugin{
 		}
 
 		/// Reserve an arena.  Let people join and enter at will
-		mp = ParamController.getMatchParamCopy("DeathMatch");
+		mp = ParamController.getEventParamCopy("DeathMatch");
 		if (mp != null){
 			ReservedArenaEvent event = new AlwaysJoinRAE(mp);
 			EventController.addEvent(event);
@@ -304,6 +307,7 @@ public class BattleArena extends JavaPlugin{
 
 	public static BattleArena getSelf() {return plugin;}
 	public static BattleArenaController getBAC(){return arenaController;}
+	public static BattleArenaController getBattleArenaController(){return arenaController;}
 	public static TeamController getTeamController(){return tc;}
 	public DuelController getDuelController(){return dc;}
 	public static EventController getEventController(){return ec;}

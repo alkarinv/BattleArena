@@ -1,28 +1,28 @@
 package mc.alk.arena.controllers;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.spawns.ItemSpawn;
-import net.minecraft.server.Entity;
+import mc.alk.arena.util.TeamUtil;
 import net.minecraft.server.WorldServer;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 
 public class ArenaDebugger {
 	static HashMap<Arena,ArenaDebugger> arenas = null;
-	
+
 
 	public static ArenaDebugger getDebugger(Arena arena){
 		if (arenas == null){
 			arenas = new HashMap<Arena, ArenaDebugger>();
 		}
-		
+
 		ArenaDebugger ad = arenas.get(arena);
 		if (ad == null){
 			ad = new ArenaDebugger(arena);
@@ -30,7 +30,7 @@ public class ArenaDebugger {
 		}
 		return ad;
 	}
-	
+
 
 	public static void removeDebugger(ArenaDebugger ad) {
 		arenas.remove(ad.arena);
@@ -38,11 +38,10 @@ public class ArenaDebugger {
 			arenas = null;
 		}
 	}
-	
+
 	Arena arena;
 	HashMap<Location, ItemStack> oldBlocks = new HashMap<Location, ItemStack>(); /// Used for debugging with show/hide spawns
-	HashMap<Integer, ItemSpawn> entityIds = new HashMap<Integer, ItemSpawn>(); /// Used for debugging with show/hide spawns
-	
+
 	public ArenaDebugger(Arena arena) {
 		this.arena = arena;
 	}
@@ -52,38 +51,44 @@ public class ArenaDebugger {
 		return rloc;
 	}
 
-	public void hideSpawns() {
+	public void hideSpawns(Player player) {
 		for (Location l : oldBlocks.keySet()){
 			ItemStack is = oldBlocks.get(l);
-			l.getBlock().setType(is.getType());
-			l.getBlock().setData((byte)is.getDurability());
+			player.sendBlockChange(l, is.getType(), (byte) is.getDurability());
 		}
-		for (Integer i: entityIds.keySet()){
-			ItemSpawn is = entityIds.get(i);
-			WorldServer ws = getWorldServer(is.getWorld());
-			Entity entity = ws.getEntity(i);
-			if (entity != null){
-				ws.removeEntity(entity);
-			}
+		oldBlocks.clear();
+		SpawnController sc = arena.getSpawnController();
+		if (sc != null){
+			sc.stop();
 		}
 	}
-	
-	public void showSpawns() {
+
+	public void showSpawns(Player player) {
 		oldBlocks = new HashMap<Location,ItemStack>();
-//		if (arena.spawnsGroups != null){
-//			/// TODO fix showing spawns
-////			for (ItemSpawn is: arena.spawnsGroups.values()){
-////				Item item = is.loc.getWorld().dropItem(is.loc, is.is);
-////				entityIds.put(item.getEntityId(), is);
-////			}
-//		}
-		for (Location l: arena.getSpawnLocs().values()){
-			Location key = getLocKey(l);
-			if (!oldBlocks.containsKey(key)){
-				Block b = l.getBlock();
-				oldBlocks.put(key, new ItemStack(b.getType(), b.getData()));
-				b.setTypeIdAndData(Material.WOOL.getId(), (byte)4, true);
+		SpawnController sc = arena.getSpawnController();
+		if (sc != null){
+			sc.start();
+		}
+		Map<Integer,Location> locs = arena.getSpawnLocs();
+		if (locs != null){
+			for (Integer i: locs.keySet()){
+				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));
 			}
+		}		
+		locs = arena.getWaitRoomSpawnLocs();
+		if (locs != null){
+			for (Integer i: locs.keySet()){
+				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));
+			}			
+		}
+	}
+
+	private void changeBlocks(Player player, Location l, ItemStack is) {
+		Location key = getLocKey(l);
+		if (!oldBlocks.containsKey(key)){
+			Block b = l.getBlock();
+			player.sendBlockChange(l, is.getTypeId(), (byte)is.getDurability());
+			oldBlocks.put(key, new ItemStack(b.getType(), b.getData()));
 		}
 	}
 

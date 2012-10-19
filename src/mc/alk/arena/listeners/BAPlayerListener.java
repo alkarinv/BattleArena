@@ -7,13 +7,11 @@ import java.util.List;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.PlayerStoreController.PInv;
 import mc.alk.arena.controllers.TeleportController;
-import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
@@ -23,16 +21,13 @@ import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -235,49 +230,6 @@ public class BAPlayerListener implements Listener  {
 
 	public static void restoreGameModeOnEnter(String playerName, GameMode gamemode) {
 		gamemodeRestore.put(playerName, gamemode);
-	}
-
-	@EventHandler
-	public void onSignChange(SignChangeEvent event){
-		if (Defaults.DEBUG_TRACE) System.out.println("onSignChange Event");
-		final Block block = event.getBlock();
-		final Material type = block.getType();
-
-		if (!(type.equals(Material.SIGN) || type.equals(Material.SIGN_POST) || type.equals(Material.WALL_SIGN))) {
-			return;}
-
-		Player p = event.getPlayer();
-
-		/// Is the sign a trade sign?
-		final boolean admin = p.isOp() || p.hasPermission(Defaults.ARENA_ADMIN);
-		String lines[] = event.getLines();
-		ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(lines[0]).replaceAll("\\*", ""));
-		if (ac == null)
-			return;
-		for (int i=1;i<lines.length;i++){
-			if (!lines[i].isEmpty()) /// other text, not our sign
-				return;
-		}
-
-		if (!admin){
-			cancelSignPlace(event,block);
-			return;
-		}
-
-		try{
-			event.setLine(0, MessageUtil.colorChat(ChatColor.GOLD+"*"+ac.getPrettyName()));
-		} catch (Exception e){
-			MessageUtil.sendMessage(p, "&cError creating Arena Class Sign");
-			e.printStackTrace();
-			cancelSignPlace(event,block);
-			return;
-		}
-	}
-
-	public static void cancelSignPlace(SignChangeEvent event, Block block){
-		event.setCancelled(true);
-		block.setType(Material.AIR);
-		block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.SIGN, 1));   	
 	}
 
 	public static void removeItemOnEnter(ArenaPlayer p, ItemStack is) {

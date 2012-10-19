@@ -14,6 +14,7 @@ import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
@@ -71,14 +72,15 @@ public class ConfigSerializer extends BaseSerializer{
 		}
 		try {
 			cs.reloadFile();
-			ConfigSerializer.setTypeConfig(name,cs.getConfigurationSection(name));
+			ConfigSerializer.setTypeConfig(name,cs.getConfigurationSection(name), 
+					!(ParamController.getMatchParams(arenaType.getName()) instanceof EventParams));
 		} catch (ConfigException e) {
 			e.printStackTrace();
 			Log.err("Error reloading " + name);
 		}
 	}
 
-	public static void setTypeConfig(final String name, ConfigurationSection cs) throws ConfigException {
+	public static void setTypeConfig(final String name, ConfigurationSection cs, boolean match) throws ConfigException {
 		if (cs == null){
 			Log.err("[BattleArena] configSerializer can't load " + name +" with a config section of " + cs);
 			return;
@@ -139,7 +141,8 @@ public class ConfigSerializer extends BaseSerializer{
 			pminTeamSize = mm.min;
 			pmaxTeamSize = mm.max;
 		}
-		MatchParams pi = new MatchParams(at, rating,vt);
+		MatchParams pi = match ? new MatchParams(at, rating,vt) : new EventParams(at,rating, vt);
+
 		/// Convert first letter of name to upper case
 		StringBuilder sb = new StringBuilder();
 		sb.append(name.substring(0,1).toUpperCase());
@@ -176,7 +179,8 @@ public class ConfigSerializer extends BaseSerializer{
 		String dbName = cs.getString("database");
 		if (dbName != null){
 			pi.setDBName(dbName);
-			BTInterface.addBTI(pi);
+			if (!BTInterface.addBTI(pi))
+				dbName = null;
 		}
 
 
@@ -224,7 +228,7 @@ public class ConfigSerializer extends BaseSerializer{
 		ParamController.removeMatchType(pi);
 		ParamController.addMatchType(pi);
 
-		Log.info(BattleArena.getPName()+" registering match =" + pi);
+		Log.info(BattleArena.getPName()+" registering match =" + pi +" BattleTrackerInterface=" + (dbName != null ? dbName : "none"));
 
 	}
 
@@ -277,7 +281,7 @@ public class ConfigSerializer extends BaseSerializer{
 
 		if (cs.contains("giveClass")){ tops.setClasses(getArenaClasses(cs.getConfigurationSection("giveClass")));}
 		if (options.contains(TransitionOption.NEEDITEMS)){ tops.setItems(getItemList(cs, "items"));}
-		if (options.contains(TransitionOption.GIVEITEMS)){ tops.setItems(getItemList(cs, "items"));}
+		if (options.contains(TransitionOption.GIVEITEMS)){tops.setItems(getItemList(cs, "items"));}
 		setPermissionSection(cs,"addPerms",tops);
 		if (options.contains(TransitionOption.ENCHANTS)){ tops.setEffects(getEffectList(cs, "enchants"));}
 		return tops;
@@ -333,8 +337,11 @@ public class ConfigSerializer extends BaseSerializer{
 			for (Object o : cs.getList(nodeString)){
 				str = o.toString();
 				EffectWithArgs ewa = EffectUtil.parseArg(str,strengthDefault,timeDefault);
-				if (ewa != null)
+				if (ewa != null) {
 					effects.add(ewa);
+				} else { 
+					Log.warn(cs.getCurrentPath() +"."+nodeString + " could not be parsed in config.yml");
+				}
 			}
 		} catch (Exception e){
 			Log.warn(cs.getCurrentPath() +"."+nodeString + " could not be parsed in config.yml");
@@ -350,8 +357,11 @@ public class ConfigSerializer extends BaseSerializer{
 				try {
 					str = o.toString();
 					ItemStack is = InventoryUtil.parseItem(str);
-					if (is != null)
+					if (is != null){
 						items.add(is);
+					} else {
+						Log.warn(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
+					}
 				} catch (Exception e){
 					Log.warn(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
 				}

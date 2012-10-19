@@ -17,6 +17,7 @@ import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.serializers.MessageSerializer;
@@ -258,6 +259,8 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				} else {
 					objs[objIndex] = verifyArenaPlayer(args[strIndex++]);
 				}
+			} else if (EventParams.class == theclass){
+				objs[objIndex] = verifyEventParams(command);
 			} else if (MatchParams.class == theclass){
 				objs[objIndex] = verifyMatchParams(command);
 			} else if (Arena.class == theclass){
@@ -304,8 +307,8 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			if (cs == null)
 				throw new InvalidArgumentException(ChatColor.RED + "You need to select an arena first");
 
-			if (System.currentTimeMillis() - cs.lastUsed > 60000){
-				throw new InvalidArgumentException(ChatColor.RED + "its been over a minute since you selected an arena, reselect it");
+			if (System.currentTimeMillis() - cs.lastUsed > 5*60*1000){
+				throw new InvalidArgumentException(ChatColor.RED + "its been over a 5 minutes since you selected an arena, reselect it");
 			}
 		}
 
@@ -380,6 +383,21 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		}
 
 		throw new InvalidArgumentException(ChatColor.RED + "Match parameters for a &6" + command.getName()+"&c can't be found");
+	}
+
+	private EventParams verifyEventParams(Command command) throws InvalidArgumentException {
+		MatchParams mp = ParamController.getMatchParamCopy(command.getName());
+		if (mp != null && mp instanceof EventParams){
+			return (EventParams)mp;
+		} else {
+			for (String alias : command.getAliases()){
+				mp = ParamController.getMatchParamCopy(alias);
+				if (mp != null && mp instanceof EventParams)
+					return (EventParams) mp;
+			}
+		}
+
+		throw new InvalidArgumentException(ChatColor.RED + "Event parameters for a &6" + command.getName()+"&c can't be found");
 	}
 
 	private Integer verifyInteger(Object object) throws InvalidArgumentException {

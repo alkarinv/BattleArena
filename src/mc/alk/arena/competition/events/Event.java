@@ -30,7 +30,7 @@ import mc.alk.arena.events.events.TeamJoinedEvent;
 import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
@@ -57,7 +57,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 
 	enum EventState{CLOSED,OPEN,RUNNING, FINISHED};
 	EventState state = EventState.CLOSED;
-	MatchParams matchParams= null;
+	EventParams eventParams= null;
 	Countdown timer = null; /// Timer till Event starts, think about moving this to executor, or eventcontroller
 
 	Set<Team> teams = new HashSet<Team>();
@@ -66,9 +66,9 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 
 	final TransitionMethodController tmc = new TransitionMethodController();
 
-	public Event(MatchParams params) {
+	public Event(EventParams params) {
 		setParamInst(params);
-		/// matchParams will change when an new Event is called
+		/// eventParams will change when an new Event is called
 		this.ac = BattleArena.getBAC();
 		this.name = params.getName();
 	}
@@ -83,7 +83,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 	}
 
 	public void openEvent() {
-		MatchParams mp = ParamController.getMatchParamCopy(matchParams.getName());
+		EventParams mp = ParamController.getEventParamCopy(eventParams.getName());
 		mp.setMinTeams(2);
 		mp.setMaxTeams(2);
 		mp.setMinTeamSize(1);
@@ -95,7 +95,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		}
 	}
 
-	public void openEvent(MatchParams params) throws NeverWouldJoinException {
+	public void openEvent(EventParams params) throws NeverWouldJoinException {
 		setParamInst(params);
 		if (params.getMaxTeams() != ArenaParams.MAX){ /// we have a finite set of players
 			joinHandler = new AddToLeastFullTeam(this);	/// lets try and add players to all players first
@@ -118,14 +118,14 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		mc.sendEventOpenMsg();
 	}
 
-	public void autoEvent(MatchParams params,int secondsTillStart,int announcementInterval) throws NeverWouldJoinException {
+	public void autoEvent(EventParams params,int secondsTillStart,int announcementInterval) throws NeverWouldJoinException {
 		openEvent(params);
 		TimeUtil.testClock();
 		mc.sendCountdownTillEvent(secondsTillStart);
 		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);
 	}
 
-	public void openAllPlayersEvent(MatchParams params) throws NeverWouldJoinException {
+	public void openAllPlayersEvent(EventParams params) throws NeverWouldJoinException {
 		openEvent(params);
 		TimeUtil.testClock();
 		Player[] online = Util.getOnlinePlayers();
@@ -136,8 +136,8 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		startEvent();
 	}
 
-	public void setParamInst(MatchParams matchParams) {
-		this.matchParams = new MatchParams(matchParams);
+	public void setParamInst(EventParams eventParams) {
+		this.eventParams = new EventParams(eventParams);
 		if (mc == null)
 			mc = new EventMessager(this);
 		mc.setMessageHandler(new EventMessageImpl(this));
@@ -146,7 +146,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 	public void startEvent() {
 		Set<ArenaPlayer> excludedPlayers = getExcludedPlayers();
 		for (ArenaPlayer p : excludedPlayers){
-			p.sendMessage(Log.colorChat(matchParams.getPrefix()+"&6 &5There werent enough players to create a &6" + getTeamSize() +"&5 person team"));
+			p.sendMessage(Log.colorChat(eventParams.getPrefix()+"&6 &5There werent enough players to create a &6" + getTeamSize() +"&5 person team"));
 		}
 		joinHandler.deconstruct();
 		joinHandler = null;
@@ -282,7 +282,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		return name;
 	}
 
-	public String getCommand(){return matchParams.getCommand();}
+	public String getCommand(){return eventParams.getCommand();}
 	public String getDetailedName() {
 		return getName();
 	}
@@ -291,10 +291,10 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 	public boolean isOpen() {return state == EventState.OPEN;}
 	public boolean isClosed() {return state == EventState.CLOSED;}
 	public boolean isFinished() {return state== EventState.FINISHED;}
-	public MatchParams getParams() {return matchParams;}
+	public EventParams getParams() {return eventParams;}
 
 	public int getNteams() {return teams.size();}
-	public int getTeamSize() {return matchParams.getSize();}
+	public int getTeamSize() {return eventParams.getSize();}
 
 	public void setTeamJoinHandler(TeamJoinHandler tjh){
 		this.joinHandler = tjh;
@@ -362,16 +362,16 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 
 	public String getStatus() {
 		StringBuilder sb = new StringBuilder();
-		boolean rated = matchParams.isRated();
+		boolean rated = eventParams.isRated();
 		sb.append((rated? "&4Rated" : "&aUnrated") +"&e "+name+". " );
 		sb.append("&e(&6" + state+"&e)");
-		if (matchParams != null) sb.append("&eTeam size=" + matchParams.getTeamSizeRange() );
+		if (eventParams != null) sb.append("&eTeam size=" + eventParams.getTeamSizeRange() );
 		//		sb.append("&e Teams=&6 " + inEvent.size()+" &e. Alive Teams: &6" + aliveTeams.size());
 		return sb.toString();
 	}
 
 	public String getInfo() {
-		return TransitionOptions.getInfo(matchParams, matchParams.getName());
+		return TransitionOptions.getInfo(eventParams, eventParams.getName());
 	}
 
 	/**
@@ -423,7 +423,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		if (!isOpen())
 			return false;
 		if (remaining == 0){
-			if (matchParams.matchesNTeams(teams.size())){
+			if (eventParams.matchesNTeams(teams.size())){
 				startEvent();							
 			} else {
 				mc.sendEventCancelledDueToLackOfPlayers(getPlayers());
@@ -463,7 +463,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 	}
 
 	public boolean hasEnoughTeams() {
-		return getNteams() < matchParams.getMinTeams();
+		return getNteams() < eventParams.getMinTeams();
 	}
 
 	public void addTransitionListener(TransitionListener transitionListener) {

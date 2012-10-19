@@ -178,5 +178,9 @@ public class ArenaType implements Comparable<ArenaType>{
 		compatibleTypes.add(at);
 	}
 
+	public static Collection<ArenaType> getTypes() {
+		return types.values();
+	}
+
 
 }
