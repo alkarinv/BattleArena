@@ -20,7 +20,7 @@ public class TransitionOptions {
 	public static enum TransitionOption{
 		TELEPORTWAITROOM("teleportWaitRoom",false),TELEPORTIN ("teleportIn",false), TELEPORTOUT("teleportOut",false),
 		TELEPORTBACK("teleportBack",false),
-		RESPAWN ("respawn",false), RANDOMRESPAWN ("randomRespawn",false),
+		RESPAWN ("respawn",false), RANDOMRESPAWN ("randomRespawn",false), RESPAWNWITHCLASS("respawnWithClass", false),
 		CLEARINVENTORY ("clearInventory",false), NEEDARMOR ("needArmor",false), NOINVENTORY("noInventory",false),
 		CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter",false), 
 		NEEDITEMS ("needItems",false), GIVEITEMS("giveItems",false), GIVECLASS("giveClass",false),
@@ -29,6 +29,7 @@ public class TransitionOptions {
 		PVPON("pvpOn",false), PVPOFF("pvpOff",false),INVINCIBLE("invincible",false),
 		BLOCKBREAKOFF("blockBreakOff",false), BLOCKBREAKON("blockBreakOn",false),
 		BLOCKPLACEOFF("blockPlaceOff",false), BLOCKPLACEON("blockPlaceOn",false),
+		DROPITEMOFF("dropItemOff",false),
 		DISGUISEALLAS("disguiseAllAs",true), UNDISGUISE("undisguise",false),
 		ENCHANTS("enchants",false), DEENCHANT("deEnchant",false),
 		STOREEXPERIENCE("storeExperience",false), RESTOREEXPERIENCE("restoreExperience",false),

@@ -61,6 +61,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -97,8 +98,10 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath; 
 	final boolean respawns, noLeave, noEnter;
 	boolean woolTeams = false;
+	final boolean respawnsWithClass;
 	boolean needsMobDeaths = false, needsBlockEvents = false;
 	boolean needsItemPickups = false, needsInventoryClick = false;
+	final boolean needsItemDropEvents;
 	boolean needsDamageEvents = false;
 	final Plugin plugin;
 
@@ -129,7 +132,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		this.needsBlockEvents = tops.hasOptions(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF,
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
 		this.needsDamageEvents = tops.hasOptions(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
-
+		this.needsItemDropEvents = tops.hasOptions(TransitionOption.DROPITEMOFF);
 		this.matchResult = new MatchResult();
 		TransitionOptions mo = tops.getOptions(MatchState.PREREQS);
 		this.needsClearInventory = mo != null ? mo.clearInventory() : false;
@@ -138,6 +141,8 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		mo = tops.getOptions(MatchState.ONDEATH);
 		this.clearsInventoryOnDeath = mo != null ? mo.clearInventory(): false;
 		this.respawns = mo != null ? (mo.respawn() || mo.randomRespawn()): false;
+		mo = tops.getOptions(MatchState.ONSPAWN);
+		this.respawnsWithClass = mo != null ? (mo.hasOption(TransitionOption.RESPAWNWITHCLASS)): false;
 	}
 
 	private void updateBukkitEvents(MatchState matchState){
@@ -486,6 +491,8 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);}
 		if (needsBlockEvents){
 			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);}
+		if (needsItemDropEvents){
+			MethodController.updateEventListeners(this,ms, p,PlayerDropItemEvent.class);}
 		updateBukkitEvents(ms,p);
 		p.setChosenClass(null);
 	}
@@ -506,8 +513,11 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);}
 		if (needsBlockEvents){
 			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);}
+		if (needsItemDropEvents){
+			MethodController.updateEventListeners(this,ms, p,PlayerDropItemEvent.class);}
 		if (woolTeams || needsInventoryClick){
 			MethodController.updateEventListeners(this,ms, p,InventoryClickEvent.class);}
+		p.setChosenClass(null);
 		BTInterface.resumeTracking(p);
 		updateBukkitEvents(ms,p);
 	}
@@ -521,16 +531,21 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	 * Player is entering arena area. Usually called from a teleportIn
 	 * @param p
 	 */
+	@SuppressWarnings("unchecked")
 	protected void enterWaitRoom(ArenaPlayer p){
 		final String name = p.getName();
-		insideArena.add(name);
-		insideWaitRoom.add(name);
 		/// Store the point at which they entered the waitroom
 		if (!oldlocs.containsKey(name)) /// First teleportIn is the location we want
 			oldlocs.put(name, p.getLocation());
 		BTInterface.stopTracking(p);
 		Team t = getTeam(p);
 		PerformTransition.transition(this, MatchState.ONENTERWAITROOM, p, t, false);
+		insideArena.add(name);
+		insideWaitRoom.add(name);
+		if (woolTeams){
+			MethodController.updateEventListeners(this, MatchState.ONENTER, p,InventoryClickEvent.class);
+			TeamUtil.setTeamHead(teams.indexOf(t), t);
+		}
 		arenaInterface.onEnterWaitRoom(p,t);	
 	}
 
@@ -541,20 +556,19 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	@SuppressWarnings("unchecked")
 	protected void enterArena(ArenaPlayer p){
 		final String name = p.getName();
-		insideArena.add(name);
-		insideWaitRoom.remove(name);
 		/// Store the point at which they entered the arena
 		if (!oldlocs.containsKey(name)) /// First teleportIn is the location we want
 			oldlocs.put(name, p.getLocation());
 		BTInterface.stopTracking(p);
 		Team t = getTeam(p);
-
 		PerformTransition.transition(this, MatchState.ONENTER, p, t, false);
-		arenaInterface.onEnter(p,t);	
+		insideArena.add(name);
+		insideWaitRoom.remove(name);
 		if (woolTeams){
 			MethodController.updateEventListeners(this, MatchState.ONENTER, p,InventoryClickEvent.class);
 			TeamUtil.setTeamHead(teams.indexOf(t), t);
 		}
+		arenaInterface.onEnter(p,t);	
 	}
 
 	/**

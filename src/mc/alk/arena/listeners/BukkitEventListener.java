@@ -29,7 +29,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
  * @author alkarin
  *
  */
-public class BukkitEventListener extends BEventListener{
+public class BukkitEventListener extends BAEventListener{
 	public MapOfHash<String,ArenaListener> listeners = new MapOfHash<String,ArenaListener>();
 	public HashSet<ArenaListener> mlisteners = new HashSet<ArenaListener>();
 
@@ -125,7 +125,7 @@ public class BukkitEventListener extends BEventListener{
 		final Player p = (Player) entity;
 		callListeners(event, p);
 	}
-	
+
 	private void callListeners(Event event, final Player p) {
 		HashSet<ArenaListener> spls = listeners.getSafe(p.getName());
 		if (spls == null){
@@ -182,7 +182,7 @@ public class BukkitEventListener extends BEventListener{
 			callListeners(event, (Player) event.getDamager());
 			return;
 		}
-		
+
 		Player player = null;
 		if (event.getDamager() instanceof Projectile){ /// we have some sort of projectile, maybe shot by a player?
 				Projectile proj = (Projectile) event.getDamager();

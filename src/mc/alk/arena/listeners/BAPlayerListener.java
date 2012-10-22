@@ -13,7 +13,6 @@ import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.PlayerStoreController.PInv;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
@@ -33,7 +32,6 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.alk.virtualPlayer.VirtualPlayers;
-
 
 /**
  * 
@@ -82,12 +80,12 @@ public class BAPlayerListener implements Listener  {
 			for (ItemStack is: p.getInventory().getContents()){
 				if (is == null || is.getType()==Material.AIR)
 					continue;
-				FileLogger.log("d  itemstack="+ InventoryUtil.getItemString(is));
+//				FileLogger.log("d  itemstack="+ InventoryUtil.getItemString(is));
 			}
 			for (ItemStack is: p.getInventory().getArmorContents()){
 				if (is == null || is.getType()==Material.AIR)
 					continue;
-				FileLogger.log("d aitemstack="+ InventoryUtil.getItemString(is));
+//				FileLogger.log("d aitemstack="+ InventoryUtil.getItemString(is));
 			}
 			InventoryUtil.clearInventory(p);
 		}

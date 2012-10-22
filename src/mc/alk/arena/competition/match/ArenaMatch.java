@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.events.PlayerLeftEvent;
@@ -42,12 +43,15 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+
+import com.alk.util.Log;
 
 
 public class ArenaMatch extends Match {
@@ -101,16 +105,16 @@ public class ArenaMatch extends Match {
 		}
 		if (!respawns){
 			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);			
-		} else {
-			target.setChosenClass(null); /// Allow them to rechoose their class
 		}
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true)
 	public void onEntityDamage(EntityDamageEvent event) {
+		if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage : ");}
 		if (!(event.getEntity() instanceof Player))
 			return;
 		ArenaPlayer target = BattleArena.toArenaPlayer((Player) event.getEntity());
+		if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage: "+target);}
 		TransitionOptions to = tops.getOptions(state);
 		if (to == null)
 			return;
@@ -118,6 +122,7 @@ public class ArenaMatch extends Match {
 		if (pvp == null)
 			return;
 		if (pvp == PVPState.INVINCIBLE){
+			if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage: "+target.getName()+ "  " + pvp + " ");}
 			/// all damage is cancelled
 			target.setFireTicks(0);
 			event.setDamage(0);
@@ -139,6 +144,9 @@ public class ArenaMatch extends Match {
 			if (damager == null){ /// damage from some source, its not pvp though. so we dont care
 				return;}
 			Team t = getTeam(damager);
+			if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage: "+target.getName()+ " pvp=" + pvp + " t=" +
+					t +" " +(t!=null ? (t.getDisplayName()+":-:"+t.hasMember(target))  : ""));}
+
 			if (t != null && t.hasMember(target)){ /// attacker is on the same team
 				event.setCancelled(true);
 			} else {/// different teams... lets make sure they can actually hit
@@ -147,6 +155,7 @@ public class ArenaMatch extends Match {
 			break;
 		case OFF:
 			damager = DmgDeathUtil.getPlayerCause(damagerEntity);
+			if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage: "+target.getName()+ " pvp=" + pvp +"  dmger="+damager);}
 			if (damager != null){ /// damage done from a player
 				event.setDamage(0);
 				event.setCancelled(true);
@@ -181,6 +190,15 @@ public class ArenaMatch extends Match {
 							Team t= getTeam(p);
 							TeamUtil.setTeamHead(teams.indexOf(t), t);
 						}
+						if (respawnsWithClass && p.getChosenClass() != null){
+							ArenaClass ac = p.getChosenClass();
+							List<ItemStack> items = ac.getItems();
+							if (items != null)
+								try{ InventoryUtil.addItemsToInventory(p.getPlayer(), items, true);} catch(Exception e){e.printStackTrace();}
+							List<EffectWithArgs> effects = ac.getEffects();
+							if (effects != null){
+								EffectUtil.enchantPlayer(p.getPlayer(), effects);}
+						}
 					} catch(Exception e){}
 				}
 			});
@@ -193,7 +211,7 @@ public class ArenaMatch extends Match {
 	}
 
 	@MatchEventHandler
-	public void onPlayerBlockBreak(BlockBreakEvent event, ArenaPlayer p){
+	public void onPlayerBlockBreak(BlockBreakEvent event){
 		TransitionOptions to = tops.getOptions(state);
 		if (to==null)
 			return;
@@ -203,11 +221,21 @@ public class ArenaMatch extends Match {
 	}
 
 	@MatchEventHandler
-	public void onPlayerBlockPlace(BlockPlaceEvent event, ArenaPlayer p){
+	public void onPlayerBlockPlace(BlockPlaceEvent event){
 		TransitionOptions to = tops.getOptions(state);
 		if (to==null)
 			return;
 		if (to.blockPlaceOff() == true){
+			event.setCancelled(true);
+		}
+	}
+
+	@MatchEventHandler
+	public void onPlayerDropItem(PlayerDropItemEvent event){
+		TransitionOptions to = tops.getOptions(state);
+		if (to==null)
+			return;
+		if (to.hasOption(TransitionOption.DROPITEMOFF)){
 			event.setCancelled(true);
 		}
 	}
@@ -235,7 +263,7 @@ public class ArenaMatch extends Match {
 		}
 
 	}
-	
+
 
 	@MatchEventHandler
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
@@ -260,28 +288,33 @@ public class ArenaMatch extends Match {
 	public void onPlayerInteract(PlayerInteractEvent event){
 		if (event.isCancelled())
 			return;
-
+		/// Check to see if it's a sign
 		final Material m = event.getClickedBlock().getType();
 		if (!(m.equals(Material.SIGN) || m.equals(Material.SIGN_POST)||m.equals(Material.WALL_SIGN))){ /// Only checking for signs
 			return;}
+		/// Get our sign
 		final Sign sign = (Sign) event.getClickedBlock().getState();
+		/// Check to see if sign has correct format (is more efficient than doing string manipulation for getting the )
+		if (!sign.getLine(0).matches("^.[0-9a-fA-F]\\*.*$")){
+			return;}
+
 		Action action = event.getAction();
-		if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
+		if (action != Action.LEFT_CLICK_BLOCK && action != Action.RIGHT_CLICK_BLOCK){
 			return;}
 		if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the sign
-			event.setCancelled(true);
-		}
+			event.setCancelled(true);}
 
 		ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(sign.getLine(0)).replace('*',' ').trim());
 		if (ac == null) /// Not a valid class sign
 			return;
 
 		final Player p = event.getPlayer();
-		final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
 		if (!p.hasPermission("arena.class.use."+ac.getName().toLowerCase())){
 			MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
 			return;			
 		}
+		
+		final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
 		ArenaClass chosen = ap.getChosenClass();
 		if (chosen != null && chosen.getName().equals(ac.getName())){
 			MessageUtil.sendMessage(p, "&cYou already are a &6" + ac.getName());
@@ -315,11 +348,12 @@ public class ArenaMatch extends Match {
 		}
 		/// Clear their inventory first, then give them the class and whatever items were due to them from the config
 		InventoryUtil.clearInventory(p, woolTeams);
-		List<ItemStack>items = ac.getItems()!=null? new ArrayList<ItemStack>() : null;
+		List<ItemStack> items = ac.getItems();
+		if (items != null)
+			try{ InventoryUtil.addItemsToInventory(p, items, true);} catch(Exception e){e.printStackTrace();}
 		if (mo.hasItems()){
-			items.addAll(mo.getItems());
+			try{ InventoryUtil.addItemsToInventory(p, mo.getItems(), true);} catch(Exception e){e.printStackTrace();}
 		}
-		try{ InventoryUtil.addItemsToInventory(p, items, true);} catch(Exception e){e.printStackTrace();}
 
 		/// Deal with effects/buffs
 		EffectUtil.unenchantAll(p);

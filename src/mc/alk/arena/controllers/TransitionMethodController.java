@@ -86,13 +86,10 @@ public class TransitionMethodController {
 			if (methods == null){
 				continue;}
 
-			/// For each of the splisteners methods that deal with this BukkitEvent
+			/// For each of the splisteners methods that deal with this Event
 			for(TransitionMethod method: methods){
-				final Object[] os = new Object[1];
-				os[0] = event;
-
 				try {
-					method.getMethod().invoke(tl, os); /// Invoke the listening arenalisteners method
+					method.getMethod().invoke(tl, event); /// Invoke the listening transitionlisteners method
 				} catch (Exception e){
 					e.printStackTrace();
 				}

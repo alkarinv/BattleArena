@@ -228,10 +228,10 @@ public class BattleArena extends JavaPlugin{
 		arenaController.stop();
 		ArenaSerializer.saveAllArenas(true);
 		yacs.save();
-		FileLogger.saveAll();
 		ess.saveScheduledEvents();
 		if (Defaults.AUTO_UPDATE)
 			PluginUpdater.updatePlugin(this);
+		FileLogger.saveAll();
 	}
 
 	private void createEvents() {

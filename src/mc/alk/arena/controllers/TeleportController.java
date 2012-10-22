@@ -34,8 +34,8 @@ public class TeleportController implements Listener{
 		if (!p.isOnline() || p.isDead()){
 			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + p.getName() + " loc=" + loc + "  " + die +":"+ wipe);
 			BAPlayerListener.teleportOnReenter(p.getName(),loc);
-			if (wipe){
-				InventoryUtil.clearInventory(p);}
+//			if (wipe){
+//				InventoryUtil.clearInventory(p);}
 			return;
 		}
 		teleport(p,loc);

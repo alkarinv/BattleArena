@@ -24,6 +24,7 @@ public class Defaults {
 	public static boolean DEBUG_TRANSITIONS = false;
 	public static boolean DEBUG_STORAGE = false;
 	public static boolean DEBUG_TRACKING = false;
+	public static final boolean DEBUG_DAMAGE = false;
 
 
 	public static final String ARENA_ADMIN = "arena.admin";

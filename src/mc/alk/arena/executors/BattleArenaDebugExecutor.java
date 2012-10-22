@@ -57,6 +57,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			Defaults.DEBUG_TRACKING = on;
 		} else if(section.equalsIgnoreCase("storage")){
 			Defaults.DEBUG_STORAGE = on;
+		} else if(section.equalsIgnoreCase("damage")){
+//			Defaults.DEBUG_DAMAGE = on;
 		} else {
 			sendMessage(sender, "&cDebugging couldnt find code section &6"+ section);
 			return;

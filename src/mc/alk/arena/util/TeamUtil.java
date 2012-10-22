@@ -119,7 +119,6 @@ public class TeamUtil {
 		if (p.isOnline() && !p.isDead()){
 			ItemStack is = p.getInventory().getHelmet();
 			ItemStack item = getTeamHead(index);
-
 			p.getInventory().setHelmet(item);
 			if (is != null && is.getType() != Material.AIR && is.getType()!= Material.WOOL){
 				InventoryUtil.addItemToInventory(p, is.clone(), is.getAmount(), false);}
@@ -129,6 +128,7 @@ public class TeamUtil {
 			}catch (Exception e){}
 		}				
 	}
+	
 	public static String createTeamName(int index) {
 		switch(index){
 		case 0: return "&cRed" ; // &4 hard to see

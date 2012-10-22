@@ -39,7 +39,7 @@ public class BASignListener implements Listener{
 			return;
 		}
 
-		ArenaCommandSign acs = SignUtil.getArenaCommandSign(sign.getLines());
+		ArenaCommandSign acs = SignUtil.getArenaCommandSign(lines);
 		if (acs == null){
 			return;}
 		ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());

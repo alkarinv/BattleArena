@@ -234,17 +234,6 @@ public enum TeamController  implements Listener {
 		}
 	}
 
-	//	private static void logHandlerList(String msg) {
-	//		FileLogger.log(msg);
-	//		synchronized (handlers){
-	//			for (Team t : handlers.keySet()){
-	//				for (TeamHandler th: handlers.get(t)){
-	//					FileLogger.log(" t " + t +"   th = " + th);
-	//				}
-	//			}			
-	//		}		
-	//	}
-
 	public static CompositeTeam createCompositeTeam(Set<ArenaPlayer> players) {
 		if (DEBUG) System.out.println("------- createCompositeTeam " + players.size());
 		return TeamFactory.createCompositeTeam(players);

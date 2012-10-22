@@ -17,12 +17,12 @@ import org.bukkit.plugin.EventExecutor;
  * @author alkarin
  *
  */
-public abstract class BEventListener implements Listener  {
+public abstract class BAEventListener implements Listener  {
 
 	final Class<? extends Event> bukkitEvent;
 
-	public BEventListener(final Class<? extends Event> bukkitEvent) {
-		if (Defaults.DEBUG_EVENTS) System.out.println("Registering BEventListener for type " + bukkitEvent);
+	public BAEventListener(final Class<? extends Event> bukkitEvent) {
+		if (Defaults.DEBUG_EVENTS) System.out.println("Registering BAEventListener for type " + bukkitEvent);
 		this.bukkitEvent = bukkitEvent;
 	}
 	public Class<? extends Event> getEvent(){

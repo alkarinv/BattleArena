@@ -187,7 +187,7 @@ public class InventoryUtil {
 			String itemName = m.name();
 			//        		ItemStack item = commonToStack.get(itemName);
 			int index = itemName.indexOf(name,0);
-//			if (DEBUG) System.out.println(index +"   " + itemName +"   " + m);
+			//			if (DEBUG) System.out.println(index +"   " + itemName +"   " + m);
 			if (index != -1 && index == 0){
 				if (DEBUG) System.out.println(m +"   " + name +"   " + dataValue);
 				return new ItemStack(m.getId(), 1, dataValue);
@@ -714,6 +714,52 @@ public class InventoryUtil {
 	public static boolean sameItems(List<ItemStack> items, PlayerInventory inv, boolean woolTeams) {
 		ItemStack[] contents =inv.getContents();
 		ItemStack[] armor = inv.getArmorContents();
+		/// This is a basic check to make sure we have the same number of items, and same total durability
+		/// Even with the 3 loops b/c there is no creation or sorting this is orders of magnitude faster
+		/// and takes almost no time.
+		int nitems1 =0, nitems2=0;
+		int dura1=0, dura2=0;
+
+		for (ItemStack is: items){
+			if (is == null || is.getType() == Material.AIR)
+				continue;
+			nitems1 += is.getAmount();
+			dura1 += is.getDurability();
+		}
+		for (ItemStack is: contents){
+			if (is == null || is.getType() == Material.AIR)
+				continue;
+			nitems2 += is.getAmount();
+			dura2 += is.getDurability();
+		}
+		if (!woolTeams){
+			for (ItemStack is: armor){
+				if (is == null || is.getType() == Material.AIR)
+					continue;		
+				nitems2 += is.getAmount();
+				dura2 += is.getDurability();
+			}			
+		} else {
+			ItemStack is = inv.getBoots();
+			if (is != null && is.getType() != Material.AIR){
+				nitems2 += is.getAmount();
+				dura2 += is.getDurability();				
+			}
+			is = inv.getLeggings();
+			if (is != null && is.getType() != Material.AIR){
+				nitems2 += is.getAmount();
+				dura2 += is.getDurability();				
+			}
+			is = inv.getChestplate();
+			if (is != null && is.getType() != Material.AIR){
+				nitems2 += is.getAmount();
+				dura2 += is.getDurability();				
+			}
+		}
+		if (nitems1 != nitems2 || dura1 != dura2)
+			return false;
+
+		/// Now that the basic check is over, the more intensive one starts
 		//// I could check size right now if it werent for "air" and null blocks in inventories
 		List<ItemStack> pitems = new ArrayList<ItemStack>();
 		pitems.addAll(Arrays.asList(contents));
@@ -739,45 +785,36 @@ public class InventoryUtil {
 
 		Collections.sort(items, new ItemComparator());
 		Collections.sort(pitems, new ItemComparator());
-		int i1 = 0, i2 = 0;
+		int idx = 0;
 		ItemStack is1, is2;
-		int nullSize1 = 0, nullSize2 = 0; /// amount of air and null
 
-		while (i1< items.size() && i2<pitems.size()){
-			is1 = items.get(i1);
-			is2 = pitems.get(i2);
-			if (is1 == null || is1.getType() == Material.AIR){
-				nullSize1++;
-				continue;
-			}
-			if (is2 == null || is2.getType() == Material.AIR){
-				nullSize2++;
-				continue;
-			}
+		while (idx< items.size() && idx<pitems.size()){
+			is1 = items.get(idx);
+			is2 = pitems.get(idx);
+//			System.out.println(idx  +" : " + is1 +"  " + is2);
+			if ((is1==null || is1.getType() == Material.AIR) && (is2 == null || is2.getType() == Material.AIR))
+				return true;
+			if ((is1==null || is1.getType() == Material.AIR) || (is2 == null || is2.getType() == Material.AIR))
+				return false;
 			/// Alright, now that we dont have to worry about null or air
 			if (!is1.equals(is2))
 				return false;
-			else {
-				//				similar++;
-			}
-			i1++; 
-			i2++;
+			idx++; 
 		}
-		for (int i=i1;i<items.size();i++){
+		/// Arrays are similar up until the smallest array
+		/// If any array has more elements that are not null, then they are not equal
+		for (int i=idx;i<items.size();i++){
 			is1 = items.get(i);
-			if (is1 == null || is1.getType() == Material.AIR){
-				nullSize1++;
-				continue;
-			}			
+			if (is1 != null && is1.getType() != Material.AIR)
+				return false;
 		}
-		for (int i=i2;i<pitems.size();i++){
+		for (int i=idx;i<pitems.size();i++){
 			is2 = pitems.get(i);
-			if (is2 == null || is2.getType() == Material.AIR){
-				nullSize2++;
-				continue;
-			}			
+			if (is2 != null && is2.getType() != Material.AIR)
+				return false;
 		}
-		return items.size() - nullSize1 == pitems.size() - nullSize2;
+		return true;
 	}
+
 
 }

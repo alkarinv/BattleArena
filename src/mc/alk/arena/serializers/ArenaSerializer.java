@@ -35,6 +35,7 @@ import mc.alk.arena.util.SerializerUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -319,10 +320,10 @@ public class ArenaSerializer {
 			}
 
 			map.put(arenaname, amap);
-			if (log)
-				Log.info(plugin.getName() + " Saving arena " + arenaname +" type=" + at.getName() +" to " + 
-						f.getPath() + " configSection="+config.getCurrentPath()+"." + config.getName());
 		}
+		if (log)
+			Log.info(plugin.getName() + " Saving arenas " + StringUtils.join(map.keySet(),",") +" to " + 
+					f.getPath() + " configSection="+config.getCurrentPath()+"." + config.getName());
 		SerializerUtil.expandMapIntoConfig(maincs, map);
 	}
 

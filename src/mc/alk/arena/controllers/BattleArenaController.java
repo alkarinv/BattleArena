@@ -84,24 +84,6 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 			amq.add(arena); /// add it back into the queue
 	}
 	
-//	public void matchComplete(Match am) {
-//		List<ArenaMatch> mls = null;
-//		synchronized(matchListeners){
-//			mls = new ArrayList<ArenaMatch>(matchListeners);			
-//		}
-//		for (Team t : am.getTeams()){ /// Do I need to really do this?
-//			TeamController.removeTeam(t, this);}
-//		/// Notify all Listeners that this match is finished
-//		for (ArenaMatch ml: mls){
-//			if (am.getMatchState() == MatchState.ONCANCEL){
-//				try { ml.matchCancelled(am);} catch(Exception e){};
-//			} else {
-//				try { ml.matchComplete(am);} catch(Exception e){};				
-//			}
-//		}		
-//
-//	}
-
 	public void updateArena(Arena arena) {
 		allarenas.put(arena.getName(), arena);
 		if (amq.removeArena(arena) != null){ /// if its not being used
@@ -141,8 +123,10 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		Arena a = amq.removeArena(arena);
 		if (a != null){
 			allarenas.remove(arena.getName());
+			ArenaInterface ai = new ArenaInterface(a);
+			ai.delete();
 		}
-		ArenaInterface ai = new ArenaInterface(a);
+		ArenaInterface ai = new ArenaInterface(arena);
 		ai.delete();
 		return a;
 	}

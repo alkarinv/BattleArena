@@ -112,8 +112,8 @@ public class PerformTransition {
 				/// Since we cant really tell the eventual result.. do our best guess
 				am.enterWaitRoom(p); 
 				final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),team.getPlayerIndex(p));
-				//			final Location l = am.getWaitRoomSpawn(teamIndex,false);
 				TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false);				
+				PlayerStoreController.setGameMode(p.getPlayer(), GameMode.SURVIVAL);
 			} else {
 				playerReady = false;
 			}
@@ -135,10 +135,10 @@ public class PerformTransition {
 
 		/// Only do if player is online options
 		if (playerReady && !dead){
-			if (wipeInventory){ InventoryUtil.clearInventory(p.getPlayer());}
 			if (mo.hasOption(TransitionOption.STOREGAMEMODE)){ am.psc.storeGamemode(p);}
 			if (mo.storeExperience()){ am.psc.storeExperience(p);}
 			if (mo.storeItems()) { am.psc.storeItems(p);}
+			if (wipeInventory){ InventoryUtil.clearInventory(p.getPlayer()); }
 			if (health != null) p.setHealth(health);
 			if (hunger != null) p.setFoodLevel(hunger);
 			try{if (mo.deEnchant() != null && mo.deEnchant()) EffectUtil.unenchantAll(p.getPlayer());} catch (Exception e){}
@@ -146,7 +146,11 @@ public class PerformTransition {
 			if (DisguiseInterface.enabled() && disguiseAllAs != null) {DisguiseInterface.disguisePlayer(p.getPlayer(), disguiseAllAs);}
 			if (mo.getMoney() != null) {MoneyController.add(p.getName(), mo.getMoney());}
 			if (mo.getExperience() != null) {p.getPlayer().giveExp(mo.getExperience());}
-			if (mo.woolTeams() && am.getParams().getMinTeamSize() >1){
+			if (mo.hasOption(TransitionOption.WOOLTEAMS) && am.getParams().getMinTeamSize() >1){				
+				if (insideArena){
+					TeamUtil.setTeamHead(teamIndex, p);}
+				am.woolTeams= true;
+			} else if (mo.hasOption(TransitionOption.ALWAYSWOOLTEAMS)){
 				if (insideArena){
 					TeamUtil.setTeamHead(teamIndex, p);}
 				am.woolTeams= true;
@@ -175,7 +179,7 @@ public class PerformTransition {
 
 			try{if (effects != null) EffectUtil.enchantPlayer(p.getPlayer(), effects);} catch (Exception e){}
 			if (items != null) {
-				giveSyncedItems(transition, p, items,teamIndex, am.woolTeams, insideArena);
+				giveItems(transition, p, items,teamIndex, am.woolTeams, insideArena);
 			}
 
 			String prizeMsg = mo.getPrizeMsg(null);
@@ -223,7 +227,7 @@ public class PerformTransition {
 			attachment.setPermission(perm, true);}
 	}
 
-	private static void giveSyncedItems(final MatchState ms, final ArenaPlayer p, final List<ItemStack> items,
+	private static void giveItems(final MatchState ms, final ArenaPlayer p, final List<ItemStack> items,
 			final int teamIndex,final boolean woolTeams, final boolean insideArena) {
 		if (woolTeams && insideArena){
 			TeamUtil.setTeamHead(teamIndex, p);}
