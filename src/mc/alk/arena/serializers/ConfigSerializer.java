@@ -80,10 +80,10 @@ public class ConfigSerializer extends BaseSerializer{
 		}
 	}
 
-	public static void setTypeConfig(final String name, ConfigurationSection cs, boolean match) throws ConfigException {
+	public static MatchParams setTypeConfig(final String name, ConfigurationSection cs, boolean match) throws ConfigException {
 		if (cs == null){
 			Log.err("[BattleArena] configSerializer can't load " + name +" with a config section of " + cs);
-			return;
+			return null;
 		}
 		//		System.out.println(" Setting up " + cs.getCurrentPath() +"   name=" +name);
 		/// Set up match options.. specifying defaults where not specified
@@ -183,7 +183,6 @@ public class ConfigSerializer extends BaseSerializer{
 				dbName = null;
 		}
 
-
 		MatchTransitions allTops = new MatchTransitions();
 
 		/// Set all Transition Options
@@ -229,7 +228,7 @@ public class ConfigSerializer extends BaseSerializer{
 		ParamController.addMatchType(pi);
 
 		Log.info(BattleArena.getPName()+" registering match =" + pi +" BattleTrackerInterface=" + (dbName != null ? dbName : "none"));
-
+		return pi;
 	}
 
 	@SuppressWarnings("unchecked")

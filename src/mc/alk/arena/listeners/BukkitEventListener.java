@@ -137,39 +137,40 @@ public class BukkitEventListener extends BAEventListener{
 		for (ArenaListener spl: spls){
 			List<MatchEventMethod> methods = MethodController.getMethods(spl,event);
 			if (Defaults.DEBUG_EVENTS) System.out.println("    SPL = " + spl.getClass() +"    getting methods "+methods);
-			if (methods == null){
-				/// Another change for entitydamage. TODO ponder.  maybe use isassignable for some alternate way
-				if (event instanceof EntityDamageByEntityEvent){ 
-					methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
-				else if (event instanceof EntityDamageByBlockEvent){ 
-					methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
-				if (methods == null)
-					continue;
-			}
-			/// For each of the splisteners methods that deal with this BukkitEvent
-			for(MatchEventMethod method: methods){
-				final Class<?>[] types = method.getMethod().getParameterTypes();
-				if (Defaults.DEBUG_EVENTS) System.out.println(" method = " + method + "  types.length=" +types.length);
-				final Object[] os = new Object[types.length];
-				os[0] = event;
+			if (methods != null){
+				doMethods(event, p, spl, methods);}
+			if (event instanceof EntityDamageByEntityEvent){ 
+				methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
+			else if (event instanceof EntityDamageByBlockEvent){ 
+				methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
+			if (methods != null){
+				doMethods(event, p, spl, methods);}
+		}
+	}
+	private void doMethods(Event event, final Player p, ArenaListener spl, List<MatchEventMethod> methods) {
+		/// For each of the splisteners methods that deal with this BukkitEvent
+		for(MatchEventMethod method: methods){
+			final Class<?>[] types = method.getMethod().getParameterTypes();
+			if (Defaults.DEBUG_EVENTS) System.out.println(" method = " + method + "  types.length=" +types.length);
+			final Object[] os = new Object[types.length];
+			os[0] = event;
 
-				try {
-					ArenaPlayer arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;
-					for (int i=1;i< types.length;i++){
-						final Class<?> t = types[i];
-						if (Player.class.isAssignableFrom(t)){
-							os[i] = p;
-						} else if (Team.class.isAssignableFrom(t)){
-							os[i] = TeamController.getTeam(arenaPlayer);
-						} else if (ArenaPlayer.class.isAssignableFrom(t)){
-							os[i] = arenaPlayer;
-						}
+			try {
+				ArenaPlayer arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;
+				for (int i=1;i< types.length;i++){
+					final Class<?> t = types[i];
+					if (Player.class.isAssignableFrom(t)){
+						os[i] = p;
+					} else if (Team.class.isAssignableFrom(t)){
+						os[i] = TeamController.getTeam(arenaPlayer);
+					} else if (ArenaPlayer.class.isAssignableFrom(t)){
+						os[i] = arenaPlayer;
 					}
-					method.getMethod().invoke(spl, os); /// Invoke the listening arenalisteners method
-				} catch (Exception e){
-					e.printStackTrace();
 				}
-			}			
+				method.getMethod().invoke(spl, os); /// Invoke the listening arenalisteners method
+			} catch (Exception e){
+				e.printStackTrace();
+			}
 		}
 	}
 

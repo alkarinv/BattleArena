@@ -190,14 +190,18 @@ public class ArenaMatch extends Match {
 							Team t= getTeam(p);
 							TeamUtil.setTeamHead(teams.indexOf(t), t);
 						}
-						if (respawnsWithClass && p.getChosenClass() != null){
-							ArenaClass ac = p.getChosenClass();
-							List<ItemStack> items = ac.getItems();
-							if (items != null)
-								try{ InventoryUtil.addItemsToInventory(p.getPlayer(), items, true);} catch(Exception e){e.printStackTrace();}
-							List<EffectWithArgs> effects = ac.getEffects();
-							if (effects != null){
-								EffectUtil.enchantPlayer(p.getPlayer(), effects);}
+						if (respawnsWithClass){
+							if (p.getChosenClass() != null){
+								ArenaClass ac = p.getChosenClass();
+								List<ItemStack> items = ac.getItems();
+								if (items != null)
+									try{ InventoryUtil.addItemsToInventory(p.getPlayer(), items, true);} catch(Exception e){e.printStackTrace();}
+								List<EffectWithArgs> effects = ac.getEffects();
+								if (effects != null){
+									EffectUtil.enchantPlayer(p.getPlayer(), effects);}
+							}
+						} else {
+							p.setChosenClass(null);
 						}
 					} catch(Exception e){}
 				}
@@ -313,7 +317,7 @@ public class ArenaMatch extends Match {
 			MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
 			return;			
 		}
-		
+
 		final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
 		ArenaClass chosen = ap.getChosenClass();
 		if (chosen != null && chosen.getName().equals(ac.getName())){

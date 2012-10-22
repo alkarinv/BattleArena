@@ -35,13 +35,6 @@ public class ArenaType implements Comparable<ArenaType>{
 		if (name.equalsIgnoreCase("ANY")) ANY = this;
 		else if (name.equalsIgnoreCase("VERSUS")) { VERSUS = this;}
 	}
-
-	public static ArenaType fromString(final String arenatype) {
-		if (arenatype==null)
-			return null;
-		return types.get(arenatype.toUpperCase());
-	}
-
 	public String toString(){
 		return name;
 	}
@@ -76,69 +69,19 @@ public class ArenaType implements Comparable<ArenaType>{
 		return sb.toString();
 	}
 
-	public static String getValidList() {
-		StringBuilder sb = new StringBuilder();
-		boolean first = true;
-		for (ArenaType at: types.values()){
-			if (!first) sb.append(", ");
-			first = false;
-			sb.append(at.name);
-		}
-		return sb.toString();
-	}
-
-	public static ArenaType register(String arenaType, Class<? extends Arena> c, Plugin plugin) {
-		final String uarenaType = arenaType.toUpperCase();
-		if (!classes.containsKey(uarenaType))
-			classes.put(uarenaType, c);
-		if (!types.containsKey(uarenaType)){
-			new ArenaType(arenaType,plugin);
-		}
-		MethodController.addMethods(c,c.getMethods());
-		return types.get(uarenaType);
-	}
-
 	public int ordinal() {
 		return id;
 	}
 
-	/**
-	 * Create an arena from a name and parameters
-	 * This will not load persistable objects, which must be done by the caller
-	 * @param arenaName
-	 * @param arenaParams
-	 * @return
-	 */
-	public static Arena createArena(String arenaName, ArenaParams arenaParams) {
-		ArenaType arenaType = arenaParams.getType();
-		Arena newArena = createArena(arenaType);
-		if (newArena == null)
-			return null;
-		newArena.setName(arenaName);
-		newArena.setParameters(arenaParams);
-		return newArena;
-	}
-	
-	private static Arena createArena(ArenaType arenaType){
-		Class<?> arenaClass = classes.get(arenaType.name);
-		if (arenaClass == null)
-			return null;
-		Class<?>[] args = {};
-		try {
-			Constructor<?> constructor = arenaClass.getConstructor(args);
-			return (Arena) constructor.newInstance((Object[])args);
-		} catch (NoSuchMethodException e){
-			System.err.println("If you have custom constructors for your class you must also have a public default constructor");
-			System.err.println("Add the following line to your Arena Class '" + arenaClass.getSimpleName()+".java'");
-			System.err.println("public " + arenaClass.getSimpleName()+"(){}");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	public String getName() {
 		return name;
+	}
+
+	private void addCompatibleType(ArenaType at) {
+		if (compatibleTypes == null){
+			compatibleTypes = new HashSet<ArenaType>();
+		}
+		compatibleTypes.add(at);
 	}
 
 	public int compareTo(ArenaType arg0) {
@@ -162,6 +105,70 @@ public class ArenaType implements Comparable<ArenaType>{
 		return ownerPlugin;
 	}
 
+	public static ArenaType fromString(final String arenatype) {
+		if (arenatype==null)
+			return null;
+		return types.get(arenatype.toUpperCase());
+	}
+
+
+	public static String getValidList() {
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		for (ArenaType at: types.values()){
+			if (!first) sb.append(", ");
+			first = false;
+			sb.append(at.name);
+		}
+		return sb.toString();
+	}
+
+	public static ArenaType register(String arenaType, Class<? extends Arena> c, Plugin plugin) {
+		final String uarenaType = arenaType.toUpperCase();
+		if (!classes.containsKey(uarenaType))
+			classes.put(uarenaType, c);
+		if (!types.containsKey(uarenaType)){
+			new ArenaType(arenaType,plugin);
+		}
+		MethodController.addMethods(c,c.getMethods());
+		return types.get(uarenaType);
+	}
+
+	/**
+	 * Create an arena from a name and parameters
+	 * This will not load persistable objects, which must be done by the caller
+	 * @param arenaName
+	 * @param arenaParams
+	 * @return
+	 */
+	public static Arena createArena(String arenaName, ArenaParams arenaParams) {
+		ArenaType arenaType = arenaParams.getType();
+		Arena newArena = createArena(arenaType);
+		if (newArena == null)
+			return null;
+		newArena.setName(arenaName);
+		newArena.setParameters(arenaParams);
+		return newArena;
+	}
+
+	private static Arena createArena(ArenaType arenaType){
+		Class<?> arenaClass = classes.get(arenaType.name);
+		if (arenaClass == null)
+			return null;
+		Class<?>[] args = {};
+		try {
+			Constructor<?> constructor = arenaClass.getConstructor(args);
+			return (Arena) constructor.newInstance((Object[])args);
+		} catch (NoSuchMethodException e){
+			System.err.println("If you have custom constructors for your class you must also have a public default constructor");
+			System.err.println("Add the following line to your Arena Class '" + arenaClass.getSimpleName()+".java'");
+			System.err.println("public " + arenaClass.getSimpleName()+"(){}");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public static void addCompatibleTypes(String type1, String type2) {
 		ArenaType at1 = fromString(type1);
 		ArenaType at2 = fromString(type2);
@@ -171,16 +178,21 @@ public class ArenaType implements Comparable<ArenaType>{
 		at2.addCompatibleType(at1);
 	}
 
-	private void addCompatibleType(ArenaType at) {
-		if (compatibleTypes == null){
-			compatibleTypes = new HashSet<ArenaType>();
-		}
-		compatibleTypes.add(at);
-	}
 
 	public static Collection<ArenaType> getTypes() {
 		return types.values();
 	}
+
+	public static Collection<ArenaType> getTypes(Plugin plugin) {
+		List<ArenaType> result = new ArrayList<ArenaType>();
+		for (ArenaType type: types.values()){
+			if (type.getPlugin().equals(plugin)){
+				result.add(type);
+			}
+		}
+		return result;
+	}
+
 
 
 }

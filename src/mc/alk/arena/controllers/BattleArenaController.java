@@ -374,5 +374,9 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		return teams;
 	}
 
+	public boolean hasRunningMatches() {
+		return !running_matches.isEmpty();
+	}
+
 
 }

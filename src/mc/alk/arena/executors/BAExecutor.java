@@ -274,6 +274,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 	}
 
 	private boolean cancelAll(CommandSender sender) {
+		ac.purgeQueue();
 		ac.cancelAllArenas();
 		ec.cancelAll();
 		return sendMessage(sender,"&2You have cancelled all matches/events");						
@@ -412,15 +413,23 @@ public class BAExecutor extends CustomCommandExecutor  {
 	@MCCommand(cmds={"reload"}, admin=true)
 	public boolean arenaReload(CommandSender sender, MatchParams mp) {		
 		Plugin plugin = mp.getType().getPlugin();
-		ac.removeAllArenas(mp.getType());
+		if (ac.hasRunningMatches()){
+			sendMessage(sender, "&cYou can't reload the config while matches are running");
+			return sendMessage(sender, "&cYou can use &6/arena cancel all &6to cancel all matches");
+		}
 		if (plugin == BattleArena.getSelf()){
+			for (ArenaType type : ArenaType.getTypes(plugin)){
+				ac.removeAllArenas(type);
+			}
 			MessageSerializer.loadDefaults();
 			BattleArena.getSelf().reloadConfig();
+			ArenaSerializer.loadAllArenas(plugin);
 		} else {
+			ac.removeAllArenas(mp.getType());
 			ConfigSerializer.reloadConfig(mp.getType());
 			MessageSerializer.reloadConfig(mp.getName());
+			ArenaSerializer.loadAllArenas(plugin, mp.getType());
 		}
-		ArenaSerializer.loadAllArenas(plugin, mp.getType());
 		return sendMessage(sender, "&6" + plugin.getName()+"&e configuration reloaded");
 	}
 

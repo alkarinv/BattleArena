@@ -1,5 +1,7 @@
 package mc.alk.arena.objects;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -81,12 +83,15 @@ public class MatchTransitions {
 	}
 	public String getOptionString() {
 		StringBuilder sb = new StringBuilder();
-		for (MatchState ms : ops.keySet()){
+		List<MatchState> states = new ArrayList<MatchState>(ops.keySet());
+		Collections.sort(states);
+		for (MatchState ms : states){
 			sb.append(ms +" -- " + ops.get(ms)+"\n");
 			List<ItemStack> items = ops.get(ms).getItems();
 			if (items != null){
 				for (ItemStack item: items){
 					sb.append("          item - " + InventoryUtil.getItemString(item));}
+				sb.append("\n");
 			}
 		}
 		return sb.toString();

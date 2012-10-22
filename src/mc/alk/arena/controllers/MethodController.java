@@ -131,7 +131,8 @@ public class MethodController {
 	
 	public static List<MatchEventMethod> getMethods(ArenaListener ael, Class<? extends Event> eventClass) {
 		HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap = arenaMethods.get(ael.getClass());
-		if (Defaults.DEBUG_EVENTS) System.out.println("!! getEvent "+ael.getClass()+ "   methods="+(typeMap==null?"null" :typeMap.size()));
+		if (Defaults.DEBUG_EVENTS) System.out.println("!! getEvent "+ael.getClass()+ " " +eventClass+"  methods="+
+				(typeMap==null?"null" :typeMap.size() +":"+ (typeMap.get(eventClass) != null ? typeMap.get(eventClass).size() : 0) ) );
 		if (typeMap == null)
 			return null;
 		return typeMap.get(eventClass);

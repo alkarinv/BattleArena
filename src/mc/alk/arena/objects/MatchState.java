@@ -8,10 +8,9 @@ package mc.alk.arena.objects;
  */
 public enum MatchState {
 	DEFAULTS("defaults"),
-	ONOPEN("onOpen"), PREREQS ("preReqs"), ONBEGIN("onBegin"),
-	ONJOIN ("onJoin"), ONPRESTART ("onPrestart"), ONSTART ("onStart"), ONVICTORY ("onVictory"),
-	ONCOMPLETE ("onComplete"), ONCANCEL ("onCancel"),
-	ONFINISH("onFinish"),
+	PREREQS ("preReqs"), ONOPEN("onOpen"), ONJOIN ("onJoin"), 
+	ONBEGIN("onBegin"), ONPRESTART ("onPrestart"), ONSTART ("onStart"), ONVICTORY ("onVictory"),
+	ONCOMPLETE ("onComplete"), ONCANCEL ("onCancel"), ONFINISH("onFinish"),
 	ONDEATH ("onDeath"), ONSPAWN ("onSpawn"), WINNER ("winner"),
 	ONENTER("onEnter"), ONLEAVE("onLeave"), ONENTERWAITROOM("onEnterWaitRoom"),
 	LOSERS ("losers"), FIRSTPLACE ("firstPlace"), PARTICIPANTS("participants"),

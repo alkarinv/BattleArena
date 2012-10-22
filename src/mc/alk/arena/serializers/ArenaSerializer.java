@@ -82,9 +82,13 @@ public class ArenaSerializer {
 
 	public static void loadAllArenas(){
 		for (Plugin plugin: configs.keySet()){
-			for (ArenaSerializer serializer: configs.get(plugin)){
-				serializer.loadArenas(plugin);
-			}
+			loadAllArenas(plugin);
+		}
+	}
+
+	public static void loadAllArenas(Plugin plugin){
+		for (ArenaSerializer serializer: configs.get(plugin)){
+			serializer.loadArenas(plugin);
 		}
 	}
 

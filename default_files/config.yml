@@ -23,8 +23,8 @@ disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]
 ## default Options (these can be overridden by each match/event type)
 defaultOptions:
     ### Match Options
-    secondsTillBegin: 3 
-    secondsTillMatch: 3 
+    secondsTillBegin: 6 
+    secondsTillMatch: 6 
     secondsToLoot: 5 ## Time after winning to run around and collect loot
     matchTime: 120 ## How long do timed matches last, (in seconds)
     matchUpdateInterval: 30 ## For timed matched, how long between sending players match updates
