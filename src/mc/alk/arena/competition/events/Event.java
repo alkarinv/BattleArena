@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
@@ -60,9 +61,9 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 	EventParams eventParams= null;
 	Countdown timer = null; /// Timer till Event starts, think about moving this to executor, or eventcontroller
 
-	Set<Team> teams = new HashSet<Team>();
-	ArrayList<Round> rounds = new ArrayList<Round>();
-	TeamJoinHandler joinHandler; /// Specify out teams are allocated
+	final List<Team> teams = new ArrayList<Team>();
+	final ArrayList<Round> rounds = new ArrayList<Round>();
+	TeamJoinHandler joinHandler; /// Specify how teams are allocated
 
 	final TransitionMethodController tmc = new TransitionMethodController();
 
@@ -97,6 +98,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 
 	public void openEvent(EventParams params) throws NeverWouldJoinException {
 		setParamInst(params);
+		teams.clear();
 		if (params.getMaxTeams() != ArenaParams.MAX){ /// we have a finite set of players
 			joinHandler = new AddToLeastFullTeam(this);	/// lets try and add players to all players first
 		} else { /// finite team size
@@ -112,7 +114,6 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 			return;
 
 		stopTimer();
-		teams.clear();
 		state = EventState.OPEN;
 
 		mc.sendEventOpenMsg();
@@ -144,6 +145,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 	}
 
 	public void startEvent() {
+		/// TODO rebalance teams
 		Set<ArenaPlayer> excludedPlayers = getExcludedPlayers();
 		for (ArenaPlayer p : excludedPlayers){
 			p.sendMessage(Log.colorChat(eventParams.getPrefix()+"&6 &5There werent enough players to create a &6" + getTeamSize() +"&5 person team"));
@@ -409,7 +411,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		return sb.toString();
 	}
 
-	public Set<Team> getTeams(){return teams;}
+	public List<Team> getTeams(){return teams;}
 	public boolean canLeaveTeam(ArenaPlayer p) {return canLeave(p);}
 	public String getState() {return state.toString();}
 
@@ -423,7 +425,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		if (!isOpen())
 			return false;
 		if (remaining == 0){
-			if (eventParams.matchesNTeams(teams.size())){
+			if (eventParams.matchesNTeams(teams.size()) && this.hasEnoughTeams()){
 				startEvent();							
 			} else {
 				mc.sendEventCancelledDueToLackOfPlayers(getPlayers());
@@ -463,7 +465,12 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 	}
 
 	public boolean hasEnoughTeams() {
-		return getNteams() < eventParams.getMinTeams();
+		int nteams = 0;
+		for (Team t: teams){
+			if (t.size() > 0)
+				nteams++;
+		}
+		return nteams >= eventParams.getMinTeams();
 	}
 
 	public void addTransitionListener(TransitionListener transitionListener) {

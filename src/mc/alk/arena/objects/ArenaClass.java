@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class ArenaClass {
 	public static final Integer DEFAULT = Integer.MAX_VALUE;
-	
+
 	final String name;
 	final List<ItemStack> items;
 	final List<EffectWithArgs> effects;
@@ -42,6 +42,7 @@ public class ArenaClass {
 		return effects;
 	}
 
+	@Override
 	public String toString(){
 		return "[ArenaClass "+name+" items="+items +" enchants=" + effects+"]";
 	}

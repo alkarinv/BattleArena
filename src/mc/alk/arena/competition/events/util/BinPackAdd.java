@@ -6,6 +6,11 @@ import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 
+/**
+ * When there is an infinite number of teams
+ * @author alkarin
+ *
+ */
 public class BinPackAdd extends TeamJoinHandler {
 	
 	public BinPackAdd(Event event) throws NeverWouldJoinException{

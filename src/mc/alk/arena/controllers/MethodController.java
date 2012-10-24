@@ -35,7 +35,7 @@ public class MethodController {
 	static HashMap<Type, BukkitEventListener> listeners = new HashMap<Type, BukkitEventListener>();
 
 	/** Our registered events and the methods to call when they happen*/
-	static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<MatchEventMethod>>> arenaMethods = 
+	static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<MatchEventMethod>>> arenaMethods =
 			new HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<MatchEventMethod>>>();
 
 	public MethodController(){}
@@ -54,7 +54,7 @@ public class MethodController {
 			}
 			Collection<String> newplayers = players != null ? new ArrayList<String>(players) : null;
 			for (Class<? extends Event> event: map.keySet()){
-				updateEventListener(arenaListener,matchState, newplayers, map, event);				
+				updateEventListener(arenaListener,matchState, newplayers, map, event);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -79,7 +79,7 @@ public class MethodController {
 			List<String> players = new ArrayList<String>();
 			players.add(player.getName());
 			for (Class<? extends Event> event: events){
-				updateEventListener(arenaListener,matchState,players, map, event);				
+				updateEventListener(arenaListener,matchState,players, map, event);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -88,18 +88,18 @@ public class MethodController {
 
 	private static void updateEventListener(ArenaListener arenaListener, MatchState matchState, Collection<String> players,
 			Map<Class<? extends Event>, List<MatchEventMethod>> map, final Class<? extends Event> event) {
-		if (Defaults.DEBUG_EVENTS) System.out.println("updateEventListener "+  event +"    " + matchState);
+		if (Defaults.DEBUG_EVENTS) System.out.println("updateEventListener "+  event.getSimpleName() +"    " + matchState);
 		final List<MatchEventMethod> at = map.get(event);
 		if (at == null || at.isEmpty()){
 			System.err.println(arenaListener +" has no method that uses the bukkit event +"+event+", but is trying to register it");
 			return;
 		}
 		for (MatchEventMethod mem : at){
-			if (Defaults.DEBUG_EVENTS) System.out.println("  updateEventListener "+  event +"    " + matchState +":" +
+			if (Defaults.DEBUG_EVENTS) System.out.println("  updateEventListener "+  event.getSimpleName() +"    " + matchState +":" +
 					mem +",al=" + arenaListener +"   " + players);
 			if (mem.getBeginState() == matchState){
 				BukkitEventListener bel = getCreate(event,mem);
-				bel.addListener(arenaListener,matchState, mem,players);					
+				bel.addListener(arenaListener,matchState, mem,players);
 			} else if (mem.getEndState() == matchState || mem.getCancelState() == matchState) {
 				BukkitEventListener bel = listeners.get(event);
 				if (bel != null){
@@ -128,7 +128,7 @@ public class MethodController {
 	public static List<MatchEventMethod> getMethods(ArenaListener ael, Event event) {
 		return getMethods(ael,event.getClass());
 	}
-	
+
 	public static List<MatchEventMethod> getMethods(ArenaListener ael, Class<? extends Event> eventClass) {
 		HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap = arenaMethods.get(ael.getClass());
 		if (Defaults.DEBUG_EVENTS) System.out.println("!! getEvent "+ael.getClass()+ " " +eventClass+"  methods="+
@@ -145,7 +145,7 @@ public class MethodController {
 
 	@SuppressWarnings("unchecked")
 	public static void addMethods(Class<? extends ArenaListener> arenaListener, Method[] methodArray){
-		HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap = 
+		HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap =
 				new HashMap<Class<? extends Event>,List<MatchEventMethod>>();
 
 		for (Method method : methodArray){
@@ -158,7 +158,7 @@ public class MethodController {
 			Class<?>[] classes = method.getParameterTypes();
 			if (classes.length == 0 || !(Event.class.isAssignableFrom(classes[0]))){
 				System.err.println("Bukkit Event was null for method " + method);
-				continue;				
+				continue;
 			}
 			Class<? extends Event> bukkitEvent = (Class<? extends Event>)classes[0];
 			Method getPlayerMethod = null;
@@ -175,7 +175,7 @@ public class MethodController {
 					}
 					getPlayerMethod = m;
 				} else if (LivingEntity.class.isAssignableFrom((Class<?>) t) || Entity.class.isAssignableFrom((Class<?>) t)){
-					getLivingMethod = m;	
+					getLivingMethod = m;
 				}
 			}
 			/// Go over the rest of the parameters to see if we should give a Team or Player
@@ -193,13 +193,13 @@ public class MethodController {
 					return;
 				} else if (getLivingMethod != null && !meh.suppressCastWarnings()){
 					Log.warn("[BattleArena] Warning. "+arenaListener+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
-							bukkitEvent.getCanonicalName()+" returns only a living entity. Cast to Player will be attempted at runtime");					
+							bukkitEvent.getCanonicalName()+" returns only a living entity. Cast to Player will be attempted at runtime");
 				} else if (getEntityMethod != null && !meh.suppressCastWarnings()){
 					Log.warn("[BattleArena] Warning. "+arenaListener+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
 							bukkitEvent.getCanonicalName()+" returns only an Entity. Cast to Player will be attempted at runtime");
 				}
 			}
-			
+
 			if (getPlayerMethod == null) getPlayerMethod = getLivingMethod; /// if playermethod is null maybe we have a living
 			if (getPlayerMethod == null) getPlayerMethod = getEntityMethod;/// ok.. maybe at least an entity?
 
@@ -209,14 +209,14 @@ public class MethodController {
 				mths = new ArrayList<MatchEventMethod>();
 				typeMap.put(bukkitEvent, mths);
 			}
-			
-			
+
+
 			if (getPlayerMethod != null){
 				if (beginState == MatchState.NONE) beginState = MatchState.ONENTER;
 				if (endState == MatchState.NONE) endState = MatchState.ONLEAVE;
-				
-				mths.add(new MatchEventMethod(method, bukkitEvent,getPlayerMethod,beginState, endState,endState, meh.priority()));				
-			} else {				
+
+				mths.add(new MatchEventMethod(method, bukkitEvent,getPlayerMethod,beginState, endState,endState, meh.priority()));
+			} else {
 				if (beginState == MatchState.NONE) beginState = MatchState.ONOPEN;
 				if (endState == MatchState.NONE) endState = MatchState.ONCOMPLETE;
 				if (cancelState == MatchState.NONE) endState = MatchState.ONCANCEL;

@@ -1,5 +1,7 @@
 package mc.alk.arena.executors;
 
+import java.util.Arrays;
+
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.TeamController;
@@ -7,6 +9,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventOpenOptions;
 import mc.alk.arena.objects.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.JoinOptions;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
@@ -50,10 +53,10 @@ public class EventExecutor extends BAExecutor{
 		if (!event.isRunning() && !event.isOpen()){
 			return sendMessage(sender,"&eA "+event.getCommand()+" is not running");
 		}
-//		boolean silent = args.length >1 && args[1].equalsIgnoreCase("silent");
+		//		boolean silent = args.length >1 && args[1].equalsIgnoreCase("silent");
 		event.cancelEvent();
-//		if (!silent && !event.isSilent())
-//			event.getMessageHandler().sendEventCancelled();
+		//		if (!silent && !event.isSilent())
+		//			event.getMessageHandler().sendEventCancelled();
 
 		return sendMessage(sender,"&eYou have canceled the &6" + event.getName());		
 	}
@@ -66,7 +69,7 @@ public class EventExecutor extends BAExecutor{
 			return sendMessage(sender,"&eType &6/"+event.getCommand()+" open <params>&e : to open one");
 		}
 		boolean forceStart = args.length > 1 && args[1].equalsIgnoreCase("force");
-		if (!forceStart && event.hasEnoughTeams()){
+		if (!forceStart && !event.hasEnoughTeams()){
 			final int nteams = event.getNteams();
 			final int neededTeams = event.getParams().getMinTeams();
 			sendMessage(sender,"&cThe "+name+" only has &6" + nteams +" &cteams and it needs &6" +neededTeams);
@@ -75,12 +78,12 @@ public class EventExecutor extends BAExecutor{
 		event.startEvent();
 		return sendMessage(sender,"&2You have started the &6" + name);
 	}
-	
+
 	@MCCommand(cmds={"announce"},admin=true,usage="announce")
 	public boolean eventAnnounce(CommandSender sender,String[] args) {
 		return true;
 	}
-	
+
 	@MCCommand(cmds={"info"},usage="info", order=2)
 	public boolean eventInfo(CommandSender sender){
 		if (!event.isOpen() && !event.isRunning()){
@@ -96,8 +99,8 @@ public class EventExecutor extends BAExecutor{
 	public boolean eventLeave(ArenaPlayer p) {
 		if (!event.waitingToJoin(p) && !event.hasPlayer(p)){
 			return sendMessage(p,"&eYou aren't inside the &6" + event.getName());}
-//		if (!event.canLeave(p)){
-//			return sendMessage(p,"&eYou can't leave the &6"+event.getCommand()+"&e while its "+event.getState());}
+		//		if (!event.canLeave(p)){
+		//			return sendMessage(p,"&eYou can't leave the &6"+event.getCommand()+"&e while its "+event.getState());}
 		event.leave(p);
 		return sendMessage(p,"&eYou have left the &6" + event.getName());
 	}
@@ -112,12 +115,12 @@ public class EventExecutor extends BAExecutor{
 	}
 
 	@MCCommand(cmds={"join"},inGame=true,usage="join", order=2)
-	public boolean eventJoin(ArenaPlayer p) {
-		eventJoin(p, false);
+	public boolean eventJoin(ArenaPlayer p, String[] args) {
+		eventJoin(p, args, false);
 		return true;
 	}
 
-	private boolean eventJoin(ArenaPlayer p, boolean adminCommand) {
+	private boolean eventJoin(ArenaPlayer p, String[] args, boolean adminCommand) {
 		if (!(p.hasPermission("arena."+event.getCommand().toLowerCase()+".join"))){
 			return sendMessage(p, "&eYou don't have permission to join a &6" + event.getCommand());}
 		if (!event.canJoin()){
@@ -138,7 +141,16 @@ public class EventExecutor extends BAExecutor{
 		Team t = teamc.getSelfTeam(p);
 		if (t==null){
 			t = TeamController.createTeam(p); }
-
+		JoinOptions jp;
+		try {
+			jp = JoinOptions.parseOptions(sq,t, p, Arrays.copyOfRange(args, 1, args.length));
+			t.setJoinPreferences(jp);
+		} catch (InvalidOptionException e) {
+			return sendMessage(p, e.getMessage());
+		} catch (Exception e){
+			e.printStackTrace();
+			jp = null;
+		}
 		if (sq.getMaxTeamSize() < t.size()){
 			return sendMessage(p,"&cThis Event can only support up to &6" + sq.getSize()+"&e your team has &6"+t.size());}
 
@@ -147,11 +159,11 @@ public class EventExecutor extends BAExecutor{
 
 		if (!checkFee(sq, p)){
 			return true;}
-		
-		event.joining(t);	
+
+		event.joining(t);
 		return true;
 	}
-	
+
 	@MCCommand(cmds={"status"}, usage="status", order=2)
 	public boolean eventStatus(CommandSender sender) {
 		StringBuilder sb = new StringBuilder(event.getStatus());
@@ -171,7 +183,7 @@ public class EventExecutor extends BAExecutor{
 		}
 		return sendMessage(sender,"&eResults for the &6" + event.getDetailedName() + "&e\n" + sb.toString());
 	}
-	
+
 	public static boolean checkOpenOptions(CommandSender sender, Event event, MatchParams mp, String[] args) {
 		if (mp == null){
 			sendMessage(sender,"&cMatch params were null");
@@ -190,7 +202,7 @@ public class EventExecutor extends BAExecutor{
 		}		
 		return true;
 	}
-	
+
 	public static void openEvent(Event te, EventParams mp, EventOpenOptions eoo) throws InvalidOptionException, NeverWouldJoinException{
 		eoo.updateParams(mp);
 		//		System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
@@ -204,5 +216,5 @@ public class EventExecutor extends BAExecutor{
 		}
 	}
 
-	
+
 }

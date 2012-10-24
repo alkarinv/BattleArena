@@ -13,13 +13,13 @@ public class ArenaClassController {
 	public static void addClass(ArenaClass ac){
 		classes.put(ac.getName().toUpperCase(), ac);
 	}
-	
+
 	public static ArenaClass getClass(String name){
 		return classes.get(name.toUpperCase());
 	}
 
-	public static void giveItems(Player player, ArenaClass ac) {
+	public static void giveClass(Player player, ArenaClass ac) {
+		try{if (ac.getItems() != null) InventoryUtil.addItemsToInventory(player, ac.getItems(),true);} catch (Exception e){}
 		try{if (ac.getEffects() != null) EffectUtil.enchantPlayer(player, ac.getEffects());} catch (Exception e){}
-		try{if (ac.getItems() != null) InventoryUtil.addItemsToInventory(player, ac.getItems(),true);} catch (Exception e){}		
 	}
 }

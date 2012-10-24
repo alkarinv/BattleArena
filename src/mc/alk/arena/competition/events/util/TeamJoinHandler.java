@@ -2,6 +2,7 @@ package mc.alk.arena.competition.events.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.competition.events.Event;
@@ -20,7 +21,7 @@ public abstract class TeamJoinHandler implements TeamHandler {
 	public static enum TeamJoinStatus{
 		ADDED, CANT_FIT, ADDED_TO_EXISTING, WAITING_FOR_PLAYERS, NOT_OPEN
 	}
-	
+
 	public static class TeamJoinResult{
 		public TeamJoinResult(TeamJoinStatus a, int n, Team t){this.a = a; this.n = n; this.team = t;}
 		public TeamJoinResult(TeamJoinStatus a){this.a = a;}
@@ -30,8 +31,8 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		public TeamJoinStatus getEventType(){ return a;}
 		public int getRemaining(){return n;}	
 	}
-	
-	final Set<Team> teams;
+
+	final List<Team> teams;
 	ArrayList<CompositeTeam> pickupTeams = new ArrayList<CompositeTeam>();
 	final MatchParams mp;
 	final Event event;
@@ -52,7 +53,7 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		}
 		pickupTeams.clear();
 	}
-	
+
 	public abstract TeamJoinResult joiningTeam(Team team);
 
 	public boolean canLeave(ArenaPlayer p) {
@@ -67,7 +68,7 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		}
 		return true;
 	}
-	
+
 	public Set<ArenaPlayer> getExcludedPlayers() {
 		Set<ArenaPlayer> tplayers = new HashSet<ArenaPlayer>();
 		for (Team t: pickupTeams){

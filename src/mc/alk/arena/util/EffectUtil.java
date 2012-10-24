@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import mc.alk.arena.Defaults;
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.MobEffect;
@@ -24,6 +23,7 @@ public class EffectUtil {
 		public String getCommonName() {
 			return EffectUtil.getCommonName(this);
 		}
+		@Override
 		public String toString(){
 			return mel.id + " " + strength +" " + time;
 		}
@@ -97,19 +97,20 @@ public class EffectUtil {
 		try{
 			el.addEffect(new MobEffect(mel.id, time * 20, strength));
 		} catch(Exception e){
-			if (!Defaults.DEBUG_VIRTUAL) e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 
 	public static void enchantPlayer(Player player, List<EffectWithArgs> ewas){
-		if (Defaults.DEBUG_VIRTUAL) return;
 		try{
 			EntityHuman eh = ((CraftPlayer)player).getHandle();
+			if (eh == null)
+				return;
 			for (EffectWithArgs ewa : ewas){
 				doEffect(eh, ewa.mel,ewa.time,ewa.strength);
 			}
 		} catch (Exception e){
-			if (!Defaults.DEBUG_VIRTUAL) e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 
@@ -126,7 +127,7 @@ public class EffectUtil {
 			String enchants = sb.toString();
 			return enchants;
 		} catch (Exception e){
-			if (!Defaults.DEBUG_VIRTUAL) e.printStackTrace();
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -163,18 +164,18 @@ public class EffectUtil {
 	}
 
 	public static void unenchantAll(Player p) {
-		if (Defaults.DEBUG_VIRTUAL) return;
 		try{
 			EntityHuman eh = ((CraftPlayer)p).getHandle();
-
+			if (eh == null)
+				return;
 			for (MobEffectList mel : EffectUtil.effectToName.keySet()){
 				if(eh.hasEffect(mel)){
 					int mod = eh.getEffect(mel).getAmplifier();
 					eh.addEffect(new MobEffect(mel.id, -1, mod+1));
-				}			
-			}	
+				}
+			}
 		} catch(Exception e){
-			if (!Defaults.DEBUG_VIRTUAL) e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 	public static String getCommonName(EffectWithArgs ewa){

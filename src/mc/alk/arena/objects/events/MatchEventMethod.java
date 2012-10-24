@@ -12,7 +12,7 @@ public class MatchEventMethod implements Comparable<MatchEventMethod>{
 	final Method getPlayerMethod;
 	final MatchState beginState, endState, cancelState;
 	final EventPriority priority;
-	public MatchEventMethod(Method callMethod, Class<? extends Event> event, 
+	public MatchEventMethod(Method callMethod, Class<? extends Event> event,
 			MatchState begin, MatchState end, MatchState cancel, EventPriority priority) {
 		this.callMethod = callMethod;
 		this.bukkitEvent = event;
@@ -22,7 +22,7 @@ public class MatchEventMethod implements Comparable<MatchEventMethod>{
 		this.cancelState = cancel;
 		this.priority = priority;
 	}
-	public MatchEventMethod(Method callMethod, Class<? extends Event> event, 
+	public MatchEventMethod(Method callMethod, Class<? extends Event> event,
 			Method getPlayerMethod, MatchState begin, MatchState end, MatchState cancel, EventPriority priority) {
 		this.callMethod = callMethod;
 		this.bukkitEvent = event;
@@ -50,10 +50,12 @@ public class MatchEventMethod implements Comparable<MatchEventMethod>{
 	public MatchState getCancelState() {
 		return cancelState;
 	}
+	@Override
 	public String toString(){
-		return "[MEM "+callMethod.getName()+", " + bukkitEvent+ " "  + beginState+":"+endState+"   playerMethod=" + getPlayerMethod+"]";
+		return "[MEM "+callMethod.getName()+", " + bukkitEvent.getSimpleName()+ " "  + beginState+":"+endState+
+				"   playerMethod=" + getPlayerMethod.getName()+"]";
 	}
-	
+
 	@Override
 	public int compareTo(MatchEventMethod arg0) {
 		return this.priority.compareTo(arg0.priority);

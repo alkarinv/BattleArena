@@ -67,8 +67,8 @@ public class ArenaMatch extends Match {
 		if (woolTeams)
 			BAPlayerListener.clearWoolOnReenter(player.getName(), teams.indexOf(getTeam(player)));
 		/// If they are just in the arena waiting for match to start, or they havent joined yet
-		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL || 
-				state == MatchState.ONOPEN || !insideArena.contains(player.getName())){ 
+		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL ||
+				state == MatchState.ONOPEN || !insideArena.contains(player.getName())){
 			return;}
 		///TODO Should they be killed when they come back for this trangression?
 		Team t = getTeam(player);
@@ -97,14 +97,14 @@ public class ArenaMatch extends Match {
 					final int amt = is.getAmount();
 					if (amt > 1)
 						is.setAmount(amt-1);
-					else 
+					else
 						is.setType(Material.AIR);
 					break;
 				}
 			}
 		}
 		if (!respawns){
-			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);			
+			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);
 		}
 	}
 
@@ -164,24 +164,23 @@ public class ArenaMatch extends Match {
 		default:
 			break;
 		}
-	}	
+	}
 
 	@MatchEventHandler
 	public void onPlayerRespawn(PlayerRespawnEvent event, final ArenaPlayer p){
-		if (isWon()){ 
+		if (isWon()){
 			return;}
 		final TransitionOptions mo = tops.getOptions(MatchState.ONDEATH);
 		if (mo == null)
 			return;
-
 		if (respawns){
 			Location loc = getTeamSpawn(getTeam(p), mo.randomRespawn());
 			event.setRespawnLocation(loc);
-			/// For some reason, the player from onPlayerRespawn Event isnt the one in the main thread, so we need to 
+			/// For some reason, the player from onPlayerRespawn Event isnt the one in the main thread, so we need to
 			/// resync before doing any effects
 			final Match am = this;
 			Plugin plugin = BattleArena.getSelf();
-			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
 					try{
 						PerformTransition.transition(am, MatchState.ONDEATH, p, getTeam(p), false);
@@ -190,20 +189,17 @@ public class ArenaMatch extends Match {
 							Team t= getTeam(p);
 							TeamUtil.setTeamHead(teams.indexOf(t), t);
 						}
-						if (respawnsWithClass){
+					} catch(Exception e){}
+					if (respawnsWithClass){
+						try{
 							if (p.getChosenClass() != null){
 								ArenaClass ac = p.getChosenClass();
-								List<ItemStack> items = ac.getItems();
-								if (items != null)
-									try{ InventoryUtil.addItemsToInventory(p.getPlayer(), items, true);} catch(Exception e){e.printStackTrace();}
-								List<EffectWithArgs> effects = ac.getEffects();
-								if (effects != null){
-									EffectUtil.enchantPlayer(p.getPlayer(), effects);}
+								ArenaClassController.giveClass(p.getPlayer(), ac);
 							}
-						} else {
-							p.setChosenClass(null);
-						}
-					} catch(Exception e){}
+						} catch(Exception e){}
+					} else {
+						p.setChosenClass(null);
+					}
 				}
 			});
 		} else { /// This player is now out of the system now that we have given the ondeath effects
@@ -263,7 +259,7 @@ public class ArenaMatch extends Match {
 					Bukkit.getWorld(arena.getRegionWorld()).getUID() == event.getTo().getWorld().getUID()) {
 				if (WorldGuardInterface.isLeavingArea(event.getFrom(), event.getTo(), Bukkit.getWorld(arena.getRegionWorld()), arena.getRegion())){
 					event.setCancelled(true);}
-			}			
+			}
 		}
 
 	}
@@ -315,7 +311,7 @@ public class ArenaMatch extends Match {
 		final Player p = event.getPlayer();
 		if (!p.hasPermission("arena.class.use."+ac.getName().toLowerCase())){
 			MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
-			return;			
+			return;
 		}
 
 		final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
@@ -339,7 +335,7 @@ public class ArenaMatch extends Match {
 			return;
 		/// Have They have already selected a class this match, have they changed their inventory since then?
 		/// If so, make sure they can't just select a class, drop the items, then choose another
-		if (chosen != null){ 
+		if (chosen != null){
 			List<ItemStack> items = new ArrayList<ItemStack>();
 			if (chosen.getItems()!=null)
 				items.addAll(chosen.getItems());
@@ -352,20 +348,20 @@ public class ArenaMatch extends Match {
 		}
 		/// Clear their inventory first, then give them the class and whatever items were due to them from the config
 		InventoryUtil.clearInventory(p, woolTeams);
-		List<ItemStack> items = ac.getItems();
-		if (items != null)
-			try{ InventoryUtil.addItemsToInventory(p, items, true);} catch(Exception e){e.printStackTrace();}
+		/// Also debuff them
+		EffectUtil.unenchantAll(p);
+
+		/// Regive class/items
+		ArenaClassController.giveClass(p, ac);
 		if (mo.hasItems()){
-			try{ InventoryUtil.addItemsToInventory(p, mo.getItems(), true);} catch(Exception e){e.printStackTrace();}
-		}
+			try{ InventoryUtil.addItemsToInventory(p, mo.getItems(), true);} catch(Exception e){e.printStackTrace();}}
 
 		/// Deal with effects/buffs
-		EffectUtil.unenchantAll(p);
-		List<EffectWithArgs> effects = ac.getEffects();
+		List<EffectWithArgs> effects = mo.getEffects();
 		if (effects != null){
 			EffectUtil.enchantPlayer(p, effects);}
-		ap.setChosenClass(ac);
 
+		ap.setChosenClass(ac);
 		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
 	}
 }

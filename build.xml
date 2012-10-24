@@ -7,7 +7,7 @@
      ====================================================================== -->
 <project name="BattleArena" default="build">
 	<description>
-            Bukkit plugin for custom events/match. API and platform for easy creation of new events/matches.
+            BattleArena: a Bukkit plugin for custom events/match. Includes API and platform for easy creation of new events/matches.
     </description>
 
 	<!-- set global properties for this build -->
@@ -23,10 +23,10 @@
 				<pathelement path="${lib}" />
 				<pathelement location="${lib}/commons-lang3-3.1.jar" />
 				<pathelement location="${lib}/CraftBukkit.jar" /> 
-				<!-- <pathelement location="${lib}/craftbukkit-1.2.5-R5.0.jar" /> -->
 				<pathelement location="${lib}/Herochat.jar" />
+				<pathelement location="${lib}/DisguiseCraft.jar" />
 				<pathelement location="${lib}/Vault.jar" />
-				<pathelement location="${lib}/Register.jar" />
+				<pathelement location="${lib}/Register-1.5.jar" />
 				<pathelement location="${lib}/MobArena.jar" />
 				<pathelement location="${lib}/WorldGuard.jar" />
 				<pathelement location="${lib}/WorldEdit.jar" />

@@ -83,7 +83,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		if (arena != null)
 			amq.add(arena); /// add it back into the queue
 	}
-	
+
 	public void updateArena(Arena arena) {
 		allarenas.put(arena.getName(), arena);
 		if (amq.removeArena(arena) != null){ /// if its not being used
@@ -122,19 +122,21 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	public Arena removeArena(Arena arena) {
 		Arena a = amq.removeArena(arena);
 		if (a != null){
-			allarenas.remove(arena.getName());
-			ArenaInterface ai = new ArenaInterface(a);
-			ai.delete();
-		}
-		ArenaInterface ai = new ArenaInterface(arena);
-		ai.delete();
+			allarenas.remove(arena.getName());}
 		return a;
 	}
+
+	public void deleteArena(Arena arena) {
+		removeArena(arena);
+		ArenaInterface ai = new ArenaInterface(arena);
+		ai.delete();	
+	}
+
 
 	public Arena nextArenaByMatchParams(MatchParams mp){
 		return amq.getNextArena(mp);
 	}
-	
+
 	public Arena getArenaByMatchParams(MatchParams mp, JoinOptions jp) {
 		for (Arena a : allarenas.values()){
 			if (a.valid() && a.matches(mp,jp)){

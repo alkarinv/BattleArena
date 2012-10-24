@@ -24,9 +24,9 @@ public class MessageSerializer extends BaseSerializer {
 
 	/// Map of path to options
 	private HashMap<String,MessageOptions> msgOptions = new HashMap<String,MessageOptions>();
-	
+
 	private static HashMap<String,MessageSerializer> files = new HashMap<String,MessageSerializer>();
-	
+
 	public MessageSerializer(String name){
 		MessageSerializer ms = files.get(name);
 		if (ms != null){
@@ -38,11 +38,11 @@ public class MessageSerializer extends BaseSerializer {
 	public static void addMessageSerializer(String name, MessageSerializer ms){
 		files.put(name, ms);
 	}
-		
+
 	public void loadAll(){
-		initMessageOptions();		
+		initMessageOptions();
 	}
-	
+
 	public static void reloadConfig(String params) {
 		MessageSerializer ms = files.get(params);
 		if (ms != null){
@@ -50,7 +50,7 @@ public class MessageSerializer extends BaseSerializer {
 			ms.initMessageOptions();
 		}
 	}
-	
+
 	public void initMessageOptions(){
 		if (config == null)
 			return;
@@ -65,12 +65,16 @@ public class MessageSerializer extends BaseSerializer {
 	}
 
 
+	public static Message getDefaultMessage(String path) {
+		return defaultMessages.getMessage(path);
+	}
+
 	public Message getMessage(String path) {
 		if (config != null && config.contains(path)){
 			return new Message(config.getString(path), msgOptions.get(path));
 		}
 		if (this != defaultMessages){
-			return defaultMessages.getMessage(path);		
+			return defaultMessages.getMessage(path);
 		} else {
 			return null;
 		}
@@ -82,7 +86,7 @@ public class MessageSerializer extends BaseSerializer {
 
 	public static boolean hasMessage(String prefix, String node) {
 		return defaultMessages.contains(prefix+"." + node);
-	}    
+	}
 
 	public static void loadDefaults() {
 		defaultMessages.reloadFile();
@@ -95,7 +99,7 @@ public class MessageSerializer extends BaseSerializer {
 	public static String getDefaultMessage(String string, String string2) {
 		return null;
 	}
-	
+
 	public static String colorChat(String msg) {return msg.replaceAll("&", Character.toString((char) 167));}
 	public static String decolorChat(String msg) { return msg.replaceAll("&", "§").replaceAll("\\§[0-9a-zA-Z]", "");}
 
@@ -108,7 +112,7 @@ public class MessageSerializer extends BaseSerializer {
 			return "multipleTeams";
 		}
 	}
-	
+
 	protected void sendVictory(Channel serverChannel, Team victor, Collection<Team> losers, MatchParams mp, String winnerpath,String loserpath, String serverPath){
 		final int size = victor == null ? losers.size() : losers.size()+1;
 		Message winnermessage = getMessage(winnerpath);
@@ -116,11 +120,11 @@ public class MessageSerializer extends BaseSerializer {
 		Message serverMessage = getMessage(serverPath);
 
 		Set<MessageOption> ops = winnermessage.getOptions();
-		if (ops == null) 
+		if (ops == null)
 			ops =new HashSet<MessageOption>();
 		ops.addAll(losermessage.getOptions());
 		if (serverChannel != Channel.NullChannel){
-			ops.addAll(serverMessage.getOptions());			
+			ops.addAll(serverMessage.getOptions());
 		}
 
 		String msg = losermessage.getMessage();
@@ -128,13 +132,13 @@ public class MessageSerializer extends BaseSerializer {
 		List<Team> teams = new ArrayList<Team>(losers);
 		if (victor != null)
 			teams.add(victor);
-		
+
 		msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
 		for (Team t: losers){
 			msgf.formatTeamOptions(t,false);
 			msgf.formatTwoTeamsOptions(t, teams);
 			msgf.formatTeams(teams);
-			msgf.formatWinnerOptions(t, false);	
+			msgf.formatWinnerOptions(t, false);
 			if (victor != null)
 				msgf.formatWinnerOptions(victor, true);
 			String newmsg = msgf.getFormattedMessage(losermessage);
@@ -148,11 +152,11 @@ public class MessageSerializer extends BaseSerializer {
 			msgf.formatTwoTeamsOptions(victor, teams);
 			msgf.formatTeams(teams);
 			if (!losers.isEmpty()){
-				msgf.formatWinnerOptions(losers.iterator().next(), false);			
+				msgf.formatWinnerOptions(losers.iterator().next(), false);
 			}
 			msgf.formatWinnerOptions(victor, true);
 			String newmsg = msgf.getFormattedMessage(winnermessage);
-			victor.sendMessage(newmsg);			
+			victor.sendMessage(newmsg);
 		}
 
 		if (serverChannel != Channel.NullChannel){

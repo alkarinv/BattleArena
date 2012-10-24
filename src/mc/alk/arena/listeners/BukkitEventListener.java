@@ -25,7 +25,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 
 /**
- * 
+ *
  * @author alkarin
  *
  */
@@ -35,7 +35,7 @@ public class BukkitEventListener extends BAEventListener{
 
 	final Method getPlayerMethod;
 	public boolean hasListeners(){
-		return (!listeners.isEmpty() || !mlisteners.isEmpty()); 
+		return (!listeners.isEmpty() || !mlisteners.isEmpty());
 	}
 	public MapOfHash<String,ArenaListener> getListeners(){
 		return listeners;
@@ -76,38 +76,38 @@ public class BukkitEventListener extends BAEventListener{
 	public boolean removeMatchListener(ArenaListener spl) {
 		final boolean removed = mlisteners.remove(spl);
 		if (removed && !hasListeners()){
-			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STOPPING LISTEN " + bukkitEvent);			
+			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STOPPING LISTEN " + bukkitEvent);
 			stopListening();}
 		return removed;
 	}
 
 	public void addMatchListener(ArenaListener spl) {
 		if (!hasListeners()){
-			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STARTING LISTEN " + bukkitEvent);			
+			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STARTING LISTEN " + bukkitEvent);
 			startMatchListening();}
-		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS now listening for match " + spl);			
+		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS now listening for match " + spl);
 		mlisteners.add(spl);
 	}
 
 	public boolean removeSPListener(String p, ArenaListener spl) {
 		final boolean removed = listeners.remove(p,spl);
 		if (removed && !hasListeners()){
-			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STOPPING LISTEN " + bukkitEvent);			
+			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STOPPING LISTEN " + bukkitEvent);
 			stopListening();}
 		return removed;
 	}
 
 	public void addSPListener(String p, ArenaListener spl) {
 		if (!hasListeners()){
-			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STARTING LISTEN " + bukkitEvent);			
+			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STARTING LISTEN " + bukkitEvent);
 			startSpecificPlayerListening();}
-		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS now listening for player " + p +"   " + bukkitEvent);			
+		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS now listening for player " + p +"   " + bukkitEvent);
 		listeners.add(p,spl);
 	}
 
 	@Override
 	public void doSpecificPlayerEvent(Event event){
-		if (Defaults.DEBUG_EVENTS) System.out.println("Event " +event + "   " + bukkitEvent + "  " + getPlayerMethod);
+		if (Defaults.DEBUG_EVENTS) System.out.println("Event " +event + "   " + bukkitEvent + "  " + getPlayerMethod.getName());
 		/// Need special handling of Methods that have 2 entities involved, as either entity may be in a match
 		if (event instanceof EntityDamageByEntityEvent){
 			doEntityDamageByEntityEvent((EntityDamageByEntityEvent)event);
@@ -129,20 +129,22 @@ public class BukkitEventListener extends BAEventListener{
 	private void callListeners(Event event, final Player p) {
 		HashSet<ArenaListener> spls = listeners.getSafe(p.getName());
 		if (spls == null){
-			if (Defaults.DEBUG_EVENTS) System.out.println("   NO SPLS listening for player " + p.getName());			
+			if (Defaults.DEBUG_EVENTS) System.out.println("   NO SPLS listening for player " + p.getName());
 			return;
 		}
 		/// For each ArenaListener class that is listening
 		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS splisteners .get " + spls);
 		for (ArenaListener spl: spls){
 			List<MatchEventMethod> methods = MethodController.getMethods(spl,event);
-			if (Defaults.DEBUG_EVENTS) System.out.println("    SPL = " + spl.getClass() +"    getting methods "+methods);
+			if (Defaults.DEBUG_EVENTS) System.out.println("    SPL = " + spl.getClass() +"    getting methods "+methods );
 			if (methods != null){
 				doMethods(event, p, spl, methods);}
-			if (event instanceof EntityDamageByEntityEvent){ 
+			if (event instanceof EntityDamageByEntityEvent){
 				methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
-			else if (event instanceof EntityDamageByBlockEvent){ 
+			else if (event instanceof EntityDamageByBlockEvent){
 				methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
+			else
+				methods = null;
 			if (methods != null){
 				doMethods(event, p, spl, methods);}
 		}
@@ -176,7 +178,7 @@ public class BukkitEventListener extends BAEventListener{
 
 	private void doEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
 		if (event.getEntity() instanceof Player){
-			callListeners(event, (Player) event.getEntity());	
+			callListeners(event, (Player) event.getEntity());
 			return;
 		}
 		if (event.getDamager() instanceof Player){
@@ -189,7 +191,7 @@ public class BukkitEventListener extends BAEventListener{
 				Projectile proj = (Projectile) event.getDamager();
 				if (proj.getShooter() instanceof Player){ /// projectile was shot by a player
 					player= (Player) proj.getShooter();
-				} 
+				}
 		}
 		if (player != null){
 			callListeners(event, player);
@@ -200,7 +202,7 @@ public class BukkitEventListener extends BAEventListener{
 
 	private void doEntityDamageEvent(EntityDamageEvent event) {
 		if (event.getEntity() instanceof Player){
-			callListeners(event, (Player) event.getEntity());	
+			callListeners(event, (Player) event.getEntity());
 			return;
 		}
 
@@ -212,11 +214,11 @@ public class BukkitEventListener extends BAEventListener{
 				damager = (Player) entity;
 			} else if (entity instanceof Projectile){
 				if (((Projectile)entity).getShooter() instanceof Player)
-					damager =(Player) ((Projectile)entity).getShooter(); 
+					damager =(Player) ((Projectile)entity).getShooter();
 			}
 		}
 		if (damager != null){
-			callListeners(event, damager);	
+			callListeners(event, damager);
 		}
 	}
 
@@ -239,7 +241,7 @@ public class BukkitEventListener extends BAEventListener{
 				} catch (Exception e){
 					e.printStackTrace();
 				}
-			}			
+			}
 		}
 	}
 	private Entity getEntityFromMethod(final Event event, final Method method) {

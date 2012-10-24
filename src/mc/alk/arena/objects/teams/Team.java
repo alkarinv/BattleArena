@@ -258,6 +258,10 @@ public class Team {
 		return jp;
 	}
 
+	public void setJoinPreferences(JoinOptions jp) {
+		this.jp = jp;
+	}
+
 	public int getPriority() {
 		int priority = Integer.MAX_VALUE;
 		for (ArenaPlayer ap: players){

@@ -9,6 +9,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 import mc.alk.arena.util.WorldEditUtil;
@@ -142,9 +143,12 @@ public class ArenaAlterController {
 			sendMessage(sender,"&cYou need to be in game to use this command");
 			return -1;
 		}
-		int locindex = -1;
+		Integer locindex = -1;
 		try{locindex = Integer.parseInt(value);}catch(Exception e){}
-		if (locindex <= 0 || locindex > 100){
+		if (locindex == -1){
+			locindex = TeamUtil.getTeamIndex(value);
+		}
+		if (locindex == null || locindex <= 0 || locindex > 100){
 			sendMessage(sender,"&cspawn number must be in the range [1-100]");
 			return -1;
 		}

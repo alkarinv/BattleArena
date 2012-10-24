@@ -46,10 +46,10 @@ public class ArenaCommandSign {
 	private void performEventAction(ArenaPlayer player) {
 		Event event = EventController.getEvent(mp.getName());
 		EventExecutor executor = EventController.getEventExecutor(event);
-//		String args[] = {options1,options2};
+		String args[] = {options1,options2};
 		switch (command){
 		case JOIN:
-			executor.eventJoin(player);
+			executor.eventJoin(player,args);
 			break;
 		case LEAVE:
 			executor.leave(player);

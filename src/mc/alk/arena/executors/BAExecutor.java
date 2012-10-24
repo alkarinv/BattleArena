@@ -399,7 +399,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 	@MCCommand(cmds={"delete"}, admin=true, usage="delete <arena name>")
 	public boolean arenaDelete(CommandSender sender, Arena arena) {
 		new ArenaDeleteEvent(arena).callEvent();
-		ac.removeArena(arena);
+		ac.deleteArena(arena);
 		BattleArena.saveArenas();
 		return sendMessage(sender,ChatColor.GREEN+ "You have deleted the arena &6" + arena.getName());
 	}
@@ -487,7 +487,6 @@ public class BAExecutor extends CustomCommandExecutor  {
 		}
 		return true;
 	}
-
 
 	@MCCommand(cmds={"create"}, inGame=true, admin=true, min=2,usage="create <arena name> [team size] [# teams]")
 	public boolean arenaCreate(CommandSender sender, MatchParams mp, String name, String[] args) {

@@ -20,10 +20,10 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
-import mc.alk.tracker.controllers.MessageController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.ChatColor;
@@ -97,9 +97,9 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			}
 			/// TeamJoinResult in the usages, for showing help messages
 			if (MessageSerializer.hasMessage("usage", mc.cmds()[0])){
-				usage.put(mc,MessageController.getMessage("usage", mc.cmds()[0]));
+				usage.put(mc,MessageSerializer.getDefaultMessage("usage."+ mc.cmds()[0]).getMessage());
 			} else if (!mc.usageNode().isEmpty()){
-				usage.put(mc, MessageController.getMessage("usage",mc.usageNode()));
+				usage.put(mc, MessageSerializer.getDefaultMessage("usage."+mc.usageNode()).getMessage());
 			} else if (!mc.usage().isEmpty()){
 				usage.put(mc, mc.usage());
 			} else { /// Generate a automatic usage string
@@ -116,14 +116,14 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			if (Player.class ==theclass){
 				if (firstPlayerSender)
 					firstPlayerSender = false;
-				else 
+				else
 					sb.append("<player> ");
 			} else if (OfflinePlayer.class ==theclass){
 				sb.append("<player> ");
 			} else if (ArenaPlayer.class == theclass){
 				if (firstPlayerSender)
 					firstPlayerSender = false;
-				else 
+				else
 					sb.append("<player> ");
 			} else if (Arena.class == theclass){
 				sb.append("<arena> ");
@@ -195,7 +195,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	}
 
 	static final String ONLY_INGAME =ChatColor.RED+"You need to be in game to use this command";
-	private Arguments verifyArgs(MethodWrapper mwrapper, MCCommand cmd, 
+	private Arguments verifyArgs(MethodWrapper mwrapper, MCCommand cmd,
 			CommandSender sender, Command command, String label, String[] args) throws InvalidArgumentException{
 		if (DEBUG)System.out.println("verifyArgs " + cmd +" sender=" +sender+", label=" + label+" args="+args);
 		int strIndex = 1/*skip the label*/, objIndex = 0;
@@ -229,7 +229,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 
 		/// In game check
 		if (cmd.inGame() && !isPlayer || getSenderAsPlayer && !isPlayer){
-			throw new InvalidArgumentException(ONLY_INGAME);			
+			throw new InvalidArgumentException(ONLY_INGAME);
 		}
 
 		Arguments newArgs = new Arguments(); /// Our return value
@@ -242,7 +242,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			if (CommandSender.class == theclass){
 				objs[objIndex] = sender;
 			} else if (Command.class == theclass){
-				objs[objIndex] = command;				
+				objs[objIndex] = command;
 			} else if (Player.class ==theclass){
 				if (getSenderAsPlayer){
 					objs[objIndex] = sender;
@@ -266,13 +266,13 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			} else if (Arena.class == theclass){
 				objs[objIndex] = verifyArena(args[strIndex++]);
 			} else if (String.class == theclass){
-				objs[objIndex] = args[strIndex++]; 
+				objs[objIndex] = args[strIndex++];
 			} else if (Integer.class == theclass){
 				objs[objIndex] = verifyInteger(args[strIndex++]);
 			} else if (String[].class == theclass){
-				objs[objIndex] = args; 
+				objs[objIndex] = args;
 			} else if (Event.class == theclass){
-				objs[objIndex] = verifyEvent(args[strIndex++]); 
+				objs[objIndex] = verifyEvent(args[strIndex++]);
 			} else if (Object[].class == theclass){
 				objs[objIndex] = args;
 			} else if (Boolean.class == theclass){
@@ -410,12 +410,16 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	}
 
 	private String getUsage(Command c, MCCommand cmd) {
-		if (!cmd.usageNode().isEmpty()) /// Get from usage message node
-			return MessageController.getMessage("usage",cmd.usageNode());
+		if (!cmd.usageNode().isEmpty()){ /// Get from usage message node
+			Message msg = MessageSerializer.getDefaultMessage("usage."+cmd.usageNode());
+			return msg == null ? null : msg.getMessage();
+		}
 		if (!cmd.usage().isEmpty()) /// Get from usage
 			return "&6"+c.getName()+" " + cmd.usage();
-		if (MessageSerializer.hasMessage("usage", cmd.cmds()[0])) /// Maybe a default message node??
-			return MessageController.getMessage("usage", cmd.cmds()[0]);
+		if (MessageSerializer.hasMessage("usage", cmd.cmds()[0])){ /// Maybe a default message node??
+			Message msg = MessageSerializer.getDefaultMessage("usage."+cmd.usageNode());
+			return msg == null ? null : msg.getMessage();
+		}
 		return "&6/"+c.getName()+" " + usage.get(cmd); /// Return the usage from our map
 	}
 
@@ -452,7 +456,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				onlyop.add(use);
 			else if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
 				unavailable.add(use);
-			else 
+			else
 				available.add(use);
 		}
 		int npages = available.size()+unavailable.size();
@@ -466,8 +470,8 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		if (command != null) {
 			String aliases = StringUtils.join(command.getAliases(),", ");
 			MessageUtil.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 : /"+command.getName()+" help <page number>");
-			MessageUtil.sendMessage(sender, "&e    command &6"+command.getName()+"&e has aliases: &6" + aliases);			
-		} else { 
+			MessageUtil.sendMessage(sender, "&e    command &6"+command.getName()+"&e has aliases: &6" + aliases);
+		} else {
 			MessageUtil.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 : /cmd help <page number>");
 		}
 		int i=0;
@@ -489,7 +493,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				if (i < (page-1) *LINES_PER_PAGE || i >= page *LINES_PER_PAGE)
 					continue;
 				MessageUtil.sendMessage(sender, ChatColor.AQUA+"[OP only] &6"+use);
-			}			
+			}
 		}
 	}
 
