@@ -68,4 +68,28 @@ public class ExpUtil {
 			return 7*level - 155;
 		}
 	}
+
+	public static void setTotalExperience(Player player, int exp){
+		player.setTotalExperience(0);
+		player.setLevel(0);
+		player.setExp(0);
+		player.giveExp(exp);
+	}
+
+	public static void setLevel(Player player, int level){
+		player.setTotalExperience(0);
+		player.setLevel(0);
+		player.setExp(0);
+		player.giveExp(getExpToLevel(level));
+	}
+
+	public static void giveExperience(Player player, int exp){
+		final int currentExp = getTotalExperience(player);
+		player.setTotalExperience(0);
+		player.setLevel(0);
+		player.setExp(0);
+		final int newexp = currentExp + exp;
+		if (newexp > 0)
+			player.giveExp(newexp);
+	}
 }
