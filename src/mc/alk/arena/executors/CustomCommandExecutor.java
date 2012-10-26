@@ -424,7 +424,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	}
 
 
-	public class InvalidArgumentException extends Exception {
+	public static class InvalidArgumentException extends Exception {
 		private static final long serialVersionUID = 1L;
 
 		public InvalidArgumentException(String string) {

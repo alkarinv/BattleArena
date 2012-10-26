@@ -14,6 +14,7 @@ import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.controllers.WorldGuardInterface.WorldGuardFlag;
+import mc.alk.arena.executors.CustomCommandExecutor.InvalidArgumentException;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -68,7 +69,7 @@ public class ArenaSerializer {
 
 		config = new YamlConfiguration();
 		Set<ArenaSerializer> paths = configs.get(plugin);
-		if (paths == null){ 
+		if (paths == null){
 			paths = new HashSet<ArenaSerializer>();
 			configs.put(plugin, paths);
 		} else { /// check to see if we have this path already
@@ -132,7 +133,7 @@ public class ArenaSerializer {
 		StringBuilder failedArenas = new StringBuilder(pname+"Failed loading arenas");
 		boolean hasFailed = false, hasAny = false;
 		for (String name : keys){
-			if (arenaType != null){ /// Are we looking for 1 particular arena type to load				
+			if (arenaType != null){ /// Are we looking for 1 particular arena type to load
 				if (!cs.getString("arenas."+name+".type","").equalsIgnoreCase(arenaType.getName())){
 					continue;}
 			}
@@ -146,7 +147,7 @@ public class ArenaSerializer {
 		}
 		if (hasAny)
 			Log.info(loadedArenas.toString());
-		else 
+		else
 			Log.info(pname + "No arenas found");
 		if (hasFailed)
 			Log.info(failedArenas.toString());
@@ -225,17 +226,23 @@ public class ArenaSerializer {
 		if (spawncs != null){
 			for (String spawnStr : spawncs.getKeys(false)){
 				ConfigurationSection scs = spawncs.getConfigurationSection(spawnStr);
-				TimedSpawn s = parseSpawnable(scs);
+				TimedSpawn s;
+				try {
+					s = parseSpawnable(scs);
+				} catch (InvalidArgumentException e) {
+					e.printStackTrace();
+					continue;
+				}
 				if (s == null)
 					continue;
 				arena.addTimedSpawn(Long.parseLong(spawnStr), s);
-			}				
+			}
 		}
 		cs = cs.getConfigurationSection("persistable");
 		Persistable.yamlToObjects(arena, cs);
 		arena.init();
 		arena.setParameters(q);
-		updateRegions(arena);		
+		updateRegions(arena);
 		bac.addArena(arena);
 		return true;
 	}
@@ -292,7 +299,7 @@ public class ArenaSerializer {
 			Map<Integer, Location> mlocs = arena.getSpawnLocs();
 			if (mlocs != null){
 				HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
-				amap.put("locations", locations);		
+				amap.put("locations", locations);
 			}
 
 			/// Wait room spawns
@@ -305,13 +312,13 @@ public class ArenaSerializer {
 			/// Timed spawns
 			Map<Long, TimedSpawn> timedSpawns = arena.getTimedSpawns();
 			if (timedSpawns != null && !timedSpawns.isEmpty()){
-				HashMap<String,Object> spawnmap = new HashMap<String,Object>();				
+				HashMap<String,Object> spawnmap = new HashMap<String,Object>();
 				for (Long key: timedSpawns.keySet() ){
 					TimedSpawn ts = timedSpawns.get(key);
 					HashMap<String,Object> itemSpawnMap = saveSpawnable(key, ts);
 					spawnmap.put(key.toString(), itemSpawnMap);
 				}
-				amap.put("spawns", spawnmap);		
+				amap.put("spawns", spawnmap);
 			}
 
 			Location vloc = arena.getVisitorLoc();
@@ -326,7 +333,7 @@ public class ArenaSerializer {
 			map.put(arenaname, amap);
 		}
 		if (log)
-			Log.info(plugin.getName() + " Saving arenas " + StringUtils.join(map.keySet(),",") +" to " + 
+			Log.info(plugin.getName() + " Saving arenas " + StringUtils.join(map.keySet(),",") +" to " +
 					f.getPath() + " configSection="+config.getCurrentPath()+"." + config.getName());
 		SerializerUtil.expandMapIntoConfig(maincs, map);
 	}
@@ -354,7 +361,7 @@ public class ArenaSerializer {
 		}
 	}
 
-	private static TimedSpawn parseSpawnable(ConfigurationSection cs) {
+	private static TimedSpawn parseSpawnable(ConfigurationSection cs) throws InvalidArgumentException {
 		if (!cs.contains("spawn") || !cs.contains("time") || !cs.contains("loc")){
 			Log.err("configuration section cs = " + cs +"  is missing either spawn,time,or loc");
 			return null;
@@ -405,7 +412,7 @@ public class ArenaSerializer {
 		}
 		if (value == null)
 			spawnmap.put("spawn", key);
-		else 
+		else
 			spawnmap.put("spawn", key+":" + value);
 		//		for (String k: spawnmap.keySet()){
 		//			System.out.println("k="+k +"  vlaue=" + key+":"+value);

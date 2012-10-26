@@ -74,4 +74,6 @@ public class Defaults {
 	/// SIGN OPTIONS
 	public static final String SIGN_PREFIX = "*";
 
+	public static boolean IGNORE_STACKSIZE = true;
+
 }

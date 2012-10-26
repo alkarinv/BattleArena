@@ -36,7 +36,7 @@ public class Persistable {
 		yamlToObjects(arena, arena.getClass(),cs);
 	}
 
-	private static void yamlToObjects(Arena arena, Class<?> arenaClass, ConfigurationSection cs){		
+	private static void yamlToObjects(Arena arena, Class<?> arenaClass, ConfigurationSection cs){
 		for(Field field : arenaClass.getDeclaredFields()){
 			Class<?> type = field.getType();
 			String name = field.getName();
@@ -101,7 +101,7 @@ public class Persistable {
 						if (str != null)
 							obj = InventoryUtil.parseItem(str);
 					} else if (List.class.isAssignableFrom(type)){
-						ParameterizedType pt = (ParameterizedType) field.getGenericType();  
+						ParameterizedType pt = (ParameterizedType) field.getGenericType();
 						List<?> list = cs.getList(name);
 						if (list == null)
 							continue;
@@ -112,7 +112,7 @@ public class Persistable {
 						}
 						obj = newList;
 					} else if (Set.class.isAssignableFrom(type)){
-						ParameterizedType pt = (ParameterizedType) field.getGenericType();  
+						ParameterizedType pt = (ParameterizedType) field.getGenericType();
 						List<?> list = cs.getList(name);
 						if (list == null)
 							continue;
@@ -123,7 +123,7 @@ public class Persistable {
 						}
 						obj = newSet;
 					} else if (Map.class.isAssignableFrom(type)){
-						ParameterizedType pt = (ParameterizedType) field.getGenericType();  
+						ParameterizedType pt = (ParameterizedType) field.getGenericType();
 						ConfigurationSection mapcs = cs.getConfigurationSection(name);
 						if (mapcs == null)
 							continue;
@@ -275,7 +275,7 @@ public class Persistable {
 						obj = oset;
 					} else if (Map.class.isAssignableFrom(type)){
 						@SuppressWarnings("unchecked")
-						Map<Object,Object> mymap = (HashMap<Object,Object>) field.get(arena);
+						Map<Object,Object> mymap = (Map<Object,Object>) field.get(arena);
 						if (mymap == null)
 							continue;
 						Map<Object,Object> oset = new HashMap<Object,Object>();
@@ -299,7 +299,7 @@ public class Persistable {
 
 					if (obj == null)
 						continue;
-					map.put(name, obj);						
+					map.put(name, obj);
 				} catch (NotPersistableException e) {
 					System.err.println(e.getMessage());
 				} catch (Exception e) {

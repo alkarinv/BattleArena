@@ -23,7 +23,7 @@ public class YamlFileUpdater {
 	public static void updateConfig(BAConfigSerializer bacs){
 		updateBaseConfig(bacs);
 	}
-	
+
 	public void updateMessageSerializer(MessageSerializer ms) {
 		FileConfiguration fc = ms.getConfig();
 
@@ -60,19 +60,22 @@ public class YamlFileUpdater {
 			to1Point1(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
 		}
 		if (version.compareTo(1.2)<0){
-			to1Point2(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
+			to1Point2(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
 		}
 		if (version.compareTo(1.3)<0){
-			to1Point3(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
+			to1Point3(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
 		}
 		if (version.compareTo(1.35)<0){
-			to1Point35(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
+			to1Point35(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
 		}
 		if (version.compareTo(1.4)<0){
-			to1Point4(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
+			to1Point4(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
 		}
 		if (version.compareTo("1.4.5")<0){
-			to1Point45(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);			
+			to1Point45(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
+		}
+		if (version.compareTo("1.5")<0){
+			to1Point5(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
 		}
 	}
 
@@ -98,7 +101,7 @@ public class YamlFileUpdater {
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
-		} 
+		}
 
 		try {
 			boolean inClassSection = false;
@@ -149,7 +152,7 @@ public class YamlFileUpdater {
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
-		} 
+		}
 
 		try {
 			boolean updatedDefaultSection = false;
@@ -231,7 +234,7 @@ public class YamlFileUpdater {
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
-		} 
+		}
 
 		try {
 			boolean updatedDefaultSection = false;
@@ -278,7 +281,7 @@ public class YamlFileUpdater {
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
-		} 
+		}
 
 		try {
 			boolean updatedDefaultSection = false;
@@ -316,6 +319,7 @@ public class YamlFileUpdater {
 			br = new BufferedReader(new FileReader(f));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			return;
 		}
 		BufferedWriter fw =null;
 		try {
@@ -323,8 +327,9 @@ public class YamlFileUpdater {
 			fw = new BufferedWriter(new FileWriter(tempFile));
 		} catch (IOException e) {
 			e.printStackTrace();
+			try{br.close();}catch (Exception e2){}
 			return;
-		} 
+		}
 
 		try {
 			boolean updatedDefaultSection = false;
@@ -366,6 +371,7 @@ public class YamlFileUpdater {
 			br = new BufferedReader(new FileReader(f));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			return;
 		}
 		BufferedWriter fw =null;
 		try {
@@ -373,8 +379,10 @@ public class YamlFileUpdater {
 			fw = new BufferedWriter(new FileWriter(tempFile));
 		} catch (IOException e) {
 			e.printStackTrace();
+			try{br.close();}catch (Exception e2){}
 			return;
-		} 
+		}
+
 
 		try {
 			boolean updatedDefaultSection = false;
@@ -410,6 +418,55 @@ public class YamlFileUpdater {
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private static void to1Point5(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
+		Log.warn("BattleArena updating config to 1.5");
+
+		String line =null;
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(f));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return;
+		}
+		BufferedWriter fw =null;
+		try {
+			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
+			fw = new BufferedWriter(new FileWriter(tempFile));
+		} catch (IOException e) {
+			e.printStackTrace();
+			try{br.close();}catch (Exception e2){}
+			return;
+		}
+
+		try {
+			boolean updatedDefaultSection = false;
+			while ((line = br.readLine()) != null){
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 1.5\n\n");
+				} else if (!updatedDefaultSection && (line.matches(".*disabledCommands:.*"))){
+					fw.write(line +"\n");
+					fw.write("\n");
+					fw.write("# If set to true, items that are usually not stackable will be stacked when\n");
+					fw.write("# a player is given items.  Examples: 64 mushroom soup, or 64 snow_ball, instead of 1 or 16\n");
+					fw.write("ignoreMaxStackSize: false\n");
+					fw.write("\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(f.getAbsoluteFile());
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
 		}
 	}
 

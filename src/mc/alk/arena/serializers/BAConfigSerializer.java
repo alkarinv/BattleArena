@@ -20,10 +20,11 @@ public class BAConfigSerializer extends ConfigSerializer{
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
 
 		parseDefaultOptions(config.getConfigurationSection("defaultOptions"));
-		Defaults.MONEY_STR = config.getString("moneyName");
-		Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", false);
-		Defaults.TELEPORT_Y_OFFSET = config.getDouble("teleportYOffset", 1.0);
-		Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", 5);
+		Defaults.MONEY_STR = config.getString("moneyName",Defaults.MONEY_STR);
+		Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", Defaults.AUTO_UPDATE);
+		Defaults.TELEPORT_Y_OFFSET = config.getDouble("teleportYOffset", Defaults.TELEPORT_Y_OFFSET);
+		Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", Defaults.NUM_INV_SAVES);
+		Defaults.IGNORE_STACKSIZE = config.getBoolean("ignoreMaxStackSize", Defaults.IGNORE_STACKSIZE);
 		DisabledCommandsUtil.addAll(config.getStringList("disabledCommands"));
 		String[] defaultMatchTypes = {"arena","skirmish","colliseum","battleground"};
 		String[] defaultEventTypes = {"freeForAll","deathMatch","tourney"};
@@ -98,7 +99,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 				AnnouncementOption bo = AnnouncementOption.fromName(kv.key);
 				if (bo == null){
 					Log.err("Couldnt recognize AnnouncementOption " + s);
-					continue;					
+					continue;
 				}
 				//				System.out.println("!!!!! Setting broadcast option " +ms +"  " + bo + "  " + kv.value);
 				an.setBroadcastOption(match, ms, bo,kv.value);

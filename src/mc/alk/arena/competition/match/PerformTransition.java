@@ -8,6 +8,7 @@ import java.util.Random;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TeleportController;
@@ -20,7 +21,6 @@ import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
-import mc.alk.arena.util.EffectUtil.EffectWithArgs;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
@@ -29,6 +29,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
+import org.bukkit.potion.PotionEffect;
 
 public class PerformTransition {
 
@@ -36,7 +37,7 @@ public class PerformTransition {
 	//	public static boolean debug = false;
 
 	/**
-	 * Perform a transition 
+	 * Perform a transition
 	 * @param Match, which match to perform the transition on
 	 * @param transition: which transition are we doing
 	 * @param teams: which teams to affect
@@ -55,25 +56,13 @@ public class PerformTransition {
 		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo );
 		if (mo == null)
 			return true;
-
-		//		/// Check for requirements if we are going to teleport in, or they are joining
-		//		final boolean teleportIn = mo.shouldTeleportIn();
-		//		if (transition == MatchState.ONJOIN || teleportIn){
-		//			Set<ArenaPlayer> stillAlive = am.checkReady(team,mo);
-		//			validPlayers.retainAll(stillAlive);
-		//		}
-		//
-		//		/// Alas no players
-		//		if (validPlayers.isEmpty())
-		//			return false;
-
 		for (ArenaPlayer p : team.getPlayers()){
 			transition(am, transition,p,team, onlyInMatch);
 		}
 		return true;
 	}
 
-	public static boolean transition(final Match am, final MatchState transition, final ArenaPlayer p, 
+	public static boolean transition(final Match am, final MatchState transition, final ArenaPlayer p,
 			final Team team, final boolean onlyInMatch) {
 		if (Defaults.DEBUG_TRANSITIONS) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +p.getName() +
 				" ops="+am.tops.getOptions(transition) +"  inArena="+am.insideArena(p));
@@ -83,7 +72,7 @@ public class PerformTransition {
 			return true;}
 		/// Options that don't affect players first
 		/// Clear the area
-		if (mo.shouldClearRegion() && WorldGuardInterface.hasWorldGuard() && am.getArena().hasRegion()) 
+		if (mo.shouldClearRegion() && WorldGuardInterface.hasWorldGuard() && am.getArena().hasRegion())
 			WorldGuardInterface.clearRegion(am.getArena().getRegionWorld(), am.getArena().getRegion());
 
 		final boolean teleportIn = mo.shouldTeleportIn();
@@ -97,8 +86,8 @@ public class PerformTransition {
 
 		final boolean wipeOnFirstEnter = !insideArena && mo.hasOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
 		final boolean wipeInventory = mo.clearInventory() || wipeOnFirstEnter;
-		
-		List<EffectWithArgs> effects = mo.getEffects()!=null ? new ArrayList<EffectWithArgs>(mo.getEffects()) : null;
+
+		List<PotionEffect> effects = mo.getEffects()!=null ? new ArrayList<PotionEffect>(mo.getEffects()) : null;
 		final Integer health = mo.getHealth();
 		final Integer hunger = mo.getHunger();
 		final String disguiseAllAs = mo.getDisguiseAllAs();
@@ -110,9 +99,9 @@ public class PerformTransition {
 			if ( (insideArena || am.checkReady(p, team, mo, true)) && !dead){
 				/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
 				/// Since we cant really tell the eventual result.. do our best guess
-				am.enterWaitRoom(p); 
+				am.enterWaitRoom(p);
 				final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),team.getPlayerIndex(p));
-				TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false);				
+				TeleportController.teleportPlayer(p.getPlayer(), l, true, true, false);
 				PlayerStoreController.setGameMode(p.getPlayer(), GameMode.SURVIVAL);
 			} else {
 				playerReady = false;
@@ -135,18 +124,20 @@ public class PerformTransition {
 
 		/// Only do if player is online options
 		if (playerReady && !dead){
-			if (mo.hasOption(TransitionOption.STOREGAMEMODE)){ am.psc.storeGamemode(p);}
-			if (mo.storeExperience()){ am.psc.storeExperience(p);}
-			if (mo.storeItems()) { am.psc.storeItems(p);}
+			boolean storeAll = mo.hasOption(TransitionOption.STOREALL);
+			if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){ am.psc.storeGamemode(p);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREEXPERIENCE)){ am.psc.storeExperience(p);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREITEMS)) { am.psc.storeItems(p);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){am.psc.storeArenaClass(p);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p.getPlayer()); }
 			if (health != null) p.setHealth(health);
 			if (hunger != null) p.setFoodLevel(hunger);
-			try{if (mo.deEnchant() != null && mo.deEnchant()) EffectUtil.unenchantAll(p.getPlayer());} catch (Exception e){}
+			try{if (mo.deEnchant() != null && mo.deEnchant()) EffectUtil.deEnchantAll(p.getPlayer());} catch (Exception e){}
 			if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p.getPlayer());}
 			if (DisguiseInterface.enabled() && disguiseAllAs != null) {DisguiseInterface.disguisePlayer(p.getPlayer(), disguiseAllAs);}
 			if (mo.getMoney() != null) {MoneyController.add(p.getName(), mo.getMoney());}
 			if (mo.getExperience() != null) {p.getPlayer().giveExp(mo.getExperience());}
-			if (mo.hasOption(TransitionOption.WOOLTEAMS) && am.getParams().getMinTeamSize() >1){				
+			if (mo.hasOption(TransitionOption.WOOLTEAMS) && am.getParams().getMinTeamSize() >1){
 				if (insideArena){
 					TeamUtil.setTeamHead(teamIndex, p);}
 				am.woolTeams= true;
@@ -157,58 +148,55 @@ public class PerformTransition {
 			}
 			if (mo.hasOption(TransitionOption.REMOVEPERMS)){ removePerms(p, mo.getRemovePerms());}
 			if (mo.hasOption(TransitionOption.ADDPERMS)){ addPerms(p, mo.getAddPerms(), 0);}
-			List<ItemStack> items = null;
-			if (mo.hasClasses()){
+			if (mo.hasOption(TransitionOption.GIVECLASS)){
 				final ArenaClass ac = getArenaClass(mo,teamIndex);
-				/// Give class items and effects
-				if (ac != null){
-					items = new ArrayList<ItemStack>(ac.getItems());
-					if (ac.getEffects() != null){
-						if (effects == null) effects = ac.getEffects();
-						else effects.addAll(ac.getEffects());
-					}
-				}
+				if (ac != null){ /// Give class items and effects
+					ArenaClassController.giveClass(p.getPlayer(), ac);}
 			}
-			if (mo.hasItems()){
-				if (items == null){
-					items = new ArrayList<ItemStack>(mo.getItems());
-				} else {
-					items.addAll(mo.getItems());				
-				}
-			}
+			if (mo.hasOption(TransitionOption.GIVEITEMS)){
+				giveItems(transition, p, mo.getGiveItems(),teamIndex, am.woolTeams, insideArena);}
 
-			try{if (effects != null) EffectUtil.enchantPlayer(p.getPlayer(), effects);} catch (Exception e){}
-			if (items != null) {
-				giveItems(transition, p, items,teamIndex, am.woolTeams, insideArena);
-			}
+			try{if (effects != null)
+				EffectUtil.enchantPlayer(p.getPlayer(), effects);} catch (Exception e){}
 
 			String prizeMsg = mo.getPrizeMsg(null);
 			if (prizeMsg != null)
 				MessageUtil.sendMessage(p,"&eYou have been given \n"+prizeMsg);
 			if (teleportIn){
 				transition(am, MatchState.ONSPAWN, p, team, false);
-			}			
+			}
 		}
 
 		/// Teleport out, need to do this at the end so that all the onCancel/onComplete options are completed first
-		if (teleportOut && insideArena){ /// Lets not teleport people out who are already out(like dead ppl)
-			TeleportController.teleportPlayer(p.getPlayer(), am.oldlocs.get(p.getName()), false, false, wipeInventory);
-			am.leaveArena(p); 
-			/// If players are outside of the match, but need requirements, warn them 
+		if (teleportOut ){ /// Lets not teleport people out who are already out(like dead ppl)
+			Location loc = null;
+			if (mo.hasOption(TransitionOption.TELEPORTTO))
+				loc = mo.getTeleportToLoc();
+			else if (mo.hasOption(TransitionOption.TELEPORTONARENAEXIT))
+				loc = mo.getTeleportToLoc();
+			else
+				loc = am.oldlocs.get(p.getName());
+			if (insideArena || !onlyInMatch){
+				TeleportController.teleportPlayer(p.getPlayer(), loc, false, false, wipeInventory);
+				am.leaveArena(p);
+			}
+			/// If players are outside of the match, but need requirements, warn them
 		} else if (transition == MatchState.ONPRESTART && !insideArena){
 			/// Warn players about requirements
 			if (!am.tops.playerReady(p)){
 				MessageUtil.sendMessage(p, am.tops.getRequiredString(p,"&eRemember you still need the following"));}
 		}
 		/// Restore their exp and items.. Has to happen AFTER teleport
-		if (mo.hasOption(TransitionOption.RESTOREGAMEMODE)){ am.psc.restoreGamemode(p);}
-		if (mo.restoreExperience()) { am.psc.restoreExperience(p);}
-		if (mo.restoreItems()){
+		boolean restoreAll = mo.hasOption(TransitionOption.RESTOREALL);
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREGAMEMODE)){ am.psc.restoreGamemode(p);}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREEXPERIENCE)) { am.psc.restoreExperience(p);}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREITEMS)){
 			if (am.woolTeams){
 				TeamUtil.removeTeamHead(teamIndex, p.getPlayer());}
 			if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+transition+" transition restoring items "+insideArena);
 			am.psc.restoreItems(p);
 		}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEROCLASS)){am.psc.restoreHeroClass(p);}
 
 		return true;
 	}
@@ -258,7 +246,7 @@ public class PerformTransition {
 		case 5:
 			loc.setX(loc.getX() + rand.nextDouble()-0.5);
 			loc.setZ(loc.getZ() + rand.nextDouble()-0.5);
-		}				
+		}
 		return loc;
 	}
 

@@ -20,6 +20,10 @@ numberSavedInventories: 5
 # which player commands should be disabled when they enter an arena
 disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]
 
+# If set to true, items that are usually not stackable will be stacked when
+# a player is given items.  Examples: 64 mushroom soup, or 64 snow_ball, instead of 1 or 16
+ignoreMaxStackSize: false
+
 ## default Options (these can be overridden by each match/event type)
 defaultOptions:
     ### Match Options

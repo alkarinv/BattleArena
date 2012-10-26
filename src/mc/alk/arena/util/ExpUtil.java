@@ -5,21 +5,22 @@ import org.bukkit.entity.Player;
 /**
  * @author alkarin
  * version: 1.3
- * 
+ *
  * This class is strictly used because Bukkit DOES NOT UPDATE experience after enchanting
  * so using player.getTotalExperience() returns an INCORRECT amount
- * 
+ *
  * Levels based off of 1.3 exp formulas verified by myself
  * formulas used.
+ * lvl <= 15 : 17*lvl;
  * 15 < lvl < 31 : 17*l + 3*(0.5*l2*(l2+1)), and 17 + 3*l2, where l2 = (l - 16)
- * lvl > 30 : 17*l + 3*(0.5*l2*(l2+1))+4*(0.5*l3*(l3+1)) and 
+ * lvl > 30 : 17*l + 3*(0.5*l2*(l2+1))+4*(0.5*l3*(l3+1)) and
  * 					17+inc, 17 + 3*l2 +4*l3, where l2 = (l-16) and l3=(l-31)
- * 
+ *
  * The forms you see in the functions are simplifications of the above
  */
 public class ExpUtil {
 
-	
+
 	/**
 	 * Get the total amount of experience that a player has
 	 * @param p
@@ -28,7 +29,7 @@ public class ExpUtil {
 	public static int getTotalExperience(Player p){
 		return getTotalExperience(p.getLevel(),p.getExp());
 	}
-	
+
 	/**
 	 * Get the total amount of experience to a level with a fractional exp bar
 	 * @param level
@@ -36,7 +37,7 @@ public class ExpUtil {
 	 * @return
 	 */
 	public static int getTotalExperience(int level, double bar){
-		return getTotalExpToLevel(level) + (int) (getExpToLevel(level+1)*bar); 
+		return getTotalExpToLevel(level) + (int) (getExpToLevel(level+1)*bar);
 	}
 
 	/**
@@ -44,9 +45,9 @@ public class ExpUtil {
 	 * @param level
 	 * @return
 	 */
-	public static int getTotalExpToLevel(int level){		
+	public static int getTotalExpToLevel(int level){
 		if (level < 16){
-			return (int) (17*level);
+			return 17*level;
 		} else if (level < 31){
 			return (int) (1.5*level*level -29.5*level+360 );
 		} else {
@@ -65,6 +66,6 @@ public class ExpUtil {
 			return 3*level - 31;
 		} else {
 			return 7*level - 155;
-		}		
+		}
 	}
 }

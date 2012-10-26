@@ -2,28 +2,31 @@ package mc.alk.arena.objects;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import mc.alk.arena.util.EffectUtil.EffectWithArgs;
 import mc.alk.arena.util.InventoryUtil;
 
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
 public class ArenaClass {
 	public static final Integer DEFAULT = Integer.MAX_VALUE;
-
+	public static final ArenaClass CHOSEN_CLASS = new ArenaClass("CHOSENCLASS","chosenClass", null, null);
 	final String name;
 	final List<ItemStack> items;
-	final List<EffectWithArgs> effects;
+	final List<PotionEffect> effects;
 	final String prettyName;
-	public ArenaClass(String name, String prettyName, List<ItemStack> items, List<EffectWithArgs> effects){
+	public ArenaClass(String name, String prettyName, List<ItemStack> items, List<PotionEffect> effects){
 		this.name = name;
-		ArrayList<ItemStack> listitems = new ArrayList<ItemStack>();
+		CopyOnWriteArrayList<ItemStack> listitems = new CopyOnWriteArrayList<ItemStack>();
 		ArrayList<ItemStack> armoritems = new ArrayList<ItemStack>();
-		for (ItemStack is: items){
-			if (InventoryUtil.isArmor(is)){
-				armoritems.add(is);
-			} else {
-				listitems.add(is);
+		if (items != null){
+			for (ItemStack is: items){
+				if (InventoryUtil.isArmor(is)){
+					armoritems.add(is);
+				} else {
+					listitems.add(is);
+				}
 			}
 		}
 		this.items = listitems;
@@ -38,7 +41,7 @@ public class ArenaClass {
 		return items;
 	}
 
-	public List<EffectWithArgs> getEffects() {
+	public List<PotionEffect> getEffects() {
 		return effects;
 	}
 

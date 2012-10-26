@@ -57,6 +57,7 @@ import mc.alk.arena.serializers.EventScheduleSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.serializers.SpawnSerializer;
 import mc.alk.arena.serializers.StateFlagSerializer;
+import mc.alk.arena.serializers.TeamHeadSerializer;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.Log;
@@ -71,7 +72,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class BattleArena extends JavaPlugin{
-	static private String pluginname; 
+	static private String pluginname;
 	static private String version;
 	static private BattleArena plugin;
 
@@ -90,6 +91,7 @@ public class BattleArena extends JavaPlugin{
 	private static final BAClassesSerializer bacs = new BAClassesSerializer();
 	private static final EventScheduleSerializer ess = new EventScheduleSerializer();
 
+	@Override
 	public void onEnable() {
 		plugin = this;
 		PluginDescriptionFile pdfFile = this.getDescription();
@@ -133,7 +135,7 @@ public class BattleArena extends JavaPlugin{
 		ArenaType.register("Arena", Arena.class, this);
 		ArenaType.register("Skirmish", Arena.class, this);
 		ArenaType.register("Versus", Arena.class, this);
-		
+
 		VictoryType.register(HighestKills.class, this);
 		VictoryType.register(NDeaths.class, this);
 		VictoryType.register(LastManStanding.class, this);
@@ -146,16 +148,21 @@ public class BattleArena extends JavaPlugin{
 		cc.setConfig(null,load("/default_files/config.yml",dir.getPath() +"/config.yml"));
 		YamlFileUpdater.updateConfig(cc); /// Update our config if necessary
 
-		bacs.setConfig(load("/default_files/classes.yml",dir.getPath() +"/classes.yml"));
+		bacs.setConfig(load("/default_files/classes.yml",dir.getPath() +"/classes.yml")); /// Load classes
 		bacs.loadAll();
 
-		cc.loadAll();
+		TeamHeadSerializer ts = new TeamHeadSerializer();
+		ts.setConfig(load("/default_files/teamHeads.yml",dir.getPath() +"/teamHeads.yml")); /// Load team heads
+		ts.loadAll();
+
+		cc.loadAll(); /// Load our defaults for BattleArena
+
 		MoneyController.setup();
 		/// persist our disabled arena types
 		StateFlagSerializer sfs = new StateFlagSerializer();
 		sfs.setConfig(dir.getPath() +"/state.yml");
 		commandExecutor.setDisabled(sfs.load());
-		
+
 		ArenaSerializer.setBAC(arenaController);
 		ArenaSerializer as = new ArenaSerializer(this, dir.getPath()+"/arenas.yml");
 		as.loadArenas(this);
@@ -198,7 +205,7 @@ public class BattleArena extends JavaPlugin{
 					es.startNext();
 				else if (Defaults.START_CONTINUOUS)
 					es.start();
-			}			
+			}
 		});
 		if (Defaults.AUTO_UPDATE)
 			PluginUpdater.downloadPluginUpdates(this);
@@ -211,14 +218,15 @@ public class BattleArena extends JavaPlugin{
 			f.mkdir();
 		HashSet<String> events = new HashSet<String>(Arrays.asList("freeforall","deathmatch","tourney"));
 		for (MatchParams mp: ParamController.getAllParams()){
-			String fileName = events.contains(mp.getName().toLowerCase()) ? "defaultEventMessages.yml": "defaultMatchMessages.yml";  
+			String fileName = events.contains(mp.getName().toLowerCase()) ? "defaultEventMessages.yml": "defaultMatchMessages.yml";
 			MessageSerializer ms = new MessageSerializer(mp.getName());
 			ms.setConfig(load("/default_files/"+fileName, f.getAbsolutePath()+"/"+mp.getName()+"Messages.yml"));
 			ms.loadAll();
 			MessageSerializer.addMessageSerializer(mp.getName(),ms);
-		}		
+		}
 	}
 
+	@Override
 	public void onDisable() {
 		StateFlagSerializer sfs = new StateFlagSerializer();
 		sfs.setConfig(getDataFolder().getPath() +"/state.yml");
@@ -247,7 +255,7 @@ public class BattleArena extends JavaPlugin{
 				getCommand("tourney").setExecutor(executor);
 				EventController.addEventExecutor(tourney, executor);
 			} catch (Exception e){
-				Log.err("command tourney not found");				
+				Log.err("command tourney not found");
 			}
 		} else {
 			Log.err("Tournament type not found");

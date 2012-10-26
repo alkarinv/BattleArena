@@ -5,13 +5,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import mc.alk.arena.executors.CustomCommandExecutor.InvalidArgumentException;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class SerializerUtil {
-	
+
 	public static HashMap<String, String> createSaveableLocations(Map<Integer, Location> mlocs) {
 		HashMap<String,String> locations = new HashMap<String,String>();
 		for (Integer key: mlocs.keySet()){
@@ -21,7 +23,7 @@ public class SerializerUtil {
 		return locations;
 	}
 
-	
+
 	public static void expandMapIntoConfig(ConfigurationSection conf, Map<String, Object> map) {
 		for (Entry<String, Object> e : map.entrySet()) {
 			if (e.getValue() instanceof Map<?,?>) {
@@ -35,10 +37,10 @@ public class SerializerUtil {
 		}
 	}
 
-	public static Location getLocation(String locstr) {
+	public static Location getLocation(String locstr) throws InvalidArgumentException {
 		//		String loc = node.getString(nodestr,null);
 		if (locstr == null)
-			return null;
+			throw new InvalidArgumentException("Error parsing location. Location string was null");
 		String split[] = locstr.split(",");
 		String w = split[0];
 		float x = Float.valueOf(split[1]);
@@ -51,7 +53,7 @@ public class SerializerUtil {
 		if (w != null)
 			world = Bukkit.getWorld(w);
 		if (world ==null){
-			return null;}
+			throw new InvalidArgumentException("Error parsing location, World was null");}
 		return new Location(world,x,y,z,yaw,pitch);
 	}
 
@@ -67,10 +69,16 @@ public class SerializerUtil {
 		HashMap<Integer,Location> locs = new HashMap<Integer,Location>();
 		Set<String> indices = cs.getKeys(false);
 		for (String locIndexStr : indices){
-			Location loc = SerializerUtil.getLocation(cs.getString(locIndexStr));
+			Location loc = null;
+			try {
+				loc = SerializerUtil.getLocation(cs.getString(locIndexStr));
+			} catch (InvalidArgumentException e) {
+				e.printStackTrace();
+				continue;
+			}
 			Integer i = Integer.valueOf(locIndexStr);
 			locs.put(i, loc);
-		}			
+		}
 		return locs;
 	}
 

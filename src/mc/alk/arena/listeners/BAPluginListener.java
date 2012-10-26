@@ -1,6 +1,7 @@
 package mc.alk.arena.listeners;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.HeroesInterface;
 import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
@@ -21,7 +22,7 @@ import com.dthielke.herochat.Herochat;
 
 
 /**
- * 
+ *
  * @author alkarin
  *
  */
@@ -47,6 +48,8 @@ public class BAPluginListener implements Listener {
 			loadWorldEdit();
 		else if (event.getPlugin().getName() == "MobArena")
 			loadMobArena();
+		else if (event.getPlugin().getName() == "Heroes")
+			loadHeroes();
 	}
 
 	public void loadAll(){
@@ -59,6 +62,7 @@ public class BAPluginListener implements Listener {
 		loadMultiverseInventory();
 		loadMultiverseCore();
 		loadMobArena();
+		loadHeroes();
 	}
 
 	public void loadHeroChat(){
@@ -101,7 +105,7 @@ public class BAPluginListener implements Listener {
 			if (plugin != null) {
 				Defaults.PLUGIN_MULTI_INV=true;
 				Log.info("[BattleArena] MultiInv detected.  Implementing teleport/gamemode workarounds");
-			} 
+			}
 		}
 	}
 
@@ -111,7 +115,7 @@ public class BAPluginListener implements Listener {
 			if (plugin != null) {
 				Defaults.PLUGIN_MULITVERSE_CORE=true;
 				Log.info("[BattleArena] Multiverse-Core detected. Implementing teleport/gamemode workarounds");
-			} 
+			}
 		}
 	}
 
@@ -121,31 +125,31 @@ public class BAPluginListener implements Listener {
 			if (plugin != null) {
 				Defaults.PLUGIN_MULITVERSE_INV=true;
 				Log.info("[BattleArena] Multiverse-Inventories detected. Implementing teleport/gamemode workarounds");
-			} 
+			}
 		}
 	}
-	
+
 	public void loadWorldEdit(){
 		if (!Defaults.PLUGIN_MULTI_INV){
 			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-			if (plugin != null) {				
-				if (WorldGuardInterface.setWorldEdit(plugin)){					
+			if (plugin != null) {
+				if (WorldGuardInterface.setWorldEdit(plugin)){
 					WorldGuardInterface.init();
 					Log.info("[BattleArena] WorldGuard detected. WorldGuard regions now enabled");
 				}
-			} 
+			}
 		}
 	}
 
 	public void loadWorldGuard(){
 		if (Defaults.PLUGIN_MULTI_INV == false){
 			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
-			if (plugin != null) {				
-				if (WorldGuardInterface.setWorldGuard(plugin)){					
+			if (plugin != null) {
+				if (WorldGuardInterface.setWorldGuard(plugin)){
 					WorldGuardInterface.init();
 					Log.info("[BattleArena] WorldGuard detected. WorldGuard regions now be used");
 				}
-			} 
+			}
 		}
 	}
 	public void loadMobArena(){
@@ -154,7 +158,17 @@ public class BAPluginListener implements Listener {
 			if (plugin != null) {
 				MobArenaInterface.init(plugin);
 				Log.info("[BattleArena] MobArena detected.  Implementing no join when in MobArena");
-			} 
+			}
+		}
+	}
+
+	public void loadHeroes(){
+		if (!HeroesInterface.enabled()){
+			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Heroes");
+			if (plugin != null) {
+				HeroesInterface.setHeroes(plugin);
+				Log.info("[BattleArena] Heroes detected. Implementing heroes class options");
+			}
 		}
 	}
 

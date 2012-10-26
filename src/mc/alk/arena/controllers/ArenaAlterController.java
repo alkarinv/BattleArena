@@ -37,6 +37,8 @@ public class ArenaAlterController {
 				if (Integer.valueOf(str) != null)
 					return SPAWNLOC;
 			} catch (Exception e){}
+			if (TeamUtil.getTeamIndex(str) != null){
+				return SPAWNLOC;}
 			if (str.equalsIgnoreCase("wr")) return WAITROOM;
 			if (str.equalsIgnoreCase("v")) return VLOC;
 			return null;
@@ -64,7 +66,7 @@ public class ArenaAlterController {
 		String changetype = args[2];
 		String value = null;
 		if (args.length > 3)
-			value = (String) args[3];
+			value = args[3];
 		String[] otherOptions = args.length > 4 ? Arrays.copyOfRange(args, 4, args.length) : null;
 		if (Defaults.DEBUG) System.out.println("alterArena " + arenaName +":" + changetype + ":" + value);
 
@@ -79,7 +81,7 @@ public class ArenaAlterController {
 		case NTEAMS: success = changeNTeams(sender, arena, ac, value); break;
 		case TYPE: success = changeType(sender, arena, ac, value); break;
 		case SPAWNLOC: success = changeSpawn(sender, arena, ac, changetype, value, otherOptions); break;
-		case VLOC: success = changeVisitorSpawn(sender,arena,ac,changetype,value,otherOptions); break;			
+		case VLOC: success = changeVisitorSpawn(sender,arena,ac,changetype,value,otherOptions); break;
 		case WAITROOM: success = changeWaitroomSpawn(sender,arena,ac,changetype,value,otherOptions); break;
 		case ADDREGION: success = addWorldGuardRegion(sender,arena,ac,value); break;
 		default:
@@ -87,7 +89,7 @@ public class ArenaAlterController {
 			break;
 		}
 		if (success)
-			BattleArena.saveArenas();	
+			BattleArena.saveArenas();
 		return success;
 	}
 
@@ -130,7 +132,7 @@ public class ArenaAlterController {
 			sendMessage(sender,"&cAdding WorldGuard region failed!");
 			sendMessage(sender, "&c" + e.getMessage());
 			e.printStackTrace();
-		}	
+		}
 		return true;
 	}
 
@@ -147,6 +149,8 @@ public class ArenaAlterController {
 		try{locindex = Integer.parseInt(value);}catch(Exception e){}
 		if (locindex == -1){
 			locindex = TeamUtil.getTeamIndex(value);
+			if (locindex!=null)
+				locindex++;
 		}
 		if (locindex == null || locindex <= 0 || locindex > 100){
 			sendMessage(sender,"&cspawn number must be in the range [1-100]");
@@ -155,7 +159,7 @@ public class ArenaAlterController {
 		return locindex;
 	}
 
-	private static boolean changeWaitroomSpawn(CommandSender sender, Arena arena, BattleArenaController ac, 
+	private static boolean changeWaitroomSpawn(CommandSender sender, Arena arena, BattleArenaController ac,
 			String changetype, String value, String[] otherOptions) {
 		if (!BAExecutor.checkPlayer(sender))
 			return false;
@@ -169,13 +173,13 @@ public class ArenaAlterController {
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}
-		arena.setWaitRoomSpawnLoc(locindex-1,loc);			
+		arena.setWaitRoomSpawnLoc(locindex-1,loc);
 		ac.addArena(arena);
 		sendMessage(sender,"&2waitroom &6" + locindex +"&2 set to location=&6" + Util.getLocString(loc));
 		return true;
 	}
 
-	private static boolean changeVisitorSpawn(CommandSender sender, Arena arena, BattleArenaController ac, 
+	private static boolean changeVisitorSpawn(CommandSender sender, Arena arena, BattleArenaController ac,
 			String changetype, String value, String[] otherOptions) {
 		if (!BAExecutor.checkPlayer(sender))
 			return false;
@@ -189,14 +193,14 @@ public class ArenaAlterController {
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}
-		arena.setSpawnLoc(locindex-1,loc);			
+		arena.setSpawnLoc(locindex-1,loc);
 		ac.addArena(arena);
 		sendMessage(sender,"&2team &6" + changetype +"&2 spawn set to location=&6" + Util.getLocString(loc));
 		return true;
 	}
 
 
-	private static boolean changeSpawn(CommandSender sender, Arena arena, BattleArenaController ac, 
+	private static boolean changeSpawn(CommandSender sender, Arena arena, BattleArenaController ac,
 			String changetype, String value, String[] otherOptions) {
 		if (!BAExecutor.checkPlayer(sender))
 			return false;
@@ -210,7 +214,7 @@ public class ArenaAlterController {
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}
-		arena.setSpawnLoc(locindex-1,loc);			
+		arena.setSpawnLoc(locindex-1,loc);
 		ac.addArena(arena);
 		sendMessage(sender,"&2team &6" + changetype +"&2 spawn set to location=&6" + Util.getLocString(loc));
 		return true;

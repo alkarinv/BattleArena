@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
@@ -13,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class MatchTransitions {
 	HashMap<MatchState,TransitionOptions> ops = new HashMap<MatchState,TransitionOptions>();
-	
+
 	public MatchTransitions() {}
 	public MatchTransitions(MatchTransitions o) {
 		for (MatchState ms: o.ops.keySet()){
@@ -31,10 +32,15 @@ public class MatchTransitions {
 				if (tops.hasOption(op))
 					return true;
 			}
-		}			
+		}
 		return false;
 	}
-	
+
+	public boolean hasOptionAt(MatchState state, TransitionOption option) {
+		TransitionOptions tops = ops.get(state);
+		return tops == null ? false : tops.hasOption(option);
+	}
+
 	public boolean needsClearInventory() {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).clearInventory() : false;
 	}
@@ -50,7 +56,7 @@ public class MatchTransitions {
 	public String getRequiredString(ArenaPlayer p, String header) {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).getNotReadyMsg(p,header): null;
 	}
-	
+
 	public String getGiveString(MatchState ms) {
 		return ops.containsKey(ms) ? ops.get(ms).getPrizeMsg(null): null;
 	}
@@ -86,11 +92,27 @@ public class MatchTransitions {
 		List<MatchState> states = new ArrayList<MatchState>(ops.keySet());
 		Collections.sort(states);
 		for (MatchState ms : states){
-			sb.append(ms +" -- " + ops.get(ms)+"\n");
-			List<ItemStack> items = ops.get(ms).getItems();
+			TransitionOptions to = ops.get(ms);
+			sb.append(ms +" -- " + to+"\n");
+			Map<Integer, ArenaClass> classes = to.getClasses();
+			if (classes != null){
+				sb.append("             classes - ");
+				for (ArenaClass ac : classes.values()){
+					sb.append(" " + ac.getPrettyName());}
+				sb.append("\n");
+			}
+			List<ItemStack> items = to.getGiveItems();
 			if (items != null){
+				sb.append("             items - ");
 				for (ItemStack item: items){
-					sb.append("          item - " + InventoryUtil.getItemString(item));}
+					sb.append(" " + InventoryUtil.getItemString(item));}
+				sb.append("\n");
+			}
+			items = to.getNeedItems();
+			if (items != null){
+				sb.append("             needitems - ");
+				for (ItemStack item: items){
+					sb.append(" " + InventoryUtil.getItemString(item));}
 				sb.append("\n");
 			}
 		}

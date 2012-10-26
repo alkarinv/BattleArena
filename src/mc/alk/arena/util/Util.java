@@ -12,7 +12,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -24,9 +23,10 @@ public class Util {
 		public MinMax(int min, int max){
 			this.min = min; this.max = max;
 		}
+		@Override
 		public String toString(){return "[MM "+min+":" + max+"]";}
 	}
-	
+
 	static public void printStackTrace(){
 		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
 			System.out.println(ste);
@@ -36,7 +36,7 @@ public class Util {
 		return l.getWorld().getName() +"," + (int)l.getX() + "," + (int)l.getY() + "," + (int)l.getZ();
 	}
 
-	
+
 	public static String getStr(int min, int max){
 		if (min==max)
 			return min+"";
@@ -53,7 +53,7 @@ public class Util {
 				Integer i = Integer.valueOf(s);
 				return new MinMax(i,ArenaParams.MAX);
 			} catch (Exception e){
-				return null;	
+				return null;
 			}
 		}
 		if (s.contains("-")){
@@ -62,21 +62,21 @@ public class Util {
 			int j = Integer.valueOf(vals[1]);
 			return new MinMax(i,j);
 		}
-		
+
 		try {
 			Integer i = null;
 			if (s.contains("v")){
-				i = Integer.valueOf(s.split("v")[0]);				
+				i = Integer.valueOf(s.split("v")[0]);
 			} else {
 				i = Integer.valueOf(s);
 			}
-			return new MinMax(i,i);			
+			return new MinMax(i,i);
 		} catch (Exception e){
-			return null;	
+			return null;
 		}
 	}
-	
-	
+
+
 	public static String getColor(String str) {
 		int index = str.indexOf("&");
 		if (index == -1){
@@ -87,7 +87,7 @@ public class Util {
 		}
 		return ChatColor.WHITE+"";
 	}
-	
+
 	public static String playersToCommaDelimitedString(Collection<ArenaPlayer> players){
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
@@ -96,7 +96,7 @@ public class Util {
 			else first = false;
 			sb.append(p.getName());
 		}
-		return sb.toString();		
+		return sb.toString();
 	}
 
 	public static String toCommaDelimitedString(Collection<String> players){
@@ -107,19 +107,27 @@ public class Util {
 			else first = false;
 			sb.append(p);
 		}
-		return sb.toString();		
+		return sb.toString();
 	}
-	
+
+	public static Player findPlayerExact(String name) {
+		if (name == null)
+			return null;
+		Player lastPlayer = Bukkit.getPlayerExact(name);
+		if (lastPlayer != null)
+			return lastPlayer;
+		if (Defaults.DEBUG_VIRTUAL){return VirtualPlayers.getPlayer(name);}
+		return null;
+	}
 
 	public static Player findPlayer(String name) {
 		if (name == null)
 			return null;
-		Server server =Bukkit.getServer();
-		Player lastPlayer = server.getPlayer(name);
-		if (lastPlayer != null) 
+		Player lastPlayer = Bukkit.getPlayer(name);
+		if (lastPlayer != null)
 			return lastPlayer;
 
-		Player[] online = server.getOnlinePlayers();
+		Player[] online = Bukkit.getOnlinePlayers();
 		if (Defaults.DEBUG_VIRTUAL){online = VirtualPlayers.getOnlinePlayers();}
 
 		for (Player player : online) {
@@ -140,7 +148,7 @@ public class Util {
 
 		return lastPlayer;
 	}
-	
+
 	public static OfflinePlayer findOfflinePlayer(String name) {
 		OfflinePlayer p = findPlayer(name);
 		if (p != null){
@@ -158,7 +166,7 @@ public class Util {
 	}
 
 	public static Player[] getOnlinePlayers() {
-		
+
 		if (Defaults.DEBUG_VIRTUAL){
 			Player[] online = VirtualPlayers.getOnlinePlayers();
 			Player[] realonline = Bukkit.getOnlinePlayers();

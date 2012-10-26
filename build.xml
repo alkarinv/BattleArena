@@ -34,6 +34,7 @@
 				<pathelement location="${lib}/VirtualPlayers.jar" />
 				<pathelement location="${lib}/MassDisguise.jar" />
 				<pathelement location="${lib}/PluginUpdater.jar" />
+				<pathelement location="${lib}/Heroes.jar" />
 			</classpath>
 		</javac>
 		<antcall target="dist" />

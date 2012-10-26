@@ -1,185 +1,104 @@
 package mc.alk.arena.util;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityLiving;
-import net.minecraft.server.MobEffect;
-import net.minecraft.server.MobEffectList;
-
-import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class EffectUtil {
-	public static final String version ="1.1";
-	public static class EffectWithArgs {
-		public MobEffectList mel;
-		public Integer strength = null;
-		public Integer time = null;
-
-
-		public String getCommonName() {
-			return EffectUtil.getCommonName(this);
-		}
-		@Override
-		public String toString(){
-			return mel.id + " " + strength +" " + time;
-		}
-
-	}
-
-	static final HashMap<MobEffectList,String> effectToName = new HashMap<MobEffectList,String>();
-	static final HashMap<String,MobEffectList> nameToEffect= new HashMap<String,MobEffectList>();
+	static final String version = "2.0";
+	static final HashMap<PotionEffectType,String> effectToName = new HashMap<PotionEffectType,String>();
+	static final HashMap<String,PotionEffectType> nameToEffect= new HashMap<String,PotionEffectType>();
 	static{
-		effectToName.put(MobEffectList.FASTER_MOVEMENT, "speed");
-		effectToName.put(MobEffectList.SLOWER_MOVEMENT, "slowness");
-		effectToName.put(MobEffectList.FASTER_DIG, "haste");
-		effectToName.put(MobEffectList.SLOWER_DIG,"slownewss");
-		effectToName.put(MobEffectList.INCREASE_DAMAGE, "strength");
-		effectToName.put(MobEffectList.HEAL, "heal");
-		effectToName.put(MobEffectList.HARM, "harm");
-		effectToName.put(MobEffectList.JUMP, "jump");
-		effectToName.put(MobEffectList.CONFUSION, "confusion");
-		effectToName.put(MobEffectList.REGENERATION, "regen");
-		effectToName.put(MobEffectList.RESISTANCE, "resistance");
-		effectToName.put(MobEffectList.FIRE_RESISTANCE, "fireresistance");
-		effectToName.put(MobEffectList.WATER_BREATHING, "waterbreathing");
-		effectToName.put(MobEffectList.INVISIBILITY, "invisibility");
-		effectToName.put(MobEffectList.BLINDNESS, "blindness");
-		effectToName.put(MobEffectList.NIGHT_VISION,"night vision");
-		effectToName.put(MobEffectList.HUNGER, "hunger");
-		effectToName.put(MobEffectList.WEAKNESS, "weakness");
-		effectToName.put(MobEffectList.POISON, "poison");
-		nameToEffect.put("speed", MobEffectList.FASTER_MOVEMENT);
-		nameToEffect.put("slowness", MobEffectList.SLOWER_MOVEMENT);
-		nameToEffect.put("haste", MobEffectList.FASTER_DIG);
-		nameToEffect.put("slowdig", MobEffectList.SLOWER_DIG);
-		nameToEffect.put("strength", MobEffectList.INCREASE_DAMAGE);
-		nameToEffect.put("heal", MobEffectList.HEAL);
-		nameToEffect.put("harm", MobEffectList.HARM);
-		nameToEffect.put("jump", MobEffectList.JUMP);
-		nameToEffect.put("confusion", MobEffectList.CONFUSION);
-		nameToEffect.put("regeneration", MobEffectList.REGENERATION);
-		nameToEffect.put("resistance", MobEffectList.RESISTANCE);
-		nameToEffect.put("fireresistance", MobEffectList.FIRE_RESISTANCE);
-		nameToEffect.put("waterbreathing", MobEffectList.WATER_BREATHING);
-		nameToEffect.put("invisibility", MobEffectList.INVISIBILITY);
-		nameToEffect.put("blindness", MobEffectList.BLINDNESS);
-		nameToEffect.put("nightvision", MobEffectList.NIGHT_VISION);
-		nameToEffect.put("hunger", MobEffectList.HUNGER);
-		nameToEffect.put("weakness", MobEffectList.WEAKNESS);
-		nameToEffect.put("poison", MobEffectList.POISON);
+		effectToName.put(PotionEffectType.FAST_DIGGING, "HASTE");
+		effectToName.put(PotionEffectType.SLOW_DIGGING,"SLOWSWING");
+		effectToName.put(PotionEffectType.SLOW_DIGGING,"SLOWDIG");
+		effectToName.put(PotionEffectType.INCREASE_DAMAGE, "STRENGTH");
+		effectToName.put(PotionEffectType.REGENERATION, "REGEN");
+		effectToName.put(PotionEffectType.DAMAGE_RESISTANCE, "RESISTANCE");
+		effectToName.put(PotionEffectType.DAMAGE_RESISTANCE, "PROT");
+		nameToEffect.put("HASTE", PotionEffectType.FAST_DIGGING);
+		nameToEffect.put("SLOW", PotionEffectType.SLOW);
+		nameToEffect.put("SLOWDIG", PotionEffectType.SLOW_DIGGING);
+		nameToEffect.put("SLOWSWING", PotionEffectType.SLOW_DIGGING);
+		nameToEffect.put("STRENGTH", PotionEffectType.INCREASE_DAMAGE);
+		nameToEffect.put("REGEN", PotionEffectType.REGENERATION);
+		nameToEffect.put("RESISTANCE", PotionEffectType.DAMAGE_RESISTANCE);
+		nameToEffect.put("PROT", PotionEffectType.DAMAGE_RESISTANCE);
 	}
 
-	public static MobEffectList getEffect(String buffName){
-		buffName = buffName.toLowerCase();
+	public static PotionEffectType getEffect(String buffName){
+		buffName = buffName.toUpperCase();
+		PotionEffectType type = PotionEffectType.getByName(buffName);
+		if (type != null){
+			return type;
+		}
 		if (nameToEffect.containsKey(buffName))
 			return nameToEffect.get(buffName);
-		if (buffName.contains("slow")) return MobEffectList.SLOWER_MOVEMENT;
-		else if (buffName.contains("fastdig")) return MobEffectList.FASTER_DIG;
-		else if (buffName.contains("fasterdig")) return MobEffectList.FASTER_DIG;
-		else if (buffName.contains("regen")) return MobEffectList.REGENERATION;
-		else if (buffName.contains("resis")) return MobEffectList.RESISTANCE;
-		else if (buffName.contains("waterb")) return MobEffectList.WATER_BREATHING;
-		else if (buffName.contains("invis")) return MobEffectList.INVISIBILITY;
-		else if (buffName.contains("blind")) return MobEffectList.BLINDNESS;
+		buffName = buffName.replaceAll("_", "");
+		type = PotionEffectType.getByName(buffName);
+		if (type != null){
+			return type;
+		}
+		if (nameToEffect.containsKey(buffName))
+			return nameToEffect.get(buffName);
 		return null;
 	}
 
-
-	public static void doEffect(EntityHuman player, MobEffectList mel, int time, int strength) {
-		doEffect((EntityLiving)player,mel,time,strength);
+	public static String getCommonName(PotionEffect effect){
+		if (effectToName.containsKey(effect.getType()))
+			return effectToName.get(effect.getType()).toLowerCase();
+		return effect.getType().getName().toLowerCase();
 	}
 
-	private static void doEffect(EntityLiving el, MobEffectList mel, int time, int strength) {
-		try{
-			el.addEffect(new MobEffect(mel.id, time * 20, strength));
-		} catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-
-	public static void enchantPlayer(Player player, List<EffectWithArgs> ewas){
-		try{
-			EntityHuman eh = ((CraftPlayer)player).getHandle();
-			if (eh == null)
-				return;
-			for (EffectWithArgs ewa : ewas){
-				doEffect(eh, ewa.mel,ewa.time,ewa.strength);
+	public static void enchantPlayer(Player player, List<PotionEffect> ewas){
+		for (PotionEffect ewa : ewas){
+			if (player.hasPotionEffect(ewa.getType())){
+				player.removePotionEffect(ewa.getType());
 			}
-		} catch (Exception e){
-			e.printStackTrace();
+			player.addPotionEffect(ewa);
 		}
 	}
 
-	public static String getEnchantString(List<EffectWithArgs> ewas){
-		try{
-			StringBuilder sb = new StringBuilder();
-			boolean first = true;
-			for (EffectWithArgs ewa : ewas){
-				if (!first) sb.append(",");
-				String commonName = EffectUtil.getCommonName(ewa);
-				sb.append(commonName);
-				first = false;
-			}
-			String enchants = sb.toString();
-			return enchants;
-		} catch (Exception e){
-			e.printStackTrace();
+	public static String getEnchantString(List<PotionEffect> effects){
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		for (PotionEffect pe : effects){
+			int str = pe.getAmplifier();
+			int tim = pe.getDuration();
+			if (!first) sb.append(", ");
+			String commonName = getCommonName(pe) +":" + (str+1)+":"+tim/20;
+			sb.append(commonName);
+			first = false;
 		}
-		return null;
+		return sb.toString();
 	}
 
-	public static List<EffectWithArgs> parseArgs(String arg, int strength, int time) {
-		String args[] = arg.split(" ");
-		List<EffectWithArgs> ewas = new ArrayList<EffectWithArgs>();
-		for (String effect: args){
-			EffectWithArgs ewa = EffectUtil.parseArg(effect,strength, time);
-			if (ewa != null)
-				ewas.add(ewa);
-		}
-		return ewas;
-	}
-
-	public static EffectWithArgs parseArg(String arg, int strength, int time) {
+	public static PotionEffect parseArg(String arg, int defaultStrength, int defaultTime) {
 		arg = arg.replaceAll(",", ":");
 		String split[] = arg.split(":");
-		EffectWithArgs ewa = new EffectWithArgs();
 		try {
-			MobEffectList mel = getEffect(split[0].trim());
-			if (mel == null)
+			PotionEffectType type = getEffect(split[0]);
+			if (type == null)
 				return null;
-			ewa.mel = mel;
-			if (split.length > 1){try{ewa.strength = Integer.valueOf(split[1]) -1;} catch (Exception e){}}
-			else { ewa.strength = strength;}
-
-			if (split.length > 2){try{ewa.time = Integer.valueOf(split[2]);} catch (Exception e){}}
-			else {ewa.time = time;}
-		} catch (Exception e){
-			return null;
-		}
-		return ewa;
+			Integer strength = defaultStrength;
+			Integer time = defaultTime;
+			if (split.length > 1){try{strength = Integer.valueOf(split[1]) -1;} catch (Exception e){}}
+			if (split.length > 2){try{time = Integer.valueOf(split[2])*20/*ticks*/;} catch (Exception e){}}
+			return new PotionEffect(type,time, strength);
+		} catch (Exception e){}
+		return null;
 	}
 
-	public static void unenchantAll(Player p) {
-		try{
-			EntityHuman eh = ((CraftPlayer)p).getHandle();
-			if (eh == null)
-				return;
-			for (MobEffectList mel : EffectUtil.effectToName.keySet()){
-				if(eh.hasEffect(mel)){
-					int mod = eh.getEffect(mel).getAmplifier();
-					eh.addEffect(new MobEffect(mel.id, -1, mod+1));
-				}
+	public static void deEnchantAll(Player p) {
+		for (PotionEffectType pet: PotionEffectType.values()){
+			if (pet == null)
+				continue;
+			if (p.hasPotionEffect(pet)){
+				p.removePotionEffect(pet);
 			}
-		} catch(Exception e){
-			e.printStackTrace();
 		}
 	}
-	public static String getCommonName(EffectWithArgs ewa){
-		return effectToName.get(ewa.mel);
-	}
-
 }

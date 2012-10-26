@@ -8,6 +8,7 @@ import java.util.Map;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.PlayerStoreController.PInv;
+import mc.alk.arena.executors.CustomCommandExecutor.InvalidArgumentException;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.SerializerUtil;
@@ -29,7 +30,7 @@ public class ArenaControllerSerializer {
 			f = new File(BattleArena.getSelf().getDataFolder()+"/arenaplayers.yml");
 			if (!f.exists())
 				f.createNewFile();
-		} catch (Exception e){e.printStackTrace();}		
+		} catch (Exception e){e.printStackTrace();}
 	}
 
 	public void load(){
@@ -41,7 +42,12 @@ public class ArenaControllerSerializer {
 		if (cs != null){
 			for (String name : cs.getKeys(false)){
 				ConfigurationSection loccs = cs.getConfigurationSection(name);
-				Location loc = SerializerUtil.getLocation(loccs.getString("loc"));
+				Location loc = null;
+				try {
+					loc = SerializerUtil.getLocation(loccs.getString("loc"));
+				} catch (InvalidArgumentException e) {
+					e.printStackTrace();
+				}
 				if (loc == null){
 					System.err.println("Couldnt load the player " + name +" when reading tpOnReenter inside arenaplayers.yml");
 					continue;
@@ -66,9 +72,9 @@ public class ArenaControllerSerializer {
 				String strgm = cs2.getString("gamemode");
 				if (strgm == null){
 					System.err.println("Couldnt load the player " + name +" when reading restoreGameModeOnReenter inside arenaplayers.yml");
-					continue;					
+					continue;
 				}
-				GameMode gm = GameMode.valueOf(strgm); 
+				GameMode gm = GameMode.valueOf(strgm);
 				if (gm == null){
 					System.err.println("Couldnt load the player " + name +" when reading restoreGameModeOnReenter inside arenaplayers.yml");
 					continue;
@@ -83,7 +89,7 @@ public class ArenaControllerSerializer {
 				PInv pinv = getInventory(pcs);
 				BAPlayerListener.restoreItemsOnReenter(name, pinv);
 			}
-		}			
+		}
 	}
 
 	public static PInv getInventory(ConfigurationSection cs){

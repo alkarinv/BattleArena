@@ -25,7 +25,7 @@ public class PlayerStoreController {
 	 * Store the experience, no problem
 	 * Restoring
 	 * case1: player in match, dies : should restore his exp
-	 * case2: player in match, quits, 
+	 * case2: player in match, quits,
 	 * 		Will that person come back into match if they come back?
 	 * 			a) yes: dont do anything
 	 * 			b) no: set a flag to restore when they join mc again
@@ -33,11 +33,12 @@ public class PlayerStoreController {
 	 * 		are the players still in match, gone, or offline
 	 * 			a) inmatch: restore
 	 * 			b) outofmatch: do nothing
-	 * 			c) offline && 
+	 * 			c) offline &&
 	 */
 	final HashMap <String, Integer> expmap = new HashMap<String,Integer>();
 	final HashMap <String, PInv> itemmap = new HashMap<String,PInv>();
 	final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
+	final HashMap <String, String> arenaclass = new HashMap<String,String>();
 
 	public static class PInv {
 		public ItemStack[] contents;
@@ -148,7 +149,7 @@ public class PlayerStoreController {
 			InventoryUtil.addItemToInventory(p, is);
 		}
 		inv.setContents(pinv.contents);
-		try {p.getPlayer().updateInventory(); } catch (Exception e){} /// Yes this can throw errors	
+		try {p.getPlayer().updateInventory(); } catch (Exception e){} /// Yes this can throw errors
 		for (ItemStack is: pinv.contents){
 			if (is == null || is.getType()==Material.AIR)
 				continue;
@@ -175,7 +176,7 @@ public class PlayerStoreController {
 		if (gm == null)
 			return;
 		if (!p.isOnline() || p.isDead()){
-			BAPlayerListener.restoreGameModeOnEnter(p.getName(), gm);	
+			BAPlayerListener.restoreGameModeOnEnter(p.getName(), gm);
 		} else {
 			setGameMode(p.getPlayer(), gm);
 		}
@@ -188,21 +189,21 @@ public class PlayerStoreController {
 			p.getPlayer().setGameMode(gm);
 		}
 	}
-	
+
 	public static void removeItem(ArenaPlayer p, ItemStack is) {
 		if (p.isOnline()){
 			InventoryUtil.removeItems((PlayerInventory)p.getInventory(),is);
 		} else {
 			BAPlayerListener.removeItemOnEnter(p,is);
-		}	
+		}
 	}
 
 	public static void removeItems(ArenaPlayer p, List<ItemStack> items) {
 		if (p.isOnline()){
-			InventoryUtil.removeItems((PlayerInventory)p.getInventory(),items);
+			InventoryUtil.removeItems(p.getInventory(),items);
 		} else {
 			BAPlayerListener.removeItemsOnEnter(p,items);
-		}	
+		}
 	}
 
 	public void allowEntry(ArenaPlayer p, String region, String regionWorld) {
@@ -216,5 +217,23 @@ public class PlayerStoreController {
 	}
 	public void removeMember(ArenaPlayer p, String region, String regionWorld) {
 		WorldGuardInterface.removeMember(p.getName(), region, regionWorld);
+	}
+
+	public void storeArenaClass(ArenaPlayer p) {
+		if (!HeroesInterface.enabled())
+			return;
+		String heroClass = HeroesInterface.getHeroClassName(p.getPlayer());
+		if (heroClass == null)
+			return;
+		arenaclass.put(p.getName(), heroClass);
+	}
+
+	public void restoreHeroClass(ArenaPlayer p) {
+		if (!HeroesInterface.enabled())
+			return;
+		String heroClass = arenaclass.get(p.getName());
+		if (heroClass == null)
+			return;
+		HeroesInterface.setHeroClass(p.getPlayer(), heroClass);
 	}
 }

@@ -460,6 +460,10 @@ public class InventoryUtil {
 	public static void addItemToInventory(Inventory inv, ItemStack is, int left){
 		if (is == null || is.getType() == Material.AIR)
 			return;
+		if (Defaults.IGNORE_STACKSIZE){
+			inv.addItem(is);
+			return;
+		}
 		int maxStackSize = is.getType().getMaxStackSize();
 		ItemStack is2 = is.clone(); /// we are modifying the amounts, so lets clone
 		if(left <= maxStackSize){

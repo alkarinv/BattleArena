@@ -34,7 +34,7 @@ import org.bukkit.inventory.ItemStack;
 import com.alk.virtualPlayer.VirtualPlayers;
 
 /**
- * 
+ *
  * @author alkarin
  *
  */
@@ -65,8 +65,8 @@ public class BAPlayerListener implements Listener  {
 	}
 
 	/**
-	 * 
-	 * Why priority.HIGHEST: if an exception happens after we have already set their respawn location, 
+	 *
+	 * Why priority.HIGHEST: if an exception happens after we have already set their respawn location,
 	 * they relog in at a separate time and will not get teleported to the correct place.
 	 * As a workaround, try to handle this event last.
 	 * @param event
@@ -125,7 +125,7 @@ public class BAPlayerListener implements Listener  {
 					Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
 						@Override
 						public void run() {
-							Player pl = Bukkit.getPlayer(name);
+							Player pl = Util.findPlayerExact(name);
 							if (pl != null){
 								TeleportController.teleport(p, tp.remove(name));
 							} else {
@@ -170,7 +170,7 @@ public class BAPlayerListener implements Listener  {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
 					Player pl;
-					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);} 
+					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);}
 					else {pl = Bukkit.getPlayer(name);}
 					//					System.out.println("### restoring items to " + name +"   pl = " + pl);
 					if (pl != null){
@@ -187,7 +187,7 @@ public class BAPlayerListener implements Listener  {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
 					Player pl;
-					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);} 
+					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);}
 					else {pl = Bukkit.getPlayer(name);}
 					if (pl != null){
 						List<ItemStack> items = itemRemove.remove(pl.getName());
@@ -245,6 +245,6 @@ public class BAPlayerListener implements Listener  {
 			items = new ArrayList<ItemStack>();
 			itemRemove.put(p.getName(), items);
 		}
-		items.addAll(itemsToRemove);		
+		items.addAll(itemsToRemove);
 	}
 }

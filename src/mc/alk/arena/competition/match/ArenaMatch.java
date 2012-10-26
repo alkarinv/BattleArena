@@ -9,6 +9,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.events.PlayerLeftEvent;
+import mc.alk.arena.events.matches.MatchClassSelectedEvent;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -23,7 +24,6 @@ import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.DisabledCommandsUtil;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.EffectUtil;
-import mc.alk.arena.util.EffectUtil.EffectWithArgs;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
@@ -50,6 +50,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffect;
 
 import com.alk.util.Log;
 
@@ -261,7 +262,6 @@ public class ArenaMatch extends Match {
 					event.setCancelled(true);}
 			}
 		}
-
 	}
 
 
@@ -340,24 +340,26 @@ public class ArenaMatch extends Match {
 			if (chosen.getItems()!=null)
 				items.addAll(chosen.getItems());
 			if (mo.hasItems()){
-				items.addAll(mo.getItems());}
+				items.addAll(mo.getGiveItems());}
 			if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
 				MessageUtil.sendMessage(p,"&cYou can't swich classes after changing items!");
 				return;
 			}
 		}
+		notifyListeners(new MatchClassSelectedEvent(this,ac));
+
 		/// Clear their inventory first, then give them the class and whatever items were due to them from the config
 		InventoryUtil.clearInventory(p, woolTeams);
 		/// Also debuff them
-		EffectUtil.unenchantAll(p);
+		EffectUtil.deEnchantAll(p);
 
 		/// Regive class/items
 		ArenaClassController.giveClass(p, ac);
 		if (mo.hasItems()){
-			try{ InventoryUtil.addItemsToInventory(p, mo.getItems(), true);} catch(Exception e){e.printStackTrace();}}
+			try{ InventoryUtil.addItemsToInventory(p, mo.getGiveItems(), true);} catch(Exception e){e.printStackTrace();}}
 
 		/// Deal with effects/buffs
-		List<EffectWithArgs> effects = mo.getEffects();
+		List<PotionEffect> effects = mo.getEffects();
 		if (effects != null){
 			EffectUtil.enchantPlayer(p, effects);}
 

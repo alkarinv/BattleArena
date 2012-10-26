@@ -79,7 +79,7 @@ version: 1.2
 #        server_victory: '{winnerlong}&e was victorious in the {matchname}!'
 #        server_draw: "{matchprefix} ended in a draw!"
 #    twoTeams: ## 1 team vs another team
-#        prestart: '&eYour {matchname}&e match against {otherteam} starts in {time}.'
+#        prestart: '&eYour {matchname}&e match against {otherteam}&e starts in {time}.'
 #        server_prestart: '&6{matchprefix} {teamshort1}&6 vs {teamshort2}&6!'
 #        start: '&4********** &eFight!!!! &4**********'
 #        server_start: ""

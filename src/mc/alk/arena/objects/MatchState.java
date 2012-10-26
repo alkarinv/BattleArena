@@ -7,20 +7,22 @@ package mc.alk.arena.objects;
  * Enum of MatchTransitions, and MatchStates
  */
 public enum MatchState {
-	DEFAULTS("defaults"),
-	PREREQS ("preReqs"), ONOPEN("onOpen"), ONJOIN ("onJoin"), 
+	NONE("None"), DEFAULTS("defaults"),
+	PREREQS ("preReqs"), ONOPEN("onOpen"), ONJOIN ("onJoin"),
 	ONBEGIN("onBegin"), ONPRESTART ("onPrestart"), ONSTART ("onStart"), ONVICTORY ("onVictory"),
 	ONCOMPLETE ("onComplete"), ONCANCEL ("onCancel"), ONFINISH("onFinish"),
-	ONDEATH ("onDeath"), ONSPAWN ("onSpawn"), WINNER ("winner"),
+	ONDEATH ("onDeath"), ONSPAWN ("onSpawn"),
+	WINNER ("winner"),LOSERS ("losers"),
+	FIRSTPLACE ("firstPlace"), PARTICIPANTS("participants"),
 	ONENTER("onEnter"), ONLEAVE("onLeave"), ONENTERWAITROOM("onEnterWaitRoom"),
-	LOSERS ("losers"), FIRSTPLACE ("firstPlace"), PARTICIPANTS("participants"),
 	ONMATCHINTERVAL("onMatchInterval"), ONMATCHTIMEEXPIRED("onMatchTimeExpired"),
-	NONE("None"), ONCOUNTDOWNTOEVENT("onCountdownToEvent");
-	
+	ONCOUNTDOWNTOEVENT("onCountdownToEvent");
+
 	String name;
 	MatchState(String name){
 		this.name = name;
 	}
+	@Override
 	public String toString(){
 		return name;
 	}

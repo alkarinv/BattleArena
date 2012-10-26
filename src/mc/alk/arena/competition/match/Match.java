@@ -95,9 +95,10 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	List<ArenaListener> arenaListeners = new ArrayList<ArenaListener>();
 
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
-	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath; 
+	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
 	final boolean respawns, noLeave, noEnter;
 	boolean woolTeams = false;
+	final boolean alwaysTeamNames;
 	final boolean respawnsWithClass;
 	boolean needsMobDeaths = false, needsBlockEvents = false;
 	boolean needsItemPickups = false, needsInventoryClick = false;
@@ -111,7 +112,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	public Match(Arena arena, MatchParams mp) {
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::" + mp);
 		plugin = BattleArena.getSelf();
-		this.mp = mp;	
+		this.mp = mp;
 		this.arena = arena;
 		arenaInterface =new ArenaInterface(arena);
 		arenaListeners.add(arena);
@@ -133,6 +134,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
 		this.needsDamageEvents = tops.hasOptions(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
 		this.needsItemDropEvents = tops.hasOptions(TransitionOption.DROPITEMOFF);
+		this.alwaysTeamNames = tops.hasOptions(TransitionOption.ALWAYSTEAMNAMES);
 		this.matchResult = new MatchResult();
 		TransitionOptions mo = tops.getOptions(MatchState.PREREQS);
 		this.needsClearInventory = mo != null ? mo.clearInventory() : false;
@@ -158,7 +160,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	}
 
 	/**
-	 * As this gets calls Arena's and events which can call bukkit events 
+	 * As this gets calls Arena's and events which can call bukkit events
 	 * this should be done in a synchronous fashion
 	 */
 	public void open(){
@@ -172,14 +174,14 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 				if (event.isCancelled()){
 					match.cancelMatch();
 					return;
-				}	
+				}
 				event.callEvent(); /// Call bukkit listeners for this event
 				if (event.isCancelled()){
 					match.cancelMatch();
 					return;
 				}
 				updateBukkitEvents(MatchState.ONOPEN);
-				arenaInterface.onOpen();				
+				arenaInterface.onOpen();
 			}});
 	}
 
@@ -278,15 +280,15 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 				this.cancelMatch();
 			} else {
 				Team victor = teams.get(rand.nextInt(teams.size()));
-				setVictor(victor);				
+				setVictor(victor);
 			}
-		}	
+		}
 	}
 
 	private synchronized void teamVictory() {
 		/// this might be called multiple times as multiple players might meet the victory condition within a small
 		/// window of time.  But only let the first one through
-		if (state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL) 
+		if (state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL)
 			return;
 		state = MatchState.ONVICTORY;
 		/// Call the rest after a 2 tick wait to ensure the calling transitionMethods complete before the
@@ -302,7 +304,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 			Team victor = getVictor();
 			final Set<Team> losers = getLosers();
 			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victor="+ victor + "  " + losers);
-			TrackerInterface bti = BTInterface.getInterface(mp);			
+			TrackerInterface bti = BTInterface.getInterface(mp);
 			if (victor != null){ /// We have a true winner
 				if (bti != null && mp.isRated()){
 					try{BTInterface.addRecord(bti,victor.getPlayers(),losers,WLT.WIN);}catch(Exception e){e.printStackTrace();}
@@ -315,8 +317,8 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 			notifyListeners(new MatchVictoryEvent(am,matchResult));
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
 			arenaInterface.onVictory(getResult());
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, 
-					new MatchCompleted(am), (long) (mp.getSecondsToLoot() * 20L * Defaults.TICK_MULT));		
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
+					new MatchCompleted(am), (long) (mp.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
 		}
 	}
 
@@ -343,7 +345,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 					arenaInterface.onComplete();
 					notifyListeners(new MatchCompletedEvent(am));
 					updateBukkitEvents(MatchState.ONCOMPLETE);
-					deconstruct();	
+					deconstruct();
 				}
 			});
 		}
@@ -412,7 +414,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		int index = teams.size();
 		teams.add(t);
 		teamIndexes.put(t, index);
-		if (!t.hasSetName() && t.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND){
+		if ( alwaysTeamNames || (!t.hasSetName() && t.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND)){
 			t.setDisplayName(TeamUtil.createTeamName(indexOf(t)));
 		}
 		startTracking(t);
@@ -420,7 +422,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		t.resetScores();/// reset scores
 		TeamController.addTeamHandler(t, this);
 		for (ArenaPlayer p: t.getPlayers()){
-			arenaInterface.onJoin(p,t);			
+			arenaInterface.onJoin(p,t);
 		}
 
 		PerformTransition.transition(this, MatchState.ONJOIN, t, true);
@@ -437,7 +439,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 
 	/**
 	 * TeamHandler override
-	 * We already handle leaving in other methods. 
+	 * We already handle leaving in other methods.
 	 */
 	@Override
 	public boolean leave(ArenaPlayer p) {
@@ -546,7 +548,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 			MethodController.updateEventListeners(this, MatchState.ONENTER, p,InventoryClickEvent.class);
 			TeamUtil.setTeamHead(teams.indexOf(t), t);
 		}
-		arenaInterface.onEnterWaitRoom(p,t);	
+		arenaInterface.onEnterWaitRoom(p,t);
 	}
 
 	/**
@@ -568,12 +570,12 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 			MethodController.updateEventListeners(this, MatchState.ONENTER, p,InventoryClickEvent.class);
 			TeamUtil.setTeamHead(teams.indexOf(t), t);
 		}
-		arenaInterface.onEnter(p,t);	
+		arenaInterface.onEnter(p,t);
 	}
 
 	/**
 	 * Signfies that player has left the arena
-	 * This can happen when the player was teleported out, kicked from server, 
+	 * This can happen when the player was teleported out, kicked from server,
 	 * the player disconnected, or player died and wasnt respawned in arena
 	 * @param p: Leaving player
 	 */
@@ -671,13 +673,13 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	}
 
 	public Location getTeamSpawn(Team t, boolean random){
-		return random ? arena.getRandomSpawnLoc(): arena.getSpawnLoc(teams.indexOf(t)); 
+		return random ? arena.getRandomSpawnLoc(): arena.getSpawnLoc(teams.indexOf(t));
 	}
 	public Location getTeamSpawn(int index, boolean random){
-		return random ? arena.getRandomSpawnLoc(): arena.getSpawnLoc(index); 
+		return random ? arena.getRandomSpawnLoc(): arena.getSpawnLoc(index);
 	}
 	public Location getWaitRoomSpawn(int index, boolean random){
-		return random ? arena.getRandomWaitRoomSpawnLoc(): arena.getWaitRoomSpawnLoc(index); 
+		return random ? arena.getRandomWaitRoomSpawnLoc(): arena.getWaitRoomSpawnLoc(index);
 	}
 	public MatchResult getResult(){return matchResult;}
 	public Team getVictor() {return matchResult.getVictor();}
@@ -697,7 +699,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 
 	protected Set<ArenaPlayer> checkReady(final Team t, TransitionOptions mo) {
 		Set<ArenaPlayer> alive = new HashSet<ArenaPlayer>();
-		for (ArenaPlayer p : t.getPlayers()){			
+		for (ArenaPlayer p : t.getPlayers()){
 			if (checkReady(p,t,mo,true)){
 				alive.add(p);}
 		}
@@ -758,8 +760,9 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	}
 
 
+	@Override
 	public String toString(){
-		StringBuilder sb = new StringBuilder("[Match:"+id+":" + arena.getName() +" ,"); 
+		StringBuilder sb = new StringBuilder("[Match:"+id+":" + arena.getName() +" ,");
 		for (Team t: teams){
 			sb.append("["+t.getDisplayName() + "] ,");}
 		sb.append("]");
@@ -784,7 +787,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	public void intervalTick(VictoryCondition vc, int remaining) {
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
 		notifyListeners(event);
-		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeader());}catch(Exception e){e.printStackTrace();}		
+		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeader());}catch(Exception e){e.printStackTrace();}
 	}
 
 	public Integer getTeamIndex(Team t) {
