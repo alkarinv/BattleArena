@@ -4,6 +4,7 @@ import java.util.List;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.Exceptions.ConfigException;
+import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
@@ -11,8 +12,6 @@ import mc.alk.arena.util.TeamUtil.TeamHead;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
-
-import com.alk.virtualPlayer.InventoryUtil;
 
 public class TeamHeadSerializer extends BaseSerializer{
 
