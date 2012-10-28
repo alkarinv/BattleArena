@@ -22,8 +22,9 @@ Default Event Types:
 Adding to BattleArena
 ------------
 I will gladly accept any code contributions through github.
+If you need help with the API or writing a plugin for BattleArena I will help as well.
 
 Links
 ------------
-* [IRC](http://www.esper.net/publicirc.php)(join channel BattlePlugins) (#alkarin on irc.esper.net)
-* [Bukkit Page](http://dev.bukkit.org/server-mods/battlearena/)(BattleArena on Bukkit)
+* [IRC](http://www.esper.net/publicirc.php) (#alkarin on irc.esper.net, join channel BattlePlugins)
+* [Bukkit Page](http://dev.bukkit.org/server-mods/battlearena/) (BattleArena on Bukkit)
