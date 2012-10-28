@@ -1,4 +1,4 @@
-configVersion: 1.4.5
+configVersion: 1.5.5
 
 # Auto Update the BattleArena plugin (only works for uniz/linux/mac)
 # Updates will be retrieved from the latest plugin on the bukkit site
@@ -36,6 +36,9 @@ defaultOptions:
     ### Event Options
     eventCountdownTime: 180 ## How long before announcing an automated event and its start
     eventCountdownInterval: 60 ## How often will it announce a reminder that its open and you can join
+    ## If true, when a player joins and an event that can be opened, it will be
+    ## silently opened and the player will join
+    allowPlayerCreation: false
 
     ### Duel Options
     allowRatedDuels: false
@@ -60,6 +63,7 @@ defaultOptions:
 
     ### Default event Announcements
     eventAnnouncements:
+        onCountDownToEvent: [ announce, server ]  ## event is now open
         onOpen: [ announce, server ]  ## event is now open
         onStart: [ announce, server ]  ## event is starting
         onVictory:  [ announce, server ] ## event has been won

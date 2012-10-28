@@ -10,7 +10,7 @@ import org.bukkit.Bukkit;
 
 public class TimeUtil {
 	static long lastCheck = 0;
-	
+
 	public static void testClock() {
         final long start = System.currentTimeMillis();
 		if (start - lastCheck < 30000)
@@ -19,11 +19,11 @@ public class TimeUtil {
         int seconds = 3;
 
         final double millis = seconds * 1000;
-        final int nTicks = 20 * (int)seconds;
+        final int nTicks = 20 * seconds;
         Runnable task = new Runnable() {
             public void run() {
                 long now = System.currentTimeMillis();
-                
+
                 long elapsedTime = now - start;
                 double mult = millis/elapsedTime;
                 if (mult > 5){
@@ -35,7 +35,7 @@ public class TimeUtil {
 //                MatchMessageImpl.sendMessage(null, ChatColor.GRAY + "[BattleArena] multiplier: " + mult + "x");
             }
         };
-        
+
         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), task, nTicks);
     }
 
@@ -69,12 +69,12 @@ public class TimeUtil {
 		}
 		return sb.toString();
 	}
-	
+
 	public static String convertToString(long t){
-	    t = t / 1000;  
+	    t = t / 1000;
 	    return convertSecondsToString(t);
 	}
-	
+
 	public static String dayOrDays(long t){
 		return t > 1 || t == 0? "days" : "day";
 	}
@@ -90,14 +90,19 @@ public class TimeUtil {
 		return t > 1 || t == 0? "sec" : "secs";
 	}
 
-	
+
 	public static String convertLongToDate(long time) {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd hh:mm");
+		return sdf.format(time);
+	}
+
+	public static String convertLongToSimpleDate(long time) {
+		SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
 		return sdf.format(time);
 	}
 
 	public static String PorP(int size) {
 		return size == 1 ? "person" : "people";
 	}
-	
+
 }

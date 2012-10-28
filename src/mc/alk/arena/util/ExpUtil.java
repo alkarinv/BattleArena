@@ -4,13 +4,13 @@ import org.bukkit.entity.Player;
 
 /**
  * @author alkarin
- * version: 1.3
+ * version: 1.4
  *
  * This class is strictly used because Bukkit DOES NOT UPDATE experience after enchanting
  * so using player.getTotalExperience() returns an INCORRECT amount
  *
- * Levels based off of 1.3 exp formulas verified by myself
- * formulas used.
+ * Levels based off of 1.3 exp formulas verified by myself.
+ * Formulas used.
  * lvl <= 15 : 17*lvl;
  * 15 < lvl < 31 : 17*l + 3*(0.5*l2*(l2+1)), and 17 + 3*l2, where l2 = (l - 16)
  * lvl > 30 : 17*l + 3*(0.5*l2*(l2+1))+4*(0.5*l3*(l3+1)) and
@@ -19,7 +19,6 @@ import org.bukkit.entity.Player;
  * The forms you see in the functions are simplifications of the above
  */
 public class ExpUtil {
-
 
 	/**
 	 * Get the total amount of experience that a player has
@@ -69,6 +68,11 @@ public class ExpUtil {
 		}
 	}
 
+	/**
+	 * Set the total amount of experience for a player
+	 * @param player
+	 * @param exp
+	 */
 	public static void setTotalExperience(Player player, int exp){
 		player.setTotalExperience(0);
 		player.setLevel(0);
@@ -77,6 +81,11 @@ public class ExpUtil {
 			player.giveExp(exp);
 	}
 
+	/**
+	 * Set the level of a player
+	 * @param player
+	 * @param level
+	 */
 	public static void setLevel(Player player, int level){
 		player.setTotalExperience(0);
 		player.setLevel(0);
@@ -85,6 +94,11 @@ public class ExpUtil {
 			player.giveExp(getExpToLevel(level));
 	}
 
+	/**
+	 * Give experience to a player
+	 * @param player
+	 * @param exp
+	 */
 	public static void giveExperience(Player player, int exp){
 		final int currentExp = getTotalExperience(player);
 		player.setTotalExperience(0);

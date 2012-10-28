@@ -1,6 +1,6 @@
-package mc.alk.arena.objects;
+package mc.alk.arena.objects.options;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,6 +8,9 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.util.Util;
@@ -53,12 +56,12 @@ public class EventOpenOptions {
 		}
 	}
 
-	HashMap<EventOpenOption,Object> options = new HashMap<EventOpenOption,Object>();
+	Map<EventOpenOption,Object> options = new EnumMap<EventOpenOption,Object>(EventOpenOption.class);
 	int announceInterval = 0, secTillStart = 0;
 
 	public static EventOpenOptions parseOptions(String[] args, Set<Integer> ignoreArgs) throws InvalidOptionException{
 		EventOpenOptions eoo = new EventOpenOptions();
-		HashMap<EventOpenOption,Object> ops = eoo.options;
+		Map<EventOpenOption,Object> ops = eoo.options;
 		int i =0;
 		for (String op: args){
 			if ( ignoreArgs != null && ignoreArgs.contains(i++))
@@ -91,15 +94,15 @@ public class EventOpenOptions {
 				if (nTeams == null){
 					throw new InvalidOptionException("&cCouldnt parse nTeams &6"+val+" &e needs an int or range. &68, 2+, 2-10, etc");}
 				obj = nTeams;
-			} 
+			}
 			break;
 			case TIME:
-				try {obj = Integer.valueOf(val) *60;} 
+				try {obj = Integer.valueOf(val) *60;}
 				catch (Exception e){throw new InvalidOptionException("&cTime wasnt an integer: &6" +val);}
 				eoo.secTillStart = (Integer) obj;
 				break;
 			case INTERVAL:
-				try {obj = Integer.valueOf(val) *60;} 
+				try {obj = Integer.valueOf(val) *60;}
 				catch (Exception e){throw new InvalidOptionException("&cTime interval wasnt an integer: &6" +val);}
 				eoo.announceInterval = (Integer) obj;
 				break;
@@ -132,7 +135,7 @@ public class EventOpenOptions {
 		/// Rated
 		mp.setRating(hasOption(EventOpenOption.UNRATED) ? Rating.UNRATED : Rating.RATED);
 		/// By default lets make the teamSize the min team size if max # teams not specified as a finite range
-		if (mp.getMaxTeams() == ArenaParams.MAX){ 
+		if (mp.getMaxTeams() == ArenaParams.MAX){
 			mp.setMaxTeamSize(mp.getMinTeamSize());
 		}
 
@@ -143,7 +146,7 @@ public class EventOpenOptions {
 
 		/// Team size
 		if (hasOption(EventOpenOption.TEAMSIZE)){
-			mp.setTeamSizes((MinMax)getOption(EventOpenOption.TEAMSIZE));}		
+			mp.setTeamSizes((MinMax)getOption(EventOpenOption.TEAMSIZE));}
 	}
 
 	public Arena getArena(MatchParams mp, JoinOptions jp) throws InvalidOptionException{
@@ -180,7 +183,7 @@ public class EventOpenOptions {
 			if (arena == null){
 				throw new InvalidOptionException("&cAll arenas matching those params are in use. wait till one is free ");}
 		} else {
-			arena = ac.reserveArena(arena);			
+			arena = ac.reserveArena(arena);
 			if (arena == null){
 				throw new InvalidOptionException("&c Arena &6" +arenaName+"&c is currently in use, you'll have to wait till its free");}
 		}
@@ -200,9 +203,9 @@ public class EventOpenOptions {
 	}
 
 	public String getOpenCmd() {
-		if (hasOption(EventOpenOption.AUTO)){			
+		if (hasOption(EventOpenOption.AUTO)){
 			return EventOpenOption.AUTO.toString().toLowerCase();
-		} else {			
+		} else {
 			return EventOpenOption.OPEN.toString().toLowerCase();
 		}
 	}

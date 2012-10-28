@@ -1,14 +1,19 @@
 package mc.alk.arena.executors;
 
+import java.util.List;
+import java.util.Map;
+
+import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.events.ReservedArenaEvent;
-import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
-import mc.alk.arena.objects.EventOpenOptions;
-import mc.alk.arena.objects.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.EventState;
+import mc.alk.arena.objects.Exceptions.InvalidEventException;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
-import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.options.EventOpenOptions;
+import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
+import mc.alk.arena.util.TimeUtil;
 
 import org.bukkit.command.CommandSender;
 
@@ -27,74 +32,80 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 	 */
 	public ReservedArenaEventExecutor(ReservedArenaEvent ae){
 		super();
-		setEvent(ae);
-	}
-
-	/**
-	 * set the Event for this executor to handle 
-	 * @param ReservedArenaEvent
-	 */
-	public void setEvent(ReservedArenaEvent ae){
-		if (event != null){
-			event.cancelEvent();}
-		this.event = ae;
 	}
 
 	@MCCommand(cmds={"open","auto"}, admin=true, order=1)
-	public boolean open(CommandSender sender, String[] args) {
-		openIt(sender,args);
-		return true;
-	}
-
-	public boolean openIt(CommandSender sender, String[] args){
-		if (!(event instanceof ReservedArenaEvent)){
-			sendMessage(sender,"&4The Event " + event.getName() +" is not type ReservedArenaEvent");
-			return false;
-		}
-		EventParams mp = ParamController.getEventParamCopy(event.getName());
-		if (!checkOpenOptions(sender,event, mp, args)){
-			return false;
-		}
-		
-		ReservedArenaEvent rae = (ReservedArenaEvent) event;
-		Arena arena;
-		EventOpenOptions eoo = null;
+	public boolean open(CommandSender sender, EventParams eventParams, String[] args) {
 		try {
-			eoo = EventOpenOptions.parseOptions(args, null);
-			arena = openEvent(rae, mp, eoo);
+			ReservedArenaEvent event = openIt(eventParams, args);
+			Arena arena = event.getArena();
+			final int max = arena.getParameters().getMaxPlayers();
+			final String maxPlayers = max == ArenaParams.MAX ? "&6any&2 number of players" : max+"&2 players";
+			sendMessage(sender,"&2You have "+args[0]+"ed a &6" + event.getDetailedName() +
+					"&2 inside &6" + arena.getName() +" &2TeamSize=&6" + arena.getParameters().getTeamSizeRange() +"&2 #Teams=&6"+
+					arena.getParameters().getNTeamRange() +"&2 supporting "+maxPlayers +"&2 at &5"+arena.getName() );
+		} catch (InvalidEventException e) {
+			sendMessage(sender, e.getMessage());
 		} catch (InvalidOptionException e) {
 			sendMessage(sender, e.getMessage());
-			return false;
-		} catch (NeverWouldJoinException e) {
-			sendMessage(sender, e.getMessage());
-			return false;
 		} catch (Exception e){
+			sendMessage(sender, e.getMessage());
 			e.printStackTrace();
-			return false;
 		}
-
-		final int max = arena.getParameters().getMaxPlayers();
-		final String maxPlayers = max == ArenaParams.MAX ? "&6any&2 number of players" : max+"&2 players";
-		sendMessage(sender,"&2You have "+eoo.getOpenCmd()+"ed a &6" + event.getDetailedName() +
-				"&2 inside &6" + arena.getName() +" &2TeamSize=&6" + arena.getParameters().getTeamSizeRange() +"&2 #Teams=&6"+
-				arena.getParameters().getNTeamRange() +"&2 supporting "+maxPlayers +"&2 at &5"+arena.getName() );
 		return true;
 	}
 
-	public Arena openEvent(ReservedArenaEvent rae, EventParams mp, EventOpenOptions eoo) throws InvalidOptionException, NeverWouldJoinException{
+	public ReservedArenaEvent openIt(EventParams eventParams, String[] args) throws InvalidEventException, InvalidOptionException{
+		Event openevent = controller.getOpenEvent(eventParams);
+		if (openevent != null){
+			throw new InvalidEventException("&cThere is already an event open!");
+		}
+		ReservedArenaEvent event = new ReservedArenaEvent(eventParams);
+
+		checkOpenOptions(event, eventParams, args);
+		EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null);
+		openEvent(event, eventParams, eoo);
+
+		controller.addOpenEvent(event);
+		return event;
+	}
+
+	@MCCommand(cmds={"ongoing"})
+	public boolean eventOngoing(CommandSender sender, EventParams eventParams, String[] args) {
+		Map<EventState, List<Event>> map = controller.getCurrentEvents(eventParams);
+		sendMessage(sender,"&5----------- &2Ongoing Events &5-----------");
+		for (EventState state: map.keySet()){
+			List<Event> list = map.get(state);
+			for (Event event: list){
+				ReservedArenaEvent rae = (ReservedArenaEvent) event;
+				Long opentime = rae.getTime(EventState.OPEN);
+				Long starttime = rae.getTime(EventState.RUNNING);
+
+				String openDate = opentime != null ? TimeUtil.convertLongToSimpleDate(opentime) : "N/A";
+				String startDate = starttime != null ? TimeUtil.convertLongToSimpleDate(starttime) : "N/A";
+				sendMessage(sender,"&2Arena=&5"+ rae.getArena().getName()+" &2 Opened: &6" + openDate +
+						"  &2Started:&6"+startDate +"  &2state="+(state == EventState.OPEN ? "&a":"&c")+state);
+			}
+		}
+		return true;
+	}
+
+	public static Arena openEvent(ReservedArenaEvent rae, EventParams ep, EventOpenOptions eoo) throws InvalidOptionException, InvalidEventException{
 		if (rae.isOpen())
-			throw new InvalidOptionException("The event is already open");
-		eoo.updateParams(mp);
-		Arena arena = eoo.getArena(mp,null);
+			throw new InvalidOptionException("&cThe event is already open");
+		eoo.updateParams(ep);
+		Arena arena = eoo.getArena(ep,null);
 		//System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
-		arena.setParameters(mp);
+		arena.setParameters(ep);
 		rae.setSilent(eoo.isSilent());
 		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
-			rae.openAllPlayersEvent(mp, arena);
+			rae.openAllPlayersEvent(ep, arena);
 		} else if (eoo.hasOption(EventOpenOption.AUTO)){
-			rae.autoEvent(mp, arena, eoo.getSecTillStart(), eoo.getInterval());
+			ep.setSecondsTillStart(eoo.getSecTillStart());
+			ep.setAnnouncementInterval(eoo.getInterval());
+			rae.autoEvent(ep, arena);
 		} else {
-			rae.openEvent(mp, arena);
+			rae.openEvent(ep, arena);
 		}
 		return arena;
 	}

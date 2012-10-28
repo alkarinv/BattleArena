@@ -1,9 +1,11 @@
-package mc.alk.arena.objects;
+package mc.alk.arena.objects.options;
 
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
@@ -36,11 +38,11 @@ public class MatchJoinOptions {
 		}
 	}
 
-	HashMap<MatchJoinOption,Object> options = new HashMap<MatchJoinOption,Object>();
+	Map<MatchJoinOption,Object> options = new EnumMap<MatchJoinOption,Object>(MatchJoinOption.class);
 
 	public static MatchJoinOptions parseOptions(String[] args, Set<Integer> ignoreArgs) throws InvalidOptionException{
 		MatchJoinOptions mjo = new MatchJoinOptions();
-		HashMap<MatchJoinOption,Object> ops = mjo.options;
+		Map<MatchJoinOption,Object> ops = mjo.options;
 		int i =0;
 		for (String op: args){
 			if ( ignoreArgs != null && ignoreArgs.contains(i++))
@@ -93,6 +95,6 @@ public class MatchJoinOptions {
 
 		/// Team size
 		if (hasOption(MatchJoinOption.TEAMSIZE)){
-			mp.setTeamSizes((MinMax)getOption(MatchJoinOption.TEAMSIZE));}		
+			mp.setTeamSizes((MinMax)getOption(MatchJoinOption.TEAMSIZE));}
 	}
 }

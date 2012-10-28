@@ -3,9 +3,10 @@ package mc.alk.arena.executors;
 import java.util.Arrays;
 import java.util.List;
 
-import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.EventScheduler;
-import mc.alk.arena.objects.EventPair;
+import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.pairs.EventPair;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.command.Command;
@@ -17,6 +18,7 @@ public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
 		this.es = es;
 	}
 
+	@Override
 	public void showHelp(CommandSender sender, Command command){
 		help(sender,command,null,null);
 	}
@@ -25,17 +27,21 @@ public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
 	public void help(CommandSender sender, Command command, String label, Object[] args){
 		super.help(sender, command, args);
 	}
-	
+
 	@MCCommand(cmds={"add"}, admin=true)
-	public boolean schedule(CommandSender sender, Event event, String[] args) {
-		if (es.scheduleEvent(event, Arrays.copyOfRange(args, 2, args.length))){
+	public boolean schedule(CommandSender sender, String eventType, String[] args) {
+		EventParams ep = ParamController.getEventParamCopy(eventType);
+		if (ep == null){
+			return sendMessage(sender, "&cEvent type " + eventType+ " not found!");
+		}
+		if (es.scheduleEvent(ep, Arrays.copyOfRange(args, 2, args.length))){
 			sendMessage(sender, "&2Event scheduled!. &6/bas list&2 to see a list of scheduled events");
 		} else {
 			sendMessage(sender, "&cEvent not scheduled!. There was some error scheduling this events");
 		}
 		return true;
 	}
-	
+
 	@MCCommand(cmds={"delete","del"}, admin=true)
 	public boolean delete(CommandSender sender, Integer index) {
 		List<EventPair> events = es.getEvents();
@@ -47,7 +53,7 @@ public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
 		es.deleteEvent(index-1);
 		return sendMessage(sender, "&2Event &6"+index+"&2 deleted");
 	}
-	
+
 	@MCCommand(cmds={"list"}, admin=true)
 	public boolean list(CommandSender sender) {
 		List<EventPair> events = es.getEvents();
@@ -55,11 +61,13 @@ public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
 			return sendMessage(sender, "&cNo &4BattleArena&c events have been scheduled");}
 		for (int i=0;i<events.size();i++){
 			EventPair ep = events.get(i);
-			sendMessage(sender, "&2"+(i+1)+"&e:&6"+ep.getEvent().getName() +"&e args: &6" + StringUtils.join(ep.getArgs(), " "));
+			String[] args = ep.getArgs();
+			String strargs = args == null ? "[]" : StringUtils.join(ep.getArgs(), " ");
+			sendMessage(sender, "&2"+(i+1)+"&e:&6"+ep.getEventParams().getName() +"&e args: &6" + strargs);
 		}
 		return sendMessage(sender, "&6/bas delete <number>:&e to delete an event");
 	}
-	
+
 	@MCCommand(cmds={"start"}, admin=true)
 	public boolean start(CommandSender sender) {
 		List<EventPair> events = es.getEvents();
@@ -73,17 +81,17 @@ public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
 		}
 		return sendMessage(sender, "&2Scheduled events are now &astarted");
 	}
-	
+
 	@MCCommand(cmds={"stop"}, admin=true)
 	public boolean stop(CommandSender sender) {
 		if (!es.isRunning()){
 			return sendMessage(sender, "&cScheduled events are already stopped!");
 		} else {
-			es.stop();			
+			es.stop();
 		}
 		return sendMessage(sender, "&2Scheduled events are now &4stopped!");
 	}
-	
+
 	@MCCommand(cmds={"startNext"}, admin=true)
 	public boolean startNext(CommandSender sender) {
 		List<EventPair> events = es.getEvents();

@@ -49,4 +49,14 @@ public class HeroesUtil {
 		return hc.getName();
 	}
 
+	public static int getLevel(Player player) {
+		if (heroes == null)
+			return -1;
+		CharacterManager cm = heroes.getCharacterManager();
+		Hero hero = cm.getHero(player);
+		if (hero == null)
+			return -1;
+		return hero.getLevel();
+	}
+
 }

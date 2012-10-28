@@ -38,6 +38,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public BattleArenaDebugExecutor(){}
 
 
+	@Override
 	public void showHelp(CommandSender sender, Command command){
 		help(sender,command,null,null);
 	}
@@ -259,9 +260,15 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			return sendMessage(sender,"&c index must be between 1-"+Defaults.NUM_INV_SAVES);}
 		if (InventorySerializer.restoreInventory(p,index-1)){
 			return sendMessage(sender, "&2Player inventory restored");
-		} else {			
+		} else {
 			return sendMessage(sender, "&cPlayer inventory could not be restored");
 		}
+	}
+
+	@MCCommand(cmds={"setexp"}, op=true)
+	public boolean setExp(CommandSender sender, ArenaPlayer p, Integer exp) {
+		ExpUtil.setTotalExperience(p.getPlayer(), exp);
+		return sendMessage(sender,"&2Player's exp set to " + exp );
 	}
 
 }

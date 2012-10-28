@@ -44,7 +44,7 @@ public class TournamentEvent extends Event implements Listener{
 	ArrayList<Team> competingTeams = new ArrayList<Team>();
 	final EventParams oParms ; /// Our original default params
 	Random rand = new Random();
-	
+
 	public TournamentEvent(EventParams params) {
 		super(params);
 		oParms = params;
@@ -107,10 +107,10 @@ public class TournamentEvent extends Event implements Listener{
 		}
 		server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&6 " + teams.size() + " &e" +MessageUtil.getTeamsOrPlayers(teams.size())+
 				" will compete in a &6"+nrounds+"&e round tournament"));
-		if (preliminary_round){			
-			makePreliminaryRound();			
+		if (preliminary_round){
+			makePreliminaryRound();
 		} else{
-			makeNextRound();			
+			makeNextRound();
 		}
 		startRound();
 	}
@@ -122,7 +122,7 @@ public class TournamentEvent extends Event implements Listener{
 			return;
 		Match am = event.getMatch();
 		Matchup m = getMatchup(am.getTeams().get(0),round);
-		//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());	
+		//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());
 		if (m == null){ /// This match wasnt in our tournament
 			return;}
 		eventCancelled();
@@ -137,12 +137,12 @@ public class TournamentEvent extends Event implements Listener{
 		Matchup m;
 		if (victor == null)
 			m = getMatchup(am.getResult().getLosers().iterator().next(),round);
-		else 
+		else
 			 m = getMatchup(victor,round);
-		//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());	
+		//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());
 		if (m == null){ /// This match wasnt in our tournament
 			return;}
-		if (am.getMatchState() == MatchState.ONCANCEL){
+		if (am.getState() == MatchState.ONCANCEL){
 			endEvent();
 			return;}
 		MatchResult r = am.getResult();
@@ -171,7 +171,7 @@ public class TournamentEvent extends Event implements Listener{
 
 		if (roundFinished()){
 			TimeUtil.testClock();
-			if (Defaults.DEBUG) System.out.println("ROUND FINISHED !!!!!   " + aliveTeams);	
+			if (Defaults.DEBUG) System.out.println("ROUND FINISHED !!!!!   " + aliveTeams);
 
 			if (round+1 == nrounds || isFinished()){
 				eventParams.setPrettyName("&4[Tournament]");
@@ -273,17 +273,17 @@ public class TournamentEvent extends Event implements Listener{
 			if (m.getTeams().size() == 2){
 				Team t1 = m.getTeam(0);
 				Team t2 = m.getTeam(1);
-				
+
 				Double elo1 = (double) bti.getElo(t1);
 				Double elo2 = (double) bti.getElo(t2);
 				//				System.out.println("team1 stat= " + bti.loadRecord(t1.getPlayers()));
 				broadcast(prefix + "&e "+ strround +": &8"+t1.getDisplayName() +"&6["+ elo1+"]" +
-						"&e vs &8" +t2.getDisplayName() +"&6["+ elo2+"]");							
+						"&e vs &8" +t2.getDisplayName() +"&6["+ elo2+"]");
 			}
 		}
 		if (round != nrounds)
-			broadcast(prefix+"&e "+strround+" will start in &4" + timeBetweenRounds +" &eseconds!");			
-		else 
+			broadcast(prefix+"&e "+strround+" will start in &4" + timeBetweenRounds +" &eseconds!");
+		else
 			broadcast(prefix +"&e The "+strround+" will start in &4" + timeBetweenRounds +" &eseconds!");
 	}
 
@@ -299,7 +299,7 @@ public class TournamentEvent extends Event implements Listener{
 		if (size > 2 && size % idealteam == 0){
 			Bukkit.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&6" + size +" "+MessageUtil.getTeamsOrPlayers(teams.size())+
 					"&e have joined, Current tournament will have &6" + nrounds+"&e rounds"));
-		}			
+		}
 	}
 
 

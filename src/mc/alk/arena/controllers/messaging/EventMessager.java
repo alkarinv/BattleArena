@@ -23,7 +23,8 @@ public class EventMessager {
 
 	private Channel getChannel(MatchState state) {
 		if (silent) return Channel.NullChannel;
-		return bos != null && bos.hasOption(false,state) ? bos.getChannel(false,state) : AnnouncementOptions.getDefaultChannel(false,state);
+		return bos != null && bos.hasOption(false,state) ? bos.getChannel(false,state) :
+			AnnouncementOptions.getDefaultChannel(false,state);
 	}
 
 	public void setMessageHandler(EventMessageHandler handler) {
@@ -35,7 +36,8 @@ public class EventMessager {
 	}
 
 	public void sendCountdownTillEvent(int seconds) {
-		try{impl.sendCountdownTillEvent(getChannel(MatchState.ONOPEN), seconds);}catch(Exception e){e.printStackTrace();}		
+		try{impl.sendCountdownTillEvent(getChannel(MatchState.ONCOUNTDOWNTOEVENT), seconds);}
+		catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendEventStarting(Collection<Team> teams) {
@@ -47,7 +49,7 @@ public class EventMessager {
 	}
 
 	public void sendEventOpenMsg() {
-		try{impl.sendEventOpenMsg(getChannel(MatchState.ONOPEN));}catch(Exception e){e.printStackTrace();}		
+		try{impl.sendEventOpenMsg(getChannel(MatchState.ONOPEN));}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendEventCancelledDueToLackOfPlayers(Set<ArenaPlayer> competingPlayers) {
@@ -75,7 +77,7 @@ public class EventMessager {
 	}
 
 	public void sendEventDraw(Collection<Team> losers) {
-		try{impl.sendEventDraw(getChannel(MatchState.ONVICTORY), losers);}catch(Exception e){e.printStackTrace();}		
+		try{impl.sendEventDraw(getChannel(MatchState.ONVICTORY), losers);}catch(Exception e){e.printStackTrace();}
 	}
 
 }

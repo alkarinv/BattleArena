@@ -10,9 +10,9 @@ import mc.alk.arena.competition.events.Event.TeamSizeComparator;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.JoinOptions;
-import mc.alk.arena.objects.JoinOptions.JoinOption;
 import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.options.JoinOptions.JoinOption;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 

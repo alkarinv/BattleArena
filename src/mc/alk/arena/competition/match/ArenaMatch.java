@@ -16,10 +16,10 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.PVPState;
-import mc.alk.arena.objects.TransitionOptions;
-import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.DisabledCommandsUtil;
 import mc.alk.arena.util.DmgDeathUtil;
@@ -270,7 +270,7 @@ public class ArenaMatch extends Match {
 		if (event.isCancelled() || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL){
 			return;}
 		final Player p = event.getPlayer();
-		if (event.getPlayer().isOp())
+		if (p.isOp() || p.hasPermission(Defaults.ARENA_ADMIN))
 			return;
 
 		String msg = event.getMessage();

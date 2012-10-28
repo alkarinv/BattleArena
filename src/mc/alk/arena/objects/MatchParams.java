@@ -30,7 +30,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		super(q);
 		this.matchWillBeginMsgs = q.matchWillBeginMsgs;
 		this.startMsgs = q.startMsgs;
-		this.name = q.name;
 		this.prefix = q.prefix;
 		this.prettyName = q.prettyName;
 		this.vc = q.vc;
@@ -39,7 +38,9 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.ao = q.ao;
 	}
 
+	@Override
 	public int getMinTeams(){return minTeams;}
+	@Override
 	public int getMinTeamSize(){ return minTeamSize;}
 	public VictoryType getVictoryType() {return vc;}
 
@@ -64,17 +65,11 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		return hash.compareTo(other.hashCode());
 	}
 
-	public String getName() {
-		return name;
-	}
 
 	public void setVictoryCondition(VictoryType victoryCondition) {
 		this.vc = victoryCondition;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public Integer getMatchTime() {
 		return matchTime;
@@ -112,6 +107,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		return ao;
 	}
 
+	@Override
 	public String toString(){
 		return super.toString()+",vc=" + vc.getName();
 	}
@@ -121,9 +117,9 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		int index = lbl.indexOf("§");
 		if (index != -1 && lbl.length() > index+2){
 			ChatColor cc = ChatColor.getByChar(lbl.charAt(index+2));
-			if (cc != null)	
+			if (cc != null)
 				return cc;
-		} 		
+		}
 		return ChatColor.GREEN;
 	}
 

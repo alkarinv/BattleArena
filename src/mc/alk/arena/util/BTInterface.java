@@ -63,14 +63,14 @@ public class BTInterface {
 					if (Defaults.DEBUG_TRACKING) System.out.println("BA Debug: winner = "+p.getName());}
 				for (Player p: losingPlayers){
 					if (Defaults.DEBUG_TRACKING) System.out.println("BA Debug: loser = "+p.getName());}
-				bti.addTeamRecord(winningPlayers, losingPlayers, WLT.WIN);						
+				bti.addTeamRecord(winningPlayers, losingPlayers, WLT.WIN);
 			} else {
 				Collection<Collection<Player>> plosers = new ArrayList<Collection<Player>>();
 				for (Team t: losers){
 					plosers.add(t.getBukkitPlayers());
 				}
-				bti.addRecordGroup(winningPlayers, plosers, WLT.WIN);			
-			} 
+				bti.addRecordGroup(winningPlayers, plosers, WLT.WIN);
+			}
 		} catch(Exception e){
 			e.printStackTrace();
 		}
@@ -104,11 +104,11 @@ public class BTInterface {
 
 	public static void resumeTracking(ArenaPlayer p) {
 		if (aBTI != null)
-			aBTI.resumeTracking(p.getName());		
+			aBTI.resumeTracking(p.getName());
 	}
 	public static void stopTracking(ArenaPlayer p) {
 		if (aBTI != null)
-			aBTI.stopTracking(p.getName());		
+			aBTI.stopTracking(p.getName());
 	}
 	public static void resumeTracking(Set<Player> players) {
 		if (aBTI != null)
@@ -155,5 +155,4 @@ public class BTInterface {
 	public void printTopX(CommandSender sender, int x, int minTeamSize, String headerMsg, String bodyMsg) {
 		ti.printTopX(sender, StatType.RANKING, x, minTeamSize,headerMsg,bodyMsg);
 	}
-
 }

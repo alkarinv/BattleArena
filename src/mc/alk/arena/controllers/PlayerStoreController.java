@@ -56,14 +56,8 @@ public class PlayerStoreController {
 		if (expmap.containsKey(name)){
 			exp += expmap.get(name);}
 		expmap.put(name, exp);
-		p.setTotalExperience(0);
-		p.setLevel(0);
-		p.setExp(0);
-		try{
-			p.updateInventory();
-		} catch(Exception e){
-
-		}
+		ExpUtil.setTotalExperience(p, 0);
+		try{p.updateInventory();} catch(Exception e){}
 	}
 
 	public void restoreExperience(ArenaPlayer p) {
@@ -72,7 +66,7 @@ public class PlayerStoreController {
 		Integer exp = expmap.remove(p.getName());
 //		FileLogger.log("restoring exp for = "+p.getName()+" exp="+exp+",curexp="+p.getPlayer().getTotalExperience()+",online=" + p.isOnline() +"   isdead=" +p.isDead());
 		if (p.isOnline() && !p.isDead()){
-			p.getPlayer().giveExp(exp);
+			ExpUtil.giveExperience(p.getPlayer(), exp);
 		} else {
 			BAPlayerListener.restoreExpOnReenter(p.getName(), exp);
 		}

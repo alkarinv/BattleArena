@@ -16,7 +16,7 @@ public class ParamController {
 		types.put(matchParams.getName(), matchParams);
 		types.put(matchParams.getCommand(), matchParams);
 	}
-	
+
 	public static void removeMatchType(MatchParams matchParams) {
 		types.remove(matchParams.getName());
 		types.remove(matchParams.getCommand());
@@ -25,7 +25,7 @@ public class ParamController {
 	public static Collection<MatchParams> getAllParams(){
 		return types.values();
 	}
-	
+
 	/**
 	 * Returns the found matchparams
 	 * If you want to change you should make a copy
@@ -45,7 +45,7 @@ public class ParamController {
 		MatchParams mp = types.get(type);
 		if (mp == null)
 			return null;
-		return new MatchParams(mp);
+		return mp instanceof EventParams ? new EventParams(mp) : new MatchParams(mp);
 	}
 
 	/**

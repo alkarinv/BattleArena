@@ -1,6 +1,6 @@
 package mc.alk.arena.objects.messaging;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 import mc.alk.arena.BattleArena;
@@ -26,21 +26,23 @@ public class AnnouncementOptions {
 			return null;
 		}
 	}
-	
+
 	static AnnouncementOptions defaultOptions;
-	public static Herochat hc = null;	
-	Map<MatchState, Map<AnnouncementOption,Object>> matchOptions = new HashMap<MatchState, Map<AnnouncementOption,Object>>();
-	Map<MatchState, Map<AnnouncementOption,Object>> eventOptions = new HashMap<MatchState, Map<AnnouncementOption,Object>>();
+	public static Herochat hc = null;
+	Map<MatchState, Map<AnnouncementOption,Object>> matchOptions =
+			new EnumMap<MatchState, Map<AnnouncementOption,Object>>(MatchState.class);
+	Map<MatchState, Map<AnnouncementOption,Object>> eventOptions =
+			new EnumMap<MatchState, Map<AnnouncementOption,Object>>(MatchState.class);
 
 	public static void setHerochat(Herochat hc) {
 		AnnouncementOptions.hc = hc;
 	}
-	
+
 	public void setBroadcastOption(boolean match, MatchState ms, AnnouncementOption bo, String value) {
 		Map<MatchState, Map<AnnouncementOption,Object>> options = match ? matchOptions : eventOptions;
 		Map<AnnouncementOption,Object> ops = options.get(ms);
 		if (ops == null){
-			ops = new HashMap<AnnouncementOption,Object>();
+			ops = new EnumMap<AnnouncementOption,Object>(AnnouncementOption.class);
 			options.put(ms, ops);
 		}
 		if (bo == AnnouncementOption.HEROCHAT){
@@ -50,7 +52,7 @@ public class AnnouncementOptions {
 				ops.put(AnnouncementOption.SERVER, null);
 				return;
 			}
-			
+
 			com.dthielke.herochat.Channel channel = Herochat.getChannelManager().getChannel(value);
 			if (channel == null){
 				Log.err(BattleArena.getPName()+"config.yml Announcement option herochat="+value+
@@ -65,7 +67,7 @@ public class AnnouncementOptions {
 	public static void setDefaultOptions(AnnouncementOptions bo) {
 		defaultOptions = bo;
 	}
-	
+
 	public Channel getChannel(boolean match, MatchState state) {
 		Map<MatchState, Map<AnnouncementOption,Object>> options = match ? matchOptions : eventOptions;
 
@@ -86,12 +88,12 @@ public class AnnouncementOptions {
 				Log.warn(BattleArena.getPName()+"Herochat channel not found!. ignoring config.yml announcement option herochat="+hcChannelName);
 				return Channel.ServerChannel;
 			} else {
-				return new HerochatChannel(channel);	
-			}			
+				return new HerochatChannel(channel);
+			}
 		}
 		return Channel.ServerChannel;
 	}
-	
+
 	public static Channel getDefaultChannel(boolean match, MatchState state) {
 		return defaultOptions.getChannel(match, state);
 	}

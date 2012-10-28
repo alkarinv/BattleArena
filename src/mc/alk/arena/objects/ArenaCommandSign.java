@@ -1,10 +1,7 @@
 package mc.alk.arena.objects;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.executors.BAExecutor;
-import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.util.SignUtil.ARENA_COMMAND;
 
 public class ArenaCommandSign {
@@ -12,7 +9,7 @@ public class ArenaCommandSign {
 	ARENA_COMMAND command;
 	String options1;
 	String options2;
-	
+
 	public ArenaCommandSign(MatchParams mp, ARENA_COMMAND cmd, String op1, String op2) {
 		this.mp = mp;
 		this.command = cmd;
@@ -44,21 +41,21 @@ public class ArenaCommandSign {
 	}
 
 	private void performEventAction(ArenaPlayer player) {
-		Event event = EventController.getEvent(mp.getName());
-		EventExecutor executor = EventController.getEventExecutor(event);
-		String args[] = {options1,options2};
-		switch (command){
-		case JOIN:
-			executor.eventJoin(player,args);
-			break;
-		case LEAVE:
-			executor.leave(player);
-			break;
-		case START:
-//			executor.start();
-			break;
-		}
-	
+//		Event event = EventController.getEvent(mp.getName());
+//		EventExecutor executor = EventController.getEventExecutor(event);
+//		String args[] = {options1,options2};
+//		switch (command){
+//		case JOIN:
+//			executor.eventJoin(player,args);
+//			break;
+//		case LEAVE:
+//			executor.leave(player);
+//			break;
+//		case START:
+////			executor.start();
+//			break;
+//		}
+
 	}
 
 	public MatchParams getMatchParams() {

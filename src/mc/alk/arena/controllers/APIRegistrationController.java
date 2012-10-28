@@ -12,12 +12,10 @@ import java.io.OutputStream;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.competition.events.ReservedArenaEvent;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.objects.EventParams;
-import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.serializers.ArenaSerializer;
@@ -50,13 +48,13 @@ public class APIRegistrationController {
 		as.loadArenas(plugin,at);
 
 		ConfigSerializer cc = new ConfigSerializer(); /// Our config.yml
-		
+
 		String configFileName = name+"Config.yml";
 		String fileName = match ? "defaultMatchTypeConfig.yml" : "defaultEventTypeConfig.yml";
 
 		File pluginFile = new File(dir.getPath()+File.separator+configFileName);
 		File defaultPluginFile = new File(configFileName);
-		File defaultFile = new File("default_files"+File.separator+fileName);			
+		File defaultFile = new File("default_files"+File.separator+fileName);
 
 		if (!loadConfigFile(plugin, defaultFile, defaultPluginFile, pluginFile, name,cmd)){
 			Log.err(plugin.getName() + " " + pluginFile.getName() + " could not be loaded");
@@ -70,16 +68,16 @@ public class APIRegistrationController {
 
 		String messagesFileName = name+"Messages.yml";
 		fileName = match ? "defaultMatchMessages.yml": "defaultEventMessages.yml";
-		
+
 		pluginFile = new File(dir.getPath()+File.separator+messagesFileName);
 		defaultPluginFile = new File(messagesFileName);
-		defaultFile = new File("default_files"+File.separator+fileName);			
+		defaultFile = new File("default_files"+File.separator+fileName);
 
 		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
 			pluginFile = BattleArena.getSelf().load("/default_files/"+fileName, pluginFile.getAbsolutePath());
 			if (pluginFile == null){
 				Log.err(plugin.getName() + " " + messagesFileName+" could not be loaded");
-				return;				
+				return;
 			}
 		}
 		ms.setConfig(pluginFile);
@@ -114,13 +112,13 @@ public class APIRegistrationController {
 		} finally{
 			if (out != null)
 				try {out.close();} catch (IOException e) {}
-			if (inputStream!=null) 
+			if (inputStream!=null)
 				try {inputStream.close();} catch (IOException e) {}
 		}
-		
+
 		return true;
 	}
-	
+
 	private boolean loadConfigFile(Plugin plugin, File defaultFile, File defaultPluginFile, File pluginFile,
 			String name, String cmd) {
 		if (pluginFile.exists())
@@ -138,7 +136,7 @@ public class APIRegistrationController {
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
-		} 
+		}
 
 		try {
 			while ((line = br.readLine()) != null){
@@ -155,7 +153,7 @@ public class APIRegistrationController {
 
 	private InputStream getInputStream(Plugin plugin, File defaultFile, File defaultPluginFile) {
 		InputStream inputStream = null;
-		/// Load from pluginJar 
+		/// Load from pluginJar
 		inputStream = plugin.getClass().getClassLoader().getResourceAsStream(defaultPluginFile.getPath());
 		if (inputStream == null){ /// Load from BattleArena.jar
 			inputStream = BattleArena.getSelf().getClass().getClassLoader().getResourceAsStream(defaultFile.getPath());
@@ -192,28 +190,28 @@ public class APIRegistrationController {
 		EventParams mp = ParamController.getEventParamCopy(name);
 		if (mp != null){
 			/// TODO this should probably get what event based off of what executor, maybe a map?
-			ReservedArenaEvent event = new ReservedArenaEvent(mp);
-			EventController.addEvent(event);
-			executor.setEvent(event);
+//			ReservedArenaEvent event = new ReservedArenaEvent(mp);
+//			EventController.addEvent(event);
+//			executor.setEvent(event);
 			registerCommand(plugin, cmd, executor);
-			EventController.addEventExecutor(event, executor);
+			EventController.addEventExecutor(mp, executor);
 		} else {
 			Log.err(name+" type not found");
 		}
 	}
 
-	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, 
+	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass,
 			Event event, EventExecutor executor) {
 		init(plugin,name,cmd,arenaClass,false);
-		MatchParams mp = ParamController.getMatchParams(name);
+		EventParams mp = ParamController.getEventParamCopy(name);
 		if (mp != null){
-			EventController.addEvent(event);
-			executor.setEvent(event);
+//			EventController.addEvent(event);
+//			executor.setEvent(event);
 			plugin.getCommand(cmd).setExecutor(executor);
-			EventController.addEventExecutor(event, executor);
+			EventController.addEventExecutor(mp, executor);
 		} else {
 			Log.err(name+" type not found");
-		}		
+		}
 	}
 
 }

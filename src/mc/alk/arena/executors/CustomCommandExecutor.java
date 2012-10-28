@@ -10,7 +10,6 @@ import java.util.TreeMap;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.ArenaEditor.CurrentSelection;
 import mc.alk.arena.controllers.BattleArenaController;
@@ -19,6 +18,7 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.Exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.serializers.MessageSerializer;
@@ -271,8 +271,8 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				objs[objIndex] = verifyInteger(args[strIndex++]);
 			} else if (String[].class == theclass){
 				objs[objIndex] = args;
-			} else if (Event.class == theclass){
-				objs[objIndex] = verifyEvent(args[strIndex++]);
+//			} else if (Event.class == theclass){
+//				objs[objIndex] = verifyEvent(args[strIndex++]);
 			} else if (Object[].class == theclass){
 				objs[objIndex] = args;
 			} else if (Boolean.class == theclass){
@@ -335,12 +335,12 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		return newArgs; /// Success
 	}
 
-	private Event verifyEvent(String name) throws InvalidArgumentException {
-		Event event = EventController.getEvent(name);
-		if (event == null)
-			throw new InvalidArgumentException("Event " + name+" can not be found");
-		return event;
-	}
+//	private Event verifyEvent(String name) throws InvalidArgumentException {
+//		Event event = EventController.getEvent(name);
+//		if (event == null)
+//			throw new InvalidArgumentException("Event " + name+" can not be found");
+//		return event;
+//	}
 
 	private OfflinePlayer verifyOfflinePlayer(String name) throws InvalidArgumentException {
 		OfflinePlayer p = Util.findOfflinePlayer(name);
@@ -386,12 +386,12 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	}
 
 	private EventParams verifyEventParams(Command command) throws InvalidArgumentException {
-		MatchParams mp = ParamController.getMatchParamCopy(command.getName());
+		MatchParams mp = ParamController.getEventParamCopy(command.getName());
 		if (mp != null && mp instanceof EventParams){
 			return (EventParams)mp;
 		} else {
 			for (String alias : command.getAliases()){
-				mp = ParamController.getMatchParamCopy(alias);
+				mp = ParamController.getEventParamCopy(alias);
 				if (mp != null && mp instanceof EventParams)
 					return (EventParams) mp;
 			}
@@ -421,15 +421,6 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			return msg == null ? null : msg.getMessage();
 		}
 		return "&6/"+c.getName()+" " + usage.get(cmd); /// Return the usage from our map
-	}
-
-
-	public static class InvalidArgumentException extends Exception {
-		private static final long serialVersionUID = 1L;
-
-		public InvalidArgumentException(String string) {
-			super(string);
-		}
 	}
 
 	static final int LINES_PER_PAGE = 8;

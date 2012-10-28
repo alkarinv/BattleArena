@@ -2,13 +2,17 @@ package mc.alk.arena.competition.events;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.util.AddToLeastFullTeam;
 import mc.alk.arena.competition.events.util.BinPackAdd;
 import mc.alk.arena.competition.events.util.TeamJoinHandler;
@@ -16,7 +20,6 @@ import mc.alk.arena.competition.events.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.controllers.TransitionMethodController;
 import mc.alk.arena.controllers.messaging.EventMessageHandler;
 import mc.alk.arena.controllers.messaging.EventMessageImpl;
 import mc.alk.arena.controllers.messaging.EventMessager;
@@ -31,10 +34,12 @@ import mc.alk.arena.events.events.TeamJoinedEvent;
 import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.MatchResult;
-import mc.alk.arena.objects.TransitionOptions;
 import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -48,32 +53,33 @@ import mc.alk.arena.util.Util;
 import org.bukkit.entity.Player;
 
 
-public abstract class Event implements CountdownCallback, TeamHandler, TransitionListener{
+public abstract class Event extends Competition implements CountdownCallback, TeamHandler, TransitionListener{
 	static int eventCount = 0;
 	final int id = eventCount++;
 
 	final String name;
 	BattleArenaController ac;
+
 	EventMessager mc = null;
 
-	enum EventState{CLOSED,OPEN,RUNNING, FINISHED};
-	EventState state = EventState.CLOSED;
 	EventParams eventParams= null;
 	Countdown timer = null; /// Timer till Event starts, think about moving this to executor, or eventcontroller
 
-	final List<Team> teams = new ArrayList<Team>();
 	final ArrayList<Round> rounds = new ArrayList<Round>();
 	TeamJoinHandler joinHandler; /// Specify how teams are allocated
 
-	final TransitionMethodController tmc = new TransitionMethodController();
+	EventState state = null;
+	/// When did each transition occur
+	final Map<EventState, Long> times = Collections.synchronizedMap(new EnumMap<EventState,Long>(EventState.class));
 
 	public Event(EventParams params) {
+		transitionTo(EventState.CLOSED);
 		setParamInst(params);
 		/// eventParams will change when an new Event is called
 		this.ac = BattleArena.getBAC();
 		this.name = params.getName();
 	}
-	
+
 	/**
 	 * Notify Bukkit Listeners and specific listeners to this match
 	 * @param BAevent event
@@ -114,7 +120,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 			return;
 
 		stopTimer();
-		state = EventState.OPEN;
+		transitionTo(EventState.OPEN);
 
 		mc.sendEventOpenMsg();
 	}
@@ -152,14 +158,15 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		}
 		joinHandler.deconstruct();
 		joinHandler = null;
-		state = EventState.RUNNING;
+		transitionTo(EventState.RUNNING);
+
 		notifyListeners(new EventStartEvent(this,teams));
 	}
 
 	protected void eventVictory(Team victor, Collection<Team> losers) {
 		if (victor != null)
 			mc.sendEventVictory(victor, losers);
-		else 
+		else
 			mc.sendEventDraw(losers);
 		notifyListeners(new EventVictoryEvent(this,victor,losers));
 	}
@@ -168,14 +175,14 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		if (timer != null){
 			timer.stop();
 			timer = null;
-		}		
+		}
 	}
 
 	public void eventCompleted(){
 		notifyListeners(new EventCompletedEvent(this));
 		endEvent();
 	}
-	
+
 	public void cancelEvent() {
 		for (Team tt : teams){ /// for anyone in a match, cancel them
 			ac.cancelMatch(tt);}
@@ -183,18 +190,17 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		mc.sendEventCancelled();
 		endEvent(); /// now call the method to clean everything else up
 	}
-	
+
 	protected void eventCancelled(){
 		notifyListeners(new EventCancelEvent(this));
 		mc.sendEventCancelled();
-		endEvent(); 		
+		endEvent();
 	}
-	
+
 	protected void endEvent() {
 		if (Defaults.DEBUG_TRACE) System.out.println("BAEvent::endEvent");
 		stopTimer();
-
-		state = EventState.CLOSED;
+		transitionTo(EventState.CLOSED);
 		removeAllTeams();
 		teams.clear();
 		notifyListeners(new EventFinishedEvent(this));
@@ -210,19 +216,33 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 
 	public abstract boolean canLeave(ArenaPlayer p);
 
+	@Override
+	public EventState getState() {return state;}
+
+	@Override
+	protected void transitionTo(CompetitionState state){
+		this.state = (EventState) state;
+		times.put(this.state, System.currentTimeMillis());
+	}
+
+	@Override
+	public Long getTime(CompetitionState state){
+		return times.get(state);
+	}
+
 	/**
 	 * Called when a player leaves minecraft.. we cant stop them so deal with it
-	 */	
+	 */
 	public boolean leave(ArenaPlayer p) {
 		Team t = getTeam(p);
 		if (t==null) /// they arent in this Event
 			return true;
-//		if (!isRunning()){
-			removeTeam(t);
-//		} else {
-			/// do nothing, they should be part of a match somewhere which will handle
-			/// removing them
-//		}
+		//		if (!isRunning()){
+		removeTeam(t);
+		//		} else {
+		/// do nothing, they should be part of a match somewhere which will handle
+		/// removing them
+		//		}
 		return true;
 	}
 
@@ -262,7 +282,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		TeamJoinResult tjr = null;
 		if (joinHandler == null)
 			tjr = TeamJoinHandler.NOTOPEN;
-		else 
+		else
 			tjr = joinHandler.joiningTeam(t);
 		switch(tjr.a){
 		case ADDED:
@@ -386,7 +406,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 			return "&eThere are no results from the previous Event";
 		}
 		if (!isFinished() && !isClosed()){
-			sb.append("&eEvent is still &6" + state + "\n");			
+			sb.append("&eEvent is still &6" + state + "\n");
 		}
 
 		//		boolean useRounds = rounds.size() > 1 || isTourney;
@@ -413,20 +433,24 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 
 	public List<Team> getTeams(){return teams;}
 	public boolean canLeaveTeam(ArenaPlayer p) {return canLeave(p);}
-	public String getState() {return state.toString();}
 
 	/**
 	 * Broadcast to all players in the Event
 	 */
 	public void broadcast(String msg){for (Team t : teams){t.sendMessage(msg);}}
 
+	public Long getTimeTillStart() {
+		if (timer == null)
+			return null;
+		return timer.getTimeRemaining();
+	}
 
 	public boolean intervalTick(int remaining){
 		if (!isOpen())
 			return false;
 		if (remaining == 0){
 			if (eventParams.matchesNTeams(teams.size()) && this.hasEnoughTeams()){
-				startEvent();							
+				startEvent();
 			} else {
 				mc.sendEventCancelledDueToLackOfPlayers(getPlayers());
 				cancelEvent();
@@ -456,6 +480,7 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 		mc.setSilent(silent);
 	}
 
+	@Override
 	public String toString(){
 		return "[" + getName()+":"+id+"]";
 	}
@@ -479,4 +504,10 @@ public abstract class Event implements CountdownCallback, TeamHandler, Transitio
 	public void removeTransitionListener(TransitionListener transitionListener) {
 		tmc.removeListener(transitionListener);
 	}
+	@Override
+	public int getID(){
+		return id;
+	}
+
+
 }

@@ -5,10 +5,10 @@ import mc.alk.arena.objects.MatchState;
 
 public class MatchFinishedEvent extends MatchEvent {
 	final MatchState state;
-	
+
 	public MatchFinishedEvent(Match match){
 		super(match);
-		this.state = match.getMatchState();
+		this.state = match.getState();
 	}
 
 	public MatchState getState() {

@@ -27,20 +27,20 @@ import mc.alk.arena.events.arenas.ArenaDeleteEvent;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
-import mc.alk.arena.objects.DuelOptions;
-import mc.alk.arena.objects.DuelOptions.DuelOption;
-import mc.alk.arena.objects.JoinOptions;
-import mc.alk.arena.objects.JoinOptions.JoinOption;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.ParamTeamPair;
-import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.Rating;
-import mc.alk.arena.objects.TransitionOptions;
-import mc.alk.arena.objects.WantedTeamSizeResult;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.options.DuelOptions;
+import mc.alk.arena.objects.options.DuelOptions.DuelOption;
+import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.options.JoinOptions.JoinOption;
+import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.pairs.ParamTeamPair;
+import mc.alk.arena.objects.pairs.QPosTeamPair;
+import mc.alk.arena.objects.pairs.WantedTeamSizePair;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.ArenaSerializer;
@@ -52,6 +52,7 @@ import mc.alk.arena.util.TimeUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -149,10 +150,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 			t = TeamController.createTeam(player);
 		mp = new MatchParams(mp);
 		JoinOptions jp;
-		WantedTeamSizeResult wtsr = null;
+		WantedTeamSizePair wtsr = null;
 		try {
 			jp = JoinOptions.parseOptions(mp,t, player, Arrays.copyOfRange(args, 1, args.length));
-			wtsr = (WantedTeamSizeResult) jp.getOption(JoinOption.TEAMSIZE);
+			wtsr = (WantedTeamSizePair) jp.getOption(JoinOption.TEAMSIZE);
 			mp.setTeamSize(wtsr.size);
 			t.setJoinPreferences(jp);
 		} catch (InvalidOptionException e) {
@@ -187,7 +188,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 		final MatchTransitions ops = mp.getTransitionOptions();
 		if (ops == null){
 			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
-
+//		BTInterface bti = BTInterface.getInterface(mp);
+//		if (bti.isValid()){
+//			bti.updateRanking(t);
+//		}
 		/// Check ready
 		if(!ops.teamReady(t)){
 			t.sendMessage(ops.getRequiredString("&eYou need the following to join"));
@@ -440,9 +444,20 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return sendMessage(sender, info);
 	}
 
+	@SuppressWarnings("unchecked")
 	@MCCommand(cmds={"info"}, op=true, usage="info <arenaname>", order=1)
 	public boolean info(CommandSender sender, Arena arena) {
-		return sendMessage(sender, arena.toDetailedString());
+		sendMessage(sender, arena.toDetailedString());
+		Match match = ac.getMatch(arena);
+		if (match != null){
+			List<String> strs = new ArrayList<String>();
+			for (Team t: match.getTeams()){
+				strs.add("&5 -&e" + t.getDisplayName());}
+			sendMessage(sender, "Teams: " + StringUtils.join(strs));
+		}
+//		final BAEventController controller = BattleArena.getBAEventController();
+//		Event event = controller.getEvent(arena);
+		return true;
 	}
 
 	public boolean watch(CommandSender sender, String args[]) {
@@ -601,8 +616,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Can the player join this match/event at this moment?
 		if (!canJoin(player)){
 			return true;}
-		Event e = EventController.getEvent(mp.getName());
-		if (e != null){
+//		Event e = EventController.getEvent(mp.getName());
+		if (EventController.hasEventType(mp.getName())){
 			return sendMessage(player,"&4[Duel] &cYou can't duel someone in an Event type!");}
 
 		/// Parse the duel options

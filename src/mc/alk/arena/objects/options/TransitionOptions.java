@@ -1,16 +1,23 @@
-package mc.alk.arena.objects;
+package mc.alk.arena.objects.options;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.objects.ArenaClass;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.PVPState;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.ArmorLevel;
 import mc.alk.arena.util.Util;
+import mc.alk.arena.util.Util.MinMax;
 
 import org.bukkit.Location;
 import org.bukkit.inventory.Inventory;
@@ -29,6 +36,7 @@ public class TransitionOptions {
 		CLEARINVENTORY ("clearInventory",false), NEEDARMOR ("needArmor",false), NOINVENTORY("noInventory",false),
 		CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter",false),
 		NEEDITEMS ("needItems",false), GIVEITEMS("giveItems",false), GIVECLASS("giveClass",false),
+		LEVELRANGE("levelRange",true),
 		HEALTH("health",true), HUNGER("hunger",true),
 		MONEY("money",true), EXPERIENCE("experience",true),
 		PVPON("pvpOn",false), PVPOFF("pvpOff",false),INVINCIBLE("invincible",false),
@@ -70,7 +78,7 @@ public class TransitionOptions {
 	public TransitionOptions(TransitionOptions o) {
 		if (o == null)
 			return;
-		if (o.options != null) this.options = new HashMap<TransitionOption,Object>(o.options);
+		if (o.options != null) this.options = new EnumMap<TransitionOption,Object>(o.options);
 		//		this.items = o.items;
 		//		this.classes = o.classes;
 		this.effects = o.effects;
@@ -83,14 +91,14 @@ public class TransitionOptions {
 	}
 
 	public void setOptions(Set<String> options) {
-		this.options =new HashMap<TransitionOption,Object>();
+		this.options =new EnumMap<TransitionOption,Object>(TransitionOption.class);
 		for (String s: options){
 			this.options.put(TransitionOption.valueOf(s),null);
 		}
 	}
 
 	public void setMatchOptions(Map<TransitionOption,Object> options) {
-		this.options =new HashMap<TransitionOption,Object>(options);
+		this.options =new EnumMap<TransitionOption,Object>(options);
 	}
 
 	public List<ItemStack> getGiveItems() {
@@ -159,6 +167,11 @@ public class TransitionOptions {
 			if (!InventoryUtil.hasArmor(p.getPlayer()))
 				return false;
 		}
+		if (options.containsKey(TransitionOption.LEVELRANGE)){
+			MinMax mm = (MinMax) options.get(TransitionOption.LEVELRANGE);
+			if (!mm.contains(p.getLevel()))
+				return false;
+		}
 		//		System.out.println(" my options are " + options);
 		return true;
 	}
@@ -185,6 +198,12 @@ public class TransitionOptions {
 			hasSomething = true;
 			sb.append("&5 - &6Armor");
 		}
+		if (options.containsKey(TransitionOption.LEVELRANGE)){
+			MinMax mm = (MinMax) options.get(TransitionOption.LEVELRANGE);
+			sb.append("&a - lvl="+mm.toString());
+		}
+
+		sb.append("&5 - &6Armor");
 		return hasSomething ? sb.toString() : null;
 	}
 
@@ -216,6 +235,14 @@ public class TransitionOptions {
 				isReady = false;
 			}
 		}
+		if (options.containsKey(TransitionOption.LEVELRANGE)){
+			MinMax mm = (MinMax) options.get(TransitionOption.LEVELRANGE);
+			if (!mm.contains(p.getLevel())){
+				sb.append("&a - lvl="+mm.toString());
+				isReady = false;
+			}
+		}
+
 		//		System.out.println(" Here in getNot ready msg with " + p.getName() + " ------" + sb.toString());
 		return isReady? null : sb.toString();
 	}
@@ -300,7 +327,7 @@ public class TransitionOptions {
 	public void addOption(TransitionOption option, Object value) throws InvalidOptionException {
 		if (option.hasValue() && value==null) throw new InvalidOptionException("TransitionOption needs a value!");
 		if (options==null){
-			options = new HashMap<TransitionOption,Object>();}
+			options = new EnumMap<TransitionOption,Object>(TransitionOption.class);}
 		options.put(option,value);
 	}
 

@@ -24,7 +24,10 @@ public class Util {
 			this.min = min; this.max = max;
 		}
 		@Override
-		public String toString(){return "[MM "+min+":" + max+"]";}
+		public String toString(){return getStr(min,max);}
+		public boolean contains(int i) {
+			return min <= i && max >= i;
+		}
 	}
 
 	static public void printStackTrace(){

@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.JoinOptions;
+import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.entity.Player;

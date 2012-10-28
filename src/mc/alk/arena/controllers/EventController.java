@@ -5,6 +5,7 @@ import java.util.HashMap;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.teams.Team;
 
 
@@ -13,7 +14,7 @@ public class EventController {
 	static HashMap<String, EventExecutor> registeredExecutors = new HashMap<String,EventExecutor>();
 
 	public EventController(){}
-	
+
 	public static Event insideEvent(ArenaPlayer p) {
 		for (Event evt : registeredEvents.values()){
 			Team t = evt.getTeam(p);
@@ -23,10 +24,10 @@ public class EventController {
 		return null;
 	}
 
-	public static Event getEvent(String name) {
-		return registeredEvents.get(name.toLowerCase());
-	}
-	
+//	public static Event getEvent(String name) {
+//		return registeredEvents.get(name.toLowerCase());
+//	}
+//
 	public static void addEvent(Event event){
 		registeredEvents.put(event.getName().toLowerCase(),event);
 		registeredEvents.put(event.getCommand().toLowerCase(),event);
@@ -40,13 +41,24 @@ public class EventController {
 		}
 	}
 
-	public static void addEventExecutor(Event event, EventExecutor executor) {
-		registeredExecutors.put(event.getName().toLowerCase(), executor);
-		registeredExecutors.put(event.getCommand().toLowerCase(),executor);
+	public static void addEventExecutor(EventParams eventParams, EventExecutor executor) {
+		registeredExecutors.put(eventParams.getName().toLowerCase(), executor);
+		registeredExecutors.put(eventParams.getCommand().toLowerCase(),executor);
 
 	}
-	
+
 	public static EventExecutor getEventExecutor(Event event){
 		return registeredExecutors.get(event.getName().toLowerCase());
 	}
+
+	public static EventExecutor getEventExecutor(String eventType){
+		return registeredExecutors.get(eventType.toLowerCase());
+	}
+
+	public static boolean hasEventType(String name) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
 }

@@ -1,12 +1,15 @@
-package mc.alk.arena.objects;
+package mc.alk.arena.objects.options;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MoneyController;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.util.Util;
 
@@ -52,14 +55,14 @@ public class DuelOptions {
 			return sb.toString();
 		}
 	}
-	
+
 	final List<ArenaPlayer> challengedPlayers = new ArrayList<ArenaPlayer>();
-	final HashMap<DuelOption,Object> options = new HashMap<DuelOption,Object>();
+	final Map<DuelOption,Object> options = new EnumMap<DuelOption,Object>(DuelOption.class);
 
 	public static DuelOptions parseOptions(String[] args) throws InvalidOptionException{
 		DuelOptions eoo = new DuelOptions();
-		HashMap<DuelOption,Object> ops = eoo.options;
-		
+		Map<DuelOption,Object> ops = eoo.options;
+
 		for (int i=0;i<args.length;i++){
 			String op = args[i];
 			Player p = Util.findPlayer(op);
@@ -82,7 +85,7 @@ public class DuelOptions {
 						DuelOption.getValidList());
 			}
 			switch(to){
-			case RATED: 
+			case RATED:
 				if (!Defaults.DUEL_ALLOW_RATED)
 					throw new InvalidOptionException("&cRated formingDuels are not allowed!");
 				break;
@@ -146,7 +149,7 @@ public class DuelOptions {
 	public boolean hasOption(DuelOption option) {
 		return options.containsKey(option);
 	}
-	
+
 	public Object getOptionValue(DuelOption option) {
 		return options.get(option);
 	}

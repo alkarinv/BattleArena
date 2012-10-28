@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,9 +101,9 @@ public class InventoryUtil {
 		else return enc.getName();
 	}
 
-	static final HashMap<Material,Armor> armor;
+	static final Map<Material,Armor> armor;
 	static {
-		armor = new HashMap<Material,Armor>();
+		armor = new EnumMap<Material,Armor>(Material.class);
 		armor.put(Material.WOOL,new Armor(ArmorType.HELM, ArmorLevel.WOOL));
 		armor.put(Material.LEATHER_HELMET,new Armor(ArmorType.HELM, ArmorLevel.LEATHER));
 		armor.put(Material.IRON_HELMET,new Armor(ArmorType.HELM, ArmorLevel.IRON));

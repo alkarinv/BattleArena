@@ -1,11 +1,15 @@
-package mc.alk.arena.objects;
+package mc.alk.arena.objects.options;
 
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.UUID;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.pairs.WantedTeamSizePair;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.TeamUtil;
 
@@ -46,11 +50,11 @@ public class JoinOptions {
 	}
 
 
-	final HashMap<JoinOption,Object> options = new HashMap<JoinOption,Object>();
+	final Map<JoinOption,Object> options = new EnumMap<JoinOption,Object>(JoinOption.class);
 	Location joinedLocation = null;
 
 	public boolean matches(Arena a) {
-		return options.containsKey(JoinOption.ARENA) ? 
+		return options.containsKey(JoinOption.ARENA) ?
 				((Arena)options.get(JoinOption.ARENA)).getName().equals(a.getName()) : true;
 	}
 
@@ -58,7 +62,7 @@ public class JoinOptions {
 		UUID wid = joinedLocation.getWorld().getUID();
 		Location arenajoinloc = arena.getJoinLocation();
 		if (arenajoinloc != null){
-			return (wid == arenajoinloc.getWorld().getUID() && 
+			return (wid == arenajoinloc.getWorld().getUID() &&
 					arenajoinloc.distanceSquared(joinedLocation) <= distance);
 		}
 
@@ -87,10 +91,10 @@ public class JoinOptions {
 	public static JoinOptions parseOptions(MatchParams mp, Team t, ArenaPlayer player, String[] args) throws InvalidOptionException{
 		JoinOptions jos = new JoinOptions();
 		jos.joinedLocation = player.getLocation();
-		HashMap<JoinOption,Object> ops = jos.options;
+		Map<JoinOption,Object> ops = jos.options;
 		Arena arena = null;
 		String lastArg = args.length - 1 >= 0 ? args[args.length-1] : "";
-		final WantedTeamSizeResult teamSize = WantedTeamSizeResult.getWantedTeamSize(player,t,mp,lastArg);
+		final WantedTeamSizePair teamSize = WantedTeamSizePair.getWantedTeamSize(player,t,mp,lastArg);
 		if (teamSize == null)
 			throw new InvalidOptionException("");
 		int length = teamSize.manuallySet ? args.length -1 : args.length;
@@ -123,7 +127,7 @@ public class JoinOptions {
 						JoinOption.getValidList());
 			}
 			switch(jo){
-			default: 
+			default:
 				break;
 			}
 
@@ -137,7 +141,7 @@ public class JoinOptions {
 				obj = BattleArena.getBAC().getArena(val);
 				if (obj==null){
 					throw new InvalidOptionException("&cCouldnt find the arena &6" +val);}
-			default: 
+			default:
 				break;
 			}
 			ops.put(jo, obj);

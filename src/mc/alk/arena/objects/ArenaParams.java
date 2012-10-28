@@ -59,6 +59,7 @@ public class ArenaParams {
 		this.minTeams = ap.minTeams;
 		this.maxTeams = ap.maxTeams;
 		this.cmd = ap.cmd;
+		this.name = ap.name;
 		this.timeBetweenRounds = ap.timeBetweenRounds;
 		this.secondsTillMatch = ap.secondsTillMatch;
 		this.secondsToLoot = ap.secondsToLoot;
@@ -97,7 +98,7 @@ public class ArenaParams {
 
 	public static String rangeString(final int min,final int max){
 		if (max == MAX){ return min+"+";} /// Example: 2+
-		if (min == max){ return min+"";} /// Example: 2	
+		if (min == max){ return min+"";} /// Example: 2
 		return min + "-" + max; //Example 2-4
 	}
 
@@ -108,14 +109,14 @@ public class ArenaParams {
 	public void setType(ArenaType type) {this.arenaType = type;}
 
 	public boolean matches(final ArenaParams ap) {
-		return ( ((arenaType == null || ap.arenaType == null) || arenaType.matches(ap.arenaType)) && 
-				matchesTeamSize(ap) && 
+		return ( ((arenaType == null || ap.arenaType == null) || arenaType.matches(ap.arenaType)) &&
+				matchesTeamSize(ap) &&
 				matchesNTeams(ap));
 	}
 
 
 	public boolean matchesNTeams(final ArenaParams ap) {
-		return (this.minTeams <= ap.getMinTeams() && maxTeams >= ap.getMaxTeams()) 
+		return (this.minTeams <= ap.getMinTeams() && maxTeams >= ap.getMaxTeams())
 				|| maxTeams == MAX  || ap.getMaxTeams() == MAX;
 	}
 
@@ -131,7 +132,7 @@ public class ArenaParams {
 		if (!matchesNTeams(ap)) reasons.add("Arena accepts nteams="+getNTeamRange()+
 				". you requested "+ap.getNTeamRange());
 		if (!matchesTeamSize(ap)) reasons.add("Arena accepts teamSize="+getTeamSizeRange()+
-				". you requested "+ap.getTeamSizeRange());		
+				". you requested "+ap.getTeamSizeRange());
 		return reasons;
 	}
 
@@ -243,13 +244,21 @@ public class ArenaParams {
 	public String getDBName(){
 		return dbName;
 	}
-
+	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	
 	public String toPrettyString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("&e"+arenaType.toPrettyString(minTeamSize, maxTeamSize));
 		return sb.toString();
 	}
 
+	@Override
 	public String toString(){
 		return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
 	}

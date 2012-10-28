@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.objects.YamlSerializable;
 import mc.alk.arena.serializers.Persist;
@@ -271,6 +272,22 @@ public class Persistable {
 						List<Object> oset = new ArrayList<Object>();
 						for (Object o : set){
 							oset.add(objToYaml(o));
+						}
+						obj = oset;
+					} else if (ConcurrentHashMap.class.isAssignableFrom(type)){
+						@SuppressWarnings("unchecked")
+						Map<Object,Object> mymap = (ConcurrentHashMap<Object,Object>) field.get(arena);
+						if (mymap == null)
+							continue;
+						Map<Object,Object> oset = new HashMap<Object,Object>();
+						for (Object o : mymap.keySet()){
+							Object key = objToYaml(o);
+							if (key == null)
+								continue;
+							Object value = mymap.get(o);
+							if (value == null)
+								continue;
+							oset.put(key.toString(),objToYaml(value));
 						}
 						obj = oset;
 					} else if (Map.class.isAssignableFrom(type)){

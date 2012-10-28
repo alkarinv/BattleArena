@@ -18,8 +18,10 @@ import mc.alk.plugin.updater.Version;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class YamlFileUpdater {
-
-
+	BufferedReader br = null;
+	BufferedWriter fw =null;
+	File tempFile = null;
+	File configFile = null;
 	public static void updateConfig(BAConfigSerializer bacs){
 		updateBaseConfig(bacs);
 	}
@@ -54,32 +56,28 @@ public class YamlFileUpdater {
 		File tempFile = null;
 		FileConfiguration fc = bacs.getConfig();
 		Version version = new Version(fc.getString("configVersion","0"));
-
+		YamlFileUpdater yfu = new YamlFileUpdater();
+		yfu.configFile = bacs.getFile();
 		/// configVersion: 1.1, move over to classes.yml
 		if (version.compareTo(1.1) <0){
-			to1Point1(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
-		}
+			yfu.to1Point1(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);}
 		if (version.compareTo(1.2)<0){
-			to1Point2(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
-		}
+			yfu.to1Point2(bacs, bacs.getConfig(), version);}
 		if (version.compareTo(1.3)<0){
-			to1Point3(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
-		}
-		if (version.compareTo(1.35)<0){
-			to1Point35(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
-		}
+			yfu.to1Point3(bacs, bacs.getConfig(), version);}
+		if (version.compareTo("1.3.5")<0){
+			yfu.to1Point35(bacs, bacs.getConfig(), version);}
 		if (version.compareTo(1.4)<0){
-			to1Point4(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
-		}
+			yfu.to1Point4(bacs, bacs.getConfig(), version);}
 		if (version.compareTo("1.4.5")<0){
-			to1Point45(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
-		}
+			yfu.to1Point45(bacs, bacs.getConfig(), version);}
 		if (version.compareTo("1.5")<0){
-			to1Point5(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);
-		}
+			yfu.to1Point5(bacs, bacs.getConfig(), version);}
+		if (version.compareTo("1.5.5")<0){
+			yfu.to1Point55(bacs, bacs.getConfig(), version);}
 	}
 
-	private static void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
+	private void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
 		Log.warn("BattleArena updating config to 1.1");
 		Log.warn("Classes are now located in the classes.yml");
 		Boolean configStillHasClasses = fc.contains("classes");
@@ -134,31 +132,15 @@ public class YamlFileUpdater {
 		}
 	}
 
-	private static void to1Point2(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
+	private void to1Point2(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
 		Log.warn("BattleArena updating config to 1.2");
 		Log.warn("You will have to remake any changes you made to defaultOptions");
-
-		String line =null;
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		BufferedWriter fw =null;
-		try {
-			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
-			fw = new BufferedWriter(new FileWriter(tempFile));
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (!openFiles())
 			return;
-		}
-
+		String line =null;
 		try {
 			boolean updatedDefaultSection = false;
 			boolean inDefaultSection = false;
-			if (version.compareTo(0)==0){
-				fw.write("configVersion: 1.2\n");}
 			while ((line = br.readLine()) != null){
 				//				System.out.println((line.matches("defaultMatchOptions:.*") || line.matches("## default Match Options.*")) + " "+line);
 				if (line.contains("configVersion")){
@@ -209,7 +191,7 @@ public class YamlFileUpdater {
 				}
 			}
 			fw.close();
-			tempFile.renameTo(f.getAbsoluteFile());
+			tempFile.renameTo(configFile.getAbsoluteFile());
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -217,29 +199,13 @@ public class YamlFileUpdater {
 	}
 
 
-	private static void to1Point3(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
+	private void to1Point3(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
 		Log.warn("BattleArena updating config to 1.3");
-
-		String line =null;
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		BufferedWriter fw =null;
-		try {
-			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
-			fw = new BufferedWriter(new FileWriter(tempFile));
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (!openFiles())
 			return;
-		}
-
+		String line =null;
 		try {
 			boolean updatedDefaultSection = false;
-			if (version.compareTo(0)==0){
-				fw.write("configVersion: 1.3\n");}
 			while ((line = br.readLine()) != null){
 				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
 				if (line.contains("configVersion")){
@@ -257,40 +223,24 @@ public class YamlFileUpdater {
 				}
 			}
 			fw.close();
-			tempFile.renameTo(f.getAbsoluteFile());
+			tempFile.renameTo(configFile.getAbsoluteFile());
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void to1Point35(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
-		Log.warn("BattleArena updating config to 1.35");
-
-		String line =null;
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		BufferedWriter fw =null;
-		try {
-			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
-			fw = new BufferedWriter(new FileWriter(tempFile));
-		} catch (IOException e) {
-			e.printStackTrace();
+	private void to1Point35(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
+		Log.warn("BattleArena updating config to 1.3.5");
+		if (!openFiles())
 			return;
-		}
-
+		String line =null;
 		try {
 			boolean updatedDefaultSection = false;
-			if (version.compareTo(0)==0){
-				fw.write("configVersion: 1.35\n");}
 			while ((line = br.readLine()) != null){
 				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
 				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.35\n");
+					fw.write("configVersion: 1.3.5\n");
 				} else if (!updatedDefaultSection && (line.matches(".*challengeInterval.*"))){
 					fw.write(line +"\n");
 					fw.write("\n");
@@ -303,38 +253,21 @@ public class YamlFileUpdater {
 				}
 			}
 			fw.close();
-			tempFile.renameTo(f.getAbsoluteFile());
+			tempFile.renameTo(configFile.getAbsoluteFile());
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void to1Point4(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
+	private void to1Point4(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
 		Log.warn("BattleArena updating config to 1.4");
 
+		if (!openFiles())
+			return;
 		String line =null;
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		BufferedWriter fw =null;
-		try {
-			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
-			fw = new BufferedWriter(new FileWriter(tempFile));
-		} catch (IOException e) {
-			e.printStackTrace();
-			try{br.close();}catch (Exception e2){}
-			return;
-		}
-
 		try {
 			boolean updatedDefaultSection = false;
-			if (version.compareTo(0)==0){
-				fw.write("configVersion: 1.4\n");}
 			while ((line = br.readLine()) != null){
 				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
 				if (line.contains("configVersion")){
@@ -355,44 +288,20 @@ public class YamlFileUpdater {
 				}
 			}
 			fw.close();
-			tempFile.renameTo(f.getAbsoluteFile());
+			tempFile.renameTo(configFile.getAbsoluteFile());
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void to1Point45(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
+	private void to1Point45(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
 		Log.warn("BattleArena updating config to 1.4.5");
-
+		if (!openFiles())
+			return;
 		String line =null;
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		BufferedWriter fw =null;
-		try {
-			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
-			fw = new BufferedWriter(new FileWriter(tempFile));
-		} catch (IOException e) {
-			e.printStackTrace();
-			try{br.close();}catch (Exception e2){}
-			return;
-		}
-
-
 		try {
 			boolean updatedDefaultSection = false;
-			if (version.compareTo(0)==0){
-				fw.write("configVersion: 1.4.5\n\n");
-				fw.write("# Auto Update the BattleArena plugin (only works for unix/linux/mac)\n");
-				fw.write("# Updates will be retrieved from the latest plugin on the bukkit site\n");
-				fw.write("autoUpdate: true\n");
-				fw.write("\n");
-			}
 			while ((line = br.readLine()) != null){
 				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
 				if (line.contains("configVersion")){
@@ -414,34 +323,18 @@ public class YamlFileUpdater {
 				}
 			}
 			fw.close();
-			tempFile.renameTo(f.getAbsoluteFile());
+			tempFile.renameTo(configFile.getAbsoluteFile());
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void to1Point5(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
+	private void to1Point5(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
 		Log.warn("BattleArena updating config to 1.5");
-
+		if (!openFiles())
+			return;
 		String line =null;
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		BufferedWriter fw =null;
-		try {
-			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
-			fw = new BufferedWriter(new FileWriter(tempFile));
-		} catch (IOException e) {
-			e.printStackTrace();
-			try{br.close();}catch (Exception e2){}
-			return;
-		}
-
 		try {
 			boolean updatedDefaultSection = false;
 			while ((line = br.readLine()) != null){
@@ -460,7 +353,7 @@ public class YamlFileUpdater {
 				}
 			}
 			fw.close();
-			tempFile.renameTo(f.getAbsoluteFile());
+			tempFile.renameTo(configFile.getAbsoluteFile());
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -468,6 +361,56 @@ public class YamlFileUpdater {
 			try {br.close();} catch (Exception e) {}
 			try {fw.close();} catch (Exception e) {}
 		}
+	}
+
+	private void to1Point55(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
+		Log.warn("BattleArena updating config to 1.5.5");
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			boolean updatedDefaultSection = false;
+			while ((line = br.readLine()) != null){
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 1.5.5\n\n");
+				} else if (!updatedDefaultSection && (line.matches(".*eventCountdownInterval:.*"))){
+					fw.write(line +"\n");
+					fw.write("    ## If true, when a player joins and an event that can be opened, it will be\n");
+					fw.write("    ## silently opened and the player will join\n");
+					fw.write("    allowPlayerCreation: true \n");
+					fw.write("\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(configFile.getAbsoluteFile());
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
+	private boolean openFiles() {
+		try {
+			br = new BufferedReader(new FileReader(configFile));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		}
+		try {
+			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
+			fw = new BufferedWriter(new FileWriter(tempFile));
+		} catch (IOException e) {
+			e.printStackTrace();
+			try{br.close();}catch (Exception e2){}
+			return false;
+		}
+		return true;
 	}
 
 	public File move(String default_file, String config_file) {
@@ -485,5 +428,4 @@ public class YamlFileUpdater {
 		}
 		return file;
 	}
-
 }

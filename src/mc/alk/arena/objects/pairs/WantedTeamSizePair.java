@@ -1,12 +1,14 @@
-package mc.alk.arena.objects;
+package mc.alk.arena.objects.pairs;
 
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
 
-public class WantedTeamSizeResult {
+public class WantedTeamSizePair {
 	public int size;
 	public boolean manuallySet = false;
 
@@ -18,12 +20,12 @@ public class WantedTeamSizeResult {
 	 * @param string
 	 * @return
 	 */
-	public static WantedTeamSizeResult getWantedTeamSize(ArenaPlayer player, Team t, MatchParams mp, String string) {
+	public static WantedTeamSizePair getWantedTeamSize(ArenaPlayer player, Team t, MatchParams mp, String string) {
 		/// Check to see if the user has specified a wanted team size
 		MinMax mm = Util.getMinMax(string);
 		final int min = mp.getMinTeamSize();
 		final int max = mp.getMaxTeamSize();
-		WantedTeamSizeResult result = new WantedTeamSizeResult();
+		WantedTeamSizePair result = new WantedTeamSizePair();
 		if (mm != null){
 			if (mm.min > max){ /// They want a team size that is greater than what is offered by this match type
 				MessageUtil.sendMessage(player, "&cYou wanted to join with a team of &6" + mm.min+"&c players");

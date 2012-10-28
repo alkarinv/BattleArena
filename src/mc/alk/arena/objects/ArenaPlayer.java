@@ -1,5 +1,6 @@
 package mc.alk.arena.objects;
 
+import mc.alk.arena.controllers.HeroesInterface;
 import mc.alk.arena.util.PermissionsUtil;
 
 import org.bukkit.Location;
@@ -11,7 +12,7 @@ public class ArenaPlayer {
 	Player player;
 	ArenaClass preferredClass;
 	ArenaClass chosenClass;
-	
+
 	public ArenaPlayer(Player player) {
 		this.player = player;
 	}
@@ -108,6 +109,10 @@ public class ArenaPlayer {
 
 	public int getPriority() {
 		return PermissionsUtil.getPriority(player);
+	}
+
+	public int getLevel() {
+		return (HeroesInterface.enabled()) ? HeroesInterface.getLevel(player) : player.getLevel();
 	}
 
 }

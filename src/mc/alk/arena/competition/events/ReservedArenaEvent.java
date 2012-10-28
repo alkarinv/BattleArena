@@ -6,6 +6,7 @@ import mc.alk.arena.competition.events.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
+import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
@@ -25,18 +26,18 @@ public class ReservedArenaEvent extends Event {
 		super(params);
 	}
 
-	Match arenaMatch;	
+	Match arenaMatch;
 
 	public void openEvent(EventParams mp, Arena arena) throws NeverWouldJoinException {
 		arenaMatch = new ArenaMatch(arena, mp);
 		openEvent(mp);
 	}
 
-	public void autoEvent(EventParams mp, Arena arena, int secondsTillStart, int announcementInterval) throws NeverWouldJoinException {
+	public void autoEvent(EventParams mp, Arena arena) throws NeverWouldJoinException {
 		openEvent(mp,arena);
-		mc.sendCountdownTillEvent(secondsTillStart);
+		mc.sendCountdownTillEvent(mp.getSecondsTillStart());
 		/// Set a countdown to announce updates every minute
-		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);	
+		timer = new Countdown(BattleArena.getSelf(),mp.getSecondsTillStart(), mp.getAnnouncementInterval(), this);
 	}
 
 	public void openAllPlayersEvent(EventParams mp, Arena arena) throws NeverWouldJoinException {
@@ -53,7 +54,7 @@ public class ReservedArenaEvent extends Event {
 		ac.openMatch(arenaMatch);
 		arenaMatch.onJoin(teams);
 	}
-	
+
 	@Override
 	public void startEvent() {
 		super.startEvent();
@@ -66,11 +67,11 @@ public class ReservedArenaEvent extends Event {
 	public void matchCompleted(MatchCompletedEvent event){
 		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchComplete " +arenaMatch +"   isRunning()=" + isRunning());
 		Team victor = event.getMatch().getResult().getVictor();
-		
+
 		Matchup m;
 		if (victor == null)
 			m = getMatchup(event.getMatch().getResult().getLosers().iterator().next());
-		else 
+		else
 			 m = getMatchup(victor);
 		if (m == null){
 			return;
@@ -79,13 +80,16 @@ public class ReservedArenaEvent extends Event {
 
 		TrackerInterface bti = BTInterface.getInterface(eventParams);
 		if (bti != null && victor != null){
-			BTInterface.addRecord(bti, victor.getPlayers(), arenaMatch.getLosers(), WLT.WIN);			
+			BTInterface.addRecord(bti, victor.getPlayers(), arenaMatch.getLosers(), WLT.WIN);
 		}
 
 		eventVictory(victor,m.getResult().getLosers());
-		eventCompleted();
 	}
 
+	@TransitionEventHandler
+	public void matchFinished(MatchFinishedEvent event){
+		eventCompleted();
+	}
 
 	@Override
 	public TeamJoinResult joining(Team t){
@@ -100,12 +104,12 @@ public class ReservedArenaEvent extends Event {
 				for (ArenaPlayer p : t.getPlayers()){/// subsequent times, just the new players
 					/// dont call arenaMatch.onJoin(Team), as part of the team might already be in arena
 					arenaMatch.playerAddedToTeam(p,tjr.team);
-				}				
+				}
 			}
 			String str = Util.playersToCommaDelimitedString(t.getPlayers());
 			for (ArenaPlayer p : t.getPlayers()){
 				tjr.team.sendToOtherMembers(p, str +" has joined the team!");
-			}										
+			}
 
 			break;
 		default:
@@ -170,7 +174,7 @@ public class ReservedArenaEvent extends Event {
 			return true;
 
 		boolean canLeave = super.leave(p);
-		if (canLeave){ 
+		if (canLeave){
 			arenaMatch.onLeave(p);
 		}
 		return canLeave;

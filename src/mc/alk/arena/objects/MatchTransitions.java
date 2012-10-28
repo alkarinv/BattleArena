@@ -2,18 +2,19 @@ package mc.alk.arena.objects;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import mc.alk.arena.objects.TransitionOptions.TransitionOption;
+import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.InventoryUtil;
 
 import org.bukkit.inventory.ItemStack;
 
 public class MatchTransitions {
-	HashMap<MatchState,TransitionOptions> ops = new HashMap<MatchState,TransitionOptions>();
+	Map<MatchState,TransitionOptions> ops = new EnumMap<MatchState,TransitionOptions>(MatchState.class);
 
 	public MatchTransitions() {}
 	public MatchTransitions(MatchTransitions o) {

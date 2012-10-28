@@ -24,17 +24,10 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
  * @author alkarin
  *
  */
-public class WorldGuardUtil {	
+public class WorldGuardUtil {
 	public static WorldGuardPlugin wgp;
 	public static boolean hasWorldGuard = false;
-	
-	public static class WorldGuardException extends Exception{
-		private static final long serialVersionUID = 1L;
-		public WorldGuardException(String msg) {
-			super(msg);
-		}
-	}
-	
+
 	public static boolean hasWorldGuard() {
 		return WorldEditUtil.hasWorldEdit && hasWorldGuard;
 	}
@@ -45,7 +38,7 @@ public class WorldGuardUtil {
 		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
 		ProtectedRegion region = mgr.getRegion(id);
 
-		region = new ProtectedCuboidRegion(id, 
+		region = new ProtectedCuboidRegion(id,
 				sel.getNativeMinimumPoint().toBlockVector(), sel.getNativeMaximumPoint().toBlockVector());
 		try {
 			wgp.getRegionManager(w).addRegion(region);
@@ -57,7 +50,7 @@ public class WorldGuardUtil {
 		}
 		return true;
 	}
-	
+
 	public static ProtectedRegion getRegion(World w, String id) {
 		if (w == null)
 			return null;
@@ -78,7 +71,7 @@ public class WorldGuardUtil {
 
 		ProtectedRegion region = mgr.getRegion(id);
 
-		region = new ProtectedCuboidRegion(id, 
+		region = new ProtectedCuboidRegion(id,
 				sel.getNativeMinimumPoint().toBlockVector(), sel.getNativeMaximumPoint().toBlockVector());
 		region.setPriority(11); /// some relatively high priority
 		region.setFlag(DefaultFlag.PVP,State.ALLOW);
@@ -92,7 +85,7 @@ public class WorldGuardUtil {
 		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
 		ProtectedRegion region = mgr.getRegion(id);
 
-		region = new ProtectedCuboidRegion(id, 
+		region = new ProtectedCuboidRegion(id,
 				sel.getNativeMinimumPoint().toBlockVector(), sel.getNativeMaximumPoint().toBlockVector());
 		region.setPriority(11); /// some relatively high priority
 		region.setFlag(DefaultFlag.PVP,State.ALLOW);
@@ -100,7 +93,7 @@ public class WorldGuardUtil {
 		mgr.save();
 		return region;
 	}
-	
+
 //	public static void updateProtectedRegion(Selection sel, ProtectedRegion pr) throws Exception {
 //		wgi._updateProtectedRegion(sel, pr);
 //	}
@@ -176,11 +169,11 @@ public class WorldGuardUtil {
 	public static boolean addMember(String name, String id, String regionWorld) {
 		return changeMember(name,id,regionWorld,true);
 	}
-	
+
 	public static boolean removeMember(String name, String id, String regionWorld) {
 		return changeMember(name,id,regionWorld,false);
 	}
-	
+
 	private static boolean changeMember(String name, String id, String regionWorld, boolean add){
 		World w = Bukkit.getWorld(regionWorld);
 		if (w == null)
@@ -188,7 +181,7 @@ public class WorldGuardUtil {
 		ProtectedRegion pr = getRegion(w, id);
 		if (pr == null)
 			return false;
-		
+
 		DefaultDomain dd = pr.getMembers();
 		if (add){
 		dd.addPlayer(name);

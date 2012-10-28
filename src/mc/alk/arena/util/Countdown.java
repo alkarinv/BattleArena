@@ -9,13 +9,14 @@ import org.bukkit.plugin.Plugin;
 public class Countdown implements Runnable{
 	public static interface CountdownCallback{
 		/**
-		 * 
+		 *
 		 * @param secondsRemaining
 		 * @return whether to cancel
 		 */
 		public boolean intervalTick(int secondsRemaining);
 	}
 
+	Long startTime, expectedEndTime;
 	int interval,seconds;
 	CountdownCallback callback;
 	Integer timerId;
@@ -30,6 +31,8 @@ public class Countdown implements Runnable{
 		/// are a multiple of the timeInterval
 		final long time = (rem != 0? rem : interval) * 20L;
 		this.seconds = seconds - (rem != 0? rem : interval);
+		startTime = System.currentTimeMillis();
+		expectedEndTime = startTime + seconds*1000;
 		this.timerId  = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, this,
 				(long)(time * Defaults.TICK_MULT));
 	}
@@ -53,8 +56,13 @@ public class Countdown implements Runnable{
 			Bukkit.getScheduler().cancelTask(timerId);
 		}
 	}
+	@Override
 	public String toString(){
 		return "[Countdown " + seconds+":"+interval+"]";
+	}
+
+	public Long getTimeRemaining(){
+		return expectedEndTime == null ? null : expectedEndTime - System.currentTimeMillis();
 	}
 }
 

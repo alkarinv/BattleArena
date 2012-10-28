@@ -11,17 +11,10 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
  * @author alkarin
  *
  */
-public class WorldEditUtil {	
+public class WorldEditUtil {
 	public static WorldEditPlugin wep;
 	public static boolean hasWorldEdit = false;
-	
-	public static class WorldGuardException extends Exception{
-		private static final long serialVersionUID = 1L;
-		public WorldGuardException(String msg) {
-			super(msg);
-		}
-	}
-	
+
 	public static boolean hasWorldEdit() {
 		return hasWorldEdit;
 	}
@@ -31,7 +24,7 @@ public class WorldEditUtil {
 		hasWorldEdit = true;
 		return false;
 	}
-	
+
 	public static Selection getSelection(Player player) {
 		return wep.getSelection(player);
 	}

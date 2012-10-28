@@ -8,7 +8,7 @@ import java.util.PriorityQueue;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.QPosTeamPair;
+import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.teams.Team;
 
 

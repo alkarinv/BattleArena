@@ -1,12 +1,13 @@
 package mc.alk.arena.objects;
 
 
+
 /**
  * @author alkarin
  *
  * Enum of MatchTransitions, and MatchStates
  */
-public enum MatchState {
+public enum MatchState implements CompetitionState{
 	NONE("None"), DEFAULTS("defaults"),
 	PREREQS ("preReqs"), ONOPEN("onOpen"), ONJOIN ("onJoin"),
 	ONBEGIN("onBegin"), ONPRESTART ("onPrestart"), ONSTART ("onStart"), ONVICTORY ("onVictory"),

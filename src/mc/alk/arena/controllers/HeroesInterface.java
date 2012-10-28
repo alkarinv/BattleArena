@@ -29,4 +29,9 @@ public class HeroesInterface {
 		if (!hasHeroes) return null;
 		return HeroesUtil.getHeroClassName(player);
 	}
+
+	public static int getLevel(Player player) {
+		if (!hasHeroes) return -1;
+		return HeroesUtil.getLevel(player);
+	}
 }

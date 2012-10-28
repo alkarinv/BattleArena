@@ -2,6 +2,8 @@ package mc.alk.arena.competition.match;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,10 +13,10 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.controllers.TransitionMethodController;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
 import mc.alk.arena.controllers.messaging.MatchMessager;
@@ -32,15 +34,16 @@ import mc.alk.arena.events.matches.MatchVictoryEvent;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchResult.WinLossDraw;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.TransitionOptions;
-import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaInterface;
+import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.victoryconditions.TimeLimit;
@@ -69,7 +72,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 
 
-public abstract class Match implements Runnable, ArenaListener, TeamHandler {
+public abstract class Match extends Competition implements Runnable, ArenaListener, TeamHandler {
 	public enum PlayerState{OUTOFMATCH,INMATCH};
 	static int count =0;
 
@@ -78,14 +81,13 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	final Arena arena; /// The arena we are using
 	final ArenaInterface arenaInterface; /// Our interface to access arena methods w/o reflection
 
-	final TransitionMethodController tmc = new TransitionMethodController();
-
-	List<Team> teams = new ArrayList<Team>(); /// Our players
 	HashMap<Team,Integer> teamIndexes = new HashMap<Team,Integer>();
 
 	Set<String> visitors = new HashSet<String>(); /// Who is watching
 	MatchState state = MatchState.NONE;/// State of the match
-	List<VictoryCondition> vcs = new ArrayList<VictoryCondition>(); /// Under what conditions does a victory occur
+	/// When did each transition occur
+	final Map<MatchState, Long> times = Collections.synchronizedMap(new EnumMap<MatchState,Long>(MatchState.class));
+	final List<VictoryCondition> vcs = new ArrayList<VictoryCondition>(); /// Under what conditions does a victory occur
 	MatchResult matchResult; /// Results for this match
 	Map<String, Location> oldlocs = null; /// Locations where the players came from before entering arena
 	Set<String> insideArena = new HashSet<String>(); /// who is still inside arena area
@@ -119,7 +121,6 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 
 		this.mc = new MatchMessager(this);
 		this.oldlocs = new HashMap<String,Location>();
-		this.teams = new ArrayList<Team>();
 		this.tops = mp.getTransitionOptions();
 		arena.setMatch(this);
 		VictoryCondition vt = VictoryType.createVictoryCondition(this);
@@ -168,7 +169,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
 			@Override
 			public void run() {
-				state = MatchState.ONOPEN;
+				transitionTo(MatchState.ONOPEN);
 				MatchOpenEvent event = new MatchOpenEvent(match);
 				tmc.callListeners(event); /// Call our listeners listening to only this match
 				if (event.isCancelled()){
@@ -219,7 +220,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	private void preStartMatch() {
 		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::startMatch()");
-		state = MatchState.ONPRESTART;
+		transitionTo(MatchState.ONPRESTART);
 		/// If we will teleport them into the arena for the first time, check to see they are ready first
 		TransitionOptions ts = tops.getOptions(state);
 		if (ts != null && ts.teleportsIn()){
@@ -243,7 +244,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 
 	private void startMatch(){
 		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
-		state = MatchState.ONSTART;
+		transitionTo(MatchState.ONSTART);
 		List<Team> competingTeams = new ArrayList<Team>();
 		/// If we will teleport them into the arena for the first time, check to see they are ready first
 		TransitionOptions ts = tops.getOptions(state);
@@ -290,7 +291,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		/// window of time.  But only let the first one through
 		if (state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL)
 			return;
-		state = MatchState.ONVICTORY;
+		transitionTo(MatchState.ONVICTORY);
 		/// Call the rest after a 2 tick wait to ensure the calling transitionMethods complete before the
 		/// victory conditions start rolling in
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new MatchVictory(this),2L);
@@ -327,6 +328,8 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		MatchCompleted(Match am){this.am = am;}
 
 		public void run() {
+			transitionTo(MatchState.ONSTART);
+
 			state = MatchState.ONCOMPLETE;
 			final Team victor = am.getVictor();
 			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + victor);
@@ -649,7 +652,20 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 	public boolean isFinished() {return state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isWon() {return state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isStarted() {return state == MatchState.ONSTART;}
-	public MatchState getMatchState() {return state;}
+
+	@Override
+	public MatchState getState() {return state;}
+	@Override
+	protected void transitionTo(CompetitionState state){
+		this.state = (MatchState) state;
+		times.put(this.state, System.currentTimeMillis());
+	}
+
+	@Override
+	public Long getTime(CompetitionState state){
+		return times.get(state);
+	}
+
 	public MatchParams getParams() {return mp;}
 	public List<Team> getTeams() {return teams;}
 	public List<Team> getAliveTeams() {
@@ -794,6 +810,7 @@ public abstract class Match implements Runnable, ArenaListener, TeamHandler {
 		return teamIndexes.get(t);
 	}
 
+	@Override
 	public int getID(){
 		return id;
 	}

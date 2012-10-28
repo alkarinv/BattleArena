@@ -15,13 +15,13 @@ import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.JoinOptions;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.TransitionOptions;
-import mc.alk.arena.objects.TransitionOptions.TransitionOption;
+import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.Persist;
@@ -39,10 +39,10 @@ public class Arena implements ArenaListener {
 	protected TreeMap<Integer,Location> wrlocs = null; /// wait room spawn locations
 	protected Location vloc = null;
 	/// If this is not null, this is where distance will be based off of, otherwise it's an area around the spawns
-	protected Location joinloc = null; 
+	protected Location joinloc = null;
 
 	protected Map<String, Location> visitorlocations = null;/// tp locations for the visitors
-	protected Random rand = new Random(); /// a random 
+	protected Random rand = new Random(); /// a random
 
 	protected Map<Long, TimedSpawn> timedSpawns = null; /// Item/mob/other spawn events
 	protected SpawnController spawnController = null;
@@ -53,7 +53,7 @@ public class Arena implements ArenaListener {
 	protected String wgRegionName;
 	@Persist
 	protected String wgRegionWorld;
-	
+
 	/**
 	 * Arena constructor
 	 */
@@ -61,14 +61,14 @@ public class Arena implements ArenaListener {
 		visitorlocations = new HashMap<String,Location>();
 		locs = new TreeMap<Integer,Location>();
 	}
-	
+
 	/**
-	 * Called after the object has been loaded with persistable data  
+	 * Called after the object has been loaded with persistable data
 	 * Subclasses can override to initialize their own values right after construction
-	 * Or subclasses can override the default constructor 
+	 * Or subclasses can override the default constructor
 	 */
 	public void init(){}
-	
+
 	/**
 	 * Returns the spawn location of this index
 	 * @param index
@@ -127,7 +127,7 @@ public class Arena implements ArenaListener {
 	 * @param loc
 	 */
 	public void setSpawnLoc(int index, Location loc){locs.put(index,loc);}
-	
+
 	/**
 	 * Set the wait room spawn location
 	 * @param index
@@ -138,7 +138,7 @@ public class Arena implements ArenaListener {
 			wrlocs = new TreeMap<Integer,Location>();}
 		wrlocs.put(index,loc);
 	}
-	
+
 	/**
 	 * Return the spot where players need to join close to
 	 * @return
@@ -152,7 +152,7 @@ public class Arena implements ArenaListener {
 	 * @param loc
 	 */
 	public void setVisitorLoc(Location loc) {vloc = loc;}
-	
+
 	/**
 	 * Set the Arena parameters
 	 * @param arenaParams
@@ -176,7 +176,7 @@ public class Arena implements ArenaListener {
 	 * @return
 	 */
 	public String getName() {return name;}
-	
+
 	/**
 	 * Return the team spawn locations
 	 * @return
@@ -216,7 +216,7 @@ public class Arena implements ArenaListener {
 		return reasons;
 	}
 
-	
+
 	/**
 	 * TeamJoinResult a Protected Region (only available with worldguard)
 	 * @param wgRegionName
@@ -227,7 +227,7 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * does this arena have a worlguard wgRegionName attached 
+	 * does this arena have a worlguard wgRegionName attached
 	 * @returns
 	 */
 	public boolean hasRegion() {
@@ -265,7 +265,7 @@ public class Arena implements ArenaListener {
 		if (timedSpawns == null){
 			timedSpawns = new HashMap<Long,TimedSpawn>();
 		}
-		timedSpawns.put(num, s);	
+		timedSpawns.put(num, s);
 	}
 
 	/**
@@ -303,7 +303,7 @@ public class Arena implements ArenaListener {
 	 * @return
 	 */
 	public MatchState getMatchState(){
-		return match.getMatchState();
+		return match.getState();
 	}
 
 	/**
@@ -329,7 +329,7 @@ public class Arena implements ArenaListener {
 	public Set<ArenaPlayer> getAlivePlayers(){
 		return match == null ? null : match.getAlivePlayers();
 	}
-	
+
 	/**
 	 * Return a list of alive bukkit players inside this match
 	 * @return
@@ -358,7 +358,7 @@ public class Arena implements ArenaListener {
 	 * Start any spawns happening for this arena
 	 */
 	public void startSpawns(){
-		/// Start Spawning Items 
+		/// Start Spawning Items
 		if (timedSpawns != null && !timedSpawns.isEmpty()){
 			spawnController = new SpawnController(timedSpawns);
 			spawnController.start();
@@ -386,7 +386,7 @@ public class Arena implements ArenaListener {
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Return a string of appended waitroom spawn locations
 	 * @return
@@ -401,22 +401,22 @@ public class Arena implements ArenaListener {
 		}
 		return sb.toString();
 	}
-	
+
 	/**
-	 * private Arena delete events, calls delete for subclasses to be able to override 
+	 * private Arena delete events, calls delete for subclasses to be able to override
 	 */
 	void privateDelete(){
 		try{delete();}catch(Exception e){e.printStackTrace();}
 		if (wgRegionName != null && wgRegionWorld != null && WorldGuardInterface.hasWorldGuard())
 			WorldGuardInterface.deleteRegion(wgRegionWorld, wgRegionName);
 	}
-	
+
 	/**
 	 * Called when an arena is deleted
 	 */
 	protected void delete(){}
-	
-	//	
+
+	//
 	//	public String itemSpawnString(){
 	//		if (spawnsGroups == null)
 	//			return null;
@@ -433,28 +433,28 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * private Arena onOpen events, calls onOpen for subclasses to be able to override 
+	 * private Arena onOpen events, calls onOpen for subclasses to be able to override
 	 */
 	void privateOnOpen(){
 		try{onOpen();}catch(Exception e){e.printStackTrace();}
 	}
 
 	/**
-	 * private Arena onBegin events, calls onBegin for subclasses to be able to override 
+	 * private Arena onBegin events, calls onBegin for subclasses to be able to override
 	 */
 	void privateOnBegin(){
 		try{onBegin();}catch(Exception e){e.printStackTrace();}
 	}
 
 	/**
-	 * private Arena onPrestart events, calls onPrestart for subclasses to be able to override 
+	 * private Arena onPrestart events, calls onPrestart for subclasses to be able to override
 	 */
 	void privateOnPrestart(){
 		try{onPrestart();}catch(Exception e){e.printStackTrace();}
 	}
 
 	/**
-	 * private Arena onStart events, calls onStart for subclasses to be able to override 
+	 * private Arena onStart events, calls onStart for subclasses to be able to override
 	 */
 	void privateOnStart(){
 		startSpawns();
@@ -462,7 +462,7 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * private Arena onStart events, calls onStart for subclasses to be able to override 
+	 * private Arena onStart events, calls onStart for subclasses to be able to override
 	 */
 	void privateOnVictory(MatchResult result){
 		stopSpawns();
@@ -470,7 +470,7 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * private Arena onComplete events, calls onComplete for subclasses to be able to override 
+	 * private Arena onComplete events, calls onComplete for subclasses to be able to override
 	 */
 	void privateOnComplete(){
 		stopSpawns();
@@ -478,7 +478,7 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * private Arena onCancel events, calls onCancel for subclasses to be able to override 
+	 * private Arena onCancel events, calls onCancel for subclasses to be able to override
 	 */
 	void privateOnCancel(){
 		stopSpawns();
@@ -486,33 +486,33 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * private Arena onFinish events, calls onFinish for subclasses to be able to override 
+	 * private Arena onFinish events, calls onFinish for subclasses to be able to override
 	 */
 	void privateOnFinish(){
 		try{onFinish();}catch(Exception e){e.printStackTrace();}
 	}
 
 	/**
-	 * private Arena onEnter events, calls onEnter for subclasses to be able to override 
+	 * private Arena onEnter events, calls onEnter for subclasses to be able to override
 	 */
 	void privateOnEnter(ArenaPlayer player, Team team){
 		try{onEnter(player,team);}catch(Exception e){e.printStackTrace();}
 	}
 	/**
-	 * private Arena onEnterWaitRoom events, calls onEnterWaitRoom for subclasses to be able to override 
+	 * private Arena onEnterWaitRoom events, calls onEnterWaitRoom for subclasses to be able to override
 	 */
 	void privateOnEnterWaitRoom(ArenaPlayer player, Team team){
 		try{onEnterWaitRoom(player,team);}catch(Exception e){e.printStackTrace();}
 	}
 	/**
-	 * private Arena onJoin events, calls onJoin for subclasses to be able to override 
+	 * private Arena onJoin events, calls onJoin for subclasses to be able to override
 	 */
 	void privateOnJoin(ArenaPlayer player, Team team){
 		try{onJoin(player,team);}catch(Exception e){e.printStackTrace();}
 	}
-	
+
 	/**
-	 * private Arena onLeave events, calls onLeave for subclasses to be able to override 
+	 * private Arena onLeave events, calls onLeave for subclasses to be able to override
 	 */
 	void privateOnLeave(ArenaPlayer player, Team team){
 		try{onLeave(player,team);}catch(Exception e){e.printStackTrace();}
@@ -520,7 +520,7 @@ public class Arena implements ArenaListener {
 
 
 	/**
-	 * private Arena onFinish events, calls onFinish for subclasses to be able to override 
+	 * private Arena onFinish events, calls onFinish for subclasses to be able to override
 	 */
 	void privateOnFinish(ArenaPlayer player, Team team){
 		try{onFinish();}catch(Exception e){e.printStackTrace();}
@@ -539,8 +539,8 @@ public class Arena implements ArenaListener {
 	protected void onJoin(ArenaPlayer p, Team t){}
 
 	/**
-	 * Called when a player is leaving the match ( via typing a command usually) , 
-	 * but its still acceptable to leave(usually before the match starts) 
+	 * Called when a player is leaving the match ( via typing a command usually) ,
+	 * but its still acceptable to leave(usually before the match starts)
 	 * @param p the player
 	 * @param t the team they were on
 	 */
@@ -606,7 +606,7 @@ public class Arena implements ArenaListener {
 	/**
 	 * Checks to see whether this arena has paramaters that match the given matchparams
 	 * @param eventParams
-	 * @param jp 
+	 * @param jp
 	 * @return
 	 */
 	public boolean matches(MatchParams matchParams, JoinOptions jp) {
@@ -623,23 +623,23 @@ public class Arena implements ArenaListener {
 			return true;
 		if (!jp.matches(this))
 			return false;
-		
+
 		final TransitionOptions ops = tops.getOptions(MatchState.PREREQS);
 		if (ops == null)
 			return true;
-		
+
 		if (ops.hasOption(TransitionOption.WITHINDISTANCE)){
 			if (!jp.nearby(this,ops.getWithinDistance())){
-				return false;}	
+				return false;}
 		}
 		if (ops.hasOption(TransitionOption.SAMEWORLD)){
 			if (!jp.sameWorld(this)){
-				return false;}	
+				return false;}
 		}
 
 		return true;
 	}
-	
+
 	public List<String> getInvalidMatchReasons(MatchParams matchParams, JoinOptions jp) {
 		List<String> reasons = new ArrayList<String>();
 		reasons.addAll(getParameters().getInvalidMatchReasons(matchParams));
@@ -658,11 +658,11 @@ public class Arena implements ArenaListener {
 			return reasons;
 		if (ops.hasOption(TransitionOption.WITHINDISTANCE)){
 			if (!jp.nearby(this,ops.getWithinDistance())){
-				reasons.add("You aren't within " + ops.getWithinDistance() +" blocks");}	
+				reasons.add("You aren't within " + ops.getWithinDistance() +" blocks");}
 		}
 		if (ops.hasOption(TransitionOption.SAMEWORLD)){
 			if (!jp.sameWorld(this)){
-				reasons.add("You aren't in the same world");}	
+				reasons.add("You aren't in the same world");}
 		}
 
 		return reasons;
@@ -671,10 +671,11 @@ public class Arena implements ArenaListener {
 	/**
 	 * Arena printing
 	 */
+	@Override
 	public String toString(){
 		return toSummaryString();
 	}
-	
+
 	/**
 	 * return detailed arena details (includes bukkit coloring)
 	 * @return
@@ -718,5 +719,5 @@ public class Arena implements ArenaListener {
 		return spawnController;
 	}
 
-	
+
 }

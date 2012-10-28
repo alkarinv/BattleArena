@@ -2,6 +2,7 @@ package mc.alk.arena.serializers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +13,6 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.executors.CustomCommandExecutor.InvalidArgumentException;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventParams;
@@ -20,12 +20,13 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.Rating;
-import mc.alk.arena.objects.TransitionOptions;
-import mc.alk.arena.objects.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.Exceptions.ConfigException;
+import mc.alk.arena.objects.Exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
+import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.EffectUtil;
@@ -252,7 +253,7 @@ public class ConfigSerializer extends BaseSerializer{
 		Set<Object> optionsstr = new HashSet<Object>(cs.getList("options"));
 		if (optionsstr.isEmpty())
 			return null;
-		Map<TransitionOption,Object> options = new HashMap<TransitionOption,Object>();
+		Map<TransitionOption,Object> options = new EnumMap<TransitionOption,Object>(TransitionOption.class);
 		TransitionOptions tops = new TransitionOptions();
 		for (Object obj : optionsstr){
 			String s = obj.toString();

@@ -1,5 +1,6 @@
-package mc.alk.arena.objects;
+package mc.alk.arena.objects.pairs;
 
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
 
 public class ParamTeamPair {

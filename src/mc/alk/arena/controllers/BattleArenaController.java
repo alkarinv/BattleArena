@@ -4,25 +4,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.JoinOptions;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.ParamTeamPair;
-import mc.alk.arena.objects.QPosTeamPair;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.TransitionEventHandler;
+import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.pairs.ParamTeamPair;
+import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
@@ -36,7 +36,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	boolean stop = false;
 
 	private final ArenaMatchQueue amq = new ArenaMatchQueue();
-	private Set<Match> running_matches = Collections.synchronizedSet(new HashSet<Match>());
+	final private Set<Match> running_matches = Collections.synchronizedSet(new CopyOnWriteArraySet<Match>());
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
 	long lastTimeCheck = 0;
 
@@ -87,7 +87,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	public void updateArena(Arena arena) {
 		allarenas.put(arena.getName(), arena);
 		if (amq.removeArena(arena) != null){ /// if its not being used
-			amq.add(arena);			
+			amq.add(arena);
 		}
 	}
 
@@ -129,7 +129,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	public void deleteArena(Arena arena) {
 		removeArena(arena);
 		ArenaInterface ai = new ArenaInterface(arena);
-		ai.delete();	
+		ai.delete();
 	}
 
 
@@ -180,11 +180,11 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 			if (jp != null && !jp.matches(a))
 				continue;
 			if (!a.valid()){
-				reasons.put(a, a.getInvalidReasons());}			
+				reasons.put(a, a.getInvalidReasons());}
 			if (!a.matches(mp,jp)){
 				List<String> rs = reasons.get(a);
 				if (rs == null){
-					reasons.put(a, a.getInvalidMatchReasons(mp, jp));	
+					reasons.put(a, a.getInvalidMatchReasons(mp, jp));
 				} else {
 					rs.addAll(a.getInvalidMatchReasons(mp, jp));
 				}
@@ -211,7 +211,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	private void removeMatch(Match am){
 		synchronized(running_matches){
 			running_matches.remove(am);
-		}		
+		}
 	}
 
 	public synchronized void stop() {
@@ -240,7 +240,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	public boolean leave(ArenaPlayer p) {
 		ParamTeamPair ptp = removeFromQue(p);
 		if (ptp != null){
-			ptp.team.sendMessage("&cYour team has left the queue b/c &6"+p.getDisplayName()+"c has left");			
+			ptp.team.sendMessage("&cYour team has left the queue b/c &6"+p.getDisplayName()+"c has left");
 		}
 		/// else they are in a match, but those will be dealt with by the match itself
 		/// In all cases, we no longer have to worry about this player or their team
@@ -289,7 +289,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 					return am;
 				}
 			}
-		}		
+		}
 		return null;
 	}
 
@@ -300,10 +300,22 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 					return am;
 				}
 			}
-		}		
+		}
 		return null;
 	}
 
+	public Match getMatch(Arena arena) {
+		synchronized(running_matches){
+			for (Match am: running_matches){
+				if (am.getArena().equals(arena)){
+					return am;
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public String toString(){
 		return "[BAC]";
 	}
@@ -330,7 +342,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		synchronized(running_matches){
 			for (Match am: running_matches){
 				am.cancelMatch();
-			}			
+			}
 		}
 
 		amq.stop();
@@ -366,7 +378,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		synchronized(running_matches){
 			for (Match am: running_matches){
 				am.cancelMatch();
-			}			
+			}
 		}
 	}
 

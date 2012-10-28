@@ -10,14 +10,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mc.alk.arena.competition.events.AlwaysJoinRAE;
-import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.competition.events.ReservedArenaEvent;
 import mc.alk.arena.competition.events.TournamentEvent;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaEditor;
+import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
@@ -77,6 +75,7 @@ public class BattleArena extends JavaPlugin{
 	static private BattleArena plugin;
 
 	private final static BattleArenaController arenaController = new BattleArenaController();
+	static BAEventController eventController;
 	private final static TeamController tc = TeamController.INSTANCE;
 	private final static EventController ec = new EventController();
 	private final static ArenaEditor aac = new ArenaEditor();
@@ -114,6 +113,7 @@ public class BattleArena extends JavaPlugin{
 		MessageSerializer.setDefaultConfig(defaultMessages);
 
 		commandExecutor = new BAExecutor();
+		eventController = new BAEventController();
 
 		pluginListener.loadAll(); /// try and load plugins we want
 
@@ -253,7 +253,7 @@ public class BattleArena extends JavaPlugin{
 			try{
 				EventExecutor executor = new TournamentExecutor(tourney);
 				getCommand("tourney").setExecutor(executor);
-				EventController.addEventExecutor(tourney, executor);
+				EventController.addEventExecutor(tourney.getParams(), executor);
 			} catch (Exception e){
 				Log.err("command tourney not found");
 			}
@@ -264,12 +264,12 @@ public class BattleArena extends JavaPlugin{
 		/// Reserve an arena.  Hold people in the area till ffa starts
 		mp = ParamController.getEventParamCopy("FreeForAll");
 		if (mp != null){
-			ReservedArenaEvent event = new ReservedArenaEvent(mp);
-			EventController.addEvent(event);
+//			ReservedArenaEvent event = new ReservedArenaEvent(mp);
+//			EventController.addEvent(mp);
 			try{
-				EventExecutor executor = new ReservedArenaEventExecutor(event);
+				EventExecutor executor = new ReservedArenaEventExecutor(null);
 				getCommand("ffa").setExecutor(executor);
-				EventController.addEventExecutor(event, executor);
+				EventController.addEventExecutor(mp, executor);
 			} catch (Exception e){
 				Log.err("command ffa not found");
 			}
@@ -280,12 +280,12 @@ public class BattleArena extends JavaPlugin{
 		/// Reserve an arena.  Let people join and enter at will
 		mp = ParamController.getEventParamCopy("DeathMatch");
 		if (mp != null){
-			ReservedArenaEvent event = new AlwaysJoinRAE(mp);
-			EventController.addEvent(event);
+//			ReservedArenaEvent event = new AlwaysJoinRAE(mp);
+//			EventController.addEvent(event);
 			try{
-				EventExecutor executor = new ReservedArenaEventExecutor(event);
+				EventExecutor executor = new ReservedArenaEventExecutor(null);
 				getCommand("dm").setExecutor(executor);
-				EventController.addEventExecutor(event, executor);
+				EventController.addEventExecutor(mp, executor);
 			} catch (Exception e){
 				Log.err("command dm not found");
 			}
@@ -315,11 +315,12 @@ public class BattleArena extends JavaPlugin{
 
 	public static BattleArena getSelf() {return plugin;}
 	public static BattleArenaController getBAC(){return arenaController;}
-	public static BattleArenaController getBattleArenaController(){return arenaController;}
+	public static BattleArenaController getBAController(){return arenaController;}
+	public static BAEventController getBAEventController(){return eventController;}
 	public static TeamController getTeamController(){return tc;}
 	public DuelController getDuelController(){return dc;}
 	public static EventController getEventController(){return ec;}
-	public static Event getEvent(String name){return EventController.getEvent(name);}
+//	public static Event getEvent(String name){return EventController.getEvent(name);}
 	public static ArenaEditor getArenaEditor() {return aac;}
 	public static BAExecutor getBAExecutor() {return commandExecutor;}
 

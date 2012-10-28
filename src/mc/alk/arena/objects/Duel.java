@@ -4,7 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.objects.DuelOptions.DuelOption;
+import mc.alk.arena.objects.options.DuelOptions;
+import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.teams.Team;
 
 public class Duel {

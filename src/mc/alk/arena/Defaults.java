@@ -55,6 +55,7 @@ public class Defaults {
 	public static boolean START_CONTINUOUS = false;
 	public static boolean START_NEXT = false;
 	public static int TIME_BETWEEN_SCHEDULED_EVENTS = 30;
+	public static boolean ALLOW_PLAYER_EVENT_CREATION = true;
 
 	/// Workaround for gamemode switching and teleporting
 	public static boolean PLUGIN_MULTI_INV = false; /// workarounds for multiinv and tping
