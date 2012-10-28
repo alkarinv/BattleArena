@@ -1,7 +1,7 @@
 ![BattleArena](http://dev.bukkit.org/media/images/44/472/BattleArena_Large.png)
 ==========
 
-BattleArena is a complete Event system for minecraft.
+A complete Event system for minecraft.
 * Comes default with several Match and Event Types
 * Huge amounts of customization through the configs and in game commands
 * Framework and API for easily creating custom matches/events.
@@ -24,6 +24,6 @@ Adding to BattleArena
 I will gladly accept any code contributions through github.
 
 Links
-
-* [IRC](BattlePlugins) (#alkarin on irc.esper.net)
-* [Bukkit](BattleArena) (http://dev.bukkit.org/server-mods/battlearena/)
+------------
+* [IRC](http://www.esper.net/publicirc.php)(join channel BattlePlugins) (#alkarin on irc.esper.net)
+* [Bukkit](http://dev.bukkit.org/server-mods/battlearena/)
