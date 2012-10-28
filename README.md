@@ -26,4 +26,4 @@ I will gladly accept any code contributions through github.
 Links
 ------------
 * [IRC](http://www.esper.net/publicirc.php)(join channel BattlePlugins) (#alkarin on irc.esper.net)
-* [Bukkit](http://dev.bukkit.org/server-mods/battlearena/)
+* [Bukkit Page](http://dev.bukkit.org/server-mods/battlearena/)(BattleArena on Bukkit)
