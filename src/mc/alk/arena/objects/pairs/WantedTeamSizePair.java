@@ -4,7 +4,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
 
@@ -22,7 +21,8 @@ public class WantedTeamSizePair {
 	 */
 	public static WantedTeamSizePair getWantedTeamSize(ArenaPlayer player, Team t, MatchParams mp, String string) {
 		/// Check to see if the user has specified a wanted team size
-		MinMax mm = Util.getMinMax(string);
+		MinMax mm = null;
+		try{mm = MinMax.valueOf(string);} catch (Exception e){}
 		final int min = mp.getMinTeamSize();
 		final int max = mp.getMaxTeamSize();
 		WantedTeamSizePair result = new WantedTeamSizePair();

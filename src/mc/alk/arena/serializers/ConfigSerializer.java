@@ -33,7 +33,6 @@ import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.SerializerUtil;
-import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -134,17 +133,17 @@ public class ConfigSerializer extends BaseSerializer{
 		Integer pminTeamSize = cs.contains("preferredMinTeamSize") ? cs.getInt("preferredMinTeamSize") : minTeamSize;
 		Integer pmaxTeamSize = cs.contains("preferredMaxTeamSize") ? cs.getInt("preferredMaxTeamSize") : maxTeamSize;
 		if (cs.contains("teamSize")) {
-			MinMax mm = Util.getMinMax(cs.getString("teamSize"));
+			MinMax mm = MinMax.valueOf(cs.getString("teamSize"));
 			minTeamSize = mm.min;
 			maxTeamSize = mm.max;
 		}
 		if (cs.contains("nTeams")) {
-			MinMax mm = Util.getMinMax(cs.getString("nTeams"));
+			MinMax mm = MinMax.valueOf(cs.getString("nTeams"));
 			minTeams = mm.min;
 			maxTeams = mm.max;
 		}
 		if (cs.contains("preferredTeamSize")) {
-			MinMax mm = Util.getMinMax(cs.getString("preferredTeamSize"));
+			MinMax mm = MinMax.valueOf(cs.getString("preferredTeamSize"));
 			pminTeamSize = mm.min;
 			pmaxTeamSize = mm.max;
 		}
@@ -231,7 +230,6 @@ public class ConfigSerializer extends BaseSerializer{
 				allTops.removeOptions(transition);
 				continue;}
 			if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + transition +" "+tops);
-			//			TOC.setOptions(transition, pi,tops);
 			if (transition == MatchState.ONCOMPLETE){
 				TransitionOptions cancelOps = new TransitionOptions(tops);
 				allTops.addTransition(MatchState.ONCANCEL, cancelOps);
@@ -285,6 +283,7 @@ public class ConfigSerializer extends BaseSerializer{
 				case HUNGER: tops.setHunger(Integer.valueOf(split[1])); break;
 				case DISGUISEALLAS: tops.setDisguiseAllAs(split[1]); break;
 				case WITHINDISTANCE: tops.setWithinDistance(Integer.valueOf(split[1])); break;
+				case LEVELRANGE: tops.addOption(to,MinMax.valueOf(split[1])); break;
 //				case TELEPORTTO:
 //				case TELEPORTWINNER:
 //				case TELEPORTLOSER:

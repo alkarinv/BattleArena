@@ -75,6 +75,7 @@ public class ArenaAlterController {
 		if (ct == null){
 			sendMessage(sender,ChatColor.RED+ "Option: &6" + changetype+"&c does not exist. \n&cValid options are &6"+ChangeType.getValidList());
 			showAlterHelp(sender);
+			return false;
 		}
 		switch(ct){
 		case TEAMSIZE: success = changeTeamSize(sender, arena, ac, value); break;
@@ -128,6 +129,7 @@ public class ArenaAlterController {
 				sendMessage(sender,"&2Region added! ");
 			}
 			arena.addRegion(w.getName(), id);
+			WorldGuardInterface.saveSchematic(p, id);
 		} catch (Exception e) {
 			sendMessage(sender,"&cAdding WorldGuard region failed!");
 			sendMessage(sender, "&c" + e.getMessage());
@@ -235,19 +237,30 @@ public class ArenaAlterController {
 	}
 
 	private static boolean changeNTeams(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
-		final MinMax mm = Util.getMinMax(value);
-		if (mm == null){
-			sendMessage(sender,"size "+ value + " not found");
-			return false;
-		} else {
+		try{
+			final MinMax mm = MinMax.valueOf(value);
 			ac.removeArena(arena);
 			arena.getParameters().setNTeams(mm);
 			ac.addArena(arena);
-			sendMessage(sender,"&2Altered arena number of teams to &6" + value);
+			return sendMessage(sender,"&2Altered arena number of teams to &6" + value);
+		} catch (Exception e){
+			sendMessage(sender,"size "+ value + " not found");
+			return false;
 		}
-		return true;
 	}
 
+	private static boolean changeTeamSize(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
+		try{
+			final MinMax mm = MinMax.valueOf(value);
+			ac.removeArena(arena);
+			arena.getParameters().setTeamSizes(mm);
+			ac.addArena(arena);
+			return sendMessage(sender,"&2Altered arena team size to &6" + value);
+		} catch (Exception e){
+			sendMessage(sender,"size "+ value + " not found");
+			return false;
+		}
+	}
 
 	private static void showAlterHelp(CommandSender sender) {
 		sendMessage(sender,ChatColor.GOLD+ "Usage: /arena alter <arenaname> <teamSize|nTeams|type|1|2|3...|vloc|waitroom> <value> [option]");
@@ -258,23 +271,6 @@ public class ArenaAlterController {
 		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena type deathmatch ");
 		sendMessage(sender,ChatColor.GOLD+ "      or /arena alter MainArena waitroom 1 &e: sets waitroom 1 to your location");
 	}
-
-
-	private static boolean changeTeamSize(CommandSender sender, Arena arena,
-			BattleArenaController ac, String value) {
-		final MinMax mm = Util.getMinMax(value);
-		if (mm == null){
-			sendMessage(sender,"size "+ value + " not found");
-			return false;
-		} else {
-			ac.removeArena(arena);
-			arena.getParameters().setTeamSizes(mm);
-			ac.addArena(arena);
-			sendMessage(sender,"&2Altered arena team size to &6" + value);
-		}
-		return true;
-	}
-
 
 	public static Location parseLocation(CommandSender sender, String svl) {
 		if (!(sender instanceof Player))

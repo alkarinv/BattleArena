@@ -28,6 +28,29 @@ public class Util {
 		public boolean contains(int i) {
 			return min <= i && max >= i;
 		}
+
+		public static MinMax valueOf(String s) throws NumberFormatException{
+			if (s == null) throw new NumberFormatException("Number can not be null");
+			if (s.contains("+")){
+				s = s.replaceAll("\\+", "");
+				Integer i = Integer.valueOf(s);
+				return new MinMax(i,ArenaParams.MAX);
+			}
+			if (s.contains("-")){
+				String[] vals = s.split("-");
+				int i = Integer.valueOf(vals[0]);
+				int j = Integer.valueOf(vals[1]);
+				return new MinMax(i,j);
+			}
+
+			Integer i = null;
+			if (s.contains("v")){
+				i = Integer.valueOf(s.split("v")[0]);
+			} else {
+				i = Integer.valueOf(s);
+			}
+			return new MinMax(i,i);
+		}
 	}
 
 	static public void printStackTrace(){
@@ -48,36 +71,6 @@ public class Util {
 		return min+"-"+max;
 	}
 
-	public static MinMax getMinMax(String s){
-		if (s == null) return null;
-		if (s.contains("+")){
-			s = s.replaceAll("\\+", "");
-			try {
-				Integer i = Integer.valueOf(s);
-				return new MinMax(i,ArenaParams.MAX);
-			} catch (Exception e){
-				return null;
-			}
-		}
-		if (s.contains("-")){
-			String[] vals = s.split("-");
-			int i = Integer.valueOf(vals[0]);
-			int j = Integer.valueOf(vals[1]);
-			return new MinMax(i,j);
-		}
-
-		try {
-			Integer i = null;
-			if (s.contains("v")){
-				i = Integer.valueOf(s.split("v")[0]);
-			} else {
-				i = Integer.valueOf(s);
-			}
-			return new MinMax(i,i);
-		} catch (Exception e){
-			return null;
-		}
-	}
 
 
 	public static String getColor(String str) {

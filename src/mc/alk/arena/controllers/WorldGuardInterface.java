@@ -5,12 +5,13 @@ import mc.alk.arena.util.WorldGuardUtil;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 /**
  * @author alkarin
- * 
+ *
  * The key to these optional dependencies(OD) seem to be there can be no direct
  * function call to a method that USES any of the OD classes.
  * So this entire class is just a wrapper for functions.
@@ -38,7 +39,6 @@ public class WorldGuardInterface {
 	public boolean addRegion(Player sender, String id) throws Exception {
 		return WorldGuardUtil.addRegion(sender, id);
 	}
-	
 
 	public static boolean hasRegion(World world, String id){
 		return WorldGuardUtil.hasRegion(world, id);
@@ -51,7 +51,7 @@ public class WorldGuardInterface {
 	public static void createProtectedRegion(Player p, String id) throws Exception {
 		WorldGuardUtil.createProtectedRegion(p, id);
 	}
-	
+
 	public static void clearRegion(String world, String id) {
 		WorldGuardUtil.clearRegion(world, id);
 	}
@@ -68,23 +68,31 @@ public class WorldGuardInterface {
 		return WorldEditUtil.setWorldEdit(plugin);
 	}
 
-	public static boolean setFlag(String id, String worldName, WorldGuardFlag flag, boolean enable) {
-		return WorldGuardUtil.setFlag(id, worldName, flag, enable);
+	public static boolean setFlag(String worldName, String id, WorldGuardFlag flag, boolean enable) {
+		return WorldGuardUtil.setFlag(worldName, id, flag, enable);
 	}
 
-	public static void allowEntry(Player player, String id, String regionWorld) {
-		WorldGuardUtil.allowEntry(player,id,regionWorld);
+	public static void allowEntry(Player player, String regionWorld, String id) {
+		WorldGuardUtil.allowEntry(player,regionWorld, id);
 	}
 
-	public static void addMember(String name, String id, String regionWorld) {
-		WorldGuardUtil.addMember(name,id, regionWorld);
+	public static void addMember(String name, String regionWorld, String id) {
+		WorldGuardUtil.addMember(name,regionWorld, id);
 	}
-	public static void removeMember(String name, String id, String regionWorld) {
-		WorldGuardUtil.removeMember(name,id, regionWorld);
+	public static void removeMember(String name, String regionWorld, String id) {
+		WorldGuardUtil.removeMember(name,regionWorld, id);
 	}
 
-	public static void deleteRegion(String id, String worldName) {
-		WorldGuardUtil.deleteRegion(id,worldName);
+	public static void deleteRegion(String worldName, String id) {
+		WorldGuardUtil.deleteRegion(worldName, id);
+	}
+
+	public static void saveSchematic(Player p, String id) {
+		WorldGuardUtil.saveSchematic(p,id);
+	}
+
+	public static void pasteSchematic(CommandSender sender, String regionWorld, String id) {
+		WorldGuardUtil.pasteSchematic(sender,regionWorld,id);
 	}
 
 }

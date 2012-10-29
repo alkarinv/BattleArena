@@ -200,17 +200,17 @@ public class PlayerStoreController {
 		}
 	}
 
-	public void allowEntry(ArenaPlayer p, String region, String regionWorld) {
+	public void allowEntry(ArenaPlayer p, String regionWorld, String region) {
 		if (!WorldGuardInterface.hasWorldGuard()){
 			return;}
-		WorldGuardInterface.allowEntry(p.getPlayer(), region, regionWorld);
+		WorldGuardInterface.allowEntry(p.getPlayer(), regionWorld, region);
 	}
 
-	public void addMember(ArenaPlayer p, String region, String regionWorld) {
-		WorldGuardInterface.addMember(p.getName(), region, regionWorld);
+	public void addMember(ArenaPlayer p, String regionWorld, String region) {
+		WorldGuardInterface.addMember(p.getName(), regionWorld, region);
 	}
-	public void removeMember(ArenaPlayer p, String region, String regionWorld) {
-		WorldGuardInterface.removeMember(p.getName(), region, regionWorld);
+	public void removeMember(ArenaPlayer p, String regionWorld, String region) {
+		WorldGuardInterface.removeMember(p.getName(), regionWorld, region);
 	}
 
 	public void storeArenaClass(ArenaPlayer p) {

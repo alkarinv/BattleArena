@@ -88,15 +88,14 @@ public class JoinOptions {
 		return true;
 	}
 
-	public static JoinOptions parseOptions(MatchParams mp, Team t, ArenaPlayer player, String[] args) throws InvalidOptionException{
+	public static JoinOptions parseOptions(MatchParams mp, Team t, ArenaPlayer player, String[] args)
+			throws InvalidOptionException, NumberFormatException{
 		JoinOptions jos = new JoinOptions();
 		jos.joinedLocation = player.getLocation();
 		Map<JoinOption,Object> ops = jos.options;
 		Arena arena = null;
 		String lastArg = args.length - 1 >= 0 ? args[args.length-1] : "";
 		final WantedTeamSizePair teamSize = WantedTeamSizePair.getWantedTeamSize(player,t,mp,lastArg);
-		if (teamSize == null)
-			throw new InvalidOptionException("");
 		int length = teamSize.manuallySet ? args.length -1 : args.length;
 		ops.put(JoinOption.TEAMSIZE, teamSize);
 		for (int i=0;i<length;i++){

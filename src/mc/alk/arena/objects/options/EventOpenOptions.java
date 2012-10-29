@@ -13,7 +13,6 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
 import org.apache.commons.lang3.StringUtils;
@@ -83,17 +82,19 @@ public class EventOpenOptions {
 			String val = split[1].trim();
 			switch(to){
 			case TEAMSIZE:{
-				MinMax teamSize = Util.getMinMax(val);
-				if (teamSize == null){
-					throw new InvalidOptionException("&cCouldnt parse teamSize &6"+val+" &e needs an int or range. &68, 2+, 2-10, etc");}
-				obj = teamSize;
+				try{
+					obj = MinMax.valueOf(val);
+				}catch (Exception e){
+					throw new InvalidOptionException("&cCouldnt parse teamSize &6"+val+" &e needs an int or range. &68, 2+, 2-10, etc");
+				}
 			}
 			break;
 			case NTEAMS: {
-				MinMax nTeams = Util.getMinMax(val);
-				if (nTeams == null){
-					throw new InvalidOptionException("&cCouldnt parse nTeams &6"+val+" &e needs an int or range. &68, 2+, 2-10, etc");}
-				obj = nTeams;
+				try{
+					obj = MinMax.valueOf(val);
+				}catch (Exception e){
+					throw new InvalidOptionException("&cCouldnt parse nTeams &6"+val+" &e needs an int or range. &68, 2+, 2-10, etc");
+				}
 			}
 			break;
 			case TIME:

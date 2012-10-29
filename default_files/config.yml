@@ -155,6 +155,8 @@ arena:
             default: gladiator
         items: # ignored if options doesnt have "giveItems"
             - bread: 5
+    onDeath:
+        options: [clearInventory]
     onComplete:
         options: [teleportOut, deEnchant, clearInventory]
     winner:

@@ -6,7 +6,6 @@ import java.util.List;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.arenas.ArenaType;
-import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
 
@@ -74,10 +73,9 @@ public class ArenaParams {
 	public MatchTransitions getTransitionOptions(){
 		return allTops;
 	}
-	public ArenaParams(String teamSize, ArenaType arenaType) {
-		final MinMax q = Util.getMinMax(teamSize);
-		this.minTeamSize = q.min;
-		this.maxTeamSize = q.max;
+	public ArenaParams(MinMax teamSize, ArenaType arenaType) {
+		this.minTeamSize = teamSize.min;
+		this.maxTeamSize = teamSize.max;
 		this.arenaType = arenaType;
 		calcMaxPlayers();
 	}
@@ -244,14 +242,14 @@ public class ArenaParams {
 	public String getDBName(){
 		return dbName;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public String toPrettyString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("&e"+arenaType.toPrettyString(minTeamSize, maxTeamSize));

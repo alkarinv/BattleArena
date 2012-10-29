@@ -188,10 +188,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 		final MatchTransitions ops = mp.getTransitionOptions();
 		if (ops == null){
 			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
-//		BTInterface bti = BTInterface.getInterface(mp);
-//		if (bti.isValid()){
-//			bti.updateRanking(t);
-//		}
+		//		BTInterface bti = BTInterface.getInterface(mp);
+		//		if (bti.isValid()){
+		//			bti.updateRanking(t);
+		//		}
 		/// Check ready
 		if(!ops.teamReady(t)){
 			t.sendMessage(ops.getRequiredString("&eYou need the following to join"));
@@ -455,8 +455,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 				strs.add("&5 -&e" + t.getDisplayName());}
 			sendMessage(sender, "Teams: " + StringUtils.join(strs));
 		}
-//		final BAEventController controller = BattleArena.getBAEventController();
-//		Event event = controller.getEvent(arena);
+		//		final BAEventController controller = BattleArena.getBAEventController();
+		//		Event event = controller.getEvent(arena);
 		return true;
 	}
 
@@ -515,15 +515,13 @@ public class BAExecutor extends CustomCommandExecutor  {
 		Player p = (Player) sender;
 
 		ArenaParams ap = new ArenaParams(ArenaType.ANY, Rating.ANY);
-		MinMax mm = Util.getMinMax(strTeamSize);
-		if (mm == null){
-			return sendMessage(sender,"That size not recognized.  Examples: 1 or 2 or 1-5 or 2+");}
-		ap.setTeamSizes(mm);
+		try{
+			ap.setTeamSizes(MinMax.valueOf(strTeamSize));
+			ap.setNTeams(MinMax.valueOf(strNTeams));
+		} catch(Exception e){
+			return sendMessage(sender,"That size not recognized.  Examples: 1 or 2 or 1-5 or 2+");
+		}
 
-		mm = Util.getMinMax(strNTeams);
-		if (mm == null){
-			return sendMessage(sender,"That size not recognized.  Examples: 1 or 2 or 1-5 or 2+");}
-		ap.setNTeams(mm);
 		ap.setType(mp.getType());
 
 		Arena arena = ArenaType.createArena(name, ap);
@@ -616,7 +614,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Can the player join this match/event at this moment?
 		if (!canJoin(player)){
 			return true;}
-//		Event e = EventController.getEvent(mp.getName());
+		//		Event e = EventController.getEvent(mp.getName());
 		if (EventController.hasEventType(mp.getName())){
 			return sendMessage(player,"&4[Duel] &cYou can't duel someone in an Event type!");}
 

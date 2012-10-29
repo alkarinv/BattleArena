@@ -33,7 +33,6 @@ import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.SerializerUtil;
-import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
 import org.apache.commons.lang.StringUtils;
@@ -162,17 +161,17 @@ public class ArenaSerializer {
 		Integer pminTeamSize = cs.contains("preferredMinTeamSize") ? cs.getInt("preferredMinTeamSize") : minTeamSize;
 		Integer pmaxTeamSize = cs.contains("preferredMaxTeamSize") ? cs.getInt("preferredMaxTeamSize") : maxTeamSize;
 		if (cs.contains("teamSize")) {
-			MinMax mm = Util.getMinMax(cs.getString("teamSize"));
+			MinMax mm = MinMax.valueOf(cs.getString("teamSize"));
 			minTeamSize = mm.min;
 			maxTeamSize = mm.max;
 		}
 		if (cs.contains("nTeams")) {
-			MinMax mm = Util.getMinMax(cs.getString("nTeams"));
+			MinMax mm = MinMax.valueOf(cs.getString("nTeams"));
 			minTeams = mm.min;
 			maxTeams = mm.max;
 		}
 		if (cs.contains("preferredTeamSize")) {
-			MinMax mm = Util.getMinMax(cs.getString("preferredTeamSize"));
+			MinMax mm = MinMax.valueOf(cs.getString("preferredTeamSize"));
 			pminTeamSize = mm.min;
 			pmaxTeamSize = mm.max;
 		}

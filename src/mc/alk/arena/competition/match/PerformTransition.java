@@ -25,6 +25,7 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
@@ -46,23 +47,44 @@ public class PerformTransition {
 	public static void transition(Match am, MatchState transition, Collection<Team> teams, boolean onlyInArena){
 		if (teams == null)
 			return;
-		for (Team t: teams)
-			transition(am, transition,t, onlyInArena);
+		boolean first = true;
+		for (Team team: teams){
+			transition(am,transition,team,onlyInArena,first);
+			first = false;
+		}
 	}
 
 	public static boolean transition(Match am, final MatchState transition, Team team, boolean onlyInMatch) {
+		return transition(am,transition,team,onlyInMatch,true);
+	}
+
+	static boolean transition(Match am, final MatchState transition, Team team, boolean onlyInMatch,
+			boolean performOncePerTransitionOptions) {
 		//		final Set<ArenaPlayer> validPlayers = team.getPlayers();
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo );
 		if (mo == null)
 			return true;
+		if (performOncePerTransitionOptions){
+			/// Options that don't affect players first
+			if (WorldGuardInterface.hasWorldGuard() && am.getArena().hasRegion()){
+				String region = am.getArena().getRegion();
+				String worldName = am.getArena().getRegionWorld();
+				/// Clear the area
+				if (mo.shouldClearRegion()){
+					WorldGuardInterface.clearRegion(worldName,region);}
+				if (mo.hasOption(TransitionOption.WGRESETREGION)){
+					WorldGuardInterface.pasteSchematic(Bukkit.getConsoleSender(), worldName, region);
+				}
+			}
+		}
 		for (ArenaPlayer p : team.getPlayers()){
 			transition(am, transition,p,team, onlyInMatch);
 		}
 		return true;
 	}
 
-	public static boolean transition(final Match am, final MatchState transition, final ArenaPlayer p,
+	static boolean transition(final Match am, final MatchState transition, final ArenaPlayer p,
 			final Team team, final boolean onlyInMatch) {
 		if (Defaults.DEBUG_TRANSITIONS) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +p.getName() +
 				" ops="+am.tops.getOptions(transition) +"  inArena="+am.insideArena(p));
@@ -70,11 +92,6 @@ public class PerformTransition {
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		if (mo == null){
 			return true;}
-		/// Options that don't affect players first
-		/// Clear the area
-		if (mo.shouldClearRegion() && WorldGuardInterface.hasWorldGuard() && am.getArena().hasRegion())
-			WorldGuardInterface.clearRegion(am.getArena().getRegionWorld(), am.getArena().getRegion());
-
 		final boolean teleportIn = mo.shouldTeleportIn();
 		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
 

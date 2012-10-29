@@ -491,7 +491,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		if (needsDamageEvents){
 			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);}
 		if (WorldGuardInterface.hasWorldGuard() && arena.getRegion() != null){
-			psc.addMember(p, arena.getRegion(), arena.getRegionWorld());}
+			psc.addMember(p, arena.getRegionWorld(),arena.getRegion());}
 		if (noLeave){
 			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);}
 		if (needsBlockEvents){
@@ -510,7 +510,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		MethodController.updateEventListeners(this,ms, p,PlayerDeathEvent.class);
 		MethodController.updateEventListeners(this,ms, p,PlayerInteractEvent.class); /// for sign clicks
 		if (WorldGuardInterface.hasWorldGuard() && arena.getRegion() != null)
-			psc.removeMember(p, arena.getRegion(), arena.getRegionWorld());
+			psc.removeMember(p, arena.getRegionWorld(), arena.getRegion());
 
 		if (needsDamageEvents){
 			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);}
