@@ -8,8 +8,12 @@ public class MatchCancelledEvent extends BAEvent {
 	public MatchCancelledEvent(Match match){
 		this.match = match;
 	}
+
+	/**
+	 * Return the match for this event
+	 * @return Match
+	 */
 	public Match getMatch(){
 		return match;
 	}
-
 }

@@ -10,7 +10,6 @@ public class MatchFinishedEvent extends MatchEvent {
 		super(match);
 		this.state = match.getState();
 	}
-
 	public MatchState getState() {
 		return state;
 	}

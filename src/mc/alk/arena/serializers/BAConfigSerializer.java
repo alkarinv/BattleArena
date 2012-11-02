@@ -1,10 +1,18 @@
 package mc.alk.arena.serializers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.ArenaCommand;
+import mc.alk.arena.controllers.CommandController;
+import mc.alk.arena.executors.BAExecutor;
+import mc.alk.arena.executors.ReservedArenaEventExecutor;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
@@ -13,10 +21,20 @@ import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class BAConfigSerializer extends ConfigSerializer{
 
 	public void loadAll(){
+		/// Do this after 0 ticks so all Custom Arena/Victory or other types can be registered by other plugins first
+//		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+//			@Override
+//			public void run() {
+				synchronizedLoadAll();
+//			}
+//		});
+	}
+	private void synchronizedLoadAll(){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
 
 		parseDefaultOptions(config.getConfigurationSection("defaultOptions"));
@@ -26,13 +44,14 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", Defaults.NUM_INV_SAVES);
 		Defaults.IGNORE_STACKSIZE = config.getBoolean("ignoreMaxStackSize", Defaults.IGNORE_STACKSIZE);
 		DisabledCommandsUtil.addAll(config.getStringList("disabledCommands"));
-		String[] defaultMatchTypes = {"arena","skirmish","colliseum","battleground"};
-		String[] defaultEventTypes = {"freeForAll","deathMatch","tourney"};
+		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"arena","skirmish","colliseum","battleground"}));
+		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"freeForAll","deathMatch","tourney"}));
+		JavaPlugin plugin = BattleArena.getSelf();
 
 		/// Now initialize the specific match settings
 		for (String defaultType: defaultMatchTypes){
 			try {
-				setTypeConfig(defaultType,config.getConfigurationSection(defaultType), true);
+				setTypeConfig(plugin,defaultType,config.getConfigurationSection(defaultType), true);
 			} catch (Exception e) {
 				Log.err("Couldnt configure arenaType " + defaultType+". " + e.getMessage());
 				e.printStackTrace();
@@ -41,25 +60,43 @@ public class BAConfigSerializer extends ConfigSerializer{
 		/// Now initialize the specific event settings
 		for (String defaultType: defaultEventTypes){
 			try {
-				setTypeConfig(defaultType,config.getConfigurationSection(defaultType), false);
+				setTypeConfig(plugin,defaultType,config.getConfigurationSection(defaultType), false);
 			} catch (Exception e) {
 				Log.err("Couldnt configure arenaType " + defaultType+". " + e.getMessage());
 				e.printStackTrace();
 			}
 		}
-
+		/// Initialize custom matches or events
+		Set<String> keys = config.getKeys(false);
+		for (String key: keys){
+			ConfigurationSection cs = config.getConfigurationSection(key);
+			if (cs == null || defaultMatchTypes.contains(key) || defaultEventTypes.contains(key) || key.equals("defaultOptions"))
+				continue;
+			try {
+				/// A new match/event needs the params, an executor, and the command to use
+				boolean isMatch = !config.getBoolean("isEvent",false);
+				MatchParams mp = setTypeConfig(plugin,key,cs, isMatch);
+				BAExecutor executor = isMatch ? BattleArena.getBAExecutor() : new ReservedArenaEventExecutor();
+				ArenaCommand arenaCommand = new ArenaCommand(mp.getCommand(),"","", new ArrayList<String>(), BattleArena.getSelf());
+				arenaCommand.setExecutor(executor);
+				CommandController.registerCommand(arenaCommand);
+			} catch (Exception e) {
+				Log.err("Couldnt configure arenaType " + key+". " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
 	}
 
 	protected static void parseDefaultOptions(ConfigurationSection cs) {
-		Defaults.SECONDS_TILL_MATCH = cs.getInt("secondsTillMatch", 20);
-		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", 20);
-		Defaults.MATCH_TIME = cs.getInt("matchTime", 120/*matchEndTime*/);
-		Defaults.AUTO_EVENT_COUNTDOWN_TIME = cs.getInt("eventCountdownTime",180);
-		Defaults.ANNOUNCE_EVENT_INTERVAL = cs.getInt("eventCountdownInterval", 60);
-		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", 30);
-		Defaults.DUEL_ALLOW_RATED = cs.getBoolean("allowRatedDuels", false);
-		Defaults.DUEL_CHALLENGE_INTERVAL = cs.getInt("challengeInterval", 1800);
-		Defaults.TIME_BETWEEN_SCHEDULED_EVENTS = cs.getInt("timeBetweenScheduledEvents", 30);
+		Defaults.SECONDS_TILL_MATCH = cs.getInt("secondsTillMatch", Defaults.SECONDS_TILL_MATCH);
+		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT);
+		Defaults.MATCH_TIME = cs.getInt("matchTime", Defaults.MATCH_TIME);
+		Defaults.AUTO_EVENT_COUNTDOWN_TIME = cs.getInt("eventCountdownTime",Defaults.AUTO_EVENT_COUNTDOWN_TIME);
+		Defaults.ANNOUNCE_EVENT_INTERVAL = cs.getInt("eventCountdownInterval", Defaults.ANNOUNCE_EVENT_INTERVAL);
+		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", Defaults.MATCH_UPDATE_INTERVAL);
+		Defaults.DUEL_ALLOW_RATED = cs.getBoolean("allowRatedDuels", Defaults.DUEL_ALLOW_RATED);
+		Defaults.DUEL_CHALLENGE_INTERVAL = cs.getInt("challengeInterval", Defaults.DUEL_CHALLENGE_INTERVAL);
+		Defaults.TIME_BETWEEN_SCHEDULED_EVENTS = cs.getInt("timeBetweenScheduledEvents", Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 		parseOnServerStartOptions(cs);
 		AnnouncementOptions an = new AnnouncementOptions();
 		parseAnnouncementOptions(an,true,cs.getConfigurationSection("announcements"), true);

@@ -10,7 +10,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.Exceptions.InvalidOptionException;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.entity.Player;
@@ -59,7 +59,7 @@ public class DuelOptions {
 	final List<ArenaPlayer> challengedPlayers = new ArrayList<ArenaPlayer>();
 	final Map<DuelOption,Object> options = new EnumMap<DuelOption,Object>(DuelOption.class);
 
-	public static DuelOptions parseOptions(String[] args) throws InvalidOptionException{
+	public static DuelOptions parseOptions(ArenaPlayer challenger, String[] args) throws InvalidOptionException{
 		DuelOptions eoo = new DuelOptions();
 		Map<DuelOption,Object> ops = eoo.options;
 
@@ -69,7 +69,8 @@ public class DuelOptions {
 			if (p != null){
 				if (!p.isOnline())
 					throw new InvalidOptionException("&cPlayer &6" + p.getDisplayName() +"&c is not online!");
-
+				if (p.getName().equals(challenger.getName()))
+					throw new InvalidOptionException("&cYou can't challenge yourself!");
 				eoo.challengedPlayers.add(BattleArena.toArenaPlayer(p));
 				continue;
 			}
@@ -143,7 +144,7 @@ public class DuelOptions {
 	public String getOtherChallengedString(ArenaPlayer ap) {
 		List<ArenaPlayer> players = new ArrayList<ArenaPlayer>(challengedPlayers);
 		players.remove(ap);
-		return Util.playersToCommaDelimitedString(getChallengedPlayers());
+		return Util.playersToCommaDelimitedString(players);
 	}
 
 	public boolean hasOption(DuelOption option) {

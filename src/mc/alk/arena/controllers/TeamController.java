@@ -2,6 +2,7 @@ package mc.alk.arena.controllers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
@@ -25,26 +25,30 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 
-public enum TeamController  implements Listener {
+public enum TeamController implements Listener, TeamHandler {
 	INSTANCE;
 
 	static final boolean DEBUG = false;
-	static Map<Team,CopyOnWriteArrayList<TeamHandler>> handlers = new ConcurrentHashMap<Team,CopyOnWriteArrayList<TeamHandler>>();
-	HashSet<Team> selfFormedTeams = new HashSet<Team>();
-	HashSet<FormingTeam> formingTeams = new HashSet<FormingTeam>();
-	BattleArenaController bac;
-	static TeamController teamController = null;
 
-	private TeamController(){
-		this.bac = BattleArena.getBAC();
+	/** A map of teams to which classes are currently "handling" those teams */
+	final Map<Team,CopyOnWriteArrayList<TeamHandler>> handlers = new ConcurrentHashMap<Team,CopyOnWriteArrayList<TeamHandler>>();
+
+	/** Teams that are created through players wanting to be teams up, or an admin command */
+	final Set<Team> selfFormedTeams = Collections.synchronizedSet(new HashSet<Team>());
+
+	/** Teams that are still being created, these aren't "real" teams yet */
+	final Set<FormingTeam> formingTeams = Collections.synchronizedSet(new HashSet<FormingTeam>());
+
+	/**
+	 * A valid team should either be currently being "handled" or is selfFormed
+	 * @param player
+	 * @return Team
+	 */
+	public static Team getTeam(ArenaPlayer player) {
+		return INSTANCE.handledTeams(player);
 	}
 
-	public static Team getTeam(ArenaPlayer p) {
-		Team t = handledTeams(p);
-		return t == null ? INSTANCE.getSelfTeam(p) : t;
-	}
-
-	private static Team handledTeams(ArenaPlayer p) {
+	private Team handledTeams(ArenaPlayer p) {
 		synchronized(handlers){
 			for (Team t: handlers.keySet()){
 				if (t.hasMember(p))
@@ -54,7 +58,7 @@ public enum TeamController  implements Listener {
 		return null;
 	}
 
-	public Team getSelfTeam(ArenaPlayer pl) {
+	public Team getSelfFormedTeam(ArenaPlayer pl) {
 		for (Team t: selfFormedTeams){
 			if (t.hasMember(pl))
 				return t;
@@ -62,14 +66,18 @@ public enum TeamController  implements Listener {
 		return null;
 	}
 
-	public boolean removeSelfTeam(Team t) {
-		return selfFormedTeams.remove(t);
+	public boolean removeSelfFormedTeam(Team team) {
+		if (selfFormedTeams.remove(team)){
+			removeHandler(team,this);
+			return true;
+		}
+		return false;
 	}
 
-	public void addSelfTeam(Team t) {
-		selfFormedTeams.add(t);
+	public void addSelfFormedTeam(Team team) {
+		selfFormedTeams.add(team);
+		addHandler(team, this);
 	}
-
 
 	private void leaveSelfTeam(ArenaPlayer p) {
 		Team t = getFormingTeam(p);
@@ -77,14 +85,14 @@ public enum TeamController  implements Listener {
 			t.sendMessage("&cYou're team has been disbanded as &6" + p.getDisplayName()+"&c has left minecraft");
 			return;
 		}
-		t = getSelfTeam(p);
+		t = getSelfFormedTeam(p);
 		if (t != null && selfFormedTeams.remove(t)){
 			t.sendMessage("&cYou're team has been disbanded as &6" + p.getDisplayName()+"&c has left minecraft");
 			return;
 		}
 	}
 
-	private static void playerLeft(ArenaPlayer p) {
+	private void playerLeft(ArenaPlayer p) {
 		Team t = handledTeams(p);
 		if (t == null ){
 			return;}
@@ -110,7 +118,6 @@ public enum TeamController  implements Listener {
 			list.retainAll(unused);
 			if (list.isEmpty())
 				handlers.remove(t);
-
 		}
 		//		logHandlerList("player left " + p.getPlayer().getName());
 	}
@@ -153,8 +160,8 @@ public enum TeamController  implements Listener {
 		formingTeams.add(ft);
 	}
 
-	public void removeFormingTeam(FormingTeam ft) {
-		formingTeams.remove(ft);
+	public boolean removeFormingTeam(FormingTeam ft) {
+		return formingTeams.remove(ft);
 	}
 
 	public Map<TeamHandler,Team> getTeamMap(ArenaPlayer p){
@@ -166,38 +173,21 @@ public enum TeamController  implements Listener {
 				List<TeamHandler> ths = handlers.get(t);
 				synchronized(ths){
 					for (TeamHandler th: ths){
-						map.put(th,t);}				
+						map.put(th,t);}
 				}
 			}
 		}
 		return map;
 	}
-	//
-	//	public static Team createTe3am(ArenaPlayer p, TeamHandler th) {
-	//		if (DEBUG) System.out.println("------- createTeam " + p.getName() + ": " + th);
-	//		Team t = TeamFactory.createTeam(p);
-	//		List<TeamHandler> ths = new ArrayList<TeamHandler>();
-	//		ths.add(th);
-	//		handlers.put(t, ths);
-	//		return t;
-	//	}
-	//
-	//	public static Team createT3eam(Set<ArenaPlayer> players, TeamHandler th) {
-	//		if (DEBUG) System.out.println("------- createTeam " + players.size() + ": " + th);
-	//		Team t = TeamFactory.createTeam(players);
-	//		List<TeamHandler> ths = new ArrayList<TeamHandler>();
-	//		ths.add(th);
-	//		handlers.put(t, ths);
-	//		return t;
-	//	}
 
 	public static void addTeamHandler(Team t, TeamHandler th) {
+		INSTANCE.addHandler(t, th);
+	}
+	private void addHandler(Team t, TeamHandler th){
 		if (DEBUG) System.out.println("------- addTeamHandler " + t + ": " + th);
 		CopyOnWriteArrayList<TeamHandler> ths = handlers.get(t);
 		if (ths == null){
-			//			ths = Collections.synchronizedList(new ArrayList<TeamHandler>());
 			ths = new CopyOnWriteArrayList<TeamHandler>();
-			//			ths = new ArrayList<TeamHandler>();
 			synchronized(handlers){
 				handlers.put(t, ths);
 			}
@@ -206,8 +196,6 @@ public enum TeamController  implements Listener {
 			if (!ths.contains(th))
 				ths.add(th);
 		}
-
-		//		logHandlerList("addTeamHandler " + t + "   " + th);
 	}
 
 	public static Team createTeam(ArenaPlayer p) {
@@ -215,22 +203,25 @@ public enum TeamController  implements Listener {
 		return TeamFactory.createTeam(p);
 	}
 
-	public static void removeTeam(Team t, TeamHandler teamHandler) {
-		if (DEBUG) System.out.println("------- removing team="+t+" and handler =" + teamHandler);
-		List<TeamHandler> ths = handlers.get(t);
+
+	public static void removeTeamHandler(Team team, TeamHandler teamHandler) {
+		INSTANCE.removeHandler(team, teamHandler);
+	}
+	private void removeHandler(Team team, TeamHandler teamHandler){
+		if (DEBUG) System.out.println("------- removing team="+team+" and handler =" + teamHandler);
+		List<TeamHandler> ths = handlers.get(team);
 		if (ths != null){
 			ths.remove(teamHandler);
 			if (ths.isEmpty())
-				handlers.remove(t);
+				handlers.remove(team);
 		} else {
-			handlers.remove(t);
+			handlers.remove(team);
 		}
 		//		logHandlerList("removeTeam " + t +"   " + th);
 	}
-
 	public static void removeTeams(Collection<Team> teams, TeamHandler teamHandler) {
 		for (Team t: teams){
-			removeTeam(t,teamHandler);
+			removeTeamHandler(t,teamHandler);
 		}
 	}
 
@@ -247,6 +238,7 @@ public enum TeamController  implements Listener {
 		if (DEBUG) System.out.println("------- createCompositeTeam " + ct);
 		return ct;
 	}
+	@Override
 	public String toString(){
 		return "[TeamController]";
 	}
@@ -258,7 +250,7 @@ public enum TeamController  implements Listener {
 				if (t.hasMember(p)){
 					hs.addAll(handlers.get(t));
 				}
-			}			
+			}
 		}
 		return hs;
 	}
@@ -274,6 +266,13 @@ public enum TeamController  implements Listener {
 		return handlers.get(t);
 	}
 
+	@Override
+	public boolean canLeave(ArenaPlayer p) {
+		return true;
+	}
 
-
+	@Override
+	public boolean leave(ArenaPlayer p) {
+		return true;
+	}
 }

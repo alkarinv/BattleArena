@@ -17,5 +17,4 @@ public class MatchVictoryEvent extends MatchEvent {
 	public void setMatchResult(MatchResult matchResult) {
 		this.matchResult = matchResult;
 	}
-
 }

@@ -8,7 +8,7 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.pairs.EventPair;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 

@@ -12,6 +12,7 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
 
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -229,5 +230,17 @@ public class PlayerStoreController {
 		if (heroClass == null)
 			return;
 		HeroesInterface.setHeroClass(p.getPlayer(), heroClass);
+	}
+
+	public void setNameColor(ArenaPlayer p, ChatColor teamColor) {
+		if (!TagAPIInterface.enabled())
+			return;
+		TagAPIInterface.setNameColor(p.getPlayer(), teamColor);
+	}
+
+	public void removeNameColor(ArenaPlayer p) {
+		if (!TagAPIInterface.enabled())
+			return;
+		TagAPIInterface.removeNameColor(p.getPlayer());
 	}
 }

@@ -6,7 +6,7 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.Exceptions.InvalidOptionException;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.Util.MinMax;
 
 public class MatchJoinOptions {

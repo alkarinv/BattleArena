@@ -24,10 +24,6 @@ public class EventController {
 		return null;
 	}
 
-//	public static Event getEvent(String name) {
-//		return registeredEvents.get(name.toLowerCase());
-//	}
-//
 	public static void addEvent(Event event){
 		registeredEvents.put(event.getName().toLowerCase(),event);
 		registeredEvents.put(event.getCommand().toLowerCase(),event);
@@ -55,10 +51,8 @@ public class EventController {
 		return registeredExecutors.get(eventType.toLowerCase());
 	}
 
-	public static boolean hasEventType(String name) {
-		// TODO Auto-generated method stub
-		return false;
+	public static boolean isEventType(String name) {
+		return ParamController.getEventParamCopy(name) != null;
 	}
-
 
 }

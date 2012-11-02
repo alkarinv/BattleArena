@@ -18,14 +18,14 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.Exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;

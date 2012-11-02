@@ -14,7 +14,7 @@ import mc.alk.arena.util.CaseInsensitiveMap;
 import org.bukkit.plugin.Plugin;
 
 public class ArenaType implements Comparable<ArenaType>{
-	static public CaseInsensitiveMap<Class<?>> classes = new CaseInsensitiveMap<Class<?>>();
+	static public CaseInsensitiveMap<Class<? extends Arena>> classes = new CaseInsensitiveMap<Class<? extends Arena>>();
 	static public CaseInsensitiveMap<ArenaType> types = new CaseInsensitiveMap<ArenaType>();
 
 	public static ArenaType ANY = null;
@@ -35,6 +35,7 @@ public class ArenaType implements Comparable<ArenaType>{
 		if (name.equalsIgnoreCase("ANY")) ANY = this;
 		else if (name.equalsIgnoreCase("VERSUS")) { VERSUS = this;}
 	}
+	@Override
 	public String toString(){
 		return name;
 	}
@@ -43,7 +44,7 @@ public class ArenaType implements Comparable<ArenaType>{
 		if (this == ANY || arenaType == ANY) return true;
 		if (this == arenaType)
 			return true;
-		return (compatibleTypes==null) ? false : compatibleTypes.contains(arenaType); 
+		return (compatibleTypes==null) ? false : compatibleTypes.contains(arenaType);
 	}
 
 	public Collection<String> getInvalidMatchReasons(ArenaType arenaType) {
@@ -90,7 +91,7 @@ public class ArenaType implements Comparable<ArenaType>{
 
 	@Override
 	public boolean equals(Object obj){
-		if(this == obj) 
+		if(this == obj)
 			return true;
 		if((obj == null) || (obj.getClass() != this.getClass()))
 			return false;
@@ -191,6 +192,10 @@ public class ArenaType implements Comparable<ArenaType>{
 			}
 		}
 		return result;
+	}
+
+	public static Class<? extends Arena> getArenaClass(ArenaType arenaType){
+		return classes.get(arenaType.getName());
 	}
 
 

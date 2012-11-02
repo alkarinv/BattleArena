@@ -26,5 +26,4 @@ public class MatchClassSelectedEvent extends MatchEvent {
 	public void setItems(List<ItemStack> items) {
 		this.items = items;
 	}
-
 }

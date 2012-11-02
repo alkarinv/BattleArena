@@ -18,6 +18,7 @@ import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 
 import org.apache.commons.lang3.StringUtils;
 
+
 /**
  * @author alkarin
  *
@@ -40,7 +41,7 @@ public class MessageFormatter{
 
 	public MessageFormatter(MessageSerializer impl, MatchParams mp, int size, int nTeams, Message message, Set<MessageOption> ops){
 		searchList = new String[size];
-		replaceList = new String[size];		
+		replaceList = new String[size];
 		this.msg = message;
 		this.ops = ops;
 		tns = new HashMap<Integer,TeamNames>(nTeams);
@@ -67,7 +68,7 @@ public class MessageFormatter{
 					t1 = t;
 				else if (j==1)
 					t2 = t;
-				else 
+				else
 					break;
 				j++;
 			}
@@ -85,22 +86,22 @@ public class MessageFormatter{
 				case EVENTNAME: replaceList[i] = mp.getName(); break;
 				case SECONDS: replaceList[i] = seconds != null ? seconds.toString(): null; break;
 				case TIME: replaceList[i] = seconds != null ? TimeUtil.convertSecondsToString(seconds): null; break;
-				case TEAM1: 
+				case TEAM1:
 					replaceList[i] = formatTeamName(impl.getMessage("common.team"),t1);
 					break;
-				case TEAM2: 
+				case TEAM2:
 					replaceList[i] = formatTeamName(impl.getMessage("common.team"),t2);
 					break;
-				case TEAMSHORT1: 
+				case TEAMSHORT1:
 					replaceList[i] = formatTeamName(impl.getMessage("common.teamshort"),t1);
 					break;
-				case TEAMSHORT2: 
+				case TEAMSHORT2:
 					replaceList[i] = formatTeamName(impl.getMessage("common.teamshort"),t2);
 					break;
-				case TEAMLONG1: 
+				case TEAMLONG1:
 					replaceList[i] = formatTeamName(impl.getMessage("common.teamlong"),t1);
 					break;
-				case TEAMLONG2: 
+				case TEAMLONG2:
 					replaceList[i] = formatTeamName(impl.getMessage("common.teamlong"),t2);
 					break;
 				case NTEAMS: replaceList[i] = teams != null ? teams.size()+"" : "0"; break;
@@ -125,7 +126,7 @@ public class MessageFormatter{
 						first = false;
 					}
 					replaceList[i] = sb.toString();
-				} 
+				}
 				break;
 
 				default:
@@ -179,7 +180,7 @@ public class MessageFormatter{
 				if (oteam != null)
 					repl = oteam.getDisplayName();
 				break;
-			case WINSAGAINST: 
+			case WINSAGAINST:
 				if (bti.isValid()){
 					try{
 						st1 = getStat(bti,stats,t);
@@ -190,7 +191,7 @@ public class MessageFormatter{
 							repl = vr.wins +"";
 						} else {
 							repl = "0";
-						}						
+						}
 					} catch(Exception e){
 						e.printStackTrace();
 					}
@@ -199,7 +200,7 @@ public class MessageFormatter{
 				}
 
 				break;
-			case LOSSESAGAINST: 
+			case LOSSESAGAINST:
 				if (bti.isValid()){
 					try{
 						st1 = getStat(bti,stats,t);
@@ -374,6 +375,7 @@ public class MessageFormatter{
 			replaceList[i] = repl;
 			i++;
 		}
+
 		return StringUtils.replaceEach(message.getMessage(), searchList, replaceList);
 	}
 

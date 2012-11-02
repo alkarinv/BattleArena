@@ -12,7 +12,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.PVPState;
-import mc.alk.arena.objects.Exceptions.InvalidOptionException;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.ArmorLevel;
@@ -261,7 +261,7 @@ public class TransitionOptions {
 		}
 		if (hasMoney()){
 			hasSomething = true;
-			sb.append("&5 - &6" + getMoney()+Defaults.MONEY_STR);
+			sb.append("&5 - &6" + getMoney()+" " + Defaults.MONEY_STR);
 		}
 		if (hasItems()){
 			hasSomething = true;

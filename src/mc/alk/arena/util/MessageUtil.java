@@ -21,10 +21,10 @@ public class MessageUtil extends BaseSerializer {
 			return sendMultilineMessage(p,message);
 		if (p instanceof Player){
 			if (((Player) p).isOnline())
-				p.sendMessage(colorChat(message));			
+				p.sendMessage(colorChat(message));
 		} else {
 			p.sendMessage(colorChat(message));
-		}	
+		}
 		return true;
 	}
 
@@ -34,10 +34,10 @@ public class MessageUtil extends BaseSerializer {
 		for (String msg: msgs){
 			if (p instanceof Player){
 				if (((Player) p).isOnline())
-					p.sendMessage(colorChat(msg));			
+					p.sendMessage(colorChat(msg));
 			} else {
 				p.sendMessage(colorChat(msg));
-			}	
+			}
 		}
 		return true;
 	}
@@ -79,4 +79,15 @@ public class MessageUtil extends BaseSerializer {
 		}
 		return sb.toString();
 	}
+	public static ChatColor getFirstColor(String str) {
+		String lbl = str.replaceAll("&", "§");
+		int index = lbl.indexOf("§");
+		if (index != -1 && lbl.length() > index+2){
+			ChatColor cc = ChatColor.getByChar(lbl.charAt(index+2));
+			if (cc != null)
+				return cc;
+		}
+		return ChatColor.WHITE;
+	}
+
 }

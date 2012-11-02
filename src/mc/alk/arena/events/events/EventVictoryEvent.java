@@ -11,20 +11,19 @@ public class EventVictoryEvent extends BAEvent {
 
 	final Team victor;
 	final Collection<Team> losers;
-	
+
 	public EventVictoryEvent(Event event, Team victor, Collection<Team> losers) {
 		this.event = event;
 		this.victor = victor;
 		this.losers = losers;
 	}
-	
+
 	public Team getVictor() {
 		return victor;
 	}
 	public Collection<Team> getLosers() {
 		return losers;
 	}
-
 
 	public Event getEvent(){
 		return event;

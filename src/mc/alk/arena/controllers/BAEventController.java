@@ -15,8 +15,8 @@ import mc.alk.arena.events.events.EventFinishedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
-import mc.alk.arena.objects.Exceptions.InvalidEventException;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.util.KeyValue;
 
 import org.bukkit.Bukkit;
@@ -36,9 +36,8 @@ public class BAEventController implements Listener{
 	public KeyValue<Boolean,Event> getUniqueEvent(EventParams eventParams) {
 		final String key = getKey(eventParams);
 		Map<EventState,List<Event>> events = allEvents.get(key);
-//		System.out.println("hasUnique event = " + eventParams.getName() +"   :  " + events);
 		KeyValue<Boolean,Event> result = new KeyValue<Boolean,Event>(false, null);
-		if (events == null)
+		if (events == null || events.isEmpty())
 			return result;
 		result.key = true;
 		Event event = null;

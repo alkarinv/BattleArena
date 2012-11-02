@@ -38,7 +38,7 @@ import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.MatchResult;
-import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
@@ -57,25 +57,32 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	static int eventCount = 0;
 	final int id = eventCount++;
 
-	final String name;
-	BattleArenaController ac;
+	final String name; /// Name of this event
 
-	EventMessager mc = null;
+	BattleArenaController ac; /// The BattleArenaController for adding removing matches
 
-	EventParams eventParams= null;
+	EventMessager mc = null; /// Our message handler
+
+	EventParams eventParams= null; /// The parameters for this event
+
 	Countdown timer = null; /// Timer till Event starts, think about moving this to executor, or eventcontroller
 
-	final ArrayList<Round> rounds = new ArrayList<Round>();
+	final ArrayList<Round> rounds = new ArrayList<Round>(); /// The list of matchups for each round
+
 	TeamJoinHandler joinHandler; /// Specify how teams are allocated
 
-	EventState state = null;
+	EventState state = null; /// The current state of this event
+
 	/// When did each transition occur
 	final Map<EventState, Long> times = Collections.synchronizedMap(new EnumMap<EventState,Long>(EventState.class));
 
+	/**
+	 * Create our event from the specified paramaters
+	 * @param params
+	 */
 	public Event(EventParams params) {
 		transitionTo(EventState.CLOSED);
 		setParamInst(params);
-		/// eventParams will change when an new Event is called
 		this.ac = BattleArena.getBAC();
 		this.name = params.getName();
 	}
@@ -91,7 +98,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 
 	public void openEvent() {
 		EventParams mp = ParamController.getEventParamCopy(eventParams.getName());
-		mp.setMinTeams(2);
+		mp.setMinTeams(2); /// TODO do I need this anymore?
 		mp.setMaxTeams(2);
 		mp.setMinTeamSize(1);
 		mp.setMaxTeamSize(Integer.MAX_VALUE);
@@ -248,16 +255,18 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 
 	public void removeAllTeams(){
 		for (Team t: teams){
-			TeamController.removeTeam(t,this);}
+			TeamController.removeTeamHandler(t,this);}
 		teams.clear();
 	}
 	public void removeTeam(Team t){
 		teams.remove(t);
-		TeamController.removeTeam(t,this);
+		TeamController.removeTeamHandler(t,this);
 	}
 
 
 	public void addTeam(Team t){
+		if (teams.contains(t)) /// adding a team twice is bad mmkay
+			return;
 		TeamController.addTeamHandler(t, this);
 		new TeamJoinedEvent(this,t).callEvent();
 		teams.add(t);

@@ -11,5 +11,4 @@ public class MatchCompletedEvent extends BAEvent {
 	public Match getMatch(){
 		return match;
 	}
-
 }

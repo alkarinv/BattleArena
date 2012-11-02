@@ -19,7 +19,7 @@ classes:
             - speed:1:900
             - resistance:1:900
     archer:
-        prettyName: "&4Archer" ### Used for signs
+        prettyName: "&2Archer" ### Used for signs
         items:
             - iron_sword: sharp:1 1
             - bow: flame:2 power:3 punch:2 1

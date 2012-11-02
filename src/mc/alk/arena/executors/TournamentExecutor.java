@@ -9,9 +9,9 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.Exceptions.InvalidEventException;
-import mc.alk.arena.objects.Exceptions.InvalidOptionException;
-import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.exceptions.InvalidEventException;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.util.KeyValue;
 
@@ -60,7 +60,6 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 		EventParams ep = new EventParams(mp);
 		event = new TournamentEvent(eventParams);
 		checkOpenOptions(event,ep , args);
-
 
 		EventOpenOptions eoo = null;
 

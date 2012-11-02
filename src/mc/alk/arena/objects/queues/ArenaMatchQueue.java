@@ -32,7 +32,7 @@ public class ArenaMatchQueue {
 
 	ArenaQueue arenaqueue = new ArenaQueue();
 
-	LinkedList<Match> ready_matches = new LinkedList<Match>();	
+	LinkedList<Match> ready_matches = new LinkedList<Match>();
 	boolean suspend = false;
 
 	public synchronized Match getArenaMatch() {
@@ -46,7 +46,7 @@ public class ArenaMatchQueue {
 			}
 		} catch(InterruptedException e) {
 			System.err.println("InterruptedException caught");
-		} 
+		}
 		notify();
 		return null;
 	}
@@ -88,7 +88,7 @@ public class ArenaMatchQueue {
 		if (!suspend)
 			notifyIfNeeded(tq);
 		QPosTeamPair qtp = new QPosTeamPair(to.getMatchParams(),tq.size(),tq.getNPlayers(),to);
-		return qtp;		
+		return qtp;
 	}
 
 	/**
@@ -194,7 +194,7 @@ public class ArenaMatchQueue {
 					final Match m = new ArenaMatch(a, tq.getMatchParams());
 					m.onJoin(teams);
 					return m;
-				}						
+				}
 			}
 		}}
 		///Found nothing matching
@@ -251,7 +251,7 @@ public class ArenaMatchQueue {
 	}
 
 	public QPosTeamPair getQuePos(ArenaPlayer p) {
-		//		int pos; 
+		//		int pos;
 		for (TeamQueue tq : tqs.values()){
 			QPosTeamPair qtp = tq.getPos(p);
 			if (qtp != null)
@@ -286,7 +286,7 @@ public class ArenaMatchQueue {
 	}
 
 	public Arena getNextArena(MatchParams mp) {
-		synchronized(arenaqueue){ 
+		synchronized(arenaqueue){
 			for (Arena a : arenaqueue){
 				if (!a.valid() || !a.matches(mp,null))
 					continue;
@@ -313,6 +313,7 @@ public class ArenaMatchQueue {
 		return removeArena(arena);
 	}
 
+	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("------queues------- \n");

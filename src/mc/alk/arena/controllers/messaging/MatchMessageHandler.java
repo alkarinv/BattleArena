@@ -16,5 +16,4 @@ public interface MatchMessageHandler {
 	public void sendOtherTeamNotReadyMsg(Team team);
 	public void sendOnIntervalMsg(Channel serverChannel,Team currentLeader, int remaining);
 	public void sendTimeExpired(Channel serverChannel);
-
 }

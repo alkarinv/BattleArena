@@ -2,7 +2,7 @@ package mc.alk.arena.competition.events.util;
 
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 
@@ -23,7 +23,7 @@ public class BinPackAdd extends TeamJoinHandler {
 
 		if (team.size() == maxTeamSize && teams.size() < maxTeams){ /// just add the team to the current team list
 			CompositeTeam ct = TeamController.createCompositeTeam(team,this);
-			TeamController.removeTeam(ct, this);
+			TeamController.removeTeamHandler(ct, this);
 			ct.addTeam(team);
 			ct.finish();
 			event.addTeam(ct);
@@ -40,7 +40,7 @@ public class BinPackAdd extends TeamJoinHandler {
 				if ( size >= minTeamSize){ /// the new team would be a valid range, add them
 					pickupTeams.remove(t);
 					event.addTeam(ct);
-					TeamController.removeTeam(ct, this);
+					TeamController.removeTeamHandler(ct, this);
 					return new TeamJoinResult(TeamJoinStatus.ADDED, 0,ct);
 				} else{
 //					System.out.println("Adding team " + ct +"  ct size = " + ct.size() +"   team=" + t);

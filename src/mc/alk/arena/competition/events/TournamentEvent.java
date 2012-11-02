@@ -18,7 +18,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
@@ -58,7 +58,6 @@ public class TournamentEvent extends Event implements Listener{
 		rounds.clear();
 		round = -1;
 		nrounds = -1;
-		eventParams.setPrettyName(mp.getCommand());
 		timeBetweenRounds = oParms.getTimeBetweenRounds();
 		String color = Util.getColor(mp.getPrefix());
 		mp.setPrefix(color+"["+mp.getName() +" " + oParms.getName()+"]");
@@ -174,11 +173,9 @@ public class TournamentEvent extends Event implements Listener{
 			if (Defaults.DEBUG) System.out.println("ROUND FINISHED !!!!!   " + aliveTeams);
 
 			if (round+1 == nrounds || isFinished()){
-				eventParams.setPrettyName("&4[Tournament]");
 				Server server = Bukkit.getServer();
 				Team t = aliveTeams.get(0);
 				server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&e Congratulations to &6" + t.getDisplayName() + "&e for winning!"));
-				//				if (BattleArena.bet != null) BattleEventTracker.addTeamWinner(t.getDisplayName(), getName());
 				HashSet<Team> losers = new HashSet<Team>(competingTeams);
 				losers.remove(victor);
 				eventVictory(victor,losers);
@@ -266,7 +263,6 @@ public class TournamentEvent extends Event implements Listener{
 				t.sendMessage("&4["+strround+"]&e You have a &5bye&e this round");
 			}
 		}
-		eventParams.setPrettyName("&4[" + strround +"]");
 		BTInterface bti = new BTInterface(eventParams);
 		final String prefix = eventParams.getPrefix();
 		for (Matchup m: tr.getMatchups()){

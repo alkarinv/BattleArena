@@ -9,7 +9,7 @@ import java.util.Map;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.PlayerStoreController.PInv;
 import mc.alk.arena.listeners.BAPlayerListener;
-import mc.alk.arena.objects.Exceptions.InvalidArgumentException;
+import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.SerializerUtil;
 

@@ -8,7 +8,7 @@ import mc.alk.arena.objects.teams.Team;
 public class MatchFindCurrentLeaderEvent extends MatchEvent {
 	final List<Team> teams;
 	Team currentLeader = null;
-	
+
 	public MatchFindCurrentLeaderEvent(Match match, List<Team> teams) {
 		super(match);
 		this.teams = teams;
@@ -25,5 +25,4 @@ public class MatchFindCurrentLeaderEvent extends MatchEvent {
 	public void setCurrentLeader(Team currentLeader) {
 		this.currentLeader = currentLeader;
 	}
-
 }

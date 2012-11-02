@@ -74,12 +74,12 @@ public class ArenaDebugger {
 			for (Integer i: locs.keySet()){
 				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));
 			}
-		}		
+		}
 		locs = arena.getWaitRoomSpawnLocs();
 		if (locs != null){
 			for (Integer i: locs.keySet()){
 				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));
-			}			
+			}
 		}
 	}
 

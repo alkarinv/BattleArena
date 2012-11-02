@@ -10,8 +10,11 @@ public class MatchEvent extends BAEvent {
 		this.match = match;
 	}
 
+	/**
+	 * Returns the match for this event
+	 * @return Match
+	 */
 	public Match getMatch() {
 		return match;
 	}
-
 }

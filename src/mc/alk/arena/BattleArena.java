@@ -79,7 +79,6 @@ public class BattleArena extends JavaPlugin{
 	private final static TeamController tc = TeamController.INSTANCE;
 	private final static EventController ec = new EventController();
 	private final static ArenaEditor aac = new ArenaEditor();
-	private final static APIRegistrationController apiRegistrationController = new APIRegistrationController();
 	private final DuelController dc = new DuelController();
 	private static BAExecutor commandExecutor;
 	private final BAPlayerListener playerListener = new BAPlayerListener(arenaController);
@@ -312,7 +311,6 @@ public class BattleArena extends JavaPlugin{
 		return file;
 	}
 
-
 	public static BattleArena getSelf() {return plugin;}
 	public static BattleArenaController getBAC(){return arenaController;}
 	public static BattleArenaController getBAController(){return arenaController;}
@@ -320,7 +318,6 @@ public class BattleArena extends JavaPlugin{
 	public static TeamController getTeamController(){return tc;}
 	public DuelController getDuelController(){return dc;}
 	public static EventController getEventController(){return ec;}
-//	public static Event getEvent(String name){return EventController.getEvent(name);}
 	public static ArenaEditor getArenaEditor() {return aac;}
 	public static BAExecutor getBAExecutor() {return commandExecutor;}
 
@@ -355,18 +352,18 @@ public class BattleArena extends JavaPlugin{
 	public static List<Player> toPlayerList(Collection<ArenaPlayer> players) {return PlayerController.toPlayerList(players);}
 
 	public static void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
-		apiRegistrationController.registerMatchType(plugin, name, cmd, arenaClass);
+		new APIRegistrationController().registerMatchType(plugin, name, cmd, arenaClass);
 	}
 	public static void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, BAExecutor executor){
-		apiRegistrationController.registerMatchType(plugin,name,cmd,arenaClass,executor);
+		new APIRegistrationController().registerMatchType(plugin,name,cmd,arenaClass,executor);
 	}
 
 	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
-		apiRegistrationController.registerEventType(plugin,name,cmd,arenaClass);
+		new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass);
 	}
 
 	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor){
-		apiRegistrationController.registerEventType(plugin,name,cmd,arenaClass,executor);
+		new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass,executor);
 	}
 
 	public static Arena getArena(String arenaName) {return BattleArena.getBAC().getArena(arenaName);}

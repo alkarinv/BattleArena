@@ -11,8 +11,8 @@ import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Rating;
-import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.Util.MinMax;
 
 import org.apache.commons.lang3.StringUtils;
@@ -177,7 +177,7 @@ public class EventOpenOptions {
 		}
 		if (!arena.valid()){
 			throw new InvalidOptionException("&c Arena is not valid.");}
-
+		/// We have verified there is a valid arena.. now get a real one from the queue
 		final String arenaName = arena.getName();
 		if (autoFindArena){
 			arena = ac.nextArenaByMatchParams(mp);

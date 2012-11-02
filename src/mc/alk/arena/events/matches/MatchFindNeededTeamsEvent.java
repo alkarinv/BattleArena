@@ -16,5 +16,4 @@ public class MatchFindNeededTeamsEvent extends MatchEvent {
 	public void setNeededTeams(int neededTeams) {
 		this.neededTeams = Math.max(this.neededTeams, neededTeams);
 	}
-
 }

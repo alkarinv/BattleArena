@@ -7,6 +7,7 @@ import java.util.List;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -20,14 +21,20 @@ public class TeamUtil {
 	public static class TeamHead {
 		final ItemStack is;
 		final String name;
+		final ChatColor color;
 		public TeamHead(ItemStack is, String name){
-			this.is = is; this.name = name;
+			this.is = is;
+			this.name = name;
+			this.color = MessageUtil.getFirstColor(name);
 		}
 		public String getName(){
 			return name;
 		}
 		public ItemStack getItem(){
 			return is;
+		}
+		public ChatColor getColor(){
+			return color;
 		}
 	}
 
@@ -47,6 +54,10 @@ public class TeamUtil {
 
 	public static ItemStack getTeamHead(int index){
 		return index < teamHeads.size() ? teamHeads.get(index).getItem() : new ItemStack(Material.DIRT);
+	}
+
+	public static ChatColor getTeamColor(int index){
+		return index < teamHeads.size() ? teamHeads.get(index).getColor() : ChatColor.WHITE;
 	}
 
 	@SuppressWarnings("deprecation")

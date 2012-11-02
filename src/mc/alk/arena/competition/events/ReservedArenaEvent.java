@@ -9,9 +9,9 @@ import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
-import mc.alk.arena.objects.Exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.TransitionEventHandler;
+import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
@@ -49,7 +49,6 @@ public class ReservedArenaEvent extends Event {
 	public void openEvent(EventParams mp) throws NeverWouldJoinException{
 		super.openEvent(mp);
 		rounds.clear();
-		eventParams.setPrettyName(mp.getCommand());
 		arenaMatch.addTransitionListener(this);
 		ac.openMatch(arenaMatch);
 		arenaMatch.onJoin(teams);

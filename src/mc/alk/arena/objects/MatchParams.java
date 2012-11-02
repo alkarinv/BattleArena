@@ -1,8 +1,5 @@
 package mc.alk.arena.objects;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
@@ -13,10 +10,7 @@ import org.bukkit.ChatColor;
 
 public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
-	List<String> matchWillBeginMsgs = null;
-	List<String> startMsgs = null;
 	String prefix;
-	String prettyName;
 	VictoryType vc = null;
 	Integer matchTime, intervalTime;
 	AnnouncementOptions ao = null;
@@ -28,10 +22,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	public MatchParams(MatchParams q) {
 		super(q);
-		this.matchWillBeginMsgs = q.matchWillBeginMsgs;
-		this.startMsgs = q.startMsgs;
 		this.prefix = q.prefix;
-		this.prettyName = q.prettyName;
 		this.vc = q.vc;
 		this.matchTime = q.matchTime;
 		this.intervalTime = q.intervalTime;
@@ -50,15 +41,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	}
 	public void setPrefix(String str){prefix = str;}
 	public void setCommand(String str){cmd = str;}
-	public void setPrettyName(String str){prettyName = str;}
-	public void addStartMessage(String str){
-		if (startMsgs==null)
-			startMsgs = new ArrayList<String>();
-		startMsgs.add(str);
-	}
-
-	public String getStartMsgs(){return MessageUtil.convertToString(startMsgs);}
-	public String getSendMatchWillBeginMessage() {return MessageUtil.convertToString(matchWillBeginMsgs);}
 
 	public int compareTo(MatchParams other) {
 		Integer hash = this.hashCode();
@@ -113,14 +95,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	}
 
 	public ChatColor getColor() {
-		String lbl = prefix.replaceAll("&", "§");
-		int index = lbl.indexOf("§");
-		if (index != -1 && lbl.length() > index+2){
-			ChatColor cc = ChatColor.getByChar(lbl.charAt(index+2));
-			if (cc != null)
-				return cc;
-		}
-		return ChatColor.GREEN;
+		return MessageUtil.getFirstColor(prefix);
 	}
 
 }

@@ -35,6 +35,7 @@ public class MessageSerializer extends BaseSerializer {
 			this.msgOptions = ms.msgOptions;
 		}
 	}
+
 	public static void addMessageSerializer(String name, MessageSerializer ms){
 		files.put(name, ms);
 	}

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.competition.events.ReservedArenaEvent;
 import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.TeamController;
@@ -12,9 +13,9 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.Exceptions.InvalidEventException;
-import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.exceptions.InvalidEventException;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
@@ -132,7 +133,8 @@ public class EventExecutor extends BAExecutor{
 			return sendMessage(sender,"&eThere is no open "+event.getCommand()+" right now");}
 		int size = event.getNteams();
 		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(event.getTeamSize());
-		sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers+" that have joined");
+		String arena =event instanceof ReservedArenaEvent? " &eArena=&5"+((ReservedArenaEvent) event).getArena().getName() : "";
+		sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers+arena);
 		StringBuilder sb = new StringBuilder(event.getInfo());
 		return sendMessage(sender,sb.toString());
 	}
@@ -142,8 +144,6 @@ public class EventExecutor extends BAExecutor{
 		Event event = controller.getEvent(p);
 		if (event == null || !event.waitingToJoin(p) && !event.hasPlayer(p)){
 			return sendMessage(p,"&eYou aren't inside the &6" + event.getName());}
-		//		if (!event.canLeave(p)){
-		//			return sendMessage(p,"&eYou can't leave the &6"+event.getCommand()+"&e while its "+event.getState());}
 		event.leave(p);
 		return sendMessage(p,"&eYou have left the &6" + event.getName());
 	}
@@ -172,6 +172,7 @@ public class EventExecutor extends BAExecutor{
 		if (!(p.hasPermission("arena."+eventParams.getCommand().toLowerCase()+".join"))){
 			return sendMessage(p, "&eYou don't have permission to join a &6" + eventParams.getCommand());}
 		Event event = controller.getOpenEvent(eventParams);
+		/// If we allow players to start their own events
 		if (event == null && Defaults.ALLOW_PLAYER_EVENT_CREATION){
 			EventExecutor ee = EventController.getEventExecutor(eventParams.getName());
 			if (ee == null){
@@ -186,9 +187,9 @@ public class EventExecutor extends BAExecutor{
 				}
 			}
 		}
+		/// perform join checks
 		if (event == null){
-			return sendMessage(p, "&cThere is no event currently open");
-		}
+			return sendMessage(p, "&cThere is no event currently open");}
 
 		if (!event.canJoin()){
 			return sendMessage(p,"&eYou can't join the &6"+event.getCommand()+"&e while its "+event.getState());}
@@ -197,18 +198,20 @@ public class EventExecutor extends BAExecutor{
 			return true;}
 
 		if (event.waitingToJoin(p)){
-			return sendMessage(p,"&eYou have already joined the and will enter when you get matched up with a team");
-		}
+			return sendMessage(p,"&eYou have already joined the and will enter when you get matched up with a team");}
 
 		EventParams sq = event.getParams();
 		MatchTransitions tops = sq.getTransitionOptions();
+		/// Perform is ready check
 		if(!tops.playerReady(p)){
 			String notReadyMsg = tops.getRequiredString("&eYou need the following to compete!!!\n");
 			return MessageUtil.sendMessage(p,notReadyMsg);
 		}
-		Team t = teamc.getSelfTeam(p);
+		/// Get the team
+		Team t = teamc.getSelfFormedTeam(p);
 		if (t==null){
 			t = TeamController.createTeam(p); }
+		/// Check any options specified in the join
 		JoinOptions jp;
 		try {
 			jp = JoinOptions.parseOptions(sq,t, p, Arrays.copyOfRange(args, 1, args.length));
@@ -222,11 +225,14 @@ public class EventExecutor extends BAExecutor{
 		if (sq.getMaxTeamSize() < t.size()){
 			return sendMessage(p,"&cThis Event can only support up to &6" + sq.getSize()+"&e your team has &6"+t.size());}
 
+		/// Now that we have options and teams, recheck the team for joining
 		if (!event.canJoin(t)){
 			return true;}
-
+		/// Check fee
 		if (!checkFee(sq, p)){
 			return true;}
+
+		/// Finally actually join the event
 		event.joining(t);
 		if (sq.getSecondsTillStart() != null){
 			Long time = event.getTimeTillStart();

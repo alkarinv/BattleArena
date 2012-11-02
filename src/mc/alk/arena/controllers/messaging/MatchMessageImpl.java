@@ -14,7 +14,7 @@ import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.TimeUtil;
 
 /**
- * 
+ *
  * @author alkarin
  *
  */
@@ -46,12 +46,12 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	private void sendMessageToTeams(Channel serverChannel, List<Team> teams, String path, String serverpath, Integer seconds){
-		final String nTeamPath = getStringPathFromSize(teams.size()); 
+		final String nTeamPath = getStringPathFromSize(teams.size());
 		Message message = getMessage("match."+ nTeamPath+"."+path);
 		Message serverMessage = getMessage("match."+ nTeamPath+"."+serverpath);
 		Set<MessageOption> ops = message.getOptions();
 		if (serverChannel != Channel.NullChannel){
-			ops.addAll(serverMessage.getOptions());	
+			ops.addAll(serverMessage.getOptions());
 		}
 
 		String msg = message.getMessage();
@@ -71,10 +71,10 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 			serverChannel.broadcast(msg);
 		}
 	}
-	
+
 	@Override
 	public void sendOnVictoryMsg(Channel serverChannel, Team victor, Collection<Team> losers) {
-		final String nTeamPath = getStringPathFromSize(losers.size()+1); 
+		final String nTeamPath = getStringPathFromSize(losers.size()+1);
 		sendVictory(serverChannel,victor,losers,mp,"match."+nTeamPath+".victory","match."+nTeamPath+".loss",
 				"match."+nTeamPath+".server_victory");
 	}
@@ -102,22 +102,22 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		final String timeStr = TimeUtil.convertSecondsToString(remaining);
 		String msg;
 		if (currentLeader == null){
-			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr;			
+			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr;
 		} else {
 			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr+". &6"+
 					currentLeader.getDisplayName()+"&e leads with &2" + currentLeader.getNKills() +
-					"&e kills &4"+currentLeader.getNDeaths()+"&e deaths";				
+					"&e kills &4"+currentLeader.getNDeaths()+"&e deaths";
 		}
-		match.sendMessage(msg);		
+		match.sendMessage(msg);
 	}
 	public void sendTimeExpired(Channel serverChannel) {}
 
 	@Override
 	public void sendOnDrawMsg(Channel serverChannel, Collection<Team> participants) {
-		final String nTeamPath = getStringPathFromSize(participants.size()); 
+		final String nTeamPath = getStringPathFromSize(participants.size());
 		sendVictory(serverChannel,null,participants,mp,"match."+nTeamPath+".draw","match."+nTeamPath+".draw",
 				"match."+nTeamPath+".server_draw");
 	}
-	
+
 
 }

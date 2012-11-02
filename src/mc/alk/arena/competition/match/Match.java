@@ -16,6 +16,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.PlayerStoreController;
+import mc.alk.arena.controllers.TagAPIInterface;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
@@ -372,7 +373,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		insideArena.clear();
 		insideWaitRoom.clear();
 		for (Team t: teams){
-			TeamController.removeTeam(t, match);
+			TeamController.removeTeamHandler(t, match);
 			for (ArenaPlayer p: t.getPlayers()){
 				stopTracking(p);
 			}
@@ -456,7 +457,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public void onLeave(Team t) {
 		PerformTransition.transition(this, MatchState.ONCANCEL, t, false);
 		teams.remove(t);
-		TeamController.removeTeam(t, this);
+		TeamController.removeTeamHandler(t, this);
 	}
 
 	public void onLeave(ArenaPlayer p) {
@@ -536,21 +537,12 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	 * Player is entering arena area. Usually called from a teleportIn
 	 * @param p
 	 */
-	@SuppressWarnings("unchecked")
 	protected void enterWaitRoom(ArenaPlayer p){
-		final String name = p.getName();
-		/// Store the point at which they entered the waitroom
-		if (!oldlocs.containsKey(name)) /// First teleportIn is the location we want
-			oldlocs.put(name, p.getLocation());
-		BTInterface.stopTracking(p);
+		preEnter(p);
 		Team t = getTeam(p);
 		PerformTransition.transition(this, MatchState.ONENTERWAITROOM, p, t, false);
-		insideArena.add(name);
-		insideWaitRoom.add(name);
-		if (woolTeams){
-			MethodController.updateEventListeners(this, MatchState.ONENTER, p,InventoryClickEvent.class);
-			TeamUtil.setTeamHead(teams.indexOf(t), t);
-		}
+		insideWaitRoom.add(p.getName());
+		postEnter(p,t);
 		arenaInterface.onEnterWaitRoom(p,t);
 	}
 
@@ -558,22 +550,36 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	 * Player is entering arena area. Usually called from a teleportIn
 	 * @param p
 	 */
-	@SuppressWarnings("unchecked")
 	protected void enterArena(ArenaPlayer p){
+		preEnter(p);
+		Team t = getTeam(p);
+		PerformTransition.transition(this, MatchState.ONENTER, p, t, false);
+		insideWaitRoom.remove(p.getName());
+		postEnter(p,t);
+		arenaInterface.onEnter(p,t);
+	}
+
+	private void preEnter(ArenaPlayer p){
 		final String name = p.getName();
+		BTInterface.stopTracking(p);
 		/// Store the point at which they entered the arena
 		if (!oldlocs.containsKey(name)) /// First teleportIn is the location we want
 			oldlocs.put(name, p.getLocation());
-		BTInterface.stopTracking(p);
-		Team t = getTeam(p);
-		PerformTransition.transition(this, MatchState.ONENTER, p, t, false);
-		insideArena.add(name);
-		insideWaitRoom.remove(name);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void postEnter(ArenaPlayer p, Team t){
+		insideArena.add(p.getName());
+		Integer index = null;
 		if (woolTeams){
+			index = teams.indexOf(t);
 			MethodController.updateEventListeners(this, MatchState.ONENTER, p,InventoryClickEvent.class);
-			TeamUtil.setTeamHead(teams.indexOf(t), t);
+			TeamUtil.setTeamHead(index, t);
 		}
-		arenaInterface.onEnter(p,t);
+		if (TagAPIInterface.enabled()){
+			if (index == null) index = teams.indexOf(t);
+			psc.setNameColor(p,TeamUtil.getTeamColor(index));
+		}
 	}
 
 	/**
@@ -592,6 +598,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		notifyListeners(new PlayerLeftEvent(p));
 		if (woolTeams)
 			PlayerStoreController.removeItem(p, TeamUtil.getTeamHead(getTeamIndex(t)));
+		if (TagAPIInterface.enabled()){
+			psc.removeNameColor(p);
+		}
 	}
 
 

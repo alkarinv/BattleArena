@@ -11,9 +11,14 @@ import mc.alk.arena.objects.ArenaPlayer;
 
 import org.bukkit.entity.Player;
 
-public class PlayerController {
+public final class PlayerController {
 	private static HashMap<String,ArenaPlayer> players = new HashMap<String,ArenaPlayer>();
 
+	/**
+	 * wrap a player into an ArenaPlayer
+	 * @param player
+	 * @return
+	 */
 	public static ArenaPlayer toArenaPlayer(Player player){
 		ArenaPlayer ap = players.get(player.getName());
 		if (ap == null){
@@ -31,7 +36,7 @@ public class PlayerController {
 			aplayers.add(toArenaPlayer(p));
 		return aplayers;
 	}
-	
+
 	public static Set<ArenaPlayer> toArenaPlayerSet(Collection<Player> players){
 		Set<ArenaPlayer> aplayers = new HashSet<ArenaPlayer>(players.size());
 		for (Player p: players)
@@ -52,12 +57,4 @@ public class PlayerController {
 			players.add(ap.getPlayer());
 		return players;
 	}
-
-//	public static Collection<Player> getAllBukkitPlayers() {
-//		List<Player> ps = new ArrayList<Player>(players.size());
-//		for (ArenaPlayer ap: players.values())
-//			ps.add(ap.getPlayer());
-//		return null;
-//	}
-
 }

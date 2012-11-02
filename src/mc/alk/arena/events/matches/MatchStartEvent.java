@@ -12,9 +12,8 @@ public class MatchStartEvent extends MatchEvent {
 		super(match);
 		this.teams = teams;
 	}
-	
+
 	public List<Team> getTeams() {
 		return teams;
 	}
-
 }

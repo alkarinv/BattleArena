@@ -32,6 +32,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -71,7 +72,7 @@ public class ArenaMatch extends Match {
 		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL ||
 				state == MatchState.ONOPEN || !insideArena.contains(player.getName())){
 			return;}
-		///TODO Should they be killed when they come back for this trangression?
+
 		Team t = getTeam(player);
 		t.killMember(player);
 		PerformTransition.transition(this, MatchState.ONCOMPLETE, player, t, true);
@@ -147,7 +148,6 @@ public class ArenaMatch extends Match {
 			Team t = getTeam(damager);
 			if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage: "+target.getName()+ " pvp=" + pvp + " t=" +
 					t +" " +(t!=null ? (t.getDisplayName()+":-:"+t.hasMember(target))  : ""));}
-
 			if (t != null && t.hasMember(target)){ /// attacker is on the same team
 				event.setCancelled(true);
 			} else {/// different teams... lets make sure they can actually hit
@@ -252,13 +252,16 @@ public class ArenaMatch extends Match {
 		TransitionOptions to = tops.getOptions(state);
 		if (to==null)
 			return;
-		if (to.hasOption(TransitionOption.WGNOLEAVE) && WorldGuardInterface.hasWorldGuard()){
+		if (arena.hasRegion() && to.hasOption(TransitionOption.WGNOLEAVE) && WorldGuardInterface.hasWorldGuard()){
 			/// Did we actually even move
 			if (event.getFrom().getBlockX() != event.getTo().getBlockX()
 					|| event.getFrom().getBlockY() != event.getTo().getBlockY()
-					|| event.getFrom().getBlockZ() != event.getTo().getBlockZ() &&
-					Bukkit.getWorld(arena.getRegionWorld()).getUID() == event.getTo().getWorld().getUID()) {
-				if (WorldGuardInterface.isLeavingArea(event.getFrom(), event.getTo(), Bukkit.getWorld(arena.getRegionWorld()), arena.getRegion())){
+					|| event.getFrom().getBlockZ() != event.getTo().getBlockZ()){
+				/// Now check world
+				World w = Bukkit.getWorld(arena.getRegionWorld());
+				if (w==null || w.getUID() != event.getTo().getWorld().getUID())
+					return;
+				if (WorldGuardInterface.isLeavingArea(event.getFrom(), event.getTo(), w, arena.getRegion())){
 					event.setCancelled(true);}
 			}
 		}

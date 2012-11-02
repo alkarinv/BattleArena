@@ -49,7 +49,7 @@ public abstract class TeamJoinHandler implements TeamHandler {
 
 	public void deconstruct() {
 		for (Team t: pickupTeams){
-			TeamController.removeTeam(t, this);
+			TeamController.removeTeamHandler(t, this);
 		}
 		pickupTeams.clear();
 	}

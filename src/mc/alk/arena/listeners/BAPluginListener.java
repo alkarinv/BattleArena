@@ -3,6 +3,7 @@ package mc.alk.arena.listeners;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.HeroesInterface;
 import mc.alk.arena.controllers.MobArenaInterface;
+import mc.alk.arena.controllers.TagAPIInterface;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.util.BTInterface;
@@ -50,6 +51,8 @@ public class BAPluginListener implements Listener {
 			loadMobArena();
 		else if (event.getPlugin().getName() == "Heroes")
 			loadHeroes();
+		else if (event.getPlugin().getName() == "TagAPI")
+			loadTagAPI();
 	}
 
 	public void loadAll(){
@@ -63,11 +66,12 @@ public class BAPluginListener implements Listener {
 		loadMultiverseCore();
 		loadMobArena();
 		loadHeroes();
+		loadTagAPI();
 	}
 
 	public void loadHeroChat(){
 		if (AnnouncementOptions.hc == null){
-			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Herochat");
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Herochat");
 			if (plugin != null) {
 				AnnouncementOptions.setHerochat((Herochat) plugin);
 			} else {
@@ -79,7 +83,7 @@ public class BAPluginListener implements Listener {
 
 	public void loadMD(){
 		if (DisguiseInterface.disguiseInterface == null){
-			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("MassDisguise");
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("MassDisguise");
 			if (plugin != null) {
 				DisguiseInterface.disguiseInterface = DisguiseCraft.getAPI();
 			} else {
@@ -90,7 +94,7 @@ public class BAPluginListener implements Listener {
 
 	public void loadBT(){
 		if (BTInterface.battleTracker == null){
-			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("BattleTracker");
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("BattleTracker");
 			if (plugin != null) {
 				BTInterface.battleTracker = (Tracker) plugin;
 			} else {
@@ -101,7 +105,7 @@ public class BAPluginListener implements Listener {
 
 	public void loadMultiInv(){
 		if (!Defaults.PLUGIN_MULTI_INV){
-			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("MultiInv");
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("MultiInv");
 			if (plugin != null) {
 				Defaults.PLUGIN_MULTI_INV=true;
 				Log.info("[BattleArena] MultiInv detected.  Implementing teleport/gamemode workarounds");
@@ -111,7 +115,7 @@ public class BAPluginListener implements Listener {
 
 	public void loadMultiverseCore(){
 		if (!Defaults.PLUGIN_MULITVERSE_CORE){
-			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Multiverse-Core");
 			if (plugin != null) {
 				Defaults.PLUGIN_MULITVERSE_CORE=true;
 				Log.info("[BattleArena] Multiverse-Core detected. Implementing teleport/gamemode workarounds");
@@ -121,7 +125,7 @@ public class BAPluginListener implements Listener {
 
 	public void loadMultiverseInventory(){
 		if (!Defaults.PLUGIN_MULITVERSE_INV){
-			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Inventories");
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Multiverse-Inventories");
 			if (plugin != null) {
 				Defaults.PLUGIN_MULITVERSE_INV=true;
 				Log.info("[BattleArena] Multiverse-Inventories detected. Implementing teleport/gamemode workarounds");
@@ -131,7 +135,7 @@ public class BAPluginListener implements Listener {
 
 	public void loadWorldEdit(){
 		if (!Defaults.PLUGIN_MULTI_INV){
-			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("WorldEdit");
 			if (plugin != null) {
 				if (WorldGuardInterface.setWorldEdit(plugin)){
 					WorldGuardInterface.init();
@@ -154,7 +158,7 @@ public class BAPluginListener implements Listener {
 	}
 	public void loadMobArena(){
 		if (!MobArenaInterface.hasMobArena()){
-			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("MobArena");
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("MobArena");
 			if (plugin != null) {
 				MobArenaInterface.init(plugin);
 				Log.info("[BattleArena] MobArena detected.  Implementing no join when in MobArena");
@@ -164,10 +168,20 @@ public class BAPluginListener implements Listener {
 
 	public void loadHeroes(){
 		if (!HeroesInterface.enabled()){
-			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Heroes");
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Heroes");
 			if (plugin != null) {
 				HeroesInterface.setHeroes(plugin);
 				Log.info("[BattleArena] Heroes detected. Implementing heroes class options");
+			}
+		}
+	}
+
+	public void loadTagAPI(){
+		if (!TagAPIInterface.enabled()){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("TagAPI");
+			if (plugin != null) {
+				TagAPIInterface.enableTagAPI(true);
+				Log.info("[BattleArena] TagAPI detected. Implementing Team colored player names");
 			}
 		}
 	}

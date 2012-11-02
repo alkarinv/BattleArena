@@ -3,7 +3,7 @@ package mc.alk.arena.serializers;
 import java.util.List;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.objects.Exceptions.ConfigException;
+import mc.alk.arena.objects.exceptions.ConfigException;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;

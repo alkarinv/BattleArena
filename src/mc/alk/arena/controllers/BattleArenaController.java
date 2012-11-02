@@ -60,7 +60,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		/// BattleArena controller only tracks the players while they are in the queue
 		/// now that a match is starting the players are no longer our responsibility
 		for (Team t : match.getTeams()){
-			TeamController.removeTeam(t, this);}
+			TeamController.removeTeamHandler(t, this);}
 		match.open();
 	}
 
@@ -77,7 +77,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		removeMatch(am); /// handles removing running match from the BArenaController
 
 		for (Team t : am.getTeams()){ /// Do I need to really do this?
-			TeamController.removeTeam(t, this);}
+			TeamController.removeTeamHandler(t, this);}
 
 		Arena arena = allarenas.get(am.getArena().getName());
 		if (arena != null)
@@ -108,11 +108,11 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	public QPosTeamPair getCurrentQuePos(ArenaPlayer p) {return amq.getQuePos(p);}
 	public ParamTeamPair removeFromQue(ArenaPlayer p) {
 		Team t = TeamController.getTeam(p);
-		TeamController.removeTeam(t, this);
+		TeamController.removeTeamHandler(t, this);
 		return amq.removeFromQue(p);
 	}
 	public ParamTeamPair removeFromQue(Team t) {
-		TeamController.removeTeam(t, this);
+		TeamController.removeTeamHandler(t, this);
 		return amq.removeFromQue(t);
 	}
 	public void addMatchup(Matchup m) {amq.addMatchup(m);}

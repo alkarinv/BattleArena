@@ -30,8 +30,8 @@ public class Defaults {
 	public static final String ARENA_ADMIN = "arena.admin";
 
 	/// MATCH OPTIONS
-	public static int SECONDS_TILL_MATCH = 20;
-	public static int SECONDS_TO_LOOT = 20;
+	public static int SECONDS_TILL_MATCH = 15;
+	public static int SECONDS_TO_LOOT = 15;
 
 	public static int MATCH_TIME = 2*60; /// matchEndTime
 	public static int MATCH_UPDATE_INTERVAL = 30;

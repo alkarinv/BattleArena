@@ -90,8 +90,6 @@ public class BTInterface {
 				}
 				/// yay, we have it, now get our interface
 				bti = Tracker.getInterface(dbName);
-//				PluginDescriptionFile pdf = BattleArena.getSelf().getDescription();
-//				Log.info(pdf.getName()+" is now using BattleTracker interface '" + dbName+"'");
 				currentInterfaces.put(dbName, bti);
 				if (aBTI == null)
 					aBTI = bti;

@@ -17,7 +17,7 @@ import org.bukkit.Bukkit;
 
 
 /**
- * 
+ *
  * @author alkarin
  *
  */
@@ -38,7 +38,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		Message serverMessage = getMessage("event.server_countdownTillEvent");
 		Set<MessageOption> ops = message.getOptions();
 		if (serverChannel != Channel.NullChannel){
-			ops.addAll(serverMessage.getOptions());	
+			ops.addAll(serverMessage.getOptions());
 		}
 		String msg = message.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), ops.size(), 0, message, ops);
@@ -47,17 +47,17 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		if (serverChannel != Channel.NullChannel){
 			msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
-		}	
+		}
 	}
 
 	@Override
 	public void sendEventStarting(Channel serverChannel, Collection<Team> teams) {
-		final String nTeamPath = getStringPathFromSize(teams.size()); 
+		final String nTeamPath = getStringPathFromSize(teams.size());
 		Message message = getMessage("event."+ nTeamPath+".start");
 		Message serverMessage = getMessage("event."+ nTeamPath+".server_start");
 		Set<MessageOption> ops = message.getOptions();
 		if (serverChannel != Channel.NullChannel){
-			ops.addAll(serverMessage.getOptions());	
+			ops.addAll(serverMessage.getOptions());
 		}
 
 		String msg = message.getMessage();
@@ -79,7 +79,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 
 	@Override
 	public void sendEventVictory(Channel serverChannel, Team victor, Collection<Team> losers) {
-		final String nTeamPath = getStringPathFromSize(losers.size()+1); 
+		final String nTeamPath = getStringPathFromSize(losers.size()+1);
 		sendVictory(serverChannel,victor,losers,mp,"event."+nTeamPath+".victory", "event."+nTeamPath+".loss",
 				"event."+nTeamPath+".server_victory");
 	}
@@ -89,12 +89,12 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		if (serverChannel == Channel.NullChannel){
 			return;
 		}
-		
-		final String nTeamPath = getStringPathFromSize(mp.getMinTeams()); 
+
+		final String nTeamPath = getStringPathFromSize(mp.getMinTeams());
 		Message serverMessage;
 		if (mp.getMinTeamSize() > 1)
 			serverMessage = getMessage("event."+nTeamPath+".server_open_teamSizeGreaterThanOne");
-		else 
+		else
 			serverMessage = getMessage("event."+nTeamPath+".server_open");
 		Set<MessageOption> ops = serverMessage.getOptions();
 		String msg = serverMessage.getMessage();
@@ -116,12 +116,12 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 
 	@Override
 	public void sendEventCancelled(Channel serverChannel) {
-		Bukkit.broadcastMessage(EventMessageImpl.colorChat(mp.getPrefix()+"&e has been cancelled!"));		
+		Bukkit.broadcastMessage(EventMessageImpl.colorChat(mp.getPrefix()+"&e has been cancelled!"));
 	}
 
 	@Override
 	public void sendCantFitTeam(Team t) {
-		t.sendMessage("&cThe &6" + event.getDetailedName()+"&c is full");		
+		t.sendMessage("&cThe &6" + event.getDetailedName()+"&c is full");
 	}
 
 	@Override
@@ -133,7 +133,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 
 	@Override
 	public void sendEventDraw(Channel serverChannel, Collection<Team> participants) {
-		final String nTeamPath = getStringPathFromSize(participants.size()); 
+		final String nTeamPath = getStringPathFromSize(participants.size());
 		sendVictory(serverChannel,null,participants,mp,"event."+nTeamPath+".draw","event."+nTeamPath+".draw",
 				"event."+nTeamPath+".server_draw");
 	}

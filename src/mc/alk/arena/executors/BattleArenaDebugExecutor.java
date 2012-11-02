@@ -26,6 +26,8 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.Util;
 
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -35,8 +37,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class BattleArenaDebugExecutor extends CustomCommandExecutor{
-	public BattleArenaDebugExecutor(){}
-
 
 	@Override
 	public void showHelp(CommandSender sender, Command command){
@@ -133,16 +133,18 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return sendMessage(player,ChatColor.GREEN+ "Experience  " + player.getTotalExperience() +" " + ExpUtil.getTotalExperience(player));
 	}
 
-	@MCCommand(cmds={"showMatchParams"}, admin=true)
-	public boolean showMatchParams(CommandSender sender, String paramName) {
+	@MCCommand(cmds={"showVars"}, admin=true)
+	public boolean showVars(CommandSender sender, String paramName) {
 		MatchParams mp = findMatchParam(sender, paramName);
 		if (mp == null)
 			return true;
-		return sendMessage(sender, mp.toString());
+		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(mp, ToStringStyle.MULTI_LINE_STYLE);
+		sendMessage(sender, mp.toString());
+		return sendMessage(sender, rtsb.toString());
 	}
 
-	@MCCommand(cmds={"showConfigOptions"}, admin=true)
-	public boolean showConfigOptions(CommandSender sender, String paramName) {
+	@MCCommand(cmds={"showTransitions"}, admin=true)
+	public boolean showTransitions(CommandSender sender, String paramName) {
 		MatchParams mp = findMatchParam(sender, paramName);
 		if (mp == null)
 			return true;
@@ -153,6 +155,12 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		}
 		sendMessage(sender, mt.getOptionString());
 		return true;
+	}
+
+	@MCCommand(cmds={"showArenaVars"}, admin=true)
+	public boolean showArenaVars(CommandSender sender, Arena arena) {
+		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(arena, ToStringStyle.MULTI_LINE_STYLE);
+		return sendMessage(sender, rtsb.toString());
 	}
 
 	@MCCommand(cmds={"version"}, admin=true)

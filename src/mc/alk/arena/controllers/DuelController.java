@@ -31,7 +31,6 @@ public class DuelController implements TransitionListener{
 		formingDuels.add(duel);
 	}
 
-
 	public Duel accept(ArenaPlayer player) {
 		Duel d = getChallengedDuel(player);
 		if (d != null){
@@ -74,9 +73,9 @@ public class DuelController implements TransitionListener{
 		for (Team t: teams){
 			for (ArenaPlayer ap: t.getPlayers()){
 				MessageUtil.sendMessage(ap,"&4[Duel] &6"+money+" "+Defaults.MONEY_STR+"&e has been refunded");
-				MoneyController.add(ap.getName(), money);						
+				MoneyController.add(ap.getName(), money);
 			}
-		}		
+		}
 	}
 
 	@TransitionEventHandler
@@ -122,15 +121,15 @@ public class DuelController implements TransitionListener{
 		for (ArenaPlayer ap: players){
 			if (MoneyController.balance(ap.getName()) < wager){
 				MessageUtil.sendMessage(ap,"&4[Duel] &cYou don't have enough money to accept the wager!");
-				cancelDuel(d, "&4[Duel]&6" + ap.getDisplayName()+" didn't have enough money for the wager");
+				cancelFormingDuel(d, "&4[Duel]&6" + ap.getDisplayName()+" didn't have enough money for the wager");
 				return false;
-			} 		
+			}
 		}
 		for (ArenaPlayer ap: players){
 			MessageUtil.sendMessage(ap,"&4[Duel] &6"+wager+" "+Defaults.MONEY_STR+"&e has been subtracted from your account");
 			MoneyController.subtract(ap.getName(), wager);
 		}
-		d.setTotalMoney(((double)wager) * players.size());
+		d.setTotalMoney((wager) * players.size());
 		return true;
 	}
 
@@ -194,9 +193,14 @@ public class DuelController implements TransitionListener{
 	}
 
 
-	public void cancelDuel(Duel d, String string) {
-		// TODO Auto-generated method stub
-
+	public void cancelFormingDuel(Duel d, String msg) {
+		formingDuels.remove(d);
+		Collection<ArenaPlayer> players = d.getChallengedPlayers();
+		for (ArenaPlayer p: players){
+			MessageUtil.sendMessage(p, msg);
+		}
+		Team t = d.getChallengerTeam();
+		t.sendMessage(msg);
 	}
 
 }

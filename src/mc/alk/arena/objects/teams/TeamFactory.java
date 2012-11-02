@@ -2,21 +2,17 @@ package mc.alk.arena.objects.teams;
 
 import java.util.Set;
 
-import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
 
 public class TeamFactory {
-	static TeamController tc ;
-	
 	public static Team createTeam(ArenaPlayer p){
-		return new Team(p);	
+		return new Team(p);
 	}
 	public static Team createTeam(Set<ArenaPlayer> players){
-		return new Team(players);	
+		return new Team(players);
 	}
 
 	public static CompositeTeam createCompositeTeam(Set<ArenaPlayer> players) {
 		return new CompositeTeam(players);
 	}
-
 }

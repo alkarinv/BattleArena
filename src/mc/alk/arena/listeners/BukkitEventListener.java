@@ -23,6 +23,8 @@ import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
+import com.alk.util.Log;
+
 
 /**
  *
@@ -30,29 +32,63 @@ import org.bukkit.event.entity.EntityDamageEvent;
  *
  */
 public class BukkitEventListener extends BAEventListener{
-	public MapOfHash<String,ArenaListener> listeners = new MapOfHash<String,ArenaListener>();
-	public HashSet<ArenaListener> mlisteners = new HashSet<ArenaListener>();
+	/** map of player to listeners listening for that player */
+	final public MapOfHash<String,ArenaListener> listeners = new MapOfHash<String,ArenaListener>();
 
+	/** Set of arena listeners */
+	final public HashSet<ArenaListener> mlisteners = new HashSet<ArenaListener>();
+
+	/** The method which will return a Player if invoked */
 	final Method getPlayerMethod;
-	public boolean hasListeners(){
-		return (!listeners.isEmpty() || !mlisteners.isEmpty());
-	}
-	public MapOfHash<String,ArenaListener> getListeners(){
-		return listeners;
-	}
-	public HashSet<ArenaListener> getMatchListeners(){
-		return mlisteners;
-	}
 
-	public Collection<String> getPlayers(){
-		return listeners.keySet();
-	}
+	/**
+	 * Construct a listener to listen for the given bukkit event
+	 * @param bukkitEvent : which event we will listen for
+	 * @param getPlayerMethod : a method which when not null and invoked will return a Player
+	 */
 	public BukkitEventListener(final Class<? extends Event> bukkitEvent, Method getPlayerMethod) {
 		super(bukkitEvent);
 		if (Defaults.DEBUG_EVENTS) System.out.println("Registering GenericPlayerEventListener for type " + bukkitEvent);
 		this.getPlayerMethod = getPlayerMethod;
 	}
 
+	/**
+	 * Does this event even have any listeners
+	 * @return
+	 */
+	public boolean hasListeners(){
+		return (!listeners.isEmpty() || !mlisteners.isEmpty());
+	}
+	/**
+	 * Get the map of players to listeners
+	 * @return
+	 */
+	public MapOfHash<String,ArenaListener> getListeners(){
+		return listeners;
+	}
+	/**
+	 * Get the set of arena listeners
+	 * @return
+	 */
+	public HashSet<ArenaListener> getMatchListeners(){
+		return mlisteners;
+	}
+
+	/**
+	 * Returns the players being listened for in this event
+	 * @return
+	 */
+	public Collection<String> getPlayers(){
+		return listeners.keySet();
+	}
+
+	/**
+	 * Add a player listener to this bukkit event
+	 * @param arenaListener
+	 * @param matchState
+	 * @param mem
+	 * @param players
+	 */
 	public void addListener(ArenaListener arenaListener, MatchState matchState, MatchEventMethod mem, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("    adding listener " + matchState +"   players="+players+"   mem="+mem);
 		if (players != null && mem.getPlayerMethod() != null){
@@ -63,6 +99,13 @@ public class BukkitEventListener extends BAEventListener{
 		}
 	}
 
+	/**
+	 * remove a player listener from this bukkit event
+	 * @param arenaListener
+	 * @param matchState
+	 * @param mem
+	 * @param players
+	 */
 	public void removeListener(ArenaListener arenaListener, MatchState matchState, MatchEventMethod mem, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("    removing listener " + matchState +"   player="+players+"   mem="+mem);
 		if (players != null && mem.getPlayerMethod() != null){
@@ -73,14 +116,11 @@ public class BukkitEventListener extends BAEventListener{
 		}
 	}
 
-	public boolean removeMatchListener(ArenaListener spl) {
-		final boolean removed = mlisteners.remove(spl);
-		if (removed && !hasListeners()){
-			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STOPPING LISTEN " + bukkitEvent);
-			stopListening();}
-		return removed;
-	}
-
+	/**
+	 * add an arena listener to this bukkit event
+	 * @param spl
+	 * @return
+	 */
 	public void addMatchListener(ArenaListener spl) {
 		if (!hasListeners()){
 			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STARTING LISTEN " + bukkitEvent);
@@ -89,14 +129,24 @@ public class BukkitEventListener extends BAEventListener{
 		mlisteners.add(spl);
 	}
 
-	public boolean removeSPListener(String p, ArenaListener spl) {
-		final boolean removed = listeners.remove(p,spl);
+	/**
+	 * remove an arena listener to this bukkit event
+	 * @param spl
+	 * @return
+	 */
+	public boolean removeMatchListener(ArenaListener spl) {
+		final boolean removed = mlisteners.remove(spl);
 		if (removed && !hasListeners()){
 			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STOPPING LISTEN " + bukkitEvent);
 			stopListening();}
 		return removed;
 	}
 
+	/**
+	 * Add a listener for a specific player
+	 * @param player
+	 * @param spl
+	 */
 	public void addSPListener(String p, ArenaListener spl) {
 		if (!hasListeners()){
 			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STARTING LISTEN " + bukkitEvent);
@@ -105,6 +155,25 @@ public class BukkitEventListener extends BAEventListener{
 		listeners.add(p,spl);
 	}
 
+	/**
+	 * Remove a listener for a specific player
+	 * @param player
+	 * @param spl
+	 * @return
+	 */
+	public boolean removeSPListener(String p, ArenaListener spl) {
+		final boolean removed = listeners.remove(p,spl);
+		if (removed && !hasListeners()){
+			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STOPPING LISTEN " + bukkitEvent);
+			stopListening();}
+		return removed;
+	}
+
+
+	/**
+	 * do the bukkit event for players
+	 * @param event
+	 */
 	@Override
 	public void doSpecificPlayerEvent(Event event){
 		if (Defaults.DEBUG_EVENTS) System.out.println("Event " +event + "   " + bukkitEvent + "  " + getPlayerMethod.getName());
@@ -151,26 +220,34 @@ public class BukkitEventListener extends BAEventListener{
 	}
 	private void doMethods(Event event, final Player p, ArenaListener spl, List<MatchEventMethod> methods) {
 		/// For each of the splisteners methods that deal with this BukkitEvent
+		ArenaPlayer arenaPlayer = null;
 		for(MatchEventMethod method: methods){
 			final Class<?>[] types = method.getMethod().getParameterTypes();
-			if (Defaults.DEBUG_EVENTS) System.out.println(" method = " + method + "  types.length=" +types.length);
+			if (Defaults.DEBUG_EVENTS) System.out.println(" method=" + method + "  types.length=" +types.length);
 			final Object[] os = new Object[types.length];
 			os[0] = event;
 
 			try {
-				ArenaPlayer arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;
 				for (int i=1;i< types.length;i++){
 					final Class<?> t = types[i];
+					/// Assign the correct values for method parameters
 					if (Player.class.isAssignableFrom(t)){
 						os[i] = p;
 					} else if (Team.class.isAssignableFrom(t)){
-						os[i] = TeamController.getTeam(arenaPlayer);
+						if (arenaPlayer == null){
+							arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;}
+						if (arenaPlayer != null)
+							os[i] = TeamController.getTeam(arenaPlayer);
 					} else if (ArenaPlayer.class.isAssignableFrom(t)){
-						os[i] = arenaPlayer;
+						if (arenaPlayer == null){
+							arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;}
+						if (arenaPlayer != null)
+							os[i] = arenaPlayer;
 					}
 				}
 				method.getMethod().invoke(spl, os); /// Invoke the listening arenalisteners method
 			} catch (Exception e){
+				Log.err("[BA:Error] method=" + method + ",  types.length=" +types.length +",  p=" + p +",  spl="+spl);
 				e.printStackTrace();
 			}
 		}
@@ -244,6 +321,7 @@ public class BukkitEventListener extends BAEventListener{
 			}
 		}
 	}
+
 	private Entity getEntityFromMethod(final Event event, final Method method) {
 		try{
 			Object o = method.invoke(event);

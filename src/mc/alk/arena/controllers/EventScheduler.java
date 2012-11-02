@@ -12,14 +12,14 @@ import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.EventParams;
-import mc.alk.arena.objects.Exceptions.InvalidEventException;
-import mc.alk.arena.objects.Exceptions.InvalidOptionException;
 import mc.alk.arena.objects.events.TransitionEventHandler;
+import mc.alk.arena.objects.exceptions.InvalidEventException;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.pairs.EventPair;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;

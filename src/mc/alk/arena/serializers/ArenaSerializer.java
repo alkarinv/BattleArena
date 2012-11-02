@@ -18,10 +18,10 @@ import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.Exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.arenas.Persistable;
+import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.spawns.EntitySpawn;
@@ -40,7 +40,6 @@ import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class ArenaSerializer {
 	static BattleArenaController arenaController;
@@ -49,13 +48,13 @@ public class ArenaSerializer {
 	YamlConfiguration config;
 	File f = null;
 	/// Which plugin does this ArenaSerializer belong to
-	JavaPlugin plugin;
+	Plugin plugin;
 
 	public static void setBAC(BattleArenaController bac){
 		arenaController = bac;
 	}
 
-	public ArenaSerializer(JavaPlugin plugin, String path){
+	public ArenaSerializer(Plugin plugin, String path){
 		this.plugin = plugin;
 		this.f = new File(path);
 		if (!f.exists()){
@@ -106,13 +105,13 @@ public class ArenaSerializer {
 
 	public void loadArenas(Plugin plugin){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
-		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
+		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getPath()+" using config "+ config.getName());
 		loadArenas(plugin, BattleArena.getBAC(), config,null);
 	}
 
 	public void loadArenas(Plugin plugin, ArenaType arenaType){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
-		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getAbsolutePath() +" using config "+ config.getName());
+		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getPath() +" using config "+ config.getName());
 		loadArenas(plugin, BattleArena.getBAC(), config, arenaType);
 	}
 
@@ -147,7 +146,7 @@ public class ArenaSerializer {
 		if (hasAny)
 			Log.info(loadedArenas.toString());
 		else
-			Log.info(pname + "No arenas found");
+			Log.info(pname + "No arenas found for " + arenaType.getName());
 		if (hasFailed)
 			Log.info(failedArenas.toString());
 	}

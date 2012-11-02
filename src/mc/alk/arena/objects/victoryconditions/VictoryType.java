@@ -34,7 +34,7 @@ public class VictoryType {
 			return null;
 		return types.get(type);
 	}
-	
+
 	public static String getValidList() {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
@@ -45,6 +45,7 @@ public class VictoryType {
 		}
 		return sb.toString();
 	}
+	@Override
 	public String toString(){
 		return name;
 	}
@@ -77,7 +78,7 @@ public class VictoryType {
 		/// Register our methods
 		MethodController.addMethods(vc, vc.getMethods());
 	}
-	
+
 	public static boolean registered(VictoryCondition vc){
 		final String vcName = vc.getClass().getSimpleName().toUpperCase();
 		return classes.containsKey(vcName) && types.containsKey(vcName);

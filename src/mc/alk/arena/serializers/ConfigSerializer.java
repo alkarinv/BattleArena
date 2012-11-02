@@ -11,6 +11,7 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaClass;
@@ -20,10 +21,11 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.Rating;
-import mc.alk.arena.objects.Exceptions.ConfigException;
-import mc.alk.arena.objects.Exceptions.InvalidArgumentException;
-import mc.alk.arena.objects.Exceptions.InvalidOptionException;
+import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.exceptions.ConfigException;
+import mc.alk.arena.objects.exceptions.InvalidArgumentException;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
@@ -37,6 +39,7 @@ import mc.alk.arena.util.Util.MinMax;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 
 /**
@@ -66,7 +69,7 @@ public class ConfigSerializer extends BaseSerializer{
 		return cs != null ? cs.getConfigurationSection(arenaType.getName()+".otherOptions") : null;
 	}
 
-	public static void reloadConfig(ArenaType arenaType) {
+	public static void reloadConfig(Plugin plugin, ArenaType arenaType) {
 		final String name = arenaType.getName();
 		ConfigSerializer cs = configs.get(arenaType);
 		if (cs == null){
@@ -75,7 +78,7 @@ public class ConfigSerializer extends BaseSerializer{
 		}
 		try {
 			cs.reloadFile();
-			ConfigSerializer.setTypeConfig(name,cs.getConfigurationSection(name),
+			ConfigSerializer.setTypeConfig(plugin, name,cs.getConfigurationSection(name),
 					!(ParamController.getMatchParams(arenaType.getName()) instanceof EventParams));
 		} catch (ConfigException e) {
 			e.printStackTrace();
@@ -86,11 +89,12 @@ public class ConfigSerializer extends BaseSerializer{
 		}
 	}
 
-	public static MatchParams setTypeConfig(final String name, ConfigurationSection cs, boolean match) throws ConfigException, InvalidOptionException {
+	public static MatchParams setTypeConfig(Plugin plugin, final String name, ConfigurationSection cs, boolean match) throws ConfigException, InvalidOptionException {
 		if (cs == null){
 			Log.err("[BattleArena] configSerializer can't load " + name +" with a config section of " + cs);
 			return null;
 		}
+
 		//		System.out.println(" Setting up " + cs.getCurrentPath() +"   name=" +name);
 		/// Set up match options.. specifying defaults where not specified
 		/// Set Arena Type
@@ -98,12 +102,17 @@ public class ConfigSerializer extends BaseSerializer{
 		if (cs.contains("arenaType")){
 			at = ArenaType.fromString(cs.getString("arenaType"));
 		} else if (cs.contains("type")){ /// old config option for setting arenaType
-			at = ArenaType.fromString(cs.getString("type"));
+			String type = cs.getString("type");
+			at = ArenaType.fromString(type);
+			if (at == null && type != null && !type.isEmpty()){ /// User is trying to make a custom type... let them
+				at = ArenaType.register(type, Arena.class, plugin);
+			}
 		} else {
 			at = ArenaType.fromString(cs.getName()); /// Get it from the configuration section name
 			if (at == null)
 				at = ArenaType.VERSUS; /// Default arena Type
 		}
+
 		if (at == null)
 			throw new ConfigException("Could not parse arena type: valid types. " + ArenaType.getValidList());
 
@@ -175,6 +184,11 @@ public class ConfigSerializer extends BaseSerializer{
 		//		pi.setIntervalTime(cs.contains("eventCountdownInterval") ? cs.getInt("eventCountdownInterval") : Defaults.ANNOUNCE_EVENT_INTERVAL);
 		pi.setIntervalTime(cs.contains("matchUpdateInterval") ? cs.getInt("matchUpdateInterval") : Defaults.MATCH_UPDATE_INTERVAL);
 
+		if (cs.contains("customMessages") && cs.getBoolean("customMessages")){
+			APIRegistrationController api = new APIRegistrationController();
+			api.createMessageSerializer(plugin, pi.getName(), match, plugin.getDataFolder());
+		}
+
 		if (cs.contains("announcements")){
 			AnnouncementOptions an = new AnnouncementOptions();
 			BAConfigSerializer.parseAnnouncementOptions(an,true,cs.getConfigurationSection("announcements"), false);
@@ -241,7 +255,7 @@ public class ConfigSerializer extends BaseSerializer{
 		ParamController.removeMatchType(pi);
 		ParamController.addMatchType(pi);
 
-		Log.info(BattleArena.getPName()+" registering match =" + pi +" BattleTrackerInterface=" + (dbName != null ? dbName : "none"));
+		Log.info(BattleArena.getPName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none"));
 		return pi;
 	}
 

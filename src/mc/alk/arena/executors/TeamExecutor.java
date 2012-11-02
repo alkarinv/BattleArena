@@ -26,8 +26,9 @@ import org.bukkit.entity.Player;
 import com.alk.virtualPlayer.VirtualPlayers;
 
 public class TeamExecutor extends CustomCommandExecutor {
-	TeamController teamc; 
+	TeamController teamc;
 	BAExecutor bae;
+
 	public TeamExecutor(BAExecutor bae) {
 		super();
 		this.teamc = BattleArena.getTeamController();
@@ -68,21 +69,15 @@ public class TeamExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"join"},inGame=true,usage="join")
 	public boolean teamJoin(ArenaPlayer player) {
 
-		Team t = teamc.getSelfTeam(player);
+		Team t = teamc.getSelfFormedTeam(player);
 		if (t != null && t.size() >1){
-			return sendMessage(player, "&cYou are already part of a team with &6" + t.getOtherNames(player));			
+			return sendMessage(player, "&cYou are already part of a team with &6" + t.getOtherNames(player));
 		}
 		List<TeamHandler> handlers = teamc.getHandlers(t);
 		if (handlers != null && !handlers.isEmpty()){
 			for (TeamHandler th: handlers){
 				return sendMessage(player, "&cYou cant join until the &6"+th+"&c ends");}
 		}
-		
-//		Event ae = EventController.insideEvent(p);
-//		if (ae != null){
-//			return sendMessage(sender, "&eYou need to leave the event first. &6/" + ae.getCommand()+" leave");
-//		}
-
 		if (!teamc.inFormingTeam(player)){
 			sendMessage(player,ChatColor.RED + "You are not part of a forming team");
 			return sendMessage(player,ChatColor.YELLOW + "Usage: &6/team create <player2> [player3]...");
@@ -97,7 +92,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		if (ft.hasAllPlayers()){
 			ft.sendMessage("&2Your team is now complete.  you can now join an event or arena");
 			teamc.removeFormingTeam(ft);
-			teamc.addSelfTeam(ft);
+			teamc.addSelfFormedTeam(ft);
 		}
 		return true;
 	}
@@ -116,7 +111,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		Set<Player> foundplayers = new HashSet<Player>();
 		Set<String> unfoundplayers = new HashSet<String>();
 		for (int i=1;i<args.length;i++){
-			players.add((String)args[i]);}
+			players.add(args[i]);}
 		if (players.contains(player.getName()))
 			return sendMessage(player,ChatColor.YELLOW + "You can not invite yourself to a team");
 
@@ -135,9 +130,9 @@ public class TeamExecutor extends CustomCommandExecutor {
 		}
 		Set<ArenaPlayer> foundArenaPlayers = PlayerController.toArenaPlayerSet(foundplayers);
 		for (ArenaPlayer p: foundArenaPlayers){
-			
+
 			if (Defaults.DEBUG){System.out.println("player=" + player.getName());}
-			Team t = teamc.getSelfTeam(p);
+			Team t = teamc.getSelfFormedTeam(p);
 			if (t!= null || !bae.canJoin(p)){
 				sendMessage(player,"&6"+ p.getName() + "&e is already part of a team or is in an Event");
 				return sendMessage(player,"&eCreate team &4cancelled!");
@@ -196,24 +191,26 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"disband","leave"},usage="disband")
+	@MCCommand(cmds={"disband","leave"},usage="disband", inGame=true)
 	public boolean teamDisband(ArenaPlayer player) {
 		/// Try to disband a forming team first
 		FormingTeam ft = teamc.getFormingTeam(player);
 		if (ft != null){
 			teamc.removeFormingTeam(ft);
-			ft.sendMessage("&eYour team has been disbanded by " + player.getName());
+			ft.sendToOtherMembers(player,"&eYour team has been disbanded by " + player.getName());
+			sendMessage(player, "&2You have disbanded your team with " + ft.getName());
 			return true;
 		}
-		
+
 		/// If in a self made team, let them disband it regardless
 		/// This will cause the team to try and leave the event, queue, or whatever
-		Team t = teamc.getSelfTeam(player);
+		Team t = teamc.getSelfFormedTeam(player);
 		if (t== null){
 			return sendMessage(player,"&eYou aren't part of a team");}
 
-		teamc.removeSelfTeam(t);
-		t.sendMessage("&eYour team has been disbanded by " + player.getName());
+		teamc.removeSelfFormedTeam(t);
+		t.sendToOtherMembers(player,"&eYour team has been disbanded by " + player.getName());
+		sendMessage(player, "&2You have disbanded your team with " + t.getName());
 
 		/// Iterate over the handlers
 		/// try and leave each one (hopefully they are only in 1)
@@ -227,39 +224,22 @@ public class TeamExecutor extends CustomCommandExecutor {
 						sendMessage(p, "&2You are leaving the &6" + th);
 						th.leave(p);
 					}
-				}				
+				}
 			}
 		}
-//		if (ac.removeFromQue(t) != null){
-//			t.sendMessage(ChatColor.YELLOW + "You have left the queue");
-//		}
-
-//		Event ae = EventController.insideEvent(pl);
-//		if (ae != null){
-//			if (ae.canLeave(pl)){
-//				ae.leave(pl);
-//				t.sendMessage("&eThe team has left the &6" + ae.getName());
-//			} else {
-//				return MatchMessager.sendMessage(pl, "&eYou can't leave the &6" +ae.getName()+"&e while its " + ae.getState());
-//			}
-//		} 
-//		if (!bae.canLeave(sender, pl)){
-//			return true;
-//		}
-
 		return true;
 	}
 
 	@MCCommand(cmds={"delete"},admin=true,online={1}, usage="delete")
 	public boolean teamDelete(CommandSender sender, ArenaPlayer player) {
-		Team t = teamc.getSelfTeam(player);
+		Team t = teamc.getSelfFormedTeam(player);
 		if (t== null){
 			return sendMessage(sender,ChatColor.YELLOW + player.getName() + " is not part of a team");}
 		Event ae = EventController.insideEvent(player);
 		if (ae != null){
 			ae.leave(player);
 		} else {
-			teamc.removeSelfTeam(t);	
+			teamc.removeSelfFormedTeam(t);
 		}
 		t.sendMessage(ChatColor.YELLOW + "The team has been disbanded ");
 		return true;
@@ -272,7 +252,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		if (t== null){
 			sendMessage(p,ChatColor.YELLOW + "You are not part of a forming team");
 			return true;
-		} 
+		}
 		t.sendMessage(ChatColor.YELLOW + "The team has been disbanded as " + p.getDisplayName() +" has declined");
 		teamc.removeFormingTeam(t);
 		return true;

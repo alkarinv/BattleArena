@@ -11,5 +11,4 @@ public class CancellableEvent extends BAEvent{
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
 	}
-
 }

@@ -4,7 +4,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 
 public class PlayerLeftEvent extends BAEvent{
 	final ArenaPlayer arenaPlayer;
-	
+
 	public PlayerLeftEvent(ArenaPlayer arenaPlayer) {
 		this.arenaPlayer = arenaPlayer;
 	}
@@ -12,5 +12,5 @@ public class PlayerLeftEvent extends BAEvent{
 	public ArenaPlayer getPlayer(){
 		return arenaPlayer;
 	}
-	
+
 }

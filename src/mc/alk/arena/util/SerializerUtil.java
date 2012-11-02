@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import mc.alk.arena.objects.Exceptions.InvalidArgumentException;
+import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

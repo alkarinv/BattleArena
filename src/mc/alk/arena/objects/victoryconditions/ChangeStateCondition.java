@@ -8,9 +8,9 @@ import mc.alk.arena.listeners.TransitionListener;
 
 public class ChangeStateCondition implements ArenaListener, TransitionListener{
 	static Random rand = new Random(); /// Our randomizer
-	
-	final Match match;
-	
+
+	protected final Match match;
+
 	public ChangeStateCondition(Match match){
 		this.match = match;
 	}

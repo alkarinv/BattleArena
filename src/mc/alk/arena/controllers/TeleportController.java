@@ -28,7 +28,7 @@ public class TeleportController implements Listener{
 	static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
     private final int TELEPORT_FIX_DELAY = 15; // ticks
 
-	///TODO showPlayer doesnt, work.. attempt sending packets for avoiding invisible players
+	///TODO remove these work around teleport hacks when bukkit fixes the invisibility on teleport issue
     /// modified from the teleportFix2 found online
 	public static void teleportPlayer(final Player p, final Location loc, boolean in, final boolean die, final boolean wipe){
 		if (!p.isOnline() || p.isDead()){
@@ -40,7 +40,7 @@ public class TeleportController implements Listener{
 		}
 		teleport(p,loc);
 	}
-	
+
 	private static void teleporting(Player player, boolean isteleporting){
 		if (isteleporting){
 			teleporting.add(player.getName());
@@ -68,7 +68,7 @@ public class TeleportController implements Listener{
 	            @Override
 	            public void run() {
 	                // Refresh nearby clients
-	                final List<Player> nearby = getPlayersWithin(player, visibleDistance);	                
+	                final List<Player> nearby = getPlayersWithin(player, visibleDistance);
 	                // Hide every player
 	                updateEntities(player, nearby, false);
 	                // Then show them again
@@ -80,7 +80,7 @@ public class TeleportController implements Listener{
 	                }, 2);
 	            }
 	        }, TELEPORT_FIX_DELAY);
-	        
+
 		}
 	}
 
@@ -107,7 +107,7 @@ public class TeleportController implements Listener{
         }
         return res;
     }
-    
+
 	public static void teleport(final Player p, final Location location){
 		Location loc = location.clone();
 		loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
@@ -129,7 +129,7 @@ public class TeleportController implements Listener{
 
 		/// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
 		/// or game states ... lets not let this happen
-		PermissionsUtil.givePlayerInventoryPerms(p);			
+		PermissionsUtil.givePlayerInventoryPerms(p);
 
 		if (!p.teleport(loc)){
 			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + p.getName() + " loc=" + loc);}

@@ -10,12 +10,13 @@ public class BAEvent extends Event{
 	public void callEvent(){
 		Bukkit.getServer().getPluginManager().callEvent(this);
 	}
-	
+
+	@Override
 	public HandlerList getHandlers() {
         return handlers;
     }
- 
+
     public static HandlerList getHandlerList() {
         return handlers;
-    }    
+    }
 }
