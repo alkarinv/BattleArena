@@ -263,8 +263,6 @@ public class BattleArena extends JavaPlugin{
 		/// Reserve an arena.  Hold people in the area till ffa starts
 		mp = ParamController.getEventParamCopy("FreeForAll");
 		if (mp != null){
-//			ReservedArenaEvent event = new ReservedArenaEvent(mp);
-//			EventController.addEvent(mp);
 			try{
 				EventExecutor executor = new ReservedArenaEventExecutor(null);
 				getCommand("ffa").setExecutor(executor);
@@ -279,8 +277,6 @@ public class BattleArena extends JavaPlugin{
 		/// Reserve an arena.  Let people join and enter at will
 		mp = ParamController.getEventParamCopy("DeathMatch");
 		if (mp != null){
-//			ReservedArenaEvent event = new AlwaysJoinRAE(mp);
-//			EventController.addEvent(event);
 			try{
 				EventExecutor executor = new ReservedArenaEventExecutor(null);
 				getCommand("dm").setExecutor(executor);

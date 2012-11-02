@@ -168,7 +168,9 @@ public class PerformTransition {
 			if (mo.hasOption(TransitionOption.GIVECLASS)){
 				final ArenaClass ac = getArenaClass(mo,teamIndex);
 				if (ac != null){ /// Give class items and effects
-					ArenaClassController.giveClass(p.getPlayer(), ac);}
+					ArenaClassController.giveClass(p.getPlayer(), ac);
+					p.setChosenClass(ac);
+				}
 			}
 			if (mo.hasOption(TransitionOption.GIVEITEMS)){
 				giveItems(transition, p, mo.getGiveItems(),teamIndex, am.woolTeams, insideArena);}
