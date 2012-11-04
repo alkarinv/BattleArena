@@ -363,6 +363,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 
 		amq.stop();
 		amq.removeAllArenas(arenaType);
+		amq.clearTeamQueues(arenaType);
 		synchronized(allarenas){
 			for (String aName: allarenas.keySet()){
 				Arena a = allarenas.get(aName);

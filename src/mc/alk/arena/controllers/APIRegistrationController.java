@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
@@ -29,54 +30,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class APIRegistrationController {
 
-	public void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass) {
-		registerMatchType(plugin,name,cmd,arenaClass,new BAExecutor());
-	}
-
-	public void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, BAExecutor executor) {
-		registerMatchType(plugin,name,cmd,arenaClass,new BAExecutor(),true,true);
-	}
-
-	public void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass,
-			BAExecutor executor, boolean registerCommand, boolean createMessages) {
-		init(plugin,name,cmd,arenaClass,true,createMessages);
-		if (registerCommand){
-			/// Set up command executors
-			registerCommand(plugin, cmd, executor);
-		}
-	}
-
-	private void registerCommand(JavaPlugin plugin, String cmd, CommandExecutor executor) {
-		try{
-			plugin.getCommand(cmd).setExecutor(executor);
-		} catch(Exception e){
-			Log.err(plugin.getName() + " command " + cmd +" was not found. Did you register it in your plugin.yml?");
-		}
-	}
-
-	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass) {
-		registerEventType(plugin,name,cmd,arenaClass,new ReservedArenaEventExecutor());
-	}
-
-	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor) {
-		registerEventType(plugin,name,cmd,arenaClass,new ReservedArenaEventExecutor(), true,true);
-	}
-
-	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass,
-			EventExecutor executor, boolean registerCommand, boolean createMessages) {
-		init(plugin,name,cmd,arenaClass,false, createMessages);
-		EventParams mp = ParamController.getEventParamCopy(name);
-		if (mp != null){
-			if (registerCommand){
-				registerCommand(plugin, cmd, executor);}
-			EventController.addEventExecutor(mp, executor);
-		} else {
-			Log.err(name+" type not found");
-		}
-	}
-
-	private void init(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass,
-			boolean match, boolean createMessages){
+	private void init(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, boolean match){
 		if (plugin == null){
 			Log.err("Plugin can not be null");
 			return;
@@ -110,53 +64,36 @@ public class APIRegistrationController {
 
 		cc.setConfig(at, pluginFile);
 
-		if (createMessages){
-			try {
-				createMessageSerializer(plugin, name, match, dir);
-			} catch (ConfigException e) {
-				System.err.println("Error trying to load messages yaml. " + e.getMessage());
-				e.printStackTrace();
+		/// Make a message serializer for this event, and make the messages.yml file if it doesnt exist
+		MessageSerializer ms = new MessageSerializer(name);
+
+		String messagesFileName = name+"Messages.yml";
+		fileName = match ? "defaultMatchMessages.yml": "defaultEventMessages.yml";
+
+		pluginFile = new File(dir.getPath()+File.separator+messagesFileName);
+		defaultPluginFile = new File(messagesFileName);
+		defaultFile = new File("default_files"+File.separator+fileName);
+
+		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
+			pluginFile = BattleArena.getSelf().load("/default_files/"+fileName, pluginFile.getAbsolutePath());
+			if (pluginFile == null){
+				Log.err(plugin.getName() + " " + messagesFileName+" could not be loaded");
+				return;
 			}
 		}
+		ms.setConfig(pluginFile);
+		ms.loadAll();
+		MessageSerializer.addMessageSerializer(name,ms);
 
 		try {
-			Log.info("["+plugin.getName()+ "] Loading config from " + cc.getFile().getPath());
+			Log.info("["+plugin.getName()+ "] Loading config from " + cc.getFile().getAbsolutePath());
 			ConfigSerializer.setTypeConfig(plugin, name,cc.getConfigurationSection(name), match);
 		} catch (Exception e){
 			System.err.println("Error trying to load "+name+" config");
 			e.printStackTrace();
 		}
 	}
-
-	public void createMessageSerializer(Plugin plugin, String name, boolean match, File dir) throws ConfigException {
-		File pluginFile;
-		/// Make a message serializer for this match/event, and make the messages.yml file if it doesnt exist
-		MessageSerializer ms = new MessageSerializer(name);
-
-		pluginFile = createMessageFile(plugin, name, match, dir);
-		ms.setConfig(pluginFile);
-		ms.loadAll();
-		MessageSerializer.addMessageSerializer(name,ms);
-	}
-
-	private static File createMessageFile(Plugin plugin, String name, boolean match, File dir) throws ConfigException {
-		String messagesFileName = name+"Messages.yml";
-		String fileName = match ? "defaultMatchMessages.yml": "defaultEventMessages.yml";
-
-		File pluginFile = new File(dir.getPath()+File.separator+messagesFileName);
-		File defaultPluginFile = new File(messagesFileName);
-		File defaultFile = new File("default_files"+File.separator+fileName);
-
-		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
-			pluginFile = BattleArena.getSelf().load("/default_files/"+fileName, pluginFile.getAbsolutePath());
-			if (pluginFile == null){
-				throw new ConfigException(plugin.getName() + " " + messagesFileName+" could not be loaded");
-			}
-		}
-		return pluginFile;
-	}
-
-	public static boolean loadFile(Plugin plugin, File defaultFile, File defaultPluginFile, File pluginFile){
+	private static boolean loadFile(Plugin plugin, File defaultFile, File defaultPluginFile, File pluginFile){
 		if (pluginFile.exists())
 			return true;
 
@@ -179,10 +116,11 @@ public class APIRegistrationController {
 			if (inputStream!=null)
 				try {inputStream.close();} catch (IOException e) {}
 		}
+
 		return true;
 	}
 
-	public static boolean loadConfigFile(Plugin plugin, File defaultFile, File defaultPluginFile, File pluginFile,
+	private boolean loadConfigFile(Plugin plugin, File defaultFile, File defaultPluginFile, File pluginFile,
 			String name, String cmd) {
 		if (pluginFile.exists())
 			return true;
@@ -214,7 +152,7 @@ public class APIRegistrationController {
 		return true;
 	}
 
-	public static InputStream getInputStream(Plugin plugin, File defaultFile, File defaultPluginFile) {
+	private static InputStream getInputStream(Plugin plugin, File defaultFile, File defaultPluginFile) {
 		InputStream inputStream = null;
 		/// Load from pluginJar
 		inputStream = plugin.getClass().getClassLoader().getResourceAsStream(defaultPluginFile.getPath());
@@ -222,6 +160,80 @@ public class APIRegistrationController {
 			inputStream = BattleArena.getSelf().getClass().getClassLoader().getResourceAsStream(defaultFile.getPath());
 		}
 		return inputStream;
+	}
+
+	public void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass) {
+		registerMatchType(plugin,name,cmd,arenaClass,new BAExecutor());
+	}
+
+	public void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, BAExecutor executor) {
+		init(plugin,name,cmd,arenaClass,true);
+
+		/// Set up command executors
+		registerCommand(plugin, cmd, executor);
+	}
+
+	private void registerCommand(JavaPlugin plugin, String cmd, CommandExecutor executor) {
+		try{
+			plugin.getCommand(cmd).setExecutor(executor);
+		} catch(Exception e){
+			Log.err(plugin.getName() + " command " + cmd +" was not found. Did you register it in your plugin.yml?");
+		}
+	}
+
+	public void createMessageSerializer(Plugin plugin, String name, boolean match, File dir) throws ConfigException {
+		File pluginFile;
+		/// Make a message serializer for this match/event, and make the messages.yml file if it doesnt exist
+		MessageSerializer ms = new MessageSerializer(name);
+
+		pluginFile = createMessageFile(plugin, name, match, dir);
+		ms.setConfig(pluginFile);
+		ms.loadAll();
+		MessageSerializer.addMessageSerializer(name,ms);
+	}
+	private static File createMessageFile(Plugin plugin, String name, boolean match, File dir) throws ConfigException {
+		String messagesFileName = name+"Messages.yml";
+		String fileName = match ? "defaultMatchMessages.yml": "defaultEventMessages.yml";
+
+		File pluginFile = new File(dir.getPath()+File.separator+messagesFileName);
+		File defaultPluginFile = new File(messagesFileName);
+		File defaultFile = new File("default_files"+File.separator+fileName);
+
+		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
+			pluginFile = BattleArena.getSelf().load("/default_files/"+fileName, pluginFile.getAbsolutePath());
+			if (pluginFile == null){
+				throw new ConfigException(plugin.getName() + " " + messagesFileName+" could not be loaded");
+			}
+		}
+		return pluginFile;
+	}
+
+
+	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass) {
+		registerEventType(plugin,name,cmd,arenaClass,new ReservedArenaEventExecutor());
+	}
+
+	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor) {
+		init(plugin,name,cmd,arenaClass,false);
+		EventParams mp = ParamController.getEventParamCopy(name);
+		if (mp != null){
+			registerCommand(plugin, cmd, executor);
+			EventController.addEventExecutor(mp, executor);
+		} else {
+			Log.err(name+" type not found");
+		}
+	}
+
+	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass,
+			Event event, EventExecutor executor) {
+		init(plugin,name,cmd,arenaClass,false);
+		EventParams mp = ParamController.getEventParamCopy(name);
+		if (mp != null){
+			plugin.getCommand(cmd).setExecutor(executor);
+			EventController.addEventExecutor(mp, executor);
+		} else {
+			Log.err(name+" type not found");
+		}
 	}
 
 }

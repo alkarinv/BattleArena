@@ -13,9 +13,9 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.PlayerStoreController.PInv;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.KeyValue;
 
 import org.bukkit.Bukkit;
@@ -27,13 +27,13 @@ import org.bukkit.inventory.ItemStack;
 public class InventorySerializer {
 
 	public static List<String> getDates(final String name){
-		BaseSerializer serializer = getSerializer(name);		
+		BaseSerializer serializer = getSerializer(name);
 		if (serializer == null)
 			return null;
 		PriorityQueue<Long> dates = new PriorityQueue<Long>(Defaults.NUM_INV_SAVES, Collections.reverseOrder());
 		Set<String> keys = serializer.config.getKeys(false);
 
-		DateFormat format = DateFormat.getDateTimeInstance( DateFormat.LONG, DateFormat.LONG); 
+		DateFormat format = DateFormat.getDateTimeInstance( DateFormat.LONG, DateFormat.LONG);
 
 		for (String key: keys){
 			ConfigurationSection cs = serializer.config.getConfigurationSection(key);
@@ -59,10 +59,10 @@ public class InventorySerializer {
 	public static PInv getInventory(final String name, int index){
 		if (index < 0 || index >= Defaults.NUM_INV_SAVES){
 			return null;}
-		BaseSerializer serializer = getSerializer(name);		
+		BaseSerializer serializer = getSerializer(name);
 		if (serializer == null)
 			return null;
-		PriorityQueue<KeyValue<Long,PInv>> dates = 
+		PriorityQueue<KeyValue<Long,PInv>> dates =
 				new PriorityQueue<KeyValue<Long,PInv>>(Defaults.NUM_INV_SAVES, new Comparator<KeyValue<Long,PInv>>(){
 					@Override
 					public int compare(KeyValue<Long, PInv> arg0, KeyValue<Long, PInv> arg1) {
@@ -71,7 +71,7 @@ public class InventorySerializer {
 				});
 		Set<String> keys = serializer.config.getKeys(false);
 
-		DateFormat format = DateFormat.getDateTimeInstance( DateFormat.LONG, DateFormat.LONG); 
+		DateFormat format = DateFormat.getDateTimeInstance( DateFormat.LONG, DateFormat.LONG);
 
 		for (String key: keys){
 			ConfigurationSection cs = serializer.config.getConfigurationSection(key);
@@ -124,7 +124,7 @@ public class InventorySerializer {
 						continue;
 					stritems.add(InventoryUtil.getItemString(is));}
 				pcs.set("contents", stritems);
-				serializer.save();	
+				serializer.save();
 			}
 		});
 	}
@@ -134,7 +134,7 @@ public class InventorySerializer {
 		File dir = new File(BattleArena.getSelf().getDataFolder()+"/inventories/");
 		if (!dir.exists()){
 			dir.mkdirs();}
-		return bs.setConfig(dir.getPath()+"/"+name+".yml") ? bs : null; 
+		return bs.setConfig(dir.getPath()+"/"+name+".yml") ? bs : null;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -151,7 +151,7 @@ public class InventorySerializer {
 		}
 		try{p.updateInventory();} catch(Exception e){ /// yes this has thrown errors on me before
 			return false; /// do I really want to return false? do I care if this doesnt go through?
-		} 
+		}
 		return true;
 	}
 

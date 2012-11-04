@@ -142,7 +142,9 @@ public class EventExecutor extends BAExecutor{
 	@MCCommand(cmds={"leave"},inGame=true,usage="leave", order=2)
 	public boolean eventLeave(ArenaPlayer p) {
 		Event event = controller.getEvent(p);
-		if (event == null || !event.waitingToJoin(p) && !event.hasPlayer(p)){
+		if (event == null){
+			return sendMessage(p,"&eYou aren't inside an event!");}
+		if (!event.waitingToJoin(p) && !event.hasPlayer(p)){
 			return sendMessage(p,"&eYou aren't inside the &6" + event.getName());}
 		event.leave(p);
 		return sendMessage(p,"&eYou have left the &6" + event.getName());

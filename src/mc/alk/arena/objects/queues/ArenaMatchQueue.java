@@ -338,15 +338,21 @@ public class ArenaMatchQueue {
 		}
 	}
 
-	public void removeAllArenas(ArenaType at) {
+	public void removeAllArenas(ArenaType arenaType) {
 		synchronized(arenaqueue){
 			Iterator<Arena> iter = arenaqueue.iterator();
 			Arena a = null;
 			while (iter.hasNext()){
 				a = iter.next();
-				if (a.getArenaType() == at)
+				if (a.getArenaType() == arenaType)
 					iter.remove();
 			}
+		}
+	}
+
+	public void clearTeamQueues(ArenaType arenaType) {
+		synchronized(tqs){
+			tqs.clear();
 		}
 	}
 

@@ -6,7 +6,7 @@ import mc.alk.arena.util.PermissionsUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.PlayerInventory;
 
 public class ArenaPlayer {
 	Player player;
@@ -78,7 +78,7 @@ public class ArenaPlayer {
 		return player.isDead();
 	}
 
-	public Inventory getInventory() {
+	public PlayerInventory getInventory() {
 		return player.getInventory();
 	}
 

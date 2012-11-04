@@ -9,15 +9,14 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
 public class PlayerStoreController {
 
@@ -41,10 +40,6 @@ public class PlayerStoreController {
 	final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
 	final HashMap <String, String> arenaclass = new HashMap<String,String>();
 
-	public static class PInv {
-		public ItemStack[] contents;
-		public ItemStack[] armor;
-	}
 
 	@SuppressWarnings("deprecation")
 	public void storeExperience(ArenaPlayer player) {
@@ -74,86 +69,32 @@ public class PlayerStoreController {
 	}
 
 	public void storeItems(ArenaPlayer player) {
-		Player p = player.getPlayer();
+		final Player p = player.getPlayer();
 		final String name = p.getName();
-//		FileLogger.log("storing items for = " + p.getName() +" contains=" + itemmap.containsKey(name));
 		if (Defaults.DEBUG_STORAGE)  System.out.println("storing items for = " + p.getName() +" contains=" + itemmap.containsKey(name));
 
 		if (itemmap.containsKey(name))
 			return;
-		PInv pinv = new PInv();
-		try{
-			pinv.contents = p.getInventory().getContents();
-			pinv.armor = p.getInventory().getArmorContents();
-			for (ItemStack is: pinv.contents){
-				if (is == null || is.getType()==Material.AIR)
-					continue;
-//				FileLogger.log("s itemstack="+ InventoryUtil.getItemString(is));
-			}
-			for (ItemStack is: pinv.armor){
-				if (is == null || is.getType()==Material.AIR)
-					continue;
-//				FileLogger.log("s armor itemstack="+ InventoryUtil.getItemString(is));
-			}
-
-			if (itemmap.containsKey(name)){
-				PInv oldItems = itemmap.get(name);
-				for (ItemStack is: oldItems.contents){
-					if (is == null || is.getType()==Material.AIR)
-						continue;
-//					FileLogger.log("olditems itemstack="+ InventoryUtil.getItemString(is));
-				}
-				for (ItemStack is: oldItems.armor){
-					if (is == null || is.getType()==Material.AIR)
-						continue;
-//					FileLogger.log("olditems armor itemstack="+ InventoryUtil.getItemString(is));
-				}
-			}
-			InventoryUtil.closeInventory(p);
-//			p.setGameMode(GameMode.SURVIVAL);
-//			InventoryUtil.clearInventory(p);
-		}catch (Exception e){
-			e.printStackTrace();
-		}
+		InventoryUtil.closeInventory(p);
+		final PInv pinv = new PInv(player.getInventory());
 		itemmap.put(name, pinv);
 		InventorySerializer.saveInventory(name,pinv);
 	}
 
 	public void restoreItems(ArenaPlayer p) {
 		if (Defaults.DEBUG_STORAGE)  System.out.println("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
-		PInv pinv = itemmap.remove(p.getName());
+		final PInv pinv = itemmap.remove(p.getName());
 		if (pinv == null)
 			return;
 		setInventory(p, pinv);
 	}
 
 	public static void setInventory(ArenaPlayer p, PInv pinv) {
-//		FileLogger.log("restoring items for = " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
 		if (Defaults.DEBUG_STORAGE) Log.info("restoring items for " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
 		if (p.isOnline() && !p.isDead()){
-			setOnlineInventory(p.getPlayer(), pinv);
+			InventoryUtil.addToInventory(p.getPlayer(), pinv);
 		} else {
 			BAPlayerListener.restoreItemsOnReenter(p.getName(), pinv);
-		}
-	}
-
-	@SuppressWarnings("deprecation")
-	private static void setOnlineInventory(Player p, PInv pinv) {
-		PlayerInventory inv = p.getPlayer().getInventory();
-		for (ItemStack is: pinv.armor){
-			InventoryUtil.addItemToInventory(p, is);
-		}
-		inv.setContents(pinv.contents);
-		try {p.getPlayer().updateInventory(); } catch (Exception e){} /// Yes this can throw errors
-		for (ItemStack is: pinv.contents){
-			if (is == null || is.getType()==Material.AIR)
-				continue;
-//			FileLogger.log("r  itemstack="+ InventoryUtil.getItemString(is));
-		}
-		for (ItemStack is: pinv.armor){
-			if (is == null || is.getType()==Material.AIR)
-				continue;
-//			FileLogger.log("r aitemstack="+ InventoryUtil.getItemString(is));
 		}
 	}
 
@@ -187,7 +128,7 @@ public class PlayerStoreController {
 
 	public static void removeItem(ArenaPlayer p, ItemStack is) {
 		if (p.isOnline()){
-			InventoryUtil.removeItems((PlayerInventory)p.getInventory(),is);
+			InventoryUtil.removeItems(p.getInventory(),is);
 		} else {
 			BAPlayerListener.removeItemOnEnter(p,is);
 		}

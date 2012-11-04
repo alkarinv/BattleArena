@@ -42,7 +42,7 @@ public class TournamentEvent extends Event implements Listener{
 	boolean preliminary_round = false;
 	ArrayList<Team> aliveTeams = new ArrayList<Team>();
 	ArrayList<Team> competingTeams = new ArrayList<Team>();
-	final EventParams oParms ; /// Our original default params
+	final EventParams oParms ; /// Our original default tourney params from the config
 	Random rand = new Random();
 
 	public TournamentEvent(EventParams params) {

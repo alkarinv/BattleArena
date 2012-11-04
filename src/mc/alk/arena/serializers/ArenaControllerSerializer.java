@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.controllers.PlayerStoreController.PInv;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.SerializerUtil;
 
 import org.bukkit.GameMode;

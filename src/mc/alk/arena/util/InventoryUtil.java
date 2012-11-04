@@ -41,8 +41,25 @@ public class InventoryUtil {
 		public String toString(){return  (e !=null?e.getName():"null")+":" + lvl;}
 	}
 
+	public static class PInv {
+		public ItemStack[] contents;
+		public ItemStack[] armor;
+		public PInv() {}
+		public PInv(PlayerInventory inventory) {
+			contents = inventory.getContents();
+			setArmor(inventory);
+		}
+		public void setArmor(PlayerInventory inventory){
+			this.armor=new ItemStack[4];
+			this.armor[ArmorType.HELM.ordinal()] = inventory.getHelmet();
+			this.armor[ArmorType.CHEST.ordinal()] = inventory.getChestplate();
+			this.armor[ArmorType.LEGGINGS.ordinal()] = inventory.getLeggings();
+			this.armor[ArmorType.BOOTS.ordinal()] = inventory.getBoots();
+		}
+	}
+
 	public enum ArmorLevel{WOOL,LEATHER,IRON,GOLD,CHAINMAIL,DIAMOND};
-	public enum ArmorType{HELM,CHEST,LEGGINGS,BOOTS};
+	public enum ArmorType{BOOTS,LEGGINGS,CHEST,HELM};
 
 	public static Enchantment getEnchantmentByCommonName(String iname){
 		iname = iname.toLowerCase();
@@ -308,32 +325,7 @@ public class InventoryUtil {
 		PlayerInventory inv = player.getInventory();
 		Material itemType =itemStack.getType();
 		if (armor.containsKey(itemType)){
-			final boolean isHelmet = armor.get(itemType).type == ArmorType.HELM;
-			/// no item: add to armor slot
-			/// item better: add old to inventory, new to armor slot
-			/// item notbetter: add to inventory
-			ItemStack oldArmor = getArmorSlot(inv,armor.get(itemType));
-			boolean empty = (oldArmor == null || oldArmor.getType() == Material.AIR);
-			boolean better = empty ? false : armorSlotBetter(armor.get(oldArmor.getType()),armor.get(itemType));
-			if (empty || better){
-				switch (armor.get(itemType).type){
-				case HELM:
-					if (empty || (better && !ignoreCustomHelmet)){
-						inv.setHelmet(itemStack);
-					}
-					break;
-				case CHEST: inv.setChestplate(itemStack); break;
-				case LEGGINGS: inv.setLeggings(itemStack); break;
-				case BOOTS: inv.setBoots(itemStack); break;
-				}
-			}
-			if (!empty){
-				if (better && !(isHelmet && ignoreCustomHelmet)){
-					addItemToInventory(inv, oldArmor,oldArmor.getAmount());
-				} else {
-					addItemToInventory(inv, itemStack,stockAmount);
-				}
-			}
+			addArmorToInventory(inv,itemStack,stockAmount,ignoreCustomHelmet);
 		} else {
 			addItemToInventory(inv, itemStack,stockAmount);
 		}
@@ -341,6 +333,36 @@ public class InventoryUtil {
 			try { player.updateInventory(); } catch (Exception e){}
 	}
 
+
+	private static void addArmorToInventory(PlayerInventory inv,
+			ItemStack itemStack, int stockAmount, boolean ignoreCustomHelmet) {
+		Material itemType =itemStack.getType();
+		final boolean isHelmet = armor.get(itemType).type == ArmorType.HELM;
+		/// no item: add to armor slot
+		/// item better: add old to inventory, new to armor slot
+		/// item notbetter: add to inventory
+		final ItemStack oldArmor = getArmorSlot(inv,armor.get(itemType).type);
+		boolean empty = (oldArmor == null || oldArmor.getType() == Material.AIR);
+		boolean better = empty ? true : armorSlotBetter(armor.get(oldArmor.getType()),armor.get(itemType));
+		if (empty || better){
+			switch (armor.get(itemType).type){
+			case HELM:
+				if (empty || (better && !ignoreCustomHelmet))
+					inv.setHelmet(itemStack);
+				break;
+			case CHEST: inv.setChestplate(itemStack); break;
+			case LEGGINGS: inv.setLeggings(itemStack); break;
+			case BOOTS: inv.setBoots(itemStack); break;
+			}
+		}
+		if (!empty){
+			if (better && !(isHelmet && ignoreCustomHelmet)){
+				addItemToInventory(inv, oldArmor,oldArmor.getAmount());
+			} else {
+				addItemToInventory(inv, itemStack,stockAmount);
+			}
+		}
+	}
 
 	public static int first(Inventory inv, ItemStack is1) {
 		if (is1 == null) {
@@ -447,8 +469,8 @@ public class InventoryUtil {
 		return oldArmor.level.ordinal() < newArmor.level.ordinal();
 	}
 
-	private static ItemStack getArmorSlot(PlayerInventory inv, Armor armor) {
-		switch (armor.type){
+	private static ItemStack getArmorSlot(PlayerInventory inv, ArmorType armorType) {
+		switch (armorType){
 		case HELM: return inv.getHelmet();
 		case CHEST: return inv.getChestplate();
 		case LEGGINGS: return inv.getLeggings();
@@ -494,8 +516,8 @@ public class InventoryUtil {
 	}
 
 	public static void closeInventory(Player p) {
-		EntityHuman eh = ((CraftPlayer)p).getHandle();
 		try{
+			EntityHuman eh = ((CraftPlayer)p).getHandle();
 			if ((eh instanceof EntityPlayer)){
 				EntityPlayer ep = (EntityPlayer) eh;
 				ep.closeInventory();
@@ -809,7 +831,7 @@ public class InventoryUtil {
 		for (ItemStack is: items){
 			if (is == null || is.getType() == Material.AIR)
 				continue;
-//			System.out.println(" iss   " + is.getAmount() +"   " + is.getMaxStackSize() +"    " + is);
+			//			System.out.println(" iss   " + is.getAmount() +"   " + is.getMaxStackSize() +"    " + is);
 			if (is.getAmount() > is.getMaxStackSize()){
 				is = is.clone();
 				while (is.getAmount() > is.getMaxStackSize()){
@@ -831,7 +853,7 @@ public class InventoryUtil {
 		while (idx< items.size() && idx<pitems.size()){
 			is1 = items.get(idx);
 			is2 = pitems.get(idx);
-//			System.out.println(idx  +" : " + is1 +"  " + is2);
+			//			System.out.println(idx  +" : " + is1 +"  " + is2);
 			if ((is1==null || is1.getType() == Material.AIR) && (is2 == null || is2.getType() == Material.AIR))
 				return true;
 			if ((is1==null || is1.getType() == Material.AIR) || (is2 == null || is2.getType() == Material.AIR))
@@ -855,6 +877,33 @@ public class InventoryUtil {
 		}
 		return true;
 	}
+
+	@SuppressWarnings("deprecation")
+	public static void addToInventory(Player p, PInv pinv) {
+		try{
+			PlayerInventory inv = p.getPlayer().getInventory();
+			for (ArmorType armor : ArmorType.values()){
+				final ItemStack oldArmor = getArmorSlot(inv,armor);
+				final ItemStack newArmor = pinv.armor[armor.ordinal()];
+				boolean empty = (oldArmor == null || oldArmor.getType() == Material.AIR);
+				if (empty) {
+					switch(armor){
+					case HELM: inv.setHelmet(newArmor); break;
+					case CHEST: inv.setChestplate(newArmor); break;
+					case LEGGINGS: inv.setLeggings(newArmor); break;
+					case BOOTS: inv.setBoots(newArmor); break;
+					}
+				} else {
+					addItemToInventory(p, newArmor, newArmor.getAmount(),false,false);
+				}
+			}
+			inv.setContents(pinv.contents);
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		try {p.getPlayer().updateInventory(); } catch (Exception e){} /// Yes this can throw errors
+	}
+
 
 
 }

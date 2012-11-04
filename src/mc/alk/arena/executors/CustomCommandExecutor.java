@@ -34,6 +34,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
+import com.alk.util.Log;
+
 public abstract class CustomCommandExecutor implements CommandExecutor{
 	static final boolean DEBUG = false;
 
@@ -89,11 +91,10 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				TreeMap<Integer,MethodWrapper> mthds = methods.get(cmd);
 				if (mthds == null){
 					mthds = new TreeMap<Integer,MethodWrapper>();
+					methods.put(cmd, mthds);
 				}
 				int order = mc.order() != -1? mc.order() : Integer.MAX_VALUE-mthds.size();
 				mthds.put(order, new MethodWrapper(obj,method));
-				methods.put(cmd, mthds);
-
 			}
 			/// TeamJoinResult in the usages, for showing help messages
 			if (MessageSerializer.hasMessage("usage", mc.cmds()[0])){
@@ -164,8 +165,9 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 
 			if (mccmd.op() && !isOp || mccmd.admin() && !sender.hasPermission(Defaults.ARENA_ADMIN)) /// no op, no pass
 				continue;
+			Arguments newArgs = null;
 			try {
-				Arguments newArgs= verifyArgs(mwrapper,mccmd,sender,command, label, args);
+				newArgs= verifyArgs(mwrapper,mccmd,sender,command, label, args);
 				mwrapper.method.invoke(mwrapper.obj,newArgs.args);
 				success = true;
 				break; /// success on one
@@ -174,6 +176,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 					errs = new ArrayList<InvalidArgumentException>();
 				errs.add(e);
 			} catch (Exception e) { /// Just all around bad
+				Log.err("[BA Error] "+mwrapper.method +" : " + mwrapper.obj +"  : " + newArgs);
 				e.printStackTrace();
 			}
 		}
