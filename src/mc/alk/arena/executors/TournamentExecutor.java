@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.events.TournamentEvent;
+import mc.alk.arena.controllers.BAEventController.SizeEventPair;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventParams;
@@ -13,7 +14,6 @@ import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.EventOpenOptions;
-import mc.alk.arena.util.KeyValue;
 
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -39,8 +39,8 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 	}
 
 	public Event openIt(CommandSender sender, EventParams eventParams, String[] args) throws InvalidEventException{
-		KeyValue<Boolean,Event> result = controller.getUniqueEvent(eventParams);
-		Event event = result.value;
+		SizeEventPair result = controller.getUniqueEvent(eventParams);
+		Event event = result.event;
 		if (event != null){
 			sendMessage(sender,"&4There is already a tournament in progress");
 			return null;

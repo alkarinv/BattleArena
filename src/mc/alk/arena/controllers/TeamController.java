@@ -47,6 +47,9 @@ public enum TeamController implements Listener, TeamHandler {
 	public static Team getTeam(ArenaPlayer player) {
 		return INSTANCE.handledTeams(player);
 	}
+	public static Team getTeamNotTeamController(ArenaPlayer player) {
+		return INSTANCE.handledTeamsNotTeamController(player);
+	}
 
 	private Team handledTeams(ArenaPlayer p) {
 		synchronized(handlers){
@@ -57,6 +60,22 @@ public enum TeamController implements Listener, TeamHandler {
 		}
 		return null;
 	}
+
+	private Team handledTeamsNotTeamController(ArenaPlayer p) {
+		synchronized(handlers){
+			for (Team t: handlers.keySet()){
+				if (t.hasMember(p)){
+					List<TeamHandler> list = handlers.get(t);
+					for (TeamHandler th: list){
+						if (th != INSTANCE)
+							return t;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 
 	public Team getSelfFormedTeam(ArenaPlayer pl) {
 		for (Team t: selfFormedTeams){

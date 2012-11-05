@@ -32,6 +32,7 @@ public class TransitionOptions {
 		TELEPORTTO("teleportTo", true), TELEPORTONARENAEXIT("teleportOnArenaExit",true),
 		TELEPORTWINNER("teleportWinner",true), TELEPORTLOSER("teleportLoser", true),
 		TELEPORTBACK("teleportBack",false),
+		NOTELEPORT("noTeleport", false), NOWORLDCHANGE("noWorldChange",false),
 		RESPAWN ("respawn",false), RANDOMRESPAWN ("randomRespawn",false), RESPAWNWITHCLASS("respawnWithClass", false),
 		CLEARINVENTORY ("clearInventory",false), NEEDARMOR ("needArmor",false), NOINVENTORY("noInventory",false),
 		CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter",false),

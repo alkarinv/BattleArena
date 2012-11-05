@@ -70,6 +70,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 
 
@@ -106,6 +107,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	boolean needsMobDeaths = false, needsBlockEvents = false;
 	boolean needsItemPickups = false, needsInventoryClick = false;
 	final boolean needsItemDropEvents;
+	final boolean stopsTeleports;
 	boolean needsDamageEvents = false;
 	final Plugin plugin;
 
@@ -145,6 +147,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		mo = tops.getOptions(MatchState.ONDEATH);
 		this.clearsInventoryOnDeath = mo != null ? mo.clearInventory(): false;
 		this.respawns = mo != null ? (mo.respawn() || mo.randomRespawn()): false;
+		this.stopsTeleports = tops.hasOptions(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE);
 		mo = tops.getOptions(MatchState.ONSPAWN);
 		this.respawnsWithClass = mo != null ? (mo.hasOption(TransitionOption.RESPAWNWITHCLASS)): false;
 	}
@@ -466,6 +469,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		t.killMember(p);
 		if (insideArena(p)){ /// Only leave if they haven't already left.
 			PerformTransition.transition(this, MatchState.ONCANCEL, p, t, false);
+			leftPlayers.add(p.getName());
+			t.playerLeft(p);
 		}
 	}
 
@@ -499,6 +504,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);}
 		if (needsItemDropEvents){
 			MethodController.updateEventListeners(this,ms, p,PlayerDropItemEvent.class);}
+		if (stopsTeleports){
+			MethodController.updateEventListeners(this,ms, p,PlayerTeleportEvent.class);
+		}
 		updateBukkitEvents(ms,p);
 		p.setChosenClass(null);
 	}
@@ -523,6 +531,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			MethodController.updateEventListeners(this,ms, p,PlayerDropItemEvent.class);}
 		if (woolTeams || needsInventoryClick){
 			MethodController.updateEventListeners(this,ms, p,InventoryClickEvent.class);}
+		if (stopsTeleports){
+			MethodController.updateEventListeners(this,ms, p,PlayerTeleportEvent.class);
+		}
 		p.setChosenClass(null);
 		BTInterface.resumeTracking(p);
 		updateBukkitEvents(ms,p);
@@ -563,7 +574,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		final String name = p.getName();
 		BTInterface.stopTracking(p);
 		/// Store the point at which they entered the arena
-		if (!oldlocs.containsKey(name)) /// First teleportIn is the location we want
+		if (!oldlocs.containsKey(name) || oldlocs.get(name) == null) /// First teleportIn is the location we want
 			oldlocs.put(name, p.getLocation());
 	}
 

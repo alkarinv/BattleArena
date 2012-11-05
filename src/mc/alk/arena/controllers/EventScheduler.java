@@ -107,7 +107,8 @@ public class EventScheduler implements Runnable, TransitionListener{
 		if (continuous){
 			/// Wait x sec then start the next event
 			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, (long) (20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS*Defaults.TICK_MULT));
-			Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"Next event will start in "+Defaults.TIME_BETWEEN_SCHEDULED_EVENTS+" seconds");
+			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
+				Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"Next event will start in "+Defaults.TIME_BETWEEN_SCHEDULED_EVENTS+" seconds");}
 		} else {
 			running = false;
 		}

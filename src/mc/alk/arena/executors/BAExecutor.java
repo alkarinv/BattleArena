@@ -797,6 +797,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 			sendMessage(p,"&cYou need to rescind your challenge first! &6/arena rescind");
 			return false;
 		}
+		Team t = TeamController.getTeamNotTeamController(p);
+		if (t != null){
+			sendMessage(p,"&cYou need to leave first.  &6/arena leave");
+			return false;
+		}
 		return true;
 	}
 

@@ -51,11 +51,14 @@ public class Defaults {
 	public static int DUEL_CHALLENGE_INTERVAL = 60*30;
 	public static boolean DUEL_ALLOW_RATED = false;
 
+	/// EVENT OPTIONS
+	public static boolean ALLOW_PLAYER_EVENT_CREATION = false;
+
 	/// Scheduled Event Options
 	public static boolean START_CONTINUOUS = false;
 	public static boolean START_NEXT = false;
 	public static int TIME_BETWEEN_SCHEDULED_EVENTS = 30;
-	public static boolean ALLOW_PLAYER_EVENT_CREATION = true;
+	public static boolean SCHEDULER_ANNOUNCE_TIMETILLNEXT = false;
 
 	/// Workaround for gamemode switching and teleporting
 	public static boolean PLUGIN_MULTI_INV = false; /// workarounds for multiinv and tping

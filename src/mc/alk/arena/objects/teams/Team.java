@@ -18,6 +18,7 @@ public class Team {
 
 	protected Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
 	protected Set<ArenaPlayer> deadplayers = new HashSet<ArenaPlayer>();
+	protected Set<ArenaPlayer> leftplayers = new HashSet<ArenaPlayer>();
 
 	protected String name =null; /// Internal name of this team
 	protected String displayName =null; /// Display name
@@ -130,14 +131,14 @@ public class Team {
 	public void addDeath(ArenaPlayer teamMemberWhoDied) {
 		Integer d = deaths.get(teamMemberWhoDied);
 		if (d == null){
-			d = 0;} 
+			d = 0;}
 		deaths.put(teamMemberWhoDied, ++d);
 	}
 
 	public void addKill(ArenaPlayer teamMemberWhoKilled){
 		Integer d = kills.get(teamMemberWhoKilled);
 		if (d == null){
-			d = 0;} 
+			d = 0;}
 		kills.put(teamMemberWhoKilled, ++d);
 	}
 
@@ -162,7 +163,7 @@ public class Team {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param p
 	 * @return whether all players are dead
 	 */
@@ -171,6 +172,16 @@ public class Team {
 			return false;
 		deadplayers.add(p);
 		return deadplayers.size() == players.size();
+	}
+	/**
+	 *
+	 * @param p
+	 * @return whether all players are dead
+	 */
+	public void playerLeft(ArenaPlayer p) {
+		if (!hasMember(p))
+			return ;
+		leftplayers.add(p);
 	}
 
 	public boolean allPlayersOffline() {
@@ -183,7 +194,8 @@ public class Team {
 
 	public void sendMessage(String message) {
 		for (ArenaPlayer p: players){
-			MessageUtil.sendMessage(p, message);}
+			if (!leftplayers.contains(p)){
+				MessageUtil.sendMessage(p, message);}}
 	}
 	public void sendToOtherMembers(ArenaPlayer player, String message) {
 		for (ArenaPlayer p: players){
@@ -191,22 +203,25 @@ public class Team {
 				MessageUtil.sendMessage(p, message);}
 	}
 
+	@Override
 	public boolean equals(Object other) {
 		if (this == other) return true;
 		if (!(other instanceof Team)) return false;
 		return this.hashCode() == ((Team) other).hashCode();
 	}
 
+	@Override
 	public int hashCode() { return id;}
 
 	public String getDisplayName(){return displayName == null ? name : displayName;}
 	public void setDisplayName(String n){displayName = n;}
+	@Override
 	public String toString(){return "["+getDisplayName()+"]";}
 
 	public String getTeamInfo(Set<String> insideMatch){
 
 		StringBuilder sb = new StringBuilder("&eTeam: ");
-		if (displayName != null) sb.append(displayName); 
+		if (displayName != null) sb.append(displayName);
 		sb.append( " " + (isDead() ? "&4dead" : "&aalive")+"&e, ");
 
 		for (ArenaPlayer p: players){

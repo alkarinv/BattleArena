@@ -883,8 +883,10 @@ public class InventoryUtil {
 		try{
 			PlayerInventory inv = p.getPlayer().getInventory();
 			for (ArmorType armor : ArmorType.values()){
-				final ItemStack oldArmor = getArmorSlot(inv,armor);
 				final ItemStack newArmor = pinv.armor[armor.ordinal()];
+				if (newArmor == null || newArmor.getType()== Material.AIR)
+					continue;
+				final ItemStack oldArmor = getArmorSlot(inv,armor);
 				boolean empty = (oldArmor == null || oldArmor.getType() == Material.AIR);
 				if (empty) {
 					switch(armor){

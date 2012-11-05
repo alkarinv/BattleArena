@@ -146,7 +146,7 @@ public class ArenaSerializer {
 		if (hasAny)
 			Log.info(loadedArenas.toString());
 		else
-			Log.info(pname + "No arenas found for " + arenaType.getName());
+			Log.info(pname + "No arenas found for " + cs.getCurrentPath() +"  arenatype="+arenaType);
 		if (hasFailed)
 			Log.info(failedArenas.toString());
 	}
@@ -283,12 +283,6 @@ public class ArenaSerializer {
 			String arenaname = arena.getName();
 
 			HashMap<String, Object> amap = new HashMap<String, Object>();
-			/// Do we really need to cut them off?? right now I think no
-			//			if (!arena.valid()){
-			//				Log.err(MatchMessageImpl.decolorChat("Unfinished arena not being saved  name=" + arena.getName() + " details=" + arena));
-			//				continue;
-			//			}
-
 			amap.put("type", arena.getArenaType().getName());
 			amap.put("teamSize", arena.getParameters().getTeamSizeRange());
 			amap.put("nTeams", arena.getParameters().getNTeamRange());

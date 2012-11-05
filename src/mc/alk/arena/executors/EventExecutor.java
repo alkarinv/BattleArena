@@ -7,6 +7,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.events.ReservedArenaEvent;
 import mc.alk.arena.controllers.BAEventController;
+import mc.alk.arena.controllers.BAEventController.SizeEventPair;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -20,7 +21,6 @@ import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
 
@@ -65,13 +65,13 @@ public class EventExecutor extends BAExecutor{
 	}
 
 	protected Event findUnique(CommandSender sender, EventParams eventParams) {
-		KeyValue<Boolean,Event> result = controller.getUniqueEvent(eventParams);
-		if (result.key == false){
+		SizeEventPair result = controller.getUniqueEvent(eventParams);
+		if (result.nEvents == 0){
 			sendMessage(sender, "&cThere are no events open/running of this type");}
-		else if (result.value == null){
+		else if (result.nEvents > 1){
 			sendMessage(sender, "&cThere are multiple events ongoing, please specify the arena of the event. \n&6/"+
 					eventParams.getCommand()+" ongoing &c for a list");}
-		return result.value;
+		return result.event;
 	}
 
 	@MCCommand(cmds={"cancel"},admin=true, order=4)
@@ -84,8 +84,7 @@ public class EventExecutor extends BAExecutor{
 
 	public boolean cancelEvent(CommandSender sender, EventParams eventParams, Event event){
 		if (!event.isRunning() && !event.isOpen()){
-			return sendMessage(sender,"&eA "+event.getCommand()+" is not running");
-		}
+			return sendMessage(sender,"&eA "+event.getCommand()+" is not running");}
 		controller.cancelEvent(event);
 		return sendMessage(sender,"&eYou have canceled the &6" + event.getName());
 	}

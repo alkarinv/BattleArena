@@ -49,6 +49,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
@@ -72,7 +73,6 @@ public class ArenaMatch extends Match {
 		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL ||
 				state == MatchState.ONOPEN || !insideArena.contains(player.getName())){
 			return;}
-
 		Team t = getTeam(player);
 		t.killMember(player);
 		PerformTransition.transition(this, MatchState.ONCOMPLETE, player, t, true);
@@ -368,5 +368,23 @@ public class ArenaMatch extends Match {
 
 		ap.setChosenClass(ac);
 		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
+	}
+
+	@MatchEventHandler
+	public void onPlayerTeleport(PlayerTeleportEvent event){
+		if (event.isCancelled())
+			return;
+		TransitionOptions ops = tops.getOptions(state);
+		if (ops==null)
+			return;
+		if (ops.hasOption(TransitionOption.NOTELEPORT)){
+			event.setCancelled(true);
+			return;
+		}
+		if (ops.hasOption(TransitionOption.NOWORLDCHANGE)){
+			if (event.getFrom().getWorld().getUID() != event.getTo().getWorld().getUID()){
+				event.setCancelled(true);
+			}
+		}
 	}
 }

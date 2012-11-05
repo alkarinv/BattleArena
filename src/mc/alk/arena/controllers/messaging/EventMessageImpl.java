@@ -13,8 +13,6 @@ import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
 
-import org.bukkit.Bukkit;
-
 
 /**
  *
@@ -116,7 +114,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 
 	@Override
 	public void sendEventCancelled(Channel serverChannel) {
-		Bukkit.broadcastMessage(EventMessageImpl.colorChat(mp.getPrefix()+"&e has been cancelled!"));
+		serverChannel.broadcast(mp.getPrefix()+"&e has been cancelled!");
 	}
 
 	@Override

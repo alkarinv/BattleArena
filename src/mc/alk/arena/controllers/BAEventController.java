@@ -17,7 +17,6 @@ import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
-import mc.alk.arena.util.KeyValue;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -32,25 +31,32 @@ public class BAEventController implements Listener{
 	public BAEventController(){
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
 	}
+	public static class SizeEventPair{
+		public Integer nEvents = 0;
+		public Event event = null;
+	}
 
-	public KeyValue<Boolean,Event> getUniqueEvent(EventParams eventParams) {
+	public SizeEventPair getUniqueEvent(EventParams eventParams) {
 		final String key = getKey(eventParams);
 		Map<EventState,List<Event>> events = allEvents.get(key);
-		KeyValue<Boolean,Event> result = new KeyValue<Boolean,Event>(false, null);
+		SizeEventPair result = new SizeEventPair();
 		if (events == null || events.isEmpty())
 			return result;
-		result.key = true;
+		result.nEvents = 0;
 		Event event = null;
 		for (List<Event> list: events.values()){
+			result.nEvents += list.size();
 			for (Event evt: list){
-				if (event != null){
-					result.value = null;
-					return result;
-				} else
+				if (evt != null){
+					if (event != null){
+						result.event = null;
+						return result;
+					}
 					event = evt;
+					result.event = evt;
+				}
 			}
 		}
-		result.value = event;
 		return result;
 	}
 

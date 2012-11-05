@@ -97,7 +97,7 @@ public class PerformTransition {
 
 		final boolean insideArena = am.insideArena(p);
 		/// If the flag onlyInMatch is set, we should leave if the player isnt inside.  disregard if we are teleporting people in
-		if (!(teleportIn || teleportWaitRoom) && onlyInMatch && !insideArena){
+		if (onlyInMatch && !insideArena && !(teleportIn || teleportWaitRoom) && !am.playerLeft(p)){
 			return true;}
 		final boolean teleportOut = mo.shouldTeleportOut();
 
