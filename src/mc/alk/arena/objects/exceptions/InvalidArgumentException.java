@@ -1,4 +1,4 @@
-package mc.alk.arena.objects.Exceptions;
+package mc.alk.arena.objects.exceptions;
 
 public class InvalidArgumentException extends Exception {
 	private static final long serialVersionUID = 1L;
