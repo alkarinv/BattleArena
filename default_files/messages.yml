@@ -1,4 +1,8 @@
-version: 1.2.1
+version: 1.3
+
+system:
+    type_enabled: "&2 type &6%s&2 enabled"
+    type_disabled: "&2 type &6%s&2 disabled"
 
 common:
     team: '&7{name}&e'

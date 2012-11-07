@@ -28,6 +28,8 @@ public class MessageSerializer extends BaseSerializer {
 	private static HashMap<String,MessageSerializer> files = new HashMap<String,MessageSerializer>();
 
 	public MessageSerializer(String name){
+		if (name == null)
+			return;
 		MessageSerializer ms = files.get(name);
 		if (ms != null){
 			this.config = ms.config;

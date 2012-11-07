@@ -15,11 +15,8 @@ import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
-import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Util;
-import mc.alk.tracker.TrackerInterface;
-import mc.alk.tracker.objects.WLT;
 
 public class ReservedArenaEvent extends Event {
 	public ReservedArenaEvent(EventParams params) {
@@ -76,12 +73,6 @@ public class ReservedArenaEvent extends Event {
 			return;
 		}
 		m.setResult(arenaMatch.getResult());
-
-		TrackerInterface bti = BTInterface.getInterface(eventParams);
-		if (bti != null && victor != null){
-			BTInterface.addRecord(bti, victor.getPlayers(), arenaMatch.getLosers(), WLT.WIN);
-		}
-
 		eventVictory(victor,m.getResult().getLosers());
 	}
 

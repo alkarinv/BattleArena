@@ -22,6 +22,7 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.arenas.ArenaCreateEvent;
 import mc.alk.arena.events.arenas.ArenaDeleteEvent;
 import mc.alk.arena.objects.ArenaParams;
@@ -89,11 +90,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 				set.add(param.getName());
 			}
 			for (String s: set){
-				sendMessage(sender, "&2 type &6" + s + "&2 enabled");}
+				sendMessage(sender, MessageHandler.getSystemMessage("type_enabled",s));}
 			return true;
 		}
 		disabled.remove(mp.getName());
-		return sendMessage(sender, "&2 type &6" + mp.getName() + "&2 enabled");
+		return sendMessage(sender, MessageHandler.getSystemMessage("type_enabled",mp.getName()));
 	}
 
 	@MCCommand(cmds={"disable"},admin=true,usage="disable")
@@ -105,11 +106,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 				set.add(param.getName());
 			}
 			for (String s: set){
-				sendMessage(sender, "&5 type &6" + s + "&5 disabled");}
+				sendMessage(sender, MessageHandler.getSystemMessage("type_disabled",s));}
 			return true;
 		}
 		disabled.add(mp.getName());
-		return sendMessage(sender, "&5 type &6" + mp.getName() + "&5 disabled");
+		return sendMessage(sender, MessageHandler.getSystemMessage("type_disabled",mp.getName()));
 	}
 
 	@MCCommand(cmds={"enabled"},admin=true)
