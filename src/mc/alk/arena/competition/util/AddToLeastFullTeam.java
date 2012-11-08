@@ -1,34 +1,33 @@
-package mc.alk.arena.competition.events.util;
+package mc.alk.arena.competition.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
-import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event.TeamSizeComparator;
-import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaParams;
-import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.JoinOptions.JoinOption;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.TeamFactory;
 
 public class AddToLeastFullTeam extends TeamJoinHandler {
 
-	public AddToLeastFullTeam(Event event) throws NeverWouldJoinException{
-		super(event);
+	public AddToLeastFullTeam(Competition competition) throws NeverWouldJoinException{
+		super(competition);
 		if (maxTeams == ArenaParams.MAX)
 			throw new NeverWouldJoinException("If you add players by adding them to the next team in the list, there must be a finite number of players");
 		/// Lets add in all our teams first
 		for (int i=0;i<maxTeams;i++){
-			CompositeTeam ct = TeamController.createCompositeTeam(new HashSet<ArenaPlayer>());
-			event.addTeam(ct);
+			CompositeTeam ct = TeamFactory.createCompositeTeam();
+			competition.addTeam(ct);
 		}
 	}
 
+	@Override
 	public TeamJoinResult joiningTeam(Team team) {
 		if ( maxTeamSize < team.size()){
 			return CANTFIT;}
@@ -47,7 +46,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 		List<Team> sortedBySize = new ArrayList<Team>(teams);
 		Collections.sort(sortedBySize, new TeamSizeComparator());
 		for (int i=0;i<sortedBySize.size();i++){
-			Team t = sortedBySize.get(i);	
+			Team t = sortedBySize.get(i);
 			TeamJoinResult tjr = teamFits(team, t);
 //			System.out.println("@@@@@@@@@@@@ teams.size()=" + teams.size() +"   " + t.size() +"    " + tjr);
 			if (tjr != CANTFIT)
@@ -66,7 +65,8 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 		return CANTFIT;
 	}
 
+	@Override
 	public String toString(){
-		return "["+event.getName() +":JH:AddToLeast]";
+		return "["+competition.getParams().getName() +":JH:AddToLeast]";
 	}
 }

@@ -21,6 +21,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class BASignListener implements Listener{
+
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		if (event.isCancelled()) return;
@@ -29,7 +30,7 @@ public class BASignListener implements Listener{
 		final Material clickedMat = clickedBlock.getType();
 
 		/// If this is an uninteresting block get out of here as quickly as we can
-		if (!(clickedMat.equals(Material.SIGN) || clickedMat.equals(Material.SIGN_POST) 
+		if (!(clickedMat.equals(Material.SIGN) || clickedMat.equals(Material.SIGN_POST)
 				|| 	clickedMat.equals(Material.WALL_SIGN))) {
 			return;
 		}
@@ -69,7 +70,7 @@ public class BASignListener implements Listener{
 			makeArenaClassSign(event, ac, lines);
 			return;
 		}
-		
+
 		ArenaCommandSign acs = SignUtil.getArenaCommandSign(lines);
 		if (acs != null){
 			if (!admin){
@@ -77,9 +78,8 @@ public class BASignListener implements Listener{
 				return;
 			}
 			makeArenaCommandSign(event, acs, lines);
-			return;			
+			return;
 		}
-		
 	}
 
 	private void makeArenaClassSign(SignChangeEvent event, ArenaClass ac, String[] lines) {
@@ -99,9 +99,9 @@ public class BASignListener implements Listener{
 			e.printStackTrace();
 			cancelSignPlace(event,block);
 			return;
-		}				
+		}
 	}
-	
+
 	private void makeArenaCommandSign(SignChangeEvent event, ArenaCommandSign acs, String[] lines) {
 		if (acs == null)
 			return;
@@ -131,7 +131,7 @@ public class BASignListener implements Listener{
 	public static void cancelSignPlace(SignChangeEvent event, Block block){
 		event.setCancelled(true);
 		block.setType(Material.AIR);
-		block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.SIGN, 1));   	
+		block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.SIGN, 1));
 	}
 
 }

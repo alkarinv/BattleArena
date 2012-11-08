@@ -244,11 +244,6 @@ public enum TeamController implements Listener, TeamHandler {
 		}
 	}
 
-	public static CompositeTeam createCompositeTeam(Set<ArenaPlayer> players) {
-		if (DEBUG) System.out.println("------- createCompositeTeam " + players.size());
-		return TeamFactory.createCompositeTeam(players);
-	}
-
 	public static CompositeTeam createCompositeTeam(Team t, TeamHandler th) {
 		CompositeTeam ct = new CompositeTeam();
 		ct.addTeam(t);
@@ -257,6 +252,7 @@ public enum TeamController implements Listener, TeamHandler {
 		if (DEBUG) System.out.println("------- createCompositeTeam " + ct);
 		return ct;
 	}
+
 	@Override
 	public String toString(){
 		return "[TeamController]";

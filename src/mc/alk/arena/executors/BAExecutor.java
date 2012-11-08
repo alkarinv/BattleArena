@@ -154,7 +154,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 		try {
 			jp = JoinOptions.parseOptions(mp,t, player, Arrays.copyOfRange(args, 1, args.length));
 			wtsr = (WantedTeamSizePair) jp.getOption(JoinOption.TEAMSIZE);
-			mp.setTeamSize(wtsr.size);
+
+//			mp.setTeamSize(wtsr.size);
 			t.setJoinPreferences(jp);
 		} catch (InvalidOptionException e) {
 			return sendMessage(player, e.getMessage());
@@ -204,7 +205,9 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 		/// Add them to the queue
 		QPosTeamPair qpp = ac.addToQue(t, mp);
-		if (qpp.pos== -2){
+		if (qpp == null){
+			t.sendMessage("&eYou have been added to a team");
+		} else if (qpp.pos== -2){
 			t.sendMessage("&cTeam queue was busy.  Try again in a sec.");
 		} else if (qpp.pos == -1){
 			t.sendMessage("&cAn arena has not been built yet for that size of team");
@@ -394,7 +397,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		if(ac.isInQue(p)){
 			QPosTeamPair qpp = ac.getCurrentQuePos(p);
 			if (qpp != null){
-				return sendMessage(p,"&e"+qpp.q.toPrettyString()+"&e Queue Position: "+
+				return sendMessage(p,"&e"+qpp.params.toPrettyString()+"&e Queue Position: "+
 						" &6" + (qpp.pos+1) +"&e. &6"+qpp.playersInQueue+" &eplayers in queue");
 			}
 		}
@@ -769,8 +772,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Inside the queue waiting for a match?
 		QPosTeamPair qpp = ac.getCurrentQuePos(p);
 		if(qpp != null && qpp.pos != -1){
-			sendMessage(p,"&eYou are already in the " + qpp.q.toPrettyString() + " queue.");
-			String cmd = qpp.q.getCommand();
+			sendMessage(p,"&eYou are already in the " + qpp.params.toPrettyString() + " queue.");
+			String cmd = qpp.params.getCommand();
 			sendMessage(p,"&eType &6/"+cmd+" leave");
 			return false;
 		}

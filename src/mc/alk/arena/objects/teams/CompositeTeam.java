@@ -1,30 +1,34 @@
 package mc.alk.arena.objects.teams;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
 
 /**
- * Class that is a collection of other teams 
+ * Class that is a collection of other teams
  * @author alkarin
  *
  */
 public class CompositeTeam extends Team{
-	final List<Team> oldTeams = new ArrayList<Team>();
+	final Set<Team> oldTeams = new HashSet<Team>();
 	boolean nameSet = false;
-	
+
 	public CompositeTeam() {
 		super();
 		isPickupTeam = true;
 	}
 
+	protected CompositeTeam(Team team) {
+		this();
+		addTeam(team);
+	}
 	protected CompositeTeam(Set<ArenaPlayer> tplayers) {
 		super(tplayers);
 		isPickupTeam=true;
 	}
-	
+
 	@Override
 	public void setName(String name) {
 		super.setName(name);
@@ -40,12 +44,26 @@ public class CompositeTeam extends Team{
 			players.addAll(t.getPlayers());
 		}
 	}
-	
+
 	public boolean removeTeam(Team t) {
+		if (t instanceof CompositeTeam){
+			for (Team tt : ((CompositeTeam)t).getOldTeams()){
+				oldTeams.remove(tt);
+			}
+		}
 		boolean has = oldTeams.remove(t);
 		if (has){
 			players.removeAll(t.getPlayers());}
 		return has;
+	}
+
+	@Override
+	public boolean hasTeam(Team team){
+		for (Team t: oldTeams){
+			if (t.hasTeam(team))
+				return true;
+		}
+		return false;
 	}
 
 	public void finish() {
@@ -61,5 +79,7 @@ public class CompositeTeam extends Team{
 			}
 		}
 	}
-
+	public Collection<Team> getOldTeams(){
+		return oldTeams;
+	}
 }

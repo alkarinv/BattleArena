@@ -17,9 +17,7 @@ import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.pairs.EventPair;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.MessageUtil;
 
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -90,13 +88,9 @@ public class EventScheduler implements Runnable, TransitionListener{
 			if (event != null){
 				event.addTransitionListener(scheduler);
 			} else {  /// wait then start up the scheduler again in x seconds
-				MessageUtil.sendMessage(sender, "Event could not be started, continuing in "+
-						Defaults.TIME_BETWEEN_SCHEDULED_EVENTS+" seconds");
-				MessageUtil.sendMessage(sender, "Event was " + eventParams.getName()+"  args: " + StringUtils.join(args,","));
 				Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(),
 						scheduler, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			}
-			/// otherwise we wait for event is finished message
 		}
 	}
 

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +14,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.competition.util.TeamJoinHandler;
+import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -24,6 +28,7 @@ import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
+import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -37,6 +42,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 
 	private final ArenaMatchQueue amq = new ArenaMatchQueue();
 	final private Set<Match> running_matches = Collections.synchronizedSet(new CopyOnWriteArraySet<Match>());
+	final private Map<ArenaType,Set<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,Set<Match>>());
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
 	long lastTimeCheck = 0;
 
@@ -59,14 +65,36 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		}
 		/// BattleArena controller only tracks the players while they are in the queue
 		/// now that a match is starting the players are no longer our responsibility
-		for (Team t : match.getTeams()){
-			TeamController.removeTeamHandler(t, this);}
+		unhandle(match);
 		match.open();
+		TeamJoinHandler tjh = match.getTeamJoinHandler();
+		if (tjh != null && match.hasWaitroom() && !tjh.isFull()){
+			Set<Match> matches = unfilled_matches.get(match.getParams().getType());
+			if (matches == null){
+				matches = Collections.synchronizedSet(new HashSet<Match>());
+				unfilled_matches.put(match.getParams().getType(), matches);
+			}
+			matches.add(match);
+		}
+	}
+
+	private void unhandle(Match match) {
+		for (Team team : match.getTeams()){
+			if (team instanceof CompositeTeam){
+				for (Team t: ((CompositeTeam)team).getOldTeams()){
+					TeamController.removeTeamHandler(t, this);
+				}
+				TeamController.removeTeamHandler(team, this);
+			} else{
+				TeamController.removeTeamHandler(team, this);
+			}
+		}
 	}
 
 	public void startMatch(Match arenaMatch) {
 		/// arenaMatch run calls.... broadcastMessage ( which unfortunately is not thread safe)
 		/// So we have to schedule a sync task... again
+		unhandle(arenaMatch); /// Since teams and players can join between onOpen and onStart.. re unhandle
 		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), arenaMatch);
 	}
 
@@ -76,9 +104,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		Match am = event.getMatch();
 		removeMatch(am); /// handles removing running match from the BArenaController
 
-		for (Team t : am.getTeams()){ /// Do I need to really do this?
-			TeamController.removeTeamHandler(t, this);}
-
+		unhandle(am);/// unhandle any teams that were added during the match
 		Arena arena = allarenas.get(am.getArena().getName());
 		if (arena != null)
 			amq.add(arena); /// add it back into the queue
@@ -97,13 +123,51 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	}
 
 	public Map<String, Arena> getArenas(){return allarenas;}
-	public QPosTeamPair addToQue(Team t1, MatchParams mp) {
-		QPosTeamPair qpp = amq.add(t1,mp);
+	public QPosTeamPair addToQue(Team team, MatchParams params) {
+		if (joinExistingMatch(team,params)){
+			return null;}
+		QPosTeamPair qpp = amq.add(team,params);
 		if (qpp != null && qpp.pos >=0){
-			TeamController.addTeamHandler(t1,this);
+			TeamController.addTeamHandler(team,this);
 		}
 		return qpp;
 	}
+
+	private boolean joinExistingMatch(Team team, MatchParams params) {
+		if (unfilled_matches.isEmpty()){
+			return false;}
+		synchronized(unfilled_matches){
+			Set<Match> matches = unfilled_matches.get(params.getType());
+			if (matches == null)
+				return false;
+			Iterator<Match> iter = matches.iterator();
+			while (iter.hasNext()){
+				Match match = iter.next();
+				/// We dont want people joining in a non waitroom state
+				if (!match.isInWaitRoomState()){
+					iter.remove();
+					continue;
+				}
+				if (match.getParams().matches(params)){
+					TeamJoinHandler tjh = match.getTeamJoinHandler();
+					if (tjh == null)
+						continue;
+					boolean result = false;
+					TeamJoinResult tjr = tjh.joiningTeam(team);
+					switch(tjr.status){
+					case ADDED_TO_EXISTING: case ADDED: result = true;
+					default: break;
+					}
+					/// if we are now full, remove from unfilled
+					if (tjh.isFull())
+						iter.remove();
+					return result;
+				}
+			}
+		}
+		return false;
+	}
+
 	public boolean isInQue(ArenaPlayer p) {return amq.isInQue(p);}
 	public QPosTeamPair getCurrentQuePos(ArenaPlayer p) {return amq.getQuePos(p);}
 	public ParamTeamPair removeFromQue(ArenaPlayer p) {
@@ -211,6 +275,12 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	private void removeMatch(Match am){
 		synchronized(running_matches){
 			running_matches.remove(am);
+		}
+		synchronized(unfilled_matches){
+			Set<Match> matches = unfilled_matches.get(am.getParams().getType());
+			if (matches != null){
+				matches.remove(am);
+			}
 		}
 	}
 

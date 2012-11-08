@@ -15,4 +15,12 @@ public class TeamFactory {
 	public static CompositeTeam createCompositeTeam(Set<ArenaPlayer> players) {
 		return new CompositeTeam(players);
 	}
+
+	public static CompositeTeam createCompositeTeam() {
+		return new CompositeTeam();
+	}
+	public static CompositeTeam createCompositeTeam(Team team) {
+		return new CompositeTeam(team);
+	}
+
 }

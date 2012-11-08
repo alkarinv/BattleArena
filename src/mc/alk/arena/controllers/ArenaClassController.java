@@ -22,18 +22,25 @@ public class ArenaClassController {
 	}
 
 	public static void giveClass(Player player, ArenaClass ac) {
-		giveHeroClass(player,ac);
+		if (HeroesInterface.enabled())
+			ac = giveHeroClass(player,ac);
 		try{if (ac.getItems() != null) InventoryUtil.addItemsToInventory(player, ac.getItems(),true);} catch (Exception e){}
 		try{if (ac.getEffects() != null) EffectUtil.enchantPlayer(player, ac.getEffects());} catch (Exception e){}
 	}
 
-	public static void giveHeroClass(Player player, ArenaClass ac){
-		if (!HeroesInterface.enabled() || ac == ArenaClass.CHOSEN_CLASS){
-			return;} /// Either heroes is not enabled or they already have their own hero class
-
+	private static ArenaClass giveHeroClass(Player player, ArenaClass ac){
+		if (ac == ArenaClass.CHOSEN_CLASS){
+			String className = HeroesInterface.getHeroClassName(player);
+			if (className != null){
+				ArenaClass ac2 = ArenaClassController.getClass(className);
+				if (ac2 != null)
+					return ac2;
+			}
+		}
 		/// Set them to the appropriate heros class if one exists with this name
 		if (HeroesInterface.hasHeroClass(ac.getName())){
 			HeroesInterface.setHeroClass(player, ac.getName());
 		}
+		return ac;
 	}
 }

@@ -173,6 +173,7 @@ public class Team {
 		deadplayers.add(p);
 		return deadplayers.size() == players.size();
 	}
+
 	/**
 	 *
 	 * @param p
@@ -203,6 +204,9 @@ public class Team {
 				MessageUtil.sendMessage(p, message);}
 	}
 
+	public String getDisplayName(){return displayName == null ? name : displayName;}
+	public void setDisplayName(String n){displayName = n;}
+
 	@Override
 	public boolean equals(Object other) {
 		if (this == other) return true;
@@ -213,13 +217,22 @@ public class Team {
 	@Override
 	public int hashCode() { return id;}
 
-	public String getDisplayName(){return displayName == null ? name : displayName;}
-	public void setDisplayName(String n){displayName = n;}
 	@Override
 	public String toString(){return "["+getDisplayName()+"]";}
 
-	public String getTeamInfo(Set<String> insideMatch){
+	public boolean hasTeam(Team team){
+		if (team instanceof CompositeTeam){
+			for (Team t: ((CompositeTeam)team).getOldTeams()){
+				if (this.hasTeam(t))
+					return true;
+			}
+			return false;
+		} else {
+			return this.equals(team);
+		}
+	}
 
+	public String getTeamInfo(Set<String> insideMatch){
 		StringBuilder sb = new StringBuilder("&eTeam: ");
 		if (displayName != null) sb.append(displayName);
 		sb.append( " " + (isDead() ? "&4dead" : "&aalive")+"&e, ");
@@ -285,7 +298,6 @@ public class Team {
 		}
 		return priority;
 	}
-
 
 }
 

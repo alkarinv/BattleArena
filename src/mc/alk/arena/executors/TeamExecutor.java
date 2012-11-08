@@ -52,7 +52,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		Map<Team,CopyOnWriteArrayList<TeamHandler>> teams = teamc.getTeams();
 
 		for (Team t: teams.keySet()){
-			sb.append(t.getTeamInfo(null));
+			sb.append(t.getTeamInfo(null) +" tid=" + t.getId());
 			sb.append(" &5Handlers:");
 			if (teams.get(t) == null){
 				sb.append("null");

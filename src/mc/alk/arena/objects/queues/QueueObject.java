@@ -9,9 +9,9 @@ import mc.alk.arena.objects.teams.Team;
 public abstract class QueueObject {
 	Integer priority;
 	MatchParams mp;
-	
+
 	public abstract Integer getPriority();
-	
+
 	public MatchParams getMatchParams() {
 		return mp;
 	}
@@ -23,5 +23,6 @@ public abstract class QueueObject {
 	public abstract int size();
 
 	public abstract Collection<Team> getTeams();
-	
+
+	public abstract boolean hasTeam(Team team);
 }

@@ -11,7 +11,7 @@ import mc.alk.arena.util.Util.MinMax;
 
 
 public class ArenaParams {
-	public static final int ANY = Integer.MAX_VALUE-1;
+//	public static final int ANY = Integer.MAX_VALUE-1;
 	public static final int CLANS = Integer.MAX_VALUE;
 	public static final int MAX = Integer.MAX_VALUE-2;
 	public static final int NONE = -1;
@@ -22,8 +22,8 @@ public class ArenaParams {
 	Integer preferredMinTeamSize = minTeamSize;
 	Integer preferredMaxTeamSize = maxTeamSize;
 
-	Integer minTeams = ANY;
-	Integer maxTeams = ANY;
+	Integer minTeams = MAX;
+	Integer maxTeams = MAX;
 
 	ArenaType arenaType = ArenaType.ANY;
 	Rating rating = Rating.ANY;
@@ -119,7 +119,7 @@ public class ArenaParams {
 	}
 
 	public boolean matchesNTeams(int nteams) {
-		return ( (minTeams <= nteams && maxTeams>=nteams) || minTeams==ANY || nteams==ANY);
+		return ( (minTeams <= nteams && maxTeams>=nteams) || minTeams==MAX || nteams==MAX);
 	}
 
 	public Collection<String> getInvalidMatchReasons(ArenaParams ap) {
@@ -152,7 +152,7 @@ public class ArenaParams {
 	}
 
 	public boolean matchesTeamSize(int i) {
-		return (minTeamSize==ANY || i>= minTeamSize && i<= maxTeamSize);
+		return (minTeamSize==MAX || i>= minTeamSize && i<= maxTeamSize);
 	}
 	public void setTeamSize(int size) {
 		preferredMinTeamSize = preferredMaxTeamSize = minTeamSize = maxTeamSize = size;

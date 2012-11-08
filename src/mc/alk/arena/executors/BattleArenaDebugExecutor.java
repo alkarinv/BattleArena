@@ -48,7 +48,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		super.help(sender, command, args);
 	}
 
-	@MCCommand( cmds = {"enableDebugging"}, op=true,min=3, usage="enableDebugging <code section> <true | false>")
+	@MCCommand( cmds = {"enableDebugging"}, admin=true,min=3, usage="enableDebugging <code section> <true | false>")
 	public void enableDebugging(CommandSender sender, String section, Boolean on){
 		if (section.equalsIgnoreCase("transitions")){
 			Defaults.DEBUG_TRANSITIONS = on;
@@ -99,7 +99,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 
 
-	@MCCommand( cmds = {"showListeners","sl"}, op=true, usage="showListeners")
+	@MCCommand( cmds = {"showListeners","sl"}, admin=true, usage="showListeners")
 	public boolean showListeners(CommandSender sender) {
 		HashMap<Type, BukkitEventListener> types = MethodController.getEventListeners();
 		for (BukkitEventListener bel: types.values()){
@@ -118,7 +118,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return true;
 	}
 
-	@MCCommand(cmds={"addKill"}, op=true,min=2,usage="addKill <player>")
+	@MCCommand(cmds={"addKill"}, admin=true,min=2,usage="addKill <player>")
 	public boolean arenaAddKill(CommandSender sender, ArenaPlayer pl) {
 		Match am = ac.getMatch(pl);
 		if (am == null){
@@ -181,7 +181,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return mp;
 	}
 
-	@MCCommand(cmds={"invalidReason"}, op=true)
+	@MCCommand(cmds={"invalidReason"}, admin=true)
 	public boolean arenaAddKill(CommandSender sender, Arena arena) {
 		Collection<String> reasons = arena.getInvalidReasons();
 		sendMessage(sender, "&eInvalid reasons for &6" + arena.getName());
@@ -191,19 +191,19 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return true;
 	}
 
-	@MCCommand(cmds={"verify"}, op=true,usage="verify")
+	@MCCommand(cmds={"verify"}, admin=true,usage="verify")
 	public boolean arenaVerify(CommandSender sender) {
 		String[] lines = ac.toDetailedString().split("\n");
 		for (String line : lines){
 			sendMessage(sender,line);}
 		return true;
 	}
-	@MCCommand(cmds={"online"}, op=true)
+	@MCCommand(cmds={"online"}, admin=true)
 	public boolean arenaVerify(CommandSender sender, OfflinePlayer p) {
 		return sendMessage(sender, "Player " + p.getName() +"  is " + p.isOnline());
 	}
 
-	@MCCommand(cmds={"purgeQueue"}, op=true)
+	@MCCommand(cmds={"purgeQueue"}, admin=true)
 	public boolean arenaPurgeQueue(CommandSender sender) {
 		try {
 			Collection<Team> teams = ac.purgeQueue();
@@ -219,7 +219,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return true;
 	}
 
-	@MCCommand(cmds={"hasPerm"}, op=true)
+	@MCCommand(cmds={"hasPerm"}, admin=true)
 	public boolean hasPerm(CommandSender sender, String perm, Player p) {
 		return sendMessage(sender, "Player " + p.getName() +"  hasPerm " + perm +" " +p.hasPermission(perm));
 	}

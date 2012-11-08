@@ -18,6 +18,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -30,7 +31,6 @@ import mc.alk.arena.util.Util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
@@ -115,22 +115,23 @@ public class TournamentEvent extends Event implements Listener{
 	}
 
 
-	@EventHandler
+	@TransitionEventHandler
 	public void matchCancelled(MatchCancelledEvent event){
-		if (!isRunning()) /// Tournament isnt even going on, definitely not our match
-			return;
 		Match am = event.getMatch();
 		Matchup m = getMatchup(am.getTeams().get(0),round);
-		//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());
+		System.out.println("victor ===  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());
 		if (m == null){ /// This match wasnt in our tournament
 			return;}
 		eventCancelled();
 	}
-
-	@EventHandler
+	@Override
+	public void endEvent(){
+		super.endEvent();
+		aliveTeams.clear();
+		competingTeams.clear();
+	}
+	@TransitionEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
-		if (!isRunning())
-			return ;
 		Match am = event.getMatch();
 		Team victor = am.getVictor();
 		Matchup m;
@@ -138,7 +139,7 @@ public class TournamentEvent extends Event implements Listener{
 			m = getMatchup(am.getResult().getLosers().iterator().next(),round);
 		else
 			 m = getMatchup(victor,round);
-		//		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());
+		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());
 		if (m == null){ /// This match wasnt in our tournament
 			return;}
 		if (am.getState() == MatchState.ONCANCEL){
@@ -205,6 +206,7 @@ public class TournamentEvent extends Event implements Listener{
 			Team t1 = aliveTeams.get(loffset-i);
 			Team t2 = aliveTeams.get(hoffset+i);
 			m = new Matchup(eventParams,t1,t2);
+			m.addTransitionListener(this);
 			tr.addMatchup(m);
 		}
 	}
@@ -219,6 +221,7 @@ public class TournamentEvent extends Event implements Listener{
 			Team t1 = aliveTeams.get(i);
 			Team t2 = aliveTeams.get(j-i);
 			m = new Matchup(eventParams,t1,t2);
+			m.addTransitionListener(this);
 			tr.addMatchup(m);
 		}
 	}

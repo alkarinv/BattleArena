@@ -21,15 +21,15 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		this.mp = mp;
 	}
 
-	public boolean contains(ArenaPlayer p){
+	public synchronized boolean contains(ArenaPlayer p){
 		for (QueueObject t: this){
-			if (t.hasMember(p)) 
+			if (t.hasMember(p))
 				return true;
 		}
 		return false;
 	}
 
-	public Team remove(ArenaPlayer p){
+	public synchronized Team remove(ArenaPlayer p){
 		for (QueueObject t: this){
 			if (t.hasMember(p)){
 				this.remove(t);
@@ -38,7 +38,7 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		}
 		return null;
 	}
-	public int indexOf(ArenaPlayer p){
+	public synchronized int indexOf(ArenaPlayer p){
 		int i=0;
 		for (QueueObject t: this){
 			if (t.hasMember(p))
@@ -48,7 +48,7 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		return -1;
 	}
 
-	public QPosTeamPair getPos(ArenaPlayer p) {
+	public synchronized QPosTeamPair getPos(ArenaPlayer p) {
 		int i=0;
 		for (QueueObject t: this){
 			if (t.hasMember(p))
@@ -81,7 +81,7 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		}
 	}
 
-	public Collection<? extends Team> getTeams() {
+	public synchronized Collection<? extends Team> getTeams() {
 		List<Team> teams = new ArrayList<Team>();
 		for (QueueObject team: this){
 			teams.addAll(team.getTeams());

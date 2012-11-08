@@ -1,6 +1,6 @@
-package mc.alk.arena.competition.events.util;
+package mc.alk.arena.competition.util;
 
-import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.CompositeTeam;
@@ -12,40 +12,39 @@ import mc.alk.arena.objects.teams.Team;
  *
  */
 public class BinPackAdd extends TeamJoinHandler {
-	
-	public BinPackAdd(Event event) throws NeverWouldJoinException{
-		super(event);
+	boolean full = false;
+
+	public BinPackAdd(Competition competition) throws NeverWouldJoinException{
+		super(competition);
 	}
-	
+
+	@Override
 	public TeamJoinResult joiningTeam(Team team) {
 		if ( maxTeamSize < team.size()){
 			return CANTFIT;}
-
-		if (team.size() == maxTeamSize && teams.size() < maxTeams){ /// just add the team to the current team list
+		final int teamSize = team.size();
+		if (teamSize >= minTeamSize && teamSize <= maxTeamSize && teams.size() < maxTeams){ /// just add the team to the current team list
 			CompositeTeam ct = TeamController.createCompositeTeam(team,this);
 			TeamController.removeTeamHandler(ct, this);
 			ct.addTeam(team);
 			ct.finish();
-			event.addTeam(ct);
-//			System.out.println("Adding team " + ct +"  ct size = " + ct.size() +"   teamSize=" + inEvent.size());
+			competition.addTeam(ct);
 			return new TeamJoinResult(TeamJoinStatus.ADDED, 0,ct);
 		}
 		for (CompositeTeam t: pickupTeams){
 			final int size = t.size()+team.size();
-			System.out.println("Checking here " + size +"   mts =" + minTeamSize +":" + maxTeamSize +"   t " +t);
 			if (size <= maxTeamSize){
-				CompositeTeam ct = (CompositeTeam) t;
+				CompositeTeam ct = t;
 				ct.addTeam(team);
 				ct.finish();
 				if ( size >= minTeamSize){ /// the new team would be a valid range, add them
 					pickupTeams.remove(t);
-					event.addTeam(ct);
+					competition.addTeam(ct);
 					TeamController.removeTeamHandler(ct, this);
 					return new TeamJoinResult(TeamJoinStatus.ADDED, 0,ct);
 				} else{
-//					System.out.println("Adding team " + ct +"  ct size = " + ct.size() +"   team=" + t);
 					return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING, minTeamSize - ct.size(),ct);
-				}				
+				}
 			}
 		}
 		/// So we couldnt add them to an existing team
@@ -62,9 +61,9 @@ public class BinPackAdd extends TeamJoinHandler {
 			return CANTFIT;
 		}
 	}
-	
-	public String toString(){
-		return "["+event.getName() +":JH:BinPackAdd]";
-	}
 
+	@Override
+	public String toString(){
+		return "["+competition.getParams().getName() +":JH:BinPackAdd]";
+	}
 }

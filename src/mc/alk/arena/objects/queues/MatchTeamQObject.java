@@ -1,6 +1,7 @@
 package mc.alk.arena.objects.queues;
 
 import java.util.Collection;
+import java.util.List;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
@@ -9,7 +10,7 @@ import mc.alk.arena.objects.tournament.Matchup;
 public class MatchTeamQObject extends QueueObject{
 	final Matchup matchup;
 	final Integer priority;
-	
+
 	public MatchTeamQObject(Matchup matchup){
 		mp = matchup.getMatchParams();
 		this.matchup = matchup;
@@ -48,5 +49,11 @@ public class MatchTeamQObject extends QueueObject{
 
 	public Matchup getMatchup() {
 		return matchup;
+	}
+
+	@Override
+	public boolean hasTeam(Team team) {
+		List<Team> teams = matchup.getTeams();
+		return teams != null ? teams.contains(team) : false;
 	}
 }

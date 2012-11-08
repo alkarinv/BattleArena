@@ -262,8 +262,6 @@ public class ConfigSerializer extends BaseSerializer{
 		if (cs == null)
 			return null;
 		Set<Object> optionsstr = new HashSet<Object>(cs.getList("options"));
-		if (optionsstr.isEmpty())
-			return null;
 		Map<TransitionOption,Object> options = new EnumMap<TransitionOption,Object>(TransitionOption.class);
 		TransitionOptions tops = new TransitionOptions();
 		for (Object obj : optionsstr){
@@ -287,7 +285,6 @@ public class ConfigSerializer extends BaseSerializer{
 				continue;}
 
 			split[1] = split[1].trim();
-//			System.out.println("split[0]= " + split[0] +"   " + split[1]);
 			try{
 				switch(to){
 				case MONEY:tops.setMoney(Double.valueOf(split[1])); break;
@@ -297,14 +294,6 @@ public class ConfigSerializer extends BaseSerializer{
 				case DISGUISEALLAS: tops.setDisguiseAllAs(split[1]); break;
 				case WITHINDISTANCE: tops.setWithinDistance(Integer.valueOf(split[1])); break;
 				case LEVELRANGE: tops.addOption(to,MinMax.valueOf(split[1])); break;
-//				case TELEPORTTO:
-//				case TELEPORTWINNER:
-//				case TELEPORTLOSER:
-//					Location l = SerializerUtil.getLocation(split[1]);
-//					if (l == null)
-//						throw new InvalidArgumentException("Location was not correct. needs to be in the form: world,x,y,z or world,x,y,z,pitch,yaw");
-//					tops.addOption(to, l);
-//					break;
 				default:
 					break;
 				}

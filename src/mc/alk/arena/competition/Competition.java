@@ -9,6 +9,7 @@ import java.util.Set;
 import mc.alk.arena.controllers.TransitionMethodController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
 
 /**
@@ -52,7 +53,32 @@ public abstract class Competition {
 	 */
 	protected abstract void transitionTo(CompetitionState state);
 
+	/**
+	 * Signify that a player has left the competition
+	 * @param player
+	 * @return
+	 */
 	public boolean playerLeft(ArenaPlayer player) {
 		return leftPlayers.contains(player.getName());
+	}
+
+	/**
+	 * Returns either the MatchParams or EventParams of the match/event
+	 * @return
+	 */
+	public abstract MatchParams getParams();
+
+	/**
+	 * add a team to this competition
+	 * @param team
+	 */
+	public abstract void addTeam(Team team);
+
+	/**
+	 * return the teams for this competition
+	 * @return
+	 */
+	public List<Team> getTeams() {
+		return teams;
 	}
 }

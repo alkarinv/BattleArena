@@ -3,10 +3,10 @@ package mc.alk.arena.objects;
 import java.util.Collection;
 import java.util.HashMap;
 
-import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.TeamFactory;
 
 public class Duel {
 	final MatchParams mp;
@@ -57,7 +57,7 @@ public class Duel {
 	}
 
 	public Team makeChallengedTeam() {
-		return TeamController.createCompositeTeam(challengedPlayers.keySet());
+		return TeamFactory.createCompositeTeam(challengedPlayers.keySet());
 	}
 
 	public MatchParams getMatchParams() {

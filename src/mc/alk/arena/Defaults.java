@@ -1,5 +1,7 @@
 package mc.alk.arena;
 
+import org.bukkit.Material;
+
 public class Defaults {
 
 	public static final String ADMIN_NODE = "arena.admin";
@@ -16,7 +18,7 @@ public class Defaults {
     /// before reverting to team 1, team 2, etc
     public static final int MAX_TEAM_NAME_APPEND = 4;
 
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 	public static final boolean DEBUG_TRACE = false;
 	public static final boolean DEBUG_EVENTS = false;
 	public static final boolean DEBUG_TEVENTS = false;
@@ -75,9 +77,13 @@ public class Defaults {
 
 	public static double TELEPORT_Y_OFFSET = 1.0; /// offset for teleportation
 
+	public static final Material READY_BLOCK = Material.IRON_BLOCK;
+
 	/// SIGN OPTIONS
 	public static final String SIGN_PREFIX = "*";
 
+
 	public static boolean IGNORE_STACKSIZE = true;
+
 
 }

@@ -87,7 +87,9 @@ public class PerformTransition {
 	static boolean transition(final Match am, final MatchState transition, final ArenaPlayer p,
 			final Team team, final boolean onlyInMatch) {
 		if (Defaults.DEBUG_TRANSITIONS) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +p.getName() +
-				" ops="+am.tops.getOptions(transition) +"  inArena="+am.insideArena(p));
+				" ops="+am.tops.getOptions(transition) +"  inArena="+am.insideArena(p) +"  left="+am.playerLeft(p));
+		if (am.playerLeft(p))
+			return true;
 
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		if (mo == null){
@@ -97,7 +99,7 @@ public class PerformTransition {
 
 		final boolean insideArena = am.insideArena(p);
 		/// If the flag onlyInMatch is set, we should leave if the player isnt inside.  disregard if we are teleporting people in
-		if (onlyInMatch && !insideArena && !(teleportIn || teleportWaitRoom) && !am.playerLeft(p)){
+		if (onlyInMatch && !insideArena && !(teleportIn || teleportWaitRoom)){
 			return true;}
 		final boolean teleportOut = mo.shouldTeleportOut();
 

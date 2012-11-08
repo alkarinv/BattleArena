@@ -14,6 +14,8 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
+import mc.alk.arena.competition.util.TeamJoinFactory;
+import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TagAPIInterface;
@@ -43,6 +45,7 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaInterface;
+import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
@@ -79,7 +82,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	static int count =0;
 
 	final int id = count++;
-	final MatchParams mp; /// Our parameters for this match
+	final MatchParams params; /// Our parameters for this match
 	final Arena arena; /// The arena we are using
 	final ArenaInterface arenaInterface; /// Our interface to access arena methods w/o reflection
 
@@ -92,12 +95,13 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	final List<VictoryCondition> vcs = new ArrayList<VictoryCondition>(); /// Under what conditions does a victory occur
 	MatchResult matchResult; /// Results for this match
 	Map<String, Location> oldlocs = null; /// Locations where the players came from before entering arena
-	Set<String> insideArena = new HashSet<String>(); /// who is still inside arena area
-	Set<String> insideWaitRoom = new HashSet<String>(); /// who is still inside the wait room
+	final Set<String> insideArena = new HashSet<String>(); /// who is still inside arena area
+	final Set<String> insideWaitRoom = new HashSet<String>(); /// who is still inside the wait room
 	MatchTransitions tops = null; /// Our match options for this arena match
-	PlayerStoreController psc = new PlayerStoreController(); /// Store items and exp for players if specified
+	final PlayerStoreController psc = new PlayerStoreController(); /// Store items and exp for players if specified
 	List<ArenaListener> arenaListeners = new ArrayList<ArenaListener>();
-
+	Set<ArenaPlayer> readyPlayers = null; /// Do we have ready Players
+	final Set<MatchState> waitRoomStates = new HashSet<MatchState>();
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
 	final boolean respawns, noLeave, noEnter;
@@ -113,18 +117,19 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	Random rand = new Random(); /// Our randomizer
 	MatchMessager mc; /// Our message instance
+	TeamJoinHandler joinHandler = null;
 
-	public Match(Arena arena, MatchParams mp) {
-		if (Defaults.DEBUG) System.out.println("ArenaMatch::" + mp);
+	public Match(Arena arena, MatchParams params) {
+		if (Defaults.DEBUG) System.out.println("ArenaMatch::" + params);
 		plugin = BattleArena.getSelf();
-		this.mp = mp;
+		this.params = params;
 		this.arena = arena;
 		arenaInterface =new ArenaInterface(arena);
 		arenaListeners.add(arena);
 
 		this.mc = new MatchMessager(this);
 		this.oldlocs = new HashMap<String,Location>();
-		this.tops = mp.getTransitionOptions();
+		this.tops = params.getTransitionOptions();
 		arena.setMatch(this);
 		VictoryCondition vt = VictoryType.createVictoryCondition(this);
 		if (!(vt instanceof TimeLimit))
@@ -132,7 +137,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		addVictoryCondition(vt);
 		this.noEnter = tops.hasOptions(TransitionOption.WGNOENTER);
 		this.noLeave = tops.hasOptions(TransitionOption.WGNOLEAVE);
-		this.woolTeams = tops.hasOptions(TransitionOption.WOOLTEAMS) && mp.getMaxTeamSize() >1 ||
+		this.woolTeams = tops.hasOptions(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() >1 ||
 				tops.hasOptions(TransitionOption.ALWAYSWOOLTEAMS);
 		this.needsBlockEvents = tops.hasOptions(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF,
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
@@ -150,6 +155,16 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		this.stopsTeleports = tops.hasOptions(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE);
 		mo = tops.getOptions(MatchState.ONSPAWN);
 		this.respawnsWithClass = mo != null ? (mo.hasOption(TransitionOption.RESPAWNWITHCLASS)): false;
+//		Map<Integer,Location> wr = arena.getWaitRoomSpawnLocs();
+		/// TODO complete Ready events
+//		if (wr != null && !wr.isEmpty()){
+//			for (MatchState ms : MatchState.values()){
+//
+//			}
+//		}
+
+		/// Try and make a joinhandler out of our current params, but we don't care if it's null
+		try {joinHandler = TeamJoinFactory.createTeamJoinHandler(this);} catch (NeverWouldJoinException e) {}
 	}
 
 	private void updateBukkitEvents(MatchState matchState){
@@ -201,6 +216,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		for (TransitionListener tl: transitionListeners){
 			tmc.addListener(tl);}
 	}
+	public void setTeamJoinHandler(TeamJoinHandler teamJoinHandler){
+		this.joinHandler = teamJoinHandler;
+	}
 
 	//	private void beginMatch() {
 	//		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
@@ -243,7 +261,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			public void run() {
 				startMatch();
 			}
-		}, (long) (mp.getSecondsTillMatch() * 20L * Defaults.TICK_MULT));
+		}, (long) (params.getSecondsTillMatch() * 20L * Defaults.TICK_MULT));
 	}
 
 	private void startMatch(){
@@ -309,9 +327,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			Team victor = getVictor();
 			final Set<Team> losers = getLosers();
 			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victor="+ victor + "  " + losers);
-			TrackerInterface bti = BTInterface.getInterface(mp);
+			TrackerInterface bti = BTInterface.getInterface(params);
 			if (victor != null){ /// We have a true winner
-				if (bti != null && mp.isRated()){
+				if (bti != null && params.isRated()){
 					try{BTInterface.addRecord(bti,victor.getPlayers(),losers,WLT.WIN);}catch(Exception e){e.printStackTrace();}
 				}
 				try{mc.sendOnVictoryMsg(victor, losers);}catch(Exception e){e.printStackTrace();}
@@ -323,7 +341,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
 			arenaInterface.onVictory(getResult());
 			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-					new MatchCompleted(am), (long) (mp.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
+					new MatchCompleted(am), (long) (params.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
 		}
 	}
 
@@ -410,29 +428,32 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		PerformTransition.transition(this, MatchState.ONJOIN, p,t, true);
 	}
 
+	@Override
+	public void addTeam(Team team){
+		teams.add(team);
+		teamIndexes.put(team, teams.size());
+		startTracking(team);
+		team.setAlive();
+		team.resetScores();/// reset scores
+		TeamController.addTeamHandler(team, this);
+		for (ArenaPlayer p: team.getPlayers()){
+			arenaInterface.onJoin(p,team);}
+		if ( alwaysTeamNames || (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND)){
+			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
+		PerformTransition.transition(this, MatchState.ONJOIN, team, true);
+	}
+
 	public void onJoin(Collection<Team> teams){
 		for (Team t: teams){
-			TeamController.addTeamHandler(t, this);
 			onJoin(t);}
 	}
 
 	public void onJoin(Team t) {
-		//		System.out.println(" team t= " + t.getName() +"   is joining  " + q +"  mt=" + mt+ " options=" + arena.getOptions(mt));
-		int index = teams.size();
-		teams.add(t);
-		teamIndexes.put(t, index);
-		if ( alwaysTeamNames || (!t.hasSetName() && t.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND)){
-			t.setDisplayName(TeamUtil.createTeamName(indexOf(t)));
+		if (joinHandler != null){
+			joinHandler.joiningTeam(t);
+		} else {
+			addTeam(t);
 		}
-		startTracking(t);
-		t.setAlive();
-		t.resetScores();/// reset scores
-		TeamController.addTeamHandler(t, this);
-		for (ArenaPlayer p: t.getPlayers()){
-			arenaInterface.onJoin(p,t);
-		}
-
-		PerformTransition.transition(this, MatchState.ONJOIN, t, true);
 	}
 
 	/**
@@ -454,11 +475,13 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	}
 
 	/**
-	 * only call before a match is running, otherwise strange things will occur
+	 *
 	 * @param t
 	 */
 	public void onLeave(Team t) {
-		PerformTransition.transition(this, MatchState.ONCANCEL, t, false);
+		for (ArenaPlayer ap: t.getPlayers()){
+			onLeave(ap,t);
+		}
 		teams.remove(t);
 		TeamController.removeTeamHandler(t, this);
 	}
@@ -466,14 +489,17 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public void onLeave(ArenaPlayer p) {
 		/// remove them from the match, they don't want to be here
 		Team t = getTeam(p);
-		t.killMember(p);
-		if (insideArena(p)){ /// Only leave if they haven't already left.
-			PerformTransition.transition(this, MatchState.ONCANCEL, p, t, false);
-			leftPlayers.add(p.getName());
-			t.playerLeft(p);
-		}
+		onLeave(p,t);
 	}
 
+	private void onLeave(ArenaPlayer ap, Team t){
+		t.killMember(ap);
+		if (insideArena(ap)){ /// Only leave if they haven't already left.
+			PerformTransition.transition(this, MatchState.ONCANCEL, ap, t, false);
+			leftPlayers.add(ap.getName());
+			t.playerLeft(ap);
+		}
+	}
 	/**
 	 * Called when a team joins the arena
 	 * @param team
@@ -672,6 +698,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public boolean isFinished() {return state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isWon() {return state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isStarted() {return state == MatchState.ONSTART;}
+	public boolean isInWaitRoomState() {return waitRoomStates.contains(state);}
 
 	@Override
 	public MatchState getState() {return state;}
@@ -686,7 +713,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		return times.get(state);
 	}
 
-	public MatchParams getParams() {return mp;}
+	@Override
+	public MatchParams getParams() {return params;}
+	@Override
 	public List<Team> getTeams() {return teams;}
 	public List<Team> getAliveTeams() {
 		List<Team> alive = new ArrayList<Team>();
@@ -777,7 +806,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public String getMatchInfo() {
 		TransitionOptions to = tops.getOptions(state);
 		StringBuilder sb = new StringBuilder("ArenaMatch " + this.toString() +" ");
-		sb.append(mp +"\n");
+		sb.append(params +"\n");
 		sb.append("state=&6"+state +"\n");
 		sb.append("pvp=&6"+ (to != null ? to.getPVP(): "on" ) +"\n");
 		//		sb.append("playersInMatch=&6"+inMatch.get(p)+"\n");
@@ -826,8 +855,24 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeader());}catch(Exception e){e.printStackTrace();}
 	}
 
+	public TeamJoinHandler getTeamJoinHandler() {
+		return joinHandler;
+	}
+
 	public Integer getTeamIndex(Team t) {
 		return teamIndexes.get(t);
+	}
+
+	public boolean hasWaitroom() {
+		final Map<Integer, Location> wrlocs = arena.getWaitRoomSpawnLocs();
+		return wrlocs != null && !wrlocs.isEmpty() &&
+				params.getTransitionOptions().hasOptions(TransitionOption.TELEPORTWAITROOM);
+	}
+
+	public void setReady(ArenaPlayer ap) {
+		if (readyPlayers == null)
+			readyPlayers = new HashSet<ArenaPlayer>();
+		readyPlayers.add(ap);
 	}
 
 	@Override

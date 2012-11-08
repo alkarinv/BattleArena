@@ -49,7 +49,8 @@ defaultOptions:
     ### Valid options [startContinuous, startNext]
     onServerStart: []
     timeBetweenScheduledEvents: 30 ## seconds between end of one event, and start of another
-
+    announceTimeTillNextEvent: false
+  
     ### Match/Event Announcements
     ## these only affect the broadcasts to the server or channel, not the messages the fighting players receive
     ## announce : announce these messages 
@@ -67,6 +68,7 @@ defaultOptions:
         onOpen: [ announce, server ]  ## event is now open
         onStart: [ announce, server ]  ## event is starting
         onVictory:  [ announce, server ] ## event has been won
+        onCancel:  [ announce, server ] ## event has been cancelled
 
 ### Prerequisites
 # prerequisites is what they need to have BEFORE joining, this will also be rechecked when the players teleport in

@@ -85,8 +85,10 @@ public class ArenaType implements Comparable<ArenaType>{
 		compatibleTypes.add(at);
 	}
 
+	@Override
 	public int compareTo(ArenaType arg0) {
-		return this.name.compareTo(arg0.name);
+		Integer ord = ordinal();
+		return ord.compareTo(arg0.ordinal());
 	}
 
 	@Override
@@ -95,11 +97,12 @@ public class ArenaType implements Comparable<ArenaType>{
 			return true;
 		if((obj == null) || (obj.getClass() != this.getClass()))
 			return false;
-		return this.name.equals( ((ArenaType)obj).name);
+		return compareTo((ArenaType)obj) == 0;
 	}
+
 	@Override
 	public int hashCode(){
-		return name.hashCode();
+		return id;
 	}
 
 	public Plugin getPlugin() {
@@ -197,7 +200,4 @@ public class ArenaType implements Comparable<ArenaType>{
 	public static Class<? extends Arena> getArenaClass(ArenaType arenaType){
 		return classes.get(arenaType.getName());
 	}
-
-
-
 }

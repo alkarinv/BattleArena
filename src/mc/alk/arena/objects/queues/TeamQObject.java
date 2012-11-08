@@ -10,17 +10,17 @@ import mc.alk.arena.objects.teams.Team;
 public class TeamQObject extends QueueObject{
 	Team team;
 	final int priority;
-	
+
 	public TeamQObject(Team t1, MatchParams mp) {
 		this.mp = mp;
 		this.team = t1;
 		priority = t1.getPriority();
 	}
-	
+
 	public Team getTeam() {
 		return team;
 	}
-	
+
 	@Override
 	public Integer getPriority() {
 		return priority;
@@ -46,5 +46,10 @@ public class TeamQObject extends QueueObject{
 		ArrayList<Team> teams = new ArrayList<Team>(1);
 		teams.add(team);
 		return teams;
+	}
+
+	@Override
+	public boolean hasTeam(Team team) {
+		return this.team.getId() == team.getId();
 	}
 }

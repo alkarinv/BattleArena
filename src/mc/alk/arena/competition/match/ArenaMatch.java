@@ -10,6 +10,7 @@ import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.events.PlayerLeftEvent;
 import mc.alk.arena.events.matches.MatchClassSelectedEvent;
+import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -33,6 +34,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -53,8 +55,6 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
-
-import com.alk.util.Log;
 
 
 public class ArenaMatch extends Match {
@@ -112,19 +112,16 @@ public class ArenaMatch extends Match {
 
 	@MatchEventHandler(suppressCastWarnings=true)
 	public void onEntityDamage(EntityDamageEvent event) {
-		if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage : ");}
 		if (!(event.getEntity() instanceof Player))
 			return;
-		ArenaPlayer target = BattleArena.toArenaPlayer((Player) event.getEntity());
-		if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage: "+target);}
-		TransitionOptions to = tops.getOptions(state);
+		final ArenaPlayer target = BattleArena.toArenaPlayer((Player) event.getEntity());
+		final TransitionOptions to = tops.getOptions(state);
 		if (to == null)
 			return;
 		final PVPState pvp = to.getPVP();
 		if (pvp == null)
 			return;
 		if (pvp == PVPState.INVINCIBLE){
-			if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage: "+target.getName()+ "  " + pvp + " ");}
 			/// all damage is cancelled
 			target.setFireTicks(0);
 			event.setDamage(0);
@@ -134,7 +131,7 @@ public class ArenaMatch extends Match {
 		if (!(event instanceof EntityDamageByEntityEvent)){
 			return;}
 
-		Entity damagerEntity = ((EntityDamageByEntityEvent)event).getDamager();
+		final Entity damagerEntity = ((EntityDamageByEntityEvent)event).getDamager();
 
 		ArenaPlayer damager=null;
 		switch(pvp){
@@ -146,8 +143,6 @@ public class ArenaMatch extends Match {
 			if (damager == null){ /// damage from some source, its not pvp though. so we dont care
 				return;}
 			Team t = getTeam(damager);
-			if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage: "+target.getName()+ " pvp=" + pvp + " t=" +
-					t +" " +(t!=null ? (t.getDisplayName()+":-:"+t.hasMember(target))  : ""));}
 			if (t != null && t.hasMember(target)){ /// attacker is on the same team
 				event.setCancelled(true);
 			} else {/// different teams... lets make sure they can actually hit
@@ -156,7 +151,6 @@ public class ArenaMatch extends Match {
 			break;
 		case OFF:
 			damager = DmgDeathUtil.getPlayerCause(damagerEntity);
-			if (Defaults.DEBUG_DAMAGE) {Log.info("BA onEntityDamage: "+target.getName()+ " pvp=" + pvp +"  dmger="+damager);}
 			if (damager != null){ /// damage done from a player
 				event.setDamage(0);
 				event.setCancelled(true);
@@ -291,23 +285,49 @@ public class ArenaMatch extends Match {
 	public void onPlayerInteract(PlayerInteractEvent event){
 		if (event.isCancelled())
 			return;
+		final Block b = event.getClickedBlock();
+		if (b == null) /// It's happened.. minecraft is a strange beast
+			return;
 		/// Check to see if it's a sign
-		final Material m = event.getClickedBlock().getType();
-		if (!(m.equals(Material.SIGN) || m.equals(Material.SIGN_POST)||m.equals(Material.WALL_SIGN))){ /// Only checking for signs
+		final Material m = b.getType();
+		if (m.equals(Material.SIGN) || m.equals(Material.SIGN_POST)||m.equals(Material.WALL_SIGN)){ /// Only checking for signs
+			signClick(event);
+		} else if (m.equals(Defaults.READY_BLOCK)) {
+			readyClick(event);
+		}
+	}
+
+	private void readyClick(PlayerInteractEvent event) {
+		if (!isInWaitRoomState()){
 			return;}
+		final Action action = event.getAction();
+		if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the block
+			event.setCancelled(true);}
+		final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
+		if (readyPlayers != null && readyPlayers.contains(ap)) /// they are already ready
+			return;
+		setReady(ap);
+		MessageUtil.sendMessage(ap, "&cYou ready yourself for the arena");
+		int size = getAlivePlayers().size();
+		if (size == readyPlayers.size()){
+			new MatchPlayersReadyEvent(this).callEvent();
+		}
+	}
+
+	private void signClick(PlayerInteractEvent event) {
 		/// Get our sign
 		final Sign sign = (Sign) event.getClickedBlock().getState();
-		/// Check to see if sign has correct format (is more efficient than doing string manipulation for getting the )
+		/// Check to see if sign has correct format (is more efficient than doing string manipulation )
 		if (!sign.getLine(0).matches("^.[0-9a-fA-F]\\*.*$")){
 			return;}
 
-		Action action = event.getAction();
+		final Action action = event.getAction();
 		if (action != Action.LEFT_CLICK_BLOCK && action != Action.RIGHT_CLICK_BLOCK){
 			return;}
 		if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the sign
 			event.setCancelled(true);}
 
-		ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(sign.getLine(0)).replace('*',' ').trim());
+		final ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(sign.getLine(0)).replace('*',' ').trim());
 		if (ac == null) /// Not a valid class sign
 			return;
 

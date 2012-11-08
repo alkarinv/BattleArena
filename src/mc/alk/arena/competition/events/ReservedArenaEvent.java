@@ -2,11 +2,12 @@ package mc.alk.arena.competition.events;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.events.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
+import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.arenas.Arena;
@@ -60,6 +61,13 @@ public class ReservedArenaEvent extends Event {
 		mc.sendEventStarting(teams);
 		makeNextRound();
 		startRound();
+	}
+
+	@TransitionEventHandler
+	public void allPlayersReady(MatchPlayersReadyEvent event){
+		if (joinHandler != null && joinHandler.hasEnough()){
+			startEvent();
+		}
 	}
 
 	@TransitionEventHandler
