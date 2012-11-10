@@ -144,7 +144,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 			while (iter.hasNext()){
 				Match match = iter.next();
 				/// We dont want people joining in a non waitroom state
-				if (!match.isInWaitRoomState()){
+				if (!match.canStillJoin()){
 					iter.remove();
 					continue;
 				}
@@ -159,8 +159,10 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 					default: break;
 					}
 					/// if we are now full, remove from unfilled
-					if (tjh.isFull())
+					if (tjh.isFull()){
 						iter.remove();
+						match.start();
+					}
 					return result;
 				}
 			}

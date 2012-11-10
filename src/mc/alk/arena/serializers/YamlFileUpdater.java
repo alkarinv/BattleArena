@@ -75,6 +75,8 @@ public class YamlFileUpdater {
 			yfu.to1Point5(bacs, bacs.getConfig(), version);}
 		if (version.compareTo("1.5.5")<0){
 			yfu.to1Point55(bacs, bacs.getConfig(), version);}
+		if (version.compareTo("1.6")<0){
+			yfu.to1Point6(bacs, bacs.getConfig(), version);}
 	}
 
 	private void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
@@ -380,6 +382,38 @@ public class YamlFileUpdater {
 					fw.write("    ## silently opened and the player will join\n");
 					fw.write("    allowPlayerCreation: true \n");
 					fw.write("\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(configFile.getAbsoluteFile());
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
+	private void to1Point6(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
+		Log.warn("BattleArena updating config to 1.6");
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			boolean updatedDefaultSection = false;
+			while ((line = br.readLine()) != null){
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 1.6\n\n");
+				} else if (!updatedDefaultSection && (line.matches(".*ignoreMaxStackSize:.*"))){
+					fw.write(line +"\n\n");
+					fw.write("# If true if a player joins a match which has 2 arenas. 1v1 and 1v1v1v1. Then 1v1 will happen first\n");
+					fw.write("# afterwards the 1v1v1v1 is guaranteed to be the next arena used.\n");
+					fw.write("# if false.  if after the 1v1 is used, and the match ends, the 1v1 can be used again before the 1v1v1v1\n");
+					fw.write("useArenasOnlyInOrder: false\n\n");
 				} else {
 					fw.write(line+"\n");
 				}

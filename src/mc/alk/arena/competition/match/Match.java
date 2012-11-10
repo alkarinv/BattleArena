@@ -102,7 +102,10 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	final PlayerStoreController psc = new PlayerStoreController(); /// Store items and exp for players if specified
 	List<ArenaListener> arenaListeners = new ArrayList<ArenaListener>();
 	Set<ArenaPlayer> readyPlayers = null; /// Do we have ready Players
-	final Set<MatchState> waitRoomStates = new HashSet<MatchState>();
+	List<MatchState> waitRoomStates = null; /// which states are inside a waitRoom
+	Long joinCutoffTime = null; /// at what point do we cut people off from joining
+	Integer currentTimer = null; /// Our current timer
+
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
 	final boolean respawns, noLeave;
@@ -159,13 +162,12 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		mo = tops.getOptions(MatchState.ONSPAWN);
 		this.respawnsWithClass = mo != null ? (mo.hasOption(TransitionOption.RESPAWNWITHCLASS)): false;
 
-//		Map<Integer,Location> wr = arena.getWaitRoomSpawnLocs();
-		/// TODO complete Ready events
-//		if (wr != null && !wr.isEmpty()){
-//			for (MatchState ms : MatchState.values()){
-//
-//			}
-//		}
+		final Map<Integer,Location> wr = arena.getWaitRoomSpawnLocs();
+		if (wr != null && !wr.isEmpty()){
+			waitRoomStates = tops.getMatchStateRange(TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTIN);
+			if (waitRoomStates.isEmpty()){
+				waitRoomStates = null;}
+		}
 
 		/// Try and make a joinhandler out of our current params, but we don't care if it's null
 		try {joinHandler = TeamJoinFactory.createTeamJoinHandler(this);} catch (NeverWouldJoinException e) {}
@@ -189,7 +191,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	 */
 	public void open(){
 		final Match match = this;
-		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+		currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
 			@Override
 			public void run() {
 				transitionTo(MatchState.ONOPEN);
@@ -261,11 +263,26 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		arenaInterface.onPrestart();
 		try{mc.sendOnPreStartMsg(teams);}catch(Exception e){e.printStackTrace();}
 		/// Schedule the start of the match
-		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+		currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
 				startMatch();
 			}
 		}, (long) (params.getSecondsTillMatch() * 20L * Defaults.TICK_MULT));
+		if (waitRoomStates != null){
+			joinCutoffTime = System.currentTimeMillis() + (params.getSecondsTillMatch()- Defaults.JOIN_CUTOFF_TIME)*1000;}
+	}
+
+	public void start() {
+		if (state != MatchState.ONPRESTART)
+			return;
+		if (currentTimer != null){
+			Bukkit.getScheduler().cancelTask(currentTimer);}
+		currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			public void run() {
+				startMatch();
+			}
+		}, (long) (10 * 20L * Defaults.TICK_MULT));
+
 	}
 
 	private void startMatch(){
@@ -320,7 +337,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		transitionTo(MatchState.ONVICTORY);
 		/// Call the rest after a 2 tick wait to ensure the calling transitionMethods complete before the
 		/// victory conditions start rolling in
-		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new MatchVictory(this),2L);
+		currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new MatchVictory(this),2L);
 	}
 
 	class MatchVictory implements Runnable{
@@ -344,7 +361,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			notifyListeners(new MatchVictoryEvent(am,matchResult));
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
 			arenaInterface.onVictory(getResult());
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
+			currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 					new MatchCompleted(am), (long) (params.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
 		}
 	}
@@ -365,7 +382,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			PerformTransition.transition(am, MatchState.ONCOMPLETE, teams, true);
 			/// Once again, lets delay this final bit so that transitions have time to finish before
 			/// Other splisteners get a chance to handle
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable(){
+			currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable(){
 				public void run() {
 					/// Losers and winners get handled after the match is complete
 					PerformTransition.transition(am, MatchState.LOSERS, am.getResult().getLosers(), false);
@@ -702,7 +719,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public boolean isFinished() {return state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isWon() {return state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isStarted() {return state == MatchState.ONSTART;}
-	public boolean isInWaitRoomState() {return waitRoomStates.contains(state);}
+	public boolean isInWaitRoomState() {return waitRoomStates != null && waitRoomStates.contains(state);}
 
 	@Override
 	public MatchState getState() {return state;}
@@ -868,9 +885,10 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	}
 
 	public boolean hasWaitroom() {
-		final Map<Integer, Location> wrlocs = arena.getWaitRoomSpawnLocs();
-		return wrlocs != null && !wrlocs.isEmpty() &&
-				params.getTransitionOptions().hasOptions(TransitionOption.TELEPORTWAITROOM);
+		return waitRoomStates != null;
+	}
+	public boolean canStillJoin() {
+		return isInWaitRoomState() && (joinCutoffTime == null || System.currentTimeMillis() < joinCutoffTime);
 	}
 
 	public void setReady(ArenaPlayer ap) {

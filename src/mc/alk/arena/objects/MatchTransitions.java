@@ -88,6 +88,22 @@ public class MatchTransitions {
 		}
 		return true;
 	}
+	public List<MatchState> getMatchStateRange(TransitionOption option, TransitionOption endOption) {
+		boolean foundOption = false;
+		List<MatchState> list = new ArrayList<MatchState>();
+		for (MatchState ms : MatchState.values()){
+			TransitionOptions to = ops.get(ms);
+			if (to == null) continue;
+			if (to.hasOption(option)){
+				foundOption = true;}
+			if (to.hasOption(endOption))
+				return list;
+			if (foundOption)
+				list.add(ms);
+		}
+		return list;
+	}
+
 	public String getOptionString() {
 		StringBuilder sb = new StringBuilder();
 		List<MatchState> states = new ArrayList<MatchState>(ops.keySet());
@@ -119,4 +135,5 @@ public class MatchTransitions {
 		}
 		return sb.toString();
 	}
+
 }

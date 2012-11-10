@@ -41,6 +41,8 @@ public class Defaults {
 
 	public static int MATCH_TIME = 2*60; /// matchEndTime
 	public static int MATCH_UPDATE_INTERVAL = 30;
+	public static int JOIN_CUTOFF_TIME = 15;
+
 
 	/// EVENT OPTIONS
 	public static int AUTO_EVENT_COUNTDOWN_TIME = 180;
@@ -85,7 +87,6 @@ public class Defaults {
 
 	/// SIGN OPTIONS
 	public static final String SIGN_PREFIX = "*";
-
 
 	public static boolean IGNORE_STACKSIZE = true;
 
