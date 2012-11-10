@@ -58,7 +58,7 @@ public class BASignListener implements Listener{
 
 		Player p = event.getPlayer();
 
-		/// Is the sign a trade sign?
+		/// Is the sign a arena class sign?
 		final boolean admin = p.isOp() || p.hasPermission(Defaults.ARENA_ADMIN);
 		String lines[] = event.getLines();
 		ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(lines[0]).replaceAll("\\"+Defaults.SIGN_PREFIX, ""));
@@ -70,7 +70,7 @@ public class BASignListener implements Listener{
 			makeArenaClassSign(event, ac, lines);
 			return;
 		}
-
+		/// is the sign a command sign
 		ArenaCommandSign acs = SignUtil.getArenaCommandSign(lines);
 		if (acs != null){
 			if (!admin){

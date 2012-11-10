@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 
@@ -55,5 +56,10 @@ public class MatchTeamQObject extends QueueObject{
 	public boolean hasTeam(Team team) {
 		List<Team> teams = matchup.getTeams();
 		return teams != null ? teams.contains(team) : false;
+	}
+
+	@Override
+	public JoinOptions getJoinOptions() {
+		return null;
 	}
 }

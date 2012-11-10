@@ -97,5 +97,4 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public ChatColor getColor() {
 		return MessageUtil.getFirstColor(prefix);
 	}
-
 }

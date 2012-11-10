@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.Team;
 
 public abstract class QueueObject {
@@ -25,4 +26,6 @@ public abstract class QueueObject {
 	public abstract Collection<Team> getTeams();
 
 	public abstract boolean hasTeam(Team team);
+
+	public abstract JoinOptions getJoinOptions();
 }

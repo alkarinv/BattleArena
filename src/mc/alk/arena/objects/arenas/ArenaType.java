@@ -41,9 +41,7 @@ public class ArenaType implements Comparable<ArenaType>{
 	}
 
 	public boolean matches(ArenaType arenaType) {
-		if (this == ANY || arenaType == ANY) return true;
-		if (this == arenaType)
-			return true;
+		if (this == ANY || arenaType == ANY || this == arenaType) return true;
 		return (compatibleTypes==null) ? false : compatibleTypes.contains(arenaType);
 	}
 

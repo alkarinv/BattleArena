@@ -11,10 +11,7 @@ import mc.alk.arena.util.Util.MinMax;
 
 
 public class ArenaParams {
-//	public static final int ANY = Integer.MAX_VALUE-1;
-	public static final int CLANS = Integer.MAX_VALUE;
 	public static final int MAX = Integer.MAX_VALUE-2;
-	public static final int NONE = -1;
 
 	Integer minTeamSize = 1;
 	Integer maxTeamSize = MAX;
@@ -113,13 +110,14 @@ public class ArenaParams {
 	}
 
 
-	public boolean matchesNTeams(final ArenaParams ap) {
-		return (this.minTeams <= ap.getMinTeams() && maxTeams >= ap.getMaxTeams())
-				|| maxTeams == MAX  || ap.getMaxTeams() == MAX;
+	public boolean matchesNTeams(final ArenaParams params) {
+		final int min = Math.max(params.minTeams, minTeams);
+		final int max = Math.min(params.maxTeams, maxTeams);
+		return min <= max;
 	}
 
 	public boolean matchesNTeams(int nteams) {
-		return ( (minTeams <= nteams && maxTeams>=nteams) || minTeams==MAX || nteams==MAX);
+		return minTeams<= nteams && nteams<=maxTeams;
 	}
 
 	public Collection<String> getInvalidMatchReasons(ArenaParams ap) {
@@ -144,15 +142,18 @@ public class ArenaParams {
 		if (minTeamSize <= 0) reasons.add("Min Team Size is <= 0");
 		if (maxTeamSize <= 0) reasons.add("Max Team Size is <= 0");
 		if (minTeamSize > maxTeamSize) reasons.add("Min Team Size is greater than Max Team Size " + minTeamSize+":"+ maxTeamSize);
+		if (minTeams > maxTeams) reasons.add("Min Teams is greater than Max Teams" + minTeams+":"+ maxTeams);
 		return reasons;
 	}
 
-	public boolean matchesTeamSize(final ArenaParams q) {
-		return (this.minTeamSize <= q.minTeamSize ) && (this.maxTeamSize == MAX  || this.maxTeamSize >= q.maxTeamSize);
+	public boolean matchesTeamSize(final ArenaParams params) {
+		final int min = Math.max(params.minTeamSize, minTeamSize);
+		final int max = Math.min(params.maxTeamSize, maxTeamSize);
+		return min <= max;
 	}
 
 	public boolean matchesTeamSize(int i) {
-		return (minTeamSize==MAX || i>= minTeamSize && i<= maxTeamSize);
+		return minTeamSize <= i && i <= maxTeamSize;
 	}
 	public void setTeamSize(int size) {
 		preferredMinTeamSize = preferredMaxTeamSize = minTeamSize = maxTeamSize = size;
@@ -261,5 +262,22 @@ public class ArenaParams {
 		return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
 	}
 
+	public boolean intersect(ArenaParams params) {
+		if (!getType().matches(params.getType()))
+			return false;
+		minTeams = Math.max(params.minTeams, minTeams);
+		maxTeams = Math.min(params.maxTeams, maxTeams);
+		minTeamSize = Math.max(params.minTeamSize, minTeamSize);
+		maxTeamSize = Math.min(params.maxTeamSize, maxTeamSize);
+		calcMaxPlayers();
+		return (minTeams <= maxTeams && minTeamSize <= maxTeamSize);
+	}
+	public boolean intersectTeamSize(int size) {
+		if (minTeamSize > size || maxTeamSize < size)
+			return false;
+		minTeamSize = size;
+		maxTeamSize = size;
+		return true;
+	}
 
 }

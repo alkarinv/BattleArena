@@ -94,8 +94,6 @@ public class ConfigSerializer extends BaseSerializer{
 			Log.err("[BattleArena] configSerializer can't load " + name +" with a config section of " + cs);
 			return null;
 		}
-
-		//		System.out.println(" Setting up " + cs.getCurrentPath() +"   name=" +name);
 		/// Set up match options.. specifying defaults where not specified
 		/// Set Arena Type
 		ArenaType at;
@@ -180,8 +178,6 @@ public class ConfigSerializer extends BaseSerializer{
 		pi.setSecondsTillMatch( cs.contains("secondsTillMatch") ? cs.getInt("secondsTillMatch") : Defaults.SECONDS_TILL_MATCH);
 
 		pi.setMatchTime(cs.contains("matchTime") ? cs.getInt("matchTime") : Defaults.MATCH_TIME);
-		//		pi.setEv(cs.contains("eventCountdownTime") ? cs.getInt("eventCountdownTime") : Defaults.AUTO_EVENT_COUNTDOWN_TIME);
-		//		pi.setIntervalTime(cs.contains("eventCountdownInterval") ? cs.getInt("eventCountdownInterval") : Defaults.ANNOUNCE_EVENT_INTERVAL);
 		pi.setIntervalTime(cs.contains("matchUpdateInterval") ? cs.getInt("matchUpdateInterval") : Defaults.MATCH_UPDATE_INTERVAL);
 
 		if (cs.contains("customMessages") && cs.getBoolean("customMessages")){

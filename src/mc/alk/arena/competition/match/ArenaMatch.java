@@ -81,8 +81,8 @@ public class ArenaMatch extends Match {
 
 	@MatchEventHandler(suppressCastWarnings=true)
 	public void onPlayerDeath(PlayerDeathEvent event, ArenaPlayer target){
-		//		System.out.println(this+"!!!!! onPlayerDeath = " + target.getName() + "  complete=" +matchResult.matchComplete()  +
-		//				": inside=" + insideArena.contains(target.getName()) +"   clearInv?=" + clearsInventoryOnDeath +"   " + isWon());
+		System.out.println(this+"!!!!! onPlayerDeath = " + target.getName()  +
+				": inside=" + insideArena.contains(target.getName()) +"   clearInv?=" + clearsInventoryOnDeath +"   " + isWon());
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE || !insideArena.contains(target.getName())){
 			return;}
 

@@ -21,6 +21,7 @@ import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TagAPIInterface;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.WorldGuardInterface;
+import mc.alk.arena.controllers.WorldGuardInterface.WorldGuardFlag;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
 import mc.alk.arena.controllers.messaging.MatchMessager;
 import mc.alk.arena.events.BAEvent;
@@ -104,7 +105,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	final Set<MatchState> waitRoomStates = new HashSet<MatchState>();
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
-	final boolean respawns, noLeave, noEnter;
+	final boolean respawns, noLeave;
 	boolean woolTeams = false;
 	final boolean alwaysTeamNames;
 	final boolean respawnsWithClass;
@@ -135,7 +136,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		if (!(vt instanceof TimeLimit))
 			addVictoryCondition(new TimeLimit(this));
 		addVictoryCondition(vt);
-		this.noEnter = tops.hasOptions(TransitionOption.WGNOENTER);
+		boolean noEnter = tops.hasOptions(TransitionOption.WGNOENTER);
+		if (noEnter && arena.hasRegion())
+			WorldGuardInterface.setFlag(arena.getRegionWorld(), arena.getRegion(), WorldGuardFlag.ENTRY, !noEnter);
 		this.noLeave = tops.hasOptions(TransitionOption.WGNOLEAVE);
 		this.woolTeams = tops.hasOptions(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() >1 ||
 				tops.hasOptions(TransitionOption.ALWAYSWOOLTEAMS);
@@ -155,6 +158,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		this.stopsTeleports = tops.hasOptions(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE);
 		mo = tops.getOptions(MatchState.ONSPAWN);
 		this.respawnsWithClass = mo != null ? (mo.hasOption(TransitionOption.RESPAWNWITHCLASS)): false;
+
 //		Map<Integer,Location> wr = arena.getWaitRoomSpawnLocs();
 		/// TODO complete Ready events
 //		if (wr != null && !wr.isEmpty()){
@@ -448,11 +452,11 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			onJoin(t);}
 	}
 
-	public void onJoin(Team t) {
+	public void onJoin(Team team) {
 		if (joinHandler != null){
-			joinHandler.joiningTeam(t);
+			joinHandler.joiningTeam(team);
 		} else {
-			addTeam(t);
+			addTeam(team);
 		}
 	}
 

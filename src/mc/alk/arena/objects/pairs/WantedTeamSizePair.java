@@ -2,8 +2,8 @@ package mc.alk.arena.objects.pairs;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util.MinMax;
 
 
@@ -16,30 +16,31 @@ public class WantedTeamSizePair {
 	 * @param player
 	 * @param t
 	 * @param mp
-	 * @param string
+	 * @param stringsize
 	 * @return
+	 * @throws InvalidOptionException
 	 */
-	public static WantedTeamSizePair getWantedTeamSize(ArenaPlayer player, Team t, MatchParams mp, String string) {
+	public static WantedTeamSizePair getWantedTeamSize(ArenaPlayer player, Team t, MatchParams mp, String stringsize) throws InvalidOptionException {
 		/// Check to see if the user has specified a wanted team size
 		MinMax mm = null;
-		try{mm = MinMax.valueOf(string);} catch (Exception e){}
+		try{mm = MinMax.valueOf(stringsize);} catch (Exception e){}
 		final int min = mp.getMinTeamSize();
 		final int max = mp.getMaxTeamSize();
 		WantedTeamSizePair result = new WantedTeamSizePair();
 		if (mm != null){
 			if (mm.min > max){ /// They want a team size that is greater than what is offered by this match type
-				MessageUtil.sendMessage(player, "&cYou wanted to join with a team of &6" + mm.min+"&c players");
-				MessageUtil.sendMessage(player, "&cBut this match type only supports up to &6"+max+"&c players per team");
-				return null;
+				throw new InvalidOptionException("&cYou wanted to join with a team of &6" + mm.min+"&c players\n" +
+						"&cBut this match type only supports up to &6"+max+"&c players per team");
+			} else if (mm.min < t.size()){
+				throw new InvalidOptionException("&cYou wanted to join an arena with less members than your team has!");
 			}
 			result.size = mm.min;
 			result.manuallySet = true;
 			return result;
 		}
 		if (t.size() > max){
-			MessageUtil.sendMessage(player, "&cYour team has &6" + t.size()+"&c players");
-			MessageUtil.sendMessage(player, "&cBut this match type only supports up to &6"+max+"&c players per team");
-			return null;
+			throw new InvalidOptionException("&cYour team has &6" + t.size()+"&c players\n" +
+					"&cBut this match type only supports up to &6"+max+"&c players per team");
 		}
 
 		/// Are they joining a match that needs more people than their team has

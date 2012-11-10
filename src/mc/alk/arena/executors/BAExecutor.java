@@ -22,7 +22,6 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
-import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.arenas.ArenaCreateEvent;
 import mc.alk.arena.events.arenas.ArenaDeleteEvent;
 import mc.alk.arena.objects.ArenaParams;
@@ -90,11 +89,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 				set.add(param.getName());
 			}
 			for (String s: set){
-				sendMessage(sender, MessageHandler.getSystemMessage("type_enabled",s));}
+				sendMessage(sender, "&2 type &6" + s + "&2 enabled");}
 			return true;
 		}
 		disabled.remove(mp.getName());
-		return sendMessage(sender, MessageHandler.getSystemMessage("type_enabled",mp.getName()));
+		return sendMessage(sender, "&2 type &6" + mp.getName() + "&2 enabled");
 	}
 
 	@MCCommand(cmds={"disable"},admin=true,usage="disable")
@@ -106,11 +105,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 				set.add(param.getName());
 			}
 			for (String s: set){
-				sendMessage(sender, MessageHandler.getSystemMessage("type_disabled",s));}
+				sendMessage(sender, "&5 type &6" + s + "&5 disabled");}
 			return true;
 		}
 		disabled.add(mp.getName());
-		return sendMessage(sender, MessageHandler.getSystemMessage("type_disabled",mp.getName()));
+		return sendMessage(sender, "&5 type &6" + mp.getName() + "&5 disabled");
 	}
 
 	@MCCommand(cmds={"enabled"},admin=true)
@@ -155,8 +154,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 		try {
 			jp = JoinOptions.parseOptions(mp,t, player, Arrays.copyOfRange(args, 1, args.length));
 			wtsr = (WantedTeamSizePair) jp.getOption(JoinOption.TEAMSIZE);
-
-//			mp.setTeamSize(wtsr.size);
+			if (wtsr.manuallySet)
+				mp.setTeamSize(wtsr.size);
+			else
+				mp.setMinTeamSize(Math.max(t.size(), mp.getMinTeamSize()));
 			t.setJoinPreferences(jp);
 		} catch (InvalidOptionException e) {
 			return sendMessage(player, e.getMessage());
@@ -213,8 +214,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 		} else if (qpp.pos == -1){
 			t.sendMessage("&cAn arena has not been built yet for that size of team");
 		} else {
-			t.sendMessage("&eYou have joined the queue for the &6"+ mp.toPrettyString()+ " &e.");
-			int nplayers = mp.getMinTeams()*mp.getMinTeamSize();
+			t.sendMessage("&eYou have joined the queue for the &6"+ qpp.params.toPrettyString()+ " &e.");
+			int nplayers = qpp.params.getMinTeams()*qpp.params.getMinTeamSize();
 			if (qpp.playersInQueue < nplayers && qpp.pos > 0){
 				t.sendMessage("&ePosition: &6" + qpp.pos +"&e. Match start when &6" + nplayers+"&e players join. &6"+qpp.playersInQueue+"/"+nplayers);
 			} else if (qpp.pos > 0){

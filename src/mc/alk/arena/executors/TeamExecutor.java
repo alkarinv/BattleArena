@@ -16,14 +16,12 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
+import mc.alk.arena.util.Util;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import com.alk.virtualPlayer.VirtualPlayers;
 
 public class TeamExecutor extends CustomCommandExecutor {
 	TeamController teamc;
@@ -115,7 +113,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		if (players.contains(player.getName()))
 			return sendMessage(player,ChatColor.YELLOW + "You can not invite yourself to a team");
 
-		findOnlinePlayers(players, foundplayers,unfoundplayers);
+		Util.findOnlinePlayers(players, foundplayers,unfoundplayers);
 		if (foundplayers.size() < players.size()){
 			sendMessage(player,ChatColor.YELLOW + "The following teammates were not found or were not online");
 			StringBuilder sb = new StringBuilder();
@@ -258,33 +256,6 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	protected void findOnlinePlayers(Set<String> names, Set<Player> foundplayers,Set<String> unfoundplayers) {
-		Player[] online = Bukkit.getOnlinePlayers();
-		if (Defaults.DEBUG_VIRTUAL){online =  VirtualPlayers.getOnlinePlayers();}
-		for (String name : names){
-			Player lastPlayer = null;
-			for (Player player : online) {
-				String playerName = player.getName();
-				if (playerName.equalsIgnoreCase(name)) {
-					lastPlayer = player;
-					break;
-				}
-
-				if (playerName.toLowerCase().indexOf(name.toLowerCase()) != -1) { /// many names match the one given
-					if (lastPlayer != null) {
-						lastPlayer = null;
-						break;
-					}
-					lastPlayer = player;
-				}
-			}
-			if (lastPlayer != null){
-				foundplayers.add(lastPlayer);
-			} else{
-				unfoundplayers.add(name);
-			}
-		}
-	}
 
 	@MCCommand( cmds = {"help","?"})
 	public void help(CommandSender sender, Command command, String label, Object[] args){

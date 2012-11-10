@@ -25,28 +25,29 @@ public class Matchup {
 	public void setArena(Arena arena) {this.arena = arena;}
 	List<TransitionListener> listeners = new ArrayList<TransitionListener>();
 
-	MatchParams q = null;
+	MatchParams params = null;
 	Match match = null;
 
-	public Matchup(MatchParams q, Team team, Team team2) {
-		this.q = q;
+	public Matchup(MatchParams params, Team team, Team team2) {
+		this.params = params;
 		teams.add(team);
 		teams.add(team2);
 	}
 
-	public Matchup(MatchParams sq, Collection<Team> teams) {
+	public Matchup(MatchParams params, Collection<Team> teams) {
 		this.teams = new ArrayList<Team>(teams);
-		this.q = new MatchParams(sq);
+		this.params = new MatchParams(params);
 	}
 
 	public MatchParams getMatchParams() {
-		return q;
+		return params;
 	}
 
 	public void setResult(MatchResult result) {
 		this.result = result;
 	}
 
+	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		for (Team t: teams){
@@ -62,12 +63,14 @@ public class Matchup {
 		return result;
 	}
 
+	@Override
 	public boolean equals(Object other) {
 		if (this == other) return true;
 		if (!(other instanceof Team)) return false;
 		return this.hashCode() == ((Team) other).hashCode();
 	}
 
+	@Override
 	public int hashCode() { return id;}
 
 	public void addTransitionListener(TransitionListener transitionListener) {

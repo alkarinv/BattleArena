@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.Team;
 
 public class TeamQObject extends QueueObject{
@@ -51,5 +52,10 @@ public class TeamQObject extends QueueObject{
 	@Override
 	public boolean hasTeam(Team team) {
 		return this.team.getId() == team.getId();
+	}
+
+	@Override
+	public JoinOptions getJoinOptions() {
+		return team.getJoinPreferences();
 	}
 }

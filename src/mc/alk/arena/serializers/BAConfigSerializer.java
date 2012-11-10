@@ -43,6 +43,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.TELEPORT_Y_OFFSET = config.getDouble("teleportYOffset", Defaults.TELEPORT_Y_OFFSET);
 		Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", Defaults.NUM_INV_SAVES);
 		Defaults.IGNORE_STACKSIZE = config.getBoolean("ignoreMaxStackSize", Defaults.IGNORE_STACKSIZE);
+		Defaults.USE_ARENAS_ONLY_IN_ORDER = config.getBoolean("useArenasOnlyInOrder", Defaults.USE_ARENAS_ONLY_IN_ORDER);
 		DisabledCommandsUtil.addAll(config.getStringList("disabledCommands"));
 		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"arena","skirmish","colliseum","battleground"}));
 		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"freeForAll","deathMatch","tourney"}));
@@ -74,7 +75,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 				continue;
 			try {
 				/// A new match/event needs the params, an executor, and the command to use
-				boolean isMatch = !config.getBoolean("isEvent",false);
+				boolean isMatch = !config.getBoolean(key+".isEvent",false);
 				MatchParams mp = setTypeConfig(plugin,key,cs, isMatch);
 				BAExecutor executor = isMatch ? BattleArena.getBAExecutor() : new ReservedArenaEventExecutor();
 				ArenaCommand arenaCommand = new ArenaCommand(mp.getCommand(),"","", new ArrayList<String>(), BattleArena.getSelf());

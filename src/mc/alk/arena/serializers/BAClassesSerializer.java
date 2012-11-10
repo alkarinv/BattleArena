@@ -49,6 +49,7 @@ public class BAClassesSerializer extends BaseSerializer{
 		if (cs.contains("items")){ items = BAConfigSerializer.getItemList(cs,"items");}
 		if (cs.contains("enchants")){ effects = BAConfigSerializer.getEffectList(cs,"enchants");}
 		String prettyName = cs.getString("displayName", null);
+		if (prettyName==null) cs.getString("prettyName", null);
 		return new ArenaClass(cs.getName(),prettyName, items,effects);
 	}
 

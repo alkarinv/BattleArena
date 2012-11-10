@@ -28,6 +28,7 @@ public class ReservedArenaEvent extends Event {
 
 	public void openEvent(EventParams mp, Arena arena) throws NeverWouldJoinException {
 		arenaMatch = new ArenaMatch(arena, mp);
+		arenaMatch.setTeamJoinHandler(null); /// we are taking care of this
 		openEvent(mp);
 	}
 
@@ -62,7 +63,7 @@ public class ReservedArenaEvent extends Event {
 
 	@TransitionEventHandler
 	public void allPlayersReady(MatchPlayersReadyEvent event){
-		if (joinHandler != null && joinHandler.hasEnough()){
+		if (joinHandler != null && joinHandler.hasEnough(true)){
 			startEvent();
 		}
 	}
@@ -126,6 +127,7 @@ public class ReservedArenaEvent extends Event {
 
 	private void makeNextRound() {
 		Matchup m = new Matchup(eventParams,teams);
+		m.addTransitionListener(this);
 		Round tr = new Round(0);
 		tr.addMatchup(m);
 		rounds.add(tr);

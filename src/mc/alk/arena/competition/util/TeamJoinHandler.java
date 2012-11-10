@@ -33,20 +33,25 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		public int getRemaining(){return remaining;}
 	}
 
-	final List<Team> teams;
+	List<Team> teams;
 	ArrayList<CompositeTeam> pickupTeams = new ArrayList<CompositeTeam>();
-	final MatchParams mp;
-	final Competition competition;
-	final int minTeamSize,maxTeamSize;
-	final int minTeams,maxTeams;
+	MatchParams mp;
+	Competition competition;
+	int minTeamSize,maxTeamSize;
+	int minTeams,maxTeams;
 
 	public TeamJoinHandler(Competition competition){
+		setCompetition(competition);
+	}
+
+	public void setCompetition(Competition competition){
 		this.competition = competition;
 		this.mp = competition.getParams();
 		this.minTeamSize = mp.getMinTeamSize(); this.maxTeamSize = mp.getMaxTeamSize();
 		this.minTeams = mp.getMinTeams(); this.maxTeams = mp.getMaxTeams();
 		this.teams = competition.getTeams();
 	}
+
 
 	public void deconstruct() {
 		for (Team t: pickupTeams){
@@ -77,14 +82,22 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		return tplayers;
 	}
 
-	public boolean hasEnough(){
+	public boolean hasEnough(boolean allowDifferentTeamSizes){
 		final int teamssize = teams.size();
 		if (teamssize < minTeams || teamssize > maxTeams)
 			return false;
+		int min = Integer.MAX_VALUE;
+		int max = Integer.MIN_VALUE;
 		for (Team t: teams){
 			final int tsize = t.size();
 			if (tsize < minTeamSize || tsize > maxTeamSize)
 				return false;
+			if (!allowDifferentTeamSizes){
+				min = Math.min(min, tsize);
+				max = Math.max(max, tsize);
+				if (min != tsize || max != tsize)
+					return false;
+			}
 		}
 		return true;
 	}
@@ -101,5 +114,4 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		/// we can't add a team.. and all teams are full
 		return true;
 	}
-
 }

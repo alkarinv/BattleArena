@@ -66,7 +66,6 @@ public class TournamentEvent extends Event implements Listener{
 		mp.setTimeBetweenRounds(oParms.getTimeBetweenRounds());
 		mp.setSecondsTillMatch(oParms.getSecondsTillMatch());
 		mp.setSecondsToLoot(oParms.getSecondsToLoot());
-
 		TimeUtil.testClock();
 		super.openEvent(mp);
 	}
@@ -87,12 +86,10 @@ public class TournamentEvent extends Event implements Listener{
 
 		TreeMap<Double,Team> sortTeams = new TreeMap<Double,Team>(Collections.reverseOrder());
 		BTInterface bti = new BTInterface(eventParams);
-		//		System.out.println("startEvent:: bti=" + bti);
 		for (Team t: teams){
 			Double elo = Defaults.DEFAULT_ELO;
 			if (bti.isValid()){
-				elo = (double) bti.getElo(t);
-			}
+				elo = (double) bti.getElo(t);}
 			while (sortTeams.containsKey(elo)){elo+= 0.0001;}
 			sortTeams.put(elo, t);
 		}

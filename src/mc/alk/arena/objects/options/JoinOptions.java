@@ -58,6 +58,14 @@ public class JoinOptions {
 				((Arena)options.get(JoinOption.ARENA)).getName().equals(a.getName()) : true;
 	}
 
+	public boolean matches(MatchParams params) {
+		if (options.containsKey(JoinOption.TEAMSIZE)){
+			WantedTeamSizePair wtsp = (WantedTeamSizePair)options.get(JoinOption.TEAMSIZE);
+			return wtsp.manuallySet ? params.matchesTeamSize(getTeamSize()) : true;
+		}
+		return true;
+	}
+
 	public boolean nearby(Arena arena, double distance) {
 		UUID wid = joinedLocation.getWorld().getUID();
 		Location arenajoinloc = arena.getJoinLocation();
@@ -159,7 +167,14 @@ public class JoinOptions {
 		}
 		return sb.toString();
 	}
-
+	public boolean hasTeamSize(){
+		if (options.containsKey(JoinOption.TEAMSIZE)){
+			return ((WantedTeamSizePair)options.get(JoinOption.TEAMSIZE)).manuallySet;}
+		return false;
+	}
+	public Integer getTeamSize(){
+		return ((WantedTeamSizePair)options.get(JoinOption.TEAMSIZE)).size;
+	}
 	public boolean hasOption(JoinOption option) {
 		return options.containsKey(option);
 	}
@@ -167,4 +182,5 @@ public class JoinOptions {
 	public Object getOption(JoinOption option) {
 		return options.get(option);
 	}
+
 }

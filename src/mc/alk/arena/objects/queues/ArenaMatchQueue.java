@@ -15,6 +15,7 @@ import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.messaging.MatchMessageImpl;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -94,7 +95,21 @@ public class ArenaMatchQueue {
 		tq.add(to);
 		if (!suspend)
 			notifyIfNeeded(tq);
-		QPosTeamPair qtp = new QPosTeamPair(to.getMatchParams(),tq.size(),tq.getNPlayers(),to);
+		/// This is solely for displaying you are in position 2/8, your match will start when 8 players join
+		/// So if this ever is a speed issue, remove
+		QPosTeamPair qtp = null;
+		synchronized(arenaqueue){
+			for (Arena a : arenaqueue){
+				if (a == null || !a.valid() || !a.matches(to.getMatchParams(), null))
+					continue;
+				MatchParams newParams = new MatchParams(to.getMatchParams());
+				if (!newParams.intersect(a.getParameters()))
+					continue;
+				qtp = new QPosTeamPair(newParams,tq.size(),tq.getNPlayers(),to);
+			}
+		}
+		if (qtp == null)
+			qtp = new QPosTeamPair(to.getMatchParams(),tq.size(),tq.getNPlayers(),to);
 		return qtp;
 	}
 
@@ -130,81 +145,135 @@ public class ArenaMatchQueue {
 
 	private Match findMatch(TeamQueue tq) {
 		if (Defaults.DEBUG) System.out.println("findMatch " + tq +"  " + tq.size() +"  mp=" + tq.getMatchParams());
-		List<Team> teams = new ArrayList<Team>();
-		final MatchParams mp = tq.getMatchParams();
 		/// The idea here is we iterate through all arenas
 		/// See if one matches with the type of TeamQueue that we have been given
 		/// Then we make sure those players are ready, and if not send them messages
+		final MatchParams baseParams = ParamController.getMatchParams(tq.getMatchParams().getType().getName());
+		if (baseParams==null)
+			return null;
 		synchronized(arenaqueue){ synchronized(tq){
-			Map<Team, QueueObject> oteams = new HashMap<Team, QueueObject>();
 			for (Arena a : arenaqueue){
-				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
-						"   tq=" + tq +" matches=" + a.getParameters().matches(mp) +"  mp="+mp+", --- ap="+a.getParameters() +"    "+tq.size()+" <? "+a.getParameters().getMinTeams());
-				/// Does our specific setting fit with this arena
-				if (a == null || !a.valid() || !a.matches(mp,null))
+				if (a == null || !a.valid() || !a.matches(baseParams, null))
 					continue;
-				teams.clear();
-				Competition comp = new BlankCompetition(mp);
-				TeamJoinHandler tjh = null;
-				try {
-					tjh = TeamJoinFactory.createTeamJoinHandler(comp);
-				} catch (NeverWouldJoinException e) {
-					e.printStackTrace();
-					continue;
-				}
-				for (QueueObject tto : tq){
-					if (tto instanceof MatchTeamQObject){ /// we have our teams already
-						MatchTeamQObject to = (MatchTeamQObject) tto;
-						if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + a  +"   tq=" + tq +" matches=" + a.matches(mp,null));
-						Matchup matchup = to.getMatchup();
-						tq.remove(to);
-						arenaqueue.remove(a);
-						final Match m = new ArenaMatch(a, to.getMatchParams());
-						m.setTeamJoinHandler(null); /// we don't want any custom team joining.
-						m.addTransitionListeners(matchup.getTransitionListeners());
-						m.onJoin(to.getTeams());
-						matchup.addMatch(m);
-						tjh.deconstruct();
-						return m;
-					} else {
-						TeamQObject to = (TeamQObject) tto;
-						Team t = to.getTeam();
-						JoinOptions jp = t.getJoinPreferences();
-						if (jp != null && !jp.matches(a)){
-							continue;}
-						tjh.joiningTeam(t);
-						if (!oteams.containsKey(t))
-							oteams.put(t, to);
-					}
-				}
+				MatchParams newParams = new MatchParams(baseParams);
+				if (!newParams.intersect(a.getParameters())){
+					continue;}
 
-				teams = comp.getTeams();
-				if (tjh.hasEnough()){ /// If we have enough teams, remove the QueueObject's that represent them
-					for (Team t: teams){
-						CompositeTeam ct = (CompositeTeam) t;
-						ct.finish();
-						for (Team tt: ct.getOldTeams()){
-							QueueObject qo = oteams.get(tt);
-							tq.remove(qo);
-						}
+				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
+						"   tq=" + tq +" --- ap="+a.getParameters() +"    baseP="+baseParams +" newP="+newParams);
+				for (QueueObject qo : tq){
+					MatchParams mp = qo.getMatchParams();
+					if (!mp.matches(baseParams))
+						continue;
+					Match m = null;
+					try {
+						m = findMatch(newParams,a,tq);
+					} catch (NeverWouldJoinException e) {
+						e.printStackTrace();
+						continue;
 					}
-					/// Get rid of the TeamJoinHandler, remove the arena from the queue, start up our match
-					tjh.deconstruct();
-					arenaqueue.remove(a);
-					final Match m = new ArenaMatch(a, tq.getMatchParams());
-					m.onJoin(teams);
-					return m;
+					if (m != null){
+						arenaqueue.remove(a);
+						return m;
+					} else if (Defaults.USE_ARENAS_ONLY_IN_ORDER){
+						return null;
+					}
 				}
-				tjh.deconstruct();
 			}
 		}}
 		///Found nothing matching
 		return null;
 	}
 
+	/**
+	 * For these parameters, go through each team to see if we can create a viable match
+	 * @param mp
+	 * @param a
+	 * @param tq
+	 * @return
+	 * @throws NeverWouldJoinException
+	 */
+	private Match findMatch(final MatchParams params, Arena arena, final TeamQueue tq) throws NeverWouldJoinException {
+		Map<Team, QueueObject> qteams = new HashMap<Team, QueueObject>();
+		Competition comp = new BlankCompetition(params);
+		Competition lastValidComp = null;
+
+		TeamJoinHandler tjh = TeamJoinFactory.createTeamJoinHandler(comp);
+		/// Move all teams with the same team size together
+		List<QueueObject> newList = new LinkedList<QueueObject>();
+		List<QueueObject> delayed = new LinkedList<QueueObject>();
+		for (QueueObject qo : tq){
+			MatchParams mp = qo.getMatchParams();
+			if (!mp.matches(params))
+				continue;
+			if (mp.getMinTeamSize() != params.getMinTeamSize()){
+				delayed.add(qo);
+			} else {
+				newList.add(qo);
+			}
+		}
+		newList.addAll(delayed);
+
+		/// Now that we have a semi sorted list, get the largest number of teams that fit in this arena
+		for (QueueObject qo : newList){
+			if (qo instanceof MatchTeamQObject){ /// we have our teams already
+				tjh.deconstruct();
+				return getPreMadeMatch(tq, arena, qo);
+			} else {
+				TeamQObject to = (TeamQObject) qo;
+				Team t = to.getTeam();
+				JoinOptions jp = t.getJoinPreferences();
+				if (jp != null && !(jp.matches(arena) && jp.matches(params))){
+					continue;}
+				tjh.joiningTeam(t);
+				qteams.put(t, to);
+			}
+			if (tjh.hasEnough(false)){ /// If we have enough teams, mark this as a valid competition and keep going
+				lastValidComp = comp;
+				comp = new BlankCompetition(params);
+				comp.setTeams(lastValidComp.getTeams());
+				tjh.setCompetition(comp);
+			}
+		}
+
+		if (lastValidComp != null){
+			return getMatchAndRemove(tq, lastValidComp.getTeams(), qteams, arena, params);
+		}
+		/// Get rid of the TeamJoinHandler, remove the arena from the queue, start up our match
+		tjh.deconstruct();
+		return null;
+	}
+
+	private Match getMatchAndRemove(TeamQueue tq, List<Team> teams, Map<Team, QueueObject> oteams, Arena a, MatchParams params) {
+		for (Team t: teams){
+			CompositeTeam ct = (CompositeTeam) t;
+			ct.finish();
+			for (Team tt: ct.getOldTeams()){
+				QueueObject qo = oteams.get(tt);
+				tq.remove(qo);
+			}
+		}
+		final Match m = new ArenaMatch(a, params);
+		m.onJoin(teams);
+		return m;
+	}
+
+	private Match getPreMadeMatch(TeamQueue tq,  Arena a, QueueObject tto) {
+		MatchTeamQObject to = (MatchTeamQObject) tto;
+		if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + a  +"   tq=" + tq);
+		Matchup matchup = to.getMatchup();
+		tq.remove(to);
+		final Match m = new ArenaMatch(a, to.getMatchParams());
+		m.setTeamJoinHandler(null); /// we don't want any custom team joining.
+		m.addTransitionListeners(matchup.getTransitionListeners());
+		m.onJoin(matchup.getTeams());
+		matchup.addMatch(m);
+		return m;
+	}
+
 	private TeamQueue getTeamQ(MatchParams mp) {
 		final int teamSize = mp.getMinTeamSize();
-		if (teamSize != ArenaParams.NONE && teamSize != ArenaParams.MAX){
+		if (teamSize != ArenaParams.MAX){
 			if (tqs.containsKey(mp.getType())){
 				return tqs.get(mp.getType());
 			} else {

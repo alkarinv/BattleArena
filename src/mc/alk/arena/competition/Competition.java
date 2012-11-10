@@ -75,6 +75,15 @@ public abstract class Competition {
 	public abstract void addTeam(Team team);
 
 	/**
+	 * Set our teams
+	 * @param teams
+	 */
+	public void setTeams(List<Team> teams){
+		this.teams.clear();
+		this.teams.addAll(teams);
+	}
+
+	/**
 	 * return the teams for this competition
 	 * @return
 	 */

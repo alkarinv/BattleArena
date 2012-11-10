@@ -4,7 +4,6 @@ import mc.alk.arena.competition.Competition;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
-import mc.alk.arena.util.Log;
 
 public class TeamJoinFactory {
 
