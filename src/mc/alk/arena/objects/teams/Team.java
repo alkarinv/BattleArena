@@ -1,6 +1,7 @@
 package mc.alk.arena.objects.teams;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,7 +13,7 @@ import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.entity.Player;
 
-public class Team {
+public abstract class Team {
 	static int count = 0;
 	final int id = count++; /// id
 
@@ -43,7 +44,7 @@ public class Team {
 		createName();
 	}
 
-	protected Team(Set<ArenaPlayer> teammates) {
+	protected Team(Collection<ArenaPlayer> teammates) {
 		this.players.addAll(teammates);
 		createName();
 	}

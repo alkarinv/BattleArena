@@ -512,6 +512,13 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	public void removeTransitionListener(TransitionListener transitionListener) {
 		tmc.removeListener(transitionListener);
 	}
+
+	@Override
+	public void addedToTeam(Team team, Collection<ArenaPlayer> players) {/* do nothing */}
+
+	@Override
+	public void addedToTeam(Team team, ArenaPlayer player) {/* do nothing */}
+
 	@Override
 	public int getID(){
 		return id;

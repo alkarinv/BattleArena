@@ -50,8 +50,8 @@ public class MatchMessager {
 		try{impl.sendOtherTeamNotReadyMsg(t1);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public void sendOnIntervalMsg(int remaining, Team currentLeader) {
-		try{impl.sendOnIntervalMsg(getChannel(MatchState.ONMATCHINTERVAL), currentLeader, remaining);}catch(Exception e){e.printStackTrace();}
+	public void sendOnIntervalMsg(int remaining, List<Team> currentLeaders) {
+		try{impl.sendOnIntervalMsg(getChannel(MatchState.ONMATCHINTERVAL), currentLeaders, remaining);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendTimeExpired() {

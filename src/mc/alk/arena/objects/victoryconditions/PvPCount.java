@@ -1,5 +1,6 @@
 package mc.alk.arena.objects.victoryconditions;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.MatchEventHandler;
@@ -15,13 +16,14 @@ public class PvPCount extends OneTeamLeft{
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true)
-	public void playerDeathEvent(PlayerDeathEvent event, ArenaPlayer p) {
-		if (p==null || match.isWon() || !match.isStarted()){
+	public void playerDeathEvent(PlayerDeathEvent event) {
+		if (match.isWon() || !match.isStarted()){
 			return;}
-		Team team = match.getTeam(p);
+		final ArenaPlayer p = BattleArena.toArenaPlayer(event.getEntity());
+		final Team team = match.getTeam(p);
 		if (team == null)
 			return;
-		ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
+		final ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
 		handleDeath(p,team, killer);
 	}
 

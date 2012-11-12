@@ -34,6 +34,7 @@ import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.events.matches.MatchOpenEvent;
 import mc.alk.arena.events.matches.MatchPrestartEvent;
 import mc.alk.arena.events.matches.MatchStartEvent;
+import mc.alk.arena.events.matches.MatchTimerIntervalEvent;
 import mc.alk.arena.events.matches.MatchVictoryEvent;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.TransitionListener;
@@ -439,14 +440,26 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	 * @param p
 	 * @param t
 	 */
-	public void playerAddedToTeam(ArenaPlayer p, Team t) {
-		if (!t.hasSetName() && t.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND){
-			t.setDisplayName(TeamUtil.createTeamName(indexOf(t)));
+	@Override
+	public void addedToTeam(Team team, ArenaPlayer player) {
+		if (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND){
+			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));
 		}
-		startTracking(p);
-		arenaInterface.onJoin(p,t);
+		startTracking(player);
+		arenaInterface.onJoin(player,team);
 
-		PerformTransition.transition(this, MatchState.ONJOIN, p,t, true);
+		PerformTransition.transition(this, MatchState.ONJOIN, player,team, true);
+	}
+
+	/**
+	 * Add to an already existing team
+	 * @param p
+	 * @param t
+	 */
+	@Override
+	public void addedToTeam(Team team, Collection<ArenaPlayer> players) {
+		for (ArenaPlayer ap: players)
+			addedToTeam(team,ap);
 	}
 
 	@Override
@@ -701,14 +714,15 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public void setMessageHandler(MatchMessageHandler mc){this.mc.setMessageHandler(mc);}
 	public MatchMessageHandler getMessageHandler(){return mc.getMessageHandler();}
 
-	//	public void setVictoryCondition(VictoryCondition vc){
-	//		this.vc = vc;
-	//		addArenaListener(vc);
-	//	}
 	public void addVictoryCondition(VictoryCondition vc){
 		vcs.add(vc);
 		addArenaListener(vc);
 		tmc.addListener(vc);
+	}
+	public void removeVictoryCondition(VictoryCondition vc){
+		vcs.remove(vc);
+		tmc.removeListener(vc);
+		arenaListeners.remove(vc);
 	}
 
 	public void addArenaListener(ArenaListener al){
@@ -845,7 +859,6 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		return sb.toString();
 	}
 
-
 	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder("[Match:"+id+":" + arena.getName() +" ,");
@@ -867,13 +880,22 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
 		notifyListeners(event);
 		try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
-		setVictor(event.getCurrentLeader());
+		List<Team> leaders = event.getCurrentLeaders();
+		Team winner = null;
+		if (leaders == null || leaders.isEmpty())
+			winner= teams.get(0);
+		else if (leaders.size() == 1)
+			winner = leaders.get(0);
+		else
+			winner = null; /// make it a draw
+		setVictor(winner);
 	}
 
 	public void intervalTick(VictoryCondition vc, int remaining) {
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
 		notifyListeners(event);
-		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeader());}catch(Exception e){e.printStackTrace();}
+		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeaders());}catch(Exception e){e.printStackTrace();}
+		notifyListeners(new MatchTimerIntervalEvent(this, remaining));
 	}
 
 	public TeamJoinHandler getTeamJoinHandler() {

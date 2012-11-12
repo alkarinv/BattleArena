@@ -58,6 +58,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 	private TeamJoinResult teamFits(Team team, Team t) {
 		if ( team.size() + t.size() <= maxTeamSize){
 			CompositeTeam ct = (CompositeTeam) t;
+			competition.addedToTeam(t,team.getPlayers());
 			ct.addTeam(team);
 			ct.finish();
 			return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING, minTeamSize - t.size(),t);

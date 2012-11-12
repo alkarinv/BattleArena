@@ -15,7 +15,17 @@ public class CompositeTeam extends Team{
 	final Set<Team> oldTeams = new HashSet<Team>();
 	boolean nameSet = false;
 
-	public CompositeTeam() {
+	protected CompositeTeam(ArenaPlayer ap) {
+		super(ap);
+		isPickupTeam = true;
+	}
+
+	protected CompositeTeam(Collection<ArenaPlayer> players) {
+		super(players);
+		isPickupTeam = true;
+	}
+
+	protected CompositeTeam() {
 		super();
 		isPickupTeam = true;
 	}
@@ -38,6 +48,7 @@ public class CompositeTeam extends Team{
 	public void addTeam(Team t) {
 		if (t instanceof CompositeTeam){
 			CompositeTeam ct = (CompositeTeam) t;
+			oldTeams.add(ct);
 			oldTeams.addAll(ct.oldTeams);
 			players.addAll(ct.getPlayers());
 		} else if (oldTeams.add(t)){

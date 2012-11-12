@@ -1,4 +1,7 @@
-configVersion: 1.5.5
+configVersion: 1.6
+
+# For help the wiki is a good source of information
+# Wiki: # https://github.com/alkarinv/BattleArena/wiki
 
 # Auto Update the BattleArena plugin (only works for uniz/linux/mac)
 # Updates will be retrieved from the latest plugin on the bukkit site
@@ -23,6 +26,11 @@ disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]
 # If set to true, items that are usually not stackable will be stacked when
 # a player is given items.  Examples: 64 mushroom soup, or 64 snow_ball, instead of 1 or 16
 ignoreMaxStackSize: false
+
+# If true if a player joins a match which has 2 arenas. 1v1 and 1v1v1v1. Then 1v1 will happen first
+# afterwards the 1v1v1v1 is guaranteed to be the next arena used.
+# if false.  if after the 1v1 is used, and the match ends, the 1v1 can be used again before the 1v1v1v1
+useArenasOnlyInOrder: false
 
 ## default Options (these can be overridden by each match/event type)
 defaultOptions:
@@ -70,71 +78,9 @@ defaultOptions:
         onVictory:  [ announce, server ] ## event has been won
         onCancel:  [ announce, server ] ## event has been cancelled
 
-### Prerequisites
-# prerequisites is what they need to have BEFORE joining, this will also be rechecked when the players teleport in
-# if there is money, this is taken from their account when they type the command to join
-# Prerequisite Options
-# needsArmor
-# needsItems: if specified you need an item list below
-# money=<amount of money>
-# maxElo=<maximum elo to join>
-# minElo=<minimum elo to join>
-
-### Match Stages
-# onOpen: *only called for events, such as ffa/tourney, that have an open stage.
-# onPrestart: happens secondsTillMatch seconds before onStart
-# onStart: Start of match
-# onVictory : happens when match is won by a player
-# onComplete: What happens after the match, happens between the time period (onVictory + timeToLoot)
-#             if onComplete contains clearInventory it will not allow a player to take inventory out of the arena
-#             (except for prize items, or givenItems from onComplete)
-
-### Match Transition Events
-# onSpawn: Happens on teleport or on player Respawn ( if respawn is set within onDeath)
-# onDeath: What happens when a player dies
-# onJoin: player joining a match
-# onEnter: Happens when the player first enters the arena.  right after before they are teleported in.  
-# onLeave: Happens when the player leaves the arena(aka if they win(after onComplete), or if they die(and dont respawn) )
-
-### Prizes
-# winner: given to the winner after onComplete
-# losers: given to the losers after onCompletete
-# firstPlace: (for tourneys) given to winner after tournament complete
-# participants: (for tourneys) given to all participants(except winner) after tournament complete
-
-# valid options for everything but preReqs
-# clearInventory,
-# giveItems: needs a list under items
-# teleportIn
-# teleportOut
-# pvpon or pvpoff
-# health=<health amount>
-# hunger=<hunger amount>
-# money=<money to give>
-# experience=<exp to give>
-# teamPvpOn : if not specified defaults to off
-# respawn: 
-# enchants: needs a list of enchants under enchants
-# deEnchant: get rid of all potion effects on player
-# disguiseAll=<name>: disguise all players with the given value
-# undisguise: undisguise players
-# storeExperience/restoreExperience: store/restore Experience 
-# storeItems/restoreItems : store/restore items
-
-## Defaults: these events(if not overwritten) get filled with the following values
-# onEnter:
-#    options: [storeExperience, storeItems(if preReqs contains clearInventory)] 
-# onLeave:
-#    options: [restoreExperience, restoreItems(if preReqs contains clearInventory)] 
-
-#### Events vs Matches
-### Events
-## Events can have "open" phases were people are joining but the event hasnt started
-## They also can have multiple "matches" that occur as part of the event (like a tournament, where 
-## each match is part of the whole 'Tournament Event')
-## Some Events like the FreeForAll only have 1 match, but still have the open phase that lasts until someone starts it
-### Match
-## a single battle between teams
+## For help and a constantly updated list of everything you can configure
+# Config Setup: https://github.com/alkarinv/BattleArena/wiki/Configsetup
+# Wiki: # https://github.com/alkarinv/BattleArena/wiki
 
 ### Arena
 arena:
@@ -150,7 +96,7 @@ arena:
     preReqs:
         options: [clearInventory]
     onStart:
-        options: [teleportIn, pvpOn, blockBreakOff, woolTeams]
+        options: [teleportIn, blockBreakOff, woolTeams]
     onSpawn:
         options: [deEnchant, giveItems, hunger=20, health=20]
         giveClass:

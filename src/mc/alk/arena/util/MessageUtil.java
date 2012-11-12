@@ -1,9 +1,11 @@
 package mc.alk.arena.util;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.BaseSerializer;
 
 import org.bukkit.ChatColor;
@@ -79,6 +81,7 @@ public class MessageUtil extends BaseSerializer {
 		}
 		return sb.toString();
 	}
+
 	public static ChatColor getFirstColor(String str) {
 		String lbl = str.replaceAll("&", "§");
 		int index = lbl.indexOf("§");
@@ -89,5 +92,14 @@ public class MessageUtil extends BaseSerializer {
 		}
 		return ChatColor.WHITE;
 	}
-
+	public static String convertToTeamNames(Collection<Team> teams, String joinStr){
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		for (Team t: teams){
+			if (!first) sb.append(joinStr);
+			sb.append(t.getDisplayName());
+			first = false;
+		}
+		return sb.toString();
+	}
 }

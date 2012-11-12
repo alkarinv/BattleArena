@@ -11,6 +11,7 @@ import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.MessageSerializer;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
 
 /**
@@ -97,16 +98,22 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		t1.sendMessage(msgf.getFormattedMessage(message));
 	}
 
-	public void sendOnIntervalMsg(Channel serverChannel, Team currentLeader, int remaining) {
+	public void sendOnIntervalMsg(Channel serverChannel, List<Team> currentLeaders, int remaining) {
 		TimeUtil.testClock();
 		final String timeStr = TimeUtil.convertSecondsToString(remaining);
 		String msg;
-		if (currentLeader == null){
+		if (currentLeaders == null || currentLeaders.isEmpty()){
 			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr;
 		} else {
-			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr+". &6"+
-					currentLeader.getDisplayName()+"&e leads with &2" + currentLeader.getNKills() +
-					"&e kills &4"+currentLeader.getNDeaths()+"&e deaths";
+			if (currentLeaders.size() == 1){
+				Team currentLeader = currentLeaders.get(0);
+				msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr+". &6"+
+						currentLeader.getDisplayName()+"&e leads with &2" + currentLeader.getNKills() +
+						"&e kills &4"+currentLeader.getNDeaths()+"&e deaths";
+			} else {
+				String teamStr = MessageUtil.convertToTeamNames(currentLeaders,"&e, ");
+				msg = match.getParams().getPrefix()+"&e is tied between " + teamStr;
+			}
 		}
 		match.sendMessage(msg);
 	}

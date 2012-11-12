@@ -28,6 +28,10 @@ import mc.alk.arena.util.TeamUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.potion.PotionEffect;
@@ -149,7 +153,16 @@ public class PerformTransition {
 			if (storeAll || mo.hasOption(TransitionOption.STOREITEMS)) { am.psc.storeItems(p);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){am.psc.storeArenaClass(p);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p.getPlayer()); }
-			if (health != null) p.setHealth(health);
+			if (health != null) {
+				int oldHealth = p.getHealth();
+				if (oldHealth > health){
+					EntityDamageEvent ede = new EntityDamageEvent(p.getPlayer(),  DamageCause.CUSTOM, oldHealth-health );
+					Bukkit.getPluginManager().callEvent(ede);
+				} else if (oldHealth < health){
+					EntityRegainHealthEvent ehe = new EntityRegainHealthEvent(p.getPlayer(), health-oldHealth,RegainReason.CUSTOM);
+					Bukkit.getPluginManager().callEvent(ehe);
+				}
+			}
 			if (hunger != null) p.setFoodLevel(hunger);
 			try{if (mo.deEnchant() != null && mo.deEnchant()) EffectUtil.deEnchantAll(p.getPlayer());} catch (Exception e){}
 			if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p.getPlayer());}

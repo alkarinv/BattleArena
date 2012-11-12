@@ -1,6 +1,7 @@
 package mc.alk.arena.competition;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -75,6 +76,20 @@ public abstract class Competition {
 	public abstract void addTeam(Team team);
 
 	/**
+	 * Signify that the set of players were added to the team
+	 * @param t
+	 * @param players
+	 */
+	public abstract void addedToTeam(Team team, Collection<ArenaPlayer> players);
+
+	/**
+	 * Signify that the set of players were added to the team
+	 * @param t
+	 * @param players
+	 */
+	public abstract void addedToTeam(Team team, ArenaPlayer player);
+
+	/**
 	 * Set our teams
 	 * @param teams
 	 */
@@ -90,4 +105,5 @@ public abstract class Competition {
 	public List<Team> getTeams() {
 		return teams;
 	}
+
 }

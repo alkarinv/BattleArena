@@ -44,7 +44,7 @@ public class MethodController {
 		return listeners;
 	}
 
-	public static void updateMatchBukkitEvents(ArenaListener arenaListener, MatchState matchState, Set<String> players) {
+	public static void updateMatchBukkitEvents(ArenaListener arenaListener, MatchState matchState, Collection<String> players) {
 		try {
 			Map<Class<? extends Event>,List<MatchEventMethod>> map = getMethods(arenaListener);
 			if (map == null){

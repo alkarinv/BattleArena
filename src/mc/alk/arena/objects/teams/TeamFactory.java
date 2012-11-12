@@ -5,12 +5,14 @@ import java.util.Set;
 import mc.alk.arena.objects.ArenaPlayer;
 
 public class TeamFactory {
+
 	public static Team createTeam(ArenaPlayer p){
-		return new Team(p);
+		return new CompositeTeam(p);
 	}
-	public static Team createTeam(Set<ArenaPlayer> players){
-		return new Team(players);
-	}
+
+//	public static Team createTeam(Set<ArenaPlayer> players){
+//		return new CompositeTeam(players);
+//	}
 
 	public static CompositeTeam createCompositeTeam(Set<ArenaPlayer> players) {
 		return new CompositeTeam(players);

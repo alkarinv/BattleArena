@@ -1,5 +1,8 @@
 package mc.alk.arena.competition;
 
+import java.util.Collection;
+
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
@@ -28,4 +31,11 @@ public class BlankCompetition extends Competition{
 
 	@Override
 	public void addTeam(Team team) {this.teams.add(team);}
+
+	@Override
+	public void addedToTeam(Team team, Collection<ArenaPlayer> players) {/* do nothing */}
+
+	@Override
+	public void addedToTeam(Team team, ArenaPlayer player) {/* do nothing */}
+
 }

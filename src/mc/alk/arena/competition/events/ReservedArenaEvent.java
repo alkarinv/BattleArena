@@ -102,7 +102,7 @@ public class ReservedArenaEvent extends Event {
 			if (arenaMatch.hasTeam(tjr.team)){
 				for (ArenaPlayer p : t.getPlayers()){/// subsequent times, just the new players
 					/// dont call arenaMatch.onJoin(Team), as part of the team might already be in arena
-					arenaMatch.playerAddedToTeam(p,tjr.team);
+					arenaMatch.addedToTeam(tjr.team,p);
 				}
 			}
 			String str = Util.playersToCommaDelimitedString(t.getPlayers());

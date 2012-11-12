@@ -40,7 +40,7 @@ public class TeamQObject extends QueueObject{
 	}
 	@Override
 	public String toString(){
-		return team.getPriority()+" " + team.toString();
+		return team.getPriority()+" " + team.toString()+":" + team.getId();
 	}
 	@Override
 	public Collection<Team> getTeams() {

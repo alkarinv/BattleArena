@@ -43,6 +43,7 @@ public class BinPackAdd extends TeamJoinHandler {
 					TeamController.removeTeamHandler(ct, this);
 					return new TeamJoinResult(TeamJoinStatus.ADDED, 0,ct);
 				} else{
+					competition.addedToTeam(ct, t.getPlayers());
 					return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING, minTeamSize - ct.size(),ct);
 				}
 			}

@@ -246,11 +246,12 @@ public class ArenaMatchQueue {
 
 	private Match getMatchAndRemove(TeamQueue tq, List<Team> teams, Map<Team, QueueObject> oteams, Arena a, MatchParams params) {
 		for (Team t: teams){
+			tq.remove(oteams.get(t));
+
 			CompositeTeam ct = (CompositeTeam) t;
 			ct.finish();
 			for (Team tt: ct.getOldTeams()){
-				QueueObject qo = oteams.get(tt);
-				tq.remove(qo);
+				tq.remove(oteams.get(tt));
 			}
 		}
 		final Match m = new ArenaMatch(a, params);
@@ -390,7 +391,7 @@ public class ArenaMatchQueue {
 		synchronized(tqs){
 			for (ArenaType tq : tqs.keySet()){
 				for (QueueObject t: tqs.get(tq)){
-					sb.append(tq + " : " + t + "\n");}}}
+					sb.append(tq + " : " + t +"\n");}}}
 		sb.append("------AMQ Arenas------- \n");
 		synchronized(arenaqueue){
 			for (Arena arena : arenaqueue){

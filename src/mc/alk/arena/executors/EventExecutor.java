@@ -169,9 +169,9 @@ public class EventExecutor extends BAExecutor{
 	}
 
 	public boolean eventJoin(ArenaPlayer p, EventParams eventParams, String[] args, boolean adminCommand) {
-
-		if (!(p.hasPermission("arena."+eventParams.getCommand().toLowerCase()+".join"))){
-			return sendMessage(p, "&eYou don't have permission to join a &6" + eventParams.getCommand());}
+		if (!p.hasPermission("arena."+eventParams.getName().toLowerCase()+".join") &&
+				!p.hasPermission("arena."+eventParams.getCommand().toLowerCase()+".join") ){
+			return sendMessage(p, "&cYou don't have permission to join a &6" + eventParams.getCommand());}
 		Event event = controller.getOpenEvent(eventParams);
 		/// If we allow players to start their own events
 		if (event == null && Defaults.ALLOW_PLAYER_EVENT_CREATION){
