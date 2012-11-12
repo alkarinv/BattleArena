@@ -28,6 +28,7 @@ import mc.alk.arena.util.TeamUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
@@ -153,17 +154,8 @@ public class PerformTransition {
 			if (storeAll || mo.hasOption(TransitionOption.STOREITEMS)) { am.psc.storeItems(p);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){am.psc.storeArenaClass(p);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p.getPlayer()); }
-			if (health != null) {
-				int oldHealth = p.getHealth();
-				if (oldHealth > health){
-					EntityDamageEvent ede = new EntityDamageEvent(p.getPlayer(),  DamageCause.CUSTOM, oldHealth-health );
-					Bukkit.getPluginManager().callEvent(ede);
-				} else if (oldHealth < health){
-					EntityRegainHealthEvent ehe = new EntityRegainHealthEvent(p.getPlayer(), health-oldHealth,RegainReason.CUSTOM);
-					Bukkit.getPluginManager().callEvent(ehe);
-				}
-			}
-			if (hunger != null) p.setFoodLevel(hunger);
+			if (health != null) { setHealth(p.getPlayer(), health);}
+			if (hunger != null) { setHunger(p, hunger); }
 			try{if (mo.deEnchant() != null && mo.deEnchant()) EffectUtil.deEnchantAll(p.getPlayer());} catch (Exception e){}
 			if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p.getPlayer());}
 			if (DisguiseInterface.enabled() && disguiseAllAs != null) {DisguiseInterface.disguisePlayer(p.getPlayer(), disguiseAllAs);}
@@ -233,6 +225,28 @@ public class PerformTransition {
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEROCLASS)){am.psc.restoreHeroClass(p);}
 
 		return true;
+	}
+
+	private static void setHunger(final ArenaPlayer p, final Integer hunger) {
+		p.setFoodLevel(hunger);
+	}
+
+	private static void setHealth(final Player p, final Integer health) {
+		final int oldHealth = p.getHealth();
+		if (oldHealth > health){
+			EntityDamageEvent event = new EntityDamageEvent(p.getPlayer(),  DamageCause.CUSTOM, oldHealth-health );
+			Bukkit.getPluginManager().callEvent(event);
+			if (!event.isCancelled()){
+                p.setLastDamageCause(event);
+                p.setHealth(oldHealth - event.getDamage());
+			}
+		} else if (oldHealth < health){
+			EntityRegainHealthEvent event = new EntityRegainHealthEvent(p.getPlayer(), health-oldHealth,RegainReason.CUSTOM);
+			Bukkit.getPluginManager().callEvent(event);
+			if (!event.isCancelled()){
+				p.setHealth(oldHealth + event.getAmount());
+			}
+		}
 	}
 
 	private static void removePerms(ArenaPlayer p, List<String> perms) {

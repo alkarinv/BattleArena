@@ -2,15 +2,20 @@ package mc.alk.arena.controllers;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.util.CaseInsensitiveMap;
 
 
 public class ParamController {
 	static final CaseInsensitiveMap<MatchParams> types = new CaseInsensitiveMap<MatchParams>();
+	static final Map<String, MatchTransitions> transitions = new ConcurrentHashMap<String, MatchTransitions>();
 
 	public static void addMatchType(MatchParams matchParams) {
 		types.put(matchParams.getName(), matchParams);
@@ -73,5 +78,13 @@ public class ParamController {
 			sb.append(mp.getCommand());
 		}
 		return sb.toString();
+	}
+
+	public static void setTransitionOptions(ArenaParams params, MatchTransitions matchTransitions) {
+		transitions.put(params.getName(), matchTransitions);
+	}
+
+	public static MatchTransitions getTransitionOptions(ArenaParams arenaParams) {
+		return transitions.get(arenaParams.getName());
 	}
 }

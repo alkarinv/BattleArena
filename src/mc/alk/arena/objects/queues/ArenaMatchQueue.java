@@ -236,11 +236,11 @@ public class ArenaMatchQueue {
 			}
 		}
 
+		/// Get rid of the TeamJoinHandler, remove the arena from the queue, start up our match
+		tjh.deconstruct();
 		if (lastValidComp != null){
 			return getMatchAndRemove(tq, lastValidComp.getTeams(), qteams, arena, params);
 		}
-		/// Get rid of the TeamJoinHandler, remove the arena from the queue, start up our match
-		tjh.deconstruct();
 		return null;
 	}
 
@@ -249,7 +249,6 @@ public class ArenaMatchQueue {
 			tq.remove(oteams.get(t));
 
 			CompositeTeam ct = (CompositeTeam) t;
-			ct.finish();
 			for (Team tt: ct.getOldTeams()){
 				tq.remove(oteams.get(tt));
 			}

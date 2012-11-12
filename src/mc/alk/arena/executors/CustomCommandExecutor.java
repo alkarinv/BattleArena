@@ -22,6 +22,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.serializers.MessageSerializer;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
 
@@ -33,8 +34,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-
-import com.alk.util.Log;
 
 public abstract class CustomCommandExecutor implements CommandExecutor{
 	static final boolean DEBUG = false;

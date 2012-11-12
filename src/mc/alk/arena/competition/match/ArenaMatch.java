@@ -89,11 +89,11 @@ public class ArenaMatch extends Match {
 		if (clearsInventoryOnDeath){ /// Very important for deathmatches.. otherwise tons of items on floor
 			try {event.getDrops().clear();} catch (Exception e){}
 		} else if (woolTeams){  /// Get rid of the wool from teams so it doesnt drop
-			int color = teams.indexOf(t);
-			//				System.out.println("resetting wool team " + target.getName() +" color  ");
+			final int index = teams.indexOf(t);
+			ItemStack teamHead = TeamUtil.getTeamHead(index);
 			List<ItemStack> items = event.getDrops();
 			for (ItemStack is : items){
-				if (is.getType() == Material.WOOL && color == is.getData().getData()){
+				if (is.getType() == teamHead.getType() && is.getDurability() == teamHead.getDurability()){
 					final int amt = is.getAmount();
 					if (amt > 1)
 						is.setAmount(amt-1);
@@ -112,13 +112,13 @@ public class ArenaMatch extends Match {
 	public void onEntityDamage(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player))
 			return;
-		final ArenaPlayer target = BattleArena.toArenaPlayer((Player) event.getEntity());
 		final TransitionOptions to = tops.getOptions(state);
 		if (to == null)
 			return;
 		final PVPState pvp = to.getPVP();
 		if (pvp == null)
 			return;
+		final ArenaPlayer target = BattleArena.toArenaPlayer((Player) event.getEntity());
 		if (pvp == PVPState.INVINCIBLE){
 			/// all damage is cancelled
 			target.setFireTicks(0);

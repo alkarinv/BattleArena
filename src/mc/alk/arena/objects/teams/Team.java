@@ -58,9 +58,10 @@ public abstract class Team {
 	protected void createName() {
 		/// Sort the names and then append them together
 		playerIndexes.clear();
-		ArrayList<String> list = new ArrayList<String>();
+		ArrayList<String> list = new ArrayList<String>(players.size());
 		for (ArenaPlayer p:players){list.add(p.getName());}
-		Collections.sort(list);
+		if (list.size() > 1)
+			Collections.sort(list);
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		int i=0;
@@ -109,7 +110,7 @@ public abstract class Team {
 	public void setHunger(int hunger) {for (ArenaPlayer p: players){p.setFoodLevel(hunger);}}
 	public String getName() {return name;}
 	public int getId(){ return id;}
-	public void setName(String name) {this.name = name;}
+	protected void setName(String name) {this.name = name;}
 	public void setAlive() {deadplayers.clear();}
 	public boolean isDead() {
 		if (deadplayers.size() >= players.size())
@@ -205,7 +206,7 @@ public abstract class Team {
 				MessageUtil.sendMessage(p, message);}
 	}
 
-	public String getDisplayName(){return displayName == null ? name : displayName;}
+	public String getDisplayName(){return displayName == null ? getName() : displayName;}
 	public void setDisplayName(String n){displayName = n;}
 
 	@Override

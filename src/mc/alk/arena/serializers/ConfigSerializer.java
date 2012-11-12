@@ -247,7 +247,8 @@ public class ConfigSerializer extends BaseSerializer{
 			}
 			allTops.addTransition(transition,tops);
 		}
-		pi.setAllTransitionOptions(allTops);
+		ParamController.setTransitionOptions(pi, allTops);
+//		pi.setAllTransitionOptions(allTops);
 		ParamController.removeMatchType(pi);
 		ParamController.addMatchType(pi);
 		Log.info(BattleArena.getPName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none"));

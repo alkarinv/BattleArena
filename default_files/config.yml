@@ -98,7 +98,7 @@ arena:
     onStart:
         options: [teleportIn, blockBreakOff, woolTeams]
     onSpawn:
-        options: [deEnchant, giveItems, hunger=20, health=20]
+        options: [deEnchant, giveItems, hunger=20, health=2]
         giveClass:
             default: gladiator
         items: # ignored if options doesnt have "giveItems"

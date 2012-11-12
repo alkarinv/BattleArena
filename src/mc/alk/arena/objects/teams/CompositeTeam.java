@@ -40,7 +40,20 @@ public class CompositeTeam extends Team{
 	}
 
 	@Override
-	public void setName(String name) {
+	public int getPlayerIndex(ArenaPlayer p) {
+		finish();
+		return super.getPlayerIndex(p);
+	}
+
+
+	@Override
+	public String getName() {
+		finish();
+		return name;
+	}
+
+	@Override
+	protected void setName(String name) {
 		super.setName(name);
 		nameSet = true;
 	}
@@ -51,7 +64,9 @@ public class CompositeTeam extends Team{
 			oldTeams.add(ct);
 			oldTeams.addAll(ct.oldTeams);
 			players.addAll(ct.getPlayers());
+			nameSet = false;
 		} else if (oldTeams.add(t)){
+			nameSet = false;
 			players.addAll(t.getPlayers());
 		}
 	}
@@ -59,12 +74,15 @@ public class CompositeTeam extends Team{
 	public boolean removeTeam(Team t) {
 		if (t instanceof CompositeTeam){
 			for (Team tt : ((CompositeTeam)t).getOldTeams()){
-				oldTeams.remove(tt);
+				if (oldTeams.remove(tt)){
+					nameSet = false;}
 			}
 		}
 		boolean has = oldTeams.remove(t);
 		if (has){
-			players.removeAll(t.getPlayers());}
+			players.removeAll(t.getPlayers());
+			nameSet = false;
+		}
 		return has;
 	}
 
@@ -77,15 +95,18 @@ public class CompositeTeam extends Team{
 		return false;
 	}
 
-	public void finish() {
-		if (!nameSet)
+	void finish() {
+		if (!nameSet){
+			nameSet = true;
 			createName();
+		}
 	}
 
 	public void removePlayer(ArenaPlayer p) {
 		for (Team t: oldTeams){
 			if (t.hasMember(p)){
 				oldTeams.remove(t);
+				nameSet = false;
 				break;
 			}
 		}

@@ -27,7 +27,6 @@ public class BinPackAdd extends TeamJoinHandler {
 			CompositeTeam ct = TeamController.createCompositeTeam(team,this);
 			TeamController.removeTeamHandler(ct, this);
 			ct.addTeam(team);
-			ct.finish();
 			competition.addTeam(ct);
 			return new TeamJoinResult(TeamJoinStatus.ADDED, 0,ct);
 		}
@@ -36,7 +35,6 @@ public class BinPackAdd extends TeamJoinHandler {
 			if (size <= maxTeamSize){
 				CompositeTeam ct = t;
 				ct.addTeam(team);
-				ct.finish();
 				if ( size >= minTeamSize){ /// the new team would be a valid range, add them
 					pickupTeams.remove(t);
 					competition.addTeam(ct);
@@ -53,7 +51,6 @@ public class BinPackAdd extends TeamJoinHandler {
 		if (teams.size() < maxTeams){
 			CompositeTeam ct = TeamController.createCompositeTeam(team,this);
 			ct.addTeam(team);
-			ct.finish();
 			pickupTeams.add(ct);
 			TeamJoinResult ar = new TeamJoinResult(TeamJoinStatus.WAITING_FOR_PLAYERS, minTeamSize - ct.size(),ct);
 			return ar;

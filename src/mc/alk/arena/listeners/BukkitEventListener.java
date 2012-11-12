@@ -13,6 +13,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.events.MatchEventMethod;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfHash;
 
 import org.bukkit.entity.Entity;
@@ -22,8 +23,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-
-import com.alk.util.Log;
 
 
 /**

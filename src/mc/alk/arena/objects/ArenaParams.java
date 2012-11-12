@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.Util.MinMax;
 
@@ -34,7 +35,7 @@ public class ArenaParams {
 	int secondsTillMatch = Defaults.SECONDS_TILL_MATCH;
 	int secondsToLoot = Defaults.SECONDS_TO_LOOT;
 
-	MatchTransitions allTops;
+//	MatchTransitions allTops;
 	String dbName;
 
 	public ArenaParams(ArenaType at,Rating rating) {
@@ -59,17 +60,14 @@ public class ArenaParams {
 		this.timeBetweenRounds = ap.timeBetweenRounds;
 		this.secondsTillMatch = ap.secondsTillMatch;
 		this.secondsToLoot = ap.secondsToLoot;
-		allTops = new MatchTransitions(ap.allTops);
 		this.dbName = ap.dbName;
 		calcMaxPlayers();
 	}
 
-	public void setAllTransitionOptions(MatchTransitions allTops) {
-		this.allTops = allTops;
-	}
 	public MatchTransitions getTransitionOptions(){
-		return allTops;
+		return ParamController.getTransitionOptions(this);
 	}
+
 	public ArenaParams(MinMax teamSize, ArenaType arenaType) {
 		this.minTeamSize = teamSize.min;
 		this.maxTeamSize = teamSize.max;

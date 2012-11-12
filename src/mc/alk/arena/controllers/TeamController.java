@@ -245,9 +245,7 @@ public enum TeamController implements Listener, TeamHandler {
 	}
 
 	public static CompositeTeam createCompositeTeam(Team t, TeamHandler th) {
-		CompositeTeam ct = TeamFactory.createCompositeTeam();
-		ct.addTeam(t);
-		ct.finish();
+		CompositeTeam ct = TeamFactory.createCompositeTeam(t);
 		addTeamHandler(ct,th);
 		if (DEBUG) System.out.println("------- createCompositeTeam " + ct);
 		return ct;

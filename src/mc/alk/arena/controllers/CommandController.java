@@ -2,12 +2,12 @@ package mc.alk.arena.controllers;
 
 import java.lang.reflect.Field;
 
+import mc.alk.arena.util.Log;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.craftbukkit.CraftServer;
-
-import com.alk.util.Log;
 
 public class CommandController {
 

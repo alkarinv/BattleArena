@@ -424,6 +424,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		notifyListeners(new MatchFinishedEvent(match));
 		teams.clear();
 		arenaListeners.clear();
+		if (joinHandler != null){
+			joinHandler.deconstruct();}
+		joinHandler = null;
 	}
 
 	/**
