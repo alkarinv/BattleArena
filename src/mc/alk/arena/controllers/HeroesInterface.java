@@ -34,4 +34,17 @@ public class HeroesInterface {
 		if (!hasHeroes) return -1;
 		return HeroesUtil.getLevel(player);
 	}
+	public static void setMagic(Player p, Integer magic) {
+		if (!hasHeroes) return;
+		HeroesUtil.setMagic(p,magic);
+	}
+	public static boolean isInCombat(Player player) {
+		if (!hasHeroes) return false;
+		return HeroesUtil.isInCombat(player);
+	}
+	public static void deEnchant(Player p) {
+		if (!hasHeroes)
+			return;
+		HeroesUtil.deEnchant(p);
+	}
 }

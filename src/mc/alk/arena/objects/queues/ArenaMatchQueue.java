@@ -163,7 +163,7 @@ public class ArenaMatchQueue {
 						"   tq=" + tq +" --- ap="+a.getParameters() +"    baseP="+baseParams +" newP="+newParams);
 				for (QueueObject qo : tq){
 					MatchParams mp = qo.getMatchParams();
-					if (!mp.matches(baseParams))
+					if (!mp.matches(newParams))
 						continue;
 					Match m = null;
 					try {
@@ -175,10 +175,10 @@ public class ArenaMatchQueue {
 					if (m != null){
 						arenaqueue.remove(a);
 						return m;
-					} else if (Defaults.USE_ARENAS_ONLY_IN_ORDER){
-						return null;
 					}
 				}
+				if (Defaults.USE_ARENAS_ONLY_IN_ORDER){ /// Only check the first valid arena
+					return null;}
 			}
 		}}
 		///Found nothing matching

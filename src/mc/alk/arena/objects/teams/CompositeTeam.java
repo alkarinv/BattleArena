@@ -11,7 +11,7 @@ import mc.alk.arena.objects.ArenaPlayer;
  * @author alkarin
  *
  */
-public class CompositeTeam extends Team{
+public class CompositeTeam extends AbstractTeam{
 	final Set<Team> oldTeams = new HashSet<Team>();
 	boolean nameSet = false;
 
@@ -53,7 +53,7 @@ public class CompositeTeam extends Team{
 	}
 
 	@Override
-	protected void setName(String name) {
+	public void setName(String name) {
 		super.setName(name);
 		nameSet = true;
 	}

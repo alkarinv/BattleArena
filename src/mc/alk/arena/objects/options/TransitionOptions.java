@@ -56,7 +56,8 @@ public class TransitionOptions {
 		WOOLTEAMS("woolTeams",false), ALWAYSWOOLTEAMS("alwaysWoolTeams", false),
 		ALWAYSTEAMNAMES("alwaysTeamNames", false),
 		ADDPERMS("addPerms", false), REMOVEPERMS("removePerms", false),
-		SAMEWORLD("sameWorld",false), WITHINDISTANCE("withinDistance",true)
+		SAMEWORLD("sameWorld",false), WITHINDISTANCE("withinDistance",true),
+		MAGIC("magic",true)
 		;
 		String name;
 		boolean hasValue = false;
@@ -67,29 +68,16 @@ public class TransitionOptions {
 	};
 
 	Map<TransitionOption,Object> options = null;
-	List<PotionEffect> effects = null;
-	Double money =null;
-	Integer exp = null;
-	Integer health = null;
-	Integer hunger = null;
-	String disguiseAllAs = null;
-	Integer withinDistance = null;
-	Location teleportWinner = null;
+//	List<PotionEffect> effects = null;
+//	Double money =null;
+//	String disguiseAllAs = null;
+//	Location teleportWinner = null;
 
 	public TransitionOptions() {}
 	public TransitionOptions(TransitionOptions o) {
 		if (o == null)
 			return;
 		if (o.options != null) this.options = new EnumMap<TransitionOption,Object>(o.options);
-		//		this.items = o.items;
-		//		this.classes = o.classes;
-		this.effects = o.effects;
-		this.money = o.money;
-		this.exp = o.exp;
-		this.health= o.health;
-		this.hunger = o.hunger;
-		this.disguiseAllAs = o.disguiseAllAs;
-		this.withinDistance = o.withinDistance;
 	}
 
 	public void setOptions(Set<String> options) {
@@ -113,9 +101,11 @@ public class TransitionOptions {
 		return o == null ? null : (List<ItemStack>) o;
 	}
 
-	public void setEffects(List<PotionEffect> effectList) {this.effects = effectList;}
-	public List<PotionEffect> getEffects(){return effects;}
-	private boolean hasEffects() {return effects != null;}
+	public List<PotionEffect> getEffects(){
+		Object o = options.get(TransitionOption.ENCHANTS);
+		return o == null ? null : (List<PotionEffect>) o;
+	}
+	private boolean hasEffects() {return getEffects() != null;}
 	public boolean clearInventory() {return options.containsKey(TransitionOption.CLEARINVENTORY);}
 	public boolean needsArmor() {return options.containsKey(TransitionOption.NEEDARMOR);}
 	public boolean needsItems() {return options.containsKey(TransitionOption.NEEDITEMS);}
@@ -132,22 +122,36 @@ public class TransitionOptions {
 	public boolean blockBreakOff() {return options.containsKey(TransitionOption.BLOCKBREAKOFF);}
 	public boolean blockPlaceOff() {return options.containsKey(TransitionOption.BLOCKPLACEOFF);}
 
-	public Integer getHealth() {return health;}
-	public Integer getHunger() {return hunger;}
+	public Integer getHealth() {return getInt(TransitionOption.HEALTH);}
+	public Integer getHunger() {return getInt(TransitionOption.HUNGER);}
+	public Integer getMagic() { return getInt(TransitionOption.MAGIC);}
+	public Integer getWithinDistance() {return getInt(TransitionOption.WITHINDISTANCE);}
 
-	public void setMoney(double money) {this.money = money;}
-	public Double getMoney(){return money;}
-	public boolean hasMoney(){return money != null && money > 0;}
+	public Integer getInt(TransitionOption option){
+		final Object o = options.get(option);
+		return o == null ? null : (Integer) o;
+	}
 
-	public void setGiveExperience(int exp) {this.exp = exp;}
-	public Integer getExperience(){return exp;}
-	public boolean hasExperience(){return exp!= null && exp > 0;}
+	public String getString(TransitionOption option){
+		final Object o = options.get(option);
+		return o == null ? null : (String) o;
+	}
 
-	public void setHealth(Integer h) {health = h;}
-	public void setHunger(Integer h) {hunger = h;}
+	public Double getDouble(TransitionOption option){
+		final Object o = options.get(option);
+		return o == null ? null : (Double) o;
+	}
 
-	public void setDisguiseAllAs(String str) {this.disguiseAllAs = str;}
-	public String getDisguiseAllAs() {return disguiseAllAs;}
+	public Double getMoney(){return getDouble(TransitionOption.MONEY);}
+	public boolean hasMoney(){
+		Double d = getDouble(TransitionOption.MONEY);
+		return d != null && d > 0;
+	}
+
+	public Integer getExperience(){return getInt(TransitionOption.EXPERIENCE);}
+	public boolean hasExperience(){return options.containsKey(TransitionOption.EXPERIENCE);}
+
+	public String getDisguiseAllAs() {return getString(TransitionOption.DISGUISEALLAS);}
 	public Boolean undisguise() {return options.containsKey(TransitionOption.UNDISGUISE);}
 
 	public boolean playerReady(ArenaPlayer p) {
@@ -391,12 +395,6 @@ public class TransitionOptions {
 		}
 		sb.append("]");
 		return sb.toString();
-	}
-	public void setWithinDistance(Integer value) {
-		withinDistance = value;
-	}
-	public Integer getWithinDistance() {
-		return withinDistance;
 	}
 
 	public List<String> getAddPerms() {

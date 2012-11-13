@@ -8,6 +8,7 @@ import com.herocraftonline.heroes.characters.CharacterManager;
 import com.herocraftonline.heroes.characters.Hero;
 import com.herocraftonline.heroes.characters.classes.HeroClass;
 import com.herocraftonline.heroes.characters.classes.HeroClassManager;
+import com.herocraftonline.heroes.characters.effects.Effect;
 
 public class HeroesUtil {
 	static Heroes heroes = null;
@@ -24,8 +25,9 @@ public class HeroesUtil {
 		HeroClass hc = manager.getClass(name);
 		if (hc == null)
 			return;
-		CharacterManager cm = heroes.getCharacterManager();
-		Hero hero = cm.getHero(player);
+		Hero hero = getHero(player);
+		if (hero == null)
+			return;
 //		System.out.println("Heroes oldClass=" + hero.getHeroClass().getName()+"  new=" + hc.getName());
 		if (hero.getHeroClass().getName().equals(hc.getName()))
 			return;
@@ -37,10 +39,7 @@ public class HeroesUtil {
 	}
 
 	public static String getHeroClassName(Player player) {
-		if (heroes == null)
-			return null;
-		CharacterManager cm = heroes.getCharacterManager();
-		Hero hero = cm.getHero(player);
+		Hero hero = getHero(player);
 		if (hero == null)
 			return null;
 		HeroClass hc = hero.getHeroClass();
@@ -50,13 +49,42 @@ public class HeroesUtil {
 	}
 
 	public static int getLevel(Player player) {
-		if (heroes == null)
-			return -1;
-		CharacterManager cm = heroes.getCharacterManager();
-		Hero hero = cm.getHero(player);
+		Hero hero = getHero(player);
 		if (hero == null)
 			return -1;
 		return hero.getLevel();
+	}
+
+	public static void setMagic(Player player, Integer magic) {
+		Hero hero = getHero(player);
+		if (hero == null)
+			return;
+		double max = (double)hero.getMaxMana() * magic/100.0;
+		hero.setMana((int)max);
+	}
+
+	private static Hero getHero(Player player) {
+		CharacterManager cm = heroes.getCharacterManager();
+		Hero hero = cm.getHero(player);
+		if (hero == null)
+			return null;
+		return hero;
+	}
+
+	public static boolean isInCombat(Player player) {
+		Hero hero = getHero(player);
+		if (hero == null)
+			return false;
+		return hero.isInCombat();
+	}
+
+	public static void deEnchant(Player player) {
+		Hero hero = getHero(player);
+		if (hero == null)
+			return;
+		for (Effect effect : hero.getEffects()){
+			hero.removeEffect(effect);
+		}
 	}
 
 }

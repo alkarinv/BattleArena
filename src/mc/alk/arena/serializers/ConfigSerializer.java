@@ -248,7 +248,7 @@ public class ConfigSerializer extends BaseSerializer{
 			allTops.addTransition(transition,tops);
 		}
 		ParamController.setTransitionOptions(pi, allTops);
-//		pi.setAllTransitionOptions(allTops);
+		//		pi.setAllTransitionOptions(allTops);
 		ParamController.removeMatchType(pi);
 		ParamController.addMatchType(pi);
 		Log.info(BattleArena.getPName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none"));
@@ -284,13 +284,22 @@ public class ConfigSerializer extends BaseSerializer{
 			split[1] = split[1].trim();
 			try{
 				switch(to){
-				case MONEY:tops.setMoney(Double.valueOf(split[1])); break;
-				case EXPERIENCE: tops.setGiveExperience(Integer.valueOf(split[1])); break;
-				case HEALTH: tops.setHealth(Integer.valueOf(split[1])); break;
-				case HUNGER: tops.setHunger(Integer.valueOf(split[1])); break;
-				case DISGUISEALLAS: tops.setDisguiseAllAs(split[1]); break;
-				case WITHINDISTANCE: tops.setWithinDistance(Integer.valueOf(split[1])); break;
-				case LEVELRANGE: tops.addOption(to,MinMax.valueOf(split[1])); break;
+				case MONEY:
+					options.put(to, Double.valueOf(split[1]));
+					break;
+				case LEVELRANGE:
+					options.put(to, MinMax.valueOf(split[1]));
+					break;
+				case DISGUISEALLAS:
+					options.put(to, split[1]);
+					break;
+				case HEALTH:
+				case HUNGER:
+				case EXPERIENCE:
+				case WITHINDISTANCE:
+				case MAGIC:
+					options.put(to,Integer.valueOf(split[1]));
+					break;
 				default:
 					break;
 				}
@@ -316,7 +325,8 @@ public class ConfigSerializer extends BaseSerializer{
 		if (options.containsKey(TransitionOption.GIVEITEMS)){
 			tops.addOption(TransitionOption.GIVEITEMS,getItemList(cs, "items"));}
 		setPermissionSection(cs,"addPerms",tops);
-		if (options.containsKey(TransitionOption.ENCHANTS)){ tops.setEffects(getEffectList(cs, "enchants"));}
+		if (options.containsKey(TransitionOption.ENCHANTS)){
+			tops.addOption(TransitionOption.ENCHANTS, getEffectList(cs, "enchants"));}
 		return tops;
 	}
 

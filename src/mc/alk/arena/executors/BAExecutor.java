@@ -16,6 +16,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
+import mc.alk.arena.controllers.HeroesInterface;
 import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
@@ -762,6 +763,12 @@ public class BAExecutor extends CustomCommandExecutor  {
 		if (MobArenaInterface.hasMobArena()){
 			if (MobArenaInterface.insideMobArena(p)){
 				sendMessage(p,"&cYou need to finish with MobArena first!");
+				return false;
+			}
+		}
+		if (HeroesInterface.enabled()){
+			if (HeroesInterface.isInCombat(p.getPlayer())){
+				sendMessage(p,"&cYou can't join the arena while in combat!");
 				return false;
 			}
 		}
