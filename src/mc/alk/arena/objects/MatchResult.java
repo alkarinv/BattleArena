@@ -8,8 +8,9 @@ import mc.alk.arena.objects.teams.Team;
 
 
 public class MatchResult{
-	Team victor =null;
+	Set<Team> victors = new HashSet<Team>();
 	Set<Team> losers = new HashSet<Team>();
+	Set<Team> drawers = new HashSet<Team>();
 	WinLossDraw wld = WinLossDraw.UNKNOWN;
 
 	public static enum WinLossDraw{
@@ -20,19 +21,28 @@ public class MatchResult{
 		this.wld = wld;
 	}
 	public void setVictor(Team vic) {
-		this.victor= vic;
+		this.victors.clear();
+		this.victors.add(vic);
+	}
+	public void setVictors(Collection<Team> victors) {
+		this.victors.clear();
+		this.victors.addAll(victors);
+	}
+	public void setDrawers(Collection<Team> victors) {
+		this.drawers.clear();
+		this.drawers.addAll(victors);
 	}
 
-	public void setLosers(Collection<Team> losers) {
-		this.losers = new HashSet<Team>(losers);
+	public void addLosers(Collection<Team> losers) {
+		this.losers.addAll(losers);
 	}
 
 	public void addLoser(Team loser) {
 		losers.add(loser);
 	}
 
-	public Team getVictor() {
-		return victor;
+	public Set<Team> getVictors() {
+		return victors;
 	}
 
 	public Set<Team> getLosers() {
@@ -40,22 +50,24 @@ public class MatchResult{
 	}
 
 	public Set<Team> getDrawers(){
-		return losers;
+		return drawers;
 	}
 
+	@Override
 	public String toString(){
-		StringBuilder sb = new StringBuilder("victor=" + victor + " losers=" + losers);
-		return sb.toString();
+		StringBuilder sb = new StringBuilder(wld+"  victor=" + victors + " losers=" + losers +"  drawers=" + drawers);
+		return sb.toString() + toPrettyString();
 	}
 
 	public String toPrettyString() {
-		if (victor == null){
+		if (victors.isEmpty()){
 			return "&eThere are no victors yet";}
 		StringBuilder sb = new StringBuilder();
-		sb.append(victor.getTeamSummary() +" &ewins vs ");
+		for (Team t: victors){
+			sb.append(t.getTeamSummary()+" ");}
+		sb.append(" &ewins vs ");
 		for (Team t: losers){
-			sb.append(t.getTeamSummary()+" ");
-		}
+			sb.append(t.getTeamSummary()+" ");}
 
 		return sb.toString();
 	}

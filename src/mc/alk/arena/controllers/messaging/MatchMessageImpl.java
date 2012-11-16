@@ -74,10 +74,19 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	@Override
-	public void sendOnVictoryMsg(Channel serverChannel, Team victor, Collection<Team> losers) {
-		final String nTeamPath = getStringPathFromSize(losers.size()+1);
-		sendVictory(serverChannel,victor,losers,mp,"match."+nTeamPath+".victory","match."+nTeamPath+".loss",
+	public void sendOnVictoryMsg(Channel serverChannel, Collection<Team> victors, Collection<Team> losers) {
+		int size = (victors != null ? victors.size() : 0) + (losers != null ? losers.size() : 0);
+		final String nTeamPath = getStringPathFromSize(size);
+		sendVictory(serverChannel,victors,losers,mp,"match."+nTeamPath+".victory","match."+nTeamPath+".loss",
 				"match."+nTeamPath+".server_victory");
+	}
+
+	@Override
+	public void sendOnDrawMsg(Channel serverChannel, Collection<Team> drawers, Collection<Team> losers) {
+		int size = (drawers != null ? drawers.size() : 0) + (losers != null ? losers.size() : 0);
+		final String nTeamPath = getStringPathFromSize(size);
+		sendVictory(serverChannel,null,drawers,mp,"match."+nTeamPath+".draw","match."+nTeamPath+".draw",
+				"match."+nTeamPath+".server_draw");
 	}
 
 	public void sendYourTeamNotReadyMsg(Team t1) {
@@ -118,13 +127,5 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		match.sendMessage(msg);
 	}
 	public void sendTimeExpired(Channel serverChannel) {}
-
-	@Override
-	public void sendOnDrawMsg(Channel serverChannel, Collection<Team> participants) {
-		final String nTeamPath = getStringPathFromSize(participants.size());
-		sendVictory(serverChannel,null,participants,mp,"match."+nTeamPath+".draw","match."+nTeamPath+".draw",
-				"match."+nTeamPath+".server_draw");
-	}
-
 
 }

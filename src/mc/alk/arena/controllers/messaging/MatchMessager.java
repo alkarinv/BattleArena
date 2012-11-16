@@ -2,7 +2,6 @@ package mc.alk.arena.controllers.messaging;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.MatchState;
@@ -38,8 +37,12 @@ public class MatchMessager {
 		try{impl.sendOnStartMsg(getChannel(MatchState.ONSTART), teams);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public void sendOnVictoryMsg(Team victor, Collection<Team> losers) {
-		try{impl.sendOnVictoryMsg(getChannel(MatchState.ONVICTORY), victor,losers);}catch(Exception e){e.printStackTrace();}
+	public void sendOnVictoryMsg(Collection<Team> winners, Collection<Team> losers) {
+		try{impl.sendOnVictoryMsg(getChannel(MatchState.ONVICTORY), winners,losers);}catch(Exception e){e.printStackTrace();}
+	}
+
+	public void sendOnDrawMessage(Collection<Team> drawers, Collection<Team> losers) {
+		try{impl.sendOnDrawMsg(getChannel(MatchState.ONVICTORY), drawers, losers);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendYourTeamNotReadyMsg(Team t1) {
@@ -69,7 +72,4 @@ public class MatchMessager {
 		this.silent = silent;
 	}
 
-	public void sendOnDrawMessage(Set<Team> losers) {
-		try{impl.sendOnDrawMsg(getChannel(MatchState.ONVICTORY), losers);}catch(Exception e){e.printStackTrace();}
-	}
 }

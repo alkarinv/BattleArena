@@ -84,6 +84,9 @@ public class MatchingTeam implements Team{
 	public void setAlive() {}
 
 	@Override
+	public void setAlive(ArenaPlayer player){}
+
+	@Override
 	public boolean isDead() {
 		return false;
 	}

@@ -1,6 +1,8 @@
 package mc.alk.arena.competition.events;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -60,6 +62,7 @@ public class TournamentEvent extends Event implements Listener{
 		nrounds = -1;
 		timeBetweenRounds = oParms.getTimeBetweenRounds();
 		String color = Util.getColor(mp.getPrefix());
+		mp.setTransitionOptions(mp.getTransitionOptions());
 		mp.setPrefix(color+"["+mp.getName() +" " + oParms.getName()+"]");
 		mp.setCommand(oParms.getCommand());
 		mp.setName(mp.getName()+" " + oParms.getName());
@@ -130,35 +133,26 @@ public class TournamentEvent extends Event implements Listener{
 	@TransitionEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
 		Match am = event.getMatch();
-		Team victor = am.getVictor();
-		Matchup m;
-		if (victor == null)
-			m = getMatchup(am.getResult().getLosers().iterator().next(),round);
-		else
-			 m = getMatchup(victor,round);
-		System.out.println("victor ===" + victor + "  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());
+		Matchup m = null;
+		MatchResult r = am.getResult();
+		if (r.getVictors() != null && !r.getVictors().isEmpty()){
+			m = getMatchup(r.getVictors().iterator().next(),round);
+		}else if (r.getLosers() != null && !r.getLosers().isEmpty()){
+			m = getMatchup(r.getLosers().iterator().next(),round);
+		} else if (r.getDrawers() != null && !r.getDrawers().isEmpty()){
+			m = getMatchup(r.getDrawers().iterator().next(),round);}
 		if (m == null){ /// This match wasnt in our tournament
 			return;}
 		if (am.getState() == MatchState.ONCANCEL){
 			endEvent();
 			return;}
-		MatchResult r = am.getResult();
-		if (victor == null){ /// match was a draw, pick a random lucky winner
-			List<Team> ls = new ArrayList<Team>(am.getResult().getLosers());
-			if (ls.isEmpty()){
-				Log.err("[BattleArena] Tournament found a match with no players, cancelling tournament");
-				this.cancelEvent();
-				return;
-			}
-			victor = ls.get(rand.nextInt(ls.size()));
-			victor.sendMessage("&2You drew your match but have been randomly selected as the winner!");
-			r.setVictor(victor);
-			Set<Team> losers = new HashSet<Team>(ls);
-			losers.remove(victor);
-			r.setLosers(losers);
-			for (Team l: losers){
-				l.sendMessage("&cYou drew your match but someone else has been randomly selected as the winner!");
-			}
+		Team victor = null;
+		if (r.isDraw()){ /// match was a draw, pick a random lucky winner
+			victor = pickRandomWinner(r, r.getDrawers());
+		} else if (r.hasVictor() && r.getVictors().size() != 1){
+			victor = pickRandomWinner(r, r.getVictors());
+		} else if (r.hasVictor()){
+			victor = r.getVictors().iterator().next(); /// single winner
 		}
 		m.setResult(r);
 		for (Team t: r.getLosers()){
@@ -176,7 +170,8 @@ public class TournamentEvent extends Event implements Listener{
 				server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&e Congratulations to &6" + t.getDisplayName() + "&e for winning!"));
 				HashSet<Team> losers = new HashSet<Team>(competingTeams);
 				losers.remove(victor);
-				eventVictory(victor,losers);
+				Set<Team> victors = new HashSet<Team>(Arrays.asList(victor));
+				eventVictory(victors,losers);
 				PerformTransition.transition(am, MatchState.FIRSTPLACE, t,false);
 				PerformTransition.transition(am, MatchState.PARTICIPANTS, losers,false);
 				eventCompleted();
@@ -185,6 +180,26 @@ public class TournamentEvent extends Event implements Listener{
 				startRound();
 			}
 		}
+	}
+
+	private Team pickRandomWinner(MatchResult r, Collection<Team> randos) {
+		Team victor;
+		List<Team> ls = new ArrayList<Team>(randos);
+		if (ls.isEmpty()){
+			Log.err("[BattleArena] Tournament found a match with no players, cancelling tournament");
+			this.cancelEvent();
+			return null;
+		}
+		victor = ls.get(rand.nextInt(ls.size()));
+		victor.sendMessage("&2You drew your match but have been randomly selected as the winner!");
+		r.setVictor(victor);
+		Set<Team> losers = new HashSet<Team>(ls);
+		losers.remove(victor);
+		r.addLosers(losers);
+		for (Team l: losers){
+			l.sendMessage("&cYou drew your match but someone else has been randomly selected as the winner!");
+		}
+		return victor;
 	}
 
 

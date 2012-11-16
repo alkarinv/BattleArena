@@ -116,8 +116,9 @@ public class MessageSerializer extends BaseSerializer {
 		}
 	}
 
-	protected void sendVictory(Channel serverChannel, Team victor, Collection<Team> losers, MatchParams mp, String winnerpath,String loserpath, String serverPath){
-		final int size = victor == null ? losers.size() : losers.size()+1;
+	protected void sendVictory(Channel serverChannel, Collection<Team> victors, Collection<Team> losers, MatchParams mp, String winnerpath,String loserpath, String serverPath){
+		int size = victors != null ? victors.size() : 0;
+		size += losers != null ? losers.size() : 0;
 		Message winnermessage = getMessage(winnerpath);
 		Message losermessage = getMessage(loserpath);
 		Message serverMessage = getMessage(serverPath);
@@ -133,33 +134,38 @@ public class MessageSerializer extends BaseSerializer {
 		String msg = losermessage.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), size, losermessage, ops);
 		List<Team> teams = new ArrayList<Team>(losers);
-		if (victor != null)
-			teams.add(victor);
+		if (victors != null){
+			teams.addAll(victors);
+		}
 
 		msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
+		Team vic = (victors != null && !victors.isEmpty()) ? victors.iterator().next() : null;
 		for (Team t: losers){
 			msgf.formatTeamOptions(t,false);
 			msgf.formatTwoTeamsOptions(t, teams);
 			msgf.formatTeams(teams);
 			msgf.formatWinnerOptions(t, false);
-			if (victor != null)
-				msgf.formatWinnerOptions(victor, true);
+			/// TODO : I now need to make this work with multiple winners
+			if (vic != null)
+				msgf.formatWinnerOptions(vic, true);
 			String newmsg = msgf.getFormattedMessage(losermessage);
 			t.sendMessage(newmsg);
 		}
 
-		if (victor != null){
-			msgf = new MessageFormatter(this, mp, ops.size(), size, winnermessage, ops);
-			msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
-			msgf.formatTeamOptions(victor,true);
-			msgf.formatTwoTeamsOptions(victor, teams);
-			msgf.formatTeams(teams);
-			if (!losers.isEmpty()){
-				msgf.formatWinnerOptions(losers.iterator().next(), false);
+		if (victors != null){
+			for (Team victor: victors){
+				msgf = new MessageFormatter(this, mp, ops.size(), size, winnermessage, ops);
+				msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
+				msgf.formatTeamOptions(victor,true);
+				msgf.formatTwoTeamsOptions(victor, teams);
+				msgf.formatTeams(teams);
+				if (!losers.isEmpty()){
+					msgf.formatWinnerOptions(losers.iterator().next(), false);
+				}
+				msgf.formatWinnerOptions(victor, true);
+				String newmsg = msgf.getFormattedMessage(winnermessage);
+				victor.sendMessage(newmsg);
 			}
-			msgf.formatWinnerOptions(victor, true);
-			String newmsg = msgf.getFormattedMessage(winnermessage);
-			victor.sendMessage(newmsg);
 		}
 
 		if (serverChannel != Channel.NullChannel){

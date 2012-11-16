@@ -9,17 +9,17 @@ import mc.alk.arena.objects.teams.Team;
 public class EventVictoryEvent extends BAEvent {
 	final Event event;
 
-	final Team victor;
+	final Collection<Team> victors;
 	final Collection<Team> losers;
 
-	public EventVictoryEvent(Event event, Team victor, Collection<Team> losers) {
+	public EventVictoryEvent(Event event, Collection<Team> victors, Collection<Team> losers) {
 		this.event = event;
-		this.victor = victor;
+		this.victors = victors;
 		this.losers = losers;
 	}
 
-	public Team getVictor() {
-		return victor;
+	public Collection<Team> getVictors() {
+		return victors;
 	}
 	public Collection<Team> getLosers() {
 		return losers;

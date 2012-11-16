@@ -166,12 +166,12 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		notifyListeners(new EventStartEvent(this,teams));
 	}
 
-	protected void eventVictory(Team victor, Collection<Team> losers) {
-		if (victor != null)
-			mc.sendEventVictory(victor, losers);
+	protected void eventVictory(Collection<Team> victors, Collection<Team> losers) {
+		if (victors != null)
+			mc.sendEventVictory(victors, losers);
 		else
-			mc.sendEventDraw(losers);
-		notifyListeners(new EventVictoryEvent(this,victor,losers));
+			mc.sendEventDraw(losers, new HashSet<Team>());
+		notifyListeners(new EventVictoryEvent(this,victors,losers));
 	}
 
 	public void stopTimer(){
@@ -370,8 +370,10 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 			return null;
 		for (Matchup m : tr.getMatchups()){
 			for (Team team: m.getTeams()){
-				if (t.hasTeam(team))
-					return m;
+				for (ArenaPlayer ap: t.getPlayers()){
+					if (team.hasMember(ap))
+						return m;
+				}
 			}
 		}
 		return null;
@@ -426,7 +428,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 			for (Matchup m: round.getMatchups()){
 				if (useMatchups) sb.append("&4Matchup :");
 				MatchResult result = m.getResult();
-				if (result == null || result.getVictor() == null){
+				if (result == null || result.getVictors() == null){
 					for (Team t: m.getTeams()){
 						sb.append(t.getTeamSummary()+" "); }
 					sb.append("\n");

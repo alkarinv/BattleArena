@@ -1,5 +1,7 @@
 package mc.alk.arena.competition.events;
 
+import java.util.Collection;
+
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.ArenaMatch;
@@ -71,18 +73,18 @@ public class ReservedArenaEvent extends Event {
 	@TransitionEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
 		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchComplete " +arenaMatch +"   isRunning()=" + isRunning());
-		Team victor = event.getMatch().getResult().getVictor();
+		Collection<Team> victors = event.getMatch().getResult().getVictors();
 
 		Matchup m;
-		if (victor == null)
+		if (victors == null || victors.isEmpty())
 			m = getMatchup(event.getMatch().getResult().getLosers().iterator().next());
 		else
-			 m = getMatchup(victor);
+			 m = getMatchup(victors.iterator().next());
 		if (m == null){
 			return;
 		}
 		m.setResult(arenaMatch.getResult());
-		eventVictory(victor,m.getResult().getLosers());
+		eventVictory(victors,m.getResult().getLosers());
 	}
 
 	@TransitionEventHandler

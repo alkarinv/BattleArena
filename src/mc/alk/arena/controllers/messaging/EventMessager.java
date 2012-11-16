@@ -44,8 +44,8 @@ public class EventMessager {
 		try{impl.sendEventStarting(getChannel(MatchState.ONSTART), teams);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public void sendEventVictory(Team victor, Collection<Team> losers) {
-		try{impl.sendEventVictory(getChannel(MatchState.ONVICTORY), victor,losers);}catch(Exception e){e.printStackTrace();}
+	public void sendEventVictory(Collection<Team> victors, Collection<Team> losers) {
+		try{impl.sendEventVictory(getChannel(MatchState.ONVICTORY), victors,losers);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendEventOpenMsg() {
@@ -76,8 +76,8 @@ public class EventMessager {
 		this.silent = silent;
 	}
 
-	public void sendEventDraw(Collection<Team> losers) {
-		try{impl.sendEventDraw(getChannel(MatchState.ONVICTORY), losers);}catch(Exception e){e.printStackTrace();}
+	public void sendEventDraw(Collection<Team> drawers, Collection<Team> losers) {
+		try{impl.sendEventDraw(getChannel(MatchState.ONVICTORY), drawers, losers);}catch(Exception e){e.printStackTrace();}
 	}
 
 }

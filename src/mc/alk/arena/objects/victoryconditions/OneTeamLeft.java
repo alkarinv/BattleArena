@@ -19,14 +19,14 @@ public class OneTeamLeft extends VictoryCondition{
 
 	@TransitionEventHandler
 	public void onPlayerLeft(PlayerLeftEvent event) {
-		ArenaPlayer p = event.getPlayer();		
+		ArenaPlayer p = event.getPlayer();
 		if (match.isWon() || !match.isStarted()){
 			return;}
 		Team team = match.getTeam(p);
 		if (team == null)
 			return;
-		team.killMember(p);
-		handleDeath(team);
+		if (team.killMember(p))
+			handleDeath(team);
 	}
 
 	protected void handleDeath(Team team) {
@@ -42,9 +42,11 @@ public class OneTeamLeft extends VictoryCondition{
 				continue;
 			if (leftAlive != null) /// obviously more than one team is still in the match
 				return;
-			leftAlive = t;				
+			leftAlive = t;
 		}
-		/// One team left alive = victory
-		match.setVictor(leftAlive);
+		if (leftAlive == null)
+			match.setDraw();
+		else /// One team left alive = victory
+			match.setVictor(leftAlive);
 	}
 }

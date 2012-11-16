@@ -20,11 +20,11 @@ public interface Team {
 
 	public Set<ArenaPlayer> getLivingPlayers();
 
-	public boolean wouldBeDeadWithout(ArenaPlayer p);
+	public boolean wouldBeDeadWithout(ArenaPlayer player);
 
-	public boolean hasMember(ArenaPlayer p);
+	public boolean hasMember(ArenaPlayer player);
 
-	public boolean hasAliveMember(ArenaPlayer p);
+	public boolean hasAliveMember(ArenaPlayer player);
 
 	public boolean isPickupTeam();
 
@@ -40,6 +40,8 @@ public interface Team {
 
 	public void setAlive();
 
+	public void setAlive(ArenaPlayer player);
+
 	public boolean isDead();
 
 	public int size();
@@ -54,23 +56,23 @@ public interface Team {
 
 	public int getNDeaths();
 
-	public Integer getNDeaths(ArenaPlayer p);
+	public Integer getNDeaths(ArenaPlayer player);
 
-	public Integer getNKills(ArenaPlayer p);
-
-	/**
-	 *
-	 * @param p
-	 * @return whether all players are dead
-	 */
-	public boolean killMember(ArenaPlayer p);
+	public Integer getNKills(ArenaPlayer player);
 
 	/**
 	 *
 	 * @param p
 	 * @return whether all players are dead
 	 */
-	public void playerLeft(ArenaPlayer p);
+	public boolean killMember(ArenaPlayer player);
+
+	/**
+	 *
+	 * @param p
+	 * @return whether all players are dead
+	 */
+	public void playerLeft(ArenaPlayer player);
 
 	public boolean allPlayersOffline();
 
@@ -80,7 +82,7 @@ public interface Team {
 
 	public String getDisplayName();
 
-	public void setDisplayName(String n);
+	public void setDisplayName(String displayName);
 
 	public boolean hasTeam(Team team);
 

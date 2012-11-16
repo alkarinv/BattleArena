@@ -92,11 +92,16 @@ public class DuelController implements TransitionListener{
 		Double money = (Double) d.getDuelOptionValue(DuelOption.MONEY);
 		if (money != null){
 			if (mr.hasVictor()){
-				Team t = mr.getVictor();
-				double split = d.getTotalMoney() / t.size();
-				for (ArenaPlayer ap: t.getPlayers()){
-					MessageUtil.sendMessage(ap,"&4[Duel] &eYou have won &6" + split +" "+Defaults.MONEY_STR+"&e for your victory!");
-					MoneyController.add(ap.getName(), split);
+				Collection<Team> winningTeams = mr.getVictors();
+				int winningSize = 0;
+				for (Team winTeam : winningTeams){
+					winningSize += winTeam.size();}
+				final double split = d.getTotalMoney() / winningSize;
+				for (Team winTeam : winningTeams){
+					for (ArenaPlayer ap: winTeam.getPlayers()){
+						MessageUtil.sendMessage(ap,"&4[Duel] &eYou have won &6" + split +" "+Defaults.MONEY_STR+"&e for your victory!");
+						MoneyController.add(ap.getName(), split);
+					}
 				}
 			} else {
 				refundMoney(money, mr.getDrawers());

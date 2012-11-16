@@ -76,9 +76,9 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 	}
 
 	@Override
-	public void sendEventVictory(Channel serverChannel, Team victor, Collection<Team> losers) {
+	public void sendEventVictory(Channel serverChannel, Collection<Team> victors, Collection<Team> losers) {
 		final String nTeamPath = getStringPathFromSize(losers.size()+1);
-		sendVictory(serverChannel,victor,losers,mp,"event."+nTeamPath+".victory", "event."+nTeamPath+".loss",
+		sendVictory(serverChannel,victors,losers,mp,"event."+nTeamPath+".victory", "event."+nTeamPath+".loss",
 				"event."+nTeamPath+".server_victory");
 	}
 
@@ -130,7 +130,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 	}
 
 	@Override
-	public void sendEventDraw(Channel serverChannel, Collection<Team> participants) {
+	public void sendEventDraw(Channel serverChannel, Collection<Team> participants, Collection<Team> losers) {
 		final String nTeamPath = getStringPathFromSize(participants.size());
 		sendVictory(serverChannel,null,participants,mp,"event."+nTeamPath+".draw","event."+nTeamPath+".draw",
 				"event."+nTeamPath+".server_draw");

@@ -1,6 +1,7 @@
 package mc.alk.arena.competition.match;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -321,13 +322,10 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			victor.sendMessage("&4WIN!!!&eThe other team was offline or didnt meet the entry requirements.");
 			setVictor(victor);
 		} else { /// Seriously, no one showed up?? Well, one of them won regardless, but scold them
-			for (Team t: competingTeams){
-				t.sendMessage("&eNo team was ready to compete, choosing a random team to win");}
 			if (teams.isEmpty()){
 				this.cancelMatch();
 			} else {
-				Team victor = teams.get(rand.nextInt(teams.size()));
-				setVictor(victor);
+				setDraw();
 			}
 		}
 	}
@@ -348,17 +346,18 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		MatchVictory(Match am){this.am = am; }
 
 		public void run() {
-			Team victor = getVictor();
-			final Set<Team> losers = getLosers();
-			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victor="+ victor + "  " + losers);
+			final Set<Team> victors = matchResult.getVictors();
+			final Set<Team> losers = matchResult.getLosers();
+			final Set<Team> drawers = matchResult.getDrawers();
+			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  " + losers);
 			TrackerInterface bti = BTInterface.getInterface(params);
-			if (victor != null){ /// We have a true winner
+			if (matchResult.hasVictor()){ /// We have a true winner
 				if (bti != null && params.isRated()){
-					try{BTInterface.addRecord(bti,victor.getPlayers(),losers,WLT.WIN);}catch(Exception e){e.printStackTrace();}
+					try{BTInterface.addRecord(bti,victors,losers,drawers,WLT.WIN);}catch(Exception e){e.printStackTrace();}
 				}
-				try{mc.sendOnVictoryMsg(victor, losers);}catch(Exception e){e.printStackTrace();}
+				try{mc.sendOnVictoryMsg(victors, losers);}catch(Exception e){e.printStackTrace();}
 			} else { /// we have a draw
-				try{mc.sendOnDrawMessage(losers);} catch(Exception e){e.printStackTrace();}
+				try{mc.sendOnDrawMessage(drawers,losers);} catch(Exception e){e.printStackTrace();}
 			}
 			updateBukkitEvents(MatchState.ONVICTORY);
 			notifyListeners(new MatchVictoryEvent(am,matchResult));
@@ -377,8 +376,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			transitionTo(MatchState.ONSTART);
 
 			state = MatchState.ONCOMPLETE;
-			final Team victor = am.getVictor();
-			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + victor);
+			final Collection<Team> victors = am.getVictors();
+			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + victors);
 			/// ONCOMPLETE can teleport people out of the arena,
 			/// So the order of events is usually
 			/// ONCOMPLETE(half of effects) -> ONLEAVE( and all effects) -> ONCOMPLETE( rest of effects)
@@ -388,9 +387,12 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable(){
 				public void run() {
 					/// Losers and winners get handled after the match is complete
-					PerformTransition.transition(am, MatchState.LOSERS, am.getResult().getLosers(), false);
-					if (victor != null) /// everyone died at once??
-						PerformTransition.transition(am, MatchState.WINNER, victor, false);
+					if (am.getLosers() != null)
+						PerformTransition.transition(am, MatchState.LOSERS, am.getLosers(), false);
+					if (am.getDrawers() != null)
+						PerformTransition.transition(am, MatchState.LOSERS, am.getDrawers(), false);
+					if (am.getVictors() != null)
+						PerformTransition.transition(am, MatchState.WINNER, am.getVictors(), false);
 					arenaInterface.onComplete();
 					notifyListeners(new MatchCompletedEvent(am));
 					updateBukkitEvents(MatchState.ONCOMPLETE);
@@ -475,6 +477,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		if (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND){
 			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));
 		}
+		team.setAlive(player);
 		startTracking(player);
 		arenaInterface.onJoin(player,team);
 		HeroesInterface.addedToTeam(team, player.getPlayer());
@@ -705,26 +708,6 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		}
 	}
 
-
-	public void setVictor(ArenaPlayer p){
-		Team t = getTeam(p);
-		if (t != null) setVictor(t);
-	}
-
-	public synchronized void setVictor(final Team team){
-		matchResult.setVictor(team);
-		ArrayList<Team> losers= new ArrayList<Team>(teams);
-		if (team != null){
-			losers.remove(team);
-			matchResult.setResult(WinLossDraw.WIN);
-		} else {
-			matchResult.setResult(WinLossDraw.DRAW);
-		}
-		matchResult.setLosers(losers);
-
-		teamVictory();
-	}
-
 	public Team getTeam(ArenaPlayer p) {
 		for (Team t: teams) {
 			if (t.hasMember(p)) return t;}
@@ -812,8 +795,35 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public Location getWaitRoomSpawn(int index, boolean random){
 		return random ? arena.getRandomWaitRoomSpawnLoc(): arena.getWaitRoomSpawnLoc(index);
 	}
+	public void endMatchWithResult(MatchResult result){
+		this.matchResult = result;
+		teamVictory();
+	}
+
+	public void setVictor(ArenaPlayer p){
+		Team t = getTeam(p);
+		if (t != null) setVictor(t);
+	}
+
+	public synchronized void setVictor(final Team team){
+		setVictor(new ArrayList<Team>(Arrays.asList(team)));
+	}
+
+	public synchronized void setVictor(final Collection<Team> winningTeams){
+		matchResult.setVictors(winningTeams);
+		ArrayList<Team> losers= new ArrayList<Team>(teams);
+		losers.removeAll(winningTeams);
+		matchResult.addLosers(losers);
+		matchResult.setResult(WinLossDraw.WIN);
+		endMatchWithResult(matchResult);
+	}
+	public synchronized void setDraw(){
+		matchResult.setResult(WinLossDraw.DRAW);
+		matchResult.setDrawers(teams);
+		endMatchWithResult(matchResult);
+	}
 	public MatchResult getResult(){return matchResult;}
-	public Team getVictor() {return matchResult.getVictor();}
+	public Set<Team> getVictors() {return matchResult.getVictors();}
 	public Set<Team> getLosers() {return matchResult.getLosers();}
 	public Set<Team> getDrawers() {return matchResult.getDrawers();}
 	public Map<String,Location> getOldLocations() {return oldlocs;}
@@ -912,14 +922,10 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		notifyListeners(event);
 		try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
 		List<Team> leaders = event.getCurrentLeaders();
-		Team winner = null;
-		if (leaders == null || leaders.isEmpty())
-			winner= teams.get(0);
-		else if (leaders.size() == 1)
-			winner = leaders.get(0);
+		if (leaders != null)
+			setVictor(leaders);
 		else
-			winner = null; /// make it a draw
-		setVictor(winner);
+			setDraw();
 	}
 
 	public void intervalTick(VictoryCondition vc, int remaining) {

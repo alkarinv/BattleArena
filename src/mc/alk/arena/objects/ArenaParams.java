@@ -21,7 +21,7 @@ public class ArenaParams extends ArenaSize{
 	int secondsTillMatch = Defaults.SECONDS_TILL_MATCH;
 	int secondsToLoot = Defaults.SECONDS_TO_LOOT;
 
-//	MatchTransitions allTops;
+	MatchTransitions allTops;
 	String dbName;
 
 	public ArenaParams(ArenaType at) {
@@ -41,10 +41,15 @@ public class ArenaParams extends ArenaSize{
 		this.secondsTillMatch = ap.secondsTillMatch;
 		this.secondsToLoot = ap.secondsToLoot;
 		this.dbName = ap.dbName;
+		if (ap.allTops != null)
+			this.allTops = new MatchTransitions(ap.allTops);
 	}
 
 	public MatchTransitions getTransitionOptions(){
-		return ParamController.getTransitionOptions(this);
+		return allTops == null ? ParamController.getTransitionOptions(this) : allTops;
+	}
+	public void setTransitionOptions(MatchTransitions transitionOptions) {
+		this.allTops = new MatchTransitions(transitionOptions);
 	}
 
 	public static String rangeString(final int min,final int max){

@@ -123,16 +123,22 @@ public abstract class AbstractTeam implements Team{
 		this.nameManuallySet = true;
 	}
 	public void setAlive() {deadplayers.clear();}
+
+	@Override
+	public void setAlive(ArenaPlayer player){deadplayers.remove(player);}
+
 	public boolean isDead() {
 		if (deadplayers.size() >= players.size())
 			return true;
 		Set<ArenaPlayer> living = getLivingPlayers();
+		if (living.isEmpty())
+			return true;
 		int offline = 0;
 		for (ArenaPlayer ap: living){
 			if (!ap.isOnline())
 				offline++;
 		}
-		return living.isEmpty() || living.size() <= offline;
+		return living.size() <= offline;
 	}
 
 	public int size() {return players.size();}

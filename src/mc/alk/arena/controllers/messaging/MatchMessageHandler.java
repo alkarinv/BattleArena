@@ -10,8 +10,8 @@ public interface MatchMessageHandler {
 	public void sendOnBeginMsg(Channel channel, List<Team> teams);
 	public void sendOnPreStartMsg(Channel serverChannel, List<Team> teams);
 	public void sendOnStartMsg(Channel serverChannel, List<Team> teams);
-	public void sendOnVictoryMsg(Channel serverChannel, Team victor, Collection<Team> losers);
-	public void sendOnDrawMsg(Channel serverChannel, Collection<Team> participants);
+	public void sendOnVictoryMsg(Channel serverChannel, Collection<Team> victors, Collection<Team> losers);
+	public void sendOnDrawMsg(Channel serverChannel, Collection<Team> drawers, Collection<Team> losers);
 	public void sendYourTeamNotReadyMsg(Team team);
 	public void sendOtherTeamNotReadyMsg(Team team);
 	public void sendOnIntervalMsg(Channel serverChannel,List<Team> currentLeaders, int remaining);

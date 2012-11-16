@@ -50,6 +50,15 @@ public class BTInterface {
 		return db == null ? null : btis.get(db);
 	}
 
+	public static void addRecord(TrackerInterface bti, Set<Team> victors,Set<Team> losers, Set<Team> drawers, WLT win) {
+		if (victors != null){
+			Set<ArenaPlayer> winningPlayers = new HashSet<ArenaPlayer>();
+			for (Team w : victors){
+				winningPlayers.addAll(w.getPlayers());
+			}
+			addRecord(bti,winningPlayers, losers,win);
+		}
+	}
 	public static void addRecord(TrackerInterface bti, Set<ArenaPlayer> players, Collection<Team> losers, WLT win) {
 		if (bti == null)
 			return;
@@ -153,4 +162,5 @@ public class BTInterface {
 	public void printTopX(CommandSender sender, int x, int minTeamSize, String headerMsg, String bodyMsg) {
 		ti.printTopX(sender, StatType.RANKING, x, minTeamSize,headerMsg,bodyMsg);
 	}
+
 }
