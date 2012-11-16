@@ -16,7 +16,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	AnnouncementOptions ao = null;
 
 	public MatchParams(ArenaType at, Rating rating, VictoryType vc) {
-		super(at,rating);
+		super(at);
+		this.setRating(rating);
 		this.vc = vc;
 	}
 
@@ -29,17 +30,12 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.ao = q.ao;
 	}
 
-	@Override
-	public int getMinTeams(){return minTeams;}
-	@Override
-	public int getMinTeamSize(){ return minTeamSize;}
 	public VictoryType getVictoryType() {return vc;}
 
-	public int getSize() {return minTeamSize;}
-	public String getPrefix(){
-		return prefix;
-	}
+	public String getPrefix(){return prefix;}
+
 	public void setPrefix(String str){prefix = str;}
+
 	public void setCommand(String str){cmd = str;}
 
 	public int compareTo(MatchParams other) {

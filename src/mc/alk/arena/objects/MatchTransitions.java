@@ -1,10 +1,13 @@
 package mc.alk.arena.objects;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
@@ -14,27 +17,47 @@ import mc.alk.arena.util.InventoryUtil;
 import org.bukkit.inventory.ItemStack;
 
 public class MatchTransitions {
-	Map<MatchState,TransitionOptions> ops = new EnumMap<MatchState,TransitionOptions>(MatchState.class);
+	final Map<MatchState,TransitionOptions> ops = new EnumMap<MatchState,TransitionOptions>(MatchState.class);
+	final Set<TransitionOption> allops = new HashSet<TransitionOption>();
 
 	public MatchTransitions() {}
 	public MatchTransitions(MatchTransitions o) {
 		for (MatchState ms: o.ops.keySet()){
 			ops.put(ms, new TransitionOptions(o.ops.get(ms)));
 		}
+		calculateAllOptions();
 	}
 
-	public void addTransition(MatchState ms, TransitionOptions tops) {
+	public void addTransitionOptions(MatchState ms, TransitionOptions tops) {
 		ops.put(ms, tops);
+		Map<TransitionOption,Object> ops = tops.getOptions();
+		if (ops != null)
+			allops.addAll(ops.keySet());
 	}
 
-	public boolean hasOptions(TransitionOption... options) {
+	public void removeTransitionOptions(MatchState ms) {
+		ops.remove(ms);
+		calculateAllOptions();
+	}
+
+	private void calculateAllOptions(){
+		allops.clear();
+		for (TransitionOptions top: ops.values()){
+			allops.addAll(top.getOptions().keySet());
+		}
+	}
+
+	public boolean hasAnyOption(TransitionOption... options) {
 		for (TransitionOption op: options){
-			for (TransitionOptions tops : ops.values()){
-				if (tops.hasOption(op))
-					return true;
-			}
+			if (allops.contains(op))
+				return true;
 		}
 		return false;
+	}
+
+	public boolean hasAllOptions(TransitionOption... options) {
+		Set<TransitionOption> ops = new HashSet<TransitionOption>(Arrays.asList(options));
+		return allops.containsAll(ops);
 	}
 
 	public boolean hasOptionAt(MatchState state, TransitionOption option) {
@@ -44,10 +67,6 @@ public class MatchTransitions {
 
 	public boolean needsClearInventory() {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).clearInventory() : false;
-	}
-
-	public void removeOptions(MatchState ms) {
-		ops.remove(ms);
 	}
 
 	public String getRequiredString(String header) {

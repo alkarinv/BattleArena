@@ -68,10 +68,6 @@ public class TransitionOptions {
 	};
 
 	Map<TransitionOption,Object> options = null;
-//	List<PotionEffect> effects = null;
-//	Double money =null;
-//	String disguiseAllAs = null;
-//	Location teleportWinner = null;
 
 	public TransitionOptions() {}
 	public TransitionOptions(TransitionOptions o) {

@@ -94,11 +94,11 @@ public class PerformTransition {
 			final Team team, final boolean onlyInMatch) {
 		if (Defaults.DEBUG_TRANSITIONS) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +player.getName() +
 				" ops="+am.tops.getOptions(transition) +"  inArena="+am.insideArena(player) +"  left="+am.playerLeft(player));
-		if (am.playerLeft(player))
+		if (am.playerLeft(player)) /// The player has purposefully left the match, we have nothing to do with them anymore
 			return true;
 
 		final TransitionOptions mo = am.tops.getOptions(transition);
-		if (mo == null){
+		if (mo == null){ /// no options
 			return true;}
 		final boolean teleportIn = mo.shouldTeleportIn();
 		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
@@ -108,7 +108,6 @@ public class PerformTransition {
 		if (onlyInMatch && !insideArena && !(teleportIn || teleportWaitRoom)){
 			return true;}
 		final boolean teleportOut = mo.shouldTeleportOut();
-
 		final boolean wipeOnFirstEnter = !insideArena && mo.hasOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
 		final boolean wipeInventory = mo.clearInventory() || wipeOnFirstEnter;
 
@@ -126,7 +125,7 @@ public class PerformTransition {
 				/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
 				/// Since we cant really tell the eventual result.. do our best guess
 				am.enterWaitRoom(player);
-				final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),team.getPlayerIndex(player));
+				final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),rand.nextInt(team.size()));
 				TeleportController.teleportPlayer(p, l, true, true, false);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
 			} else {
@@ -140,7 +139,7 @@ public class PerformTransition {
 				/// enterArena is supposed to happen before the teleport in Event, but it depends on the result of a teleport
 				/// Since we cant really tell the eventual result.. do our best guess
 				am.enterArena(player);
-				final Location l = jitter(am.getTeamSpawn(teamIndex,false),team.getPlayerIndex(player));
+				final Location l = jitter(am.getTeamSpawn(teamIndex,false),rand.nextInt(team.size()));
 				TeleportController.teleportPlayer(p, l, true, true, false);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
 			} else {
@@ -150,7 +149,7 @@ public class PerformTransition {
 
 		/// Only do if player is online options
 		if (playerReady && !dead){
-			boolean storeAll = mo.hasOption(TransitionOption.STOREALL);
+			final boolean storeAll = mo.hasOption(TransitionOption.STOREALL);
 			if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){ am.psc.storeGamemode(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREEXPERIENCE)){ am.psc.storeExperience(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREITEMS)) { am.psc.storeItems(player);}

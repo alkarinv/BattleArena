@@ -122,9 +122,7 @@ public class BukkitEventListener extends BAEventListener{
 	 */
 	public void addMatchListener(ArenaListener spl) {
 		if (!hasListeners()){
-			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STARTING LISTEN " + bukkitEvent);
 			startMatchListening();}
-		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS now listening for match " + spl);
 		mlisteners.add(spl);
 	}
 
@@ -136,7 +134,6 @@ public class BukkitEventListener extends BAEventListener{
 	public boolean removeMatchListener(ArenaListener spl) {
 		final boolean removed = mlisteners.remove(spl);
 		if (removed && !hasListeners()){
-			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STOPPING LISTEN " + bukkitEvent);
 			stopListening();}
 		return removed;
 	}
@@ -148,9 +145,7 @@ public class BukkitEventListener extends BAEventListener{
 	 */
 	public void addSPListener(String p, ArenaListener spl) {
 		if (!hasListeners()){
-			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STARTING LISTEN " + bukkitEvent);
 			startSpecificPlayerListening();}
-		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS now listening for player " + p +"   " + bukkitEvent);
 		listeners.add(p,spl);
 	}
 
@@ -163,7 +158,6 @@ public class BukkitEventListener extends BAEventListener{
 	public boolean removeSPListener(String p, ArenaListener spl) {
 		final boolean removed = listeners.remove(p,spl);
 		if (removed && !hasListeners()){
-			if (Defaults.DEBUG_EVENTS) System.out.println(" @@@@@@@@@@@@@@@@@@@@@@  STOPPING LISTEN " + bukkitEvent);
 			stopListening();}
 		return removed;
 	}
@@ -175,7 +169,6 @@ public class BukkitEventListener extends BAEventListener{
 	 */
 	@Override
 	public void doSpecificPlayerEvent(Event event){
-		if (Defaults.DEBUG_EVENTS) System.out.println("Event " +event + "   " + bukkitEvent + "  " + getPlayerMethod.getName());
 		/// Need special handling of Methods that have 2 entities involved, as either entity may be in a match
 		if (event instanceof EntityDamageByEntityEvent){
 			doEntityDamageByEntityEvent((EntityDamageByEntityEvent)event);
@@ -187,7 +180,6 @@ public class BukkitEventListener extends BAEventListener{
 		if (event.getClass() != bukkitEvent) /// This can happen with subclasses such as PlayerDeathEvent and EntityDeathEvent
 			return;
 		final Entity entity = getEntityFromMethod(event, getPlayerMethod);
-		if (Defaults.DEBUG_EVENTS) System.out.println("Event " +event + "   " + entity);
 		if (!(entity instanceof Player))
 			return;
 		final Player p = (Player) entity;
@@ -197,14 +189,10 @@ public class BukkitEventListener extends BAEventListener{
 	private void callListeners(Event event, final Player p) {
 		HashSet<ArenaListener> spls = listeners.getSafe(p.getName());
 		if (spls == null){
-			if (Defaults.DEBUG_EVENTS) System.out.println("   NO SPLS listening for player " + p.getName());
-			return;
-		}
+			return;}
 		/// For each ArenaListener class that is listening
-		if (Defaults.DEBUG_EVENTS) System.out.println("   SPLS splisteners .get " + spls);
 		for (ArenaListener spl: spls){
 			List<MatchEventMethod> methods = MethodController.getMethods(spl,event);
-			if (Defaults.DEBUG_EVENTS) System.out.println("    SPL = " + spl.getClass() +"    getting methods "+methods );
 			if (methods != null){
 				doMethods(event, p, spl, methods);}
 			if (event instanceof EntityDamageByEntityEvent){
@@ -222,7 +210,6 @@ public class BukkitEventListener extends BAEventListener{
 		ArenaPlayer arenaPlayer = null;
 		for(MatchEventMethod method: methods){
 			final Class<?>[] types = method.getMethod().getParameterTypes();
-			if (Defaults.DEBUG_EVENTS) System.out.println(" method=" + method + "  types.length=" +types.length);
 			final Object[] os = new Object[types.length];
 			os[0] = event;
 
@@ -300,18 +287,14 @@ public class BukkitEventListener extends BAEventListener{
 
 	@Override
 	public void doMatchEvent(Event event){
-		if (Defaults.DEBUG_EVENTS) System.out.println("MatchEvent " +event + "   " + bukkitEvent + "  " + getPlayerMethod);
-
 		if (event.getClass() != bukkitEvent) /// This can happen with subclasses such as PlayerDeathEvent and EntityDeathEvent
 			return;
 
 		/// For each ArenaListener class that is listening
-		if (Defaults.DEBUG_EVENTS) System.out.println("   Match splisteners .get " + mlisteners.size() +"  " + event);
 		for (ArenaListener spl: mlisteners){
 			List<MatchEventMethod> methods = MethodController.getMethods(spl,event);
 			/// For each of the splisteners methods that deal with this BukkitEvent
 			for(MatchEventMethod method: methods){
-				if (Defaults.DEBUG_EVENTS) System.out.println("    MatchSPL = " + spl.getClass() +"    getting method "+method);
 				try {
 					method.getMethod().invoke(spl, event); /// Invoke the listening arenalisteners method
 				} catch (Exception e){

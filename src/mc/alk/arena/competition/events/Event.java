@@ -110,7 +110,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	public void openEvent(EventParams params) throws NeverWouldJoinException {
 		setParamInst(params);
 		teams.clear();
-		joinHandler = TeamJoinFactory.createTeamJoinHandler(this);
+		joinHandler = TeamJoinFactory.createTeamJoinHandler(params, this);
 
 		EventOpenEvent event = new EventOpenEvent(this);
 		tmc.callListeners(event);
@@ -156,7 +156,8 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		/// TODO rebalance teams
 		Set<ArenaPlayer> excludedPlayers = getExcludedPlayers();
 		for (ArenaPlayer p : excludedPlayers){
-			p.sendMessage(Log.colorChat(eventParams.getPrefix()+"&6 &5There werent enough players to create a &6" + getTeamSize() +"&5 person team"));
+			p.sendMessage(Log.colorChat(eventParams.getPrefix()+
+					"&6 &5There werent enough players to create a &6" + eventParams.getMinTeamSize() +"&5 person team"));
 		}
 		joinHandler.deconstruct();
 		joinHandler = null;
@@ -239,12 +240,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		Team t = getTeam(p);
 		if (t==null) /// they arent in this Event
 			return true;
-		//		if (!isRunning()){
 		removeTeam(t);
-		//		} else {
-		/// do nothing, they should be part of a match somewhere which will handle
-		/// removing them
-		//		}
 		return true;
 	}
 
@@ -323,7 +319,6 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	public EventParams getParams() {return eventParams;}
 
 	public int getNteams() {return teams.size();}
-	public int getTeamSize() {return eventParams.getSize();}
 
 	public void setTeamJoinHandler(TeamJoinHandler tjh){
 		this.joinHandler = tjh;
@@ -518,6 +513,12 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 
 	@Override
 	public void addedToTeam(Team team, ArenaPlayer player) {/* do nothing */}
+
+	@Override
+	public void removedFromTeam(Team team, Collection<ArenaPlayer> players) {/* do nothing */}
+
+	@Override
+	public void removedFromTeam(Team team, ArenaPlayer player) {/* do nothing */}
 
 	@Override
 	public int getID(){

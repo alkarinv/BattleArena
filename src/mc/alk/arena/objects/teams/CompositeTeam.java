@@ -13,7 +13,11 @@ import mc.alk.arena.objects.ArenaPlayer;
  */
 public class CompositeTeam extends AbstractTeam{
 	final Set<Team> oldTeams = new HashSet<Team>();
-	boolean nameSet = false;
+
+	public CompositeTeam() {
+		super();
+		isPickupTeam = true;
+	}
 
 	protected CompositeTeam(ArenaPlayer ap) {
 		super(ap);
@@ -25,37 +29,14 @@ public class CompositeTeam extends AbstractTeam{
 		isPickupTeam = true;
 	}
 
-	protected CompositeTeam() {
-		super();
-		isPickupTeam = true;
-	}
-
 	protected CompositeTeam(Team team) {
 		this();
 		addTeam(team);
 	}
+
 	protected CompositeTeam(Set<ArenaPlayer> tplayers) {
 		super(tplayers);
 		isPickupTeam=true;
-	}
-
-	@Override
-	public int getPlayerIndex(ArenaPlayer p) {
-		finish();
-		return super.getPlayerIndex(p);
-	}
-
-
-	@Override
-	public String getName() {
-		finish();
-		return name;
-	}
-
-	@Override
-	public void setName(String name) {
-		super.setName(name);
-		nameSet = true;
 	}
 
 	public void addTeam(Team t) {
@@ -64,9 +45,9 @@ public class CompositeTeam extends AbstractTeam{
 			oldTeams.add(ct);
 			oldTeams.addAll(ct.oldTeams);
 			players.addAll(ct.getPlayers());
-			nameSet = false;
+			nameChanged = true;
 		} else if (oldTeams.add(t)){
-			nameSet = false;
+			nameChanged = true;
 			players.addAll(t.getPlayers());
 		}
 	}
@@ -75,13 +56,13 @@ public class CompositeTeam extends AbstractTeam{
 		if (t instanceof CompositeTeam){
 			for (Team tt : ((CompositeTeam)t).getOldTeams()){
 				if (oldTeams.remove(tt)){
-					nameSet = false;}
+					nameChanged = true;}
 			}
 		}
 		boolean has = oldTeams.remove(t);
 		if (has){
 			players.removeAll(t.getPlayers());
-			nameSet = false;
+			nameChanged = true;
 		}
 		return has;
 	}
@@ -95,18 +76,11 @@ public class CompositeTeam extends AbstractTeam{
 		return false;
 	}
 
-	void finish() {
-		if (!nameSet){
-			nameSet = true;
-			createName();
-		}
-	}
-
 	public void removePlayer(ArenaPlayer p) {
 		for (Team t: oldTeams){
 			if (t.hasMember(p)){
 				oldTeams.remove(t);
-				nameSet = false;
+				nameChanged = true;
 				break;
 			}
 		}
@@ -114,4 +88,5 @@ public class CompositeTeam extends AbstractTeam{
 	public Collection<Team> getOldTeams(){
 		return oldTeams;
 	}
+
 }

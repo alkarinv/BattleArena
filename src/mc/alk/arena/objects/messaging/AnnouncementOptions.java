@@ -6,6 +6,7 @@ import java.util.Map;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.util.Log;
+import net.milkbowl.vault.chat.Chat;
 
 import com.dthielke.herochat.Herochat;
 public class AnnouncementOptions {
@@ -29,6 +30,8 @@ public class AnnouncementOptions {
 
 	static AnnouncementOptions defaultOptions;
 	public static Herochat hc = null;
+	public static Chat chat = null;
+
 	Map<MatchState, Map<AnnouncementOption,Object>> matchOptions =
 			new EnumMap<MatchState, Map<AnnouncementOption,Object>>(MatchState.class);
 	Map<MatchState, Map<AnnouncementOption,Object>> eventOptions =

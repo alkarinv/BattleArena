@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
@@ -15,7 +16,7 @@ import mc.alk.arena.util.TeamUtil;
 
 import org.bukkit.Location;
 
-public class JoinOptions {
+public class JoinOptions extends ArenaSize{
 	public static enum JoinOption{
 		ARENA("<arena>",false), TEAM("<team>",false), TEAMSIZE("<teamSize>",false);
 
@@ -59,11 +60,7 @@ public class JoinOptions {
 	}
 
 	public boolean matches(MatchParams params) {
-		if (options.containsKey(JoinOption.TEAMSIZE)){
-			WantedTeamSizePair wtsp = (WantedTeamSizePair)options.get(JoinOption.TEAMSIZE);
-			return wtsp.manuallySet ? params.matchesTeamSize(getTeamSize()) : true;
-		}
-		return true;
+		return matchesTeamSize(params);
 	}
 
 	public boolean nearby(Arena arena, double distance) {
@@ -104,7 +101,12 @@ public class JoinOptions {
 		Arena arena = null;
 		String lastArg = args.length - 1 >= 0 ? args[args.length-1] : "";
 		final WantedTeamSizePair teamSize = WantedTeamSizePair.getWantedTeamSize(player,t,mp,lastArg);
-		int length = teamSize.manuallySet ? args.length -1 : args.length;
+		int length = args.length;
+		if (teamSize.manuallySet){
+			length = args.length -1;
+			jos.setTeamSize(teamSize.size);
+		}
+//		int length = teamSize.manuallySet ? args.length -1 : args.length;
 		ops.put(JoinOption.TEAMSIZE, teamSize);
 		for (int i=0;i<length;i++){
 			String op = args[i];

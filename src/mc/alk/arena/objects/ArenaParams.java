@@ -7,29 +7,15 @@ import java.util.List;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.arenas.ArenaType;
-import mc.alk.arena.util.Util.MinMax;
 
 
 
-public class ArenaParams {
-	public static final int MAX = Integer.MAX_VALUE-2;
-
-	Integer minTeamSize = 1;
-	Integer maxTeamSize = MAX;
-
-	Integer preferredMinTeamSize = minTeamSize;
-	Integer preferredMaxTeamSize = maxTeamSize;
-
-	Integer minTeams = MAX;
-	Integer maxTeams = MAX;
-
-	ArenaType arenaType = ArenaType.ANY;
+public class ArenaParams extends ArenaSize{
+	ArenaType arenaType;
 	Rating rating = Rating.ANY;
 
 	String name;
 	String cmd;
-
-	int maxNumberPlayers = MAX;
 
 	int timeBetweenRounds = Defaults.TIME_BETWEEN_ROUNDS;
 	int secondsTillMatch = Defaults.SECONDS_TILL_MATCH;
@@ -38,55 +24,27 @@ public class ArenaParams {
 //	MatchTransitions allTops;
 	String dbName;
 
-	public ArenaParams(ArenaType at,Rating rating) {
+	public ArenaParams(ArenaType at) {
+		super();
 		this.arenaType = at;
-		this.rating = rating;
-		calcMaxPlayers();
 	}
 
 	public ArenaParams(ArenaParams ap) {
+		super(ap);
 		if (this == ap)
 			return;
 		this.arenaType = ap.arenaType;
 		this.rating = ap.rating;
-		this.minTeamSize = ap.minTeamSize;
-		this.maxTeamSize = ap.maxTeamSize;
-		this.preferredMaxTeamSize = ap.preferredMaxTeamSize;
-		this.preferredMinTeamSize = ap.preferredMinTeamSize;
-		this.minTeams = ap.minTeams;
-		this.maxTeams = ap.maxTeams;
 		this.cmd = ap.cmd;
 		this.name = ap.name;
 		this.timeBetweenRounds = ap.timeBetweenRounds;
 		this.secondsTillMatch = ap.secondsTillMatch;
 		this.secondsToLoot = ap.secondsToLoot;
 		this.dbName = ap.dbName;
-		calcMaxPlayers();
 	}
 
 	public MatchTransitions getTransitionOptions(){
 		return ParamController.getTransitionOptions(this);
-	}
-
-	public ArenaParams(MinMax teamSize, ArenaType arenaType) {
-		this.minTeamSize = teamSize.min;
-		this.maxTeamSize = teamSize.max;
-		this.arenaType = arenaType;
-		calcMaxPlayers();
-	}
-	public ArenaParams(Integer minTeamSize, Integer maxTeamSize, ArenaType at){
-		this.minTeamSize = minTeamSize;
-		this.maxTeamSize = maxTeamSize;
-		this.arenaType = at;
-		calcMaxPlayers();
-	}
-
-	private void calcMaxPlayers() {
-		if (maxTeams == ArenaParams.MAX || maxTeamSize == ArenaParams.MAX){
-			maxNumberPlayers = ArenaParams.MAX;
-		} else {
-			maxNumberPlayers = maxTeams * maxTeamSize;
-		}
 	}
 
 	public static String rangeString(final int min,final int max){
@@ -102,20 +60,9 @@ public class ArenaParams {
 	public void setType(ArenaType type) {this.arenaType = type;}
 
 	public boolean matches(final ArenaParams ap) {
-		return ( ((arenaType == null || ap.arenaType == null) || arenaType.matches(ap.arenaType)) &&
+		return ( !(arenaType == null && ap.arenaType == null) && arenaType.matches(ap.arenaType) &&
 				matchesTeamSize(ap) &&
 				matchesNTeams(ap));
-	}
-
-
-	public boolean matchesNTeams(final ArenaParams params) {
-		final int min = Math.max(params.minTeams, minTeams);
-		final int max = Math.min(params.maxTeams, maxTeams);
-		return min <= max;
-	}
-
-	public boolean matchesNTeams(int nteams) {
-		return minTeams<= nteams && nteams<=maxTeams;
 	}
 
 	public Collection<String> getInvalidMatchReasons(ArenaParams ap) {
@@ -142,63 +89,6 @@ public class ArenaParams {
 		if (minTeamSize > maxTeamSize) reasons.add("Min Team Size is greater than Max Team Size " + minTeamSize+":"+ maxTeamSize);
 		if (minTeams > maxTeams) reasons.add("Min Teams is greater than Max Teams" + minTeams+":"+ maxTeams);
 		return reasons;
-	}
-
-	public boolean matchesTeamSize(final ArenaParams params) {
-		final int min = Math.max(params.minTeamSize, minTeamSize);
-		final int max = Math.min(params.maxTeamSize, maxTeamSize);
-		return min <= max;
-	}
-
-	public boolean matchesTeamSize(int i) {
-		return minTeamSize <= i && i <= maxTeamSize;
-	}
-	public void setTeamSize(int size) {
-		preferredMinTeamSize = preferredMaxTeamSize = minTeamSize = maxTeamSize = size;
-		calcMaxPlayers();
-	}
-
-	public void setTeamSizes(MinMax mm) {
-		preferredMinTeamSize = minTeamSize = mm.min;
-		preferredMaxTeamSize = maxTeamSize = mm.max;
-		calcMaxPlayers();
-	}
-	public void setNTeams(MinMax mm) {
-		minTeams = mm.min;
-		maxTeams = mm.max;
-		calcMaxPlayers();
-	}
-
-	public int getMaxPlayers(){return maxNumberPlayers;}
-	public int getMinTeams() {return minTeams;}
-	public int getMaxTeams() {return maxTeams;}
-	public void setMinTeams(Integer nteams) {this.minTeams = nteams;}
-	public void setMaxTeams(Integer nteams) {
-		this.maxTeams = nteams;
-		calcMaxPlayers();
-	}
-
-	public void setMinTeamSize(int size) {minTeamSize=size;}
-	public void setMaxTeamSize(int size) {
-		maxTeamSize=size;
-		calcMaxPlayers();
-	}
-	public int getMinTeamSize() {return minTeamSize;}
-	public int getMaxTeamSize() {return maxTeamSize;}
-
-	public Integer getPreferredMinTeamSize() {
-		return preferredMinTeamSize;
-	}
-	public void setPreferredMinTeamSize(Integer preferredMinTeamSize) {
-		this.preferredMinTeamSize = preferredMinTeamSize;
-	}
-	public Integer getPreferredMaxTeamSize() {
-		return preferredMaxTeamSize;
-	}
-	public void setPreferredMaxTeamSize(Integer preferredMaxTeamSize) {
-		this.preferredMaxTeamSize = preferredMaxTeamSize;
-		calcMaxPlayers();
-
 	}
 
 	public String getCommand() {
@@ -263,19 +153,6 @@ public class ArenaParams {
 	public boolean intersect(ArenaParams params) {
 		if (!getType().matches(params.getType()))
 			return false;
-		minTeams = Math.max(params.minTeams, minTeams);
-		maxTeams = Math.min(params.maxTeams, maxTeams);
-		minTeamSize = Math.max(params.minTeamSize, minTeamSize);
-		maxTeamSize = Math.min(params.maxTeamSize, maxTeamSize);
-		calcMaxPlayers();
-		return (minTeams <= maxTeams && minTeamSize <= maxTeamSize);
+		return super.intersect(params);
 	}
-	public boolean intersectTeamSize(int size) {
-		if (minTeamSize > size || maxTeamSize < size)
-			return false;
-		minTeamSize = size;
-		maxTeamSize = size;
-		return true;
-	}
-
 }

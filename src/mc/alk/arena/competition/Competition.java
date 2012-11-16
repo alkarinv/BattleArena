@@ -21,7 +21,7 @@ import mc.alk.arena.objects.teams.Team;
 public abstract class Competition {
 
 	/** Our teams */
-	protected final List<Team> teams = new ArrayList<Team>();
+	protected List<Team> teams = new ArrayList<Team>();
 
 	/** Our Transition Controller that will handle transition from one state to the next*/
 	protected final TransitionMethodController tmc = new TransitionMethodController();
@@ -90,12 +90,25 @@ public abstract class Competition {
 	public abstract void addedToTeam(Team team, ArenaPlayer player);
 
 	/**
+	 * Signify that the set of players were removed from the team
+	 * @param t
+	 * @param players
+	 */
+	public abstract void removedFromTeam(Team team, Collection<ArenaPlayer> players);
+
+	/**
+	 * Signify that the set of players were added to the team
+	 * @param t
+	 * @param players
+	 */
+	public abstract void removedFromTeam(Team team, ArenaPlayer player);
+
+	/**
 	 * Set our teams
 	 * @param teams
 	 */
 	public void setTeams(List<Team> teams){
-		this.teams.clear();
-		this.teams.addAll(teams);
+		this.teams = teams;
 	}
 
 	/**

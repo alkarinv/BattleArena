@@ -99,20 +99,23 @@ public class ConfigSerializer extends BaseSerializer{
 		ArenaType at;
 		if (cs.contains("arenaType")){
 			at = ArenaType.fromString(cs.getString("arenaType"));
+			if (at == null)
+				throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
 		} else if (cs.contains("type")){ /// old config option for setting arenaType
 			String type = cs.getString("type");
 			at = ArenaType.fromString(type);
 			if (at == null && type != null && !type.isEmpty()){ /// User is trying to make a custom type... let them
 				at = ArenaType.register(type, Arena.class, plugin);
 			}
+			if (at == null)
+				throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
 		} else {
 			at = ArenaType.fromString(cs.getName()); /// Get it from the configuration section name
-			if (at == null)
-				at = ArenaType.VERSUS; /// Default arena Type
 		}
-
 		if (at == null)
-			throw new ConfigException("Could not parse arena type: valid types. " + ArenaType.getValidList());
+			at = ArenaType.fromString("Arena");
+		if (at == null)
+			throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
 
 		/// What is the default rating for this match type
 		Rating rating = cs.contains("rated") ? Rating.fromBoolean(cs.getBoolean("rated")) : Rating.RATED;
@@ -137,8 +140,6 @@ public class ConfigSerializer extends BaseSerializer{
 		Integer maxTeams = cs.contains("maxTeams") ? cs.getInt("maxTeams") : ArenaParams.MAX;
 		Integer minTeamSize = cs.contains("minTeamSize") ? cs.getInt("minTeamSize") : 1;
 		Integer maxTeamSize = cs.contains("maxTeamSize") ? cs.getInt("maxTeamSize") : ArenaParams.MAX;
-		Integer pminTeamSize = cs.contains("preferredMinTeamSize") ? cs.getInt("preferredMinTeamSize") : minTeamSize;
-		Integer pmaxTeamSize = cs.contains("preferredMaxTeamSize") ? cs.getInt("preferredMaxTeamSize") : maxTeamSize;
 		if (cs.contains("teamSize")) {
 			MinMax mm = MinMax.valueOf(cs.getString("teamSize"));
 			minTeamSize = mm.min;
@@ -148,11 +149,6 @@ public class ConfigSerializer extends BaseSerializer{
 			MinMax mm = MinMax.valueOf(cs.getString("nTeams"));
 			minTeams = mm.min;
 			maxTeams = mm.max;
-		}
-		if (cs.contains("preferredTeamSize")) {
-			MinMax mm = MinMax.valueOf(cs.getString("preferredTeamSize"));
-			pminTeamSize = mm.min;
-			pmaxTeamSize = mm.max;
 		}
 		MatchParams pi = match ? new MatchParams(at, rating,vt) : new EventParams(at,rating, vt);
 
@@ -170,8 +166,6 @@ public class ConfigSerializer extends BaseSerializer{
 		pi.setMaxTeams(maxTeams);
 		pi.setMinTeamSize(minTeamSize);
 		pi.setMaxTeamSize(maxTeamSize);
-		pi.setPreferredMinTeamSize(pminTeamSize);
-		pi.setPreferredMaxTeamSize(pmaxTeamSize);
 
 		pi.setTimeBetweenRounds( cs.contains("timeBetweenRounds") ? cs.getInt("timeBetweenRounds") : Defaults.TIME_BETWEEN_ROUNDS);
 		pi.setSecondsToLoot( cs.contains("secondsToLoot") ? cs.getInt("secondsToLoot") : Defaults.SECONDS_TO_LOOT);
@@ -237,15 +231,15 @@ public class ConfigSerializer extends BaseSerializer{
 				continue;
 			}
 			if (tops == null){
-				allTops.removeOptions(transition);
+				allTops.removeTransitionOptions(transition);
 				continue;}
 			if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + transition +" "+tops);
 			if (transition == MatchState.ONCOMPLETE){
 				TransitionOptions cancelOps = new TransitionOptions(tops);
-				allTops.addTransition(MatchState.ONCANCEL, cancelOps);
+				allTops.addTransitionOptions(MatchState.ONCANCEL, cancelOps);
 				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
 			}
-			allTops.addTransition(transition,tops);
+			allTops.addTransitionOptions(transition,tops);
 		}
 		ParamController.setTransitionOptions(pi, allTops);
 		//		pi.setAllTransitionOptions(allTops);

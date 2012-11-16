@@ -7,23 +7,23 @@ import java.util.List;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event.TeamSizeComparator;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.JoinOptions.JoinOption;
-import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamFactory;
 
 public class AddToLeastFullTeam extends TeamJoinHandler {
 
-	public AddToLeastFullTeam(Competition competition) throws NeverWouldJoinException{
-		super(competition);
+	public AddToLeastFullTeam(MatchParams params, Competition competition, Class<? extends Team> clazz) throws NeverWouldJoinException{
+		super(params,competition,clazz);
 		if (maxTeams == ArenaParams.MAX)
 			throw new NeverWouldJoinException("If you add players by adding them to the next team in the list, there must be a finite number of players");
 		/// Lets add in all our teams first
-		for (int i=0;i<maxTeams;i++){
-			CompositeTeam ct = TeamFactory.createCompositeTeam();
-			competition.addTeam(ct);
+		for (int i=0;i<minTeams;i++){
+			Team team = TeamFactory.createTeam(clazz);
+			addTeam(team);
 		}
 	}
 
@@ -36,8 +36,8 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 		if (jo != null && jo.hasOption(JoinOption.TEAM)){
 			Integer index = (Integer) jo.getOption(JoinOption.TEAM);
 			if (index < maxTeams){ /// they specified a team index within range
-				Team t= teams.get(index);
-				TeamJoinResult tjr = teamFits(team, t);
+				Team baseTeam= teams.get(index);
+				TeamJoinResult tjr = teamFits(baseTeam, team);
 				if (tjr != CANTFIT)
 					return tjr;
 			}
@@ -45,22 +45,18 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 		/// Try to fit them with an existing team
 		List<Team> sortedBySize = new ArrayList<Team>(teams);
 		Collections.sort(sortedBySize, new TeamSizeComparator());
-		for (int i=0;i<sortedBySize.size();i++){
-			Team t = sortedBySize.get(i);
-			TeamJoinResult tjr = teamFits(team, t);
-//			System.out.println("@@@@@@@@@@@@ teams.size()=" + teams.size() +"   " + t.size() +"    " + tjr);
+		for (Team baseTeam : sortedBySize){
+			TeamJoinResult tjr = teamFits(baseTeam, team);
 			if (tjr != CANTFIT)
 				return tjr;
 		}
 		return CANTFIT; /// we couldnt find a place for them
 	}
 
-	private TeamJoinResult teamFits(Team team, Team t) {
-		if ( team.size() + t.size() <= maxTeamSize){
-			CompositeTeam ct = (CompositeTeam) t;
-			competition.addedToTeam(t,team.getPlayers());
-			ct.addTeam(team);
-			return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING, minTeamSize - t.size(),t);
+	private TeamJoinResult teamFits(Team baseTeam, Team team) {
+		if ( baseTeam.size() + team.size() <= maxTeamSize){
+			addToTeam(baseTeam, team.getPlayers());
+			return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING, minTeamSize - baseTeam.size(),baseTeam);
 		}
 		return CANTFIT;
 	}

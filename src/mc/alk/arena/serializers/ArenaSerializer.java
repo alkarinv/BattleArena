@@ -157,8 +157,6 @@ public class ArenaSerializer {
 		Integer maxTeams = cs.contains("maxTeams") ? cs.getInt("maxTeams") : ArenaParams.MAX;
 		Integer minTeamSize = cs.contains("minTeamSize") ? cs.getInt("minTeamSize") : 1;
 		Integer maxTeamSize = cs.contains("maxTeamSize") ? cs.getInt("maxTeamSize") : ArenaParams.MAX;
-		Integer pminTeamSize = cs.contains("preferredMinTeamSize") ? cs.getInt("preferredMinTeamSize") : minTeamSize;
-		Integer pmaxTeamSize = cs.contains("preferredMaxTeamSize") ? cs.getInt("preferredMaxTeamSize") : maxTeamSize;
 		if (cs.contains("teamSize")) {
 			MinMax mm = MinMax.valueOf(cs.getString("teamSize"));
 			minTeamSize = mm.min;
@@ -168,11 +166,6 @@ public class ArenaSerializer {
 			MinMax mm = MinMax.valueOf(cs.getString("nTeams"));
 			minTeams = mm.min;
 			maxTeams = mm.max;
-		}
-		if (cs.contains("preferredTeamSize")) {
-			MinMax mm = MinMax.valueOf(cs.getString("preferredTeamSize"));
-			pminTeamSize = mm.min;
-			pmaxTeamSize = mm.max;
 		}
 
 		if (minTeams == 0 || maxTeams == 0){
@@ -185,13 +178,11 @@ public class ArenaSerializer {
 			Log.err(" Arena type not found for " + name);
 			return false;
 		}
-		ArenaParams q = new ArenaParams(minTeamSize,maxTeamSize,atype);
+		ArenaParams q = new ArenaParams(atype);
 		q.setMinTeams(minTeams);
 		q.setMaxTeams(maxTeams);
 		q.setMinTeamSize(minTeamSize);
 		q.setMaxTeamSize(maxTeamSize);
-		q.setPreferredMinTeamSize(pminTeamSize);
-		q.setPreferredMaxTeamSize(pmaxTeamSize);
 
 		if (!q.valid()){
 			Log.err( name + " This arena is not valid arenaq=" + q.toString());

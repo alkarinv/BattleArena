@@ -11,6 +11,10 @@ import mc.alk.arena.util.MessageUtil;
 public class FormingTeam extends AbstractTeam{
 	Set<ArenaPlayer> joined_players = new HashSet<ArenaPlayer>();
 
+	public FormingTeam(){
+		super();
+	}
+
 	public FormingTeam(ArenaPlayer p, Set<ArenaPlayer> teammates) {
 		super(p,teammates);
 		joined_players.add(p);

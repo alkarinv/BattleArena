@@ -21,7 +21,6 @@ import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.EventScheduler;
 import mc.alk.arena.controllers.MethodController;
-import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
@@ -156,7 +155,6 @@ public class BattleArena extends JavaPlugin{
 
 		cc.loadAll(); /// Load our defaults for BattleArena
 
-		MoneyController.setup();
 		/// persist our disabled arena types
 		StateFlagSerializer sfs = new StateFlagSerializer();
 		sfs.setConfig(dir.getPath() +"/state.yml");

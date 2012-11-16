@@ -79,7 +79,12 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	}
 
 	private void unhandle(Match match) {
-		for (Team team : match.getTeams()){
+		Collection<Team> teams = match.getOriginalTeams();
+		if (teams == null)
+			teams = match.getTeams();
+		if (teams == null)
+			return;
+		for (Team team : teams){
 			if (team instanceof CompositeTeam){
 				for (Team t: ((CompositeTeam)team).getOldTeams()){
 					TeamController.removeTeamHandler(t, this);
@@ -227,6 +232,8 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		for (Arena a : allarenas.values()){
 			if (a.valid() && a.matches(mp,jp)){
 				return a;}
+			if (a.getArenaType() != mp.getType())
+				continue;
 			int m2 = a.getParameters().getMinTeamSize();
 			if (m2 > m1 && m2 -m1 < sizeDif){
 				sizeDif = m2 - m1;
@@ -435,7 +442,6 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 
 		amq.stop();
 		amq.removeAllArenas(arenaType);
-		amq.clearTeamQueues(arenaType);
 		synchronized(allarenas){
 			for (String aName: allarenas.keySet()){
 				Arena a = allarenas.get(aName);
@@ -444,15 +450,21 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 			}
 		}
 		amq.resume();
-
 	}
 
 	public void cancelAllArenas() {
+		amq.stop();
+		amq.clearTeamQueues();
 		synchronized(running_matches){
 			for (Match am: running_matches){
 				am.cancelMatch();
 			}
 		}
+		amq.resume();
+	}
+
+	public void resume() {
+		amq.resume();
 	}
 
 	public Collection<Team> purgeQueue() {
@@ -464,6 +476,4 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	public boolean hasRunningMatches() {
 		return !running_matches.isEmpty();
 	}
-
-
 }

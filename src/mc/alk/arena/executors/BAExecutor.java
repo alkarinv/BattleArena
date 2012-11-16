@@ -30,7 +30,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
@@ -155,10 +154,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 		try {
 			jp = JoinOptions.parseOptions(mp,t, player, Arrays.copyOfRange(args, 1, args.length));
 			wtsr = (WantedTeamSizePair) jp.getOption(JoinOption.TEAMSIZE);
-			if (wtsr.manuallySet)
-				mp.setTeamSize(wtsr.size);
-			else
-				mp.setMinTeamSize(Math.max(t.size(), mp.getMinTeamSize()));
+			if (wtsr.manuallySet){
+				mp.intersect(jp);
+			} else {
+				mp.setTeamSize(Math.max(t.size(), mp.getMinTeamSize()));}
 			t.setJoinPreferences(jp);
 		} catch (InvalidOptionException e) {
 			return sendMessage(player, e.getMessage());
@@ -247,7 +246,14 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 		/// Are they even in a queue?
 		if(!(ac.isInQue(p))){
-			return sendMessage(p,"&eYou are not currently in a queue, use /arena join");}
+			Team t = TeamController.getTeam(p);
+			if (t != null){
+				TeamController.removeTeamHandlers(t);
+				return sendMessage(p, "&eYou have left");
+			} else {
+				return sendMessage(p,"&eYou are not currently in a queue, use /arena join");
+			}
+		}
 		Team t = teamc.getSelfFormedTeam(p); /// They are in the queue, they are part of a team
 		ParamTeamPair qtp = ac.removeFromQue(p);
 		if (t!= null && t.size() > 1){
@@ -288,7 +294,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 		ac.purgeQueue();
 		ac.cancelAllArenas();
 		ec.cancelAll();
-		return sendMessage(sender,"&2You have cancelled all matches/events");
+		TeamController.removeAllHandlers();
+		return sendMessage(sender,"&2You have cancelled all matches/events and cleared the queue");
 	}
 
 	@MCCommand(cmds={"status"}, admin=true,min=2,usage="status <arena or player>")
@@ -441,6 +448,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			MessageSerializer.reloadConfig(mp.getName());
 			ArenaSerializer.loadAllArenas(plugin, mp.getType());
 		}
+		ac.resume();
 		return sendMessage(sender, "&6" + plugin.getName()+"&e configuration reloaded");
 	}
 
@@ -519,15 +527,13 @@ public class BAExecutor extends CustomCommandExecutor  {
 			return sendMessage(sender, "&cThere is already an arena named &6"+name);}
 		Player p = (Player) sender;
 
-		ArenaParams ap = new ArenaParams(ArenaType.ANY, Rating.ANY);
+		ArenaParams ap = new ArenaParams(mp.getType());
 		try{
 			ap.setTeamSizes(MinMax.valueOf(strTeamSize));
 			ap.setNTeams(MinMax.valueOf(strNTeams));
 		} catch(Exception e){
 			return sendMessage(sender,"That size not recognized.  Examples: 1 or 2 or 1-5 or 2+");
 		}
-
-		ap.setType(mp.getType());
 
 		Arena arena = ArenaType.createArena(name, ap);
 		arena.setSpawnLoc(0, p.getLocation());

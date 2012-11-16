@@ -1,8 +1,10 @@
 package mc.alk.arena.listeners;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.HeroesInterface;
 import mc.alk.arena.controllers.MobArenaInterface;
+import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.TagAPIInterface;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
@@ -10,12 +12,15 @@ import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.tracker.Tracker;
+import net.milkbowl.vault.chat.Chat;
+import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import pgDev.bukkit.DisguiseCraft.DisguiseCraft;
 
@@ -34,7 +39,7 @@ public class BAPluginListener implements Listener {
 		if (event.getPlugin().getName() == "BattleTracker")
 			loadBT();
 		else if (event.getPlugin().getName() == "MassDisguise")
-			loadMD();
+			loadDisguiseCraft();
 		else if (event.getPlugin().getName() == "MultiInv")
 			loadMultiInv();
 		else if (event.getPlugin().getName() == "Multiverse-Inventories")
@@ -53,10 +58,14 @@ public class BAPluginListener implements Listener {
 			loadHeroes();
 		else if (event.getPlugin().getName() == "TagAPI")
 			loadTagAPI();
+		else if (event.getPlugin().getName() == "Vault")
+			loadVault();
+		else if (event.getPlugin().getName() == "Register")
+			loadRegister();
 	}
 
 	public void loadAll(){
-		loadMD();
+		loadDisguiseCraft();
 		loadBT();
 		loadHeroChat();
 		loadWorldEdit();
@@ -67,27 +76,16 @@ public class BAPluginListener implements Listener {
 		loadMobArena();
 		loadHeroes();
 		loadTagAPI();
+		loadVault();
+		loadRegister();
 	}
 
-	public void loadHeroChat(){
-		if (AnnouncementOptions.hc == null){
-			Plugin plugin = Bukkit.getPluginManager().getPlugin("Herochat");
-			if (plugin != null) {
-				AnnouncementOptions.setHerochat((Herochat) plugin);
-			} else {
-				Log.info("[BattleArena] Herochat not detected, ignoring Herochat channel options");
-			}
-		}
-
-	}
-
-	public void loadMD(){
+	public void loadDisguiseCraft(){
 		if (DisguiseInterface.disguiseInterface == null){
-			Plugin plugin = Bukkit.getPluginManager().getPlugin("MassDisguise");
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("DisguiseCraft");
 			if (plugin != null) {
 				DisguiseInterface.disguiseInterface = DisguiseCraft.getAPI();
-			} else {
-				Log.info("[BattleArena] DisguiseCraft not detected, ignoring disguises");
+				Log.info("[BattleArena] DisguiseCraft detected, enabling disguises");
 			}
 		}
 	}
@@ -176,6 +174,18 @@ public class BAPluginListener implements Listener {
 		}
 	}
 
+	public void loadHeroChat(){
+		if (AnnouncementOptions.hc == null){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Herochat");
+			if (plugin != null) {
+				AnnouncementOptions.setHerochat((Herochat) plugin);
+			} else {
+				Log.info("[BattleArena] Herochat not detected, ignoring Herochat channel options");
+			}
+		}
+	}
+
+
 	public void loadTagAPI(){
 		if (!TagAPIInterface.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("TagAPI");
@@ -186,4 +196,41 @@ public class BAPluginListener implements Listener {
 		}
 	}
 
+	public void loadVault(){
+		Plugin plugin = Bukkit.getPluginManager().getPlugin("Vault");
+		if (plugin != null ){
+			/// Load vault economy
+			if (!MoneyController.hasVaultEconomy()){
+				RegisteredServiceProvider<Economy> provider = Bukkit.getServer().
+						getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+				if (provider==null || provider.getProvider() == null){
+					Log.warn(BattleArena.getPName() +" found no economy plugin. Attempts to use money in arenas might result in errors.");
+					return;
+				} else {
+					MoneyController.setEconomy(provider.getProvider());
+					Log.info(BattleArena.getPName() +" found economy plugin Vault. [Default]");
+				}
+			}
+			/// Load Vault chat
+			if (AnnouncementOptions.chat == null){
+				RegisteredServiceProvider<Chat> provider = Bukkit.getServer().
+						getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
+				if (plugin != null) {
+					AnnouncementOptions.setHerochat((Herochat) plugin);
+				} else {
+					Log.info("[BattleArena] Herochat not detected, ignoring Herochat channel options");
+				}
+			}
+		}
+	}
+
+	public void loadRegister(){
+		if (!MoneyController.hasVaultEconomy() && !MoneyController.hasRegisterEconomy()){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Register");
+			if (plugin != null){
+				MoneyController.setRegisterEconomy();
+				Log.info(BattleArena.getPName() +" found economy plugin Register");
+			}
+		}
+	}
 }

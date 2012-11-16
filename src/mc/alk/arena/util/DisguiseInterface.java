@@ -17,10 +17,17 @@ public class DisguiseInterface {
 
 	public static void disguisePlayer(Player player, String disguiseAllAs) {
 		MobType type = MobType.fromString(disguiseAllAs);
-		if (type == null)
-			return;
-		Disguise d = new Disguise(player.getEntityId(), type);
-		disguiseInterface.disguisePlayer(player, d);
+		if (type == null){
+			return ;}
+		Disguise oldD = disguiseInterface.getDisguise(player);
+		if (oldD.mob == type){
+			return;}
+		Disguise d = new Disguise(disguiseInterface.newEntityID(), type);
+		if (disguiseInterface.isDisguised(player)){
+			disguiseInterface.changePlayerDisguise(player, d);
+		} else {
+			disguiseInterface.disguisePlayer(player, d);
+		}
 	}
 
 	public static boolean enabled() {

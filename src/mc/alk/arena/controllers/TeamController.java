@@ -50,7 +50,31 @@ public enum TeamController implements Listener, TeamHandler {
 	public static Team getTeamNotTeamController(ArenaPlayer player) {
 		return INSTANCE.handledTeamsNotTeamController(player);
 	}
+	public static void removeAllHandlers() {
+		INSTANCE.removeAllHandledTeams();
+	}
 
+	public static void removeTeamHandlers(Team t) {
+		INSTANCE.removeHandledTeam(t);
+	}
+	private void removeHandledTeam(Team t) {
+		synchronized(handlers){
+			List<TeamHandler> hs = handlers.remove(t);
+			if (hs != null){
+				for (TeamHandler th: hs){
+					for (ArenaPlayer ap: t.getPlayers()){
+						th.leave(ap);}
+				}
+			}
+		}
+	}
+	private void removeAllHandledTeams() {
+		selfFormedTeams.clear();
+		formingTeams.clear();
+		synchronized(handlers){
+			handlers.clear();
+		}
+	}
 	private Team handledTeams(ArenaPlayer p) {
 		synchronized(handlers){
 			for (Team t: handlers.keySet()){
@@ -288,4 +312,5 @@ public enum TeamController implements Listener, TeamHandler {
 	public boolean leave(ArenaPlayer p) {
 		return true;
 	}
+
 }

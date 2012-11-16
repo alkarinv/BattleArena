@@ -21,6 +21,8 @@ public abstract class AbstractTeam implements Team{
 	protected Set<ArenaPlayer> deadplayers = new HashSet<ArenaPlayer>();
 	protected Set<ArenaPlayer> leftplayers = new HashSet<ArenaPlayer>();
 
+	protected boolean nameManuallySet = false;
+	protected boolean nameChanged = true;
 	protected String name =null; /// Internal name of this team
 	protected String displayName =null; /// Display name
 
@@ -29,8 +31,6 @@ public abstract class AbstractTeam implements Team{
 
 	/// Pickup teams are transient in nature, once the match end they disband
 	protected boolean isPickupTeam = false;
-	/// This is only so that teleports can be done to slightly different places for each player
-	protected HashMap<String,Integer> playerIndexes = new HashMap<String,Integer>();
 
 	protected JoinOptions jp;
 
@@ -41,18 +41,18 @@ public abstract class AbstractTeam implements Team{
 
 	protected AbstractTeam(ArenaPlayer p) {
 		players.add(p);
-		createName();
+		nameChanged = true;
 	}
 
 	protected AbstractTeam(Collection<ArenaPlayer> teammates) {
 		this.players.addAll(teammates);
-		createName();
+		nameChanged = true;
 	}
 
-	protected AbstractTeam(ArenaPlayer p, Set<ArenaPlayer> teammates) {
+	protected AbstractTeam(ArenaPlayer p, Collection<ArenaPlayer> teammates) {
 		players.add(p);
 		players.addAll(teammates);
-		createName();
+		nameChanged = true;
 	}
 
 	@Override
@@ -61,22 +61,22 @@ public abstract class AbstractTeam implements Team{
 	}
 
 	protected void createName() {
+		if (nameManuallySet || !nameChanged){ ///
+			return;}
 		/// Sort the names and then append them together
-		playerIndexes.clear();
 		ArrayList<String> list = new ArrayList<String>(players.size());
 		for (ArenaPlayer p:players){list.add(p.getName());}
 		if (list.size() > 1)
 			Collections.sort(list);
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
-		int i=0;
 		for (String s: list){
 			if (!first) sb.append(", ");
 			sb.append(s);
 			first = false;
-			playerIndexes.put(s, i++);
 		}
 		name= sb.toString();
+		nameChanged = false;
 	}
 
 	public Set<ArenaPlayer> getPlayers() {return players;}
@@ -113,9 +113,15 @@ public abstract class AbstractTeam implements Team{
 	public void setPickupTeam(boolean isPickupTeam) {this.isPickupTeam = isPickupTeam;}
 	public void setHealth(int health) {for (ArenaPlayer p: players){p.setHealth(health);}}
 	public void setHunger(int hunger) {for (ArenaPlayer p: players){p.setFoodLevel(hunger);}}
-	public String getName() {return name;}
+	public String getName() {
+		createName();
+		return name;
+	}
 	public int getId(){ return id;}
-	public void setName(String name) {this.name = name;}
+	public void setName(String name) {
+		this.name = name;
+		this.nameManuallySet = true;
+	}
 	public void setAlive() {deadplayers.clear();}
 	public boolean isDead() {
 		if (deadplayers.size() >= players.size())
@@ -258,10 +264,6 @@ public abstract class AbstractTeam implements Team{
 		return sb.toString();
 	}
 
-	public int getPlayerIndex(ArenaPlayer p) {
-		return playerIndexes.get(p.getName());
-	}
-
 	public String getTeamSummary() {
 		StringBuilder sb = new StringBuilder("&6"+getDisplayName());
 		for (ArenaPlayer p: players){
@@ -286,7 +288,7 @@ public abstract class AbstractTeam implements Team{
 	}
 
 	public boolean hasSetName() {
-		return displayName != null;
+		return this.nameManuallySet;
 	}
 
 	public JoinOptions getJoinPreferences() {
@@ -304,6 +306,38 @@ public abstract class AbstractTeam implements Team{
 				priority = ap.getPriority();
 		}
 		return priority;
+	}
+
+	@Override
+	public void addPlayer(ArenaPlayer player) {
+		this.players.add(player);
+		this.nameChanged = true;
+	}
+
+	@Override
+	public void removePlayer(ArenaPlayer player) {
+		this.players.remove(player);
+		this.deadplayers.remove(player);
+		this.kills.remove(player);
+		this.deaths.remove(player);
+		this.nameChanged = true;
+	}
+
+	@Override
+	public void addPlayers(Collection<ArenaPlayer> players) {
+		this.players.addAll(players);
+		this.nameChanged = true;
+	}
+
+	@Override
+	public void removePlayers(Collection<ArenaPlayer> players) {
+		this.players.removeAll(players);
+		this.deadplayers.removeAll(players);
+		for (ArenaPlayer ap: players){
+			this.kills.remove(ap);
+			this.deaths.remove(ap);
+		}
+		this.nameChanged = true;
 	}
 
 }

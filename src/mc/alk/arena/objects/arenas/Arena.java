@@ -616,8 +616,7 @@ public class Arena implements ArenaListener {
 		final MatchTransitions tops = matchParams.getTransitionOptions();
 		if (tops == null)
 			return true;
-		final boolean mo = tops.hasOptions(TransitionOption.TELEPORTWAITROOM);
-		if (mo && (wrlocs == null || wrlocs.isEmpty()))
+		if ((wrlocs == null || wrlocs.isEmpty()) && tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM))
 			return false;
 		if (jp == null)
 			return true;
@@ -645,7 +644,7 @@ public class Arena implements ArenaListener {
 		reasons.addAll(getParameters().getInvalidMatchReasons(matchParams));
 		final MatchTransitions tops = matchParams.getTransitionOptions();
 		if (tops != null){
-			final boolean mo = tops.hasOptions(TransitionOption.TELEPORTWAITROOM);
+			final boolean mo = tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM);
 			if (mo && (wrlocs == null || wrlocs.isEmpty()))
 				reasons.add("Needs a waitroom but none has been provided");
 		}

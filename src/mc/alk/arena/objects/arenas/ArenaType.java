@@ -17,8 +17,6 @@ public class ArenaType implements Comparable<ArenaType>{
 	static public CaseInsensitiveMap<Class<? extends Arena>> classes = new CaseInsensitiveMap<Class<? extends Arena>>();
 	static public CaseInsensitiveMap<ArenaType> types = new CaseInsensitiveMap<ArenaType>();
 
-	public static ArenaType ANY = null;
-	public static ArenaType VERSUS = null;
 	static int count = 0;
 
 	final String name;
@@ -31,9 +29,6 @@ public class ArenaType implements Comparable<ArenaType>{
 		this.ownerPlugin = plugin;
 		if (!types.containsKey(name))
 			types.put(name,this);
-
-		if (name.equalsIgnoreCase("ANY")) ANY = this;
-		else if (name.equalsIgnoreCase("VERSUS")) { VERSUS = this;}
 	}
 	@Override
 	public String toString(){
@@ -41,18 +36,18 @@ public class ArenaType implements Comparable<ArenaType>{
 	}
 
 	public boolean matches(ArenaType arenaType) {
-		if (this == ANY || arenaType == ANY || this == arenaType) return true;
+		if (this == arenaType) return true;
 		return (compatibleTypes==null) ? false : compatibleTypes.contains(arenaType);
 	}
 
 	public Collection<String> getInvalidMatchReasons(ArenaType arenaType) {
 		List<String> reasons = new ArrayList<String>();
-		if (this != arenaType && this!=ANY && arenaType != ANY) reasons.add("Arena type is " + this +". You requested " + arenaType);
+		if (this != arenaType) reasons.add("Arena type is " + this +". You requested " + arenaType);
 		return reasons;
 	}
 
 	public String toPrettyString(int min, int max) {
-		if (this == ArenaType.VERSUS){
+		if (this.name.equals("ARENA") || this.name.equals("SKIRMISH")){
 			return min +"v" + max;
 		} else {
 			return toString();

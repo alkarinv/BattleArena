@@ -1,5 +1,6 @@
 package mc.alk.arena.objects.teams;
 
+import java.util.Collection;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
@@ -10,26 +11,39 @@ import org.bukkit.entity.Player;
 public interface Team {
 
 	public void init();
+
 	public Set<ArenaPlayer> getPlayers();
 
 	public Set<Player> getBukkitPlayers();
 
 	public Set<ArenaPlayer> getDeadPlayers();
+
 	public Set<ArenaPlayer> getLivingPlayers();
 
 	public boolean wouldBeDeadWithout(ArenaPlayer p);
 
 	public boolean hasMember(ArenaPlayer p);
+
 	public boolean hasAliveMember(ArenaPlayer p);
+
 	public boolean isPickupTeam();
+
 	public void setPickupTeam(boolean isPickupTeam);
-	public String getName();
+
 	public int getId();
+
+	public String getName();
+
 	public void setName(String name);
-	public void setAlive();
-	public boolean isDead();
+
 	public boolean hasSetName();
+
+	public void setAlive();
+
+	public boolean isDead();
+
 	public int size();
+
 	public void resetScores() ;
 
 	public void addDeath(ArenaPlayer teamMemberWhoDied);
@@ -41,6 +55,7 @@ public interface Team {
 	public int getNDeaths();
 
 	public Integer getNDeaths(ArenaPlayer p);
+
 	public Integer getNKills(ArenaPlayer p);
 
 	/**
@@ -64,13 +79,12 @@ public interface Team {
 	public void sendToOtherMembers(ArenaPlayer player, String message);
 
 	public String getDisplayName();
+
 	public void setDisplayName(String n);
 
 	public boolean hasTeam(Team team);
 
 	public String getTeamInfo(Set<String> insideMatch);
-
-	public int getPlayerIndex(ArenaPlayer p);
 
 	public String getTeamSummary();
 
@@ -82,5 +96,12 @@ public interface Team {
 
 	public int getPriority();
 
+	public void addPlayer(ArenaPlayer player);
+
+	public void removePlayer(ArenaPlayer player);
+
+	public void addPlayers(Collection<ArenaPlayer> players);
+
+	public void removePlayers(Collection<ArenaPlayer> players);
 }
 

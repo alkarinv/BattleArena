@@ -38,4 +38,10 @@ public class BlankCompetition extends Competition{
 	@Override
 	public void addedToTeam(Team team, ArenaPlayer player) {/* do nothing */}
 
+	@Override
+	public void removedFromTeam(Team team, Collection<ArenaPlayer> players) {/* do nothing */}
+
+	@Override
+	public void removedFromTeam(Team team, ArenaPlayer player) {/* do nothing */}
+
 }

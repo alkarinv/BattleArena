@@ -3,10 +3,12 @@ package mc.alk.arena.objects.queues;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.BlankCompetition;
@@ -15,6 +17,8 @@ import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
+import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinStatus;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.messaging.MatchMessageImpl;
 import mc.alk.arena.objects.ArenaParams;
@@ -27,7 +31,6 @@ import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.queues.TeamQueue.TeamQueueComparator;
-import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 
@@ -144,6 +147,8 @@ public class ArenaMatchQueue {
 	}
 
 	private Match findMatch(TeamQueue tq) {
+		if (suspend)
+			return null;
 		if (Defaults.DEBUG) System.out.println("findMatch " + tq +"  " + tq.size() +"  mp=" + tq.getMatchParams());
 		/// The idea here is we iterate through all arenas
 		/// See if one matches with the type of TeamQueue that we have been given
@@ -167,7 +172,9 @@ public class ArenaMatchQueue {
 						continue;
 					Match m = null;
 					try {
-						m = findMatch(newParams,a,tq);
+						MatchParams playerMatchAndArenaParams = new MatchParams(newParams);
+						playerMatchAndArenaParams.intersect(mp);
+						m = findMatch(playerMatchAndArenaParams,a,tq);
 					} catch (NeverWouldJoinException e) {
 						e.printStackTrace();
 						continue;
@@ -194,14 +201,10 @@ public class ArenaMatchQueue {
 	 * @throws NeverWouldJoinException
 	 */
 	private Match findMatch(final MatchParams params, Arena arena, final TeamQueue tq) throws NeverWouldJoinException {
-		Map<Team, QueueObject> qteams = new HashMap<Team, QueueObject>();
-		Competition comp = new BlankCompetition(params);
-		Competition lastValidComp = null;
-
-		TeamJoinHandler tjh = TeamJoinFactory.createTeamJoinHandler(comp);
 		/// Move all teams with the same team size together
 		List<QueueObject> newList = new LinkedList<QueueObject>();
 		List<QueueObject> delayed = new LinkedList<QueueObject>();
+		int totalSize =0;
 		for (QueueObject qo : tq){
 			MatchParams mp = qo.getMatchParams();
 			if (!mp.matches(params))
@@ -211,9 +214,18 @@ public class ArenaMatchQueue {
 			} else {
 				newList.add(qo);
 			}
+			totalSize += qo.size();
 		}
+		if (totalSize < params.getMinPlayers()) /// we don't have enough players to match these params
+			return null;
 		newList.addAll(delayed);
 
+		Map<ArenaPlayer, QueueObject> qteams = new HashMap<ArenaPlayer, QueueObject>();
+		Competition comp = new BlankCompetition(params);
+		//		Competition lastValidComp = null;
+
+		TeamJoinHandler tjh = TeamJoinFactory.createTeamJoinHandler(params, null);
+		boolean hasComp = false;
 		/// Now that we have a semi sorted list, get the largest number of teams that fit in this arena
 		for (QueueObject qo : newList){
 			if (qo instanceof MatchTeamQObject){ /// we have our teams already
@@ -225,36 +237,43 @@ public class ArenaMatchQueue {
 				JoinOptions jp = t.getJoinPreferences();
 				if (jp != null && !(jp.matches(arena) && jp.matches(params))){
 					continue;}
-				tjh.joiningTeam(t);
-				qteams.put(t, to);
+				TeamJoinResult tjr = tjh.joiningTeam(t);
+				if (tjr.status == TeamJoinStatus.CANT_FIT){
+					continue;
+				}
+				for (ArenaPlayer ap: t.getPlayers())
+					qteams.put(ap, to);
 			}
 			if (tjh.hasEnough(false)){ /// If we have enough teams, mark this as a valid competition and keep going
-				lastValidComp = comp;
-				comp = new BlankCompetition(params);
-				comp.setTeams(lastValidComp.getTeams());
-				tjh.setCompetition(comp);
+				hasComp = true;
+				comp.setTeams(tjh.getTeams());
+				if (tjh.isFull()){
+					break;
+				}
 			}
 		}
 
 		/// Get rid of the TeamJoinHandler, remove the arena from the queue, start up our match
 		tjh.deconstruct();
-		if (lastValidComp != null){
-			return getMatchAndRemove(tq, lastValidComp.getTeams(), qteams, arena, params);
+		if (hasComp){
+			return getMatchAndRemove(tq, comp.getTeams(), qteams, arena, params);
 		}
 		return null;
 	}
 
-	private Match getMatchAndRemove(TeamQueue tq, List<Team> teams, Map<Team, QueueObject> oteams, Arena a, MatchParams params) {
+	private Match getMatchAndRemove(TeamQueue tq, List<Team> teams, Map<ArenaPlayer, QueueObject> oteams, Arena a, MatchParams params) {
+		Set<Team> originalTeams = new HashSet<Team>();
 		for (Team t: teams){
-			tq.remove(oteams.get(t));
-
-			CompositeTeam ct = (CompositeTeam) t;
-			for (Team tt: ct.getOldTeams()){
-				tq.remove(oteams.get(tt));
+			originalTeams.add(t);
+			for (ArenaPlayer ap :t.getPlayers()){
+				Team originalTeam = oteams.get(ap).getTeam(ap);
+				originalTeams.add(originalTeam);
+				tq.remove(oteams.get(ap));
 			}
 		}
 		final Match m = new ArenaMatch(a, params);
 		m.onJoin(teams);
+		m.setOriginalTeams(originalTeams);
 		return m;
 	}
 
@@ -420,11 +439,9 @@ public class ArenaMatchQueue {
 		}
 	}
 
-	public void clearTeamQueues(ArenaType arenaType) {
+	public void clearTeamQueues() {
 		synchronized(tqs){
 			tqs.clear();
 		}
 	}
-
-
 }

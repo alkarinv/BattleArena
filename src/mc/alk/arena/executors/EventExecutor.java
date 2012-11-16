@@ -131,7 +131,7 @@ public class EventExecutor extends BAExecutor{
 		if (!event.isOpen() && !event.isRunning()){
 			return sendMessage(sender,"&eThere is no open "+event.getCommand()+" right now");}
 		int size = event.getNteams();
-		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(event.getTeamSize());
+		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(eventParams.getMaxTeamSize());
 		String arena =event instanceof ReservedArenaEvent? " &eArena=&5"+((ReservedArenaEvent) event).getArena().getName() : "";
 		sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers+arena);
 		StringBuilder sb = new StringBuilder(event.getInfo());
@@ -158,7 +158,7 @@ public class EventExecutor extends BAExecutor{
 		if (!event.isOpen()){
 			return sendMessage(sender,"&eThere is no open &6"+event.getCommand()+"&e right now");}
 		int size = event.getNteams();
-		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(event.getTeamSize());
+		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(eventParams.getMaxTeamSize());
 		return  sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers+" that have joined");
 	}
 
@@ -224,7 +224,7 @@ public class EventExecutor extends BAExecutor{
 			jp = null;
 		}
 		if (sq.getMaxTeamSize() < t.size()){
-			return sendMessage(p,"&cThis Event can only support up to &6" + sq.getSize()+"&e your team has &6"+t.size());}
+			return sendMessage(p,"&cThis Event can only support up to &6" + sq.getMaxTeamSize()+"&e your team has &6"+t.size());}
 
 		/// Now that we have options and teams, recheck the team for joining
 		if (!event.canJoin(t)){

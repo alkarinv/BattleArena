@@ -106,6 +106,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	List<MatchState> waitRoomStates = null; /// which states are inside a waitRoom
 	Long joinCutoffTime = null; /// at what point do we cut people off from joining
 	Integer currentTimer = null; /// Our current timer
+	Collection<Team> originalTeams = null;
 
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
@@ -140,17 +141,17 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		if (!(vt instanceof TimeLimit))
 			addVictoryCondition(new TimeLimit(this));
 		addVictoryCondition(vt);
-		boolean noEnter = tops.hasOptions(TransitionOption.WGNOENTER);
+		boolean noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
 		if (noEnter && arena.hasRegion())
 			WorldGuardInterface.setFlag(arena.getRegionWorld(), arena.getRegion(), WorldGuardFlag.ENTRY, !noEnter);
-		this.noLeave = tops.hasOptions(TransitionOption.WGNOLEAVE);
-		this.woolTeams = tops.hasOptions(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() >1 ||
-				tops.hasOptions(TransitionOption.ALWAYSWOOLTEAMS);
-		this.needsBlockEvents = tops.hasOptions(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF,
+		this.noLeave = tops.hasAnyOption(TransitionOption.WGNOLEAVE);
+		this.woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() >1 ||
+				tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS);
+		this.needsBlockEvents = tops.hasAnyOption(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF,
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
-		this.needsDamageEvents = tops.hasOptions(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
-		this.needsItemDropEvents = tops.hasOptions(TransitionOption.DROPITEMOFF);
-		this.alwaysTeamNames = tops.hasOptions(TransitionOption.ALWAYSTEAMNAMES);
+		this.needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
+		this.needsItemDropEvents = tops.hasAnyOption(TransitionOption.DROPITEMOFF);
+		this.alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
 		this.matchResult = new MatchResult();
 		TransitionOptions mo = tops.getOptions(MatchState.PREREQS);
 		this.needsClearInventory = mo != null ? mo.clearInventory() : false;
@@ -159,7 +160,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		mo = tops.getOptions(MatchState.ONDEATH);
 		this.clearsInventoryOnDeath = mo != null ? mo.clearInventory(): false;
 		this.respawns = mo != null ? (mo.respawn() || mo.randomRespawn()): false;
-		this.stopsTeleports = tops.hasOptions(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE);
+		this.stopsTeleports = tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE);
 		mo = tops.getOptions(MatchState.ONSPAWN);
 		this.respawnsWithClass = mo != null ? (mo.hasOption(TransitionOption.RESPAWNWITHCLASS)): false;
 
@@ -171,7 +172,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		}
 
 		/// Try and make a joinhandler out of our current params, but we don't care if it's null
-		try {joinHandler = TeamJoinFactory.createTeamJoinHandler(this);} catch (NeverWouldJoinException e) {}
+		try {joinHandler = TeamJoinFactory.createTeamJoinHandler(params,this);} catch (NeverWouldJoinException e) {}
 	}
 
 	private void updateBukkitEvents(MatchState matchState){
@@ -438,6 +439,22 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		event.callEvent(); /// Call bukkit listeners for this event
 	}
 
+
+	@Override
+	public void addTeam(Team team){
+		teams.add(team);
+		teamIndexes.put(team, teams.size());
+		startTracking(team);
+		team.setAlive();
+		team.resetScores();/// reset scores
+		TeamController.addTeamHandler(team, this);
+		for (ArenaPlayer p: team.getPlayers()){
+			arenaInterface.onJoin(p,team);}
+		if ( alwaysTeamNames || (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND)){
+			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
+		PerformTransition.transition(this, MatchState.ONJOIN, team, true);
+	}
+
 	/**
 	 * Add to an already existing team
 	 * @param p
@@ -466,18 +483,14 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	}
 
 	@Override
-	public void addTeam(Team team){
-		teams.add(team);
-		teamIndexes.put(team, teams.size());
-		startTracking(team);
-		team.setAlive();
-		team.resetScores();/// reset scores
-		TeamController.addTeamHandler(team, this);
-		for (ArenaPlayer p: team.getPlayers()){
-			arenaInterface.onJoin(p,team);}
-		if ( alwaysTeamNames || (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND)){
-			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
-		PerformTransition.transition(this, MatchState.ONJOIN, team, true);
+	public void removedFromTeam(Team team, Collection<ArenaPlayer> players) {
+		for (ArenaPlayer ap:players)
+			removedFromTeam(team,ap);
+	}
+
+	@Override
+	public void removedFromTeam(Team team, ArenaPlayer player) {
+		/* do nothing */
 	}
 
 	public void onJoin(Collection<Team> teams){
@@ -925,5 +938,12 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	@Override
 	public int getID(){
 		return id;
+	}
+
+	public void setOriginalTeams(Collection<Team> originalTeams) {
+		this.originalTeams = originalTeams;
+	}
+	public Collection<Team> getOriginalTeams(){
+		return originalTeams;
 	}
 }
