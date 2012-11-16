@@ -249,20 +249,25 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 			TeamController.removeTeamHandler(t,this);}
 		teams.clear();
 	}
-	public void removeTeam(Team t){
-		teams.remove(t);
-		TeamController.removeTeamHandler(t,this);
+
+	@Override
+	public boolean removeTeam(Team team){
+		if (teams.remove(team)){
+			TeamController.removeTeamHandler(team,this);
+			return true;
+		}
+		return false;
 	}
 
 
 	@Override
-	public void addTeam(Team t){
-		if (teams.contains(t)) /// adding a team twice is bad mmkay
+	public void addTeam(Team team){
+		if (teams.contains(team)) /// adding a team twice is bad mmkay
 			return;
-		TeamController.addTeamHandler(t, this);
-		new TeamJoinedEvent(this,t).callEvent();
-		teams.add(t);
-		mc.sendTeamJoinedEvent(t);
+		TeamController.addTeamHandler(team, this);
+		new TeamJoinedEvent(this,team).callEvent();
+		teams.add(team);
+		mc.sendTeamJoinedEvent(team);
 	}
 
 	public void addTeam(Player p){

@@ -1,5 +1,6 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.HeroesUtil;
 
 import org.bukkit.entity.Player;
@@ -7,6 +8,7 @@ import org.bukkit.plugin.Plugin;
 
 public class HeroesInterface {
 	static boolean hasHeroes = false;
+	HeroesUtil heroes = null;
 
 	public static boolean hasHeroClass(String className) {
 		if (!hasHeroes) return false;
@@ -47,4 +49,34 @@ public class HeroesInterface {
 			return;
 		HeroesUtil.deEnchant(p);
 	}
+
+	public static void createTeam(Team team) {
+		if (!hasHeroes)
+			return;
+		HeroesUtil.createTeam(team);
+	}
+
+	public static void removeTeam(Team team) {
+		if (!hasHeroes)
+			return;
+		HeroesUtil.removeTeam(team);
+	}
+
+	public static void addedToTeam(Team team, Player player) {
+		if (!hasHeroes)
+			return;
+		HeroesUtil.addedToTeam(team, player);
+	}
+
+	public static void removedFromTeam(Team team, Player player) {
+		if (!hasHeroes)
+			return;
+		HeroesUtil.removedFromTeam(team, player);
+	}
+	public static Team getTeam(Player player) {
+		if (!hasHeroes)
+			return null;
+		return HeroesUtil.getTeam(player);
+	}
+
 }

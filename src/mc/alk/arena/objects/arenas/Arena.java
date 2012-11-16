@@ -504,8 +504,10 @@ public class Arena implements ArenaListener {
 	void privateOnEnterWaitRoom(ArenaPlayer player, Team team){
 		try{onEnterWaitRoom(player,team);}catch(Exception e){e.printStackTrace();}
 	}
+
 	/**
 	 * private Arena onJoin events, calls onJoin for subclasses to be able to override
+	 * Happens when a player joins a team
 	 */
 	void privateOnJoin(ArenaPlayer player, Team team){
 		try{onJoin(player,team);}catch(Exception e){e.printStackTrace();}
@@ -513,6 +515,7 @@ public class Arena implements ArenaListener {
 
 	/**
 	 * private Arena onLeave events, calls onLeave for subclasses to be able to override
+	 * Happens when a player leaves a team
 	 */
 	void privateOnLeave(ArenaPlayer player, Team team){
 		try{onLeave(player,team);}catch(Exception e){e.printStackTrace();}

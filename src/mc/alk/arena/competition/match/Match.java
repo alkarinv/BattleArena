@@ -16,6 +16,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
+import mc.alk.arena.controllers.HeroesInterface;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TagAPIInterface;
@@ -439,7 +440,6 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		event.callEvent(); /// Call bukkit listeners for this event
 	}
 
-
 	@Override
 	public void addTeam(Team team){
 		teams.add(team);
@@ -453,6 +453,16 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		if ( alwaysTeamNames || (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND)){
 			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
 		PerformTransition.transition(this, MatchState.ONJOIN, team, true);
+		HeroesInterface.createTeam(team);
+	}
+
+	@Override
+	public boolean removeTeam(Team team){
+		if (teams.contains(team)){
+			onLeave(team);
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -467,6 +477,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		}
 		startTracking(player);
 		arenaInterface.onJoin(player,team);
+		HeroesInterface.addedToTeam(team, player.getPlayer());
 
 		PerformTransition.transition(this, MatchState.ONJOIN, player,team, true);
 	}
@@ -490,7 +501,10 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	@Override
 	public void removedFromTeam(Team team, ArenaPlayer player) {
-		/* do nothing */
+		for (ArenaPlayer p: team.getPlayers()){
+			arenaInterface.onLeave(p,team);
+			HeroesInterface.removedFromTeam(team, player.getPlayer());
+		}
 	}
 
 	public void onJoin(Collection<Team> teams){
@@ -526,14 +540,15 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	/**
 	 *
-	 * @param t
+	 * @param team
 	 */
-	public void onLeave(Team t) {
-		for (ArenaPlayer ap: t.getPlayers()){
-			onLeave(ap,t);
+	public void onLeave(Team team) {
+		for (ArenaPlayer ap: team.getPlayers()){
+			onLeave(ap,team);
 		}
-		teams.remove(t);
-		TeamController.removeTeamHandler(t, this);
+		teams.remove(team);
+		HeroesInterface.removeTeam(team);
+		TeamController.removeTeamHandler(team, this);
 	}
 
 	public void onLeave(ArenaPlayer p) {
@@ -542,12 +557,12 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		onLeave(p,t);
 	}
 
-	private void onLeave(ArenaPlayer ap, Team t){
-		t.killMember(ap);
+	private void onLeave(ArenaPlayer ap, Team team){
+		team.killMember(ap);
 		if (insideArena(ap)){ /// Only leave if they haven't already left.
-			PerformTransition.transition(this, MatchState.ONCANCEL, ap, t, false);
+			PerformTransition.transition(this, MatchState.ONCANCEL, ap, team, false);
 			leftPlayers.add(ap.getName());
-			t.playerLeft(ap);
+			team.playerLeft(ap);
 		}
 	}
 	/**

@@ -76,6 +76,13 @@ public abstract class Competition {
 	public abstract void addTeam(Team team);
 
 	/**
+	 * Remove the team from the competition
+	 * @param team
+	 * @return whether or not the team was removed
+	 */
+	public abstract boolean removeTeam(Team team);
+
+	/**
 	 * Signify that the set of players were added to the team
 	 * @param t
 	 * @param players

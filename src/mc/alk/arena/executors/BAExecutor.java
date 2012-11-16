@@ -146,8 +146,17 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 		/// Make a team for the new Player
 		Team t = teamc.getSelfFormedTeam(player);
-		if (t==null)
+		if (t==null) {
 			t = TeamController.createTeam(player);
+		} else {
+			for (ArenaPlayer p: t.getPlayers()){
+				if (p == player){
+					continue;}
+				if (!canJoin(p,true)){
+					return sendMessage(player, "&cOne of your teammates can't join the &6"+mp.getCommand());
+				}
+			}
+		}
 		mp = new MatchParams(mp);
 		JoinOptions jp;
 		WantedTeamSizePair wtsr = null;
@@ -764,38 +773,41 @@ public class BAExecutor extends CustomCommandExecutor  {
 		//		return true;
 	}
 
-	public boolean canJoin(ArenaPlayer p) {
+	public boolean canJoin(ArenaPlayer p){
+		return canJoin(p,true);
+	}
+	public boolean canJoin(ArenaPlayer p, boolean showMessages) {
 		/// Inside MobArena?
 		if (MobArenaInterface.hasMobArena()){
 			if (MobArenaInterface.insideMobArena(p)){
-				sendMessage(p,"&cYou need to finish with MobArena first!");
+				if (showMessages) sendMessage(p,"&cYou need to finish with MobArena first!");
 				return false;
 			}
 		}
 		if (HeroesInterface.enabled()){
 			if (HeroesInterface.isInCombat(p.getPlayer())){
-				sendMessage(p,"&cYou can't join the arena while in combat!");
+				if (showMessages) sendMessage(p,"&cYou can't join the arena while in combat!");
 				return false;
 			}
 		}
 		/// Inside an Event?
 		Event ae = insideEvent(p);
 		if (ae != null){
-			sendMessage(p, "&eYou need to leave the Event first. &6/" + ae.getCommand()+" leave");
+			if (showMessages) sendMessage(p, "&eYou need to leave the Event first. &6/" + ae.getCommand()+" leave");
 			return false;
 		}
 		/// Inside the queue waiting for a match?
 		QPosTeamPair qpp = ac.getCurrentQuePos(p);
 		if(qpp != null && qpp.pos != -1){
-			sendMessage(p,"&eYou are already in the " + qpp.params.toPrettyString() + " queue.");
+			if (showMessages) sendMessage(p,"&eYou are already in the " + qpp.params.toPrettyString() + " queue.");
 			String cmd = qpp.params.getCommand();
-			sendMessage(p,"&eType &6/"+cmd+" leave");
+			if (showMessages) sendMessage(p,"&eType &6/"+cmd+" leave");
 			return false;
 		}
 		/// Inside a match?
 		Match am = ac.getMatch(p);
 		if (am != null){
-			sendMessage(p,"&eYou are already in a match.");
+			if (showMessages) sendMessage(p,"&eYou are already in a match.");
 			return false;
 		}
 
@@ -803,21 +815,21 @@ public class BAExecutor extends CustomCommandExecutor  {
 		if (teamc.inFormingTeam(p)){
 			FormingTeam ft = teamc.getFormingTeam(p);
 			if (ft.isJoining(p)){
-				sendMessage(p,"&eYou have been invited to the team. " + ft.getDisplayName());
-				sendMessage(p,"&eType &6/team join|decline");
+				if (showMessages) sendMessage(p,"&eYou have been invited to the team. " + ft.getDisplayName());
+				if (showMessages) sendMessage(p,"&eType &6/team join|decline");
 			} else if (!ft.hasAllPlayers()){
-				sendMessage(p,"&eYour team is not yet formed. &6/team disband&e to leave");
-				sendMessage(p,"&eYou are still missing " + Util.playersToCommaDelimitedString(ft.getUnjoinedPlayers()) + " !!");
+				if (showMessages) sendMessage(p,"&eYour team is not yet formed. &6/team disband&e to leave");
+				if (showMessages) sendMessage(p,"&eYou are still missing " + Util.playersToCommaDelimitedString(ft.getUnjoinedPlayers()) + " !!");
 			}
 			return false;
 		}
 		if (dc.hasChallenger(p)){
-			sendMessage(p,"&cYou need to rescind your challenge first! &6/arena rescind");
+			if (showMessages) sendMessage(p,"&cYou need to rescind your challenge first! &6/arena rescind");
 			return false;
 		}
 		Team t = TeamController.getTeamNotTeamController(p);
 		if (t != null){
-			sendMessage(p,"&cYou need to leave first.  &6/arena leave");
+			if (showMessages) sendMessage(p,"&cYou need to leave first.  &6/arena leave");
 			return false;
 		}
 		return true;

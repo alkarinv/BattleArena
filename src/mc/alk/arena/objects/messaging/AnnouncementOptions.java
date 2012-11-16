@@ -40,6 +40,9 @@ public class AnnouncementOptions {
 	public static void setHerochat(Herochat hc) {
 		AnnouncementOptions.hc = hc;
 	}
+	public static void setVaultChat(Chat chat) {
+		AnnouncementOptions.chat = chat;
+	}
 
 	public void setBroadcastOption(boolean match, MatchState ms, AnnouncementOption bo, String value) {
 		Map<MatchState, Map<AnnouncementOption,Object>> options = match ? matchOptions : eventOptions;
@@ -105,4 +108,6 @@ public class AnnouncementOptions {
 		Map<MatchState, Map<AnnouncementOption,Object>> options = match ? matchOptions : eventOptions;
 		return options.containsKey(state);
 	}
+
+
 }

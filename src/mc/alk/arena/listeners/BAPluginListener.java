@@ -179,8 +179,7 @@ public class BAPluginListener implements Listener {
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("Herochat");
 			if (plugin != null) {
 				AnnouncementOptions.setHerochat((Herochat) plugin);
-			} else {
-				Log.info("[BattleArena] Herochat not detected, ignoring Herochat channel options");
+				Log.info("[BattleArena] Herochat detected, adding channel options");
 			}
 		}
 	}
@@ -215,10 +214,10 @@ public class BAPluginListener implements Listener {
 			if (AnnouncementOptions.chat == null){
 				RegisteredServiceProvider<Chat> provider = Bukkit.getServer().
 						getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
-				if (plugin != null) {
-					AnnouncementOptions.setHerochat((Herochat) plugin);
-				} else {
-					Log.info("[BattleArena] Herochat not detected, ignoring Herochat channel options");
+				if (provider != null && provider.getProvider() != null) {
+					AnnouncementOptions.setVaultChat(provider.getProvider());
+				} else if (AnnouncementOptions.hc == null){
+					Log.info("[BattleArena] Vault chat not detected, ignoring channel options");
 				}
 			}
 		}
