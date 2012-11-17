@@ -124,8 +124,9 @@ public class HeroesUtil {
 		HeroParty party = parties.get(team);
 		if (party == null) {
 			createTeam(team);
-			parties.get(team);
+			party = parties.get(team);
 		}
+
 		Hero hero = getHero(player);
 		if (hero == null)
 			return;

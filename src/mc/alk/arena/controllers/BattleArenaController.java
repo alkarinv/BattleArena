@@ -269,6 +269,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	/**
 	 * We dont care if they leave queues
 	 */
+	@Override
 	public boolean canLeave(ArenaPlayer p) {
 		return true;
 	}

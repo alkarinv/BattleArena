@@ -12,11 +12,12 @@ public class HeroesInterface {
 
 	public static boolean hasHeroClass(String className) {
 		if (!hasHeroes) return false;
-		return HeroesUtil.hasHeroClass(className);
+		try{return HeroesUtil.hasHeroClass(className);}catch(Exception e){e.printStackTrace();}
+		return false;
 	}
 	public static void setHeroClass(Player player, String className) {
 		if (!hasHeroes) return;
-		HeroesUtil.setHeroClass(player, className);
+		try{HeroesUtil.setHeroClass(player, className);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public static void setHeroes(Plugin plugin){
@@ -29,54 +30,59 @@ public class HeroesInterface {
 	}
 	public static String getHeroClassName(Player player) {
 		if (!hasHeroes) return null;
-		return HeroesUtil.getHeroClassName(player);
+		try{return HeroesUtil.getHeroClassName(player);}catch(Exception e){e.printStackTrace();}
+		return null;
 	}
 
 	public static int getLevel(Player player) {
 		if (!hasHeroes) return -1;
-		return HeroesUtil.getLevel(player);
+		try{return HeroesUtil.getLevel(player);}catch(Exception e){e.printStackTrace();}
+		return -1;
 	}
 	public static void setMagic(Player p, Integer magic) {
 		if (!hasHeroes) return;
-		HeroesUtil.setMagic(p,magic);
+		try{HeroesUtil.setMagic(p,magic);}catch(Exception e){e.printStackTrace();}
 	}
 	public static boolean isInCombat(Player player) {
 		if (!hasHeroes) return false;
-		return HeroesUtil.isInCombat(player);
+		try{return HeroesUtil.isInCombat(player);}catch(Exception e){e.printStackTrace();}
+		return false;
 	}
 	public static void deEnchant(Player p) {
 		if (!hasHeroes)
 			return;
-		HeroesUtil.deEnchant(p);
+		try{HeroesUtil.deEnchant(p);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public static void createTeam(Team team) {
 		if (!hasHeroes)
 			return;
-		HeroesUtil.createTeam(team);
+		try{HeroesUtil.createTeam(team);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public static void removeTeam(Team team) {
 		if (!hasHeroes)
 			return;
-		HeroesUtil.removeTeam(team);
+		try{HeroesUtil.removeTeam(team);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public static void addedToTeam(Team team, Player player) {
 		if (!hasHeroes)
 			return;
-		HeroesUtil.addedToTeam(team, player);
+		try{HeroesUtil.addedToTeam(team, player);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public static void removedFromTeam(Team team, Player player) {
 		if (!hasHeroes)
 			return;
-		HeroesUtil.removedFromTeam(team, player);
+		try{HeroesUtil.removedFromTeam(team, player);}catch(Exception e){e.printStackTrace();}
 	}
+
 	public static Team getTeam(Player player) {
 		if (!hasHeroes)
 			return null;
-		return HeroesUtil.getTeam(player);
+		try{return HeroesUtil.getTeam(player);}catch(Exception e){e.printStackTrace();}
+		return null;
 	}
 
 }
