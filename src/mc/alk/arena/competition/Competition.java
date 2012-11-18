@@ -21,7 +21,7 @@ import mc.alk.arena.objects.teams.Team;
 public abstract class Competition {
 
 	/** Our teams */
-	protected List<Team> teams = new ArrayList<Team>();
+	protected List<Team> teams = Collections.synchronizedList(new ArrayList<Team>());
 
 	/** Our Transition Controller that will handle transition from one state to the next*/
 	protected final TransitionMethodController tmc = new TransitionMethodController();

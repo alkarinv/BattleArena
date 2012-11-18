@@ -267,8 +267,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 		ParamTeamPair qtp = ac.removeFromQue(p);
 		if (t!= null && t.size() > 1){
 			t.sendMessage("&6The team has left the &6"+qtp.q.getName()+" queue&e. &6"+ p.getName() +"&e issued the command");
-		} else {
+		} else if (t!= null){
 			sendMessage(p,"&eYou have left the queue for the &6" + qtp.q.getName() );
+		} else {
+			sendMessage(p,"&eYou weren't found in any queue");
+			return true;
 		}
 		refundFee(qtp.q, t);
 		return true;
@@ -807,8 +810,13 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Inside a match?
 		Match am = ac.getMatch(p);
 		if (am != null){
-			if (showMessages) sendMessage(p,"&eYou are already in a match.");
-			return false;
+			Team t = am.getTeam(p);
+			if (am.insideArena(p) || !t.hasLeft(p)){
+				if (showMessages) sendMessage(p,"&eYou are already in a match.");
+				return false;
+			} else{
+				return true;
+			}
 		}
 
 		/// Inside a forming team?
@@ -819,7 +827,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 				if (showMessages) sendMessage(p,"&eType &6/team join|decline");
 			} else if (!ft.hasAllPlayers()){
 				if (showMessages) sendMessage(p,"&eYour team is not yet formed. &6/team disband&e to leave");
-				if (showMessages) sendMessage(p,"&eYou are still missing " + Util.playersToCommaDelimitedString(ft.getUnjoinedPlayers()) + " !!");
+				if (showMessages) sendMessage(p,"&eYou are still missing " +
+						MessageUtil.joinPlayers(ft.getUnjoinedPlayers(),", ") + " !!");
 			}
 			return false;
 		}

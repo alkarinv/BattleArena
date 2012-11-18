@@ -26,6 +26,8 @@ public interface Team {
 
 	public boolean hasAliveMember(ArenaPlayer player);
 
+	public boolean hasLeft(ArenaPlayer player);
+
 	public boolean isPickupTeam();
 
 	public void setPickupTeam(boolean isPickupTeam);
@@ -105,5 +107,6 @@ public interface Team {
 	public void addPlayers(Collection<ArenaPlayer> players);
 
 	public void removePlayers(Collection<ArenaPlayer> players);
+
 }
 

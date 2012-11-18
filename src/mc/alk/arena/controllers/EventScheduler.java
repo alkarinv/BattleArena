@@ -30,6 +30,7 @@ public class EventScheduler implements Runnable, TransitionListener{
 	boolean continuous= false;
 	boolean running = false;
 	boolean stop = false;
+	Integer currentTimer = null;
 
 	final CopyOnWriteArrayList<EventPair> events = new CopyOnWriteArrayList<EventPair>();
 
@@ -45,7 +46,7 @@ public class EventScheduler implements Runnable, TransitionListener{
 		running = true;
 		int index = curEvent % events.size();
 		curEvent++;
-		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new RunEvent(this, events.get(index)));
+		currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new RunEvent(this, events.get(index)));
 	}
 
 	public class RunEvent implements Runnable{
@@ -88,7 +89,7 @@ public class EventScheduler implements Runnable, TransitionListener{
 			if (event != null){
 				event.addTransitionListener(scheduler);
 			} else {  /// wait then start up the scheduler again in x seconds
-				Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(),
+				currentTimer = Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(),
 						scheduler, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			}
 		}
@@ -130,8 +131,8 @@ public class EventScheduler implements Runnable, TransitionListener{
 
 	public void startNext() {
 		continuous = false;
-		if (running)
-			return;
+		if (currentTimer != null)
+			Bukkit.getScheduler().cancelTask(currentTimer);
 		stop = false;
 		new Thread(this).start();
 	}

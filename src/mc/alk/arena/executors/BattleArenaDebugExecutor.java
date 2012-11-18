@@ -24,7 +24,6 @@ import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.MapOfHash;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
-import mc.alk.arena.util.Util;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -105,7 +104,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		for (BukkitEventListener bel: types.values()){
 			Collection<ArenaListener> lists = bel.getMatchListeners();
 			MapOfHash<String,ArenaListener> lists2 = bel.getListeners();
-			String str = Util.toCommaDelimitedString(bel.getPlayers());
+			String str = MessageUtil.joinBukkitPlayers(bel.getPlayers(),", ");
 			sendMessage(sender, "Event " + bel.getEvent() +", players="+str);
 			for (String p : lists2.keySet()){
 				sendMessage(sender, bel.getEvent() +"  " + p +"  Listener  " + lists2.get(p));

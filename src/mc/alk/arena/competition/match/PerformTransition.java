@@ -153,6 +153,9 @@ public class PerformTransition {
 			if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){ am.psc.storeGamemode(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREEXPERIENCE)){ am.psc.storeExperience(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREITEMS)) { am.psc.storeItems(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREHEALTH)){ am.psc.storeHealth(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREHUNGER)){ am.psc.storeHunger(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREMAGIC)){ am.psc.storeMagic(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){am.psc.storeArenaClass(player);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p); }
 			if (health != null) { setHealth(p, health);}
@@ -224,6 +227,9 @@ public class PerformTransition {
 			if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+transition+" transition restoring items "+insideArena);
 			am.psc.restoreItems(player);
 		}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEALTH)){ am.psc.restoreHealth(player);}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHUNGER)){ am.psc.restoreHunger(player);}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREMAGIC)) { am.psc.restoreMagic(player);}
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEROCLASS)){am.psc.restoreHeroClass(player);}
 
 		return true;

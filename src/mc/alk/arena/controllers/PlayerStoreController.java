@@ -36,17 +36,18 @@ public class PlayerStoreController {
 	 * 			c) offline &&
 	 */
 	final HashMap <String, Integer> expmap = new HashMap<String,Integer>();
+	final HashMap <String, Integer> healthmap = new HashMap<String,Integer>();
+	final HashMap <String, Integer> hungermap = new HashMap<String,Integer>();
+	final HashMap <String, Integer> magicmap = new HashMap<String,Integer>();
 	final HashMap <String, PInv> itemmap = new HashMap<String,PInv>();
 	final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
 	final HashMap <String, String> arenaclass = new HashMap<String,String>();
-
 
 	@SuppressWarnings("deprecation")
 	public void storeExperience(ArenaPlayer player) {
 		Player p = player.getPlayer();
 		int exp = ExpUtil.getTotalExperience(p);
 		final String name = p.getName();
-//		FileLogger.log("storing exp for = " + p.getName() +" exp="+ exp +"   online=" + p.isOnline() +"   isdead=" +p.isDead());
 		if (exp == 0)
 			return;
 		if (expmap.containsKey(name)){
@@ -60,11 +61,70 @@ public class PlayerStoreController {
 		if (!expmap.containsKey(p.getName()))
 			return;
 		Integer exp = expmap.remove(p.getName());
-//		FileLogger.log("restoring exp for = "+p.getName()+" exp="+exp+",curexp="+p.getPlayer().getTotalExperience()+",online=" + p.isOnline() +"   isdead=" +p.isDead());
 		if (p.isOnline() && !p.isDead()){
 			ExpUtil.giveExperience(p.getPlayer(), exp);
 		} else {
 			BAPlayerListener.restoreExpOnReenter(p.getName(), exp);
+		}
+	}
+
+	public void storeHealth(ArenaPlayer player) {
+		Player p = player.getPlayer();
+		final String name = p.getName();
+		healthmap.put(name, p.getHealth());
+	}
+
+	public void restoreHealth(ArenaPlayer p) {
+		if (!healthmap.containsKey(p.getName()))
+			return;
+		Integer val = healthmap.remove(p.getName());
+		if (val == null || val <= 0)
+			return;
+		if (p.isOnline() && !p.isDead()){
+			p.setHealth(val);
+		} else {
+			BAPlayerListener.restoreHealthOnReenter(p.getName(), val);
+		}
+	}
+
+	public void storeHunger(ArenaPlayer player) {
+		Player p = player.getPlayer();
+		final String name = p.getName();
+		hungermap.put(name, p.getHealth());
+	}
+
+	public void restoreHunger(ArenaPlayer p) {
+		if (!hungermap.containsKey(p.getName()))
+			return;
+		Integer val = hungermap.remove(p.getName());
+		if (val == null || val <= 0)
+			return;
+		if (p.isOnline() && !p.isDead()){
+			p.getPlayer().setFoodLevel(val);
+		} else {
+			BAPlayerListener.restoreHungerOnReenter(p.getName(), val);
+		}
+	}
+
+	public void storeMagic(ArenaPlayer player) {
+		if (!HeroesInterface.enabled())
+			return;
+		Integer val = HeroesInterface.getMagicLevel(player.getPlayer());
+		if (val == null)
+			return;
+		magicmap.put(player.getName(), val);
+	}
+
+	public void restoreMagic(ArenaPlayer p) {
+		if (!magicmap.containsKey(p.getName()))
+			return;
+		Integer val = magicmap.remove(p.getName());
+		if (val == null)
+			return;
+		if (p.isOnline() && !p.isDead()){
+			HeroesInterface.setMagic(p.getPlayer(), val);
+		} else {
+			BAPlayerListener.restoreMagicOnReenter(p.getName(), val);
 		}
 	}
 

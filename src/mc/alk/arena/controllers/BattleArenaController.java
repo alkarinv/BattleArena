@@ -179,6 +179,8 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	public QPosTeamPair getCurrentQuePos(ArenaPlayer p) {return amq.getQuePos(p);}
 	public ParamTeamPair removeFromQue(ArenaPlayer p) {
 		Team t = TeamController.getTeam(p);
+		if (t == null)
+			return null;
 		TeamController.removeTeamHandler(t, this);
 		return amq.removeFromQue(p);
 	}
@@ -347,12 +349,12 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		return true;
 	}
 
-	public void cancelMatch(Team team) {
+	public boolean cancelMatch(Team team) {
 		Set<ArenaPlayer> ps = team.getPlayers();
 		for (ArenaPlayer p : ps){
-			cancelMatch(p);
-			return;
+			return cancelMatch(p);
 		}
+		return false;
 	}
 
 	public void cancelMatch(Match am){

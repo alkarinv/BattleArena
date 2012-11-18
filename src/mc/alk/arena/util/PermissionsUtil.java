@@ -25,10 +25,10 @@ public class PermissionsUtil {
 
 	public static int getPriority(Player player) {
 		if (player.hasPermission("arena.priority.lowest")){ return 1000;}
-		else if (player.hasPermission("arena.priority.low")){ return 900;}
-		else if (player.hasPermission("arena.priority.normal")){ return 800;}
-		else if (player.hasPermission("arena.priority.high")){ return 700;}
-		else if (player.hasPermission("arena.priority.highest")){ return 600;}
+		else if (player.hasPermission("arena.priority.low")){ return 800;}
+		else if (player.hasPermission("arena.priority.normal")){ return 600;}
+		else if (player.hasPermission("arena.priority.high")){ return 400;}
+		else if (player.hasPermission("arena.priority.highest")){ return 200;}
 		return 1000;
 	}
 }

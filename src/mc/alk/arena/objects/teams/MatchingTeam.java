@@ -60,6 +60,11 @@ public class MatchingTeam implements Team{
 	}
 
 	@Override
+	public boolean hasLeft(ArenaPlayer p) {
+		return false;
+	}
+
+	@Override
 	public boolean isPickupTeam() {
 		return false;
 	}

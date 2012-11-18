@@ -22,7 +22,7 @@ public class MapOfHash<K,V> extends HashMap<K,HashSet<V>>{
 	public boolean remove(K k, V v) {
 		if (!containsKey(k))
 			return false;
-		Set<V> set = get(k); 
+		Set<V> set = get(k);
 		boolean removed = set.remove(v);
 		if (set.isEmpty()){
 			synchronized(this){
@@ -42,7 +42,7 @@ public class MapOfHash<K,V> extends HashMap<K,HashSet<V>>{
 		}
 		return set;
 	}
-	
+
 	public HashSet<V> getSafe(K k){
 		HashSet<V> set = get(k);
 		if (set == null)

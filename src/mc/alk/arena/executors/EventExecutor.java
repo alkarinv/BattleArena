@@ -103,7 +103,7 @@ public class EventExecutor extends BAExecutor{
 		}
 		boolean forceStart = args.length > 1 && args[1].equalsIgnoreCase("force");
 		if (!forceStart && !event.hasEnoughTeams()){
-			final int nteams = event.getNteams();
+			final int nteams = event.getNTeams();
 			final int neededTeams = event.getParams().getMinTeams();
 			sendMessage(sender,"&cThe "+name+" only has &6" + nteams +" &cteams and it needs &6" +neededTeams);
 			return sendMessage(sender,"&cIf you really want to start the bukkitEvent anyways. &6/"+event.getCommand()+" start force");
@@ -113,6 +113,7 @@ public class EventExecutor extends BAExecutor{
 			return sendMessage(sender,"&2You have started the &6" + name);
 		} catch (Exception e) {
 			sendMessage(sender,"&cError Starting the &6" + name);
+			e.printStackTrace();
 			return sendMessage(sender,"&c" +e.getMessage());
 		}
 	}
@@ -130,7 +131,7 @@ public class EventExecutor extends BAExecutor{
 
 		if (!event.isOpen() && !event.isRunning()){
 			return sendMessage(sender,"&eThere is no open "+event.getCommand()+" right now");}
-		int size = event.getNteams();
+		int size = event.getNTeams();
 		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(eventParams.getMaxTeamSize());
 		String arena =event instanceof ReservedArenaEvent? " &eArena=&5"+((ReservedArenaEvent) event).getArena().getName() : "";
 		sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers+arena);
@@ -157,7 +158,7 @@ public class EventExecutor extends BAExecutor{
 
 		if (!event.isOpen()){
 			return sendMessage(sender,"&eThere is no open &6"+event.getCommand()+"&e right now");}
-		int size = event.getNteams();
+		int size = event.getNTeams();
 		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(eventParams.getMaxTeamSize());
 		return  sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers+" that have joined");
 	}
@@ -243,32 +244,46 @@ public class EventExecutor extends BAExecutor{
 		return true;
 	}
 
-	@MCCommand(cmds={"status"}, usage="status", order=2)
-	public boolean eventStatus(CommandSender sender, EventParams eventParams) {
+
+	@MCCommand(cmds={"teams"}, usage="teams", admin=true, order=2)
+	public boolean eventTeams(CommandSender sender, EventParams eventParams) {
 		Event event = findUnique(sender, eventParams);
 		if (event == null){
 			return true;}
+		return eventTeams(sender, event);
+	}
 
-		StringBuilder sb = new StringBuilder(event.getStatus());
-		if (sender==null || sender.isOp() || sender.hasPermission(Defaults.ARENA_ADMIN)){
-			for (Team t: event.getTeams()){
-				sb.append("\n" + t.getTeamInfo(null)); }
-		}
+	@MCCommand(cmds={"teams"}, usage="status", admin=true, order=1)
+	public boolean eventTeams(CommandSender sender, EventParams eventParams, Arena arena) {
+		Event event = controller.getEvent(arena);
+		if (event == null){
+			return sendMessage(sender, "&cNo event could be found using that arena!");}
+		return eventTeams(sender, event);
+	}
+
+	private boolean eventTeams(CommandSender sender, Event event) {
+		StringBuilder sb = new StringBuilder();
+		for (Team t: event.getTeams()){
+			sb.append("\n" + t.getTeamInfo(null)); }
 
 		return sendMessage(sender,sb.toString());
 	}
 
-	@MCCommand(cmds={"status"}, usage="status", order=1)
+	@MCCommand(cmds={"status"}, usage="status", order=4)
+	public boolean eventStatus(CommandSender sender, EventParams eventParams) {
+		Event event = findUnique(sender, eventParams);
+		if (event == null){
+			return true;}
+		StringBuilder sb = new StringBuilder(event.getStatus());
+		return sendMessage(sender,sb.toString());
+	}
+
+	@MCCommand(cmds={"status"}, usage="status", order=3)
 	public boolean eventStatus(CommandSender sender, EventParams eventParams, Arena arena) {
 		Event event = controller.getEvent(arena);
 		if (event == null){
 			return sendMessage(sender, "&cNo event could be found using that arena!");}
 		StringBuilder sb = new StringBuilder(event.getStatus());
-		if (sender==null || sender.isOp() || sender.hasPermission(Defaults.ARENA_ADMIN)){
-			for (Team t: event.getTeams()){
-				sb.append("\n" + t.getTeamInfo(null)); }
-		}
-
 		return sendMessage(sender,sb.toString());
 	}
 

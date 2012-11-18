@@ -10,6 +10,7 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
@@ -60,7 +61,10 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 		EventParams ep = new EventParams(mp);
 		event = new TournamentEvent(eventParams);
 		checkOpenOptions(event,ep , args);
-
+		if (!isPowerOfTwo(ep.getMinTeams())){
+			sendMessage(sender, "&cTournament nteams has to be a power of 2! like 2,4,8,16,etc");
+			return null;
+		}
 		EventOpenOptions eoo = null;
 
 		try {
@@ -77,11 +81,34 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 			e.printStackTrace();
 			return null;
 		}
-		final int max = mp.getMaxPlayers();
+		final int max = ep.getMaxPlayers();
 		final String maxPlayers = max == ArenaParams.MAX ? "&6any&2 number of players" : max+"&2 players";
 		sendMessage(sender,"&2You have "+eoo.getOpenCmd()+"ed a &6" + event.getDetailedName() +
-				" &2TeamSize=&6" + mp.getTeamSizeRange() +"&2 #Teams=&6"+
-				mp.getNTeamRange() +"&2 supporting "+maxPlayers);
+				" &2TeamSize=&6" + ep.getTeamSizeRange() +"&2 #Teams=&6"+
+				ep.getNTeamRange() +"&2 supporting "+maxPlayers);
 		return event;
 	}
+
+    public static boolean isPowerOfTwo(int num)  {
+       return num > 0 && (num == 1 || (num & 1) == 0 && isPowerOfTwo(num >> 1));
+    }
+
+	@MCCommand(cmds={"status"}, usage="status", order=1)
+	public boolean eventStatus(CommandSender sender, EventParams eventParams, Arena arena, Integer round) {
+		Event event = controller.getEvent(arena);
+		if (event == null){
+			return sendMessage(sender, "&cNo event could be found using that arena!");}
+		StringBuilder sb = new StringBuilder(event.getStatus());
+		return sendMessage(sender,sb.toString());
+	}
+
+	@MCCommand(cmds={"status"}, usage="status", order=2)
+	public boolean eventStatus(CommandSender sender, EventParams eventParams, Integer round) {
+		Event event = findUnique(sender, eventParams);
+		if (event == null){
+			return true;}
+		StringBuilder sb = new StringBuilder(event.getStatus());
+		return sendMessage(sender,sb.toString());
+	}
+
 }

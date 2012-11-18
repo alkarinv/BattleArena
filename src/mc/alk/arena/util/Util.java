@@ -1,16 +1,13 @@
 package mc.alk.arena.util;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Set;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaParams;
-import mc.alk.arena.objects.ArenaPlayer;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -59,10 +56,10 @@ public class Util {
 			System.out.println(ste);
 		}
 	}
+
 	static public String getLocString(Location l){
 		return l.getWorld().getName() +"," + (int)l.getX() + "," + (int)l.getY() + "," + (int)l.getZ();
 	}
-
 
 	public static String getStr(int min, int max){
 		if (min==max)
@@ -70,41 +67,6 @@ public class Util {
 		if (max == ArenaParams.MAX){
 			return min+"+";}
 		return min+"-"+max;
-	}
-
-
-
-	public static String getColor(String str) {
-		int index = str.indexOf("&");
-		if (index == -1){
-			return ChatColor.WHITE+"";
-		}
-		if (index < str.length()-1){
-			return str.substring(index,index+2);
-		}
-		return ChatColor.WHITE+"";
-	}
-
-	public static String playersToCommaDelimitedString(Collection<ArenaPlayer> players){
-		StringBuilder sb = new StringBuilder();
-		boolean first = true;
-		for (ArenaPlayer p : players){
-			if (!first) sb.append(", ");
-			else first = false;
-			sb.append(p.getName());
-		}
-		return sb.toString();
-	}
-
-	public static String toCommaDelimitedString(Collection<String> players){
-		StringBuilder sb = new StringBuilder();
-		boolean first = true;
-		for (String p: players){
-			if (!first) sb.append(", ");
-			else first = false;
-			sb.append(p);
-		}
-		return sb.toString();
 	}
 
 	public static Player findPlayerExact(String name) {

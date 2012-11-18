@@ -34,7 +34,12 @@ public class BASignListener implements Listener{
 				|| 	clickedMat.equals(Material.WALL_SIGN))) {
 			return;
 		}
-		Sign sign = (Sign) clickedBlock.getState();
+		Sign sign = null;
+		try{
+			sign = (Sign) clickedBlock.getState(); /// so yes, this has also sometimes not been a sign, despite checking above
+		} catch (NullPointerException e){
+			return;
+		}
 		String[] lines = sign.getLines();
 		if (!lines[0].matches("^.[0-9a-fA-F]\\*.*$")){
 			return;

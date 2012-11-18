@@ -160,4 +160,18 @@ public class HeroesUtil {
 		}
 		return t;
 	}
+
+	public static Integer getMagicLevel(Player player) {
+		Hero hero = getHero(player);
+		if (hero == null)
+			return null;
+		return hero.getMana();
+	}
+
+	public static void setMagicLevel(Player player, Integer val) {
+		Hero hero = getHero(player);
+		if (hero == null)
+			return;
+		hero.setMana(val);
+	}
 }

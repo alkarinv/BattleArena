@@ -15,7 +15,6 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.controllers.HeroesInterface;
 import mc.alk.arena.controllers.MethodController;
@@ -49,7 +48,6 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaInterface;
-import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
@@ -174,7 +172,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		}
 
 		/// Try and make a joinhandler out of our current params, but we don't care if it's null
-		try {joinHandler = TeamJoinFactory.createTeamJoinHandler(params,this);} catch (NeverWouldJoinException e) {}
+//		try {joinHandler = TeamJoinFactory.createTeamJoinHandler(params,this);} catch (NeverWouldJoinException e) {}
 	}
 
 	private void updateBukkitEvents(MatchState matchState){
@@ -720,6 +718,14 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		return false;
 	}
 
+	public Set<ArenaPlayer> getPlayers() {
+		HashSet<ArenaPlayer> players = new HashSet<ArenaPlayer>();
+		for (Team t: teams){
+			players.addAll(t.getPlayers());
+		}
+		return players;
+	}
+
 	public boolean hasAlivePlayer(ArenaPlayer p) {
 		for (Team t: teams) {
 			if (t.hasAliveMember(p)) return true;}
@@ -917,7 +923,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		return vcs;
 	}
 
-	public void timeExpired(VictoryCondition vc) {
+	public void timeExpired() {
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
 		notifyListeners(event);
 		try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
@@ -928,7 +934,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			setDraw();
 	}
 
-	public void intervalTick(VictoryCondition vc, int remaining) {
+	public void intervalTick(int remaining) {
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
 		notifyListeners(event);
 		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeaders());}catch(Exception e){e.printStackTrace();}

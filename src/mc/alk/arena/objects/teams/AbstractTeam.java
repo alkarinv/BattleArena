@@ -79,7 +79,9 @@ public abstract class AbstractTeam implements Team{
 		nameChanged = false;
 	}
 
-	public Set<ArenaPlayer> getPlayers() {return players;}
+	public Set<ArenaPlayer> getPlayers() {
+		return players;
+	}
 	public Set<Player> getBukkitPlayers() {
 		Set<Player> ps = new HashSet<Player>();
 		for (ArenaPlayer ap: players){
@@ -108,6 +110,7 @@ public abstract class AbstractTeam implements Team{
 	}
 
 	public boolean hasMember(ArenaPlayer p) {return players.contains(p);}
+	public boolean hasLeft(ArenaPlayer p) {return leftplayers.contains(p);}
 	public boolean hasAliveMember(ArenaPlayer p) {return players.contains(p) && !deadplayers.contains(p);}
 	public boolean isPickupTeam() {return isPickupTeam;}
 	public void setPickupTeam(boolean isPickupTeam) {this.isPickupTeam = isPickupTeam;}

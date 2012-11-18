@@ -19,7 +19,7 @@ import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.util.Countdown;
-import mc.alk.arena.util.Util;
+import mc.alk.arena.util.MessageUtil;
 
 public class ReservedArenaEvent extends Event {
 	public ReservedArenaEvent(EventParams params) {
@@ -107,7 +107,7 @@ public class ReservedArenaEvent extends Event {
 					arenaMatch.addedToTeam(tjr.team,p);
 				}
 			}
-			String str = Util.playersToCommaDelimitedString(t.getPlayers());
+			String str = MessageUtil.joinPlayers(t.getPlayers(), ", ");
 			for (ArenaPlayer p : t.getPlayers()){
 				tjr.team.sendToOtherMembers(p, str +" has joined the team!");
 			}

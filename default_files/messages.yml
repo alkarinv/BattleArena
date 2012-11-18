@@ -104,8 +104,11 @@ match:
         server_start: ""
         victory: |
             &eYou have vanquished all foes!
-            &eYou have {time} until the match ends            
-        loss: "&eYou have been vanquished by {winner}&e!!!"
+            &eYou have {time} until the match ends
+            &eYour new rating &6[{ranking}] &e({wins}:{losses})
+        loss: |
+            &eYou were defeated by {winnershort}&e!
+            &eYour rating &6[{ranking}] &e({wins}:{losses})
         draw: "&eThe {matchname}&e has ended in a draw"
         server_victory: "{matchprefix} {winnerlong} was victorious!"
         server_draw: "{matchprefix} ended in a draw!"

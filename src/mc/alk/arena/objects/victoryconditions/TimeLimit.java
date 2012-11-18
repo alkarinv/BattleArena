@@ -36,15 +36,15 @@ public class TimeLimit extends VictoryCondition implements CountdownCallback {
 		if (timer != null){
 			timer.stop();
 			timer =null;
-		}		
+		}
 	}
 
 	public boolean intervalTick(int remaining){
 		if (remaining <= 0){
-			match.timeExpired(this);
+			match.timeExpired();
 		} else {
-			match.intervalTick(this, remaining);
-		}	
+			match.intervalTick(remaining);
+		}
 		return true;
 	}
 

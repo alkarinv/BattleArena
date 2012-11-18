@@ -209,6 +209,9 @@ public class ConfigSerializer extends BaseSerializer{
 					tops.addOption(TransitionOption.STOREEXPERIENCE);
 					tops.addOption(TransitionOption.STOREGAMEMODE);
 					tops.addOption(TransitionOption.STOREHEROCLASS);
+					tops.addOption(TransitionOption.STOREHEALTH);
+					tops.addOption(TransitionOption.STOREHUNGER);
+					tops.addOption(TransitionOption.STOREMAGIC);
 					if (allTops.needsClearInventory()){
 						tops.addOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
 						tops.addOption(TransitionOption.STOREITEMS);
@@ -219,6 +222,9 @@ public class ConfigSerializer extends BaseSerializer{
 					tops.addOption(TransitionOption.RESTOREEXPERIENCE);
 					tops.addOption(TransitionOption.RESTOREGAMEMODE);
 					tops.addOption(TransitionOption.RESTOREHEROCLASS);
+					tops.addOption(TransitionOption.RESTOREHEALTH);
+					tops.addOption(TransitionOption.RESTOREHUNGER);
+					tops.addOption(TransitionOption.RESTOREMAGIC);
 					if (allTops.needsClearInventory())
 						tops.addOption(TransitionOption.RESTOREITEMS);
 					break;

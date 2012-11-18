@@ -11,6 +11,7 @@ import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.entity.Player;
@@ -138,13 +139,13 @@ public class DuelOptions {
 	}
 
 	public String getChallengedTeamString() {
-		return Util.playersToCommaDelimitedString(getChallengedPlayers());
+		return MessageUtil.joinPlayers(getChallengedPlayers(), ", ");
 	}
 
 	public String getOtherChallengedString(ArenaPlayer ap) {
 		List<ArenaPlayer> players = new ArrayList<ArenaPlayer>(challengedPlayers);
 		players.remove(ap);
-		return Util.playersToCommaDelimitedString(players);
+		return MessageUtil.joinPlayers(players, ", ");
 	}
 
 	public boolean hasOption(DuelOption option) {

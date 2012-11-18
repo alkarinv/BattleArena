@@ -98,11 +98,7 @@ public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
 		if (events == null || events.isEmpty()){
 			return sendMessage(sender, "&cNo &4BattleArena&c events have been scheduled");}
 
-		if (es.isRunning()){
-			return sendMessage(sender, "&cScheduled events are already running!");
-		} else {
-			es.startNext();
-		}
+		es.startNext();
 		return sendMessage(sender, "&2Next Scheduled event is now starting");
 	}
 }

@@ -277,12 +277,12 @@ public class ArenaMatchQueue {
 		return m;
 	}
 
-	private Match getPreMadeMatch(TeamQueue tq,  Arena a, QueueObject tto) {
+	private Match getPreMadeMatch(TeamQueue tq,  Arena arena, QueueObject tto) {
 		MatchTeamQObject to = (MatchTeamQObject) tto;
-		if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + a  +"   tq=" + tq);
+		if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + arena  +"   tq=" + tq);
 		Matchup matchup = to.getMatchup();
 		tq.remove(to);
-		final Match m = new ArenaMatch(a, to.getMatchParams());
+		final Match m = new ArenaMatch(arena, to.getMatchParams());
 		m.setTeamJoinHandler(null); /// we don't want any custom team joining.
 		m.addTransitionListeners(matchup.getTransitionListeners());
 		m.onJoin(matchup.getTeams());

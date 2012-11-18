@@ -14,10 +14,13 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.match.PerformTransition;
+import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.events.TransitionEventHandler;
@@ -29,12 +32,14 @@ import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.arena.util.Util;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.ChatPaginator;
 
 public class TournamentEvent extends Event implements Listener{
 	public long timeBetweenRounds;
@@ -46,7 +51,7 @@ public class TournamentEvent extends Event implements Listener{
 	ArrayList<Team> competingTeams = new ArrayList<Team>();
 	final EventParams oParms ; /// Our original default tourney params from the config
 	Random rand = new Random();
-
+	Integer curTimer = null;
 	public TournamentEvent(EventParams params) {
 		super(params);
 		oParms = params;
@@ -61,7 +66,7 @@ public class TournamentEvent extends Event implements Listener{
 		round = -1;
 		nrounds = -1;
 		timeBetweenRounds = oParms.getTimeBetweenRounds();
-		String color = Util.getColor(mp.getPrefix());
+		ChatColor color = MessageUtil.getFirstColor(mp.getPrefix());
 		mp.setTransitionOptions(mp.getTransitionOptions());
 		mp.setPrefix(color+"["+mp.getName() +" " + oParms.getName()+"]");
 		mp.setCommand(oParms.getCommand());
@@ -71,21 +76,22 @@ public class TournamentEvent extends Event implements Listener{
 		mp.setSecondsToLoot(oParms.getSecondsToLoot());
 		TimeUtil.testClock();
 		super.openEvent(mp);
+		EventParams copy = new EventParams(mp);
+		copy.setMaxTeams(CompetitionSize.MAX);
+		this.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(copy, this));
 	}
 
 	@Override
 	public void startEvent() {
 		super.startEvent();
 		Server server = Bukkit.getServer();
-
 		int osize = teams.size();
 		nrounds = getNRounds(osize);
-		int nteams = (int) Math.pow(2, nrounds);
+		final int minTeams = eventParams.getMinTeams();
+		int roundteams = (int) Math.pow(minTeams, nrounds);
 		server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&e The " + eventParams.toPrettyString() +
 				oParms.getName() + " tournament is starting!"));
 
-		preliminary_round = teams.size()!=nteams;
-		if (preliminary_round) nrounds++;
 
 		TreeMap<Double,Team> sortTeams = new TreeMap<Double,Team>(Collections.reverseOrder());
 		BTInterface bti = new BTInterface(eventParams);
@@ -96,14 +102,17 @@ public class TournamentEvent extends Event implements Listener{
 			while (sortTeams.containsKey(elo)){elo+= 0.0001;}
 			sortTeams.put(elo, t);
 		}
-		competingTeams.addAll(teams);
 		teams.clear();
 		aliveTeams.clear();
 		ArrayList<Team> ts = new ArrayList<Team>(sortTeams.values());
 		for (Team t: ts){
 			teams.add(t);
 			aliveTeams.add(t);
+			competingTeams.add(t);
 		}
+		removeExtraneous();
+		preliminary_round = teams.size()!=roundteams;
+		if (preliminary_round) nrounds++;
 		server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&6 " + teams.size() + " &e" +MessageUtil.getTeamsOrPlayers(teams.size())+
 				" will compete in a &6"+nrounds+"&e round tournament"));
 		if (preliminary_round){
@@ -129,6 +138,10 @@ public class TournamentEvent extends Event implements Listener{
 		super.endEvent();
 		aliveTeams.clear();
 		competingTeams.clear();
+		if (curTimer != null){
+			Bukkit.getScheduler().cancelTask(curTimer);
+			curTimer = null;
+		}
 	}
 	@TransitionEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
@@ -202,22 +215,47 @@ public class TournamentEvent extends Event implements Listener{
 		return victor;
 	}
 
+	private void removeExtraneous(){
+		/// remaining teams
+		int minTeams = eventParams.getMinTeams();
+		final int needed_size = (int) Math.pow(minTeams, nrounds);
+		final int nprelims = (teams.size() - needed_size) / (minTeams-1);
+
+		int remaining = teams.size() - (needed_size + nprelims*(minTeams-1));
+		if (remaining > 0){
+			List<Team> newTeams = new ArrayList<Team>();
+			for (int i=0;i<remaining;i++){
+				Team t = teams.get(needed_size + i);
+				newTeams.add(t);
+				t.sendMessage("&c[Tourney] There weren't enough players for you to compete in this tourney");
+			}
+			teams.removeAll(newTeams);
+			aliveTeams.removeAll(newTeams);
+		}
+	}
 
 	private void makePreliminaryRound() {
 		Matchup m;
 		round++;
 		Round tr = new Round(round);
 		rounds.add(tr);
-		final int needed_size = (int) Math.pow(2, nrounds-1);
-		final int nprelims = aliveTeams.size() - needed_size;
+		int nrounds = getNRounds(teams.size()) + 1;
+		int minTeams = eventParams.getMinTeams();
+		final int needed_size = (int) Math.pow(minTeams, nrounds-1);
+		final int nprelims = (aliveTeams.size() - needed_size) / (minTeams-1);
 
-		final int loffset = needed_size -1;
-		final int hoffset = needed_size;
+		int loffset = needed_size -1;
+		int hoffset = needed_size;
 
 		for (int i = 0;i< nprelims;i++){
-			Team t1 = aliveTeams.get(loffset-i);
-			Team t2 = aliveTeams.get(hoffset+i);
-			m = new Matchup(eventParams,t1,t2);
+			List<Team> newTeams = new ArrayList<Team>();
+			for (int j=0;j<minTeams/2;j++){
+				newTeams.add(aliveTeams.get(loffset));
+				newTeams.add(aliveTeams.get(hoffset));
+				loffset--;
+				hoffset++;
+			}
+			m = new Matchup(eventParams,newTeams);
 			m.addTransitionListener(this);
 			tr.addMatchup(m);
 		}
@@ -228,11 +266,17 @@ public class TournamentEvent extends Event implements Listener{
 		round++;
 		Round tr = new Round(round);
 		rounds.add(tr);
-		int j = aliveTeams.size()-1;
-		for (int i = 0;i< aliveTeams.size()/2;i++){
-			Team t1 = aliveTeams.get(i);
-			Team t2 = aliveTeams.get(j-i);
-			m = new Matchup(eventParams,t1,t2);
+		int minTeams = eventParams.getMinTeams();
+		int size = aliveTeams.size();
+		final int nMatches = size/minTeams;
+		for (int i = 0;i< nMatches;i++){
+			List<Team> newTeams = new ArrayList<Team>();
+			for (int j=0;j<minTeams/2;j++){
+				int index = i + j*nMatches;
+				newTeams.add(aliveTeams.get(index));
+				newTeams.add(aliveTeams.get(size-1-index));
+			}
+			m = new Matchup(eventParams,newTeams);
 			m.addTransitionListener(this);
 			tr.addMatchup(m);
 		}
@@ -248,12 +292,14 @@ public class TournamentEvent extends Event implements Listener{
 	}
 
 	public boolean startRound(){
-		if (round <0){ /// trying to start when we havent created anything yet
+		/// trying to start when we havent created anything yet
+		/// or event was canceled/closed
+		if (round <0 || state == EventState.CLOSED){
 			return false;}
 		announceRound();
 		Plugin plugin = BattleArena.getSelf();
 		/// Section to start the match
-		plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+		curTimer = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
 				Round tr = rounds.get(round);
 				for (Matchup m: tr.getMatchups()){
@@ -266,13 +312,13 @@ public class TournamentEvent extends Event implements Listener{
 
 	private void announceRound() {
 		Round tr = rounds.get(round);
-		String strround = "Round " + (round +1);
+
+		String strround = preliminary_round && round==0 ? "PreliminaryRound" : ("Round "+(round+1));
 		if (round+1 == nrounds){
-			strround = "Final Round";
-		}
+			strround = "Final Round";}
 		if (preliminary_round){
 			preliminary_round = false;
-			int nprelims = tr.getMatchups().size()*2;
+			int nprelims = tr.getMatchups().size()*eventParams.getMinTeams();
 			for (int i=0;i< aliveTeams.size()-nprelims;i++){
 				Team t = aliveTeams.get(i);
 				t.sendMessage("&4["+strround+"]&e You have a &5bye&e this round");
@@ -280,17 +326,21 @@ public class TournamentEvent extends Event implements Listener{
 		}
 		BTInterface bti = new BTInterface(eventParams);
 		final String prefix = eventParams.getPrefix();
-		for (Matchup m: tr.getMatchups()){
-			if (m.getTeams().size() == 2){
-				Team t1 = m.getTeam(0);
-				Team t2 = m.getTeam(1);
-
-				Double elo1 = (double) bti.getElo(t1);
-				Double elo2 = (double) bti.getElo(t2);
-				//				System.out.println("team1 stat= " + bti.loadRecord(t1.getPlayers()));
-				broadcast(prefix + "&e "+ strround +": &8"+t1.getDisplayName() +"&6["+ elo1+"]" +
-						"&e vs &8" +t2.getDisplayName() +"&6["+ elo2+"]");
+		if (tr.getMatchups().size() <= 8){
+			for (Matchup m: tr.getMatchups()){
+				List<String> names = new ArrayList<String>();
+				for (Team t: m.getTeams()){
+					names.add("&8"+t.getDisplayName()+"&6["+bti.getElo(t)+"]");}
+				String msg = "&e"+ strround +": " + StringUtils.join(names, " vs ");
+				if (ChatPaginator.GUARANTEED_NO_WRAP_CHAT_PAGE_WIDTH > msg.length() + prefix.length()){
+					broadcastAlive(prefix+" "+msg);
+				} else {
+					broadcastAlive(msg);
+				}
 			}
+		} else {
+			broadcastAlive(prefix + "&e Round " + strround +" has " + tr.getMatchups().size()+ " "+
+					MessageUtil.teamsOrPlayers(eventParams.getMinTeamSize())+" competing. &6/tourney status:&e for updates");
 		}
 		if (round != nrounds)
 			broadcast(prefix+"&e "+strround+" will start in &4" + timeBetweenRounds +" &eseconds!");
@@ -301,21 +351,37 @@ public class TournamentEvent extends Event implements Listener{
 	@Override
 	public void broadcast(String msg){for (Team t : competingTeams){t.sendMessage(msg);}}
 
+	public void broadcastAlive(String msg){for (Team t : aliveTeams){t.sendMessage(msg);}}
+
 	@Override
-	public void addTeam(Team t){
-		super.addTeam(t);
-		int size = teams.size();
+	public void addedToTeam(Team team, ArenaPlayer ap){
+		super.addedToTeam(team, ap);
+		if (team.size() == 1){ /// it's finally a valid team
+			announceTourneySize();}
+	}
+
+	@Override
+	public void addTeam(Team team){
+		super.addTeam(team);
+		announceTourneySize();
+	}
+
+	private void announceTourneySize() {
+		int size = 0;
+		for (Team t: teams){
+			if (t.size() > 0)
+				size++;
+		}
 		int nrounds = getNRounds(size);
-		int idealteam = (int) Math.pow(2, nrounds);
-		if (size > 2 && size % idealteam == 0){
+		int idealteam = (int) Math.pow(eventParams.getMinTeams(), nrounds);
+		if (nrounds > 1 && size % idealteam == 0){
 			Bukkit.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&6" + size +" "+MessageUtil.getTeamsOrPlayers(teams.size())+
 					"&e have joined, Current tournament will have &6" + nrounds+"&e rounds"));
 		}
 	}
 
-
 	public int getNRounds(int size){
-		return (int) Math.floor(Math.log(size)/Math.log(2));
+		return (int) Math.floor(Math.log(size)/Math.log(eventParams.getMinTeams()));
 	}
 
 	@Override
@@ -323,4 +389,20 @@ public class TournamentEvent extends Event implements Listener{
 		Team t = getTeam(p);
 		return isOpen() || (t != null && !aliveTeams.contains(t));
 	}
+
+	@Override
+	public String getStatus() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(super.getStatus());
+		if (round <0){
+			return sb.toString();}
+		sb.append("&e Alive Teams=&6 " + aliveTeams.size()+"\n");
+		Round tr = rounds.get(round);
+		int ncomplete = tr.getCompleteMatchups().size();
+		final int total = tr.getMatchups().size();
+		sb.append(preliminary_round && round==0 ? "&ePreliminaryRound" : "&eRound");
+		sb.append("&4 " + (round+1)+" &eComplete Matches: &6 " + ncomplete +"/" +total);
+		return sb.toString();
+	}
+
 }

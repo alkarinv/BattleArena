@@ -8,6 +8,7 @@ import java.util.List;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.HeroesInterface;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TeleportController;
@@ -45,6 +46,9 @@ public class BAPlayerListener implements Listener  {
 	public static HashMap<String,Location> tp = new HashMap<String,Location>();
 
 	public static HashMap<String,Integer> expRestore = new HashMap<String,Integer>();
+	public static HashMap<String,Integer> healthRestore = new HashMap<String,Integer>();
+	public static HashMap<String,Integer> hungerRestore = new HashMap<String,Integer>();
+	public static HashMap<String,Integer> magicRestore = new HashMap<String,Integer>();
 	public static HashMap<String,PInv> itemRestore = new HashMap<String,PInv>();
 	public static HashMap<String,List<ItemStack>> itemRemove = new HashMap<String,List<ItemStack>>();
 	public static HashMap<String,GameMode> gamemodeRestore = new HashMap<String,GameMode>();
@@ -160,11 +164,48 @@ public class BAPlayerListener implements Listener  {
 				public void run() {
 					Player pl = Bukkit.getPlayerExact(name);
 					if (pl != null){
-						pl.giveExp(exp);
+						pl.giveExp(exp);}
+				}
+			});
+		}
+
+		/// Health restore
+		if (healthRestore.containsKey(p.getName())){
+			final int val = healthRestore.remove(p.getName());
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+				public void run() {
+					Player pl = Bukkit.getPlayerExact(name);
+					if (pl != null){
+						pl.setHealth(val);}
+				}
+			});
+		}
+
+		/// Hunger restore
+		if (hungerRestore.containsKey(p.getName())){
+			final int val = hungerRestore.remove(p.getName());
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+				public void run() {
+					Player pl = Bukkit.getPlayerExact(name);
+					if (pl != null){
+						pl.setFoodLevel(val);}
+				}
+			});
+		}
+
+		/// Magic restore
+		if (magicRestore.containsKey(p.getName())){
+			final int val = magicRestore.remove(p.getName());
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+				public void run() {
+					Player pl = Bukkit.getPlayerExact(name);
+					if (pl != null){
+						HeroesInterface.setMagic(pl, val);
 					}
 				}
 			});
 		}
+
 		/// Restore Items
 		if (itemRestore.containsKey(p.getName())){
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
@@ -210,10 +251,10 @@ public class BAPlayerListener implements Listener  {
 		messagesOnRespawn.put(playerName, string);
 	}
 
-	public static void restoreExpOnReenter(String playerName, Integer f) {
+	public static void restoreExpOnReenter(String playerName, Integer val) {
 		if (expRestore.containsKey(playerName)){
-			f += expRestore.get(playerName);}
-		expRestore.put(playerName, f);
+			val += expRestore.get(playerName);}
+		expRestore.put(playerName, val);
 	}
 
 	public static void restoreItemsOnReenter(String playerName, PInv pinv) {
@@ -247,4 +288,17 @@ public class BAPlayerListener implements Listener  {
 		}
 		items.addAll(itemsToRemove);
 	}
+
+	public static void restoreHealthOnReenter(String playerName, Integer val) {
+		healthRestore.put(playerName, val);
+	}
+
+	public static void restoreHungerOnReenter(String playerName, Integer val) {
+		hungerRestore.put(playerName, val);
+	}
+
+	public static void restoreMagicOnReenter(String playerName, Integer val) {
+		magicRestore.put(playerName, val);
+	}
+
 }

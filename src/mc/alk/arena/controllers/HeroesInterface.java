@@ -85,4 +85,10 @@ public class HeroesInterface {
 		return null;
 	}
 
+	public static Integer getMagicLevel(Player player) {
+		if (!hasHeroes)
+			return null;
+		try{return HeroesUtil.getMagicLevel(player);}catch(Exception e){e.printStackTrace();}
+		return null;
+	}
 }

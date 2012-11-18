@@ -205,32 +205,20 @@ public class ArenaMatch extends Match {
 
 	@MatchEventHandler
 	public void onPlayerBlockBreak(BlockBreakEvent event){
-		TransitionOptions to = tops.getOptions(state);
-		if (to==null)
-			return;
-		if (to.blockBreakOff() == true){
-			event.setCancelled(true);
-		}
+		if (tops.hasOptionAt(state, TransitionOption.BLOCKBREAKOFF)){
+			event.setCancelled(true);}
 	}
 
 	@MatchEventHandler
 	public void onPlayerBlockPlace(BlockPlaceEvent event){
-		TransitionOptions to = tops.getOptions(state);
-		if (to==null)
-			return;
-		if (to.blockPlaceOff() == true){
-			event.setCancelled(true);
-		}
+		if (tops.hasOptionAt(state, TransitionOption.BLOCKPLACEOFF)){
+			event.setCancelled(true);}
 	}
 
 	@MatchEventHandler
 	public void onPlayerDropItem(PlayerDropItemEvent event){
-		TransitionOptions to = tops.getOptions(state);
-		if (to==null)
-			return;
-		if (to.hasOption(TransitionOption.DROPITEMOFF)){
-			event.setCancelled(true);
-		}
+		if (tops.hasOptionAt(state, TransitionOption.DROPITEMOFF)){
+			event.setCancelled(true);}
 	}
 
 	@MatchEventHandler

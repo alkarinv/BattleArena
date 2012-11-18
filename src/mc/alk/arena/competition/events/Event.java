@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -152,7 +153,17 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		mc.setMessageHandler(new EventMessageImpl(this));
 	}
 
+	public void removeEmptyTeams(){
+		Iterator<Team> iter = teams.iterator();
+		while(iter.hasNext()){
+			Team t = iter.next();
+			if (t.size() == 0){
+				iter.remove();}
+		}
+	}
+
 	public void startEvent() {
+		removeEmptyTeams();
 		/// TODO rebalance teams
 		Set<ArenaPlayer> excludedPlayers = getExcludedPlayers();
 		for (ArenaPlayer p : excludedPlayers){
@@ -187,8 +198,11 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	}
 
 	public void cancelEvent() {
-		for (Team tt : teams){ /// for anyone in a match, cancel them
-			ac.cancelMatch(tt);}
+		List<Team> newTeams = new ArrayList<Team>(teams);
+		for (Team tt : newTeams){ /// for anyone in a match, cancel them
+			if (!ac.cancelMatch(tt)){
+				tt.sendMessage("&cEvent was cancelled");}
+		}
 		notifyListeners(new EventCancelEvent(this));
 		mc.sendEventCancelled();
 		endEvent(); /// now call the method to clean everything else up
@@ -323,7 +337,14 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	@Override
 	public EventParams getParams() {return eventParams;}
 
-	public int getNteams() {return teams.size();}
+	public int getNTeams() {
+		int size = 0;
+		for (Team t: teams){
+			if (t.size() > 0)
+				size++;
+		}
+		return size;
+	}
 
 	public void setTeamJoinHandler(TeamJoinHandler tjh){
 		this.joinHandler = tjh;
@@ -396,8 +417,10 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		boolean rated = eventParams.isRated();
 		sb.append((rated? "&4Rated" : "&aUnrated") +"&e "+name+". " );
 		sb.append("&e(&6" + state+"&e)");
-		if (eventParams != null) sb.append("&eTeam size=" + eventParams.getTeamSizeRange() );
-		//		sb.append("&e Teams=&6 " + inEvent.size()+" &e. Alive Teams: &6" + aliveTeams.size());
+		if (eventParams != null){
+			sb.append("&eTeam size=" + eventParams.getTeamSizeRange() );
+			sb.append("&e Teams=&6 " + teams.size());
+		}
 		return sb.toString();
 	}
 
@@ -459,7 +482,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		if (!isOpen())
 			return false;
 		if (remaining == 0){
-			if (eventParams.matchesNTeams(teams.size()) && this.hasEnoughTeams()){
+			if (this.hasEnoughTeams()){
 				startEvent();
 			} else {
 				mc.sendEventCancelledDueToLackOfPlayers(getPlayers());
@@ -500,12 +523,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	}
 
 	public boolean hasEnoughTeams() {
-		int nteams = 0;
-		for (Team t: teams){
-			if (t.size() > 0)
-				nteams++;
-		}
-		return nteams >= eventParams.getMinTeams();
+		return getNTeams() >= eventParams.getMinTeams();
 	}
 
 	public void addTransitionListener(TransitionListener transitionListener) {
