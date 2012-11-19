@@ -8,14 +8,26 @@ import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.Team;
 
 public abstract class QueueObject {
-	Integer priority;
-	MatchParams mp;
 
-	public abstract Integer getPriority();
+	protected Integer priority;
+
+	protected MatchParams matchParams;
+
+	protected JoinOptions jp;
 
 	public MatchParams getMatchParams() {
-		return mp;
+		return matchParams;
 	}
+
+	public JoinOptions getJoinOptions() {
+		return jp;
+	}
+
+	public void setJoinOptions(JoinOptions jp) {
+		this.jp = jp;
+	}
+
+	public abstract Integer getPriority();
 
 	public abstract boolean hasMember(ArenaPlayer p);
 
@@ -26,6 +38,4 @@ public abstract class QueueObject {
 	public abstract Collection<Team> getTeams();
 
 	public abstract boolean hasTeam(Team team);
-
-	public abstract JoinOptions getJoinOptions();
 }

@@ -6,10 +6,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.listeners.ArenaListener;
@@ -44,7 +42,7 @@ public class MethodController {
 		return listeners;
 	}
 
-	public static void updateMatchBukkitEvents(ArenaListener arenaListener, MatchState matchState, Collection<String> players) {
+	public static void updateMatchBukkitEvents(ArenaListener arenaListener, MatchState matchState, List<String> players) {
 		try {
 			Map<Class<? extends Event>,List<MatchEventMethod>> map = getMethods(arenaListener);
 			if (map == null){
@@ -52,9 +50,8 @@ public class MethodController {
 				Util.printStackTrace();
 				return;
 			}
-			Collection<String> newplayers = players != null ? new ArrayList<String>(players) : null;
 			for (Class<? extends Event> event: map.keySet()){
-				updateEventListener(arenaListener,matchState, newplayers, map, event);
+				updateEventListener(arenaListener,matchState, players, map, event);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -62,9 +59,16 @@ public class MethodController {
 	}
 
 	public static void updateAllEventListeners(ArenaListener arenaListener, MatchState matchState, ArenaPlayer player){
-		Set<String> players = new HashSet<String>();
+		List<String> players = new ArrayList<String>();
 		players.add(player.getName());
 		updateMatchBukkitEvents(arenaListener,matchState,players);
+	}
+
+	public static void updateAllEventListeners(ArenaListener arenaListener, MatchState matchState, Collection<ArenaPlayer> players){
+		List<String> strplayers = new ArrayList<String>();
+		for (ArenaPlayer ap: players){
+			strplayers.add(ap.getName());}
+		updateMatchBukkitEvents(arenaListener,matchState,strplayers);
 	}
 
 	public static void updateEventListeners(ArenaListener arenaListener, MatchState matchState,
@@ -100,7 +104,7 @@ public class MethodController {
 			if (mem.getBeginState() == matchState){
 				BukkitEventListener bel = getCreate(event,mem);
 				bel.addListener(arenaListener,matchState, mem,players);
-			} else if (mem.getEndState() == matchState || mem.getCancelState() == matchState) {
+			} else if (mem.getEndState() == matchState) {
 				BukkitEventListener bel = listeners.get(event);
 				if (bel != null){
 					bel.removeListener(arenaListener, matchState,mem,players);
@@ -152,7 +156,7 @@ public class MethodController {
 			MatchEventHandler meh = method.getAnnotation(MatchEventHandler.class);
 			if (meh == null)
 				continue;
-			MatchState beginState = meh.begin(),endState = meh.end(), cancelState = MatchState.NONE;
+			MatchState beginState = meh.begin(),endState = meh.end();
 			boolean needsTeamOrPlayer = false;
 			/// Make sure there is some sort of bukkit bukkitEvent here
 			Class<?>[] classes = method.getParameterTypes();
@@ -165,19 +169,22 @@ public class MethodController {
 			Method getLivingMethod = null;
 			Method getEntityMethod = null;
 
-			/// From our bukkit bukkitEvent. find any methods that return a Player, HumanEntity, or LivingEntity
-			for (Method m : bukkitEvent.getMethods()){
-				Type t = m.getReturnType();
-				if (Player.class.isAssignableFrom((Class<?>) t) || HumanEntity.class.isAssignableFrom((Class<?>) t)){
-					if (getPlayerMethod != null){
-						System.err.println("Method "+method.getName() +" has multiple methods that return a player ");
-						return;
+			if (meh.needsPlayer()){
+				/// From our bukkit bukkitEvent. find any methods that return a Player, HumanEntity, or LivingEntity
+				for (Method m : bukkitEvent.getMethods()){
+					Type t = m.getReturnType();
+					if (Player.class.isAssignableFrom((Class<?>) t) || HumanEntity.class.isAssignableFrom((Class<?>) t)){
+						if (getPlayerMethod != null){
+							System.err.println("Method "+method.getName() +" has multiple methods that return a player ");
+							return;
+						}
+						getPlayerMethod = m;
+					} else if (LivingEntity.class.isAssignableFrom((Class<?>) t) || Entity.class.isAssignableFrom((Class<?>) t)){
+						getLivingMethod = m;
 					}
-					getPlayerMethod = m;
-				} else if (LivingEntity.class.isAssignableFrom((Class<?>) t) || Entity.class.isAssignableFrom((Class<?>) t)){
-					getLivingMethod = m;
 				}
 			}
+
 			/// Go over the rest of the parameters to see if we should give a Team or Player
 			for (int i =1;i< classes.length;i++){
 				Class<?> c = classes[i];
@@ -215,12 +222,11 @@ public class MethodController {
 				if (beginState == MatchState.NONE) beginState = MatchState.ONENTER;
 				if (endState == MatchState.NONE) endState = MatchState.ONLEAVE;
 
-				mths.add(new MatchEventMethod(method, bukkitEvent,getPlayerMethod,beginState, endState,endState, meh.priority()));
+				mths.add(new MatchEventMethod(method, bukkitEvent,getPlayerMethod,beginState, endState, meh.priority()));
 			} else {
 				if (beginState == MatchState.NONE) beginState = MatchState.ONOPEN;
-				if (endState == MatchState.NONE) endState = MatchState.ONCOMPLETE;
-				if (cancelState == MatchState.NONE) endState = MatchState.ONCANCEL;
-				mths.add(new MatchEventMethod(method, bukkitEvent,beginState,endState,cancelState, meh.priority()));
+				if (endState == MatchState.NONE) endState = MatchState.ONFINISH;
+				mths.add(new MatchEventMethod(method, bukkitEvent,beginState,endState,meh.priority()));
 			}
 			Collections.sort(mths);
 		}

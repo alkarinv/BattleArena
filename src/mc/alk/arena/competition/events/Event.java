@@ -39,6 +39,7 @@ import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -141,7 +142,8 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		Player[] online = Util.getOnlinePlayers();
 		for (Player p: online){
 			Team t = TeamController.createTeam(BattleArena.toArenaPlayer(p));
-			this.joining(t);
+			TeamQObject tqo = new TeamQObject(t,params,null);
+			this.joining(tqo);
 		}
 		startEvent();
 	}
@@ -298,20 +300,21 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	 * @param team that is joining
 	 * @return where the team ended up
 	 */
-	public TeamJoinResult joining(Team t){
+	public TeamJoinResult joining(TeamQObject tqo){
 		TeamJoinResult tjr = null;
+		Team team = tqo.getTeam();
 		if (joinHandler == null)
 			tjr = TeamJoinHandler.NOTOPEN;
 		else
-			tjr = joinHandler.joiningTeam(t);
+			tjr = joinHandler.joiningTeam(tqo);
 		switch(tjr.status){
 		case ADDED:
 			break;
 		case CANT_FIT:
-			mc.sendCantFitTeam(t);
+			mc.sendCantFitTeam(team);
 			break;
 		case WAITING_FOR_PLAYERS:
-			mc.sendWaitingForMorePlayers(t, tjr.remaining);
+			mc.sendWaitingForMorePlayers(team, tjr.remaining);
 			break;
 		default:
 			break;

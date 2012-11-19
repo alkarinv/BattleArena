@@ -50,6 +50,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaInterface;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
+import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.victoryconditions.TimeLimit;
@@ -177,7 +178,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	private void updateBukkitEvents(MatchState matchState){
 		for (ArenaListener al : arenaListeners){
-			MethodController.updateMatchBukkitEvents(al, matchState, insideArena);
+			MethodController.updateMatchBukkitEvents(al, matchState, new ArrayList<String>(insideArena));
 		}
 	}
 
@@ -348,8 +349,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			final Set<Team> losers = matchResult.getLosers();
 			final Set<Team> drawers = matchResult.getDrawers();
 			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  " + losers);
-			TrackerInterface bti = BTInterface.getInterface(params);
 			if (matchResult.hasVictor()){ /// We have a true winner
+				TrackerInterface bti = BTInterface.getInterface(params);
 				if (bti != null && params.isRated()){
 					try{BTInterface.addRecord(bti,victors,losers,drawers,WLT.WIN);}catch(Exception e){e.printStackTrace();}
 				}
@@ -414,6 +415,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	private void deconstruct(){
 		/// Teleport out happens 1 tick after oncancel/oncomplete, we also must wait 1 tick
 		final Match match = this;
+		updateBukkitEvents(MatchState.ONFINISH);
+		notifyListeners(new MatchFinishedEvent(match));
 		arenaInterface.onFinish();
 		insideArena.clear();
 		insideWaitRoom.clear();
@@ -423,7 +426,6 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 				stopTracking(p);
 			}
 		}
-		notifyListeners(new MatchFinishedEvent(match));
 		teams.clear();
 		arenaListeners.clear();
 		if (joinHandler != null){
@@ -515,7 +517,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	public void onJoin(Team team) {
 		if (joinHandler != null){
-			joinHandler.joiningTeam(team);
+			TeamQObject tqo = new TeamQObject(team,params,null);
+			joinHandler.joiningTeam(tqo);
 		} else {
 			addTeam(team);
 		}

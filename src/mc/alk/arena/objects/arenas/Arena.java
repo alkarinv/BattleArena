@@ -75,7 +75,7 @@ public class Arena implements ArenaListener {
 	 * @return
 	 */
 	public Location getSpawnLoc(int index){
-		if (locs == null || locs.isEmpty())
+		if (locs == null || locs.isEmpty() || index < 0)
 			return null;
 		if (index >= locs.size())
 			index %= locs.size();

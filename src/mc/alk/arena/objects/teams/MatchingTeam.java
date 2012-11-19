@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.options.JoinOptions;
 
 import org.bukkit.entity.Player;
 
@@ -183,14 +182,6 @@ public class MatchingTeam implements Team{
 	public String getOtherNames(ArenaPlayer player) {
 		return null;
 	}
-
-	@Override
-	public JoinOptions getJoinPreferences() {
-		return null;
-	}
-
-	@Override
-	public void setJoinPreferences(JoinOptions jp) {}
 
 	@Override
 	public int getPriority() {

@@ -41,6 +41,7 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.pairs.WantedTeamSizePair;
+import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.ArenaSerializer;
@@ -158,7 +159,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			}
 		}
 		mp = new MatchParams(mp);
-		JoinOptions jp;
+		JoinOptions jp = null;
 		WantedTeamSizePair wtsr = null;
 		try {
 			jp = JoinOptions.parseOptions(mp,t, player, Arrays.copyOfRange(args, 1, args.length));
@@ -167,7 +168,6 @@ public class BAExecutor extends CustomCommandExecutor  {
 				mp.intersect(jp);
 			} else {
 				mp.setTeamSize(Math.max(t.size(), mp.getMinTeamSize()));}
-			t.setJoinPreferences(jp);
 		} catch (InvalidOptionException e) {
 			return sendMessage(player, e.getMessage());
 		} catch (Exception e){
@@ -213,9 +213,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Check entrance fee
 		if (!checkFee(mp, player)){
 			return true;}
+		TeamQObject tqo = new TeamQObject(t,mp,jp);
 
 		/// Add them to the queue
-		QPosTeamPair qpp = ac.addToQue(t, mp);
+		QPosTeamPair qpp = ac.addToQue(tqo);
 		if (qpp == null){
 			t.sendMessage("&eYou have been added to a team");
 		} else if (qpp.pos== -2){
@@ -279,6 +280,9 @@ public class BAExecutor extends CustomCommandExecutor  {
 
 	@MCCommand(cmds={"cancel"},admin=true,exact=2,usage="cancel <arenaname or player>")
 	public boolean arenaCancel(CommandSender sender, String[] args) {
+		if (args[1].equalsIgnoreCase("all")){
+			return cancelAll(sender);}
+
 		Player player = Util.findPlayer(args[1]);
 		if (player != null){
 			ArenaPlayer ap = PlayerController.toArenaPlayer(player);
@@ -289,8 +293,6 @@ public class BAExecutor extends CustomCommandExecutor  {
 			}
 		}
 		String arenaName = args[1];
-		if (arenaName.equalsIgnoreCase("all")){
-			return cancelAll(sender);}
 		Arena arena = ac.getArena(arenaName);
 		if (arena == null){
 			return sendMessage(sender,"&cArena "+ arenaName + " not found");

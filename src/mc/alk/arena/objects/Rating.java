@@ -1,12 +1,13 @@
 package mc.alk.arena.objects;
 
+
 public enum Rating {
 	RATED,UNRATED, UNKNOWN, ANY;
 
 	public static Rating fromString(String rating) {
 		try {
 			return Rating.valueOf(rating.toUpperCase());
-		} catch (Exception e){			
+		} catch (Exception e){
 			return Rating.UNKNOWN;
 		}
 	}

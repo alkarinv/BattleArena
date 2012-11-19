@@ -11,6 +11,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.JoinOptions.JoinOption;
+import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamFactory;
 
@@ -28,11 +29,12 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 	}
 
 	@Override
-	public TeamJoinResult joiningTeam(Team team) {
+	public TeamJoinResult joiningTeam(TeamQObject tqo) {
+		Team team = tqo.getTeam();
 		if ( maxTeamSize < team.size()){
 			return CANTFIT;}
 		/// Try to let them join their specified team if possible
-		JoinOptions jo = team.getJoinPreferences();
+		JoinOptions jo = tqo.getJoinOptions();
 		if (jo != null && jo.hasOption(JoinOption.TEAM)){
 			Integer index = (Integer) jo.getOption(JoinOption.TEAM);
 			if (index < maxTeams){ /// they specified a team index within range

@@ -17,11 +17,11 @@ public class TagAPIInterface {
 	}
 
 	public static void setNameColor(Player player, ChatColor teamColor) {
-		TagAPIListener.setNameColor(player,teamColor);
+		try{TagAPIListener.setNameColor(player,teamColor);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public static void removeNameColor(Player player) {
-		TagAPIListener.removeNameColor(player);
+		try{TagAPIListener.removeNameColor(player);}catch(Exception e){e.printStackTrace();}
 	}
 
 }

@@ -74,8 +74,8 @@ public class ArenaMatchQueue {
 			notifyIfNeeded();
 	}
 
-	public synchronized QPosTeamPair add(final Team t1, final MatchParams mp) {
-		return addToQueue(new TeamQObject(t1,mp));
+	public synchronized QPosTeamPair add(final QueueObject queueObject) {
+		return addToQueue(queueObject);
 	}
 	/**
 	 * Add a matchup of teams.  They already have all required teams, so just need to wait for an open arena
@@ -234,10 +234,12 @@ public class ArenaMatchQueue {
 			} else {
 				TeamQObject to = (TeamQObject) qo;
 				Team t = to.getTeam();
-				JoinOptions jp = t.getJoinPreferences();
-				if (jp != null && !(jp.matches(arena) && jp.matches(params))){
-					continue;}
-				TeamJoinResult tjr = tjh.joiningTeam(t);
+				JoinOptions jp = qo.getJoinOptions();
+				if (jp != null &&
+						!(jp.matches(arena) && jp.matches(params) && arena.matches(params, jp))){
+					continue;
+				}
+				TeamJoinResult tjr = tjh.joiningTeam(to);
 				if (tjr.status == TeamJoinStatus.CANT_FIT){
 					continue;
 				}
@@ -311,16 +313,6 @@ public class ArenaMatchQueue {
 		return false;
 	}
 
-	public int addToQue(Team t, MatchParams q) {
-		TeamQueue tq = getTeamQ(q);
-		if (tq == null) /// no queue!!!!
-			return -1;
-		if (tq.contains(t)) /// already in queue
-			return -1;
-		tq.add(new TeamQObject(t,q)); /// TeamJoinResult team to the end of the queue
-		return tq.size();
-	}
-
 	public synchronized ParamTeamPair removeFromQue(ArenaPlayer p) {
 		for (TeamQueue tq : tqs.values()){
 			if (tq != null && tq.contains(p)){
@@ -345,9 +337,6 @@ public class ArenaMatchQueue {
 			QPosTeamPair qtp = tq.getPos(p);
 			if (qtp != null)
 				return qtp;
-			//			pos = tq.indexOf(p);
-			//			if (pos != -1)
-			//				return new QPosTeamPair(tq.getMatchParams(),pos,tq.getNPlayers(),tq.get(pos));
 		}
 		return null;
 	}

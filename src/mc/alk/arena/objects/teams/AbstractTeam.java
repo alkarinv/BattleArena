@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.entity.Player;
@@ -31,8 +30,6 @@ public abstract class AbstractTeam implements Team{
 
 	/// Pickup teams are transient in nature, once the match end they disband
 	protected boolean isPickupTeam = false;
-
-	protected JoinOptions jp;
 
 	/**
 	 * Default Constructor
@@ -298,14 +295,6 @@ public abstract class AbstractTeam implements Team{
 
 	public boolean hasSetName() {
 		return this.nameManuallySet;
-	}
-
-	public JoinOptions getJoinPreferences() {
-		return jp;
-	}
-
-	public void setJoinPreferences(JoinOptions jp) {
-		this.jp = jp;
 	}
 
 	public int getPriority() {

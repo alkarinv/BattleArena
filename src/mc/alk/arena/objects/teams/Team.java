@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.options.JoinOptions;
 
 import org.bukkit.entity.Player;
 
@@ -93,10 +92,6 @@ public interface Team {
 	public String getTeamSummary();
 
 	public String getOtherNames(ArenaPlayer player);
-
-	public JoinOptions getJoinPreferences();
-
-	public void setJoinPreferences(JoinOptions jp);
 
 	public int getPriority();
 

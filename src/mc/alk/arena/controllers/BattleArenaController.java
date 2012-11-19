@@ -17,26 +17,32 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
+import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
+import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.tournament.Matchup;
 
 import org.bukkit.Bukkit;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 
-public class BattleArenaController implements Runnable, TeamHandler, TransitionListener{
+public class BattleArenaController implements Runnable, TeamHandler, TransitionListener, ArenaListener{
 
 	boolean stop = false;
 
@@ -45,7 +51,9 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	final private Map<ArenaType,Set<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,Set<Match>>());
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
 	long lastTimeCheck = 0;
-
+	public BattleArenaController(){
+		MethodController.addMethods(this.getClass(), this.getClass().getMethods());
+	}
 	/// Run is Thread Safe as well as every method and object it uses
 	public void run() {
 		Match match = null;
@@ -85,14 +93,17 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		if (teams == null)
 			return;
 		for (Team team : teams){
-			if (team instanceof CompositeTeam){
-				for (Team t: ((CompositeTeam)team).getOldTeams()){
-					TeamController.removeTeamHandler(t, this);
-				}
-				TeamController.removeTeamHandler(team, this);
-			} else{
-				TeamController.removeTeamHandler(team, this);
+			unhandle(team);
+		}
+	}
+	private void unhandle(final Team team) {
+		if (team instanceof CompositeTeam){
+			for (Team t: ((CompositeTeam)team).getOldTeams()){
+				TeamController.removeTeamHandler(t, this);
 			}
+			TeamController.removeTeamHandler(team, this);
+		} else{
+			TeamController.removeTeamHandler(team, this);
 		}
 	}
 
@@ -128,19 +139,38 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	}
 
 	public Map<String, Arena> getArenas(){return allarenas;}
-	public QPosTeamPair addToQue(Team team, MatchParams params) {
-		if (joinExistingMatch(team,params)){
+	public QPosTeamPair addToQue(TeamQObject tqo) {
+		Team team = tqo.getTeam();
+		if (joinExistingMatch(tqo)){
 			return null;}
-		QPosTeamPair qpp = amq.add(team,params);
+		QPosTeamPair qpp = amq.add(tqo);
 		if (qpp != null && qpp.pos >=0){
 			TeamController.addTeamHandler(team,this);
+			/// If the same world flag is set, lets not let them change worlds while waiting in the queue
+			if (tqo.getMatchParams().getTransitionOptions().hasOptionAt(MatchState.PREREQS, TransitionOption.SAMEWORLD)){
+				MethodController.updateAllEventListeners(this, MatchState.PREREQS, team.getPlayers());}
 		}
 		return qpp;
 	}
 
-	private boolean joinExistingMatch(Team team, MatchParams params) {
+	@MatchEventHandler(begin=MatchState.PREREQS, end=MatchState.ONFINISH)
+	public void onPlayerChangeWorld(PlayerTeleportEvent event){
+		if (event.isCancelled())
+			return;
+		if (event.getFrom().getWorld().getUID() != event.getTo().getWorld().getUID()){
+			ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
+			ParamTeamPair ptp = amq.removeFromQue(ap);
+			if (ptp != null){
+				MethodController.updateAllEventListeners(this, MatchState.ONFINISH, ap);
+				unhandle(ptp.team);
+				ptp.team.sendMessage("&cYou have been removed from the queue for changing worlds");
+			}
+		}
+	}
+	private boolean joinExistingMatch(TeamQObject tqo) {
 		if (unfilled_matches.isEmpty()){
 			return false;}
+		MatchParams params = tqo.getMatchParams();
 		synchronized(unfilled_matches){
 			Set<Match> matches = unfilled_matches.get(params.getType());
 			if (matches == null)
@@ -158,7 +188,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 					if (tjh == null)
 						continue;
 					boolean result = false;
-					TeamJoinResult tjr = tjh.joiningTeam(team);
+					TeamJoinResult tjr = tjh.joiningTeam(tqo);
 					switch(tjr.status){
 					case ADDED_TO_EXISTING: case ADDED: result = true;
 					default: break;

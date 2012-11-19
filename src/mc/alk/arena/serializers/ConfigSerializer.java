@@ -119,6 +119,7 @@ public class ConfigSerializer extends BaseSerializer{
 
 		/// What is the default rating for this match type
 		Rating rating = cs.contains("rated") ? Rating.fromBoolean(cs.getBoolean("rated")) : Rating.RATED;
+
 		if (rating == null || rating == Rating.UNKNOWN)
 			throw new ConfigException("Could not parse rating: valid types. " + Rating.getValidList());
 

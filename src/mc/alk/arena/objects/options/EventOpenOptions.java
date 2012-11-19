@@ -134,7 +134,8 @@ public class EventOpenOptions {
 
 	public void updateParams(MatchParams mp){
 		/// Rated
-		mp.setRating(hasOption(EventOpenOption.UNRATED) ? Rating.UNRATED : Rating.RATED);
+		if (hasOption(EventOpenOption.UNRATED))
+			mp.setRating(Rating.UNRATED);
 		/// By default lets make the teamSize the min team size if max # teams not specified as a finite range
 		if (mp.getMaxTeams() == ArenaParams.MAX){
 			mp.setMaxTeamSize(mp.getMinTeamSize());

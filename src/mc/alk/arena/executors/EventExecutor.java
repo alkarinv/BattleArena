@@ -20,6 +20,7 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
@@ -217,7 +218,6 @@ public class EventExecutor extends BAExecutor{
 		JoinOptions jp;
 		try {
 			jp = JoinOptions.parseOptions(sq,t, p, Arrays.copyOfRange(args, 1, args.length));
-			t.setJoinPreferences(jp);
 		} catch (InvalidOptionException e) {
 			return sendMessage(p, e.getMessage());
 		} catch (Exception e){
@@ -233,9 +233,10 @@ public class EventExecutor extends BAExecutor{
 		/// Check fee
 		if (!checkFee(sq, p)){
 			return true;}
+		TeamQObject tqo = new TeamQObject(t,sq,jp);
 
 		/// Finally actually join the event
-		event.joining(t);
+		event.joining(tqo);
 		if (sq.getSecondsTillStart() != null){
 			Long time = event.getTimeTillStart();
 			if (time != null)

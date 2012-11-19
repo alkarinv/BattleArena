@@ -9,6 +9,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -28,6 +29,7 @@ import mc.alk.arena.util.TeamUtil;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -276,6 +278,15 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public boolean setExp(CommandSender sender, ArenaPlayer p, Integer exp) {
 		ExpUtil.setTotalExperience(p.getPlayer(), exp);
 		return sendMessage(sender,"&2Player's exp set to " + exp );
+	}
+
+	@MCCommand(cmds={"tp"}, admin=true, inGame=true)
+	public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, Integer spawnIndex) {
+		Location loc = arena.getSpawnLoc(spawnIndex);
+		if (loc ==null){
+			return sendMessage(sender,"&2Spawn " + spawnIndex +" doesn't exist");}
+		TeleportController.teleport(sender.getPlayer(), loc);
+		return sendMessage(sender,"&2Teleported to &6"+ spawnIndex +" &2loc=&6"+loc);
 	}
 
 }

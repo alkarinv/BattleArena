@@ -15,6 +15,7 @@ import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
@@ -93,14 +94,15 @@ public class ReservedArenaEvent extends Event {
 	}
 
 	@Override
-	public TeamJoinResult joining(Team t){
-		TeamJoinResult tjr = super.joining(t);
+	public TeamJoinResult joining(TeamQObject tqo){
+		TeamJoinResult tjr = super.joining(tqo);
 		switch(tjr.getEventType()){
 		case ADDED:
 			/// The first time, add the entire team
-			arenaMatch.onJoin(tjr.team);
+			arenaMatch.onJoin(tqo.getTeam());
 			break;
 		case ADDED_TO_EXISTING:
+			Team t = tqo.getTeam();
 			if (arenaMatch.hasTeam(tjr.team)){
 				for (ArenaPlayer p : t.getPlayers()){/// subsequent times, just the new players
 					/// dont call arenaMatch.onJoin(Team), as part of the team might already be in arena

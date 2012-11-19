@@ -4,16 +4,14 @@ import java.util.Collection;
 import java.util.List;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 
 public class MatchTeamQObject extends QueueObject{
 	final Matchup matchup;
-	final Integer priority;
 
 	public MatchTeamQObject(Matchup matchup){
-		mp = matchup.getMatchParams();
+		matchParams = matchup.getMatchParams();
 		this.matchup = matchup;
 		this.priority = matchup.getPriority();
 	}
@@ -58,8 +56,4 @@ public class MatchTeamQObject extends QueueObject{
 		return teams != null ? teams.contains(team) : false;
 	}
 
-	@Override
-	public JoinOptions getJoinOptions() {
-		return null;
-	}
 }

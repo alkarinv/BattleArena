@@ -9,13 +9,13 @@ import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.Team;
 
 public class TeamQObject extends QueueObject{
-	Team team;
-	final int priority;
+	final Team team;
 
-	public TeamQObject(Team t1, MatchParams mp) {
-		this.mp = mp;
-		this.team = t1;
-		priority = t1.getPriority();
+	public TeamQObject(Team team, MatchParams params, JoinOptions joinOptions) {
+		this.matchParams = params;
+		this.team = team;
+		priority = team.getPriority();
+		this.jp = joinOptions;
 	}
 
 	public Team getTeam() {
@@ -42,6 +42,7 @@ public class TeamQObject extends QueueObject{
 	public String toString(){
 		return team.getPriority()+" " + team.toString()+":" + team.getId();
 	}
+
 	@Override
 	public Collection<Team> getTeams() {
 		ArrayList<Team> teams = new ArrayList<Team>(1);
@@ -52,10 +53,5 @@ public class TeamQObject extends QueueObject{
 	@Override
 	public boolean hasTeam(Team team) {
 		return this.team.getId() == team.getId();
-	}
-
-	@Override
-	public JoinOptions getJoinOptions() {
-		return team.getJoinPreferences();
 	}
 }
