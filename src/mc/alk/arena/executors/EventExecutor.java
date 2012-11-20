@@ -206,7 +206,7 @@ public class EventExecutor extends BAExecutor{
 		EventParams sq = event.getParams();
 		MatchTransitions tops = sq.getTransitionOptions();
 		/// Perform is ready check
-		if(!tops.playerReady(p)){
+		if(!tops.playerReady(p,null)){
 			String notReadyMsg = tops.getRequiredString("&eYou need the following to compete!!!\n");
 			return MessageUtil.sendMessage(p,notReadyMsg);
 		}

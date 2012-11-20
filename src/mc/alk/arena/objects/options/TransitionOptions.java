@@ -20,6 +20,7 @@ import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -153,7 +154,7 @@ public class TransitionOptions {
 	public String getDisguiseAllAs() {return getString(TransitionOption.DISGUISEALLAS);}
 	public Boolean undisguise() {return options.containsKey(TransitionOption.UNDISGUISE);}
 
-	public boolean playerReady(ArenaPlayer p) {
+	public boolean playerReady(ArenaPlayer p, World w) {
 		if (p==null || !p.isOnline() || p.isDead())
 			return false;
 		if (needsItems()){
@@ -166,6 +167,10 @@ public class TransitionOptions {
 		}
 		if (options.containsKey(TransitionOption.NOINVENTORY)){
 			if (InventoryUtil.hasAnyItem(p.getPlayer()))
+				return false;
+		}
+		if (options.containsKey(TransitionOption.SAMEWORLD) && w!=null){
+			if (p.getLocation().getWorld().getUID() != w.getUID())
 				return false;
 		}
 		if (needsArmor()){
@@ -199,6 +204,7 @@ public class TransitionOptions {
 			hasSomething = true;
 			sb.append("&5 - &6Clear Inventory");
 		}
+
 		if (needsArmor()){
 			hasSomething = true;
 			sb.append("&5 - &6Armor");
@@ -212,7 +218,7 @@ public class TransitionOptions {
 		return hasSomething ? sb.toString() : null;
 	}
 
-	public String getNotReadyMsg(ArenaPlayer p, String headerMsg) {
+	public String getNotReadyMsg(ArenaPlayer p, World w, String headerMsg) {
 		//		System.out.println(" Here in getNot ready msg with " + p.getName());
 		StringBuilder sb = new StringBuilder(headerMsg);
 		boolean isReady = true;
@@ -234,6 +240,12 @@ public class TransitionOptions {
 				isReady = false;
 			}
 		}
+		if (options.containsKey(TransitionOption.SAMEWORLD) && w!=null){
+			if (p.getLocation().getWorld().getUID() != w.getUID())
+				sb.append("&5 -&c Not in same world\n");
+				isReady = false;
+		}
+
 		if (needsArmor()){
 			if (!InventoryUtil.hasArmor(p.getPlayer())){
 				sb.append("&&5 - &6Armor\n");

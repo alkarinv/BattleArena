@@ -18,7 +18,6 @@ import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.events.MatchEventMethod;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.Util;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
@@ -46,13 +45,9 @@ public class MethodController {
 		try {
 			Map<Class<? extends Event>,List<MatchEventMethod>> map = getMethods(arenaListener);
 			if (map == null){
-				Log.err(arenaListener +" has no registered methods");
-				Util.printStackTrace();
-				return;
-			}
+				return;}
 			for (Class<? extends Event> event: map.keySet()){
-				updateEventListener(arenaListener,matchState, players, map, event);
-			}
+				updateEventListener(arenaListener,matchState, players, map, event);}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -76,15 +71,11 @@ public class MethodController {
 		try {
 			Map<Class<? extends Event>,List<MatchEventMethod>> map = getMethods(arenaListener);
 			if (map == null){
-				Log.err(arenaListener +" has no registered methods");
-				Util.printStackTrace();
-				return;
-			}
+				return;}
 			List<String> players = new ArrayList<String>();
 			players.add(player.getName());
 			for (Class<? extends Event> event: events){
-				updateEventListener(arenaListener,matchState,players, map, event);
-			}
+				updateEventListener(arenaListener,matchState,players, map, event);}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

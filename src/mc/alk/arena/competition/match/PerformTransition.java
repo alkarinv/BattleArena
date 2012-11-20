@@ -29,6 +29,7 @@ import mc.alk.arena.util.TeamUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -126,7 +127,7 @@ public class PerformTransition {
 				/// Since we cant really tell the eventual result.. do our best guess
 				am.enterWaitRoom(player);
 				final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),rand.nextInt(team.size()));
-				TeleportController.teleportPlayer(p, l, true, true, false);
+				TeleportController.teleportPlayer(p, l, false);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
 			} else {
 				playerReady = false;
@@ -140,7 +141,7 @@ public class PerformTransition {
 				/// Since we cant really tell the eventual result.. do our best guess
 				am.enterArena(player);
 				final Location l = jitter(am.getTeamSpawn(teamIndex,false),rand.nextInt(team.size()));
-				TeleportController.teleportPlayer(p, l, true, true, false);
+				TeleportController.teleportPlayer(p, l, false);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
 			} else {
 				playerReady = false;
@@ -208,14 +209,15 @@ public class PerformTransition {
 			else
 				loc = am.oldlocs.get(player.getName());
 			if (insideArena || !onlyInMatch){
-				TeleportController.teleportPlayer(p, loc, false, false, wipeInventory);
+				TeleportController.teleportPlayer(p, loc, wipeInventory);
 				am.leaveArena(player);
 			}
 			/// If players are outside of the match, but need requirements, warn them
 		} else if (transition == MatchState.ONPRESTART && !insideArena){
+			World w = am.getArena().getSpawnLoc(0).getWorld();
 			/// Warn players about requirements
-			if (!am.tops.playerReady(player)){
-				MessageUtil.sendMessage(player, am.tops.getRequiredString(player,"&eRemember you still need the following"));}
+			if (!am.tops.playerReady(player, w)){
+				MessageUtil.sendMessage(player, am.tops.getRequiredString(player,w,"&eRemember you still need the following"));}
 		}
 		/// Restore their exp and items.. Has to happen AFTER teleport
 		boolean restoreAll = mo.hasOption(TransitionOption.RESTOREALL);

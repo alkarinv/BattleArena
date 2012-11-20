@@ -256,7 +256,11 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		Team t = getTeam(p);
 		if (t==null) /// they arent in this Event
 			return true;
-		removeTeam(t);
+		if (t.size() == 1){
+			removeTeam(t);
+		} else {
+			t.playerLeft(p);
+		}
 		return true;
 	}
 

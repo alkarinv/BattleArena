@@ -106,9 +106,9 @@ public abstract class AbstractTeam implements Team{
 		return living.isEmpty() || living.size() <= offline;
 	}
 
-	public boolean hasMember(ArenaPlayer p) {return players.contains(p);}
+	public boolean hasMember(ArenaPlayer p) {return players.contains(p) && !leftplayers.contains(p);}
 	public boolean hasLeft(ArenaPlayer p) {return leftplayers.contains(p);}
-	public boolean hasAliveMember(ArenaPlayer p) {return players.contains(p) && !deadplayers.contains(p);}
+	public boolean hasAliveMember(ArenaPlayer p) {return hasMember(p) && !deadplayers.contains(p);}
 	public boolean isPickupTeam() {return isPickupTeam;}
 	public void setPickupTeam(boolean isPickupTeam) {this.isPickupTeam = isPickupTeam;}
 	public void setHealth(int health) {for (ArenaPlayer p: players){p.setHealth(health);}}
@@ -309,6 +309,7 @@ public abstract class AbstractTeam implements Team{
 	@Override
 	public void addPlayer(ArenaPlayer player) {
 		this.players.add(player);
+		this.leftplayers.remove(player);
 		this.nameChanged = true;
 	}
 

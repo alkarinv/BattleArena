@@ -205,7 +205,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		//			bti.updateRanking(t);
 		//		}
 		/// Check ready
-		if(!ops.teamReady(t)){
+		if(!ops.teamReady(t,null)){
 			t.sendMessage(ops.getRequiredString("&eYou need the following to join"));
 			return true;
 		}

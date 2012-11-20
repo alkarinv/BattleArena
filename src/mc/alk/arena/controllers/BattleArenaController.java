@@ -97,13 +97,13 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		}
 	}
 	private void unhandle(final Team team) {
+		TeamController.removeTeamHandler(team, this);
+		for (ArenaPlayer ap: team.getPlayers()){
+			MethodController.updateAllEventListeners(this, MatchState.ONFINISH, ap);}
 		if (team instanceof CompositeTeam){
 			for (Team t: ((CompositeTeam)team).getOldTeams()){
 				TeamController.removeTeamHandler(t, this);
 			}
-			TeamController.removeTeamHandler(team, this);
-		} else{
-			TeamController.removeTeamHandler(team, this);
 		}
 	}
 
@@ -161,7 +161,6 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 			ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
 			ParamTeamPair ptp = amq.removeFromQue(ap);
 			if (ptp != null){
-				MethodController.updateAllEventListeners(this, MatchState.ONFINISH, ap);
 				unhandle(ptp.team);
 				ptp.team.sendMessage("&cYou have been removed from the queue for changing worlds");
 			}

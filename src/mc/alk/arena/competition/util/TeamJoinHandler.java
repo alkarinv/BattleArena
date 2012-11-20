@@ -143,4 +143,14 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		return teams;
 	}
 
+	protected Team addToPreviouslyLeftTeam(ArenaPlayer player) {
+		for (Team t: teams){
+			if (t.hasLeft(player)){
+				t.addPlayer(player);
+				return t;
+			}
+		}
+		return null;
+	}
+
 }

@@ -31,6 +31,12 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 	@Override
 	public TeamJoinResult joiningTeam(TeamQObject tqo) {
 		Team team = tqo.getTeam();
+		if (team.size()==1){
+			Team oldTeam = addToPreviouslyLeftTeam(team.getPlayers().iterator().next());
+			if (oldTeam != null)
+				return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING,minTeamSize - oldTeam.size(), oldTeam);
+		}
+
 		if ( maxTeamSize < team.size()){
 			return CANTFIT;}
 		/// Try to let them join their specified team if possible

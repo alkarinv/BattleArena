@@ -154,8 +154,9 @@ public class ArenaMatchQueue {
 		/// See if one matches with the type of TeamQueue that we have been given
 		/// Then we make sure those players are ready, and if not send them messages
 		final MatchParams baseParams = ParamController.getMatchParams(tq.getMatchParams().getType().getName());
-		if (baseParams==null)
+		if (baseParams==null || tq.isEmpty())
 			return null;
+		boolean skipNonMatched = false;
 		synchronized(arenaqueue){ synchronized(tq){
 			for (Arena a : arenaqueue){
 				if (a == null || !a.valid() || !a.matches(baseParams, null))
@@ -167,6 +168,9 @@ public class ArenaMatchQueue {
 				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
 						"   tq=" + tq +" --- ap="+a.getParameters() +"    baseP="+baseParams +" newP="+newParams);
 				for (QueueObject qo : tq){
+					/// We want to allow MatchedUp Matches to proceed like normal (this happens for tournaments and duels)
+					if (skipNonMatched && !(qo instanceof MatchTeamQObject)){
+						continue;}
 					MatchParams mp = qo.getMatchParams();
 					if (!mp.matches(newParams))
 						continue;
@@ -185,7 +189,7 @@ public class ArenaMatchQueue {
 					}
 				}
 				if (Defaults.USE_ARENAS_ONLY_IN_ORDER){ /// Only check the first valid arena
-					return null;}
+					skipNonMatched = true;}
 			}
 		}}
 		///Found nothing matching

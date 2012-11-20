@@ -14,6 +14,7 @@ import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.InventoryUtil;
 
+import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
 public class MatchTransitions {
@@ -73,8 +74,8 @@ public class MatchTransitions {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).getNotReadyMsg(header): null;
 	}
 
-	public String getRequiredString(ArenaPlayer p, String header) {
-		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).getNotReadyMsg(p,header): null;
+	public String getRequiredString(ArenaPlayer p, World w, String header) {
+		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).getNotReadyMsg(p,w,header): null;
 	}
 
 	public String getGiveString(MatchState ms) {
@@ -93,16 +94,16 @@ public class MatchTransitions {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).hasMoney() : false;
 	}
 
-	public boolean playerReady(ArenaPlayer p) {
-		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).playerReady(p): true;
+	public boolean playerReady(ArenaPlayer p, World w) {
+		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).playerReady(p,w): true;
 	}
 
-	public boolean teamReady(Team t) {
+	public boolean teamReady(Team t, World w) {
 		TransitionOptions to = ops.get(MatchState.PREREQS);
 		if (to == null)
 			return true;
 		for (ArenaPlayer p: t.getPlayers()){
-			if (!to.playerReady(p))
+			if (!to.playerReady(p,w))
 				return false;
 		}
 		return true;

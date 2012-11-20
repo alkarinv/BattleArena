@@ -30,9 +30,9 @@ public class TeleportController implements Listener{
 
 	///TODO remove these work around teleport hacks when bukkit fixes the invisibility on teleport issue
     /// modified from the teleportFix2 found online
-	public static void teleportPlayer(final Player p, final Location loc, boolean in, final boolean die, final boolean wipe){
+	public static void teleportPlayer(final Player p, final Location loc, final boolean wipe){
 		if (!p.isOnline() || p.isDead()){
-			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + p.getName() + " loc=" + loc + "  " + die +":"+ wipe);
+			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + p.getName() + " loc=" + loc +":"+ wipe);
 			BAPlayerListener.teleportOnReenter(p.getName(),loc);
 			if (wipe){
 				InventoryUtil.clearInventory(p);}

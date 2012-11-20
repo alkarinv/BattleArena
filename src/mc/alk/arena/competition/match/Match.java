@@ -65,6 +65,7 @@ import mc.alk.tracker.objects.WLT;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -173,7 +174,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		}
 
 		/// Try and make a joinhandler out of our current params, but we don't care if it's null
-//		try {joinHandler = TeamJoinFactory.createTeamJoinHandler(params,this);} catch (NeverWouldJoinException e) {}
+		//		try {joinHandler = TeamJoinFactory.createTeamJoinHandler(params,this);} catch (NeverWouldJoinException e) {}
 	}
 
 	private void updateBukkitEvents(MatchState matchState){
@@ -372,9 +373,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		MatchCompleted(Match am){this.am = am;}
 
 		public void run() {
-			transitionTo(MatchState.ONSTART);
-
-			state = MatchState.ONCOMPLETE;
+			transitionTo(MatchState.ONCOMPLETE);
 			final Collection<Team> victors = am.getVictors();
 			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + victors);
 			/// ONCOMPLETE can teleport people out of the arena,
@@ -417,15 +416,16 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		final Match match = this;
 		updateBukkitEvents(MatchState.ONFINISH);
 		notifyListeners(new MatchFinishedEvent(match));
-		arenaInterface.onFinish();
-		insideArena.clear();
-		insideWaitRoom.clear();
 		for (Team t: teams){
 			TeamController.removeTeamHandler(t, match);
+			PerformTransition.transition(this, MatchState.ONFINISH,t,true);
 			for (ArenaPlayer p: t.getPlayers()){
 				stopTracking(p);
 			}
 		}
+		arenaInterface.onFinish();
+		insideArena.clear();
+		insideWaitRoom.clear();
 		teams.clear();
 		arenaListeners.clear();
 		if (joinHandler != null){
@@ -481,7 +481,6 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		startTracking(player);
 		arenaInterface.onJoin(player,team);
 		HeroesInterface.addedToTeam(team, player.getPlayer());
-
 		PerformTransition.transition(this, MatchState.ONJOIN, player,team, true);
 	}
 
@@ -550,9 +549,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		for (ArenaPlayer ap: team.getPlayers()){
 			onLeave(ap,team);
 		}
-		teams.remove(team);
-		HeroesInterface.removeTeam(team);
-		TeamController.removeTeamHandler(team, this);
+		privateRemoveTeam(team);
 	}
 
 	public void onLeave(ArenaPlayer p) {
@@ -563,11 +560,20 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	private void onLeave(ArenaPlayer ap, Team team){
 		team.killMember(ap);
+		team.playerLeft(ap);
+		leftPlayers.add(ap.getName());
 		if (insideArena(ap)){ /// Only leave if they haven't already left.
+			/// The onCancel should teleport them out, and call leaveArena(ap)
 			PerformTransition.transition(this, MatchState.ONCANCEL, ap, team, false);
-			leftPlayers.add(ap.getName());
-			team.playerLeft(ap);
 		}
+		if (team.size()==1){
+			privateRemoveTeam(team);}
+	}
+
+	private void privateRemoveTeam(Team team){
+		teams.remove(team);
+		HeroesInterface.removeTeam(team);
+		TeamController.removeTeamHandler(team, this);
 	}
 	/**
 	 * Called when a team joins the arena
@@ -861,7 +867,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		boolean inmatch = insideArena.contains(p.getName());
 		final String pname = p.getDisplayName();
 		boolean ready = true;
-		if (Defaults.DEBUG) System.out.println(p.getName()+"  online=" + online +" isready="+tops.playerReady(p));
+		World w = arena.getSpawnLoc(0).getWorld();
+		if (Defaults.DEBUG) System.out.println(p.getName()+"  online=" + online +" isready="+tops.playerReady(p,w));
 		if (!online){
 			//				Log.warn("[BattleArena] "+p.getName()+" killed for not being online");
 			t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for not being online");
@@ -870,9 +877,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			//				Log.warn("[BattleArena] "+p.getName()+" killed for not being online");
 			t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for being dead while the match starts");
 			ready = false;
-		} else if (!inmatch && !tops.playerReady(p)){ /// Players are about to be teleported into arena
+		} else if (!inmatch && !tops.playerReady(p,w)){ /// Players are about to be teleported into arena
 			t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for not being ready");
-			String notReady = tops.getRequiredString(p,"&eYou needed");
+			String notReady = tops.getRequiredString(p,w,"&eYou needed");
 			MessageUtil.sendMessage(p,"&eYou didn't compete because of the following.");
 			MessageUtil.sendMessage(p,notReady);
 			ready = false;
