@@ -71,7 +71,9 @@ public class PlayerStoreController {
 	public void storeHealth(ArenaPlayer player) {
 		Player p = player.getPlayer();
 		final String name = p.getName();
-		healthmap.put(name, player.getHealth());
+		int health = player.getHealth();
+		if (Defaults.DEBUG_STORAGE) Log.info("storing health=" + health+" for player=" + player.getName());
+		healthmap.put(name, health);
 	}
 
 	public void restoreHealth(ArenaPlayer p) {
@@ -80,6 +82,7 @@ public class PlayerStoreController {
 		Integer val = healthmap.remove(p.getName());
 		if (val == null || val <= 0)
 			return;
+		if (Defaults.DEBUG_STORAGE) Log.info("restoring health=" + val+" for player=" + p.getName());
 		if (p.isOnline() && !p.isDead()){
 			p.setHealth(val);
 		} else {
@@ -131,7 +134,7 @@ public class PlayerStoreController {
 	public void storeItems(ArenaPlayer player) {
 		final Player p = player.getPlayer();
 		final String name = p.getName();
-		if (Defaults.DEBUG_STORAGE)  System.out.println("storing items for = " + p.getName() +" contains=" + itemmap.containsKey(name));
+		if (Defaults.DEBUG_STORAGE) Log.info("storing items for = " + p.getName() +" contains=" + itemmap.containsKey(name));
 
 		if (itemmap.containsKey(name))
 			return;
@@ -142,7 +145,7 @@ public class PlayerStoreController {
 	}
 
 	public void restoreItems(ArenaPlayer p) {
-		if (Defaults.DEBUG_STORAGE)  System.out.println("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
+		if (Defaults.DEBUG_STORAGE)  Log.info("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
 		final PInv pinv = itemmap.remove(p.getName());
 		if (pinv == null)
 			return;

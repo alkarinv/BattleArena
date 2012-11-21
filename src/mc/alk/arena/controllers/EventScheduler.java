@@ -10,9 +10,9 @@ import mc.alk.arena.events.events.EventFinishedEvent;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
-import mc.alk.arena.listeners.TransitionListener;
+import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.EventParams;
-import mc.alk.arena.objects.events.TransitionEventHandler;
+import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.pairs.EventPair;
@@ -23,7 +23,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.command.ColouredConsoleSender;
 
-public class EventScheduler implements Runnable, TransitionListener{
+public class EventScheduler implements Runnable, ArenaListener{
 
 	int curEvent = 0;
 	Long delay = 5L;
@@ -87,7 +87,7 @@ public class EventScheduler implements Runnable, TransitionListener{
 				e.printStackTrace();
 			}
 			if (event != null){
-				event.addTransitionListener(scheduler);
+				event.addArenaListener(scheduler);
 			} else {  /// wait then start up the scheduler again in x seconds
 				currentTimer = Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(),
 						scheduler, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
@@ -95,10 +95,10 @@ public class EventScheduler implements Runnable, TransitionListener{
 		}
 	}
 
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void onEventFinished(EventFinishedEvent event){
 		Event e = event.getEvent();
-		e.removeTransitionListener(this);
+		e.removeArenaListener(this);
 		if (continuous){
 			/// Wait x sec then start the next event
 			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, (long) (20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS*Defaults.TICK_MULT));

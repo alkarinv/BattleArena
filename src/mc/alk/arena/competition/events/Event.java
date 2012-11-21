@@ -31,7 +31,7 @@ import mc.alk.arena.events.events.EventOpenEvent;
 import mc.alk.arena.events.events.EventStartEvent;
 import mc.alk.arena.events.events.EventVictoryEvent;
 import mc.alk.arena.events.events.TeamJoinedEvent;
-import mc.alk.arena.listeners.TransitionListener;
+import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
@@ -53,7 +53,7 @@ import mc.alk.arena.util.Util;
 import org.bukkit.entity.Player;
 
 
-public abstract class Event extends Competition implements CountdownCallback, TeamHandler, TransitionListener {
+public abstract class Event extends Competition implements CountdownCallback, TeamHandler, ArenaListener {
 	static int eventCount = 0;
 	final int id = eventCount++;
 
@@ -533,10 +533,10 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		return getNTeams() >= eventParams.getMinTeams();
 	}
 
-	public void addTransitionListener(TransitionListener transitionListener) {
+	public void addArenaListener(ArenaListener transitionListener) {
 		tmc.addListener(transitionListener);
 	}
-	public void removeTransitionListener(TransitionListener transitionListener) {
+	public void removeArenaListener(ArenaListener transitionListener) {
 		tmc.removeListener(transitionListener);
 	}
 

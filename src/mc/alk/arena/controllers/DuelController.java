@@ -12,17 +12,17 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
-import mc.alk.arena.listeners.TransitionListener;
+import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.MatchResult;
-import mc.alk.arena.objects.events.TransitionEventHandler;
+import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.MessageUtil;
 
-public class DuelController implements TransitionListener{
+public class DuelController implements ArenaListener{
 	List<Duel> formingDuels = new CopyOnWriteArrayList<Duel>();
 	HashMap<String, Long> rejectTimers = new HashMap<String,Long>();
 	HashMap<Matchup,Duel> ongoingDuels = new HashMap<Matchup,Duel>();
@@ -46,7 +46,7 @@ public class DuelController implements TransitionListener{
 				teams.add(t);
 				teams.add(t2);
 				Matchup m = new Matchup(d.getMatchParams(),teams);
-				m.addTransitionListener(this);
+				m.addArenaListener(this);
 				formingDuels.remove(d);
 				ongoingDuels.put(m, d);
 				BattleArena.getBAC().addMatchup(m);
@@ -55,7 +55,7 @@ public class DuelController implements TransitionListener{
 		return d;
 	}
 
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void matchCancelled(MatchCancelledEvent event){
 		Match match = event.getMatch();
 		Matchup matchup = findMatchup(match);
@@ -78,7 +78,7 @@ public class DuelController implements TransitionListener{
 		}
 	}
 
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void matchComplete(MatchCompletedEvent event){
 		Match match = event.getMatch();
 		Matchup matchup = findMatchup(match);

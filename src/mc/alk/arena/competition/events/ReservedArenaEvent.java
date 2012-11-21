@@ -13,7 +13,7 @@ import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.events.TransitionEventHandler;
+import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
@@ -51,7 +51,7 @@ public class ReservedArenaEvent extends Event {
 	public void openEvent(EventParams mp) throws NeverWouldJoinException{
 		super.openEvent(mp);
 		rounds.clear();
-		arenaMatch.addTransitionListener(this);
+		arenaMatch.addArenaListener(this);
 		ac.openMatch(arenaMatch);
 		arenaMatch.onJoin(teams);
 	}
@@ -64,14 +64,14 @@ public class ReservedArenaEvent extends Event {
 		startRound();
 	}
 
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void allPlayersReady(MatchPlayersReadyEvent event){
 		if (joinHandler != null && joinHandler.hasEnough(true)){
 			startEvent();
 		}
 	}
 
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
 		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchComplete " +arenaMatch +"   isRunning()=" + isRunning());
 		Collection<Team> victors = event.getMatch().getResult().getVictors();
@@ -88,7 +88,7 @@ public class ReservedArenaEvent extends Event {
 		eventVictory(victors,m.getResult().getLosers());
 	}
 
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void matchFinished(MatchFinishedEvent event){
 		eventCompleted();
 	}
@@ -131,7 +131,7 @@ public class ReservedArenaEvent extends Event {
 
 	private void makeNextRound() {
 		Matchup m = new Matchup(eventParams,teams);
-		m.addTransitionListener(this);
+		m.addArenaListener(this);
 		Round tr = new Round(0);
 		tr.addMatchup(m);
 		rounds.add(tr);

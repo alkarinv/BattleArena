@@ -228,7 +228,7 @@ public class ArenaSerializer {
 			}
 		}
 		cs = cs.getConfigurationSection("persistable");
-		Persistable.yamlToObjects(arena, cs);
+		Persistable.yamlToObjects(arena, cs,Arena.class);
 		arena.init();
 		arena.setParameters(q);
 		updateRegions(arena);
@@ -308,7 +308,7 @@ public class ArenaSerializer {
 			if (vloc != null)
 				amap.put("vloc",SerializerUtil.getLocString(vloc));
 
-			Map<String,Object> persisted = Persistable.objectsToYamlMap(arena);
+			Map<String,Object> persisted = Persistable.objectsToYamlMap(arena, Arena.class);
 			if (persisted != null && !persisted.isEmpty()){
 				amap.put("persistable", persisted);
 			}

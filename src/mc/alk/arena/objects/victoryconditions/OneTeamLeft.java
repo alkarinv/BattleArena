@@ -4,7 +4,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.PlayerLeftEvent;
 import mc.alk.arena.events.matches.MatchFindNeededTeamsEvent;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.events.TransitionEventHandler;
+import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.Team;
 
 public class OneTeamLeft extends VictoryCondition{
@@ -12,12 +12,12 @@ public class OneTeamLeft extends VictoryCondition{
 		super(match);
 	}
 
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void onNeededTeams(MatchFindNeededTeamsEvent event) {
 		event.setNeededTeams(2);
 	}
 
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void onPlayerLeft(PlayerLeftEvent event) {
 		ArenaPlayer p = event.getPlayer();
 		if (match.isWon() || !match.isStarted()){

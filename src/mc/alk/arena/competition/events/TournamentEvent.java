@@ -23,7 +23,7 @@ import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.events.TransitionEventHandler;
+import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -124,7 +124,7 @@ public class TournamentEvent extends Event implements Listener{
 	}
 
 
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void matchCancelled(MatchCancelledEvent event){
 		Match am = event.getMatch();
 		Matchup m = getMatchup(am.getTeams().get(0),round);
@@ -143,7 +143,7 @@ public class TournamentEvent extends Event implements Listener{
 			curTimer = null;
 		}
 	}
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
 		Match am = event.getMatch();
 		Matchup m = null;
@@ -256,7 +256,7 @@ public class TournamentEvent extends Event implements Listener{
 				hoffset++;
 			}
 			m = new Matchup(eventParams,newTeams);
-			m.addTransitionListener(this);
+			m.addArenaListener(this);
 			tr.addMatchup(m);
 		}
 	}
@@ -277,7 +277,7 @@ public class TournamentEvent extends Event implements Listener{
 				newTeams.add(aliveTeams.get(size-1-index));
 			}
 			m = new Matchup(eventParams,newTeams);
-			m.addTransitionListener(this);
+			m.addArenaListener(this);
 			tr.addMatchup(m);
 		}
 	}

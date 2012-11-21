@@ -290,7 +290,7 @@ public class ArenaMatchQueue {
 		tq.remove(to);
 		final Match m = new ArenaMatch(arena, to.getMatchParams());
 		m.setTeamJoinHandler(null); /// we don't want any custom team joining.
-		m.addTransitionListeners(matchup.getTransitionListeners());
+		m.addArenaListeners(matchup.getArenaListeners());
 		m.onJoin(matchup.getTeams());
 		matchup.addMatch(m);
 		return m;

@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.listeners.TransitionListener;
+import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
@@ -23,7 +23,7 @@ public class Matchup {
 
 	public Arena getArena() {return arena;}
 	public void setArena(Arena arena) {this.arena = arena;}
-	List<TransitionListener> listeners = new ArrayList<TransitionListener>();
+	List<ArenaListener> listeners = new ArrayList<ArenaListener>();
 
 	MatchParams params = null;
 	Match match = null;
@@ -73,11 +73,11 @@ public class Matchup {
 	@Override
 	public int hashCode() { return id;}
 
-	public void addTransitionListener(TransitionListener transitionListener) {
+	public void addArenaListener(ArenaListener transitionListener) {
 		listeners.add(transitionListener);
 	}
 
-	public List<TransitionListener> getTransitionListeners() {
+	public List<ArenaListener> getArenaListeners() {
 		return listeners;
 	}
 

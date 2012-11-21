@@ -47,9 +47,9 @@ public class BAClassesSerializer extends BaseSerializer{
 		List<PotionEffect> effects = null;
 		if (cs.contains("items")){ items = BAConfigSerializer.getItemList(cs,"items");}
 		if (cs.contains("enchants")){ effects = BAConfigSerializer.getEffectList(cs,"enchants");}
-		String prettyName = cs.getString("displayName", null);
-		if (prettyName==null) cs.getString("prettyName", null);
-		ArenaClass ac = new ArenaClass(cs.getName(),prettyName, items,effects);
+		String displayName = cs.getString("displayName", null);
+		if (displayName==null) cs.getString("prettyName", null);
+		ArenaClass ac = new ArenaClass(cs.getName(),displayName, items,effects);
 		if (cs.contains("disguise")){ ac.setDisguiseName(cs.getString("disguise"));}
 		return ac;
 	}

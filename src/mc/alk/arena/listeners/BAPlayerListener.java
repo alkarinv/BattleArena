@@ -223,6 +223,7 @@ public class BAPlayerListener implements Listener  {
 				}
 			});
 		}
+
 		/// Remove Items
 		if (itemRemove.containsKey(p.getName())){
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {

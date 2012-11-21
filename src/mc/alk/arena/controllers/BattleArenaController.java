@@ -18,7 +18,6 @@ import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.listeners.ArenaListener;
-import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -26,7 +25,6 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.MatchEventHandler;
-import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
@@ -42,7 +40,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 
-public class BattleArenaController implements Runnable, TeamHandler, TransitionListener, ArenaListener{
+public class BattleArenaController implements Runnable, TeamHandler, ArenaListener{
 
 	boolean stop = false;
 
@@ -67,7 +65,8 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 	}
 
 	public void openMatch(Match match){
-		match.addTransitionListener(this);
+		match.addArenaListener(this);
+//		match.addTransitionListener(this);
 		synchronized(running_matches){
 			running_matches.add(match);
 		}
@@ -114,7 +113,7 @@ public class BattleArenaController implements Runnable, TeamHandler, TransitionL
 		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), arenaMatch);
 	}
 
-	@TransitionEventHandler
+	@MatchEventHandler
 	public void matchFinished(MatchFinishedEvent event){
 		//		if (Defaults.DEBUG ) System.out.println("BattleArenaController::matchComplete=" + am + ":" );
 		Match am = event.getMatch();

@@ -4,9 +4,8 @@ import java.util.Random;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.listeners.ArenaListener;
-import mc.alk.arena.listeners.TransitionListener;
 
-public class ChangeStateCondition implements ArenaListener, TransitionListener{
+public class ChangeStateCondition implements ArenaListener{
 	static Random rand = new Random(); /// Our randomizer
 
 	protected final Match match;

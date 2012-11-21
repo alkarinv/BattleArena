@@ -38,7 +38,6 @@ import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.matches.MatchTimerIntervalEvent;
 import mc.alk.arena.events.matches.MatchVictoryEvent;
 import mc.alk.arena.listeners.ArenaListener;
-import mc.alk.arena.listeners.TransitionListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
@@ -221,13 +220,6 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		preStartMatch();
 	}
 
-	public void addTransitionListener(TransitionListener transitionListener){
-		tmc.addListener(transitionListener);
-	}
-	public void addTransitionListeners(Collection<TransitionListener> transitionListeners){
-		for (TransitionListener tl: transitionListeners){
-			tmc.addListener(tl);}
-	}
 	public void setTeamJoinHandler(TeamJoinHandler teamJoinHandler){
 		this.joinHandler = teamJoinHandler;
 	}
@@ -351,7 +343,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			final Set<Team> victors = matchResult.getVictors();
 			final Set<Team> losers = matchResult.getLosers();
 			final Set<Team> drawers = matchResult.getDrawers();
-			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  " + losers);
+			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  " + losers+"  "+drawers +" " + matchResult);
 			if (matchResult.hasVictor()){ /// We have a true winner
 				TrackerInterface bti = BTInterface.getInterface(params);
 				if (bti != null && params.isRated()){
@@ -549,8 +541,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	 */
 	public void onLeave(Team team) {
 		for (ArenaPlayer ap: team.getPlayers()){
-			onLeave(ap,team);
-		}
+			onLeave(ap,team);}
 		privateRemoveTeam(team);
 	}
 
@@ -562,12 +553,12 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	private void onLeave(ArenaPlayer ap, Team team){
 		team.killMember(ap);
-		team.playerLeft(ap);
-		leftPlayers.add(ap.getName());
 		if (insideArena(ap)){ /// Only leave if they haven't already left.
 			/// The onCancel should teleport them out, and call leaveArena(ap)
 			PerformTransition.transition(this, MatchState.ONCANCEL, ap, team, false);
 		}
+		team.playerLeft(ap);
+		leftPlayers.add(ap.getName());
 		if (team.size()==1){
 			privateRemoveTeam(team);}
 	}
@@ -761,7 +752,15 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	public void addArenaListener(ArenaListener al){
 		arenaListeners.add(al);
+		tmc.addListener(al);
 	}
+
+	public void addArenaListeners(Collection<ArenaListener> transitionListeners){
+		for (ArenaListener tl: transitionListeners){
+			arenaListeners.add(tl);
+			tmc.addListener(tl);}
+	}
+
 	//	public VictoryCondition getVictoryCondition(){return vc;}
 	public Arena getArena() {return arena;}
 	public boolean isFinished() {return state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
