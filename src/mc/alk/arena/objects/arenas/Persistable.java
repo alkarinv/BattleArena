@@ -31,19 +31,19 @@ public class Persistable {
 		}
 	}
 
-	public static void yamlToObjects(Arena arena, ConfigurationSection cs){
+	public static void yamlToObjects(Object object, ConfigurationSection cs){
 		if (cs == null)
 			return;
-		yamlToObjects(arena, arena.getClass(),cs, null);
+		yamlToObjects(object, object.getClass(),cs, null);
 	}
 
-	public static void yamlToObjects(Arena arena, ConfigurationSection cs, Class<?> onlyCheckClass){
+	public static void yamlToObjects(Object object, ConfigurationSection cs, Class<?> onlyCheckClass){
 		if (cs == null)
 			return;
-		yamlToObjects(arena, arena.getClass(),cs,onlyCheckClass);
+		yamlToObjects(object, object.getClass(),cs,onlyCheckClass);
 	}
 
-	private static void yamlToObjects(Object arena, Class<?> objectClass, ConfigurationSection cs, Class<?> onlyCheckClass){
+	private static void yamlToObjects(Object object, Class<?> objectClass, ConfigurationSection cs, Class<?> onlyCheckClass){
 		for(Field field : objectClass.getDeclaredFields()){
 			Class<?> type = field.getType();
 			String name = field.getName();
@@ -57,23 +57,23 @@ public class Persistable {
 				try {
 					Object obj = null;
 					if (type == int.class){
-						field.setInt(arena, cs.getInt(name));
+						field.setInt(object, cs.getInt(name));
 					} else if (type == float.class){
-						field.setFloat(arena, (float)cs.getDouble(name));
+						field.setFloat(object, (float)cs.getDouble(name));
 					} else if (type == double.class){
-						field.setDouble(arena, cs.getDouble(name));
+						field.setDouble(object, cs.getDouble(name));
 					} else if (type == long.class){
-						field.setLong(arena, cs.getLong(name));
+						field.setLong(object, cs.getLong(name));
 					} else if (type == boolean.class){
-						field.setBoolean(arena, cs.getBoolean(name));
+						field.setBoolean(object, cs.getBoolean(name));
 					} else if (type == short.class){
-						field.setShort(arena, (short)cs.getInt(name));
+						field.setShort(object, (short)cs.getInt(name));
 					} else if (type == byte.class){
-						field.setByte(arena, (byte)cs.getInt(name));
+						field.setByte(object, (byte)cs.getInt(name));
 					} else if (type == char.class){
 						String str = cs.getString(name);
 						if (str != null && !str.isEmpty())
-							field.setChar(arena, str.charAt(0));
+							field.setChar(object, str.charAt(0));
 					} else if (type == Integer.class){
 						obj = cs.getInt(name);
 					} else if (type == Float.class){
@@ -151,7 +151,7 @@ public class Persistable {
 						obj = yamlToObj(name,type,cs);
 					}
 					if (obj != null)
-						field.set(arena, obj);
+						field.set(object, obj);
 				} catch (NotPersistableException e) {
 					System.err.println(e.getMessage());
 				} catch (Exception e) {
@@ -161,7 +161,7 @@ public class Persistable {
 		}
 		Class<?> superClass = objectClass.getSuperclass();
 		if (superClass != null && (onlyCheckClass == null || onlyCheckClass.isAssignableFrom(superClass))){
-			yamlToObjects(arena,superClass,cs, onlyCheckClass);
+			yamlToObjects(object,superClass,cs, onlyCheckClass);
 		}
 	}
 
