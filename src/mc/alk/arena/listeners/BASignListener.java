@@ -97,7 +97,7 @@ public class BASignListener implements Listener{
 		}
 
 		try{
-			event.setLine(0, MessageUtil.colorChat(ChatColor.GOLD+Defaults.SIGN_PREFIX+ac.getPrettyName()));
+			event.setLine(0, MessageUtil.colorChat(ChatColor.GOLD+Defaults.SIGN_PREFIX+ac.getDisplayName()));
 			MessageUtil.sendMessage(event.getPlayer(), "&2Arena class sign created");
 		} catch (Exception e){
 			MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Class Sign");

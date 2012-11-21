@@ -17,13 +17,14 @@ import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
 
 import org.bukkit.Bukkit;
@@ -31,10 +32,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.potion.PotionEffect;
@@ -49,14 +46,14 @@ public class PerformTransition {
 	 * @param Match, which match to perform the transition on
 	 * @param transition: which transition are we doing
 	 * @param teams: which teams to affect
-	 * @param onlyInArena: only perform the actions on people still in the arena
+	 * @param onlyInMatch: only perform the actions on people still in the arena match
 	 */
-	public static void transition(Match am, MatchState transition, Collection<Team> teams, boolean onlyInArena){
+	public static void transition(Match am, MatchState transition, Collection<Team> teams, boolean onlyInMatch){
 		if (teams == null)
 			return;
 		boolean first = true;
 		for (Team team: teams){
-			transition(am,transition,team,onlyInArena,first);
+			transition(am,transition,team,onlyInMatch,first);
 			first = false;
 		}
 	}
@@ -127,7 +124,7 @@ public class PerformTransition {
 				/// Since we cant really tell the eventual result.. do our best guess
 				am.enterWaitRoom(player);
 				final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),rand.nextInt(team.size()));
-				TeleportController.teleportPlayer(p, l, false);
+				TeleportController.teleportPlayer(p, l, false, true);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
 			} else {
 				playerReady = false;
@@ -141,7 +138,7 @@ public class PerformTransition {
 				/// Since we cant really tell the eventual result.. do our best guess
 				am.enterArena(player);
 				final Location l = jitter(am.getTeamSpawn(teamIndex,false),rand.nextInt(team.size()));
-				TeleportController.teleportPlayer(p, l, false);
+				TeleportController.teleportPlayer(p, l, false, true);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
 			} else {
 				playerReady = false;
@@ -159,9 +156,10 @@ public class PerformTransition {
 			if (storeAll || mo.hasOption(TransitionOption.STOREMAGIC)){ am.psc.storeMagic(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){am.psc.storeArenaClass(player);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p); }
-			if (health != null) { setHealth(p, health);}
-			if (hunger != null) { setHunger(player, hunger); }
+			if (health != null) { PlayerUtil.setHealth(p, health);}
+			if (hunger != null) { PlayerUtil.setHunger(p, hunger); }
 			if (mo.hasOption(TransitionOption.MAGIC)) { setMagic(transition, p, mo.getMagic()); }
+			if (mo.hasOption(TransitionOption.INVULNERABLE)) { PlayerUtil.setInvulnerable(p,mo.getInvulnerable()); }
 			if (mo.deEnchant() != null && mo.deEnchant()) { deEnchant(p);}
 			if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p);}
 			if (DisguiseInterface.enabled() && disguiseAllAs != null) {DisguiseInterface.disguisePlayer(p, disguiseAllAs);}
@@ -184,6 +182,11 @@ public class PerformTransition {
 					ArenaClassController.giveClass(p, ac);
 					player.setChosenClass(ac);
 				}
+			}
+			if (mo.hasOption(TransitionOption.GIVEDISGUISE) && DisguiseInterface.enabled()){
+				final String disguise = getDisguise(mo,teamIndex);
+				if (disguise != null){ /// Give class items and effects
+					DisguiseInterface.disguisePlayer(p, disguise);}
 			}
 			if (mo.hasOption(TransitionOption.GIVEITEMS)){
 				giveItems(transition, player, mo.getGiveItems(),teamIndex, am.woolTeams, insideArena);}
@@ -209,7 +212,7 @@ public class PerformTransition {
 			else
 				loc = am.oldlocs.get(player.getName());
 			if (insideArena || !onlyInMatch){
-				TeleportController.teleportPlayer(p, loc, wipeInventory);
+				TeleportController.teleportPlayer(p, loc, wipeInventory, true);
 				am.leaveArena(player);
 			}
 			/// If players are outside of the match, but need requirements, warn them
@@ -246,28 +249,6 @@ public class PerformTransition {
 		HeroesInterface.setMagic(p, magic);
 	}
 
-	private static void setHunger(final ArenaPlayer p, final Integer hunger) {
-		p.setFoodLevel(hunger);
-	}
-
-	private static void setHealth(final Player p, final Integer health) {
-		final int oldHealth = p.getHealth();
-		if (oldHealth > health){
-			EntityDamageEvent event = new EntityDamageEvent(p.getPlayer(),  DamageCause.CUSTOM, oldHealth-health );
-			Bukkit.getPluginManager().callEvent(event);
-			if (!event.isCancelled()){
-                p.setLastDamageCause(event);
-                p.setHealth(oldHealth - event.getDamage());
-			}
-		} else if (oldHealth < health){
-			EntityRegainHealthEvent event = new EntityRegainHealthEvent(p.getPlayer(), health-oldHealth,RegainReason.CUSTOM);
-			Bukkit.getPluginManager().callEvent(event);
-			if (!event.isCancelled()){
-				p.setHealth(oldHealth + event.getAmount());
-			}
-		}
-	}
-
 	private static void removePerms(ArenaPlayer p, List<String> perms) {
 		if (perms == null || perms.isEmpty())
 			return;
@@ -289,6 +270,7 @@ public class PerformTransition {
 		if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+ms+" transition giving items to " + p.getName());
 		InventoryUtil.addItemsToInventory(p.getPlayer(),items,woolTeams);
 	}
+
 	private static ArenaClass getArenaClass(TransitionOptions mo, final int teamIndex) {
 		Map<Integer,ArenaClass> classes = mo.getClasses();
 		if (classes.containsKey(teamIndex)){
@@ -298,6 +280,18 @@ public class PerformTransition {
 		}
 		return null;
 	}
+
+	private static String getDisguise(TransitionOptions mo, final int teamIndex) {
+		Map<Integer,String> disguises = mo.getDisguises();
+		if (disguises.containsKey(teamIndex)){
+			return disguises.get(teamIndex);
+		} else if (disguises.containsKey(DisguiseInterface.DEFAULT)){
+			return disguises.get(DisguiseInterface.DEFAULT);
+		}
+		return null;
+	}
+
+
 	private static Location jitter(final Location teamSpawn, int index) {
 		if (index == 0)
 			return teamSpawn;

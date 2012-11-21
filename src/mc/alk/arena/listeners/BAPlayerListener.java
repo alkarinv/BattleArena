@@ -138,7 +138,7 @@ public class BAPlayerListener implements Listener  {
 						}
 					});
 				} else {
-					PermissionsUtil.givePlayerInventoryPerms(p);
+					PermissionsUtil.givePlayerTeleportPerms(p);
 					event.setRespawnLocation(tp.remove(name));
 				}
 			} else { /// this is bad, how did they get a null tp loc
@@ -176,7 +176,7 @@ public class BAPlayerListener implements Listener  {
 				public void run() {
 					Player pl = Bukkit.getPlayerExact(name);
 					if (pl != null){
-						pl.setHealth(val);}
+						BattleArena.toArenaPlayer(pl).setHealth(val);}
 				}
 			});
 		}
@@ -188,7 +188,7 @@ public class BAPlayerListener implements Listener  {
 				public void run() {
 					Player pl = Bukkit.getPlayerExact(name);
 					if (pl != null){
-						pl.setFoodLevel(val);}
+						BattleArena.toArenaPlayer(pl).setFoodLevel(val);}
 				}
 			});
 		}

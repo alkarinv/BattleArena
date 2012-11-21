@@ -26,19 +26,53 @@ import org.bukkit.plugin.Plugin;
 
 public class TeleportController implements Listener{
 	static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
-    private final int TELEPORT_FIX_DELAY = 15; // ticks
+	private final int TELEPORT_FIX_DELAY = 15; // ticks
 
 	///TODO remove these work around teleport hacks when bukkit fixes the invisibility on teleport issue
-    /// modified from the teleportFix2 found online
-	public static void teleportPlayer(final Player p, final Location loc, final boolean wipe){
-		if (!p.isOnline() || p.isDead()){
-			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + p.getName() + " loc=" + loc +":"+ wipe);
-			BAPlayerListener.teleportOnReenter(p.getName(),loc);
+	/// modified from the teleportFix2 found online
+	public static void teleportPlayer(final Player player, final Location location, final boolean wipe, boolean giveBypassPerms){
+		if (!player.isOnline() || player.isDead()){
+			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + player.getName() + " loc=" + location +":"+ wipe);
+			BAPlayerListener.teleportOnReenter(player.getName(),location);
 			if (wipe){
-				InventoryUtil.clearInventory(p);}
+				InventoryUtil.clearInventory(player);}
 			return;
 		}
-		teleport(p,loc);
+		teleport(player,location,giveBypassPerms);
+	}
+
+	public static void teleport(final Player player, final Location location){
+		teleport(player,location,false);
+	}
+
+	public static void teleport(final Player player, final Location location, boolean giveBypassPerms){
+		Location loc = location.clone();
+		loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
+		teleporting(player,true);
+		/// Close their inventory so they arent taking things in/out
+		InventoryUtil.closeInventory(player);
+		player.setFireTicks(0);
+
+		/// Deal with vehicles
+		if (player.isInsideVehicle()){
+			try{ player.leaveVehicle(); } catch(Exception e){}
+		}
+
+		/// Load the chunk if its not already loaded
+		try {
+			if(!loc.getWorld().isChunkLoaded(loc.getBlock().getChunk())){
+				loc.getWorld().loadChunk(loc.getBlock().getChunk());}
+		} catch (Exception e){}
+
+		/// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
+		/// or game states ... lets not let this happen
+		PermissionsUtil.givePlayerTeleportPerms(player);
+		/// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
+		if (giveBypassPerms && BattleArena.getSelf().isEnabled())
+			player.addAttachment(BattleArena.getSelf(), Defaults.TELEPORT_BYPASS_PERM, true, 1);
+
+		if (!player.teleport(loc)){
+			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + loc);}
 	}
 
 	private static void teleporting(Player player, boolean isteleporting){
@@ -59,79 +93,57 @@ public class TeleportController implements Listener{
 		if (teleporting.remove(event.getPlayer().getName())){
 			event.setCancelled(false);
 
-	        final Player player = event.getPlayer();
-	        final Server server = Bukkit.getServer();
-	        final Plugin plugin = BattleArena.getSelf();
-	        final int visibleDistance = server.getViewDistance() * 16;
-	        // Fix the visibility issue one tick later
-	        server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-	            @Override
-	            public void run() {
-	                // Refresh nearby clients
-	                final List<Player> nearby = getPlayersWithin(player, visibleDistance);
-	                // Hide every player
-	                updateEntities(player, nearby, false);
-	                // Then show them again
-	                server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-	                    @Override
-	                    public void run() {
-	                        updateEntities(player, nearby, true);
-	                    }
-	                }, 2);
-	            }
-	        }, TELEPORT_FIX_DELAY);
+			final Player player = event.getPlayer();
+			final Server server = Bukkit.getServer();
+			final Plugin plugin = BattleArena.getSelf();
+			final int visibleDistance = server.getViewDistance() * 16;
+			// Fix the visibility issue one tick later
+			server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+				@Override
+				public void run() {
+					// Refresh nearby clients
+					final List<Player> nearby = getPlayersWithin(player, visibleDistance);
+					// Hide every player
+					updateEntities(player, nearby, false);
+					// Then show them again
+					server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+						@Override
+						public void run() {
+							updateEntities(player, nearby, true);
+						}
+					}, 2);
+				}
+			}, TELEPORT_FIX_DELAY);
 
 		}
 	}
 
-    private void updateEntities(Player tpedPlayer, List<Player> players, boolean visible) {
-        // Hide or show every player to tpedPlayer
-        // and hide or show tpedPlayer to every player.
-        for (Player player : players) {
-            if (visible){
-                tpedPlayer.showPlayer(player);
-                player.showPlayer(tpedPlayer);
-            } else {
-                tpedPlayer.hidePlayer(player);
-                player.hidePlayer(tpedPlayer);
-            }
-        }
-    }
-    private List<Player> getPlayersWithin(Player player, int distance) {
-        List<Player> res = new ArrayList<Player>();
-        int d2 = distance * distance;
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.getWorld().getUID() == player.getWorld().getUID() && p != player && p.getLocation().distanceSquared(player.getLocation()) <= d2) {
-                res.add(p);
-            }
-        }
-        return res;
-    }
-
-	public static void teleport(final Player p, final Location location){
-		Location loc = location.clone();
-		loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
-		teleporting(p,true);
-		/// Close their inventory so they arent taking things in/out
-		InventoryUtil.closeInventory(p);
-		p.setFireTicks(0);
-
-		/// Deal with vehicles
-		if (p.isInsideVehicle()){
-			try{ p.leaveVehicle(); } catch(Exception e){}
+	private void updateEntities(Player tpedPlayer, List<Player> players, boolean visible) {
+		// Hide or show every player to tpedPlayer
+		// and hide or show tpedPlayer to every player.
+		for (Player player : players) {
+			if (visible){
+				tpedPlayer.showPlayer(player);
+				player.showPlayer(tpedPlayer);
+			} else {
+				tpedPlayer.hidePlayer(player);
+				player.hidePlayer(tpedPlayer);
+			}
 		}
-
-		/// Load the chunk if its not already loaded
-		try {
-			if(!loc.getWorld().isChunkLoaded(loc.getBlock().getChunk())){
-				loc.getWorld().loadChunk(loc.getBlock().getChunk());}
-		} catch (Exception e){}
-
-		/// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
-		/// or game states ... lets not let this happen
-		PermissionsUtil.givePlayerInventoryPerms(p);
-
-		if (!p.teleport(loc)){
-			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + p.getName() + " loc=" + loc);}
 	}
+
+	private List<Player> getPlayersWithin(Player player, int distance) {
+		List<Player> res = new ArrayList<Player>();
+		int d2 = distance * distance;
+		for (Player p : Bukkit.getOnlinePlayers()) {
+			try{
+				if (p.getWorld().getUID() == player.getWorld().getUID() &&
+						p != player && p.getLocation().distanceSquared(player.getLocation()) <= d2) {
+					res.add(p);
+				}
+			} catch(IllegalArgumentException e){}
+		}
+		return res;
+	}
+
 }

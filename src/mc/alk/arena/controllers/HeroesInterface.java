@@ -1,5 +1,6 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.listeners.HeroesListener;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.HeroesUtil;
 
@@ -90,5 +91,23 @@ public class HeroesInterface {
 			return null;
 		try{return HeroesUtil.getMagicLevel(player);}catch(Exception e){e.printStackTrace();}
 		return null;
+	}
+
+	public static int getHealth(Player player) {
+		return hasHeroes ? HeroesUtil.getHealth(player) : player.getHealth();
+	}
+	public static void setHealth(Player player, int health) {
+		if (hasHeroes)
+			try{HeroesUtil.setHealth(player,health);}catch(Exception e){e.printStackTrace();}
+		else
+			player.setHealth(health);
+	}
+	public static void cancelExpLoss(Player player, boolean cancel) {
+		if (!hasHeroes)
+			return;
+		if (cancel)
+			HeroesListener.setCancelExpLoss(player);
+		else
+			HeroesListener.removeCancelExpLoss(player);
 	}
 }

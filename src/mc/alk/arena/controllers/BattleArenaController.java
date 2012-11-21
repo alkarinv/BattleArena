@@ -28,7 +28,7 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.events.TransitionEventHandler;
 import mc.alk.arena.objects.options.JoinOptions;
-import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;

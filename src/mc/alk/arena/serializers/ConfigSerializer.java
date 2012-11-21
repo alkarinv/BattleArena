@@ -27,10 +27,11 @@ import mc.alk.arena.objects.exceptions.ConfigException;
 import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.BTInterface;
+import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
@@ -301,6 +302,9 @@ public class ConfigSerializer extends BaseSerializer{
 				case MAGIC:
 					options.put(to,Integer.valueOf(split[1]));
 					break;
+				case INVULNERABLE:
+					options.put(to,Integer.valueOf(split[1])*20); // multiply by number of ticks per second
+					break;
 				default:
 					break;
 				}
@@ -321,6 +325,8 @@ public class ConfigSerializer extends BaseSerializer{
 			tops.addOption(TransitionOption.TELEPORTONARENAEXIT, SerializerUtil.getLocation(cs.getString("teleportOnArenaExit")));}
 		if (cs.contains("giveClass")){
 			tops.addOption(TransitionOption.GIVECLASS, getArenaClasses(cs.getConfigurationSection("giveClass")));}
+		if (cs.contains("giveDisguise")){
+			tops.addOption(TransitionOption.GIVEDISGUISE, getArenaDisguises(cs.getConfigurationSection("giveDisguise")));}
 		if (options.containsKey(TransitionOption.NEEDITEMS)){
 			tops.addOption(TransitionOption.NEEDITEMS,getItemList(cs, "items"));}
 		if (options.containsKey(TransitionOption.GIVEITEMS)){
@@ -361,18 +367,44 @@ public class ConfigSerializer extends BaseSerializer{
 				try {
 					team = Integer.valueOf(whichTeam.replaceAll("team", "")) - 1;
 				} catch(Exception e){
-					Log.err("Couldnt find which team this string belongs to '" + whichTeam+"'");
+					Log.err("Couldnt find which team this class belongs to '" + whichTeam+"'");
 					continue;
 				}
 			}
 			if (team ==-1){
-				Log.err("Couldnt find which team this string belongs to '" + whichTeam+"'");
+				Log.err("Couldnt find which team this class belongs to '" + whichTeam+"'");
 				continue;
 			}
 			classes.put(team, ac);
 		}
 		return classes;
 	}
+
+	public static HashMap<Integer,String> getArenaDisguises(ConfigurationSection cs){
+		HashMap<Integer,String> disguises = new HashMap<Integer,String>();
+		Set<String> keys = cs.getKeys(false);
+		for (String whichTeam: keys){
+			int team = -1;
+			final String disguiseName = cs.getString(whichTeam);
+			if (whichTeam.equalsIgnoreCase("default")){
+				team = DisguiseInterface.DEFAULT;
+			} else {
+				try {
+					team = Integer.valueOf(whichTeam.replaceAll("team", "")) - 1;
+				} catch(Exception e){
+					Log.err("Couldnt find which team this disguise belongs to '" + whichTeam+"'");
+					continue;
+				}
+			}
+			if (team ==-1){
+				Log.err("Couldnt find which team this disguise belongs to '" + whichTeam+"'");
+				continue;
+			}
+			disguises.put(team, disguiseName);
+		}
+		return disguises;
+	}
+
 	public static List<PotionEffect> getEffectList(ConfigurationSection cs, String nodeString) {
 		final int strengthDefault = 1;
 		final int timeDefault = 60;

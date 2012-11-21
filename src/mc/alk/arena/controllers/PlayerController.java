@@ -7,7 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.util.Util;
 
 import org.bukkit.entity.Player;
 
@@ -21,6 +23,7 @@ public final class PlayerController {
 	 */
 	public static ArenaPlayer toArenaPlayer(Player player){
 		ArenaPlayer ap = players.get(player.getName());
+		if (Defaults.DEBUG_VIRTUAL) player = Util.findPlayerExact(player.getName());
 		if (ap == null){
 			ap = new ArenaPlayer(player);
 			players.put(player.getName(), ap);

@@ -12,11 +12,23 @@ import org.bukkit.potion.PotionEffect;
 public class ArenaClass {
 	public static final Integer DEFAULT = Integer.MAX_VALUE;
 	public static final ArenaClass CHOSEN_CLASS = new ArenaClass("CHOSENCLASS","chosenClass", null, null);
+
+	/** Name of the Class*/
 	final String name;
+
+	/** DisplayName of the class*/
+	final String displayName;
+
+	/** Items that this class gives*/
 	final List<ItemStack> items;
+
+	/** Effects this class gives*/
 	final List<PotionEffect> effects;
-	final String prettyName;
-	public ArenaClass(String name, String prettyName, List<ItemStack> items, List<PotionEffect> effects){
+
+	/** Name of a disguise for this class */
+	String disguiseName;
+
+	public ArenaClass(String name, String displayName, List<ItemStack> items, List<PotionEffect> effects){
 		this.name = name;
 		CopyOnWriteArrayList<ItemStack> listitems = new CopyOnWriteArrayList<ItemStack>();
 		ArrayList<ItemStack> armoritems = new ArrayList<ItemStack>();
@@ -32,24 +44,60 @@ public class ArenaClass {
 		this.items = listitems;
 		this.items.addAll(armoritems);
 		this.effects = effects;
-		this.prettyName = prettyName;
+		this.displayName = displayName;
 	}
+
+	/**
+	 * Get the name
+	 * @return
+	 */
 	public String getName() {
 		return name;
 	}
+
+	/**
+	 * get the items
+	 * @return
+	 */
 	public List<ItemStack> getItems() {
 		return items;
 	}
 
+	/**
+	 * Get the effects
+	 * @return
+	 */
 	public List<PotionEffect> getEffects() {
 		return effects;
+	}
+
+	/**
+	 * Get the Display Name
+	 * @return
+	 */
+	public String getDisplayName() {
+		return displayName != null ? displayName : name;
+	}
+
+	/**
+	 * Get the disguise name
+	 * @return
+	 */
+	public String getDisguiseName() {
+		return disguiseName;
+	}
+
+	/**
+	 * Set the disguise name
+	 * @param disguiseName
+	 */
+	public void setDisguiseName(String disguiseName) {
+		this.disguiseName = disguiseName;
 	}
 
 	@Override
 	public String toString(){
 		return "[ArenaClass "+name+" items="+items +" enchants=" + effects+"]";
 	}
-	public String getPrettyName() {
-		return prettyName != null ? prettyName : name;
-	}
+
 }

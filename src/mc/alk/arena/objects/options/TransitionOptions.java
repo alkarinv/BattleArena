@@ -28,48 +28,6 @@ import org.bukkit.potion.PotionEffect;
 
 @SuppressWarnings("unchecked")
 public class TransitionOptions {
-	public static enum TransitionOption{
-		TELEPORTWAITROOM("teleportWaitRoom",false),TELEPORTIN ("teleportIn",false), TELEPORTOUT("teleportOut",false),
-		TELEPORTTO("teleportTo", true), TELEPORTONARENAEXIT("teleportOnArenaExit",true),
-		TELEPORTWINNER("teleportWinner",true), TELEPORTLOSER("teleportLoser", true),
-		TELEPORTBACK("teleportBack",false),
-		NOTELEPORT("noTeleport", false), NOWORLDCHANGE("noWorldChange",false),
-		RESPAWN ("respawn",false), RANDOMRESPAWN ("randomRespawn",false), RESPAWNWITHCLASS("respawnWithClass", false),
-		CLEARINVENTORY ("clearInventory",false), NEEDARMOR ("needArmor",false), NOINVENTORY("noInventory",false),
-		CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter",false),
-		NEEDITEMS ("needItems",false), GIVEITEMS("giveItems",false), GIVECLASS("giveClass",false),
-		LEVELRANGE("levelRange",true),
-		HEALTH("health",true), HUNGER("hunger",true),
-		MONEY("money",true), EXPERIENCE("experience",true),
-		PVPON("pvpOn",false), PVPOFF("pvpOff",false),INVINCIBLE("invincible",false),
-		BLOCKBREAKOFF("blockBreakOff",false), BLOCKBREAKON("blockBreakOn",false),
-		BLOCKPLACEOFF("blockPlaceOff",false), BLOCKPLACEON("blockPlaceOn",false),
-		DROPITEMOFF("dropItemOff",false),
-		DISGUISEALLAS("disguiseAllAs",true), UNDISGUISE("undisguise",false),
-		ENCHANTS("enchants",false), DEENCHANT("deEnchant",false),
-		STOREALL("storeAll",false), RESTOREALL("restoreAll", false),
-		STOREEXPERIENCE("storeExperience",false), RESTOREEXPERIENCE("restoreExperience",false),
-		STOREGAMEMODE("storeGamemode",false), RESTOREGAMEMODE("restoreGamemode",false),
-		STOREITEMS("storeItems",false), RESTOREITEMS("restoreItems",false),
-		STOREHEALTH("storeHealth",false), RESTOREHEALTH("restoreHealth",false),
-		STOREMAGIC("storeMagic",false), RESTOREMAGIC("restoreMagic",false),
-		STOREHUNGER("storeHunger",false), RESTOREHUNGER("restoreHunger",false),
-		STOREHEROCLASS("storeHeroClass",false), RESTOREHEROCLASS("restoreHeroClass",false),
-		WGCLEARREGION("wgClearRegion",false),  WGRESETREGION("wgResetRegion",false),
-		WGNOLEAVE("wgNoLeave",false), WGNOENTER("wgNoEnter", false),
-		WOOLTEAMS("woolTeams",false), ALWAYSWOOLTEAMS("alwaysWoolTeams", false),
-		ALWAYSTEAMNAMES("alwaysTeamNames", false),
-		ADDPERMS("addPerms", false), REMOVEPERMS("removePerms", false),
-		SAMEWORLD("sameWorld",false), WITHINDISTANCE("withinDistance",true),
-		MAGIC("magic",true)
-		;
-		String name;
-		boolean hasValue = false;
-		TransitionOption(String name,Boolean hasValue){this.name= name;this.hasValue = hasValue;}
-		@Override
-		public String toString(){return name;}
-		public boolean hasValue(){return hasValue;}
-	};
 
 	Map<TransitionOption,Object> options = null;
 
@@ -147,7 +105,7 @@ public class TransitionOptions {
 		Double d = getDouble(TransitionOption.MONEY);
 		return d != null && d > 0;
 	}
-
+	public Integer getInvulnerable(){return getInt(TransitionOption.INVULNERABLE);}
 	public Integer getExperience(){return getInt(TransitionOption.EXPERIENCE);}
 	public boolean hasExperience(){return options.containsKey(TransitionOption.EXPERIENCE);}
 
@@ -389,6 +347,11 @@ public class TransitionOptions {
 	public Map<Integer, ArenaClass> getClasses(){
 		Object o = options.get(TransitionOption.GIVECLASS);
 		return o == null ? null : (Map<Integer, ArenaClass>) o;
+	}
+
+	public Map<Integer, String> getDisguises(){
+		Object o = options.get(TransitionOption.GIVEDISGUISE);
+		return o == null ? null : (Map<Integer, String>) o;
 	}
 
 	@Override

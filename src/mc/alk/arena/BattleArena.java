@@ -1,9 +1,6 @@
 package mc.alk.arena;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -57,6 +54,7 @@ import mc.alk.arena.serializers.StateFlagSerializer;
 import mc.alk.arena.serializers.TeamHeadSerializer;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.FileLogger;
+import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.plugin.updater.PluginUpdater;
@@ -105,7 +103,7 @@ public class BattleArena extends JavaPlugin{
 
 		/// Set up our messages first before other initialization needs messages
 		MessageSerializer defaultMessages = new MessageSerializer("default");
-		defaultMessages.setConfig(load("/default_files/messages.yml", dir.getPath()+"/messages.yml"));
+		defaultMessages.setConfig(FileUtil.load(this,dir.getPath()+"/messages.yml","/default_files/messages.yml"));
 		yfu.updateMessageSerializer(defaultMessages); /// Update our config if necessary
 		defaultMessages.loadAll();
 		MessageSerializer.setDefaultConfig(defaultMessages);
@@ -143,14 +141,14 @@ public class BattleArena extends JavaPlugin{
 		MethodController.addMethods(ArenaMatch.class, ArenaMatch.class.getMethods());
 
 		/// Load our configs, then arenas
-		cc.setConfig(null,load("/default_files/config.yml",dir.getPath() +"/config.yml"));
+		cc.setConfig(null,FileUtil.load(this,dir.getPath() +"/config.yml","/default_files/config.yml"));
 		YamlFileUpdater.updateConfig(cc); /// Update our config if necessary
 
-		bacs.setConfig(load("/default_files/classes.yml",dir.getPath() +"/classes.yml")); /// Load classes
+		bacs.setConfig(FileUtil.load(this,dir.getPath() +"/classes.yml","/default_files/classes.yml")); /// Load classes
 		bacs.loadAll();
 
 		TeamHeadSerializer ts = new TeamHeadSerializer();
-		ts.setConfig(load("/default_files/teamHeads.yml",dir.getPath() +"/teamHeads.yml")); /// Load team heads
+		ts.setConfig(FileUtil.load(this,dir.getPath() +"/teamHeads.yml","/default_files/teamHeads.yml")); /// Load team heads
 		ts.loadAll();
 
 		cc.loadAll(); /// Load our defaults for BattleArena
@@ -165,7 +163,7 @@ public class BattleArena extends JavaPlugin{
 		as.loadArenas(this);
 
 		SpawnSerializer ss = new SpawnSerializer();
-		ss.setConfig(load("/default_files/spawns.yml",dir.getPath() +"/spawns.yml"));
+		ss.setConfig(FileUtil.load(this,dir.getPath() +"/spawns.yml","/default_files/spawns.yml"));
 		yacs.load();
 
 		/// Set our commands
@@ -217,7 +215,7 @@ public class BattleArena extends JavaPlugin{
 		for (MatchParams mp: ParamController.getAllParams()){
 			String fileName = events.contains(mp.getName().toLowerCase()) ? "defaultEventMessages.yml": "defaultMatchMessages.yml";
 			MessageSerializer ms = new MessageSerializer(mp.getName());
-			ms.setConfig(load("/default_files/"+fileName, f.getAbsolutePath()+"/"+mp.getName()+"Messages.yml"));
+			ms.setConfig(FileUtil.load(this,f.getAbsolutePath()+"/"+mp.getName()+"Messages.yml","/default_files/"+fileName));
 			ms.loadAll();
 			MessageSerializer.addMessageSerializer(mp.getName(),ms);
 		}
@@ -285,24 +283,6 @@ public class BattleArena extends JavaPlugin{
 		} else {
 			Log.err("DM type not found");
 		}
-	}
-
-	public File load(String default_file, String config_file) {
-		File file = new File(config_file);
-		if (!file.exists()){ /// Create a new file from our default example
-			try{
-				InputStream inputStream = getClass().getResourceAsStream(default_file);
-				OutputStream out=new FileOutputStream(config_file);
-				byte buf[]=new byte[1024];
-				int len;
-				while((len=inputStream.read(buf))>0){
-					out.write(buf,0,len);}
-				out.close();
-				inputStream.close();
-			} catch (Exception e){
-			}
-		}
-		return file;
 	}
 
 	public static BattleArena getSelf() {return plugin;}

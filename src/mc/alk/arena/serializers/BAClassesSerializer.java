@@ -19,7 +19,7 @@ public class BAClassesSerializer extends BaseSerializer{
 		loadClasses(config.getConfigurationSection("classes"));
 	}
 
-	public static void loadClasses(ConfigurationSection cs) {
+	public void loadClasses(ConfigurationSection cs) {
 		if (cs == null){
 			Log.info(BattleArena.getPName() +" has no classes");
 			return;}
@@ -42,15 +42,16 @@ public class BAClassesSerializer extends BaseSerializer{
 		}
 	}
 
-
-	private static ArenaClass parseArenaClass(ConfigurationSection cs) {
+	public ArenaClass parseArenaClass(ConfigurationSection cs) {
 		List<ItemStack> items = null;
 		List<PotionEffect> effects = null;
 		if (cs.contains("items")){ items = BAConfigSerializer.getItemList(cs,"items");}
 		if (cs.contains("enchants")){ effects = BAConfigSerializer.getEffectList(cs,"enchants");}
 		String prettyName = cs.getString("displayName", null);
 		if (prettyName==null) cs.getString("prettyName", null);
-		return new ArenaClass(cs.getName(),prettyName, items,effects);
+		ArenaClass ac = new ArenaClass(cs.getName(),prettyName, items,effects);
+		if (cs.contains("disguise")){ ac.setDisguiseName(cs.getString("disguise"));}
+		return ac;
 	}
 
 }

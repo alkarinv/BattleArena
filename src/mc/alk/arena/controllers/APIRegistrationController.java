@@ -22,6 +22,7 @@ import mc.alk.arena.objects.exceptions.ConfigException;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
+import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.command.CommandExecutor;
@@ -75,7 +76,7 @@ public class APIRegistrationController {
 		defaultFile = new File("default_files"+File.separator+fileName);
 
 		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
-			pluginFile = BattleArena.getSelf().load("/default_files/"+fileName, pluginFile.getAbsolutePath());
+			pluginFile = FileUtil.load(BattleArena.getSelf(),"/default_files/"+fileName, pluginFile.getAbsolutePath());
 			if (pluginFile == null){
 				Log.err(plugin.getName() + " " + messagesFileName+" could not be loaded");
 				return;
@@ -97,7 +98,7 @@ public class APIRegistrationController {
 		if (pluginFile.exists())
 			return true;
 
-		InputStream inputStream = getInputStream(plugin, defaultFile, defaultPluginFile);
+		InputStream inputStream = FileUtil.getInputStream(plugin, defaultFile, defaultPluginFile);
 		if (inputStream == null){
 			return false;
 		}
@@ -124,7 +125,7 @@ public class APIRegistrationController {
 			String name, String cmd) {
 		if (pluginFile.exists())
 			return true;
-		InputStream inputStream = getInputStream(plugin, defaultFile, defaultPluginFile);
+		InputStream inputStream = FileUtil.getInputStream(plugin, defaultFile, defaultPluginFile);
 		if (inputStream == null){
 			return false;
 		}
@@ -150,16 +151,6 @@ public class APIRegistrationController {
 			return false;
 		}
 		return true;
-	}
-
-	private static InputStream getInputStream(Plugin plugin, File defaultFile, File defaultPluginFile) {
-		InputStream inputStream = null;
-		/// Load from pluginJar
-		inputStream = plugin.getClass().getClassLoader().getResourceAsStream(defaultPluginFile.getPath());
-		if (inputStream == null){ /// Load from BattleArena.jar
-			inputStream = BattleArena.getSelf().getClass().getClassLoader().getResourceAsStream(defaultFile.getPath());
-		}
-		return inputStream;
 	}
 
 	public void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass) {
@@ -200,7 +191,7 @@ public class APIRegistrationController {
 		File defaultFile = new File("default_files"+File.separator+fileName);
 
 		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
-			pluginFile = BattleArena.getSelf().load("/default_files/"+fileName, pluginFile.getAbsolutePath());
+			pluginFile = FileUtil.load(BattleArena.getSelf(),"/default_files/"+fileName, pluginFile.getAbsolutePath());
 			if (pluginFile == null){
 				throw new ConfigException(plugin.getName() + " " + messagesFileName+" could not be loaded");
 			}

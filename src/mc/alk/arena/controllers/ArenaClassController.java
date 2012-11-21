@@ -3,6 +3,7 @@ package mc.alk.arena.controllers;
 import java.util.HashMap;
 
 import mc.alk.arena.objects.ArenaClass;
+import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 
@@ -26,6 +27,8 @@ public class ArenaClassController {
 			ac = giveHeroClass(player,ac);
 		try{if (ac.getItems() != null) InventoryUtil.addItemsToInventory(player, ac.getItems(),true);} catch (Exception e){}
 		try{if (ac.getEffects() != null) EffectUtil.enchantPlayer(player, ac.getEffects());} catch (Exception e){}
+		if (ac.getDisguiseName()!=null && DisguiseInterface.enabled())
+			DisguiseInterface.disguisePlayer(player, ac.getDisguiseName());
 	}
 
 	private static ArenaClass giveHeroClass(Player player, ArenaClass ac){

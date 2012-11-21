@@ -19,8 +19,8 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.PVPState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.DisabledCommandsUtil;
 import mc.alk.arena.util.DmgDeathUtil;
@@ -83,7 +83,8 @@ public class ArenaMatch extends Match {
 	public void onPlayerDeath(PlayerDeathEvent event, ArenaPlayer target){
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE || !insideArena.contains(target.getName())){
 			return;}
-
+		if (cancelExpLoss)
+			event.setKeepLevel(true);
 		Team t = getTeam(target);
 		/// Handle Drops from bukkitEvent
 		if (clearsInventoryOnDeath){ /// Very important for deathmatches.. otherwise tons of items on floor
@@ -378,17 +379,19 @@ public class ArenaMatch extends Match {
 
 	@MatchEventHandler
 	public void onPlayerTeleport(PlayerTeleportEvent event){
-		if (event.isCancelled())
+		if (event.isCancelled() || event.getPlayer().hasPermission(Defaults.TELEPORT_BYPASS_PERM))
 			return;
 		TransitionOptions ops = tops.getOptions(state);
 		if (ops==null)
 			return;
 		if (ops.hasOption(TransitionOption.NOTELEPORT)){
+			MessageUtil.sendMessage(event.getPlayer(), "&cTeleports are disabled in this arena");
 			event.setCancelled(true);
 			return;
 		}
 		if (ops.hasOption(TransitionOption.NOWORLDCHANGE)){
 			if (event.getFrom().getWorld().getUID() != event.getTo().getWorld().getUID()){
+				MessageUtil.sendMessage(event.getPlayer(), "&cWorldChanges are disabled in this arena");
 				event.setCancelled(true);
 			}
 		}

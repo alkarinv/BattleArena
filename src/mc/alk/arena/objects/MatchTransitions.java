@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.InventoryUtil;
 
@@ -135,7 +135,7 @@ public class MatchTransitions {
 			if (classes != null){
 				sb.append("             classes - ");
 				for (ArenaClass ac : classes.values()){
-					sb.append(" " + ac.getPrettyName());}
+					sb.append(" " + ac.getDisplayName());}
 				sb.append("\n");
 			}
 			List<ItemStack> items = to.getGiveItems();

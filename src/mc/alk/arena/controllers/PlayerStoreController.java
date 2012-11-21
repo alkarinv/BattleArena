@@ -71,7 +71,7 @@ public class PlayerStoreController {
 	public void storeHealth(ArenaPlayer player) {
 		Player p = player.getPlayer();
 		final String name = p.getName();
-		healthmap.put(name, p.getHealth());
+		healthmap.put(name, player.getHealth());
 	}
 
 	public void restoreHealth(ArenaPlayer p) {
@@ -90,7 +90,7 @@ public class PlayerStoreController {
 	public void storeHunger(ArenaPlayer player) {
 		Player p = player.getPlayer();
 		final String name = p.getName();
-		hungermap.put(name, p.getHealth());
+		hungermap.put(name, player.getFoodLevel());
 	}
 
 	public void restoreHunger(ArenaPlayer p) {
@@ -181,7 +181,7 @@ public class PlayerStoreController {
 	public static void setGameMode(Player p, GameMode gm){
 		if (Defaults.DEBUG_STORAGE)  Log.info("set gamemode " + p.getName() +" " + p.isOnline()+":"+p.isDead() +" gm=" +gm +"  " + p.getGameMode());
 		if (gm != null && gm != p.getGameMode()){
-			PermissionsUtil.givePlayerInventoryPerms(p);
+			PermissionsUtil.givePlayerTeleportPerms(p);
 			p.getPlayer().setGameMode(gm);
 		}
 	}
@@ -243,5 +243,11 @@ public class PlayerStoreController {
 		if (!TagAPIInterface.enabled())
 			return;
 		TagAPIInterface.removeNameColor(p.getPlayer());
+	}
+
+	public void cancelExpLoss(ArenaPlayer p, boolean cancel) {
+		if (!HeroesInterface.enabled())
+			return;
+		HeroesInterface.cancelExpLoss(p.getPlayer(),cancel);
 	}
 }

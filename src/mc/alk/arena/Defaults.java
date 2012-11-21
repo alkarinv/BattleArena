@@ -73,6 +73,7 @@ public class Defaults {
 	public static boolean PLUGIN_MULITVERSE_INV = false;
 	public static boolean PLUGIN_MULITVERSE_CORE = false;
 
+	public static final String TELEPORT_BYPASS_PERM = "arena.teleport.bypass";
 	public static final String MULTI_INV_IGNORE_NODE = "multiinv.exempt";
 	public static final String MULTIVERSE_INV_IGNORE_NODE = "mvinv.bypass.*";
 	public static final String MULTIVERSE_CORE_IGNORE_NODE = "mv.bypass.gamemode.*";
@@ -90,5 +91,11 @@ public class Defaults {
 
 	public static boolean IGNORE_STACKSIZE = true;
 
+
+	/// Minecraft defaults ( are these set somewhere in minecraft/bukkit where I can get to them??? )
+	/** Max minecraft health */
+	public static final int ENTITY_MAX_HEALTH = 20;
+	/** Min minecraft health */
+	public static final int ENTITY_MIN_HEALTH = 0;
 
 }

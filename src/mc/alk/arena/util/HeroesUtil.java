@@ -21,7 +21,7 @@ import com.herocraftonline.heroes.characters.classes.HeroClassManager;
 import com.herocraftonline.heroes.characters.effects.Effect;
 import com.herocraftonline.heroes.characters.party.HeroParty;
 
-public class HeroesUtil {
+public class HeroesUtil{
 	static Heroes heroes = null;
 	static Map<Team,HeroParty> parties = Collections.synchronizedMap(new HashMap<Team,HeroParty>());
 
@@ -55,16 +55,12 @@ public class HeroesUtil {
 		if (hero == null)
 			return null;
 		HeroClass hc = hero.getHeroClass();
-		if (hc == null)
-			return null;
-		return hc.getName();
+		return hc == null ? null : hc.getName();
 	}
 
 	public static int getLevel(Player player) {
 		Hero hero = getHero(player);
-		if (hero == null)
-			return -1;
-		return hero.getLevel();
+		return hero == null ? -1 : hero.getLevel();
 	}
 
 	public static void setMagic(Player player, Integer magic) {
@@ -76,18 +72,13 @@ public class HeroesUtil {
 	}
 
 	private static Hero getHero(Player player) {
-		CharacterManager cm = heroes.getCharacterManager();
-		Hero hero = cm.getHero(player);
-		if (hero == null)
-			return null;
-		return hero;
+		final CharacterManager cm = heroes.getCharacterManager();
+		return cm.getHero(player);
 	}
 
 	public static boolean isInCombat(Player player) {
 		Hero hero = getHero(player);
-		if (hero == null)
-			return false;
-		return hero.isInCombat();
+		return hero == null ? false : hero.isInCombat();
 	}
 
 	public static void deEnchant(Player player) {
@@ -95,8 +86,7 @@ public class HeroesUtil {
 		if (hero == null)
 			return;
 		for (Effect effect : hero.getEffects()){
-			hero.removeEffect(effect);
-		}
+			hero.removeEffect(effect);}
 	}
 
 	public static void createTeam(Team team) {
@@ -117,8 +107,7 @@ public class HeroesUtil {
 	public static void removeTeam(Team team){
 		HeroParty party = parties.remove(team);
 		if (party != null){
-			heroes.getPartyManager().removeParty(party);
-		}
+			heroes.getPartyManager().removeParty(party);}
 	}
 	public static void addedToTeam(Team team, Player player){
 		HeroParty party = parties.get(team);
@@ -163,9 +152,7 @@ public class HeroesUtil {
 
 	public static Integer getMagicLevel(Player player) {
 		Hero hero = getHero(player);
-		if (hero == null)
-			return null;
-		return hero.getMana();
+		return hero == null ? null : hero.getMana();
 	}
 
 	public static void setMagicLevel(Player player, Integer val) {
@@ -173,5 +160,18 @@ public class HeroesUtil {
 		if (hero == null)
 			return;
 		hero.setMana(val);
+	}
+
+	public static int getHealth(Player player) {
+		Hero hero = getHero(player);
+		return hero == null ? player.getHealth() : hero.getHealth();
+	}
+
+	public static void setHealth(Player player, int health) {
+		Hero hero = getHero(player);
+		if (hero == null)
+			player.setHealth(health);
+		else
+			hero.setHealth(health);
 	}
 }

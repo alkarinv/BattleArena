@@ -48,8 +48,8 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaInterface;
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.options.TransitionOptions.TransitionOption;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
@@ -120,6 +120,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	boolean needsItemPickups = false, needsInventoryClick = false;
 	final boolean needsItemDropEvents;
 	final boolean stopsTeleports;
+	final boolean cancelExpLoss;
 	boolean needsDamageEvents = false;
 	final Plugin plugin;
 
@@ -154,6 +155,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		this.needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
 		this.needsItemDropEvents = tops.hasAnyOption(TransitionOption.DROPITEMOFF);
 		this.alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
+		this.cancelExpLoss = tops.hasAnyOption(TransitionOption.NOEXPERIENCELOSS);
 		this.matchResult = new MatchResult();
 		TransitionOptions mo = tops.getOptions(MatchState.PREREQS);
 		this.needsClearInventory = mo != null ? mo.clearInventory() : false;
@@ -692,6 +694,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			if (index == null) index = teams.indexOf(t);
 			psc.setNameColor(p,TeamUtil.getTeamColor(index));
 		}
+		if (cancelExpLoss){
+			psc.cancelExpLoss(p,true);}
 	}
 
 	/**
@@ -711,8 +715,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		if (woolTeams)
 			PlayerStoreController.removeItem(p, TeamUtil.getTeamHead(getTeamIndex(t)));
 		if (TagAPIInterface.enabled()){
-			psc.removeNameColor(p);
-		}
+			psc.removeNameColor(p);}
+		if (cancelExpLoss){
+			psc.cancelExpLoss(p,false);}
 	}
 
 	public Team getTeam(ArenaPlayer p) {

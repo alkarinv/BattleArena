@@ -34,6 +34,8 @@ public enum TagAPIListener implements Listener {
 	}
 
 	public static void setNameColor(Player player, ChatColor teamColor) {
+		if (!player.isOnline())
+			return;
 		/// Register ourself if we are starting to need to listen
 		if (INSTANCE.playerName.isEmpty()){
 			Bukkit.getPluginManager().registerEvents(INSTANCE, BattleArena.getSelf());}
@@ -42,6 +44,8 @@ public enum TagAPIListener implements Listener {
 	}
 
 	public static void removeNameColor(Player player) {
+		if (!player.isOnline())
+			return;
 		if (INSTANCE.playerName.remove(player.getName()) != null){
 			TagAPI.refreshPlayer(player);
 			/// Unregister if we aren't listening for any players

@@ -9,10 +9,10 @@ import org.bukkit.entity.Player;
 public class PermissionsUtil {
 	static final int ticks = 2;
 	public static void givePlayerInventoryPerms(ArenaPlayer p){
-		givePlayerInventoryPerms(p.getPlayer());
+		givePlayerTeleportPerms(p.getPlayer());
 	}
 
-	public static void givePlayerInventoryPerms(Player p){
+	public static void givePlayerTeleportPerms(Player p){
 		if (BattleArena.getSelf().isEnabled()){
 			if (Defaults.PLUGIN_MULTI_INV){ /// Give the multiinv permission node to ignore this player
 				p.getPlayer().addAttachment(BattleArena.getSelf(), Defaults.MULTI_INV_IGNORE_NODE, true, ticks);}

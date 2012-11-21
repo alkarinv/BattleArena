@@ -2,6 +2,7 @@ package mc.alk.arena.objects;
 
 import mc.alk.arena.controllers.HeroesInterface;
 import mc.alk.arena.util.PermissionsUtil;
+import mc.alk.arena.util.PlayerUtil;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -38,20 +39,25 @@ public class ArenaPlayer {
 	public Player getPlayer() {
 		return player;
 	}
-	public int getHealth() {
-		return player.getHealth();
-	}
 
 	public boolean isOnline() {
 		return player.isOnline();
 	}
 
+	public int getHealth() {
+		return PlayerUtil.getHealth(player);
+	}
+
 	public void setHealth(int health) {
-		player.setHealth(health);
+		PlayerUtil.setHealth(player,health);
+	}
+
+	public int getFoodLevel() {
+		return PlayerUtil.getHunger(player);
 	}
 
 	public void setFoodLevel(int hunger) {
-		player.setFoodLevel(hunger);
+		PlayerUtil.setHunger(player,hunger);
 	}
 
 	public String getDisplayName() {
