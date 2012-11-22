@@ -91,11 +91,4 @@ public class Defaults {
 
 	public static boolean IGNORE_STACKSIZE = true;
 
-
-	/// Minecraft defaults ( are these set somewhere in minecraft/bukkit where I can get to them??? )
-	/** Max minecraft health */
-	public static final int ENTITY_MAX_HEALTH = 20;
-	/** Min minecraft health */
-	public static final int ENTITY_MIN_HEALTH = 0;
-
 }

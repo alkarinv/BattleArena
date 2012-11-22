@@ -295,11 +295,11 @@ public class ConfigSerializer extends BaseSerializer{
 				case DISGUISEALLAS:
 					options.put(to, split[1]);
 					break;
-				case HEALTH:
+				case HEALTH: case HEALTHP:
+				case MAGIC: case MAGICP:
 				case HUNGER:
 				case EXPERIENCE:
 				case WITHINDISTANCE:
-				case MAGIC:
 					options.put(to,Integer.valueOf(split[1]));
 					break;
 				case INVULNERABLE:

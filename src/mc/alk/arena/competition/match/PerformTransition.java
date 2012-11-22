@@ -156,9 +156,11 @@ public class PerformTransition {
 			if (storeAll || mo.hasOption(TransitionOption.STOREMAGIC)){ am.psc.storeMagic(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){am.psc.storeArenaClass(player);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p); }
-			if (health != null) { PlayerUtil.setHealth(p, health);}
+			if (mo.hasOption(TransitionOption.HEALTH)) { PlayerUtil.setHealth(p, health);}
+			if (mo.hasOption(TransitionOption.HEALTHP)) { PlayerUtil.setHealthP(p, health);}
+			if (mo.hasOption(TransitionOption.MAGIC)) { setMagicLevel(p, mo.getMagic()); }
+			if (mo.hasOption(TransitionOption.MAGICP)) { setMagicLevelP(p, mo.getMagic()); }
 			if (hunger != null) { PlayerUtil.setHunger(p, hunger); }
-			if (mo.hasOption(TransitionOption.MAGIC)) { setMagic(transition, p, mo.getMagic()); }
 			if (mo.hasOption(TransitionOption.INVULNERABLE)) { PlayerUtil.setInvulnerable(p,mo.getInvulnerable()); }
 			if (mo.deEnchant() != null && mo.deEnchant()) { deEnchant(p);}
 			if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p);}
@@ -245,10 +247,13 @@ public class PerformTransition {
 		HeroesInterface.deEnchant(p);
 	}
 
-	private static void setMagic(MatchState transition, Player p, Integer magic) {
-		HeroesInterface.setMagic(p, magic);
+	private static void setMagicLevel(Player p, Integer magic) {
+		HeroesInterface.setMagicLevel(p, magic);
 	}
 
+	private static void setMagicLevelP(Player p, Integer magic) {
+		HeroesInterface.setMagicLevelP(p, magic);
+	}
 	private static void removePerms(ArenaPlayer p, List<String> perms) {
 		if (perms == null || perms.isEmpty())
 			return;

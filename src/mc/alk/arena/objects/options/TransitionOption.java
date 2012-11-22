@@ -46,9 +46,11 @@ public enum TransitionOption{
 	GIVEDISGUISE("giveDisguise",false),				/// Give the player the specified class in classes:
 	LEVELRANGE("levelRange",true),					/// <range>: PREREQ only: player needs to be within the given range
 	HEALTH("health",true),							/// =<int> : set the players health to the given amount
+	HEALTHP("healthp",true),						/// =<int> : set the players health to the given percent
 	HUNGER("hunger",true),							/// =<int> : set the players food level
 	EXPERIENCE("experience",true),					/// =<int>: give the player this much exp
-	MAGIC("magic",true),							/// =<int>: give the player this percent of magic (0-100)
+	MAGIC("magic",true),							/// =<int>: set the players magic to the given amount
+	MAGICP("magicp",true),							/// =<int>: set the players magic to the given percent
 	MONEY("money",true),							/// =<double>: give the player money.  PREREQ: charge a fee to enter
 	PVPON("pvpOn",false),							/// Turn on PvP, by default friendly fire is off
 	PVPOFF("pvpOff",false),							/// Turn off all Pvp

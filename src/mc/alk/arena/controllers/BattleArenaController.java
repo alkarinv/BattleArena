@@ -233,6 +233,14 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		ai.delete();
 	}
 
+	public void arenaChanged(Arena arena){
+		try{
+			if (removeArena(arena) != null){
+				addArena(arena);}
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
 
 	public Arena nextArenaByMatchParams(MatchParams mp){
 		return amq.getNextArena(mp);

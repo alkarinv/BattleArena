@@ -19,26 +19,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerStoreController {
-
-	/**
-	 * Thinking aloud.
-	 * Store the experience, no problem
-	 * Restoring
-	 * case1: player in match, dies : should restore his exp
-	 * case2: player in match, quits,
-	 * 		Will that person come back into match if they come back?
-	 * 			a) yes: dont do anything
-	 * 			b) no: set a flag to restore when they join mc again
-	 * case3: match ends
-	 * 		are the players still in match, gone, or offline
-	 * 			a) inmatch: restore
-	 * 			b) outofmatch: do nothing
-	 * 			c) offline &&
-	 */
+	/// TODO since the number of things I am storing is so large now, this might be a good time to refactor these
+	/// into something a bit cleaner
 	final HashMap <String, Integer> expmap = new HashMap<String,Integer>();
 	final HashMap <String, Integer> healthmap = new HashMap<String,Integer>();
+	final HashMap <String, Integer> healthpmap = new HashMap<String,Integer>();
 	final HashMap <String, Integer> hungermap = new HashMap<String,Integer>();
 	final HashMap <String, Integer> magicmap = new HashMap<String,Integer>();
+	final HashMap <String, Integer> magicpmap = new HashMap<String,Integer>();
 	final HashMap <String, PInv> itemmap = new HashMap<String,PInv>();
 	final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
 	final HashMap <String, String> arenaclass = new HashMap<String,String>();
@@ -125,7 +113,7 @@ public class PlayerStoreController {
 		if (val == null)
 			return;
 		if (p.isOnline() && !p.isDead()){
-			HeroesInterface.setMagic(p.getPlayer(), val);
+			HeroesInterface.setMagicLevel(p.getPlayer(), val);
 		} else {
 			BAPlayerListener.restoreMagicOnReenter(p.getName(), val);
 		}

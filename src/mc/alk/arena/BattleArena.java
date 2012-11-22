@@ -141,7 +141,7 @@ public class BattleArena extends JavaPlugin{
 		MethodController.addMethods(ArenaMatch.class, ArenaMatch.class.getMethods());
 
 		/// Load our configs, then arenas
-		cc.setConfig(null,FileUtil.load(this,dir.getPath() +"/config.yml","/default_files/config.yml"));
+		cc.setConfig(FileUtil.load(this,dir.getPath() +"/config.yml","/default_files/config.yml"));
 		YamlFileUpdater.updateConfig(cc); /// Update our config if necessary
 
 		bacs.setConfig(FileUtil.load(this,dir.getPath() +"/classes.yml","/default_files/classes.yml")); /// Load classes

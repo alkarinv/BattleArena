@@ -40,10 +40,6 @@ public class HeroesInterface {
 		try{return HeroesUtil.getLevel(player);}catch(Exception e){e.printStackTrace();}
 		return -1;
 	}
-	public static void setMagic(Player p, Integer magic) {
-		if (!hasHeroes) return;
-		try{HeroesUtil.setMagic(p,magic);}catch(Exception e){e.printStackTrace();}
-	}
 	public static boolean isInCombat(Player player) {
 		if (!hasHeroes) return false;
 		try{return HeroesUtil.isInCombat(player);}catch(Exception e){e.printStackTrace();}
@@ -86,6 +82,16 @@ public class HeroesInterface {
 		return null;
 	}
 
+	public static void setMagicLevel(Player p, Integer magic) {
+		if (!hasHeroes) return;
+		try{HeroesUtil.setMagicLevel(p,magic);}catch(Exception e){e.printStackTrace();}
+	}
+
+	public static void setMagicLevelP(Player p, Integer magic) {
+		if (!hasHeroes) return;
+		try{HeroesUtil.setMagicLevelP(p,magic);}catch(Exception e){e.printStackTrace();}
+	}
+
 	public static Integer getMagicLevel(Player player) {
 		if (!hasHeroes)
 			return null;
@@ -96,12 +102,21 @@ public class HeroesInterface {
 	public static int getHealth(Player player) {
 		return hasHeroes ? HeroesUtil.getHealth(player) : player.getHealth();
 	}
+
 	public static void setHealth(Player player, int health) {
 		if (hasHeroes)
 			try{HeroesUtil.setHealth(player,health);}catch(Exception e){e.printStackTrace();}
 		else
 			player.setHealth(health);
 	}
+
+	public static void setHealthP(Player player, int health) {
+		if (hasHeroes)
+			try{HeroesUtil.setHealthP(player,health);}catch(Exception e){e.printStackTrace();}
+		else
+			player.setHealth(health);
+	}
+
 	public static void cancelExpLoss(Player player, boolean cancel) {
 		if (!hasHeroes)
 			return;

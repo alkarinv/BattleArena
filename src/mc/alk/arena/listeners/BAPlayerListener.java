@@ -200,7 +200,7 @@ public class BAPlayerListener implements Listener  {
 				public void run() {
 					Player pl = Bukkit.getPlayerExact(name);
 					if (pl != null){
-						HeroesInterface.setMagic(pl, val);
+						HeroesInterface.setMagicLevel(pl, val);
 					}
 				}
 			});

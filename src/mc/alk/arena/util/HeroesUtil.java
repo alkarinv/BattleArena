@@ -63,14 +63,6 @@ public class HeroesUtil{
 		return hero == null ? -1 : hero.getLevel();
 	}
 
-	public static void setMagic(Player player, Integer magic) {
-		Hero hero = getHero(player);
-		if (hero == null)
-			return;
-		double max = (double)hero.getMaxMana() * magic/100.0;
-		hero.setMana((int)max);
-	}
-
 	private static Hero getHero(Player player) {
 		final CharacterManager cm = heroes.getCharacterManager();
 		return cm.getHero(player);
@@ -162,6 +154,14 @@ public class HeroesUtil{
 		hero.setMana(val);
 	}
 
+	public static void setMagicLevelP(Player player, Integer magic) {
+		Hero hero = getHero(player);
+		if (hero == null)
+			return;
+		double val = (double)hero.getMaxMana() * magic/100.0;
+		hero.setMana((int)val);
+	}
+
 	public static int getHealth(Player player) {
 		Hero hero = getHero(player);
 		return hero == null ? player.getHealth() : hero.getHealth();
@@ -169,9 +169,23 @@ public class HeroesUtil{
 
 	public static void setHealth(Player player, int health) {
 		Hero hero = getHero(player);
-		if (hero == null)
+		if (hero == null){
 			player.setHealth(health);
-		else
+		} else{
 			hero.setHealth(health);
+			hero.syncHealth();
+		}
+	}
+
+	public static void setHealthP(Player player, int health) {
+		Hero hero = getHero(player);
+		if (hero == null){
+			double val = (double)player.getMaxHealth() * health/100.0;
+			player.setHealth((int)val);
+		} else{
+			double val = (double)hero.getMaxHealth() * health/100.0;
+			hero.setHealth((int)val);
+			hero.syncHealth();
+		}
 	}
 }

@@ -1,6 +1,5 @@
 package mc.alk.arena.util;
 
-import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.HeroesInterface;
 
 import org.bukkit.Bukkit;
@@ -20,6 +19,13 @@ public class PlayerUtil {
 		player.setFoodLevel(hunger);
 	}
 
+	public static void setHealthP(final Player player, final Integer health) {
+		if (HeroesInterface.enabled()){
+			HeroesInterface.setHealthP(player,health);
+			return;
+		}
+		setHealth(player,health);
+	}
 	public static void setHealth(final Player player, final Integer health) {
 		if (HeroesInterface.enabled()){
 			HeroesInterface.setHealth(player,health);
@@ -31,14 +37,14 @@ public class PlayerUtil {
 			Bukkit.getPluginManager().callEvent(event);
 			if (!event.isCancelled()){
 				player.setLastDamageCause(event);
-                final int dmg = Math.max(Defaults.ENTITY_MIN_HEALTH,oldHealth - event.getDamage());
+                final int dmg = Math.max(0,oldHealth - event.getDamage());
                 player.setHealth(dmg);
 			}
 		} else if (oldHealth < health){
 			EntityRegainHealthEvent event = new EntityRegainHealthEvent(player, health-oldHealth,RegainReason.CUSTOM);
 			Bukkit.getPluginManager().callEvent(event);
 			if (!event.isCancelled()){
-                final int regen = Math.min(oldHealth + event.getAmount(),Defaults.ENTITY_MAX_HEALTH);
+                final int regen = Math.min(oldHealth + event.getAmount(),player.getMaxHealth());
                 player.setHealth(regen);
 			}
 		}
