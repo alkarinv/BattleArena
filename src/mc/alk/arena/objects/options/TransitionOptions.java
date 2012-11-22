@@ -81,8 +81,10 @@ public class TransitionOptions {
 	public boolean blockPlaceOff() {return options.containsKey(TransitionOption.BLOCKPLACEOFF);}
 
 	public Integer getHealth() {return getInt(TransitionOption.HEALTH);}
+	public Integer getHealthP() {return getInt(TransitionOption.HEALTHP);}
 	public Integer getHunger() {return getInt(TransitionOption.HUNGER);}
 	public Integer getMagic() { return getInt(TransitionOption.MAGIC);}
+	public Integer getMagicP() { return getInt(TransitionOption.MAGICP);}
 	public Integer getWithinDistance() {return getInt(TransitionOption.WITHINDISTANCE);}
 
 	public Integer getInt(TransitionOption option){

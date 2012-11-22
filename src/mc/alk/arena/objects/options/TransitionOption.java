@@ -74,7 +74,7 @@ public enum TransitionOption{
 	/// onDeath Only Options
 	RESPAWN ("respawn",false),						/// Allow player to respawn in Arena after they have died
 	RANDOMRESPAWN ("randomRespawn",false), 			/// Respawn player at a random spawn location after they have died
-	NOEXPERIENCELOSS("noExperienceLoss",true),		/// cancel exp loss on death
+	NOEXPERIENCELOSS("noExperienceLoss",false),		/// cancel exp loss on death
 
 	/// onSpawn Only Options
 	RESPAWNWITHCLASS("respawnWithClass", false),	/// Respawn player with their previously selected class

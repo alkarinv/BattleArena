@@ -431,7 +431,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	 * Notify Bukkit Listeners and specific listeners to this match
 	 * @param BAevent event
 	 */
-	protected void notifyListeners(BAEvent event) {
+	public void notifyListeners(BAEvent event) {
 		tmc.callListeners(event); /// Call our listeners listening to only this match
 		event.callEvent(); /// Call bukkit listeners for this event
 	}
@@ -951,8 +951,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public void intervalTick(int remaining) {
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
 		notifyListeners(event);
-		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeaders());}catch(Exception e){e.printStackTrace();}
 		notifyListeners(new MatchTimerIntervalEvent(this, remaining));
+		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeaders());}catch(Exception e){e.printStackTrace();}
 	}
 
 	public TeamJoinHandler getTeamJoinHandler() {

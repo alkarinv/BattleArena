@@ -157,9 +157,9 @@ public class PerformTransition {
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){am.psc.storeArenaClass(player);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p); }
 			if (mo.hasOption(TransitionOption.HEALTH)) { PlayerUtil.setHealth(p, health);}
-			if (mo.hasOption(TransitionOption.HEALTHP)) { PlayerUtil.setHealthP(p, health);}
+			if (mo.hasOption(TransitionOption.HEALTHP)) { PlayerUtil.setHealthP(p, mo.getHealthP());}
 			if (mo.hasOption(TransitionOption.MAGIC)) { setMagicLevel(p, mo.getMagic()); }
-			if (mo.hasOption(TransitionOption.MAGICP)) { setMagicLevelP(p, mo.getMagic()); }
+			if (mo.hasOption(TransitionOption.MAGICP)) { setMagicLevelP(p, mo.getMagicP()); }
 			if (hunger != null) { PlayerUtil.setHunger(p, hunger); }
 			if (mo.hasOption(TransitionOption.INVULNERABLE)) { PlayerUtil.setInvulnerable(p,mo.getInvulnerable()); }
 			if (mo.deEnchant() != null && mo.deEnchant()) { deEnchant(p);}

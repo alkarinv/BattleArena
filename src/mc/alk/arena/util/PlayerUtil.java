@@ -24,7 +24,8 @@ public class PlayerUtil {
 			HeroesInterface.setHealthP(player,health);
 			return;
 		}
-		setHealth(player,health);
+		int val = (int) ((double)player.getMaxHealth() * health/100.0);
+		setHealth(player,val);
 	}
 	public static void setHealth(final Player player, final Integer health) {
 		if (HeroesInterface.enabled()){

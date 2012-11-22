@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.events.matches.MatchMessageEvent;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
@@ -124,8 +126,25 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 				msg = match.getParams().getPrefix()+"&e is tied between " + teamStr;
 			}
 		}
-		match.sendMessage(msg);
+		MatchMessageEvent event = new MatchMessageEvent(match,MatchState.ONMATCHINTERVAL, serverChannel,"", msg);
+		match.notifyListeners(event);
+		String message = event.getMatchMessage();
+		if (message != null && !message.isEmpty())
+			match.sendMessage(message);
+		message = event.getServerMessage();
+		if (event.getServerChannel() != Channel.NullChannel && message != null && !message.isEmpty())
+			event.getServerChannel().broadcast(message);
 	}
-	public void sendTimeExpired(Channel serverChannel) {}
+
+	public void sendTimeExpired(Channel serverChannel) {
+		MatchMessageEvent event = new MatchMessageEvent(match,MatchState.ONMATCHTIMEEXPIRED,serverChannel,"", "");
+		match.notifyListeners(event);
+		String message = event.getMatchMessage();
+		if (message != null && !message.isEmpty())
+			match.sendMessage(message);
+		message = event.getServerMessage();
+		if (event.getServerChannel() != Channel.NullChannel && message != null && !message.isEmpty())
+			event.getServerChannel().broadcast(message);
+	}
 
 }
