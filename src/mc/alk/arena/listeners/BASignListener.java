@@ -123,7 +123,7 @@ public class BASignListener implements Listener{
 					acs.getMatchParams().getColor()+match));
 			String cmd = acs.getCommand().toString();
 			cmd = Character.toUpperCase(cmd.charAt(0)) + cmd.substring(1);
-			event.setLine(1, MessageUtil.colorChat(ChatColor.BLUE+cmd.toLowerCase()) );
+			event.setLine(1, MessageUtil.colorChat(ChatColor.GREEN+cmd.toLowerCase()) );
 			MessageUtil.sendMessage(event.getPlayer(), "&2Arena command sign created");
 		} catch (Exception e){
 			MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Command Sign");

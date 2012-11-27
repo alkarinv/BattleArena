@@ -38,7 +38,8 @@ public class BAConfigSerializer extends ConfigSerializer{
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
 
 		parseDefaultOptions(config.getConfigurationSection("defaultOptions"));
-		Defaults.MONEY_STR = config.getString("moneyName",Defaults.MONEY_STR);
+		if (!Defaults.MONEY_SET)
+			Defaults.MONEY_STR = config.getString("moneyName",Defaults.MONEY_STR);
 		Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", Defaults.AUTO_UPDATE);
 		Defaults.TELEPORT_Y_OFFSET = config.getDouble("teleportYOffset", Defaults.TELEPORT_Y_OFFSET);
 		Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", Defaults.NUM_INV_SAVES);

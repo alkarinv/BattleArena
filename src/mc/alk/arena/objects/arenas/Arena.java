@@ -63,7 +63,6 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * Called after the object has been loaded with persistable data
 	 * Subclasses can override to initialize their own values right after construction
 	 * Or subclasses can override the default constructor
 	 */

@@ -141,7 +141,7 @@ public class PlayerStoreController {
 	}
 
 	public static void setInventory(ArenaPlayer p, PInv pinv) {
-		if (Defaults.DEBUG_STORAGE) Log.info("restoring items for " + p.getName() +" = "+" o="+p.isOnline() +"  dead="+p.isDead());
+		if (Defaults.DEBUG_STORAGE) Log.info("restoring items for " + p.getName() +"= "+" o="+p.isOnline() +"  dead="+p.isDead() +" h=" + p.getHealth()+"");
 		if (p.isOnline() && !p.isDead()){
 			InventoryUtil.addToInventory(p.getPlayer(), pinv);
 		} else {

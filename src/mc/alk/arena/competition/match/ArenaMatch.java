@@ -197,7 +197,7 @@ public class ArenaMatch extends Match {
 				}
 			});
 		} else { /// This player is now out of the system now that we have given the ondeath effects
-			Location l = oldlocs.get(p.getName());
+			Location l = mo.hasOption(TransitionOption.TELEPORTTO) ? mo.getTeleportToLoc() : oldlocs.get(p.getName());
 			if (l != null)
 				event.setRespawnLocation(l);
 			stopTracking(p);
@@ -341,7 +341,8 @@ public class ArenaMatch extends Match {
 		userTime.put(playerName, System.currentTimeMillis());
 
 		final TransitionOptions mo = tops.getOptions(state);
-		if (mo == null)
+		final TransitionOptions ro = tops.getOptions(MatchState.ONSPAWN);
+		if (mo == null && ro == null)
 			return;
 		/// Have They have already selected a class this match, have they changed their inventory since then?
 		/// If so, make sure they can't just select a class, drop the items, then choose another
@@ -349,10 +350,10 @@ public class ArenaMatch extends Match {
 			List<ItemStack> items = new ArrayList<ItemStack>();
 			if (chosen.getItems()!=null)
 				items.addAll(chosen.getItems());
-			if (mo.hasItems()){
-				items.addAll(mo.getGiveItems());}
+			if (ro != null && ro.hasItems()){
+				items.addAll(ro.getGiveItems());}
 			if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
-				MessageUtil.sendMessage(p,"&cYou can't swich classes after changing items!");
+				MessageUtil.sendMessage(p,"&cYou can't switch classes after changing items!");
 				return;
 			}
 		}
@@ -367,6 +368,8 @@ public class ArenaMatch extends Match {
 		ArenaClassController.giveClass(p, ac);
 		if (mo.hasItems()){
 			try{ InventoryUtil.addItemsToInventory(p, mo.getGiveItems(), true);} catch(Exception e){e.printStackTrace();}}
+		if (ro.hasItems()){
+			try{ InventoryUtil.addItemsToInventory(p, ro.getGiveItems(), true);} catch(Exception e){e.printStackTrace();}}
 
 		/// Deal with effects/buffs
 		List<PotionEffect> effects = mo.getEffects();

@@ -9,24 +9,15 @@ import mc.alk.arena.objects.teams.Team;
 
 public class VictoryUtil {
 	static final Random rand = new Random();
-	
-	public static Team highestKills(Match match){
+
+	public static List<Team> highestKills(Match match){
 		List<Team> teams = match.getTeams();
-		Team highest = null;
 		List<Team> victors = getMostKills(teams);
 		if (victors.size() > 1){ /// try to tie break by number of deaths
-			victors = getLeastDeaths(victors);			
+			victors = getLeastDeaths(victors);
 		}
 
-		/// We still have a tie.. time to go random
-		if (victors.size() == 1){
-			highest = victors.get(rand.nextInt(victors.size()));
-		} else if (victors.size() > 1){
-			highest = victors.get(rand.nextInt(victors.size()));
-		}
-		if (highest == null){ /// no one has killed, or died, choose someone at random
-			highest = teams.get(rand.nextInt(teams.size()));}
-		return highest;
+		return victors;
 	}
 
 	public static List<Team> getMostKills(List<Team> teams){

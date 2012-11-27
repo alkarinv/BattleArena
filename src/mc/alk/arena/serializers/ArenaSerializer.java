@@ -229,7 +229,6 @@ public class ArenaSerializer {
 		}
 		cs = cs.getConfigurationSection("persistable");
 		Persistable.yamlToObjects(arena, cs,Arena.class);
-		arena.init();
 		arena.setParameters(q);
 		updateRegions(arena);
 		bac.addArena(arena);

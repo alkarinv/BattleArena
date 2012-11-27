@@ -27,13 +27,18 @@ public class BAClassesSerializer extends BaseSerializer{
 		Set<String> keys = cs.getKeys(false);
 		boolean first = true;
 		for (String className : keys){
-			ArenaClass ac = parseArenaClass(cs.getConfigurationSection(className));
-			if (ac == null)
-				continue;
-			if (first) first = false;
-			else sb.append(", ");
-			sb.append(ac.getName());
-			ArenaClassController.addClass(ac);
+			try{
+				ArenaClass ac = parseArenaClass(cs.getConfigurationSection(className));
+				if (ac == null)
+					continue;
+				if (first) first = false;
+				else sb.append(", ");
+				sb.append(ac.getName());
+				ArenaClassController.addClass(ac);
+			} catch (Exception e){
+				Log.err("There was an error loading the class " + className +". It will be disabled");
+				e.printStackTrace();
+			}
 		}
 		if (first){
 			Log.info(BattleArena.getPName() +" no predefined classes found. inside of " + cs.getCurrentPath());

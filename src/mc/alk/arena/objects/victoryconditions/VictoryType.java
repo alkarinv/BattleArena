@@ -14,7 +14,6 @@ public class VictoryType {
 	static public LinkedHashMap<String,Class<?>> classes = new LinkedHashMap<String,Class<?>>();
 	static public CaseInsensitiveMap<VictoryType> types = new CaseInsensitiveMap<VictoryType>();
 
-	public static VictoryType DEFAULT = null;
 	static int count =0;
 	final String name;
 	final Plugin ownerPlugin;
@@ -26,13 +25,18 @@ public class VictoryType {
 
 		if (!types.containsKey(name))
 			types.put(name,this);
-		if (name.equalsIgnoreCase("LastManStanding")) DEFAULT = this;
 	}
 
 	public static VictoryType fromString(final String type) {
-		if (type==null)
-			return null;
-		return types.get(type);
+		return type == null ? null : types.get(type);
+	}
+
+	public static VictoryType getType(VictoryCondition vc) {
+		return vc == null ? null : types.get(vc.getClass());
+	}
+
+	public static VictoryType getType(Class<? extends VictoryCondition> vc) {
+		return vc == null ? null : types.get(vc.getSimpleName());
 	}
 
 	public static String getValidList() {

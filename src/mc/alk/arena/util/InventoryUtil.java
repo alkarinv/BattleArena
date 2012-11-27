@@ -813,6 +813,7 @@ public class InventoryUtil {
 				dura2 += is.getDurability()*is.getAmount();
 			}
 		}
+//		System.out.println("nitems1  " + nitems1 +":" + nitems2+"      " + dura1 +"  : " + dura2);
 		if (nitems1 != nitems2 || dura1 != dura2)
 			return false;
 

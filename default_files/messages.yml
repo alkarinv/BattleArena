@@ -1,4 +1,4 @@
-version: 1.3
+version: 1.4
 
 system:
     type_enabled: "&2 type &6%s&2 enabled"

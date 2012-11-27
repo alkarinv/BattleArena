@@ -98,11 +98,9 @@ arena:
     onStart:
         options: [teleportIn, blockBreakOff, woolTeams]
     onSpawn:
-        options: [deEnchant, giveItems, hunger=20, health=20]
+        options: [deEnchant, hunger=20, health=20]
         giveClass:
             default: gladiator
-        items: # ignored if options doesnt have "giveItems"
-            - bread: 5
     onDeath:
         options: [clearInventory]
     onComplete:
@@ -144,17 +142,15 @@ battleground:
     onJoin:
         options: [pvpOff]
     onPrestart:
-        options: [pvpOff, teleportIn, giveItems, deEnchant]
-        giveClass:
-            default: gladiator
-        items: # ignored if options doesnt have "giveItems"
-            - bread: 5
+        options: [pvpOff, teleportIn, deEnchant]
     onStart:
         options: [pvpOn]
     onComplete:
         options: [teleportOut, clearInventory, deEnchant ]
     onSpawn:
         options: [enchants, health=20, hunger=20, deEnchant, woolTeams]
+        giveClass:
+            default: gladiator
         enchants:
             - speed:3
     onDeath:
@@ -223,7 +219,7 @@ freeForAll:
         options: [pvpOff]
     onPrestart:
         options: [pvpOff, giveItems, deEnchant]
-        items: # ignored if options doesnt have "giveItems"
+        items: 
             - iron_sword: 1
             - bow: 1
             - tnt: 3

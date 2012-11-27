@@ -69,7 +69,7 @@ public class MessageSerializer extends BaseSerializer {
 
 
 	public static Message getDefaultMessage(String path) {
-		return defaultMessages.getMessage(path);
+		return defaultMessages != null ? defaultMessages.getMessage(path) : null;
 	}
 
 	public Message getMessage(String path) {
@@ -88,11 +88,11 @@ public class MessageSerializer extends BaseSerializer {
 	}
 
 	public static boolean hasMessage(String prefix, String node) {
-		return defaultMessages.contains(prefix+"." + node);
+		return defaultMessages != null ? defaultMessages.contains(prefix+"." + node) : false;
 	}
 
 	public static void loadDefaults() {
-		defaultMessages.reloadFile();
+		if (defaultMessages != null) defaultMessages.reloadFile();
 	}
 
 	public static void setDefaultConfig(MessageSerializer messageSerializer) {

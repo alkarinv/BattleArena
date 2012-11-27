@@ -17,6 +17,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.ExpUtil;
@@ -61,6 +62,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			Defaults.DEBUG_STORAGE = on;
 		} else if(section.equalsIgnoreCase("damage")){
 //			Defaults.DEBUG_DAMAGE = on;
+		} else if(section.equalsIgnoreCase("teamJoin")){
+			Defaults.DEBUG_MATCH_TEAMS = on;
 		} else {
 			sendMessage(sender, "&cDebugging couldnt find code section &6"+ section);
 			return;
@@ -182,9 +185,22 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return mp;
 	}
 
-	@MCCommand(cmds={"invalidReason"}, admin=true)
-	public boolean arenaAddKill(CommandSender sender, Arena arena) {
+	@MCCommand(cmds={"invalidReasons"}, admin=true)
+	public boolean arenaInvalidReasons(CommandSender sender, Arena arena) {
 		Collection<String> reasons = arena.getInvalidReasons();
+		sendMessage(sender, "&eInvalid reasons for &6" + arena.getName());
+		for (String reason: reasons){
+			MessageUtil.sendMessage(sender, reason);
+		}
+		return true;
+	}
+
+	@MCCommand(cmds={"invalidQReasons"}, admin=true)
+	public boolean matchQInvalidReasons(CommandSender sender, ArenaPlayer player, Arena arena) {
+		QueueObject qo = BattleArena.getBAController().getQueueObject(player);
+		if (qo == null){
+			return sendMessage(sender, "&cThat player is not in a queue");}
+		Collection<String> reasons = arena.getInvalidMatchReasons(qo.getMatchParams(), qo.getJoinOptions());
 		sendMessage(sender, "&eInvalid reasons for &6" + arena.getName());
 		for (String reason: reasons){
 			MessageUtil.sendMessage(sender, reason);

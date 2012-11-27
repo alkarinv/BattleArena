@@ -2,9 +2,9 @@ package mc.alk.arena.util;
 
 import org.bukkit.entity.Player;
 
-import pgDev.bukkit.DisguiseCraft.Disguise;
-import pgDev.bukkit.DisguiseCraft.Disguise.MobType;
 import pgDev.bukkit.DisguiseCraft.api.DisguiseCraftAPI;
+import pgDev.bukkit.DisguiseCraft.disguise.Disguise;
+import pgDev.bukkit.DisguiseCraft.disguise.DisguiseType;
 
 public class DisguiseInterface {
 	public static final int DEFAULT = Integer.MAX_VALUE;
@@ -18,11 +18,11 @@ public class DisguiseInterface {
 
 	public static void disguisePlayer(Player player, String disguise) {
 		try{
-			MobType type = MobType.fromString(disguise);
+			DisguiseType type = DisguiseType.fromString(disguise);
 			if (type == null){
 				return ;}
 			Disguise oldD = disguiseInterface.getDisguise(player);
-			if (oldD.mob == type){
+			if (oldD.type == type){
 				return;}
 			Disguise d = new Disguise(disguiseInterface.newEntityID(), type);
 			if (disguiseInterface.isDisguised(player)){

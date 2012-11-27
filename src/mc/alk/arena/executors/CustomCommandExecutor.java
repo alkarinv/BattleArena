@@ -58,7 +58,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		public MethodWrapper(Object obj, Method method){
 			this.obj = obj; this.method = method;
 		}
-		Object obj; /// Object the method belongs to
+		Object obj; /// Object instance the method belongs to
 		Method method; /// Method
 	}
 
@@ -170,13 +170,12 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				mwrapper.method.invoke(mwrapper.obj,newArgs.args);
 				success = true;
 				break; /// success on one
-			} catch (InvalidArgumentException e){
+			} catch (InvalidArgumentException e){ /// One of the arguments wasn't correct, store the message
 				if (errs == null)
 					errs = new ArrayList<InvalidArgumentException>();
 				errs.add(e);
 			} catch (Exception e) { /// Just all around bad
-				Log.err("[BA Error] "+mwrapper.method +" : " + mwrapper.obj +"  : " + newArgs);
-				e.printStackTrace();
+				logInvocationError(e, mwrapper,newArgs);
 			}
 		}
 		/// and handle all errors
@@ -194,6 +193,15 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			MessageUtil.sendMessage(sender, getUsage(command, mccmd));
 		}
 		return true;
+	}
+
+	private void logInvocationError(Exception e, MethodWrapper mwrapper, Arguments newArgs) {
+		Log.err("[BA Error] "+BattleArena.getVersion()+":"+mwrapper.method +" : " + mwrapper.obj +"  : " + newArgs);
+		if (newArgs!=null && newArgs.args != null){
+			for (Object o: newArgs.args)
+				Log.err("[BA Error] object=" + o);
+		}
+		e.printStackTrace();
 	}
 
 	static final String ONLY_INGAME =ChatColor.RED+"You need to be in game to use this command";

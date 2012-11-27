@@ -317,26 +317,30 @@ public class ArenaMatchQueue {
 		return false;
 	}
 
-	public synchronized ParamTeamPair removeFromQue(ArenaPlayer p) {
+	/**
+	 * Remove the player from the queue
+	 * @param player
+	 * @return The ParamTeamPair object if the player was found.  Otherwise returns null
+	 */
+	public synchronized ParamTeamPair removeFromQue(ArenaPlayer player) {
 		for (TeamQueue tq : tqs.values()){
-			if (tq != null && tq.contains(p)){
-				Team t = tq.remove(p);
+			if (tq != null && tq.contains(player)){
+				Team t = tq.remove(player);
 				return new ParamTeamPair(tq.getMatchParams(),t);
 			}
 		}
 		return null;
 	}
 
-	public synchronized ParamTeamPair removeFromQue(Team t) {
+	public synchronized ParamTeamPair removeFromQue(Team team) {
 		for (TeamQueue tq : tqs.values()){
-			if (tq.remove(t)){
-				return new ParamTeamPair(tq.getMatchParams(),t);}
+			if (tq.remove(team)){
+				return new ParamTeamPair(tq.getMatchParams(),team);}
 		}
 		return null;
 	}
 
-	public QPosTeamPair getQuePos(ArenaPlayer p) {
-		//		int pos;
+	public QPosTeamPair getQueuePos(ArenaPlayer p) {
 		for (TeamQueue tq : tqs.values()){
 			QPosTeamPair qtp = tq.getPos(p);
 			if (qtp != null)
@@ -345,6 +349,15 @@ public class ArenaMatchQueue {
 		return null;
 	}
 
+	public QueueObject getQueueObject(ArenaPlayer p) {
+		for (TeamQueue tq : tqs.values()){
+			for (QueueObject qo: tq){
+				if (qo.hasMember(p))
+					return qo;
+			}
+		}
+		return null;
+	}
 	public synchronized void stop() {
 		suspend = true;
 		notifyAll();
@@ -357,6 +370,12 @@ public class ArenaMatchQueue {
 
 	public synchronized Collection<Team> purgeQueue(){
 		List<Team> teams = new ArrayList<Team>();
+		synchronized(ready_matches){
+			for (Match m: ready_matches){
+				teams.addAll(m.getTeams());
+				m.cancelMatch();}
+			ready_matches.clear();
+		}
 		synchronized(tqs){
 			for (ArenaType mp : tqs.keySet()){
 				TeamQueue tq = tqs.get(mp);
@@ -412,6 +431,17 @@ public class ArenaMatchQueue {
 			for (Match am : ready_matches){
 				sb.append(am +"\n");}}
 		return sb.toString();
+	}
+
+	public List<String> invalidReason(QueueObject qo){
+		List<String> reasons = new ArrayList<String>();
+		MatchParams params = qo.getMatchParams();
+		synchronized(arenaqueue){
+			for (Arena arena : arenaqueue){
+				reasons.addAll(arena.getInvalidMatchReasons(params, qo.getJoinOptions()));
+			}
+		}
+		return reasons;
 	}
 
 	public void removeAllArenas() {

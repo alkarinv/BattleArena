@@ -30,6 +30,7 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
+import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
@@ -204,7 +205,13 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	}
 
 	public boolean isInQue(ArenaPlayer p) {return amq.isInQue(p);}
-	public QPosTeamPair getCurrentQuePos(ArenaPlayer p) {return amq.getQuePos(p);}
+	public QPosTeamPair getCurrentQuePos(ArenaPlayer p) {return amq.getQueuePos(p);}
+
+	/**
+	 * Remove the player from the queue
+	 * @param player
+	 * @return The ParamTeamPair object if the player was found.  Otherwise returns null
+	 */
 	public ParamTeamPair removeFromQue(ArenaPlayer p) {
 		Team t = TeamController.getTeam(p);
 		if (t == null)
@@ -514,5 +521,11 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	public boolean hasRunningMatches() {
 		return !running_matches.isEmpty();
+	}
+	public QueueObject getQueueObject(ArenaPlayer player) {
+		return amq.getQueueObject(player);
+	}
+	public List<String> getInvalidQueueReasons(QueueObject qo) {
+		return amq.invalidReason(qo);
 	}
 }

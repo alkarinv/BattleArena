@@ -15,6 +15,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	Integer matchTime, intervalTime;
 	AnnouncementOptions ao = null;
 
+	Integer nDeaths = 1;
+	boolean overrideDefaultBattleTracker = true;
 	public MatchParams(ArenaType at, Rating rating, VictoryType vc) {
 		super(at);
 		this.setRating(rating);
@@ -28,6 +30,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.matchTime = q.matchTime;
 		this.intervalTime = q.intervalTime;
 		this.ao = q.ao;
+		this.nDeaths = q.nDeaths;
 	}
 
 	public VictoryType getVictoryType() {return vc;}
@@ -64,7 +67,12 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public void setIntervalTime(Integer intervalTime) {
 		this.intervalTime = intervalTime;
 	}
-
+	public void setNDeaths(Integer ndeaths){
+		this.nDeaths = ndeaths;
+	}
+	public Integer getNDeaths(){
+		return nDeaths;
+	}
 	@Override
 	public int hashCode() {
 		return ((arenaType.ordinal()) << 27) +(rating.ordinal() << 25) + (minTeams<<12)+(vc.ordinal() << 8) + minTeamSize;
@@ -92,5 +100,12 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	public ChatColor getColor() {
 		return MessageUtil.getFirstColor(prefix);
+	}
+
+	public void setOverrideBattleTracker(boolean enable) {
+		overrideDefaultBattleTracker = enable;
+	}
+	public boolean getOverrideBattleTracker() {
+		return overrideDefaultBattleTracker;
 	}
 }

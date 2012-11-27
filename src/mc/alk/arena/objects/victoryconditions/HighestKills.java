@@ -12,6 +12,6 @@ public class HighestKills extends PvPCount{
 
 	@MatchEventHandler
 	public void onFindCurrentLeader(MatchFindCurrentLeaderEvent event) {
-		event.setCurrentLeader(VictoryUtil.highestKills(match));
+		event.setCurrentLeaders(VictoryUtil.highestKills(match));
 	}
 }

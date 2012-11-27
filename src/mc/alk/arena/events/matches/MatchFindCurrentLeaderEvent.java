@@ -25,10 +25,12 @@ public class MatchFindCurrentLeaderEvent extends MatchEvent {
 
 	public void setCurrentLeader(Team currentLeader) {
 		if (currentLeaders==null) currentLeaders = new ArrayList<Team>();
-		currentLeaders.add(currentLeader);
+		this.currentLeaders.clear();
+		this.currentLeaders.add(currentLeader);
 	}
 	public void setCurrentLeaders(List<Team> currentLeaders) {
 		if (this.currentLeaders==null) this.currentLeaders = new ArrayList<Team>();
+		this.currentLeaders.clear();
 		this.currentLeaders.addAll(currentLeaders);
 	}
 }

@@ -63,7 +63,10 @@ public class MoneyController {
 		hasVault = true;
 		useVault = true;
 		/// Certain economy plugins don't implement this method correctly due to a NPE (I'm looking at you BOSEconomy! -_-)
-		try{Defaults.MONEY_STR = economy.currencyNameSingular();} catch (Exception e){}
+		try{
+			Defaults.MONEY_STR = economy.currencyNameSingular();
+			Defaults.MONEY_SET = true;
+		} catch (Exception e){}
 	}
 
 	public static void setRegisterEconomy() {

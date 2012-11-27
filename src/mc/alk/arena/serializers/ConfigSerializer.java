@@ -29,6 +29,7 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.DisguiseInterface;
@@ -38,6 +39,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.SerializerUtil;
 import mc.alk.arena.util.Util.MinMax;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -129,7 +131,7 @@ public class ConfigSerializer extends BaseSerializer{
 		if (cs.contains("victoryCondition")){
 			vt = VictoryType.fromString(cs.getString("victoryCondition"));
 		} else {
-			vt = VictoryType.DEFAULT;
+			vt = VictoryType.getType(OneTeamLeft.class);
 		}
 
 		// TODO make unknown types with a valid plugin name be deferred until after the other plugin is loaded
@@ -138,10 +140,10 @@ public class ConfigSerializer extends BaseSerializer{
 					+"valid types are " + VictoryType.getValidList());}
 
 		/// Number of teams and team sizes
-		Integer minTeams = cs.contains("minTeams") ? cs.getInt("minTeams") : 2;
-		Integer maxTeams = cs.contains("maxTeams") ? cs.getInt("maxTeams") : ArenaParams.MAX;
-		Integer minTeamSize = cs.contains("minTeamSize") ? cs.getInt("minTeamSize") : 1;
-		Integer maxTeamSize = cs.contains("maxTeamSize") ? cs.getInt("maxTeamSize") : ArenaParams.MAX;
+		Integer minTeams = cs.getInt("minTeams",2);
+		Integer maxTeams = cs.getInt("maxTeams",ArenaParams.MAX);
+		Integer minTeamSize = cs.getInt("minTeamSize",1);
+		Integer maxTeamSize = cs.getInt("maxTeamSize", ArenaParams.MAX);
 		if (cs.contains("teamSize")) {
 			MinMax mm = MinMax.valueOf(cs.getString("teamSize"));
 			minTeamSize = mm.min;
@@ -154,27 +156,26 @@ public class ConfigSerializer extends BaseSerializer{
 		}
 		MatchParams pi = match ? new MatchParams(at, rating,vt) : new EventParams(at,rating, vt);
 
-		/// Convert first letter of name to upper case
-		StringBuilder sb = new StringBuilder();
-		sb.append(name.substring(0,1).toUpperCase());
-		sb.append(name.substring(1,name.length()));
-		pi.setName(sb.toString());
+		pi.setName(StringUtils.capitalize(name));
 
-		pi.setCommand( cs.contains("command") ? cs.getString("command") : name);
+		pi.setCommand(cs.getString("command",name));
 		if (cs.contains("cmd")) /// turns out I used cmd in a lot of old configs.. so use both :(
 			pi.setCommand(cs.getString("cmd"));
-		pi.setPrefix( cs.contains("prefix") ? cs.getString("prefix") : "&6["+name+"]");
+		pi.setPrefix( cs.getString("prefix","&6["+name+"]"));
 		pi.setMinTeams(minTeams);
 		pi.setMaxTeams(maxTeams);
 		pi.setMinTeamSize(minTeamSize);
 		pi.setMaxTeamSize(maxTeamSize);
 
-		pi.setTimeBetweenRounds( cs.contains("timeBetweenRounds") ? cs.getInt("timeBetweenRounds") : Defaults.TIME_BETWEEN_ROUNDS);
-		pi.setSecondsToLoot( cs.contains("secondsToLoot") ? cs.getInt("secondsToLoot") : Defaults.SECONDS_TO_LOOT);
-		pi.setSecondsTillMatch( cs.contains("secondsTillMatch") ? cs.getInt("secondsTillMatch") : Defaults.SECONDS_TILL_MATCH);
+		pi.setTimeBetweenRounds(cs.getInt("timeBetweenRounds",Defaults.TIME_BETWEEN_ROUNDS));
+		pi.setSecondsToLoot( cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT));
+		pi.setSecondsTillMatch( cs.getInt("secondsTillMatch",Defaults.SECONDS_TILL_MATCH));
 
-		pi.setMatchTime(cs.contains("matchTime") ? cs.getInt("matchTime") : Defaults.MATCH_TIME);
-		pi.setIntervalTime(cs.contains("matchUpdateInterval") ? cs.getInt("matchUpdateInterval") : Defaults.MATCH_UPDATE_INTERVAL);
+		pi.setMatchTime(cs.getInt("matchTime",Defaults.MATCH_TIME));
+		pi.setIntervalTime(cs.getInt("matchUpdateInterval",Defaults.MATCH_UPDATE_INTERVAL));
+
+		pi.setOverrideBattleTracker(cs.getBoolean("overrideBattleTracker", true));
+		pi.setNDeaths(cs.getInt("nDeaths",1));
 
 		if (cs.contains("customMessages") && cs.getBoolean("customMessages")){
 			APIRegistrationController api = new APIRegistrationController();

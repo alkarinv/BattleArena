@@ -155,7 +155,9 @@ public class ArenaType implements Comparable<ArenaType>{
 		Class<?>[] args = {};
 		try {
 			Constructor<?> constructor = arenaClass.getConstructor(args);
-			return (Arena) constructor.newInstance((Object[])args);
+			Arena arena = (Arena) constructor.newInstance((Object[])args);
+			try{arena.init();}catch(Exception e){ e.printStackTrace();}
+			return arena;
 		} catch (NoSuchMethodException e){
 			System.err.println("If you have custom constructors for your class you must also have a public default constructor");
 			System.err.println("Add the following line to your Arena Class '" + arenaClass.getSimpleName()+".java'");

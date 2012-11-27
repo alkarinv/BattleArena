@@ -12,22 +12,12 @@ public class Defaults {
 
 	public static double TICK_MULT = 1.0;
 	public static String MONEY_STR = "Gold";
+	public static boolean MONEY_SET = false;
     public static final double DEFAULT_ELO = 1250.0;
 
     /// How long can we keep appending player names together
     /// before reverting to team 1, team 2, etc
     public static final int MAX_TEAM_NAME_APPEND = 4;
-
-	public static final boolean DEBUG = false;
-	public static final boolean DEBUG_TRACE = false;
-	public static final boolean DEBUG_EVENTS = false;
-	public static final boolean DEBUG_TEVENTS = false;
-	public static boolean DEBUG_VIRTUAL = false;
-	public static boolean DEBUG_TRANSITIONS = false;
-	public static boolean DEBUG_STORAGE = false;
-	public static boolean DEBUG_TRACKING = false;
-	public static final boolean DEBUG_DAMAGE = false;
-
 
 	public static final String ARENA_ADMIN = "arena.admin";
 
@@ -90,5 +80,18 @@ public class Defaults {
 	public static final String SIGN_PREFIX = "*";
 
 	public static boolean IGNORE_STACKSIZE = true;
+
+    /// DEBUG OPTIONS
+	public static final boolean DEBUG = false;
+	public static final boolean DEBUG_TRACE = false;
+	public static final boolean DEBUG_EVENTS = false;
+	public static final boolean DEBUG_TEVENTS = false;
+	public static final boolean DEBUG_DAMAGE = false;
+	public static boolean DEBUG_VIRTUAL = false;
+	public static boolean DEBUG_TRANSITIONS = false;
+	public static boolean DEBUG_STORAGE = false;
+	public static boolean DEBUG_TRACKING = false;
+	public static boolean DEBUG_MATCH_TEAMS = false;
+
 
 }

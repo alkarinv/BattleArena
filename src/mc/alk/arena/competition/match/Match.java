@@ -52,6 +52,7 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
+import mc.alk.arena.objects.victoryconditions.NDeaths;
 import mc.alk.arena.objects.victoryconditions.TimeLimit;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
@@ -139,10 +140,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		this.oldlocs = new HashMap<String,Location>();
 		this.tops = params.getTransitionOptions();
 		arena.setMatch(this);
-		VictoryCondition vt = VictoryType.createVictoryCondition(this);
-		if (!(vt instanceof TimeLimit))
-			addVictoryCondition(new TimeLimit(this));
-		addVictoryCondition(vt);
+		addVictoryConditions();
 		boolean noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
 		if (noEnter && arena.hasRegion())
 			WorldGuardInterface.setFlag(arena.getRegionWorld(), arena.getRegion(), WorldGuardFlag.ENTRY, !noEnter);
@@ -438,18 +436,26 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	@Override
 	public void addTeam(Team team){
+		if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addTeam("+team.getName()+":"+team.getId()+")");
 		teams.add(team);
 		teamIndexes.put(team, teams.size());
-		startTracking(team);
 		team.setAlive();
 		team.resetScores();/// reset scores
 		TeamController.addTeamHandler(team, this);
-		for (ArenaPlayer p: team.getPlayers()){
-			arenaInterface.onJoin(p,team);}
 		if ( alwaysTeamNames || (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND)){
 			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
+		for (ArenaPlayer p: team.getPlayers()){
+			privateAddPlayer(team,p);}
 		PerformTransition.transition(this, MatchState.ONJOIN, team, true);
 		HeroesInterface.createTeam(team);
+	}
+
+	private void privateAddPlayer(Team team, ArenaPlayer player){
+		leftPlayers.remove(player.getName()); /// remove players from the list as they are now joining again
+		insideArena.remove(player.getName());
+		team.setAlive(player);
+		startTracking(player);
+		arenaInterface.onJoin(player,team);
 	}
 
 	@Override
@@ -468,12 +474,12 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	 */
 	@Override
 	public void addedToTeam(Team team, ArenaPlayer player) {
+		if (Defaults.DEBUG_MATCH_TEAMS)
+			Log.info(getID()+" addedToTeam("+team.getName()+":"+team.getId()+", " + player.getName()+") inside="+insideArena.contains(player.getName()));
+
 		if (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND){
-			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));
-		}
-		team.setAlive(player);
-		startTracking(player);
-		arenaInterface.onJoin(player,team);
+			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
+		privateAddPlayer(team,player);
 		HeroesInterface.addedToTeam(team, player.getPlayer());
 		PerformTransition.transition(this, MatchState.ONJOIN, player,team, true);
 	}
@@ -497,10 +503,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	@Override
 	public void removedFromTeam(Team team, ArenaPlayer player) {
-		for (ArenaPlayer p: team.getPlayers()){
-			arenaInterface.onLeave(p,team);
-			HeroesInterface.removedFromTeam(team, player.getPlayer());
-		}
+		HeroesInterface.removedFromTeam(team, player.getPlayer());
 	}
 
 	public void onJoin(Collection<Team> teams){
@@ -548,11 +551,12 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public void onLeave(ArenaPlayer p) {
 		/// remove them from the match, they don't want to be here
 		Team t = getTeam(p);
+		if (t==null) /// really? trying to make a player leave who isnt in the match
+			return;
 		onLeave(p,t);
 	}
 
 	private void onLeave(ArenaPlayer ap, Team team){
-		team.killMember(ap);
 		if (insideArena(ap)){ /// Only leave if they haven't already left.
 			/// The onCancel should teleport them out, and call leaveArena(ap)
 			PerformTransition.transition(this, MatchState.ONCANCEL, ap, team, false);
@@ -567,14 +571,6 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		teams.remove(team);
 		HeroesInterface.removeTeam(team);
 		TeamController.removeTeamHandler(team, this);
-	}
-	/**
-	 * Called when a team joins the arena
-	 * @param team
-	 */
-	protected void startTracking(final Team team){
-		for (ArenaPlayer p: team.getPlayers()){
-			startTracking(p);}
 	}
 
 	/**
@@ -666,7 +662,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	private void preEnter(ArenaPlayer p){
 		final String name = p.getName();
-		BTInterface.stopTracking(p);
+		if (params.getOverrideBattleTracker())
+			BTInterface.stopTracking(p);
 		/// Store the point at which they entered the arena
 		if (!oldlocs.containsKey(name) || oldlocs.get(name) == null) /// First teleportIn is the location we want
 			oldlocs.put(name, p.getLocation());
@@ -739,30 +736,59 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public void setMessageHandler(MatchMessageHandler mc){this.mc.setMessageHandler(mc);}
 	public MatchMessageHandler getMessageHandler(){return mc.getMessageHandler();}
 
+	private void addVictoryConditions(){
+		VictoryCondition vt = VictoryType.createVictoryCondition(this);
+		if (!(vt instanceof TimeLimit))
+			addVictoryCondition(new TimeLimit(this));
+		if (vt instanceof NDeaths)
+			((NDeaths)vt).setMaxDeaths(this.getParams().getNDeaths());
+		addVictoryCondition(vt);
+	}
+
+	/**
+	 * Add Another victory condition to this match
+	 * @param vc
+	 */
 	public void addVictoryCondition(VictoryCondition vc){
 		vcs.add(vc);
 		addArenaListener(vc);
 		tmc.addListener(vc);
 	}
+
+	/**
+	 * Remove a victory condition from this match
+	 * @param vc
+	 */
 	public void removeVictoryCondition(VictoryCondition vc){
 		vcs.remove(vc);
 		tmc.removeListener(vc);
 		arenaListeners.remove(vc);
 	}
 
+	/**
+	 * Add a collection of listeners for this match
+	 * @param transitionListeners
+	 */
+	public void addArenaListeners(Collection<ArenaListener> transitionListeners){
+		for (ArenaListener tl: transitionListeners){
+			addArenaListener(tl);}
+	}
+
+	/**
+	 * Add a listener for this match
+	 * @param al
+	 */
 	public void addArenaListener(ArenaListener al){
 		arenaListeners.add(al);
 		tmc.addListener(al);
 	}
 
-	public void addArenaListeners(Collection<ArenaListener> transitionListeners){
-		for (ArenaListener tl: transitionListeners){
-			arenaListeners.add(tl);
-			tmc.addListener(tl);}
-	}
-
-	//	public VictoryCondition getVictoryCondition(){return vc;}
+	/**
+	 * Gets the arena currently being used by this match
+	 * @return arena or null if not in use
+	 */
 	public Arena getArena() {return arena;}
+
 	public boolean isFinished() {return state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isWon() {return state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isStarted() {return state == MatchState.ONSTART;}
@@ -770,6 +796,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	@Override
 	public MatchState getState() {return state;}
+
 	@Override
 	protected void transitionTo(CompetitionState state){
 		this.state = (MatchState) state;
@@ -783,6 +810,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	@Override
 	public MatchParams getParams() {return params;}
+
 	@Override
 	public List<Team> getTeams() {return teams;}
 	public List<Team> getAliveTeams() {

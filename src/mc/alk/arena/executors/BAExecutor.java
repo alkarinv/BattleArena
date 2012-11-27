@@ -120,7 +120,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return sendMessage(sender, "&5Enabled types = &6 " + ParamController.getAvaibleTypes(disabled));
 	}
 
-	@MCCommand(cmds={"join"},inGame=true,usage="join [options]")
+	@MCCommand(cmds={"join","j"},inGame=true,usage="join [options]")
 	public boolean join(ArenaPlayer player, MatchParams mp, String args[]) {
 		return join(player,mp,args,false);
 	}
@@ -237,7 +237,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return true;
 	}
 
-	@MCCommand(cmds={"leave"}, inGame=true, usage="leave")
+	@MCCommand(cmds={"leave","l"}, inGame=true, usage="leave")
 	public boolean leave(ArenaPlayer p) {
 		if (!canLeave(p)){
 			return true;
@@ -264,17 +264,21 @@ public class BAExecutor extends CustomCommandExecutor  {
 				return sendMessage(p,"&eYou are not currently in a queue, use /arena join");
 			}
 		}
+		ParamTeamPair qtp = null;
 		Team t = teamc.getSelfFormedTeam(p); /// They are in the queue, they are part of a team
-		ParamTeamPair qtp = ac.removeFromQue(p);
-		if (t!= null && t.size() > 1){
+		if (t != null)
+			qtp = ac.removeFromQue(t);
+		else
+			qtp = ac.removeFromQue(p);
+		if (qtp!= null && t!= null && t.size() > 1){
 			t.sendMessage("&6The team has left the &6"+qtp.q.getName()+" queue&e. &6"+ p.getName() +"&e issued the command");
-		} else if (t!= null){
+		} else if (qtp != null){
 			sendMessage(p,"&eYou have left the queue for the &6" + qtp.q.getName() );
 		} else {
 			sendMessage(p,"&eYou weren't found in any queue");
 			return true;
 		}
-		refundFee(qtp.q, t);
+		refundFee(qtp.q, qtp.team);
 		return true;
 	}
 
@@ -627,7 +631,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return sendMessage(player,"&cYou have accepted the duel!");
 	}
 
-	@MCCommand(cmds={"duel"},inGame=true)
+	@MCCommand(cmds={"duel","d"},inGame=true)
 	public boolean duel(ArenaPlayer player, MatchParams mp, String args[]) {
 		if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".duel") &&
 				!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".duel") ){

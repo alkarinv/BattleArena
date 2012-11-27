@@ -6,11 +6,19 @@ import mc.alk.arena.objects.teams.Team;
 
 public class NDeaths extends PvPCount{
 
-	final int maxdeaths; /// number of deaths before teams are eliminated
+	int maxdeaths; /// number of deaths before teams are eliminated
+
+	public NDeaths(Match match) {
+		super(match);
+		maxdeaths = 1;
+	}
 
 	public NDeaths(Match match, Integer maxdeaths) {
 		super(match);
 		this.maxdeaths = maxdeaths;
+	}
+	public void setMaxDeaths(Integer nDeaths) {
+		this.maxdeaths = nDeaths;
 	}
 
 	@Override

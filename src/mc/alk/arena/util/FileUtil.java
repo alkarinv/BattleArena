@@ -26,6 +26,9 @@ public class FileUtil {
 		if (!file.exists()){ /// Create a new file from our default example
 			try{
 				InputStream inputStream = plugin.getClass().getResourceAsStream(default_file);
+				if (inputStream == null) /// will this work to fix the problems in windows??
+					inputStream = plugin.getClass().getClassLoader().getResourceAsStream(default_file);
+
 				OutputStream out=new FileOutputStream(config_file);
 				byte buf[]=new byte[1024];
 				int len;
