@@ -16,8 +16,8 @@ classes:
             - 373;8193: 1 # potion of regen
             - 373;16396: 1 # splash potion of harming 1
         enchants:
-            - speed:1:900
-            - resistance:1:900
+            - speed:1:120
+            - resistance:1:120
     archer:
         displayName: "&2Archer" ### Used for signs
         items:

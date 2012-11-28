@@ -50,9 +50,17 @@ public class JoinOptions extends ArenaSize{
 		}
 	}
 
-
+	/** All options for joining */
 	final Map<JoinOption,Object> options = new EnumMap<JoinOption,Object>(JoinOption.class);
+
+	/** Location they have joined from */
 	Location joinedLocation = null;
+
+	/** Specific arena or match size.  Is the user requesting a special arena or match size */
+	boolean specific = false;
+
+	/** When the player joined, can be null */
+	Long joinTime;
 
 	public boolean matches(Arena a) {
 		return options.containsKey(JoinOption.ARENA) ?
@@ -96,6 +104,7 @@ public class JoinOptions extends ArenaSize{
 	public static JoinOptions parseOptions(MatchParams mp, Team t, ArenaPlayer player, String[] args)
 			throws InvalidOptionException, NumberFormatException{
 		JoinOptions jos = new JoinOptions();
+		jos.setJoinTime(System.currentTimeMillis());
 		jos.joinedLocation = player.getLocation();
 		Map<JoinOption,Object> ops = jos.options;
 		Arena arena = null;
@@ -105,6 +114,7 @@ public class JoinOptions extends ArenaSize{
 		if (teamSize.manuallySet){
 			length = args.length -1;
 			jos.setTeamSize(teamSize.size);
+			jos.specific = true;
 		}
 //		int length = teamSize.manuallySet ? args.length -1 : args.length;
 		ops.put(JoinOption.TEAMSIZE, teamSize);
@@ -119,6 +129,7 @@ public class JoinOptions extends ArenaSize{
 					throw new InvalidOptionException("&cYou specified 2 arenas!");}
 				arena = a;
 				ops.put(JoinOption.ARENA, arena);
+				jos.specific = true;
 				continue;
 			}
 			Integer teamIndex = TeamUtil.getTeamIndex(op);
@@ -158,6 +169,14 @@ public class JoinOptions extends ArenaSize{
 		return jos;
 	}
 
+	public void setJoinTime(Long currentTimeMillis) {
+		this.joinTime = currentTimeMillis;
+	}
+
+	public Long getJoinTime(){
+		return joinTime;
+	}
+
 	public String optionsString(MatchParams mp) {
 		StringBuilder sb = new StringBuilder(mp.toPrettyString()+" ");
 		for (JoinOption op: options.keySet()){
@@ -174,9 +193,11 @@ public class JoinOptions extends ArenaSize{
 			return ((WantedTeamSizePair)options.get(JoinOption.TEAMSIZE)).manuallySet;}
 		return false;
 	}
+
 	public Integer getTeamSize(){
 		return ((WantedTeamSizePair)options.get(JoinOption.TEAMSIZE)).size;
 	}
+
 	public boolean hasOption(JoinOption option) {
 		return options.containsKey(option);
 	}
@@ -185,4 +206,7 @@ public class JoinOptions extends ArenaSize{
 		return options.get(option);
 	}
 
+	public boolean isSpecific(){
+		return specific;
+	}
 }

@@ -33,6 +33,9 @@ public class Defaults {
 	public static int MATCH_UPDATE_INTERVAL = 30;
 	public static int JOIN_CUTOFF_TIME = 15;
 
+	public static boolean FORCESTART_ENABLED = true;
+	public static long FORCESTART_TIME = 20;
+
 
 	/// EVENT OPTIONS
 	public static int AUTO_EVENT_COUNTDOWN_TIME = 180;
@@ -87,6 +90,7 @@ public class Defaults {
 	public static final boolean DEBUG_EVENTS = false;
 	public static final boolean DEBUG_TEVENTS = false;
 	public static final boolean DEBUG_DAMAGE = false;
+
 	public static boolean DEBUG_VIRTUAL = false;
 	public static boolean DEBUG_TRANSITIONS = false;
 	public static boolean DEBUG_STORAGE = false;

@@ -11,6 +11,8 @@ public class QPosTeamPair {
 	public final int pos;
 	public final Team t;
 	public final int playersInQueue;
+	public Long time;
+
 	public QPosTeamPair(){this(null,-1,-1,(Team)null);}
 
 	public QPosTeamPair(ArenaParams params, int pos, int playersInQueue, Team t){

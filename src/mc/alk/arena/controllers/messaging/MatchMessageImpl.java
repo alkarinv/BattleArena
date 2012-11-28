@@ -123,7 +123,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 						"&e kills &4"+currentLeader.getNDeaths()+"&e deaths";
 			} else {
 				String teamStr = MessageUtil.joinTeams(currentLeaders,"&e and ");
-				msg = match.getParams().getPrefix()+"&e is tied between " + teamStr;
+				msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr+"&e. Tied between " + teamStr;
 			}
 		}
 		MatchMessageEvent event = new MatchMessageEvent(match,MatchState.ONMATCHINTERVAL, serverChannel,"", msg);

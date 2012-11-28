@@ -1,4 +1,4 @@
-configVersion: 1.6
+configVersion: 1.6.5
 
 # For help the wiki is a good source of information
 # Wiki: # https://github.com/alkarinv/BattleArena/wiki
@@ -34,32 +34,42 @@ useArenasOnlyInOrder: false
 
 ## default Options (these can be overridden by each match/event type)
 defaultOptions:
-    ### Match Options
+    #### Match Options ####
     secondsTillBegin: 6 
-    secondsTillMatch: 6 
-    secondsToLoot: 5 ## Time after winning to run around and collect loot
+    secondsTillMatch: 6 ## how long between onPrestart and onStart
     matchTime: 120 ## How long do timed matches last, (in seconds)
+    secondsToLoot: 5 ## Time after winning to run around and collect loot
     matchUpdateInterval: 30 ## For timed matched, how long between sending players match updates
 
-    ### Event Options
+    ## when set to true when a player joins a queue the match will attempt to 
+    ## start after the forceStartTime regardless if the minimum amount of people
+    ## have joined.  Example: say 2 teams of 4 people each is needed, if after
+    ## the forceStartTime is exceeded only 2 teams of 1 person is needed to start.
+    matchEnableForceStart: false
+    matchForceStartTime: 180
+
+
+    #### Event Options ####
     eventCountdownTime: 180 ## How long before announcing an automated event and its start
     eventCountdownInterval: 60 ## How often will it announce a reminder that its open and you can join
     ## If true, when a player joins and an event that can be opened, it will be
-    ## silently opened and the player will join
+    ## opened and the player will join
     allowPlayerCreation: false
-
-    ### Duel Options
+    ## When opened by a player with allowPlayerCreation, what arguments should get passed in
+    playerOpenOptions: [silent, time=180]
+  
+    #### Duel Options ####
     allowRatedDuels: false
     # after a player rejects a duel, how long before they can be challenged again
     challengeInterval: 1800 # (seconds) 1800 = 30minutes
 
-    ### Scheduled Event Options
-    ### Valid options [startContinuous, startNext]
+    #### Scheduled Event Options ####
+    ## Valid options [startContinuous, startNext]
     onServerStart: []
     timeBetweenScheduledEvents: 30 ## seconds between end of one event, and start of another
     announceTimeTillNextEvent: false
   
-    ### Match/Event Announcements
+    #### Match/Event Announcements ####
     ## these only affect the broadcasts to the server or channel, not the messages the fighting players receive
     ## announce : announce these messages 
     ## dontannounce : dont announce these messages
@@ -70,7 +80,7 @@ defaultOptions:
         onStart: [ dontannounce ]  ## match starting
         onVictory:  [ announce, server ] ## match has been won, exmaple 'P1[p1elo] has defeated P2[p2elo]'
 
-    ### Default event Announcements
+    #### Default event Announcements ####
     eventAnnouncements:
         onCountDownToEvent: [ announce, server ]  ## event is now open
         onOpen: [ announce, server ]  ## event is now open
@@ -91,10 +101,8 @@ arena:
     prefix: "&6[Arena]&e"
     nTeams: 2+
     teamSize: 1+
-    onJoin:
-        options: [pvpOff]
     preReqs:
-        options: [clearInventory]
+        options: [storeAll]
     onStart:
         options: [teleportIn, blockBreakOff, woolTeams]
     onSpawn:
@@ -104,7 +112,7 @@ arena:
     onDeath:
         options: [clearInventory]
     onComplete:
-        options: [teleportOut, deEnchant, clearInventory]
+        options: [teleportOut, deEnchant, clearInventory, restoreAll]
     winner:
         options: [health=20, hunger=20]
 
@@ -118,8 +126,14 @@ skirmish:
     prefix: "&b[Skirmish]&e"
     nTeams: 2+
     teamSize: 1+
+    preReqs:
+        options: []
     onStart:
         options: [teleportIn, pvpOn, blockBreakOff, woolTeams]
+    onSpawn:
+        options: []
+    onDeath:
+        options: []
     onComplete:
         options: [teleportOut]
     winner:
@@ -233,6 +247,8 @@ freeForAll:
         options: [pvpOn]
     onComplete:
         options: [teleportOut, clearInventory, deEnchant, undisguise]
+    onDeath:
+        options: []
     onSpawn:
         options: [enchants, health=20, hunger=20, deEnchant]
         enchants:
@@ -286,7 +302,7 @@ deathMatch:
         enchants:
             - speed:2:900
             - resistance:2:900
-            
+
 tourney:
     enabled: true
     command: tourney

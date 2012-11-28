@@ -528,4 +528,10 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	public List<String> getInvalidQueueReasons(QueueObject qo) {
 		return amq.invalidReason(qo);
 	}
+	public int getMatchingQueueSize(MatchParams mp) {
+		return amq.getMatchingQueueSize(mp);
+	}
+	public boolean forceStart(MatchParams mp) {
+		return amq.forceStart(mp);
+	}
 }

@@ -22,9 +22,6 @@ public class YamlFileUpdater {
 	BufferedWriter fw =null;
 	File tempFile = null;
 	File configFile = null;
-	public static void updateConfig(BAConfigSerializer bacs){
-		updateBaseConfig(bacs);
-	}
 
 	public void updateMessageSerializer(MessageSerializer ms) {
 		FileConfiguration fc = ms.getConfig();
@@ -52,7 +49,11 @@ public class YamlFileUpdater {
 		}
 	}
 
-	private static void updateBaseConfig(BAConfigSerializer bacs) {
+	public static void updateAllConfig(BAConfigSerializer bacs) {
+
+	}
+
+	public static void updateBaseConfig(BAConfigSerializer bacs) {
 		File tempFile = null;
 		FileConfiguration fc = bacs.getConfig();
 		Version version = new Version(fc.getString("configVersion","0"));
@@ -77,6 +78,8 @@ public class YamlFileUpdater {
 			yfu.to1Point55(bacs, bacs.getConfig(), version);}
 		if (version.compareTo("1.6")<0){
 			yfu.to1Point6(bacs, bacs.getConfig(), version);}
+		if (version.compareTo("1.6.5")<0){
+			yfu.to1Point65(bacs, bacs.getConfig(), version);}
 	}
 
 	private void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
@@ -414,6 +417,44 @@ public class YamlFileUpdater {
 					fw.write("# afterwards the 1v1v1v1 is guaranteed to be the next arena used.\n");
 					fw.write("# if false.  if after the 1v1 is used, and the match ends, the 1v1 can be used again before the 1v1v1v1\n");
 					fw.write("useArenasOnlyInOrder: false\n\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(configFile.getAbsoluteFile());
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
+	private void to1Point65(ConfigSerializer bacs, FileConfiguration fc, Version version) {
+		Log.warn("BattleArena updating config to 1.6.5");
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			if (version.compareTo(0)==0){
+				fw.write("configVersion: 1.6.5\n");
+			}
+
+			boolean updatedDefaultSection = false;
+			while ((line = br.readLine()) != null){
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 1.6.5\n\n");
+				} else if (!updatedDefaultSection && (line.matches(".*matchUpdateInterval:.*"))){
+					fw.write(line +"\n\n");
+					fw.write("    ## when set to true when a player joins a queue the match will attempt to \n");
+					fw.write("    ## start after the forceStartTime regardless if the minimum amount of people\n");
+					fw.write("    ## have joined.  Example: say 2 teams of 4 people each is needed, if after\n");
+					fw.write("    ## the forceStartTime is exceeded only 2 teams of 1 person is needed to start.\n");
+					fw.write("    enableForceStart: false\n");
+					fw.write("    forceStartTime: 180\n");
 				} else {
 					fw.write(line+"\n");
 				}

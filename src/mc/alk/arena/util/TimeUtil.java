@@ -65,7 +65,7 @@ public class TimeUtil {
 			has = true;
 			sb.append("&6"+s + "&e " + secOrSecs(s));}
 		if (!has){
-			sb.append("&60 matchEndTime");
+			sb.append("&60");
 		}
 		return sb.toString();
 	}

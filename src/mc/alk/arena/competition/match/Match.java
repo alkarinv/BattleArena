@@ -171,9 +171,6 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			if (waitRoomStates.isEmpty()){
 				waitRoomStates = null;}
 		}
-
-		/// Try and make a joinhandler out of our current params, but we don't care if it's null
-		//		try {joinHandler = TeamJoinFactory.createTeamJoinHandler(params,this);} catch (NeverWouldJoinException e) {}
 	}
 
 	private void updateBukkitEvents(MatchState matchState){

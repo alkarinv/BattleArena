@@ -227,7 +227,16 @@ public class BAExecutor extends CustomCommandExecutor  {
 			t.sendMessage("&eYou have joined the queue for the &6"+ qpp.params.toPrettyString()+ " &e.");
 			int nplayers = qpp.params.getMinTeams()*qpp.params.getMinTeamSize();
 			if (qpp.playersInQueue < nplayers && qpp.pos > 0){
-				t.sendMessage("&ePosition: &6" + qpp.pos +"&e. Match start when &6" + nplayers+"&e players join. &6"+qpp.playersInQueue+"/"+nplayers);
+				StringBuilder msg = new StringBuilder("&ePosition: &6" + qpp.pos +"&e. Match start when &6" +
+						nplayers+"&e players join. &6"+qpp.playersInQueue+"/"+nplayers);
+				/// If we have force start, and the minTeams and minTeamSize are not the minimums
+				/// we should announce how much time left
+				if (qpp.time !=null && qpp.time - System.currentTimeMillis() > 0 &&
+						(mp.getMinTeams() > 2 || mp.getMinTeamSize() > 1)){
+					Long time = qpp.time - System.currentTimeMillis();
+					msg.append("\n&eor in " + TimeUtil.convertMillisToString(time) +" when at least 2 players have joined");
+				}
+				t.sendMessage(msg.toString());
 			} else if (qpp.pos > 0){
 				t.sendMessage("&ePosition: &6" + qpp.pos +"&e. your match will start when an arena is free");
 			} else {
@@ -732,6 +741,19 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return true;
 	}
 
+	@MCCommand(cmds={"forceStart"})
+	public boolean arenaForceStart(CommandSender sender, MatchParams mp) {
+		int qsize = ac.getMatchingQueueSize(mp);
+		if (qsize <= 1){
+			return sendMessage(sender, "&c" + mp.getType()+" does not have enough teams queued");}
+
+		if (ac.forceStart(mp)){
+			return sendMessage(sender, "&2" + mp.getType()+" has been started");
+		} else {
+			return sendMessage(sender, "&c" + mp.getType()+" could not be started");
+		}
+	}
+
 	@MCCommand(cmds={"list"})
 	public boolean arenaList(CommandSender sender, MatchParams mp, String[] args) {
 		boolean all = args.length > 1 && (args[1]).equals("all");
@@ -927,5 +949,4 @@ public class BAExecutor extends CustomCommandExecutor  {
 	public Collection<String> getDisabled() {
 		return this.disabled;
 	}
-
 }

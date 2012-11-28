@@ -2,6 +2,7 @@ package mc.alk.arena.objects.queues;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.BlankCompetition;
 import mc.alk.arena.competition.Competition;
@@ -28,17 +30,26 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.options.JoinOptions.JoinOption;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.queues.TeamQueue.TeamQueueComparator;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
+import mc.alk.arena.util.Log;
+
+import org.bukkit.Bukkit;
 
 
 public class ArenaMatchQueue {
 	static final boolean DEBUG = false;
 
 	final Map<ArenaType, TeamQueue> tqs = new HashMap<ArenaType, TeamQueue>();
+	final Map<TeamQueue, IdTime> forceTimers = Collections.synchronizedMap(new HashMap<TeamQueue, IdTime>());
+	public static class IdTime{
+		public Integer id;
+		public Long time;
+	}
 
 	final ArenaQueue arenaqueue = new ArenaQueue();
 
@@ -94,7 +105,13 @@ public class ArenaMatchQueue {
 
 		if (tq == null){
 			return null;}
-
+		/// If forceStart we need to track the first Team who joins, we will base how long till the force start off them
+		/// we should also report to the user that the match will start in x seconds, despite the queue size
+		Long time = null;
+		if (Defaults.FORCESTART_ENABLED){
+			IdTime idt = updateTimer(tq,to);
+			time = idt.time;
+		}
 		tq.add(to);
 		if (!suspend)
 			notifyIfNeeded(tq);
@@ -113,7 +130,42 @@ public class ArenaMatchQueue {
 		}
 		if (qtp == null)
 			qtp = new QPosTeamPair(to.getMatchParams(),tq.size(),tq.getNPlayers(),to);
+		qtp.time = time;
+
 		return qtp;
+	}
+
+	/**
+	 * Update the forceJoin timer for the following TeamQueue and the given QueueObject
+	 * The time will not be updated if an older timer is ongoing
+	 * @param tq
+	 * @param to
+	 * @return
+	 */
+	private IdTime updateTimer(final TeamQueue tq, QueueObject to) {
+		JoinOptions jo = to.getJoinOptions();
+		if (jo == null || jo.getJoinTime() == null)
+			return null;
+		IdTime idt = forceTimers.get(tq);
+		if (idt == null){
+			Long time = (System.currentTimeMillis() - jo.getJoinTime() + Defaults.FORCESTART_TIME*1000);
+			idt = new IdTime();
+			idt.time = System.currentTimeMillis() + time;
+			if (time > 0){
+				idt.id = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+					@Override
+					public void run() {
+						Match m = findMatch(tq,true);
+						if (m == null)
+							return;
+						forceTimers.remove(tq);
+						addToReadyMatches(m);
+					}
+				}, (time/1000)* 20);
+				forceTimers.put(tq, idt);
+			}
+		}
+		return idt;
 	}
 
 	/**
@@ -135,50 +187,90 @@ public class ArenaMatchQueue {
 		if (tq==null || arenaqueue.isEmpty() || tq.isEmpty())
 			return false;
 
-		Match match = findMatch(tq);
-		//		System.out.println("notifyIfNeeded " + tq  + " tqsize="+tq.size() + "   match=" + match);
+		Match match = findMatch(tq, false);
 		if (match == null)
 			return false;
+		addToReadyMatches(match);
+		return true;
+	}
+
+	private synchronized void addToReadyMatches(Match match){
 		synchronized(ready_matches){
 			ready_matches.addLast(match);
 		}
 		notifyAll();
-		return true;
 	}
 
-	private Match findMatch(TeamQueue tq) {
+	/**
+	 * @param TeamQueue : Queue we are searching for matches
+	 * @param forceStart : whether we are trying to start a match that usually would need more players
+	 * @return Match if one can be created from the specified TeamQueue
+	 */
+	private Match findMatch(TeamQueue tq, boolean forceStart) {
 		if (suspend)
 			return null;
 		if (Defaults.DEBUG) System.out.println("findMatch " + tq +"  " + tq.size() +"  mp=" + tq.getMatchParams());
 		/// The idea here is we iterate through all arenas
 		/// See if one matches with the type of TeamQueue that we have been given
 		/// Then we make sure those players are ready, and if not send them messages
-		final MatchParams baseParams = ParamController.getMatchParams(tq.getMatchParams().getType().getName());
+		final MatchParams baseParams = ParamController.getMatchParamCopy(tq.getMatchParams().getType().getName());
+
+		/// With a force start we are trying to be as permissive as possible,
+		/// this means changing the minimum teamsize and teams.  It also means later on we will do the same
+		/// with the arena params
+
+		if (Defaults.FORCESTART_ENABLED){
+			IdTime idt = forceTimers.get(tq);
+			Log.debug("###################  " + idt  +"    " +(idt != null && idt.time <= System.currentTimeMillis()));
+			if (idt != null && idt.time <= System.currentTimeMillis()){
+				forceStart = true;}
+		}
+		if (forceStart){
+			baseParams.setMinTeamSize(1);
+			baseParams.setMinTeams(2);
+		}
+
 		if (baseParams==null || tq.isEmpty())
 			return null;
+
 		boolean skipNonMatched = false;
 		synchronized(arenaqueue){ synchronized(tq){
 			for (Arena a : arenaqueue){
-				if (a == null || !a.valid() || !a.matches(baseParams, null))
+				if (a == null || !a.valid() || (!a.matches(baseParams, null) && !forceStart))
 					continue;
 				MatchParams newParams = new MatchParams(baseParams);
-				if (!newParams.intersect(a.getParameters())){
+				if (!forceStart && !newParams.intersect(a.getParameters())){ /// only intersect if not forceStart
 					continue;}
 
 				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
 						"   tq=" + tq +" --- ap="+a.getParameters() +"    baseP="+baseParams +" newP="+newParams);
 				for (QueueObject qo : tq){
-					/// We want to allow MatchedUp Matches to proceed like normal (this happens for tournaments and duels)
-					if (skipNonMatched && !(qo instanceof MatchTeamQObject)){
-						continue;}
-					MatchParams mp = qo.getMatchParams();
-					if (!mp.matches(newParams))
-						continue;
+					/// Check if we should only use 1 arena (skipNonMatched == true).  But for certain elements in the queue
+					/// We need to ignore.
+					/// Allow MatchedUp Matches to proceed like normal (this happens for tournaments and duels)
+					/// Allow people that selected particular join options (like certain arenas) to get a chance
+					if (skipNonMatched && qo instanceof TeamQObject){
+						JoinOptions jpo = qo.getJoinOptions();
+						if (jpo == null || !jpo.isSpecific())
+							continue;
+					}
+					MatchParams qomp = qo.getMatchParams();
+					/// Check to see if the team matches these params
+					if (!qomp.matches(newParams)){
+						if (!forceStart){ /// continue to next queue object
+							continue;
+						} else { /// since we are trying to force a start... how bad does this player not match?
+							JoinOptions jpo = qo.getJoinOptions();
+							if (jpo != null && jpo.isSpecific()) /// alright, they want a particular place/size we aren't doing
+								continue;
+						}
+					}
 					Match m = null;
 					try {
 						MatchParams playerMatchAndArenaParams = new MatchParams(newParams);
-						playerMatchAndArenaParams.intersect(mp);
-						m = findMatch(playerMatchAndArenaParams,a,tq);
+						if (!forceStart) /// sorry team, you don't take precedence anymore due to forcestart
+							playerMatchAndArenaParams.intersect(qomp);
+						m = findMatch(playerMatchAndArenaParams,a,tq, forceStart);
 					} catch (NeverWouldJoinException e) {
 						e.printStackTrace();
 						continue;
@@ -188,7 +280,7 @@ public class ArenaMatchQueue {
 						return m;
 					}
 				}
-				if (Defaults.USE_ARENAS_ONLY_IN_ORDER){ /// Only check the first valid arena
+				if (Defaults.USE_ARENAS_ONLY_IN_ORDER && !forceStart){ /// Only check the first valid arena
 					skipNonMatched = true;}
 			}
 		}}
@@ -198,13 +290,14 @@ public class ArenaMatchQueue {
 
 	/**
 	 * For these parameters, go through each team to see if we can create a viable match
-	 * @param mp
-	 * @param a
-	 * @param tq
+	 * @param MatchParams
+	 * @param Arena
+	 * @param TeamQueue
+	 * @param forceStart
 	 * @return
 	 * @throws NeverWouldJoinException
 	 */
-	private Match findMatch(final MatchParams params, Arena arena, final TeamQueue tq) throws NeverWouldJoinException {
+	private Match findMatch(final MatchParams params, Arena arena, final TeamQueue tq, boolean forceStart) throws NeverWouldJoinException {
 		/// Move all teams with the same team size together
 		List<QueueObject> newList = new LinkedList<QueueObject>();
 		List<QueueObject> delayed = new LinkedList<QueueObject>();
@@ -260,14 +353,15 @@ public class ArenaMatchQueue {
 		}
 
 		/// Get rid of the TeamJoinHandler, remove the arena from the queue, start up our match
-		tjh.deconstruct();
 		if (hasComp){
-			return getMatchAndRemove(tq, comp.getTeams(), qteams, arena, params);
-		}
+			return getMatchAndRemove(tq, tjh, comp.getTeams(), qteams, arena, params);}
+
+		tjh.deconstruct();
 		return null;
 	}
 
-	private Match getMatchAndRemove(TeamQueue tq, List<Team> teams, Map<ArenaPlayer, QueueObject> oteams, Arena a, MatchParams params) {
+	private Match getMatchAndRemove(TeamQueue tq, TeamJoinHandler tjh, List<Team> teams,
+			Map<ArenaPlayer, QueueObject> oteams, Arena a, MatchParams params) {
 		Set<Team> originalTeams = new HashSet<Team>();
 		for (Team t: teams){
 			originalTeams.add(t);
@@ -278,8 +372,29 @@ public class ArenaMatchQueue {
 			}
 		}
 		final Match m = new ArenaMatch(a, params);
+		if (m.hasWaitroom() && !tjh.isFull()){
+			try {
+				m.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(params, m));
+			} catch (NeverWouldJoinException e) {
+				e.printStackTrace();
+			}
+		}
 		m.onJoin(teams);
 		m.setOriginalTeams(originalTeams);
+		tjh.deconstruct();
+		/// For forcestart we need to reset the next timer
+		if (Defaults.FORCESTART_ENABLED){
+			forceTimers.remove(tq);
+			for (QueueObject qo : tq){
+				if (qo instanceof MatchTeamQObject)
+					continue;
+				JoinOptions jo = qo.getJoinOptions();
+				if (jo == null)
+					continue;
+				updateTimer(tq,qo);
+				break;
+			}
+		}
 		return m;
 	}
 
@@ -466,5 +581,35 @@ public class ArenaMatchQueue {
 		synchronized(tqs){
 			tqs.clear();
 		}
+		for (IdTime idt: forceTimers.values()){
+			Bukkit.getScheduler().cancelTask(idt.id);}
+		forceTimers.clear();
+	}
+
+	public int getMatchingQueueSize(MatchParams mp) {
+		TeamQueue tq = getTeamQ(mp);
+		if (tq == null)
+			return -1;
+		int size = 0;
+		synchronized(tq){
+			for (QueueObject qo: tq){
+				JoinOptions jo = qo.getJoinOptions();
+				if (qo instanceof MatchTeamQObject || (jo != null && jo.hasOption(JoinOption.ARENA)))
+					continue;
+				size += qo.getTeams().size();
+			}
+		}
+		return size;
+	}
+
+	public boolean forceStart(MatchParams mp) {
+		TeamQueue tq = getTeamQ(mp);
+		if (tq == null)
+			return false;
+		Match match = findMatch(tq, true);
+		if (match == null)
+			return false;
+		addToReadyMatches(match);
+		return true;
 	}
 }
