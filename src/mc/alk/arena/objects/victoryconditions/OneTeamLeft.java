@@ -22,6 +22,7 @@ public class OneTeamLeft extends VictoryCondition{
 		ArenaPlayer p = event.getPlayer();
 		if (match.isWon() || !match.isStarted()){
 			return;}
+
 		Team team = match.getTeam(p);
 		if (team == null)
 			return;

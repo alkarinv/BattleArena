@@ -1,4 +1,4 @@
-configVersion: 1.6.5
+configVersion: 2.0
 
 # For help the wiki is a good source of information
 # Wiki: # https://github.com/alkarinv/BattleArena/wiki
@@ -32,6 +32,16 @@ ignoreMaxStackSize: false
 # if false.  if after the 1v1 is used, and the match ends, the 1v1 can be used again before the 1v1v1v1
 useArenasOnlyInOrder: false
 
+### Option sets allow you to give an easy to remember name for a group of options
+# you can add as many of your own as you want
+# storeAll: with options [storeExperience, storeGamemode, storeHealth, storeHunger, storeItems, storeHeroclass, storeMagic, clearExperience, clearInventory, deEnchant]
+# restoreAll: with options [restoreExperience, restoreGamemode, restoreHealth, restoreHunger, restoreItems, restoreHeroclass, restoreMagic, clearInventory, deEnchant]
+optionSets:
+  storeAll1:
+      options: [storeExperience, storeGamemode, storeHealth, storeHunger, storeItems, storeHeroclass, storeMagic, clearExperience, clearInventory, deEnchant]
+  restoreAll1: 
+      options: [restoreExperience, restoreGamemode, restoreHealth, restoreHunger, restoreItems, restoreHeroclass, restoreMagic, clearInventory, deEnchant]
+
 ## default Options (these can be overridden by each match/event type)
 defaultOptions:
     #### Match Options ####
@@ -48,6 +58,7 @@ defaultOptions:
     matchEnableForceStart: false
     matchForceStartTime: 180
 
+    timeBetweenClassChange: 3
 
     #### Event Options ####
     eventCountdownTime: 180 ## How long before announcing an automated event and its start
@@ -102,7 +113,11 @@ arena:
     nTeams: 2+
     teamSize: 1+
     preReqs:
+        options: []
+    onEnter:
         options: [storeAll]
+    onLeave:
+        options: [restoreAll]
     onStart:
         options: [teleportIn, blockBreakOff, woolTeams]
     onSpawn:
@@ -112,7 +127,7 @@ arena:
     onDeath:
         options: [clearInventory]
     onComplete:
-        options: [teleportOut, deEnchant, clearInventory, restoreAll]
+        options: [teleportOut]
     winner:
         options: [health=20, hunger=20]
 
@@ -128,6 +143,10 @@ skirmish:
     teamSize: 1+
     preReqs:
         options: []
+    onEnter:
+        options: []
+    onLeave:
+        options: []
     onStart:
         options: [teleportIn, pvpOn, blockBreakOff, woolTeams]
     onSpawn:
@@ -138,7 +157,7 @@ skirmish:
         options: [teleportOut]
     winner:
         options: [health=20, hunger=20]
- 
+
 
 ### BattleGround
 battleground:
@@ -153,14 +172,18 @@ battleground:
     teamSize: 1
     preReqs:
         options: [clearInventory]
+    onEnter:
+        options: [storeAll]
+    onLeave:
+        options: [restoreAll]
     onJoin:
         options: [pvpOff]
     onPrestart:
-        options: [pvpOff, teleportIn, deEnchant]
+        options: [pvpOff, teleportIn]
     onStart:
         options: [pvpOn]
     onComplete:
-        options: [teleportOut, clearInventory, deEnchant ]
+        options: [teleportOut ]
     onSpawn:
         options: [enchants, health=20, hunger=20, deEnchant, woolTeams]
         giveClass:
@@ -185,14 +208,18 @@ colliseum:
     teamSize: 1
     preReqs:
         options: [clearInventory]
+    onEnter:
+        options: [storeAll]
+    onLeave:
+        options: [restoreAll]
     onJoin:
         options: [pvpOff]
     onPrestart:
-        options: [pvpOff, teleportIn, deEnchant, woolTeams]
+        options: [pvpOff, teleportIn, woolTeams]
     onStart:
         options: [pvpOn]
     onComplete:
-        options: [teleportOut, clearInventory, deEnchant, undisguise]
+        options: [teleportOut]
     onSpawn:
         options: [enchants, health=20, hunger=20, deEnchant,giveItems, woolTeams]
         enchants:
@@ -227,6 +254,10 @@ freeForAll:
         onVictory:  [ dontannounce ] 
     preReqs:
         options: [clearInventory]
+    onEnter:
+        options: [storeAll]
+    onLeave:
+        options: [restoreAll]
     onJoin:
         options: [teleportIn, woolTeams]
     onOpen:
@@ -246,7 +277,7 @@ freeForAll:
     onStart:
         options: [pvpOn]
     onComplete:
-        options: [teleportOut, clearInventory, deEnchant, undisguise]
+        options: [teleportOut]
     onDeath:
         options: []
     onSpawn:
@@ -273,6 +304,10 @@ deathMatch:
         onVictory:  [ dontannounce ] 
     preReqs:
         options: [clearInventory]
+    onEnter:
+        options: [storeAll]
+    onLeave:
+        options: [restoreAll]
     onJoin:
         options: [teleportIn, woolTeams]
     onOpen:
@@ -280,7 +315,7 @@ deathMatch:
     onStart:
         options: [pvpOn]
     onComplete:
-        options: [teleportOut, clearInventory, deEnchant, undisguise]
+        options: [teleportOut]
     onSpawn:
         options: [enchants, giveItems, health=20, hunger=20, deEnchant]
         items: # ignored if options doesnt have "giveItems"

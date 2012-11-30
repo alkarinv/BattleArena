@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -38,6 +39,19 @@ public class TransitionOptions {
 		if (o.options != null) this.options = new EnumMap<TransitionOption,Object>(o.options);
 	}
 
+	public void addOptions(TransitionOptions optionSet) {
+		if (optionSet.options == null)
+			return;
+		addOptions(optionSet.options);
+	}
+
+	public void addOptions(Map<TransitionOption,Object> options) {
+		if (this.options==null)
+			this.options = new EnumMap<TransitionOption,Object>(options);
+		else
+			this.options.putAll(options);
+	}
+
 	public void setOptions(Set<String> options) {
 		this.options =new EnumMap<TransitionOption,Object>(TransitionOption.class);
 		for (String s: options){
@@ -45,7 +59,7 @@ public class TransitionOptions {
 		}
 	}
 
-	public void setMatchOptions(Map<TransitionOption,Object> options) {
+	public void setOptions(Map<TransitionOption,Object> options) {
 		this.options =new EnumMap<TransitionOption,Object>(options);
 	}
 
@@ -125,6 +139,11 @@ public class TransitionOptions {
 					return false;
 			}
 		}
+		/// Inside MobArena?
+		if (MobArenaInterface.hasMobArena() && MobArenaInterface.insideMobArena(p)){
+			return false;
+		}
+
 		if (options.containsKey(TransitionOption.NOINVENTORY)){
 			if (InventoryUtil.hasAnyItem(p.getPlayer()))
 				return false;
@@ -201,9 +220,15 @@ public class TransitionOptions {
 			}
 		}
 		if (options.containsKey(TransitionOption.SAMEWORLD) && w!=null){
-			if (p.getLocation().getWorld().getUID() != w.getUID())
+			if (p.getLocation().getWorld().getUID() != w.getUID()){
 				sb.append("&5 -&c Not in same world\n");
 				isReady = false;
+			}
+		}
+		/// Inside MobArena?
+		if (MobArenaInterface.hasMobArena() && MobArenaInterface.insideMobArena(p)){
+			isReady = false;
+			sb.append("&5 - &4You are Inside Mob Arena");
 		}
 
 		if (needsArmor()){
@@ -212,6 +237,7 @@ public class TransitionOptions {
 				isReady = false;
 			}
 		}
+
 		if (options.containsKey(TransitionOption.LEVELRANGE)){
 			MinMax mm = (MinMax) options.get(TransitionOption.LEVELRANGE);
 			if (!mm.contains(p.getLevel())){
@@ -312,6 +338,10 @@ public class TransitionOptions {
 		return options != null && options.containsKey(op);
 	}
 
+	public Object removeOption(TransitionOption op) {
+		return options != null ? options.remove(op) : null;
+	}
+
 	public static String getInfo(MatchParams sq, String name) {
 		StringBuilder sb = new StringBuilder();
 		MatchTransitions at = sq.getTransitionOptions();
@@ -393,4 +423,5 @@ public class TransitionOptions {
 		final Object o = options.get(to);
 		return o == null ? null : (Location) o;
 	}
+
 }

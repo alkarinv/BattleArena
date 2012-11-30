@@ -13,6 +13,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaClassController;
+import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
@@ -200,40 +201,11 @@ public class ConfigSerializer extends BaseSerializer{
 
 		/// Set all Transition Options
 		for (MatchState transition : MatchState.values()){
+			if (transition == MatchState.ONCANCEL) /// OnCancel gets taken from onComplete and modified
+				continue;
 			TransitionOptions tops = null;
 			try{
-				tops = getParameters(cs.getConfigurationSection(transition.toString()));
-				switch (transition){
-				case ONCANCEL: /// OnCancel gets taken from onComplete and modified
-					continue;
-				case ONENTER: /// By Default on enter gets to store
-				case ONENTERWAITROOM: /// as does enter wait room, these wont overwrite each other
-					if (tops == null) tops = new TransitionOptions();
-					tops.addOption(TransitionOption.STOREEXPERIENCE);
-					tops.addOption(TransitionOption.STOREGAMEMODE);
-					tops.addOption(TransitionOption.STOREHEROCLASS);
-					tops.addOption(TransitionOption.STOREHEALTH);
-					tops.addOption(TransitionOption.STOREHUNGER);
-					tops.addOption(TransitionOption.STOREMAGIC);
-					if (allTops.needsClearInventory()){
-						tops.addOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
-						tops.addOption(TransitionOption.STOREITEMS);
-					}
-					break;
-				case ONLEAVE: /// By Default on leave gets to restore items and exp
-					if (tops == null) tops = new TransitionOptions();
-					tops.addOption(TransitionOption.RESTOREEXPERIENCE);
-					tops.addOption(TransitionOption.RESTOREGAMEMODE);
-					tops.addOption(TransitionOption.RESTOREHEROCLASS);
-					tops.addOption(TransitionOption.RESTOREHEALTH);
-					tops.addOption(TransitionOption.RESTOREHUNGER);
-					tops.addOption(TransitionOption.RESTOREMAGIC);
-					if (allTops.needsClearInventory())
-						tops.addOption(TransitionOption.RESTOREITEMS);
-					break;
-				default:
-					break;
-				}
+				tops = getTransitionOptions(cs.getConfigurationSection(transition.toString()));
 			} catch (Exception e){
 				Log.err("Invalid Option was not added!!! transition= " + transition);
 				e.printStackTrace();
@@ -257,25 +229,33 @@ public class ConfigSerializer extends BaseSerializer{
 		return pi;
 	}
 
-	private static TransitionOptions getParameters(ConfigurationSection cs) throws InvalidOptionException, InvalidArgumentException {
+	public static TransitionOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, InvalidArgumentException {
 		if (cs == null)
 			return null;
 		Set<Object> optionsstr = new HashSet<Object>(cs.getList("options"));
 		Map<TransitionOption,Object> options = new EnumMap<TransitionOption,Object>(TransitionOption.class);
 		TransitionOptions tops = new TransitionOptions();
 		for (Object obj : optionsstr){
-			String s = obj.toString();
-			String[] split = s.split("=");
-			split[0] = split[0].trim().toUpperCase();
+			String[] split = obj.toString().split("=");
+			/// Our key for this option
+			final String key = split[0].trim().toUpperCase();
+
+			/// Check first to see if this option is actually a set of options
+			TransitionOptions optionSet = OptionSetController.getOptionSet(key);
+			if (optionSet != null){
+				tops.addOptions(optionSet);
+				continue;
+			}
+
 			TransitionOption to = null;
 			try{
-				to = TransitionOption.valueOf(split[0]);
+				to = TransitionOption.valueOf(key);
 				if (to != null && to.hasValue() && split.length==1){
-					Log.err("Transition Option " + to +" needs a value! " + split[0]+"=<value>");
+					Log.err("Transition Option " + to +" needs a value! " + key+"=<value>");
 					continue;
 				}
 			} catch (Exception e){
-				Log.err("Transition Option " + split[0] +" doesn't exist!");
+				Log.err("Transition Option " + key +" doesn't exist!");
 				continue;
 			}
 
@@ -283,27 +263,28 @@ public class ConfigSerializer extends BaseSerializer{
 			if (split.length == 1){
 				continue;}
 
-			split[1] = split[1].trim();
+			/// Handle values for this option
+			final String value = split[1].trim();
 			try{
 				switch(to){
 				case MONEY:
-					options.put(to, Double.valueOf(split[1]));
+					options.put(to, Double.valueOf(value));
 					break;
 				case LEVELRANGE:
-					options.put(to, MinMax.valueOf(split[1]));
+					options.put(to, MinMax.valueOf(value));
 					break;
 				case DISGUISEALLAS:
-					options.put(to, split[1]);
+					options.put(to, value);
 					break;
 				case HEALTH: case HEALTHP:
 				case MAGIC: case MAGICP:
 				case HUNGER:
 				case EXPERIENCE:
 				case WITHINDISTANCE:
-					options.put(to,Integer.valueOf(split[1]));
+					options.put(to,Integer.valueOf(value));
 					break;
 				case INVULNERABLE:
-					options.put(to,Integer.valueOf(split[1])*20); // multiply by number of ticks per second
+					options.put(to,Integer.valueOf(value)*20); // multiply by number of ticks per second
 					break;
 				default:
 					break;
@@ -313,7 +294,7 @@ public class ConfigSerializer extends BaseSerializer{
 				e.printStackTrace();
 			}
 		}
-		tops.setMatchOptions(options);
+		tops.addOptions(options);
 
 		if (cs.contains("teleportTo")){
 			tops.addOption(TransitionOption.TELEPORTTO, SerializerUtil.getLocation(cs.getString("teleportTo")));}

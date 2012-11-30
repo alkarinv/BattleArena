@@ -10,12 +10,15 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaCommand;
 import mc.alk.arena.controllers.CommandController;
+import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
+import mc.alk.arena.objects.options.TransitionOption;
+import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.util.DisabledCommandsUtil;
 import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
@@ -27,12 +30,12 @@ public class BAConfigSerializer extends ConfigSerializer{
 
 	public void loadAll(){
 		/// Do this after 0 ticks so all Custom Arena/Victory or other types can be registered by other plugins first
-//		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
-//			@Override
-//			public void run() {
-				synchronizedLoadAll();
-//			}
-//		});
+		//		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+		//			@Override
+		//			public void run() {
+		synchronizedLoadAll();
+		//			}
+		//		});
 	}
 	private void synchronizedLoadAll(){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
@@ -45,6 +48,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", Defaults.NUM_INV_SAVES);
 		Defaults.IGNORE_STACKSIZE = config.getBoolean("ignoreMaxStackSize", Defaults.IGNORE_STACKSIZE);
 		Defaults.USE_ARENAS_ONLY_IN_ORDER = config.getBoolean("useArenasOnlyInOrder", Defaults.USE_ARENAS_ONLY_IN_ORDER);
+		parseOptionSets(config.getConfigurationSection("optionSets"));
 		DisabledCommandsUtil.addAll(config.getStringList("disabledCommands"));
 		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"arena","skirmish","colliseum","battleground"}));
 		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"freeForAll","deathMatch","tourney"}));
@@ -93,14 +97,17 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.SECONDS_TILL_MATCH = cs.getInt("secondsTillMatch", Defaults.SECONDS_TILL_MATCH);
 		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT);
 		Defaults.MATCH_TIME = cs.getInt("matchTime", Defaults.MATCH_TIME);
+		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", Defaults.MATCH_UPDATE_INTERVAL);
+		Defaults.MATCH_FORCESTART_ENABLED = cs.getBoolean("matchEnableForceStart", Defaults.MATCH_FORCESTART_ENABLED);
+		Defaults.MATCH_FORCESTART_TIME = cs.getLong("matchForceStartTime", Defaults.MATCH_FORCESTART_TIME);
+		Defaults.TIME_BETWEEN_CLASS_CHANGE = cs.getInt("timeBetweenClassChange", Defaults.TIME_BETWEEN_CLASS_CHANGE);
+
+		Defaults.DUEL_ALLOW_RATED = cs.getBoolean("allowRatedDuels", Defaults.DUEL_ALLOW_RATED);
+		Defaults.DUEL_CHALLENGE_INTERVAL = cs.getInt("challengeInterval", Defaults.DUEL_CHALLENGE_INTERVAL);
+
 		Defaults.AUTO_EVENT_COUNTDOWN_TIME = cs.getInt("eventCountdownTime",Defaults.AUTO_EVENT_COUNTDOWN_TIME);
 		Defaults.ANNOUNCE_EVENT_INTERVAL = cs.getInt("eventCountdownInterval", Defaults.ANNOUNCE_EVENT_INTERVAL);
 		Defaults.ALLOW_PLAYER_EVENT_CREATION = cs.getBoolean("allowPlayerCreation", Defaults.ALLOW_PLAYER_EVENT_CREATION);
-		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", Defaults.MATCH_UPDATE_INTERVAL);
-		Defaults.FORCESTART_ENABLED = cs.getBoolean("matchEnableForceStart", Defaults.FORCESTART_ENABLED);
-		Defaults.FORCESTART_TIME = cs.getLong("matchForceStartTime", Defaults.FORCESTART_TIME);
-		Defaults.DUEL_ALLOW_RATED = cs.getBoolean("allowRatedDuels", Defaults.DUEL_ALLOW_RATED);
-		Defaults.DUEL_CHALLENGE_INTERVAL = cs.getInt("challengeInterval", Defaults.DUEL_CHALLENGE_INTERVAL);
 		Defaults.TIME_BETWEEN_SCHEDULED_EVENTS = cs.getInt("timeBetweenScheduledEvents", Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 		Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT = cs.getBoolean("announceTimeTillNextEvent", Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT);
 
@@ -123,6 +130,53 @@ public class BAConfigSerializer extends ConfigSerializer{
 		}
 	}
 
+	private void parseOptionSets(ConfigurationSection cs) {
+		for (String key : cs.getKeys(false)){
+			/// dont let people override defaults
+			if (key.equalsIgnoreCase("storeAll") || key.equalsIgnoreCase("restoreAll")){
+				Log.err("You can't override the default 'storeAll' and 'restoreAll'");
+				continue;
+			}
+
+			Log.debug("loading option set = " + key);
+			try {
+				TransitionOptions to = ConfigSerializer.getTransitionOptions(cs.getConfigurationSection(key));
+				if (to != null){
+					OptionSetController.addOptionSet(key, to);}
+			} catch (Exception e) {
+				Log.err("Couldn't parse optionSet=" + key);
+				e.printStackTrace();
+			}
+		}
+		try{
+			TransitionOptions tops = new TransitionOptions();
+			tops.addOption(TransitionOption.STOREEXPERIENCE);
+			tops.addOption(TransitionOption.STOREGAMEMODE);
+			tops.addOption(TransitionOption.STOREHEROCLASS);
+			tops.addOption(TransitionOption.STOREHEALTH);
+			tops.addOption(TransitionOption.STOREHUNGER);
+			tops.addOption(TransitionOption.STOREMAGIC);
+			tops.addOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
+			tops.addOption(TransitionOption.CLEAREXPERIENCE);
+			tops.addOption(TransitionOption.STOREITEMS);
+			tops.addOption(TransitionOption.DEENCHANT);
+			OptionSetController.addOptionSet("storeAll", tops);
+
+			tops = new TransitionOptions();
+			tops.addOption(TransitionOption.RESTOREEXPERIENCE);
+			tops.addOption(TransitionOption.RESTOREGAMEMODE);
+			tops.addOption(TransitionOption.RESTOREHEROCLASS);
+			tops.addOption(TransitionOption.RESTOREHEALTH);
+			tops.addOption(TransitionOption.RESTOREHUNGER);
+			tops.addOption(TransitionOption.RESTOREMAGIC);
+			tops.addOption(TransitionOption.RESTOREITEMS);
+			tops.addOption(TransitionOption.CLEARINVENTORY);
+			tops.addOption(TransitionOption.DEENCHANT);
+			OptionSetController.addOptionSet("restoreAll", tops);
+		} catch (Exception e){
+			Log.err("Couldn't set default setOptions");
+		}
+	}
 	public static AnnouncementOptions parseAnnouncementOptions(AnnouncementOptions an , boolean match, ConfigurationSection cs, boolean warn) {
 		if (cs == null){
 			if (warn)

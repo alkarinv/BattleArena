@@ -128,6 +128,8 @@ public class BTInterface {
 	public static boolean hasInterface(MatchParams pi) {
 		return btis.containsKey(pi.getName());
 	}
+
+	@SuppressWarnings("deprecation")
 	public Integer getElo(Team t) {
 		if (!isValid())
 			return new Integer((int) Defaults.DEFAULT_ELO);
@@ -142,6 +144,8 @@ public class BTInterface {
 		if (!isValid()) return null;
 		try{return ti.loadRecord(player);} catch(Exception e){e.printStackTrace();return null;}
 	}
+
+	@SuppressWarnings("deprecation")
 	public String getRankMessage(OfflinePlayer player) {
 		Stat stat = loadRecord(player);
 		if (stat == null){
@@ -151,7 +155,6 @@ public class BTInterface {
 			rank = -1;
 		return "&eRank:&6"+rank+"&e (&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)&6["+stat.getRanking()+"]&e" +
 				". Highest &6["+ stat.getMaxRanking()+"]&e Longest Streak &b"+stat.getMaxStreak();
-//		return "";
 	}
 	public boolean setRanking(OfflinePlayer player, Integer elo) {
 		return ti.setRanking(player, elo);

@@ -49,8 +49,12 @@ public class YamlFileUpdater {
 		}
 	}
 
-	public static void updateAllConfig(BAConfigSerializer bacs) {
-
+	public static void updateAllConfig(ConfigSerializer cc) {
+		Version version = new Version(cc.getString("configVersion","0"));
+		YamlFileUpdater yfu = new YamlFileUpdater();
+		yfu.configFile = cc.getFile();
+		if (version.compareTo("2.0")<0){
+			yfu.to2Point0(cc.getConfig(), version);}
 	}
 
 	public static void updateBaseConfig(BAConfigSerializer bacs) {
@@ -80,6 +84,15 @@ public class YamlFileUpdater {
 			yfu.to1Point6(bacs, bacs.getConfig(), version);}
 		if (version.compareTo("1.6.5")<0){
 			yfu.to1Point65(bacs, bacs.getConfig(), version);}
+		if (version.compareTo("1.7")<0){
+			yfu.to1Point7(bacs, bacs.getConfig(), version);}
+		if (version.compareTo("1.7.3")<0){
+			yfu.to1Point73(bacs, bacs.getConfig(), version);}
+		if (version.compareTo("2.0")<0){
+			yfu.to2Point0(bacs.getConfig(), version);
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		}
+
 	}
 
 	private void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
@@ -453,8 +466,8 @@ public class YamlFileUpdater {
 					fw.write("    ## start after the forceStartTime regardless if the minimum amount of people\n");
 					fw.write("    ## have joined.  Example: say 2 teams of 4 people each is needed, if after\n");
 					fw.write("    ## the forceStartTime is exceeded only 2 teams of 1 person is needed to start.\n");
-					fw.write("    enableForceStart: false\n");
-					fw.write("    forceStartTime: 180\n");
+					fw.write("    matchEnableForceStart: false\n");
+					fw.write("    matchForceStartTime: 180\n");
 				} else {
 					fw.write(line+"\n");
 				}
@@ -470,6 +483,130 @@ public class YamlFileUpdater {
 		}
 	}
 
+	private void to1Point7(ConfigSerializer bacs, FileConfiguration fc, Version version) {
+		Log.warn("BattleArena updating config to 1.7");
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			boolean updatedDefaultSection = false;
+			while ((line = br.readLine()) != null){
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 1.7\n\n");
+				} else if (!updatedDefaultSection && (line.matches(".*enableForceStart:.*"))){
+					line = line.replace("enableForceStart", "matchEnableForceStart");
+					fw.write(line+"\n");
+				} else if (!updatedDefaultSection && (line.matches(".*forceStartTime:.*"))){
+					line = line.replace("forceStartTime", "matchForceStartTime");
+					fw.write(line+"\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(configFile.getAbsoluteFile());
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
+	private void to1Point73(ConfigSerializer bacs, FileConfiguration fc, Version version) {
+		Log.warn("BattleArena updating config to 1.7.3");
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			boolean updatedDefaultSection = false;
+			while ((line = br.readLine()) != null){
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 1.7.3\n\n");
+				} else if (!updatedDefaultSection && (line.matches(".*useArenasOnlyInOrder:.*"))){
+					fw.write(line+"\n\n");
+					fw.write("### Option sets allow you to give an easy to remember name for a group of options\n");
+					fw.write("# you can add as many of your own as you want\n");
+					fw.write("# there are two hidden defaults. storeAll, and restoreAll that can not be overridden\n");
+					fw.write("# storeAll: with options [storeExperience, storeGamemode, storeHealth, storeHunger, storeItems, storeHeroclass, storeMagic, clearExperience, clearInventory, deEnchant]\n");
+					fw.write("# restoreAll: with options [restoreExperience, restoreGamemode, restoreHealth, restoreHunger, restoreItems, restoreHeroclass, restoreMagic, clearInventory, deEnchant]\n");
+					fw.write("optionSets:\n");
+					fw.write("  storeAll1: \n");
+					fw.write("      options: [storeExperience, storeGamemode, storeHealth, storeHunger, storeItems, storeHeroclass, storeMagic, clearExperience, clearInventory, deEnchant]\n");
+					fw.write("  restoreAll1:\n");
+					fw.write("      options: [restoreExperience, restoreGamemode, restoreHealth, restoreHunger, restoreItems, restoreHeroclass, restoreMagic, clearInventory, deEnchant]\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(configFile.getAbsoluteFile());
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
+	private void to2Point0(FileConfiguration fc, Version version) {
+		Log.warn("BattleArena updating "+fc.getName() +" to 2.0");
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			if (version.compareTo(0)==0){
+				fw.write("configVersion: 2.0\n");
+			}
+			boolean updatedDefaultSection = false;
+			boolean lineRightAfterPreReqs = false;
+			while ((line = br.readLine()) != null){
+				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 2.0\n\n");
+				} else if (line.matches(".*preReqs:.*")){
+					lineRightAfterPreReqs = true;
+					line = line.replace("enableForceStart", "matchEnableForceStart");
+					fw.write(line+"\n");
+				} else if (!updatedDefaultSection && (line.matches(".*forceStartTime:.*"))){
+					line = line.replace("forceStartTime", "matchForceStartTime");
+					fw.write(line+"\n");
+				} else if (lineRightAfterPreReqs && line.matches(".*options:.*")) {
+					lineRightAfterPreReqs = false;
+					if (line.matches(".*options:.*\\[\\s*clearInventory\\s*\\].*")){
+						Log.debug("SIWTCHING    " + line);
+						fw.write("        options: []\n");
+					} else if (line.matches(".*options:.*clearInventory\\s*,.*")){
+						Log.debug("SIWTCHING    " + line);
+						line = line.replaceAll("clearInventory\\s*,", "");
+						fw.write(line+"\n");
+					} else if (line.matches(".*options:.*,\\s*clearInventory.*")){
+						Log.debug("SIWTCHING    " + line);
+						line = line.replaceAll(",\\s*clearInventory", "");
+						fw.write(line+"\n");
+					}
+					fw.write("    onEnter:\n");
+					fw.write("        options: [storeAll]\n");
+					fw.write("    onLeave:\n");
+					fw.write("        options: [restoreAll]\n");
+				} else {
+					lineRightAfterPreReqs = false;
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(configFile.getAbsoluteFile());
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
 	private boolean openFiles() {
 		try {
 			br = new BufferedReader(new FileReader(configFile));

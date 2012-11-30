@@ -54,7 +54,6 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.potion.PotionEffect;
 
 
 public class ArenaMatch extends Match {
@@ -105,8 +104,7 @@ public class ArenaMatch extends Match {
 			}
 		}
 		if (!respawns){
-			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);
-		}
+			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);}
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true)
@@ -332,8 +330,8 @@ public class ArenaMatch extends Match {
 		}
 		String playerName = p.getName();
 		if(userTime.containsKey(playerName)){
-			if((System.currentTimeMillis() - userTime.get(playerName)) < 3000){
-				MessageUtil.sendMessage(p, "&cYou must wait &63&c seconds between class selects");
+			if((System.currentTimeMillis() - userTime.get(playerName)) < Defaults.TIME_BETWEEN_CLASS_CHANGE*1000){
+				MessageUtil.sendMessage(p, "&cYou must wait &6"+Defaults.TIME_BETWEEN_CLASS_CHANGE+"&c seconds between class selects");
 				return;
 			}
 		}
@@ -366,15 +364,16 @@ public class ArenaMatch extends Match {
 
 		/// Regive class/items
 		ArenaClassController.giveClass(p, ac);
-		if (mo.hasItems()){
+		if (mo != null && mo.hasItems()){
 			try{ InventoryUtil.addItemsToInventory(p, mo.getGiveItems(), true);} catch(Exception e){e.printStackTrace();}}
-		if (ro.hasItems()){
+		if (ro != null && ro.hasItems()){
 			try{ InventoryUtil.addItemsToInventory(p, ro.getGiveItems(), true);} catch(Exception e){e.printStackTrace();}}
 
 		/// Deal with effects/buffs
-		List<PotionEffect> effects = mo.getEffects();
-		if (effects != null){
-			EffectUtil.enchantPlayer(p, effects);}
+		if (mo != null && mo.getEffects()!=null){
+			EffectUtil.enchantPlayer(p, mo.getEffects());}
+		if (ro != null && ro.getEffects()!=null){
+			EffectUtil.enchantPlayer(p, ro.getEffects());}
 
 		ap.setChosenClass(ac);
 		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());

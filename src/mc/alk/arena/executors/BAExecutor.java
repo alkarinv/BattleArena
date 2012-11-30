@@ -809,11 +809,9 @@ public class BAExecutor extends CustomCommandExecutor  {
 	}
 	public boolean canJoin(ArenaPlayer p, boolean showMessages) {
 		/// Inside MobArena?
-		if (MobArenaInterface.hasMobArena()){
-			if (MobArenaInterface.insideMobArena(p)){
-				if (showMessages) sendMessage(p,"&cYou need to finish with MobArena first!");
-				return false;
-			}
+		if (MobArenaInterface.hasMobArena() && MobArenaInterface.insideMobArena(p)){
+			if (showMessages) sendMessage(p,"&cYou need to finish with MobArena first!");
+			return false;
 		}
 		if (HeroesInterface.enabled()){
 			if (HeroesInterface.isInCombat(p.getPlayer())){

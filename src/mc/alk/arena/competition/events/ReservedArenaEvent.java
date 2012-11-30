@@ -12,6 +12,7 @@ import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
@@ -76,14 +77,17 @@ public class ReservedArenaEvent extends Event {
 		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchComplete " +arenaMatch +"   isRunning()=" + isRunning());
 		Collection<Team> victors = event.getMatch().getResult().getVictors();
 
-		Matchup m;
-		if (victors == null || victors.isEmpty())
-			m = getMatchup(event.getMatch().getResult().getLosers().iterator().next());
-		else
-			 m = getMatchup(victors.iterator().next());
-		if (m == null){
-			return;
-		}
+		MatchResult r = event.getMatch().getResult();
+		Matchup m = null;
+		if (r.getVictors() != null && !r.getVictors().isEmpty()){
+			m = getMatchup(r.getVictors().iterator().next(),0);
+		}else if (r.getLosers() != null && !r.getLosers().isEmpty()){
+			m = getMatchup(r.getLosers().iterator().next(),0);
+		} else if (r.getDrawers() != null && !r.getDrawers().isEmpty()){
+			m = getMatchup(r.getDrawers().iterator().next(),0);}
+		if (m == null){ /// This match wasnt in our tournament
+			return;}
+
 		m.setResult(arenaMatch.getResult());
 		eventVictory(victors,m.getResult().getLosers());
 	}

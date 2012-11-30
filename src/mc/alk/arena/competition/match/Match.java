@@ -286,13 +286,13 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		TransitionOptions ts = tops.getOptions(state);
 		if (ts != null && ts.teleportsIn()){
 			for (Team t: teams){
-				checkReady(t,tops.getOptions(MatchState.PREREQS));				}
+				checkReady(t,tops.getOptions(MatchState.PREREQS));}
 		}
 		for (Team t: teams){
 			if (!t.isDead()){
 				competingTeams.add(t);}
 		}
-		final int nCompetingTeams = competingTeams.size();
+		int nCompetingTeams = competingTeams.size();
 
 		MatchFindNeededTeamsEvent findevent = new MatchFindNeededTeamsEvent(this);
 		notifyListeners(findevent);
@@ -306,7 +306,16 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			PerformTransition.transition(this, state,competingTeams, true);
 			arenaInterface.onStart();
 			try{mc.sendOnStartMsg(teams);}catch(Exception e){e.printStackTrace();}
-		} else if (nCompetingTeams==1){
+			/// At this point every team and player should be inside.. if they aren't mark them dead
+			nCompetingTeams = checkInside(teams);
+		}
+		checkEnoughTeams(competingTeams, nCompetingTeams, neededTeams);
+	}
+
+	private void checkEnoughTeams(List<Team> competingTeams, int nCompetingTeams, int neededTeams) {
+		if (nCompetingTeams >= neededTeams){
+			return;
+		} else if (nCompetingTeams < neededTeams && nCompetingTeams==1){
 			Team victor = competingTeams.get(0);
 			victor.sendMessage("&4WIN!!!&eThe other team was offline or didnt meet the entry requirements.");
 			setVictor(victor);
@@ -317,6 +326,19 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 				setDraw();
 			}
 		}
+	}
+
+	private int checkInside(List<Team> teams) {
+		int alive= 0;
+		for (Team t: teams){
+			for (ArenaPlayer ap : t.getPlayers()){
+				if (!insideArena(ap)){
+					t.killMember(ap);}
+			}
+			if (!t.isDead())
+				alive++;
+		}
+		return alive;
 	}
 
 	private synchronized void teamVictory() {

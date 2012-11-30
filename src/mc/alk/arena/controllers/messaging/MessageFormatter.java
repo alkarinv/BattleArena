@@ -141,6 +141,7 @@ public class MessageFormatter{
 		commonIndex = i;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void formatTeamOptions(Team team, boolean isWinner){
 
 		int i = commonIndex;
@@ -156,6 +157,7 @@ public class MessageFormatter{
 			case WINS: replaceList[i] = bti.isValid() ? getStat(bti,stats,team).getWins()+"" : "0"; break;
 			case LOSSES: replaceList[i] = bti.isValid() ? getStat(bti,stats,team).getLosses()+"" : "0"; break;
 			case RANKING: replaceList[i] = bti.isValid() ? getStat(bti,stats,team).getRanking()+"" : "0"; break;
+			case RATING: replaceList[i] = bti.isValid() ? getStat(bti,stats,team).getRanking()+"" : "0"; break;
 			default:
 				continue;
 			}
@@ -348,7 +350,7 @@ public class MessageFormatter{
 	}
 
 
-
+	@SuppressWarnings("deprecation")
 	private String formatTeamName(Message message, Team t) {
 		if (t== null)
 			return null;

@@ -22,6 +22,7 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
+import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
@@ -156,6 +157,7 @@ public class PerformTransition {
 			if (storeAll || mo.hasOption(TransitionOption.STOREMAGIC)){ am.psc.storeMagic(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){am.psc.storeArenaClass(player);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p); }
+			if (mo.hasOption(TransitionOption.CLEAREXPERIENCE)){ ExpUtil.clearExperience(p);}
 			if (mo.hasOption(TransitionOption.HEALTH)) { PlayerUtil.setHealth(p, health);}
 			if (mo.hasOption(TransitionOption.HEALTHP)) { PlayerUtil.setHealthP(p, mo.getHealthP());}
 			if (mo.hasOption(TransitionOption.MAGIC)) { setMagicLevel(p, mo.getMagic()); }
@@ -166,7 +168,7 @@ public class PerformTransition {
 			if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p);}
 			if (DisguiseInterface.enabled() && disguiseAllAs != null) {DisguiseInterface.disguisePlayer(p, disguiseAllAs);}
 			if (mo.getMoney() != null) {MoneyController.add(player.getName(), mo.getMoney());}
-			if (mo.getExperience() != null) {p.giveExp(mo.getExperience());}
+			if (mo.getExperience() != null) {ExpUtil.giveExperience(p, mo.getExperience());}
 			if (mo.hasOption(TransitionOption.WOOLTEAMS) && am.getParams().getMinTeamSize() >1){
 				if (insideArena){
 					TeamUtil.setTeamHead(teamIndex, player);}

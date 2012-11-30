@@ -36,7 +36,6 @@ import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.queues.TeamQueue.TeamQueueComparator;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
-import mc.alk.arena.util.Log;
 
 import org.bukkit.Bukkit;
 
@@ -108,7 +107,7 @@ public class ArenaMatchQueue {
 		/// If forceStart we need to track the first Team who joins, we will base how long till the force start off them
 		/// we should also report to the user that the match will start in x seconds, despite the queue size
 		Long time = null;
-		if (Defaults.FORCESTART_ENABLED){
+		if (Defaults.MATCH_FORCESTART_ENABLED){
 			IdTime idt = updateTimer(tq,to);
 			time = idt.time;
 		}
@@ -148,7 +147,7 @@ public class ArenaMatchQueue {
 			return null;
 		IdTime idt = forceTimers.get(tq);
 		if (idt == null){
-			Long time = (System.currentTimeMillis() - jo.getJoinTime() + Defaults.FORCESTART_TIME*1000);
+			Long time = (System.currentTimeMillis() - jo.getJoinTime() + Defaults.MATCH_FORCESTART_TIME*1000);
 			idt = new IdTime();
 			idt.time = System.currentTimeMillis() + time;
 			if (time > 0){
@@ -219,9 +218,9 @@ public class ArenaMatchQueue {
 		/// this means changing the minimum teamsize and teams.  It also means later on we will do the same
 		/// with the arena params
 
-		if (Defaults.FORCESTART_ENABLED){
+		if (Defaults.MATCH_FORCESTART_ENABLED){
 			IdTime idt = forceTimers.get(tq);
-			Log.debug("###################  " + idt  +"    " +(idt != null && idt.time <= System.currentTimeMillis()));
+//			Log.debug("###################  " + idt  +"    " +(idt != null && idt.time <= System.currentTimeMillis()));
 			if (idt != null && idt.time <= System.currentTimeMillis()){
 				forceStart = true;}
 		}
@@ -383,7 +382,7 @@ public class ArenaMatchQueue {
 		m.setOriginalTeams(originalTeams);
 		tjh.deconstruct();
 		/// For forcestart we need to reset the next timer
-		if (Defaults.FORCESTART_ENABLED){
+		if (Defaults.MATCH_FORCESTART_ENABLED){
 			forceTimers.remove(tq);
 			for (QueueObject qo : tq){
 				if (qo instanceof MatchTeamQObject)

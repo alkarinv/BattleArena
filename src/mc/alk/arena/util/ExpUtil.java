@@ -73,6 +73,15 @@ public class ExpUtil {
 	 * @param player
 	 * @param exp
 	 */
+	public static void clearExperience(Player player){
+		setTotalExperience(player,0);
+	}
+
+	/**
+	 * Set the total amount of experience for a player
+	 * @param player
+	 * @param exp
+	 */
 	public static void setTotalExperience(Player player, int exp){
 		player.setTotalExperience(0);
 		player.setLevel(0);

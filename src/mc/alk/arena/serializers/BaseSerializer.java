@@ -7,6 +7,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.alk.util.Log;
+
 public class BaseSerializer {
 
 	FileConfiguration config;
@@ -36,6 +38,7 @@ public class BaseSerializer {
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
+				Log.err("Couldn't create the config file=" + file);
 				e.printStackTrace();
 				return false;
 			}
@@ -56,7 +59,7 @@ public class BaseSerializer {
 			config.load(file);
 		} catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 	}
 	public void save() {
 		try {

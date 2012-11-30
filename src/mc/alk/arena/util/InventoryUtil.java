@@ -654,9 +654,7 @@ public class InventoryUtil {
 
 	public void addEnchantments(ItemStack is,Map<Enchantment, Integer> enchantments) {
 		for (Enchantment e: enchantments.keySet()){
-			if (e.canEnchantItem(is)){
-				is.addUnsafeEnchantment(e, enchantments.get(e));
-			}
+			is.addUnsafeEnchantment(e, enchantments.get(e));
 		}
 	}
 

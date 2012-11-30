@@ -41,6 +41,7 @@ public enum TransitionOption{
 
 	/// Normal Options
 	CLEARINVENTORY ("clearInventory",false), 		/// Clear the players inventory
+	CLEAREXPERIENCE("clearExperience",false), 		/// Clear the players experience
 	GIVEITEMS("giveItems",false), 					/// Give the player the items specified in items:
 	GIVECLASS("giveClass",false),					/// Give the player the specified class in classes:
 	GIVEDISGUISE("giveDisguise",false),				/// Give the player the specified class in classes:

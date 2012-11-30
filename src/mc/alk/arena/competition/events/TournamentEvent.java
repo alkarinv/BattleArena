@@ -146,8 +146,8 @@ public class TournamentEvent extends Event implements Listener{
 	@MatchEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
 		Match am = event.getMatch();
-		Matchup m = null;
 		MatchResult r = am.getResult();
+		Matchup m = null;
 		if (r.getVictors() != null && !r.getVictors().isEmpty()){
 			m = getMatchup(r.getVictors().iterator().next(),round);
 		}else if (r.getLosers() != null && !r.getLosers().isEmpty()){

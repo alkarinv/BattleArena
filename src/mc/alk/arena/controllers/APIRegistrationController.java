@@ -22,6 +22,7 @@ import mc.alk.arena.objects.exceptions.ConfigException;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
+import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 
@@ -62,7 +63,8 @@ public class APIRegistrationController {
 			Log.err(plugin.getName() + " " + pluginFile.getName() + " could not be loaded");
 			return;
 		}
-
+		cc.setConfig(at, pluginFile);
+		YamlFileUpdater.updateAllConfig(cc);
 		cc.setConfig(at, pluginFile);
 
 		/// Make a message serializer for this event, and make the messages.yml file if it doesnt exist
@@ -76,7 +78,7 @@ public class APIRegistrationController {
 		defaultFile = new File("default_files"+File.separator+fileName);
 
 		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
-			pluginFile = FileUtil.load(BattleArena.getSelf(),"/default_files/"+fileName, pluginFile.getAbsolutePath());
+			pluginFile = FileUtil.load(BattleArena.getSelf(), pluginFile.getAbsolutePath(),"/default_files/"+fileName);
 			if (pluginFile == null){
 				Log.err(plugin.getName() + " " + messagesFileName+" could not be loaded");
 				return;
@@ -100,8 +102,8 @@ public class APIRegistrationController {
 
 		InputStream inputStream = FileUtil.getInputStream(plugin, defaultFile, defaultPluginFile);
 		if (inputStream == null){
-			return false;
-		}
+			return false;}
+
 		OutputStream out = null;
 		try{
 			out=new FileOutputStream(pluginFile);
@@ -111,6 +113,7 @@ public class APIRegistrationController {
 				out.write(buf,0,len);}
 		} catch (Exception e){
 			e.printStackTrace();
+			return false;
 		} finally{
 			if (out != null)
 				try {out.close();} catch (IOException e) {}
@@ -191,7 +194,7 @@ public class APIRegistrationController {
 		File defaultFile = new File("default_files"+File.separator+fileName);
 
 		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
-			pluginFile = FileUtil.load(BattleArena.getSelf(),"/default_files/"+fileName, pluginFile.getAbsolutePath());
+			pluginFile = FileUtil.load(BattleArena.getSelf(), pluginFile.getAbsolutePath(),"/default_files/"+fileName);
 			if (pluginFile == null){
 				throw new ConfigException(plugin.getName() + " " + messagesFileName+" could not be loaded");
 			}
