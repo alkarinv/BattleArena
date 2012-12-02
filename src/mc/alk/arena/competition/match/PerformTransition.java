@@ -169,20 +169,12 @@ public class PerformTransition {
 			if (DisguiseInterface.enabled() && disguiseAllAs != null) {DisguiseInterface.disguisePlayer(p, disguiseAllAs);}
 			if (mo.getMoney() != null) {MoneyController.add(player.getName(), mo.getMoney());}
 			if (mo.getExperience() != null) {ExpUtil.giveExperience(p, mo.getExperience());}
-			if (mo.hasOption(TransitionOption.WOOLTEAMS) && am.getParams().getMinTeamSize() >1){
-				if (insideArena){
-					TeamUtil.setTeamHead(teamIndex, player);}
-				am.woolTeams= true;
-			} else if (mo.hasOption(TransitionOption.ALWAYSWOOLTEAMS)){
-				if (insideArena){
-					TeamUtil.setTeamHead(teamIndex, player);}
-				am.woolTeams= true;
-			}
 			if (mo.hasOption(TransitionOption.REMOVEPERMS)){ removePerms(player, mo.getRemovePerms());}
 			if (mo.hasOption(TransitionOption.ADDPERMS)){ addPerms(player, mo.getAddPerms(), 0);}
 			if (mo.hasOption(TransitionOption.GIVECLASS)){
 				final ArenaClass ac = getArenaClass(mo,teamIndex);
 				if (ac != null){ /// Give class items and effects
+					if (am.woolTeams) TeamUtil.setTeamHead(teamIndex, player); // give wool heads first
 					ArenaClassController.giveClass(p, ac);
 					player.setChosenClass(ac);
 				}
@@ -280,6 +272,8 @@ public class PerformTransition {
 
 	private static ArenaClass getArenaClass(TransitionOptions mo, final int teamIndex) {
 		Map<Integer,ArenaClass> classes = mo.getClasses();
+		if (classes == null)
+			return null;
 		if (classes.containsKey(teamIndex)){
 			return classes.get(teamIndex);
 		} else if (classes.containsKey(ArenaClass.DEFAULT)){

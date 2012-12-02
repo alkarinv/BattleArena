@@ -103,7 +103,7 @@ public class ReservedArenaEvent extends Event {
 		switch(tjr.getEventType()){
 		case ADDED:
 			/// The first time, add the entire team
-			arenaMatch.onJoin(tqo.getTeam());
+			arenaMatch.onJoin(tjr.team);
 			break;
 		case ADDED_TO_EXISTING:
 			Team t = tqo.getTeam();

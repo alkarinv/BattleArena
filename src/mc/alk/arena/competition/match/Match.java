@@ -695,7 +695,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		if (woolTeams){
 			index = teams.indexOf(t);
 			MethodController.updateEventListeners(this, MatchState.ONENTER, p,InventoryClickEvent.class);
-			TeamUtil.setTeamHead(index, t);
+			TeamUtil.setTeamHead(index, p);
 		}
 		if (TagAPIInterface.enabled()){
 			if (index == null) index = teams.indexOf(t);

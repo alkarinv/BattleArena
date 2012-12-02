@@ -23,16 +23,20 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.arenas.ArenaCreateEvent;
 import mc.alk.arena.events.arenas.ArenaDeleteEvent;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.messaging.AnnouncementOptions;
+import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.options.JoinOptions;
@@ -90,11 +94,12 @@ public class BAExecutor extends CustomCommandExecutor  {
 				set.add(param.getName());
 			}
 			for (String s: set){
-				sendMessage(sender, "&2 type &6" + s + "&2 enabled");}
+				sendSystemMessage(sender,"type_enabled",s);}
+
 			return true;
 		}
 		disabled.remove(mp.getName());
-		return sendMessage(sender, "&2 type &6" + mp.getName() + "&2 enabled");
+		return sendSystemMessage(sender,"type_enabled",mp.getName());
 	}
 
 	@MCCommand(cmds={"disable"},admin=true,usage="disable")
@@ -106,11 +111,19 @@ public class BAExecutor extends CustomCommandExecutor  {
 				set.add(param.getName());
 			}
 			for (String s: set){
-				sendMessage(sender, "&5 type &6" + s + "&5 disabled");}
+				sendSystemMessage(sender,"type_disabled",s);}
 			return true;
 		}
 		disabled.add(mp.getName());
-		return sendMessage(sender, "&5 type &6" + mp.getName() + "&5 disabled");
+		return sendSystemMessage(sender,"type_disabled" ,mp.getName());
+	}
+
+	protected boolean sendSystemMessage(CommandSender sender, String node, Object... args) {
+		return sendMessage(sender, MessageHandler.getSystemMessage(node,args));
+	}
+
+	protected boolean sendSystemMessage(ArenaPlayer sender, String node, Object... args) {
+		return sendMessage(sender, MessageHandler.getSystemMessage(node,args));
 	}
 
 	@MCCommand(cmds={"enabled"},admin=true)
@@ -128,18 +141,18 @@ public class BAExecutor extends CustomCommandExecutor  {
 	public boolean join(ArenaPlayer player, MatchParams mp, String args[], boolean adminJoin){
 		/// Check if this match type is disabled
 		if (disabled.contains(mp.getName())){
-			sendMessage(player, "&cThe &6" + mp.getName()+"&c is currently disabled");
+			sendSystemMessage(player, "match_disabled",mp.getName());
 			final String enabled = ParamController.getAvaibleTypes(disabled);
 			if (enabled.isEmpty()){
-				return sendMessage(player, "&cThe arena system and all types are currently disabled");
+				return sendSystemMessage(player,"all_disabled");
 			} else {
-				return sendMessage(player, "&cEnabled &6" + enabled);
+				return sendSystemMessage(player,"currently_enabled", enabled);
 			}
 		}
 		/// Check Perms
 		if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".join") &&
 				!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".join") ){
-			return sendMessage(player, "&cYou don't have permission to join a &6" + mp.getCommand());}
+			return sendSystemMessage(player,"no_join_perms", mp.getCommand());}
 
 		/// Can the player join this match/event at this moment?
 		if (!canJoin(player)){
@@ -154,7 +167,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 				if (p == player){
 					continue;}
 				if (!canJoin(p,true)){
-					return sendMessage(player, "&cOne of your teammates can't join the &6"+mp.getCommand());
+					return sendSystemMessage(player, "teammate_cant_join", mp.getCommand());
 				}
 			}
 		}
@@ -193,7 +206,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 							return sendMessage(player,"&c"+rs.get(0));
 					}
 				}
-				return sendMessage(player,"&cA valid "+ mp.toPrettyString()+"&c arena has not been built");
+				return sendSystemMessage(player,"valid_arena_not_built",mp.toPrettyString());
 			}
 		}
 
@@ -206,7 +219,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		//		}
 		/// Check ready
 		if(!ops.teamReady(t,null)){
-			t.sendMessage(ops.getRequiredString("&eYou need the following to join"));
+			t.sendMessage(ops.getRequiredString(MessageHandler.getSystemMessage("need_the_following")+"\n"));
 			return true;
 		}
 
@@ -218,29 +231,38 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Add them to the queue
 		QPosTeamPair qpp = ac.addToQue(tqo);
 		if (qpp == null){
-			t.sendMessage("&eYou have been added to a team");
+			t.sendMessage(MessageHandler.getSystemMessage("you_added_to_team"));
 		} else if (qpp.pos== -2){
-			t.sendMessage("&cTeam queue was busy.  Try again in a sec.");
+			t.sendMessage(MessageHandler.getSystemMessage("queue_busy"));
 		} else if (qpp.pos == -1){
-			t.sendMessage("&cAn arena has not been built yet for that size of team");
+			t.sendMessage(MessageHandler.getSystemMessage("no_arena_for_size"));
 		} else {
-			t.sendMessage("&eYou have joined the queue for the &6"+ qpp.params.toPrettyString()+ " &e.");
+			t.sendMessage(MessageHandler.getSystemMessage("joined_the_queue",qpp.params.toPrettyString()) );
 			int nplayers = qpp.params.getMinTeams()*qpp.params.getMinTeamSize();
+			/// Annouce to the server if they have the option set
+			if (qpp.playersInQueue > 0){
+				AnnouncementOptions ao = mp.getAnnouncementOptions();
+				Channel server = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
+					AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
+				server.broadcast(MessageHandler.getSystemMessage("server_joined_the_queue",
+						mp.getPrefix(),player.getDisplayName(),qpp.playersInQueue,nplayers));
+			}
+
 			if (qpp.playersInQueue < nplayers && qpp.pos > 0){
-				StringBuilder msg = new StringBuilder("&ePosition: &6" + qpp.pos +"&e. Match start when &6" +
-						nplayers+"&e players join. &6"+qpp.playersInQueue+"/"+nplayers);
+				StringBuilder msg = new StringBuilder(MessageHandler.getSystemMessage("you_joined_the_queue",
+						qpp.pos, nplayers, qpp.playersInQueue, nplayers));
 				/// If we have force start, and the minTeams and minTeamSize are not the minimums
 				/// we should announce how much time left
 				if (qpp.time !=null && qpp.time - System.currentTimeMillis() > 0 &&
 						(mp.getMinTeams() > 2 || mp.getMinTeamSize() > 1)){
 					Long time = qpp.time - System.currentTimeMillis();
-					msg.append("\n&eor in " + TimeUtil.convertMillisToString(time) +" when at least 2 players have joined");
+					msg.append("\n" + MessageHandler.getSystemMessage("or_time", TimeUtil.convertMillisToString(time)));
 				}
 				t.sendMessage(msg.toString());
 			} else if (qpp.pos > 0){
-				t.sendMessage("&ePosition: &6" + qpp.pos +"&e. your match will start when an arena is free");
+				t.sendMessage(MessageHandler.getSystemMessage("you_start_when_free_pos", qpp.pos));
 			} else {
-				t.sendMessage("&eYour match will start when an arena is free");
+				t.sendMessage(MessageHandler.getSystemMessage("you_start_when_free"));
 			}
 		}
 		return true;
@@ -254,13 +276,13 @@ public class BAExecutor extends CustomCommandExecutor  {
 		Match am = ac.getMatch(p);
 		if (am != null){
 			am.onLeave(p);
-			return sendMessage(p,"&eYou have left the match &6");
+			return sendSystemMessage(p,"you_left_match");
 		}
 
 		Event aec = insideEvent(p);
 		if (aec != null){
 			aec.leave(p);
-			return sendMessage(p,"&eYou have left the "+aec.getName()+" event&6");
+			return sendSystemMessage(p,"you_left_event", aec.getName());
 		}
 
 		/// Are they even in a queue?
@@ -268,9 +290,9 @@ public class BAExecutor extends CustomCommandExecutor  {
 			Team t = TeamController.getTeam(p);
 			if (t != null){
 				TeamController.removeTeamHandlers(t);
-				return sendMessage(p, "&eYou have left");
+				return sendSystemMessage(p,"you_left_event");
 			} else {
-				return sendMessage(p,"&eYou are not currently in a queue, use /arena join");
+				return sendSystemMessage(p,"you_not_in_queue");
 			}
 		}
 		ParamTeamPair qtp = null;
@@ -280,12 +302,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 		else
 			qtp = ac.removeFromQue(p);
 		if (qtp!= null && t!= null && t.size() > 1){
-			t.sendMessage("&6The team has left the &6"+qtp.q.getName()+" queue&e. &6"+ p.getName() +"&e issued the command");
+			t.sendMessage(MessageHandler.getSystemMessage("team_left_queue", qtp.q.getName(), p.getName()));
 		} else if (qtp != null){
-			sendMessage(p,"&eYou have left the queue for the &6" + qtp.q.getName() );
+			sendSystemMessage(p,"you_left_queue",qtp.q.getName());
 		} else {
-			sendMessage(p,"&eYou weren't found in any queue");
-			return true;
+			return sendSystemMessage(p,"you_not_in_queue");
 		}
 		refundFee(qtp.q, qtp.team);
 		return true;

@@ -110,7 +110,7 @@ public class MessageFormatter{
 					StringBuilder sb = new StringBuilder();
 					boolean first = true;
 					for (Team t: teams){
-						if (!first) sb.append("&e, ");
+						if (!first) sb.append(", ");
 						TeamNames tn = getTeamNames(t);
 						if (tn == null){
 							sb.append(t.getDisplayName());
@@ -293,12 +293,12 @@ public class MessageFormatter{
 					boolean first = true;
 
 					for (ArenaPlayer ap: team.getLivingPlayers()){
-						if (!first) sb.append("&e, ");
+						if (!first) sb.append(", ");
 						sb.append("&6" + ap.getDisplayName()+"&e(&4" + ap.getHealth()+"&e)");
 						first = false;
 					}
 					for (ArenaPlayer ap: team.getDeadPlayers()){
-						if (!first) sb.append("&e, ");
+						if (!first) sb.append(", ");
 						sb.append("&6" + ap.getDisplayName()+"&e(&8Dead&e)");
 						first = false;
 					}

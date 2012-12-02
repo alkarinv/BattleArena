@@ -10,6 +10,7 @@ import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.BAEventController.SizeEventPair;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.TeamController;
+import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
@@ -173,7 +174,7 @@ public class EventExecutor extends BAExecutor{
 	public boolean eventJoin(ArenaPlayer p, EventParams eventParams, String[] args, boolean adminCommand) {
 		if (!p.hasPermission("arena."+eventParams.getName().toLowerCase()+".join") &&
 				!p.hasPermission("arena."+eventParams.getCommand().toLowerCase()+".join") ){
-			return sendMessage(p, "&cYou don't have permission to join a &6" + eventParams.getCommand());}
+			return sendSystemMessage(p,"no_join_perms", eventParams.getCommand());}
 		Event event = controller.getOpenEvent(eventParams);
 		/// If we allow players to start their own events
 		if (event == null && Defaults.ALLOW_PLAYER_EVENT_CREATION){
@@ -185,29 +186,28 @@ public class EventExecutor extends BAExecutor{
 				try {
 					event = exe.openIt(eventParams, new String[]{"auto","silent"});
 				} catch (Exception e) {
-					sendMessage(p, "&cThe event can not be joined at this time");
-					return true;
+					return sendSystemMessage(p, "you_cant_join_event");
 				}
 			}
 		}
 		/// perform join checks
 		if (event == null){
-			return sendMessage(p, "&cThere is no event currently open");}
+			return sendSystemMessage(p, "no_event_open");}
 
 		if (!event.canJoin()){
-			return sendMessage(p,"&eYou can't join the &6"+event.getCommand()+"&e while its "+event.getState());}
+			return sendSystemMessage(p, "you_cant_join_event_while", event.getCommand(), event.getState());}
 
 		if (!canJoin(p)){
 			return true;}
 
 		if (event.waitingToJoin(p)){
-			return sendMessage(p,"&eYou have already joined the and will enter when you get matched up with a team");}
+			return sendSystemMessage(p, "you_will_join_when_matched");}
 
 		EventParams sq = event.getParams();
 		MatchTransitions tops = sq.getTransitionOptions();
 		/// Perform is ready check
 		if(!tops.playerReady(p,null)){
-			String notReadyMsg = tops.getRequiredString("&eYou need the following to compete!!!\n");
+			String notReadyMsg = tops.getRequiredString(MessageHandler.getSystemMessage("need_the_following")+"\n");
 			return MessageUtil.sendMessage(p,notReadyMsg);
 		}
 		/// Get the team
@@ -225,7 +225,7 @@ public class EventExecutor extends BAExecutor{
 			jp = null;
 		}
 		if (sq.getMaxTeamSize() < t.size()){
-			return sendMessage(p,"&cThis Event can only support up to &6" + sq.getMaxTeamSize()+"&e your team has &6"+t.size());}
+			return sendSystemMessage(p, "event_invalid_team_size", sq.getMaxTeamSize(), t.size());}
 
 		/// Now that we have options and teams, recheck the team for joining
 		if (!event.canJoin(t)){
@@ -240,7 +240,7 @@ public class EventExecutor extends BAExecutor{
 		if (sq.getSecondsTillStart() != null){
 			Long time = event.getTimeTillStart();
 			if (time != null)
-				sendMessage(p,"&2The event will start in &6" + TimeUtil.convertMillisToString(time));
+				sendSystemMessage(p, "event_will_start_in", TimeUtil.convertMillisToString(time));
 		}
 		return true;
 	}
@@ -254,7 +254,7 @@ public class EventExecutor extends BAExecutor{
 		return eventTeams(sender, event);
 	}
 
-	@MCCommand(cmds={"teams"}, usage="status", admin=true, order=1)
+	@MCCommand(cmds={"teams"}, admin=true, order=1)
 	public boolean eventTeams(CommandSender sender, EventParams eventParams, Arena arena) {
 		Event event = controller.getEvent(arena);
 		if (event == null){

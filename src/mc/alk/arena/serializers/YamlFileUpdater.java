@@ -15,6 +15,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.Log;
 import mc.alk.plugin.updater.Version;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class YamlFileUpdater {
@@ -25,7 +26,7 @@ public class YamlFileUpdater {
 
 	public void updateMessageSerializer(MessageSerializer ms) {
 		FileConfiguration fc = ms.getConfig();
-
+		configFile = ms.getFile();
 		Version version = new Version(fc.getString("version","0"));
 		File dir = BattleArena.getSelf().getDataFolder();
 		/// configVersion: 1.2, move over to new messages.yml
@@ -45,6 +46,9 @@ public class YamlFileUpdater {
 			Log.warn("But the old messages are saved as backups/messages.1.1.yml");
 			Log.warn("You can override specific match/event messages inside the messages folder");
 			move("/default_files/messages.yml",dir+"/messages.yml");
+			ms.setConfig(new File(dir+"/messages.yml"));
+		} else if (version.compareTo("1.5") < 0){
+			messageTo1Point5(ms.getConfig(), version);
 			ms.setConfig(new File(dir+"/messages.yml"));
 		}
 	}
@@ -578,14 +582,11 @@ public class YamlFileUpdater {
 				} else if (lineRightAfterPreReqs && line.matches(".*options:.*")) {
 					lineRightAfterPreReqs = false;
 					if (line.matches(".*options:.*\\[\\s*clearInventory\\s*\\].*")){
-						Log.debug("SIWTCHING    " + line);
 						fw.write("        options: []\n");
 					} else if (line.matches(".*options:.*clearInventory\\s*,.*")){
-						Log.debug("SIWTCHING    " + line);
 						line = line.replaceAll("clearInventory\\s*,", "");
 						fw.write(line+"\n");
 					} else if (line.matches(".*options:.*,\\s*clearInventory.*")){
-						Log.debug("SIWTCHING    " + line);
 						line = line.replaceAll(",\\s*clearInventory", "");
 						fw.write(line+"\n");
 					}
@@ -606,6 +607,74 @@ public class YamlFileUpdater {
 			try {br.close();} catch (Exception e) {}
 			try {fw.close();} catch (Exception e) {}
 		}
+	}
+
+	private void messageTo1Point5(FileConfiguration fc, Version version) {
+		Log.warn("BattleArena updating messages.yml to 1.5");
+		if (!openFiles())
+			return;
+		String line =null;
+		ConfigurationSection cs = fc.getConfigurationSection("system");
+		boolean hasSystem = cs != null;
+		try {
+			boolean updatedDefaultSection = false;
+			while ((line = br.readLine()) != null){
+				if (line.contains("version")){
+					fw.write("version: 1.5\n");
+					if (!hasSystem){
+						fw.write("system:\n");
+						fw.write("    type_enabled: '&2 type &6%s&2 enabled'\n");
+						fw.write("    type_disabled: '&2 type &6%s&2 disabled'\n");
+						messageWrites1Point5();
+					}
+				} else if (!updatedDefaultSection && (line.matches(".*type_disabled:.*"))){
+					fw.write(line+"\n");
+					messageWrites1Point5();
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			fw.close();
+			tempFile.renameTo(configFile.getAbsoluteFile());
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
+	private void messageWrites1Point5() throws IOException {
+		fw.write("    time_format: '&6%s&e %s '\n");
+		fw.write("    zero_time: '&60'\n");
+		fw.write("    match_disabled: '&cThe &6%s&c is currently disabled'\n");
+		fw.write("    all_disabled: '&cThe arena system and all types are currently disabled'\n");
+		fw.write("    currently_enabled: '&cEnabled &6%s'\n");
+		fw.write("    no_join_perms: '&cYou dont have permission to join a &6%s'\n");
+		fw.write("    teammate_cant_join: '&cOne of your teammates cant join the &6%s'\n");
+		fw.write("    valid_arena_not_built: '&cA valid &6%s&c arena has not been built'\n");
+		fw.write("    need_the_following: '&eYou need the following to join'\n");
+		fw.write("    you_added_to_team: '&eYou have been added to a team'\n");
+		fw.write("    queue_busy: '&cTeam queue was busy.  Try again in a sec.'\n");
+		fw.write("    no_arena_for_size: '&cAn arena has not been built yet for that size of team'\n");
+		fw.write("    joined_the_queue: '&eYou have joined the queue for the &6%s&e.'\n");
+		fw.write("    server_joined_the_queue: '%s &6%s&e has joined the queue. &6%s/%s'\n");
+		fw.write("    you_joined_the_queue: '&ePosition: &6%s&e. Match start when &6%s&e players join. &6%s/%s'\n");
+		fw.write("    or_time: '&eor in %s when at least 2 players have joined'\n");
+		fw.write("    you_start_when_free_pos: '&ePosition: &6%s&e. your match will start when an arena is free'\n");
+		fw.write("    you_start_when_free: '&eYour match will start when an arena is free'\n");
+		fw.write("    you_left_match: '&eYou have left the match'\n");
+		fw.write("    you_left_event: '&eYou have left the %s event'\n");
+		fw.write("    you_left: '&eYou have left'\n");
+		fw.write("    you_not_in_queue: '&eYou are not currently in a queue'\n");
+		fw.write("    you_left_queue: '&eYou have left the queue for the &6%s'\n");
+		fw.write("    team_left_queue: '&6The team has left the &6%s&e queue. &6%s&e issued the command'\n");
+		fw.write("    you_cant_join_event: '&cThe event can not be joined at this time'\n");
+		fw.write("    no_event_open: '&cThere is no event currently open'\n");
+		fw.write("    you_cant_join_event_while: '&eYou cant join the &6%s&e while its %s'\n");
+		fw.write("    you_will_join_when_matched: '&eYou have already joined the and will enter when you get matched up with a team'\n");
+		fw.write("    event_will_start_in: '&2The event will start in &6%s'\n");
+		fw.write("    event_invalid_team_size: '&cThis Event can only support up to &6%s&e your team has &6%s'\n");
 	}
 	private boolean openFiles() {
 		try {

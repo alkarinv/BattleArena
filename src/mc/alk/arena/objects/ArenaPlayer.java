@@ -10,16 +10,18 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.PlayerInventory;
 
 public class ArenaPlayer {
+	final String name;
 	Player player;
 	ArenaClass preferredClass;
 	ArenaClass chosenClass;
 
 	public ArenaPlayer(Player player) {
 		this.player = player;
+		this.name = player.getName();
 	}
 
 	public String getName() {
-		return player.getName();
+		return name;
 	}
 
 	@Override
@@ -33,11 +35,15 @@ public class ArenaPlayer {
 
 	@Override
 	public int hashCode() {
-		return getName().hashCode();
+		return name.hashCode();
 	}
 
 	public Player getPlayer() {
 		return player;
+	}
+
+	public void setPlayer(Player player) {
+		this.player = player;
 	}
 
 	public boolean isOnline() {
@@ -86,10 +92,6 @@ public class ArenaPlayer {
 
 	public PlayerInventory getInventory() {
 		return player.getInventory();
-	}
-
-	public void setPlayer(Player player) {
-		this.player = player;
 	}
 
 	public boolean hasPermission(String perm) {

@@ -47,6 +47,7 @@ import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Countdown.CountdownCallback;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
 import mc.alk.arena.util.Util;
 
@@ -428,6 +429,9 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 			sb.append("&eTeam size=" + eventParams.getTeamSizeRange() );
 			sb.append("&e Teams=&6 " + teams.size());
 		}
+		if (state == EventState.OPEN && joinHandler != null){
+			sb.append("\n&eJoiningTeams: " + MessageUtil.joinPlayers(joinHandler.getExcludedPlayers(), ", "));
+		}
 		return sb.toString();
 	}
 
@@ -489,7 +493,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		if (!isOpen())
 			return false;
 		if (remaining == 0){
-			if (this.hasEnoughTeams()){
+			if (this.hasEnough() ){
 				startEvent();
 			} else {
 				mc.sendEventCancelledDueToLackOfPlayers(getPlayers());
@@ -531,6 +535,10 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 
 	public boolean hasEnoughTeams() {
 		return getNTeams() >= eventParams.getMinTeams();
+	}
+
+	public boolean hasEnough() {
+		return joinHandler != null ? joinHandler.hasEnough(true) : false;
 	}
 
 	public void addArenaListener(ArenaListener transitionListener) {

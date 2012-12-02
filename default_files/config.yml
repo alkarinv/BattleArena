@@ -90,6 +90,7 @@ defaultOptions:
         onPreStart: [ announce, server ]  ## match going to happen soon, example 'P1[p1Elo] vs P2[p2elo]'
         onStart: [ dontannounce ]  ## match starting
         onVictory:  [ announce, server ] ## match has been won, exmaple 'P1[p1elo] has defeated P2[p2elo]'
+        onEnterQueue:  [ dontannounce, server ] ## player1 has entered the queue for <match type>
 
     #### Default event Announcements ####
     eventAnnouncements:

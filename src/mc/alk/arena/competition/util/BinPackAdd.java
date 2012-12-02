@@ -30,7 +30,8 @@ public class BinPackAdd extends TeamJoinHandler {
 		if ( maxTeamSize < team.size()){
 			return CANTFIT;}
 		final int teamSize = team.size();
-		if (teamSize >= minTeamSize && teamSize <= maxTeamSize && teams.size() < maxTeams){ /// just add the team to the current team list
+		/// just add the team to the current team list if we can
+		if (teamSize >= minTeamSize && teamSize <= maxTeamSize && teams.size() < maxTeams){
 			Team ct = TeamFactory.createTeam(clazz);
 			ct.addPlayers(team.getPlayers());
 			addTeam(ct);

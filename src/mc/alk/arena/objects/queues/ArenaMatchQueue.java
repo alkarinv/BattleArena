@@ -220,7 +220,6 @@ public class ArenaMatchQueue {
 
 		if (Defaults.MATCH_FORCESTART_ENABLED){
 			IdTime idt = forceTimers.get(tq);
-//			Log.debug("###################  " + idt  +"    " +(idt != null && idt.time <= System.currentTimeMillis()));
 			if (idt != null && idt.time <= System.currentTimeMillis()){
 				forceStart = true;}
 		}

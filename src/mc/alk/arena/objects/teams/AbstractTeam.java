@@ -135,8 +135,8 @@ public abstract class AbstractTeam implements Team{
 			return true;
 		int offline = 0;
 		for (ArenaPlayer ap: living){
-			if (!ap.isOnline())
-				offline++;
+			if (!ap.isOnline()){
+				offline++;}
 		}
 		return living.size() <= offline;
 	}

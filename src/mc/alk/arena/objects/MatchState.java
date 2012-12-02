@@ -17,7 +17,9 @@ public enum MatchState implements CompetitionState{
 	FIRSTPLACE ("firstPlace"), PARTICIPANTS("participants"),
 	ONENTER("onEnter"), ONLEAVE("onLeave"), ONENTERWAITROOM("onEnterWaitRoom"),
 	ONMATCHINTERVAL("onMatchInterval"), ONMATCHTIMEEXPIRED("onMatchTimeExpired"),
-	ONCOUNTDOWNTOEVENT("onCountdownToEvent");
+	ONCOUNTDOWNTOEVENT("onCountdownToEvent"),
+	ONENTERQUEUE("onEnterQueue")
+	;
 
 	String name;
 	MatchState(String name){

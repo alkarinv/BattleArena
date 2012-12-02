@@ -7,11 +7,13 @@ import java.util.HashMap;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
+import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
@@ -303,6 +305,15 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			return sendMessage(sender,"&2Spawn " + spawnIndex +" doesn't exist");}
 		TeleportController.teleport(sender.getPlayer(), loc);
 		return sendMessage(sender,"&2Teleported to &6"+ spawnIndex +" &2loc=&6"+loc);
+	}
+
+	@MCCommand(cmds={"giveArenaClass"}, admin=true)
+	public boolean giveArenaClass(CommandSender sender, String className, Player player) {
+		ArenaClass ac = ArenaClassController.getClass(className);
+		if (ac == null)
+			return sendMessage(sender, "&cArena class " + className +" doesn't exist");
+		ArenaClassController.giveClass(player, ac);
+		return sendMessage(sender, "&2Arena class " + ac.getDisplayName() +"&2 given to &6" + player.getName());
 	}
 
 }

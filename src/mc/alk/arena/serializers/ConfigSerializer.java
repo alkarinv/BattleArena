@@ -201,7 +201,8 @@ public class ConfigSerializer extends BaseSerializer{
 
 		/// Set all Transition Options
 		for (MatchState transition : MatchState.values()){
-			if (transition == MatchState.ONCANCEL) /// OnCancel gets taken from onComplete and modified
+			/// OnCancel gets taken from onComplete and modified, ONENTERWAITROOM gets its values from ONENTER
+			if (transition == MatchState.ONCANCEL || transition == MatchState.ONENTERWAITROOM)
 				continue;
 			TransitionOptions tops = null;
 			try{
@@ -219,7 +220,12 @@ public class ConfigSerializer extends BaseSerializer{
 				TransitionOptions cancelOps = new TransitionOptions(tops);
 				allTops.addTransitionOptions(MatchState.ONCANCEL, cancelOps);
 				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
+			} else if (transition == MatchState.ONENTER){
+				TransitionOptions newOps = new TransitionOptions(tops);
+				allTops.addTransitionOptions(MatchState.ONENTERWAITROOM, newOps);
+				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONENTERWAITROOM +" "+newOps);
 			}
+
 			allTops.addTransitionOptions(transition,tops);
 		}
 		ParamController.setTransitionOptions(pi, allTops);

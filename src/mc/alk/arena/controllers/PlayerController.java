@@ -23,11 +23,15 @@ public final class PlayerController {
 	 */
 	public static ArenaPlayer toArenaPlayer(Player player){
 		ArenaPlayer ap = players.get(player.getName());
-		if (Defaults.DEBUG_VIRTUAL) player = Util.findPlayerExact(player.getName());
+		if (Defaults.DEBUG_VIRTUAL) {
+			Player p2 = Util.findPlayerExact(player.getName());
+			if (p2 != null)
+				player = p2;
+		}
 		if (ap == null){
 			ap = new ArenaPlayer(player);
 			players.put(player.getName(), ap);
-		} else {
+		} else{
 			ap.setPlayer(player);
 		}
 		return ap;

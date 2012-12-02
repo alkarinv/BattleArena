@@ -137,8 +137,6 @@ public class BAConfigSerializer extends ConfigSerializer{
 				Log.err("You can't override the default 'storeAll' and 'restoreAll'");
 				continue;
 			}
-
-			Log.debug("loading option set = " + key);
 			try {
 				TransitionOptions to = ConfigSerializer.getTransitionOptions(cs.getConfigurationSection(key));
 				if (to != null){

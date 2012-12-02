@@ -57,8 +57,9 @@ public class PlayerStoreController {
 	}
 
 	public void storeHealth(ArenaPlayer player) {
-		Player p = player.getPlayer();
-		final String name = p.getName();
+		final String name = player.getName();
+		if (healthmap.containsKey(name))
+			return;
 		int health = player.getHealth();
 		if (Defaults.DEBUG_STORAGE) Log.info("storing health=" + health+" for player=" + player.getName());
 		healthmap.put(name, health);
@@ -79,8 +80,10 @@ public class PlayerStoreController {
 	}
 
 	public void storeHunger(ArenaPlayer player) {
-		Player p = player.getPlayer();
-		final String name = p.getName();
+		final String name = player.getName();
+		if (hungermap.containsKey(name))
+			return;
+
 		hungermap.put(name, player.getFoodLevel());
 	}
 
@@ -100,10 +103,14 @@ public class PlayerStoreController {
 	public void storeMagic(ArenaPlayer player) {
 		if (!HeroesInterface.enabled())
 			return;
+		final String name = player.getName();
+		if (magicmap.containsKey(name))
+			return;
+
 		Integer val = HeroesInterface.getMagicLevel(player.getPlayer());
 		if (val == null)
 			return;
-		magicmap.put(player.getName(), val);
+		magicmap.put(name, val);
 	}
 
 	public void restoreMagic(ArenaPlayer p) {
@@ -120,13 +127,11 @@ public class PlayerStoreController {
 	}
 
 	public void storeItems(ArenaPlayer player) {
-		final Player p = player.getPlayer();
-		final String name = p.getName();
-		if (Defaults.DEBUG_STORAGE) Log.info("storing items for = " + p.getName() +" contains=" + itemmap.containsKey(name));
-
+		final String name= player.getName();
+		if (Defaults.DEBUG_STORAGE) Log.info("storing items for = " + name +" contains=" + itemmap.containsKey(name));
 		if (itemmap.containsKey(name))
 			return;
-		InventoryUtil.closeInventory(p);
+		InventoryUtil.closeInventory(player.getPlayer());
 		final PInv pinv = new PInv(player.getInventory());
 		itemmap.put(name, pinv);
 		InventorySerializer.saveInventory(name,pinv);
@@ -206,13 +211,17 @@ public class PlayerStoreController {
 		WorldGuardInterface.removeMember(p.getName(), regionWorld, region);
 	}
 
-	public void storeArenaClass(ArenaPlayer p) {
+	public void storeArenaClass(ArenaPlayer player) {
 		if (!HeroesInterface.enabled())
 			return;
-		String heroClass = HeroesInterface.getHeroClassName(p.getPlayer());
+		final String name = player.getName();
+		if (arenaclass.containsKey(name))
+			return;
+
+		String heroClass = HeroesInterface.getHeroClassName(player.getPlayer());
 		if (heroClass == null)
 			return;
-		arenaclass.put(p.getName(), heroClass);
+		arenaclass.put(name, heroClass);
 	}
 
 	public void restoreHeroClass(ArenaPlayer p) {

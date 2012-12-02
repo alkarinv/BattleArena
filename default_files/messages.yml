@@ -1,8 +1,38 @@
-version: 1.4
+version: 1.5
 
 system:
     type_enabled: "&2 type &6%s&2 enabled"
     type_disabled: "&2 type &6%s&2 disabled"
+    time_format: "&6%s&e %s "
+    zero_time: "&60"
+    match_disabled: "&cThe &6%s&c is currently disabled"
+    all_disabled: "&cThe arena system and all types are currently disabled"
+    currently_enabled: "&cEnabled &6%s"
+    no_join_perms: "&cYou don't have permission to join a &6%s"
+    teammate_cant_join: "&cOne of your teammates can't join the &6%s"
+    valid_arena_not_built: "&cA valid &6%s&c arena has not been built"
+    need_the_following: "&eYou need the following to join"
+    you_added_to_team: "&eYou have been added to a team"
+    queue_busy: "&cTeam queue was busy.  Try again in a sec."
+    no_arena_for_size: "&cAn arena has not been built yet for that size of team"
+    joined_the_queue: "&eYou have joined the queue for the &6%s&e."
+    server_joined_the_queue: "%s &6%s&e has joined the queue. &6%s/%s"
+    you_joined_the_queue: "&ePosition: &6%s&e. Match start when &6%s&e players join. &6%s/%s"
+    or_time: "&eor in %s when at least 2 players have joined"
+    you_start_when_free_pos: "&ePosition: &6%s&e. your match will start when an arena is free"
+    you_start_when_free: "&eYour match will start when an arena is free"
+    you_left_match: "&eYou have left the match"
+    you_left_event: "&eYou have left the %s event"
+    you_left: "&eYou have left"
+    you_not_in_queue: "&eYou are not currently in a queue"
+    you_left_queue: "&eYou have left the queue for the &6%s"
+    team_left_queue: "&6The team has left the &6%s&e queue. &6%s&e issued the command"
+    you_cant_join_event: "&cThe event can not be joined at this time"
+    no_event_open: "&cThere is no event currently open"
+    you_cant_join_event_while: "&eYou can't join the &6%s&e while its %s"
+    you_will_join_when_matched: "&eYou have already joined the and will enter when you get matched up with a team"
+    event_will_start_in: "&2The event will start in &6%s"
+    event_invalid_team_size: "&cThis Event can only support up to &6%s&e your team has &6%s"
 
 common:
     team: '&7{name}&e'

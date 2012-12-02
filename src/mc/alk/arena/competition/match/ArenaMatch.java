@@ -73,6 +73,8 @@ public class ArenaMatch extends Match {
 				state == MatchState.ONOPEN || !insideArena.contains(player.getName())){
 			return;}
 		Team t = getTeam(player);
+		if (t==null)
+			return;
 		t.killMember(player);
 		PerformTransition.transition(this, MatchState.ONCOMPLETE, player, t, true);
 		notifyListeners(new PlayerLeftEvent(player));
@@ -85,6 +87,8 @@ public class ArenaMatch extends Match {
 		if (cancelExpLoss)
 			event.setKeepLevel(true);
 		Team t = getTeam(target);
+		if (t==null)
+			return;
 		/// Handle Drops from bukkitEvent
 		if (clearsInventoryOnDeath){ /// Very important for deathmatches.. otherwise tons of items on floor
 			try {event.getDrops().clear();} catch (Exception e){}
@@ -174,13 +178,10 @@ public class ArenaMatch extends Match {
 			Plugin plugin = BattleArena.getSelf();
 			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
+					Team t = getTeam(p);
 					try{
-						PerformTransition.transition(am, MatchState.ONDEATH, p, getTeam(p), false);
-						PerformTransition.transition(am, MatchState.ONSPAWN, p, getTeam(p), false);
-						if (woolTeams){
-							Team t= getTeam(p);
-							TeamUtil.setTeamHead(teams.indexOf(t), t);
-						}
+						PerformTransition.transition(am, MatchState.ONDEATH, p, t , false);
+						PerformTransition.transition(am, MatchState.ONSPAWN, p, t, false);
 					} catch(Exception e){}
 					if (respawnsWithClass){
 						try{
@@ -192,6 +193,11 @@ public class ArenaMatch extends Match {
 					} else {
 						p.setChosenClass(null);
 					}
+					try{
+						if (woolTeams){
+							TeamUtil.setTeamHead(teams.indexOf(t), p);
+						}
+					} catch(Exception e){}
 				}
 			});
 		} else { /// This player is now out of the system now that we have given the ondeath effects
