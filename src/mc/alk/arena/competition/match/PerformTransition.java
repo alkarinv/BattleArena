@@ -137,7 +137,7 @@ public class PerformTransition {
 			if ((insideArena || am.checkReady(player, team, mo, true)) && !dead){
 				/// enterArena is supposed to happen before the teleport in Event, but it depends on the result of a teleport
 				/// Since we cant really tell the eventual result.. do our best guess
-				am.enterArena(player);
+				am.enterArena(player,team);
 				final Location l = jitter(am.getTeamSpawn(teamIndex,false),rand.nextInt(team.size()));
 				TeleportController.teleportPlayer(p, l, false, true);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
@@ -223,8 +223,10 @@ public class PerformTransition {
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREGAMEMODE)){ am.psc.restoreGamemode(player);}
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREEXPERIENCE)) { am.psc.restoreExperience(player);}
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREITEMS)){
-			if (am.woolTeams){
-				TeamUtil.removeTeamHead(teamIndex, p);}
+			if (am.woolTeams && teamIndex != -1){
+				/// Teams that have left can have a -1 teamIndex
+				TeamUtil.removeTeamHead(teamIndex, p);
+			}
 			if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+transition+" transition restoring items "+insideArena);
 			am.psc.restoreItems(player);
 		}
@@ -232,7 +234,6 @@ public class PerformTransition {
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHUNGER)){ am.psc.restoreHunger(player);}
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREMAGIC)) { am.psc.restoreMagic(player);}
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEROCLASS)){am.psc.restoreHeroClass(player);}
-
 		return true;
 	}
 

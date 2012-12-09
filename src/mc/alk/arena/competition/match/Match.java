@@ -90,7 +90,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	final Arena arena; /// The arena we are using
 	final ArenaInterface arenaInterface; /// Our interface to access arena methods w/o reflection
 
-	HashMap<Team,Integer> teamIndexes = new HashMap<Team,Integer>();
+	Map<Team,Integer> teamIndexes = Collections.synchronizedMap(new HashMap<Team,Integer>());
 
 	Set<String> visitors = new HashSet<String>(); /// Who is watching
 	MatchState state = MatchState.NONE;/// State of the match
@@ -346,7 +346,14 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		/// window of time.  But only let the first one through
 		if (state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL)
 			return;
+		MatchVictoryEvent event = new MatchVictoryEvent(this,matchResult);
+		notifyListeners(event);
+		if (event.isCancelled()){
+			return;
+		}
+
 		transitionTo(MatchState.ONVICTORY);
+		arenaInterface.onVictory(matchResult);
 		/// Call the rest after a 2 tick wait to ensure the calling transitionMethods complete before the
 		/// victory conditions start rolling in
 		currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new MatchVictory(this),2L);
@@ -371,9 +378,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 				try{mc.sendOnDrawMessage(drawers,losers);} catch(Exception e){e.printStackTrace();}
 			}
 			updateBukkitEvents(MatchState.ONVICTORY);
-			notifyListeners(new MatchVictoryEvent(am,matchResult));
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
-			arenaInterface.onVictory(getResult());
 			currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 					new MatchCompleted(am), (long) (params.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
 		}
@@ -415,6 +420,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		state = MatchState.ONCANCEL;
 		arenaInterface.onCancel();
 		for (Team t : teams){
+			if (t == null) ///What is going on with teams!??? TODO
+				continue;
 			PerformTransition.transition(this, MatchState.ONCANCEL,t,true);
 		}
 		updateBukkitEvents(MatchState.ONCANCEL);
@@ -582,8 +589,6 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		}
 		team.playerLeft(ap);
 		leftPlayers.add(ap.getName());
-		if (team.size()==1){
-			privateRemoveTeam(team);}
 	}
 
 	private void privateRemoveTeam(Team team){
@@ -670,13 +675,12 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	 * Player is entering arena area. Usually called from a teleportIn
 	 * @param p
 	 */
-	protected void enterArena(ArenaPlayer p){
+	protected void enterArena(ArenaPlayer p, Team team){
 		preEnter(p);
-		Team t = getTeam(p);
-		PerformTransition.transition(this, MatchState.ONENTER, p, t, false);
+		PerformTransition.transition(this, MatchState.ONENTER, p, team, false);
 		insideWaitRoom.remove(p.getName());
-		postEnter(p,t);
-		arenaInterface.onEnter(p,t);
+		postEnter(p,team);
+		arenaInterface.onEnter(p,team);
 	}
 
 	private void preEnter(ArenaPlayer p){
@@ -693,13 +697,15 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		insideArena.add(p.getName());
 		Integer index = null;
 		if (woolTeams){
-			index = teams.indexOf(t);
 			MethodController.updateEventListeners(this, MatchState.ONENTER, p,InventoryClickEvent.class);
-			TeamUtil.setTeamHead(index, p);
+			index = teams.indexOf(t);
+			if (index != -1){ /// TODO Really I would like to know how this is -1.  Should I remove the team now?
+				TeamUtil.setTeamHead(index, p);}
 		}
 		if (TagAPIInterface.enabled()){
 			if (index == null) index = teams.indexOf(t);
-			psc.setNameColor(p,TeamUtil.getTeamColor(index));
+			if (index != -1) /// Same, how did this get -1
+				psc.setNameColor(p,TeamUtil.getTeamColor(index));
 		}
 		if (cancelExpLoss){
 			psc.cancelExpLoss(p,true);}
@@ -719,8 +725,12 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		PerformTransition.transition(this, MatchState.ONLEAVE, p, t, false);
 		arenaInterface.onLeave(p,t);
 		notifyListeners(new PlayerLeftEvent(p));
-		if (woolTeams)
-			PlayerStoreController.removeItem(p, TeamUtil.getTeamHead(getTeamIndex(t)));
+
+		if (woolTeams){
+			int index = getTeamIndex(t);
+			if (index != -1)
+				PlayerStoreController.removeItem(p, TeamUtil.getTeamHead(index));
+		}
 		if (TagAPIInterface.enabled()){
 			psc.removeNameColor(p);}
 		if (cancelExpLoss){
@@ -1033,5 +1043,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	}
 	public Collection<Team> getOriginalTeams(){
 		return originalTeams;
+	}
+	public Set<String> getInsidePlayers(){
+		Set<String> inside = new HashSet<String>(insideArena);
+		return inside;
 	}
 }

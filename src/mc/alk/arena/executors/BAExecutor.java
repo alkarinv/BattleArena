@@ -45,6 +45,7 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.QPosTeamPair;
 import mc.alk.arena.objects.pairs.WantedTeamSizePair;
+import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
@@ -118,11 +119,11 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return sendSystemMessage(sender,"type_disabled" ,mp.getName());
 	}
 
-	protected boolean sendSystemMessage(CommandSender sender, String node, Object... args) {
+	public static boolean sendSystemMessage(CommandSender sender, String node, Object... args) {
 		return sendMessage(sender, MessageHandler.getSystemMessage(node,args));
 	}
 
-	protected boolean sendSystemMessage(ArenaPlayer sender, String node, Object... args) {
+	public static boolean sendSystemMessage(ArenaPlayer sender, String node, Object... args) {
 		return sendMessage(sender, MessageHandler.getSystemMessage(node,args));
 	}
 
@@ -288,9 +289,10 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Are they even in a queue?
 		if(!(ac.isInQue(p))){
 			Team t = TeamController.getTeam(p);
-			if (t != null){
+			QueueObject qo = ac.getQueueObject(p);
+			if (t != null && qo != null){
 				TeamController.removeTeamHandlers(t);
-				return sendSystemMessage(p,"you_left_event");
+				return sendSystemMessage(p,"you_left_queue",qo.getMatchParams().getName());
 			} else {
 				return sendSystemMessage(p,"you_not_in_queue");
 			}

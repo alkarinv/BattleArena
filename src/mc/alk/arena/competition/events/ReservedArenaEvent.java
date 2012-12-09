@@ -43,11 +43,6 @@ public class ReservedArenaEvent extends Event {
 		timer = new Countdown(BattleArena.getSelf(),mp.getSecondsTillStart(), mp.getAnnouncementInterval(), this);
 	}
 
-	public void openAllPlayersEvent(EventParams mp, Arena arena) throws NeverWouldJoinException {
-		arenaMatch = new ArenaMatch(arena, mp);
-		super.openAllPlayersEvent(mp);
-	}
-
 	@Override
 	public void openEvent(EventParams mp) throws NeverWouldJoinException{
 		super.openEvent(mp);
@@ -181,11 +176,11 @@ public class ReservedArenaEvent extends Event {
 		if (t==null) /// they arent in this Event
 			return true;
 
+		arenaMatch.onLeave(p);
 		boolean canLeave = super.leave(p);
-		if (canLeave){
-			arenaMatch.onLeave(p);
-		}
 		return canLeave;
 	}
-
+	public Match getMatch(){
+		return arenaMatch;
+	}
 }

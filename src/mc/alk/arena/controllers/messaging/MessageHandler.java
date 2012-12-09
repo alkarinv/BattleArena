@@ -13,8 +13,8 @@ public class MessageHandler extends MessageSerializer {
 	public static String getSystemMessage(String string, Object... varArgs) {
 		final Message msg = getDefaultMessage("system."+string);
 		if (msg != null){
-			final String message = msg.getMessage();
 			try{
+				final String message = msg.getMessage();
 				return message != null ? String.format(message,varArgs) : null;
 			} catch (Exception e){
 				final String err = "&c[BA Message Error] system.+"+string;

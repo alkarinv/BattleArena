@@ -7,14 +7,30 @@ import mc.alk.arena.util.Log;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
-import org.bukkit.craftbukkit.CraftServer;
 
 public class CommandController {
 
 	public static CommandMap getCommandMap(){
+		final String pkg = Bukkit.getServer().getClass().getPackage().getName();
+		String version = pkg.substring(pkg.lastIndexOf('.') + 1);
+		final Class<?> clazz;
 		try {
-			if (Bukkit.getServer() instanceof CraftServer) {
-				final Field f = CraftServer.class.getDeclaredField("commandMap");
+			if (version.equalsIgnoreCase("craftbukkit")){
+				clazz = Class.forName("org.bukkit.craftbukkit.CraftServer");
+			} else{
+				clazz = Class.forName("org.bukkit.craftbukkit." + version + ".CraftServer");
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return getCommandMapFromServer(clazz);
+	}
+
+	private static CommandMap getCommandMapFromServer(Class<?> serverClass){
+		try {
+			if (serverClass.isAssignableFrom(Bukkit.getServer().getClass())) {
+				final Field f = serverClass.getDeclaredField("commandMap");
 				f.setAccessible(true);
 				return (CommandMap) f.get(Bukkit.getServer());
 			}

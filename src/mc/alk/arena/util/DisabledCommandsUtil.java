@@ -9,14 +9,14 @@ public class DisabledCommandsUtil {
 	public static boolean contains(String cmd) {
 		return disabled.contains(cmd);
 	}
-	
+
 	public static void addDisabledCommand(String cmd){
 		disabled.add(cmd);
 	}
 
 	public static void addAll(Collection<String> disabledCommands) {
 		if (disabled == null)
-			return;
+			disabled = new HashSet<String>();
 		for (String s: disabledCommands){
 			disabled.add("/" + s);
 		}

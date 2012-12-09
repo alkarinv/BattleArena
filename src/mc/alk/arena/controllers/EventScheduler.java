@@ -21,7 +21,6 @@ import mc.alk.arena.util.Log;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.command.ColouredConsoleSender;
 
 public class EventScheduler implements Runnable, ArenaListener{
 
@@ -65,7 +64,8 @@ public class EventScheduler implements Runnable, ArenaListener{
 				Log.err("executor for " + eventPair.getEventParams() +" was not found");
 				return;
 			}
-			CommandSender sender = ColouredConsoleSender.getInstance();
+			CommandSender sender = Bukkit.getConsoleSender();
+//			CommandSender sender = ColouredConsoleSender.getInstance();
 			EventParams eventParams = eventPair.getEventParams();
 			//			event.addTransitionListener(scheduler);
 			String args[] = eventPair.getArgs();

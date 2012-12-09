@@ -6,6 +6,7 @@ import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.entity.Player;
 
@@ -16,6 +17,7 @@ public class ArenaClassController {
 	}
 	public static void addClass(ArenaClass ac){
 		classes.put(ac.getName().toUpperCase(), ac);
+		classes.put(MessageUtil.decolorChat(ac.getDisplayName()).toUpperCase(),ac);
 	}
 
 	public static ArenaClass getClass(String name){

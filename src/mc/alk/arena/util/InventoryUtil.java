@@ -11,11 +11,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import mc.alk.arena.Defaults;
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityPlayer;
 
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -23,7 +20,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 public class InventoryUtil {
-	static final String version = "BA InventoryUtil 2.1.5";
+	static final String version = "BA InventoryUtil 2.1.6";
 	static final boolean DEBUG = false;
 
 	public static class Armor{
@@ -517,11 +514,7 @@ public class InventoryUtil {
 
 	public static void closeInventory(Player p) {
 		try{
-			EntityHuman eh = ((CraftPlayer)p).getHandle();
-			if ((eh instanceof EntityPlayer)){
-				EntityPlayer ep = (EntityPlayer) eh;
-				ep.closeInventory();
-			}
+			p.closeInventory();
 		}catch(Exception closeInventoryError){
 			/// This almost always throws an NPE, but does its job so ignore
 		}
@@ -595,7 +588,7 @@ public class InventoryUtil {
 			for (int i = 1; i < split.length-1;i++){
 				EnchantmentWithLevel ewl = getEnchantment(split[i].trim());
 				try {
-					is.addEnchantment(ewl.e, ewl.lvl);
+					is.addUnsafeEnchantment(ewl.e, ewl.lvl);
 				} catch (IllegalArgumentException iae){
 					Logger.getLogger("minecraft").warning(ewl+" can not be applied to the item " + str);
 				}
@@ -811,7 +804,7 @@ public class InventoryUtil {
 				dura2 += is.getDurability()*is.getAmount();
 			}
 		}
-//		System.out.println("nitems1  " + nitems1 +":" + nitems2+"      " + dura1 +"  : " + dura2);
+		//		System.out.println("nitems1  " + nitems1 +":" + nitems2+"      " + dura1 +"  : " + dura2);
 		if (nitems1 != nitems2 || dura1 != dura2)
 			return false;
 

@@ -5,11 +5,9 @@ import java.util.Map;
 
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.util.TeamUtil;
-import net.minecraft.server.WorldServer;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -91,10 +89,5 @@ public class ArenaDebugger {
 			oldBlocks.put(key, new ItemStack(b.getType(), b.getData()));
 		}
 	}
-
-	public static WorldServer getWorldServer(org.bukkit.World world){
-		return (world instanceof CraftWorld)?  ((CraftWorld)world).getHandle() : null;
-	}
-
 
 }

@@ -50,16 +50,16 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	 * Custom arguments class so that we can return a modified arguments
 	 */
 	public static class Arguments{
-		MatchParams mp;
-		Object[] args;
+		public MatchParams mp;
+		public Object[] args;
 	}
 
 	protected static class MethodWrapper{
 		public MethodWrapper(Object obj, Method method){
 			this.obj = obj; this.method = method;
 		}
-		Object obj; /// Object instance the method belongs to
-		Method method; /// Method
+		public Object obj; /// Object instance the method belongs to
+		public Method method; /// Method
 	}
 
 	/**
@@ -199,7 +199,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		Log.err("[BA Error] "+BattleArena.getVersion()+":"+mwrapper.method +" : " + mwrapper.obj +"  : " + newArgs);
 		if (newArgs!=null && newArgs.args != null){
 			for (Object o: newArgs.args)
-				Log.err("[BA Error] object=" + o);
+				Log.err("[BA Error] object=" + (o!=null ? o.toString() : o));
 		}
 		e.printStackTrace();
 	}

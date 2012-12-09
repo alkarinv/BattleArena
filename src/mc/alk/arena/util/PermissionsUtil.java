@@ -4,6 +4,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaPlayer;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class PermissionsUtil {
@@ -31,4 +32,8 @@ public class PermissionsUtil {
 		else if (player.hasPermission("arena.priority.highest")){ return 200;}
 		return 1000;
 	}
+	public static boolean isAdmin(CommandSender sender){
+		return sender.isOp() || sender.hasPermission(Defaults.ARENA_ADMIN);
+	}
+
 }

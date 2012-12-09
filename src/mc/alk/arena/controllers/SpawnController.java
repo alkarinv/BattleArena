@@ -11,10 +11,8 @@ import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.util.CaseInsensitiveMap;
 import mc.alk.arena.util.TimeUtil;
-import net.minecraft.server.WorldServer;
 
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.plugin.Plugin;
 
 
@@ -42,7 +40,7 @@ public class SpawnController {
 		this.timedSpawns = spawnGroups;
 		plugin = BattleArena.getSelf();
 	}
-	
+
 	public void stop() {
 		if (timerId != null){
 			Bukkit.getScheduler().cancelTask(timerId);
@@ -96,7 +94,7 @@ public class SpawnController {
 				next.timeToNext -= nextTimeToSpawn;
 				if (DEBUG) System.out.println("     " + next.timeToNext +"  " + next.is +"   ");
 			}
-			/// Find all the elements that should spawn at this time			
+			/// Find all the elements that should spawn at this time
 			NextSpawn ns = null;
 			boolean stop = false;
 			while (!spawnQ.isEmpty() && !stop){ /// Keep iterating until we have times that dont match
@@ -114,13 +112,9 @@ public class SpawnController {
 
 			nextTimeToSpawn = spawnQ.peek().timeToNext;
 			if (DEBUG) System.out.println("run SpawnNextEvent " + spawnQ.size() +"  next=" + nextTimeToSpawn);
-			timerId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new SpawnNextEvent(nextTimeToSpawn), 
+			timerId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new SpawnNextEvent(nextTimeToSpawn),
 					(long)(Defaults.TICK_MULT*nextTimeToSpawn*20));
 		}
-	}
-
-	public static WorldServer getWorldServer(org.bukkit.World world){
-		return (world instanceof CraftWorld)?  ((CraftWorld)world).getHandle() : null;
 	}
 
 	public static void registerSpawn(String s, SpawnInstance sg) {

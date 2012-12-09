@@ -131,21 +131,27 @@ public class BAConfigSerializer extends ConfigSerializer{
 	}
 
 	private void parseOptionSets(ConfigurationSection cs) {
-		for (String key : cs.getKeys(false)){
-			/// dont let people override defaults
-			if (key.equalsIgnoreCase("storeAll") || key.equalsIgnoreCase("restoreAll")){
-				Log.err("You can't override the default 'storeAll' and 'restoreAll'");
-				continue;
-			}
-			try {
-				TransitionOptions to = ConfigSerializer.getTransitionOptions(cs.getConfigurationSection(key));
-				if (to != null){
-					OptionSetController.addOptionSet(key, to);}
-			} catch (Exception e) {
-				Log.err("Couldn't parse optionSet=" + key);
-				e.printStackTrace();
+		if (cs != null){
+			Set<String> keys = cs.getKeys(false);
+			if (keys != null){
+				for (String key : keys){
+					/// dont let people override defaults
+					if (key.equalsIgnoreCase("storeAll") || key.equalsIgnoreCase("restoreAll")){
+						Log.err("You can't override the default 'storeAll' and 'restoreAll'");
+						continue;
+					}
+					try {
+						TransitionOptions to = ConfigSerializer.getTransitionOptions(cs.getConfigurationSection(key));
+						if (to != null){
+							OptionSetController.addOptionSet(key, to);}
+					} catch (Exception e) {
+						Log.err("Couldn't parse optionSet=" + key);
+						e.printStackTrace();
+					}
+				}
 			}
 		}
+
 		try{
 			TransitionOptions tops = new TransitionOptions();
 			tops.addOption(TransitionOption.STOREEXPERIENCE);

@@ -137,16 +137,20 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);
 	}
 
-	public void openAllPlayersEvent(EventParams params) throws NeverWouldJoinException {
-		openEvent(params);
-		TimeUtil.testClock();
+//	public void openAllPlayersEvent(EventParams params) throws NeverWouldJoinException {
+//		openEvent(params);
+//		TimeUtil.testClock();
+//		addAllOnline(params);
+//		startEvent();
+//	}
+
+	public void addAllOnline() {
 		Player[] online = Util.getOnlinePlayers();
 		for (Player p: online){
 			Team t = TeamController.createTeam(BattleArena.toArenaPlayer(p));
-			TeamQObject tqo = new TeamQObject(t,params,null);
+			TeamQObject tqo = new TeamQObject(t,eventParams,null);
 			this.joining(tqo);
 		}
-		startEvent();
 	}
 
 	public void setParamInst(EventParams eventParams) {
@@ -221,6 +225,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		if (Defaults.DEBUG_TRACE) System.out.println("BAEvent::endEvent");
 		stopTimer();
 		transitionTo(EventState.CLOSED);
+
 		removeAllTeams();
 		teams.clear();
 		notifyListeners(new EventFinishedEvent(this));
@@ -257,11 +262,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		Team t = getTeam(p);
 		if (t==null) /// they arent in this Event
 			return true;
-		if (t.size() == 1){
-			removeTeam(t);
-		} else {
-			t.playerLeft(p);
-		}
+		t.playerLeft(p);
 		return true;
 	}
 

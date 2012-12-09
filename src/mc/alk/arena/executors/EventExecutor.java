@@ -1,11 +1,13 @@
 package mc.alk.arena.executors;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.events.ReservedArenaEvent;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.BAEventController.SizeEventPair;
 import mc.alk.arena.controllers.EventController;
@@ -24,6 +26,7 @@ import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TimeUtil;
 
 import org.bukkit.command.CommandSender;
@@ -174,41 +177,51 @@ public class EventExecutor extends BAExecutor{
 	public boolean eventJoin(ArenaPlayer p, EventParams eventParams, String[] args, boolean adminCommand) {
 		if (!p.hasPermission("arena."+eventParams.getName().toLowerCase()+".join") &&
 				!p.hasPermission("arena."+eventParams.getCommand().toLowerCase()+".join") ){
-			return sendSystemMessage(p,"no_join_perms", eventParams.getCommand());}
+			sendSystemMessage(p,"no_join_perms", eventParams.getCommand());
+			return false;
+		}
 		Event event = controller.getOpenEvent(eventParams);
 		/// If we allow players to start their own events
 		if (event == null && Defaults.ALLOW_PLAYER_EVENT_CREATION){
 			EventExecutor ee = EventController.getEventExecutor(eventParams.getName());
 			if (ee == null){
-				return true;}
+				return false;}
 			if (ee instanceof ReservedArenaEventExecutor){
 				ReservedArenaEventExecutor exe = (ReservedArenaEventExecutor) ee;
 				try {
 					event = exe.openIt(eventParams, new String[]{"auto","silent"});
 				} catch (Exception e) {
-					return sendSystemMessage(p, "you_cant_join_event");
+					sendSystemMessage(p, "you_cant_join_event");
+					return false;
 				}
 			}
 		}
 		/// perform join checks
 		if (event == null){
-			return sendSystemMessage(p, "no_event_open");}
+			sendSystemMessage(p, "no_event_open");
+			return false;
+		}
 
 		if (!event.canJoin()){
-			return sendSystemMessage(p, "you_cant_join_event_while", event.getCommand(), event.getState());}
+			sendSystemMessage(p, "you_cant_join_event_while", event.getCommand(), event.getState());
+			return false;
+		}
 
 		if (!canJoin(p)){
-			return true;}
+			return false;}
 
 		if (event.waitingToJoin(p)){
-			return sendSystemMessage(p, "you_will_join_when_matched");}
+			sendSystemMessage(p, "you_will_join_when_matched");
+			return false;
+		}
 
 		EventParams sq = event.getParams();
 		MatchTransitions tops = sq.getTransitionOptions();
 		/// Perform is ready check
 		if(!tops.playerReady(p,null)){
 			String notReadyMsg = tops.getRequiredString(MessageHandler.getSystemMessage("need_the_following")+"\n");
-			return MessageUtil.sendMessage(p,notReadyMsg);
+			MessageUtil.sendMessage(p,notReadyMsg);
+			return false;
 		}
 		/// Get the team
 		Team t = teamc.getSelfFormedTeam(p);
@@ -225,14 +238,16 @@ public class EventExecutor extends BAExecutor{
 			jp = null;
 		}
 		if (sq.getMaxTeamSize() < t.size()){
-			return sendSystemMessage(p, "event_invalid_team_size", sq.getMaxTeamSize(), t.size());}
+			sendSystemMessage(p, "event_invalid_team_size", sq.getMaxTeamSize(), t.size());
+			return false;
+		}
 
 		/// Now that we have options and teams, recheck the team for joining
 		if (!event.canJoin(t)){
-			return true;}
+			return false;}
 		/// Check fee
 		if (!checkFee(sq, p)){
-			return true;}
+			return false;}
 		TeamQObject tqo = new TeamQObject(t,sq,jp);
 
 		/// Finally actually join the event
@@ -276,6 +291,7 @@ public class EventExecutor extends BAExecutor{
 		if (event == null){
 			return true;}
 		StringBuilder sb = new StringBuilder(event.getStatus());
+		appendTeamStatus(sender, event, sb);
 		return sendMessage(sender,sb.toString());
 	}
 
@@ -285,8 +301,24 @@ public class EventExecutor extends BAExecutor{
 		if (event == null){
 			return sendMessage(sender, "&cNo event could be found using that arena!");}
 		StringBuilder sb = new StringBuilder(event.getStatus());
+		appendTeamStatus(sender, event, sb);
 		return sendMessage(sender,sb.toString());
 	}
+
+	private void appendTeamStatus(CommandSender sender, Event event, StringBuilder sb) {
+		if (PermissionsUtil.isAdmin(sender) || sender.hasPermission("arena.event.status")){
+			Set<String> inside = null;
+			if (event instanceof ReservedArenaEvent){
+				ReservedArenaEvent rae = (ReservedArenaEvent) event;
+				Match match = rae.getMatch();
+				inside = match.getInsidePlayers();
+			}
+			for (Team t: event.getTeams()){
+				sb.append("\n" + t.getTeamInfo(inside));
+			}
+		}
+	}
+
 
 	@MCCommand(cmds={"result"},usage="result", order=2)
 	public boolean eventResult(CommandSender sender, EventParams eventParams) {
@@ -322,15 +354,15 @@ public class EventExecutor extends BAExecutor{
 		//		System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
 		te.setSilent(eoo.isSilent());
 		controller.addOpenEvent(te);
-		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
-			te.openAllPlayersEvent(ep);
-		} else if (eoo.hasOption(EventOpenOption.AUTO)){
+		if (eoo.hasOption(EventOpenOption.AUTO)){
 			ep.setSecondsTillStart(eoo.getSecTillStart());
 			ep.setAnnouncementInterval(eoo.getInterval());
 			te.autoEvent(ep, eoo.getSecTillStart(), eoo.getInterval());
 		} else {
 			te.openEvent(ep);
 		}
+		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
+			te.addAllOnline();}
 	}
 
 

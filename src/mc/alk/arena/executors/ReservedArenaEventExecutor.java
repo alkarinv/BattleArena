@@ -98,15 +98,16 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		//System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
 		arena.setParameters(ep);
 		rae.setSilent(eoo.isSilent());
-		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
-			rae.openAllPlayersEvent(ep, arena);
-		} else if (eoo.hasOption(EventOpenOption.AUTO)){
+		if (eoo.hasOption(EventOpenOption.AUTO)){
 			ep.setSecondsTillStart(eoo.getSecTillStart());
 			ep.setAnnouncementInterval(eoo.getInterval());
 			rae.autoEvent(ep, arena);
 		} else {
 			rae.openEvent(ep, arena);
 		}
+		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
+			rae.addAllOnline();}
+
 		return arena;
 	}
 

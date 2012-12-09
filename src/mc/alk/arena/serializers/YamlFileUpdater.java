@@ -17,6 +17,7 @@ import mc.alk.plugin.updater.Version;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.Plugin;
 
 public class YamlFileUpdater {
 	BufferedReader br = null;
@@ -53,12 +54,12 @@ public class YamlFileUpdater {
 		}
 	}
 
-	public static void updateAllConfig(ConfigSerializer cc) {
+	public static void updateAllConfig(Plugin plugin, ConfigSerializer cc) {
 		Version version = new Version(cc.getString("configVersion","0"));
 		YamlFileUpdater yfu = new YamlFileUpdater();
 		yfu.configFile = cc.getFile();
 		if (version.compareTo("2.0")<0){
-			yfu.to2Point0(cc.getConfig(), version);}
+			yfu.to2Point0(plugin, cc.getConfig(), version);}
 	}
 
 	public static void updateBaseConfig(BAConfigSerializer bacs) {
@@ -93,7 +94,7 @@ public class YamlFileUpdater {
 		if (version.compareTo("1.7.3")<0){
 			yfu.to1Point73(bacs, bacs.getConfig(), version);}
 		if (version.compareTo("2.0")<0){
-			yfu.to2Point0(bacs.getConfig(), version);
+			yfu.to2Point0(BattleArena.getSelf(), bacs.getConfig(), version);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		}
 
@@ -146,8 +147,9 @@ public class YamlFileUpdater {
 				}
 			}
 			fw.close();
+			if (br != null) br.close();
 			cfw.close();
-			tempFile.renameTo(f.getAbsoluteFile());
+			renameTo(tempFile, f);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -212,8 +214,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -244,8 +246,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -274,8 +276,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -309,8 +311,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -344,8 +346,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -374,8 +376,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -406,8 +408,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -438,8 +440,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -476,8 +478,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -508,8 +510,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -546,8 +548,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -557,8 +559,8 @@ public class YamlFileUpdater {
 		}
 	}
 
-	private void to2Point0(FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating "+fc.getName() +" to 2.0");
+	private void to2Point0(Plugin plugin, FileConfiguration fc, Version version) {
+		Log.warn("BattleArena updating "+plugin.getName() +" configuration file='" + fc.getName() +"' to 2.0");
 		if (!openFiles())
 			return;
 		String line =null;
@@ -599,8 +601,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile, configFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally{
@@ -608,6 +610,7 @@ public class YamlFileUpdater {
 			try {fw.close();} catch (Exception e) {}
 		}
 	}
+
 
 	private void messageTo1Point5(FileConfiguration fc, Version version) {
 		Log.warn("BattleArena updating messages.yml to 1.5");
@@ -634,8 +637,8 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 				}
 			}
-			fw.close();
-			tempFile.renameTo(configFile.getAbsoluteFile());
+			closeFiles();
+			renameTo(tempFile,configFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally{
@@ -676,6 +679,34 @@ public class YamlFileUpdater {
 		fw.write("    event_will_start_in: '&2The event will start in &6%s'\n");
 		fw.write("    event_invalid_team_size: '&cThis Event can only support up to &6%s&e your team has &6%s'\n");
 	}
+
+	private static boolean isWindows() {
+		return System.getProperty("os.name").toUpperCase().contains("WINDOWS");
+	}
+
+	private static void renameTo(File file1, File file2) {
+		/// That's right, I can't just rename the file, i need to move and delete
+		if (isWindows()){
+			File temp = new File(file2.getAbsoluteFile() +".backup");
+			if (temp.exists()){
+				temp.delete();
+			}
+			if (file2.exists()){
+				file2.renameTo(temp);
+				file2.delete();
+			}
+			if (!file1.renameTo(file2)){
+				System.err.println(temp.getName() +" could not be renamed to " + file2.getName());
+			} else {
+				temp.delete();
+			}
+		} else {
+			if (!file1.renameTo(file2)){
+				System.err.println(file1.getName() +" could not be renamed to " + file2.getName());
+			}
+		}
+	}
+
 	private boolean openFiles() {
 		try {
 			br = new BufferedReader(new FileReader(configFile));
@@ -692,6 +723,15 @@ public class YamlFileUpdater {
 			return false;
 		}
 		return true;
+	}
+
+	private void closeFiles() {
+		try{
+			fw.close();
+			br.close();
+		} catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	public File move(String default_file, String config_file) {

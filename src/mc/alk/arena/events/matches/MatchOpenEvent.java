@@ -3,12 +3,20 @@ package mc.alk.arena.events.matches;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.CancellableEvent;
 
-public class MatchOpenEvent extends CancellableEvent {
-	final Match match;
+public class MatchOpenEvent extends MatchEvent implements CancellableEvent {
+	/// Cancel status
+	boolean cancelled = false;
+
 	public MatchOpenEvent(Match match){
-		this.match = match;
+		super(match);
 	}
-	public Match getMatch(){
-		return match;
+
+	public boolean isCancelled() {
+		return cancelled;
 	}
+
+	public void setCancelled(boolean cancelled) {
+		this.cancelled = cancelled;
+	}
+
 }

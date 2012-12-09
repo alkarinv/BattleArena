@@ -3,9 +3,11 @@ package mc.alk.arena.events.matches;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.MatchResult;
 
-public class MatchVictoryEvent extends MatchEvent {
-	MatchResult matchResult;
+import org.bukkit.event.Cancellable;
 
+public class MatchVictoryEvent extends MatchEvent implements Cancellable{
+	MatchResult matchResult;
+	boolean cancelled;
 	public MatchVictoryEvent(Match match, MatchResult matchResult) {
 		super(match);
 		this.matchResult = matchResult;
@@ -16,5 +18,13 @@ public class MatchVictoryEvent extends MatchEvent {
 	}
 	public void setMatchResult(MatchResult matchResult) {
 		this.matchResult = matchResult;
+	}
+
+	public boolean isCancelled() {
+		return cancelled;
+	}
+
+	public void setCancelled(boolean cancelled) {
+		this.cancelled = cancelled;
 	}
 }

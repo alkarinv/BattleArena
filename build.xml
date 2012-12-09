@@ -22,7 +22,7 @@
 			<classpath>
 				<pathelement path="${lib}" />
 				<pathelement location="${lib}/commons-lang3-3.1.jar" />
-				<pathelement location="${lib}/CraftBukkit.jar" /> 
+				<pathelement location="${lib}/bukkit.jar" /> 
 				<pathelement location="${lib}/Herochat.jar" />
 				<pathelement location="${lib}/DisguiseCraft.jar" />
 				<pathelement location="${lib}/Vault.jar" />

@@ -64,7 +64,7 @@ public class APIRegistrationController {
 			return;
 		}
 		cc.setConfig(at, pluginFile);
-		YamlFileUpdater.updateAllConfig(cc);
+		YamlFileUpdater.updateAllConfig(plugin, cc);
 		cc.setConfig(at, pluginFile);
 
 		/// Make a message serializer for this event, and make the messages.yml file if it doesnt exist

@@ -27,6 +27,7 @@ import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
 
 import org.bukkit.Bukkit;
@@ -53,7 +54,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 
 
 public class ArenaMatch extends Match {
@@ -175,8 +175,7 @@ public class ArenaMatch extends Match {
 			/// For some reason, the player from onPlayerRespawn Event isnt the one in the main thread, so we need to
 			/// resync before doing any effects
 			final Match am = this;
-			Plugin plugin = BattleArena.getSelf();
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
 					Team t = getTeam(p);
 					try{
@@ -204,7 +203,12 @@ public class ArenaMatch extends Match {
 			Location l = mo.hasOption(TransitionOption.TELEPORTTO) ? mo.getTeleportToLoc() : oldlocs.get(p.getName());
 			if (l != null)
 				event.setRespawnLocation(l);
-			stopTracking(p);
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+				@Override
+				public void run() {
+					stopTracking(p);
+				}
+			});
 		}
 	}
 
@@ -258,8 +262,8 @@ public class ArenaMatch extends Match {
 		if (event.isCancelled() || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL){
 			return;}
 		final Player p = event.getPlayer();
-		if (p.isOp() || p.hasPermission(Defaults.ARENA_ADMIN))
-			return;
+		if (PermissionsUtil.isAdmin(p) && Defaults.ALLOW_ADMIN_CMDS_IN_MATCH){
+			return;}
 
 		String msg = event.getMessage();
 		final int index = msg.indexOf(' ');
@@ -269,6 +273,8 @@ public class ArenaMatch extends Match {
 		if(DisabledCommandsUtil.contains(msg)){
 			event.setCancelled(true);
 			p.sendMessage(ChatColor.RED+"You cannot use that command when you are in a match");
+			if (PermissionsUtil.isAdmin(p)){
+				MessageUtil.sendMessage(p,"&cYou can set &6/bad allowAdminCommands true: &c to change");}
 		}
 	}
 

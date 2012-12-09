@@ -61,7 +61,7 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.plugin.updater.PluginUpdater;
 
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.command.ColouredConsoleSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -93,7 +93,8 @@ public class BattleArena extends JavaPlugin{
 		PluginDescriptionFile pdfFile = this.getDescription();
 		pluginname = pdfFile.getName();
 		version = pdfFile.getVersion();
-		ColouredConsoleSender.getInstance().sendMessage(MessageUtil.colorChat("&4["+pluginname+"] &6v"+version+"&f enabling!"));
+		ConsoleCommandSender sender = Bukkit.getConsoleSender();
+		MessageUtil.sendMessage(sender,"&4["+pluginname+"] &6v"+version+"&f enabling!");
 		/// Create our plugin folder if its not there
 		File dir = getDataFolder();
 		if (!dir.exists()){
@@ -206,7 +207,7 @@ public class BattleArena extends JavaPlugin{
 		});
 		if (Defaults.AUTO_UPDATE)
 			PluginUpdater.downloadPluginUpdates(this);
-		ColouredConsoleSender.getInstance().sendMessage(MessageUtil.colorChat("&4["+pluginname+"] &6v"+version+"&f enabled!"));
+		MessageUtil.sendMessage(sender,"&4["+pluginname+"] &6v"+version+"&f enabled!");
 	}
 
 	private void createMessageSerializers() {

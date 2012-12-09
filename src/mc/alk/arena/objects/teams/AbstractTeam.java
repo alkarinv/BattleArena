@@ -141,7 +141,7 @@ public abstract class AbstractTeam implements Team{
 		return living.size() <= offline;
 	}
 
-	public int size() {return players.size();}
+	public int size() {return players.size()-leftplayers.size();}
 	public void resetScores() {
 		deaths.clear();
 		kills.clear();

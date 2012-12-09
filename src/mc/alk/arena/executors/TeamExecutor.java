@@ -44,7 +44,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return sendMessage(sender,sb.toString());
 	}
 
-	@MCCommand(cmds={"listDetailed"},op=true,usage="listDetailed")
+	@MCCommand(cmds={"listDetailed"},admin=true,usage="listDetailed")
 	public boolean teamListDetails(CommandSender sender) {
 		StringBuilder sb = new StringBuilder();
 		Map<Team,CopyOnWriteArrayList<TeamHandler>> teams = teamc.getTeams();
