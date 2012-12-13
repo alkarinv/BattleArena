@@ -54,8 +54,8 @@ import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
 import org.apache.commons.lang.StringUtils;
@@ -319,7 +319,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		if (args[1].equalsIgnoreCase("all")){
 			return cancelAll(sender);}
 
-		Player player = Util.findPlayer(args[1]);
+		Player player = ServerUtil.findPlayer(args[1]);
 		if (player != null){
 			ArenaPlayer ap = PlayerController.toArenaPlayer(player);
 			if (ac.cancelMatch(ap)){
@@ -355,7 +355,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		Arena a = ac.getArena(pormatch);
 		Player player;
 		if (a == null){
-			player = Util.findPlayer(pormatch);
+			player = ServerUtil.findPlayer(pormatch);
 			if (player == null)
 				return sendMessage(sender,"&eCouldnt find arena or player=" + pormatch);
 			ArenaPlayer ap = PlayerController.toArenaPlayer(player);

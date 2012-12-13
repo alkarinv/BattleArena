@@ -8,6 +8,7 @@ public enum TransitionOption{
 	NEEDITEMS ("needItems",false),					/// PREREQ only: player needs the following items to join
 	SAMEWORLD("sameWorld",false),					/// PREREQ only: player can only join from the same world
 	WITHINDISTANCE("withinDistance",true),			/// PREREQ only: player needs to be within the following distance to join
+	LEVELRANGE("levelRange",true),					/// =<range>: PREREQ only: player needs to be within the given range
 
 	/// Save and Restore Options, These happen when a player first enters, and when the player leaves
 	STOREALL("storeAll",false),						/// Do all of the store options
@@ -45,7 +46,6 @@ public enum TransitionOption{
 	GIVEITEMS("giveItems",false), 					/// Give the player the items specified in items:
 	GIVECLASS("giveClass",false),					/// Give the player the specified class in classes:
 	GIVEDISGUISE("giveDisguise",false),				/// Give the player the specified class in classes:
-	LEVELRANGE("levelRange",true),					/// <range>: PREREQ only: player needs to be within the given range
 	HEALTH("health",true),							/// =<int> : set the players health to the given amount
 	HEALTHP("healthp",true),						/// =<int> : set the players health to the given percent
 	HUNGER("hunger",true),							/// =<int> : set the players food level

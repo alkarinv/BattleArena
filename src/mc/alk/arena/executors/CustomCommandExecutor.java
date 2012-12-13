@@ -23,7 +23,7 @@ import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.Util;
+import mc.alk.arena.util.ServerUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
@@ -334,7 +334,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				} else {
 					if (playerIndex >= args.length)
 						throw new InvalidArgumentException("PlayerIndex out of range. ");
-					Player p = Util.findPlayer(args[playerIndex]);
+					Player p = ServerUtil.findPlayer(args[playerIndex]);
 					if (p == null || !p.isOnline())
 						throw new InvalidArgumentException(args[playerIndex]+" must be online ");
 					/// Change over our string to a player
@@ -354,21 +354,21 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 //	}
 
 	private OfflinePlayer verifyOfflinePlayer(String name) throws InvalidArgumentException {
-		OfflinePlayer p = Util.findOfflinePlayer(name);
+		OfflinePlayer p = ServerUtil.findOfflinePlayer(name);
 		if (p == null)
 			throw new InvalidArgumentException("Player " + name+" can not be found");
 		return p;
 	}
 
 	private ArenaPlayer verifyArenaPlayer(String name) throws InvalidArgumentException {
-		Player p = Util.findPlayer(name);
+		Player p = ServerUtil.findPlayer(name);
 		if (p == null || !p.isOnline())
 			throw new InvalidArgumentException(name+" is not online ");
 		return BattleArena.toArenaPlayer(p);
 	}
 
 	private Player verifyPlayer(String name) throws InvalidArgumentException {
-		Player p = Util.findPlayer(name);
+		Player p = ServerUtil.findPlayer(name);
 		if (p == null || !p.isOnline())
 			throw new InvalidArgumentException(name+" is not online ");
 		return p;

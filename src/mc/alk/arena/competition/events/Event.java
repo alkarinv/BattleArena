@@ -48,8 +48,8 @@ import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Countdown.CountdownCallback;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.arena.util.Util;
 
 import org.bukkit.entity.Player;
 
@@ -145,7 +145,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 //	}
 
 	public void addAllOnline() {
-		Player[] online = Util.getOnlinePlayers();
+		Player[] online = ServerUtil.getOnlinePlayers();
 		for (Player p: online){
 			Team t = TeamController.createTeam(BattleArena.toArenaPlayer(p));
 			TeamQObject tqo = new TeamQObject(t,eventParams,null);

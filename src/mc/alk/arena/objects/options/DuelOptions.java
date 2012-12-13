@@ -12,7 +12,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.Util;
+import mc.alk.arena.util.ServerUtil;
 
 import org.bukkit.entity.Player;
 
@@ -66,7 +66,7 @@ public class DuelOptions {
 
 		for (int i=0;i<args.length;i++){
 			String op = args[i];
-			Player p = Util.findPlayer(op);
+			Player p = ServerUtil.findPlayer(op);
 			if (p != null){
 				if (!p.isOnline())
 					throw new InvalidOptionException("&cPlayer &6" + p.getDisplayName() +"&c is not online!");

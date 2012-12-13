@@ -16,7 +16,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
-import mc.alk.arena.util.Util;
+import mc.alk.arena.util.ServerUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -113,7 +113,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		if (players.contains(player.getName()))
 			return sendMessage(player,ChatColor.YELLOW + "You can not invite yourself to a team");
 
-		Util.findOnlinePlayers(players, foundplayers,unfoundplayers);
+		ServerUtil.findOnlinePlayers(players, foundplayers,unfoundplayers);
 		if (foundplayers.size() < players.size()){
 			sendMessage(player,ChatColor.YELLOW + "The following teammates were not found or were not online");
 			StringBuilder sb = new StringBuilder();

@@ -18,6 +18,7 @@ import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
+import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.Bukkit;
@@ -129,7 +130,7 @@ public class BAPlayerListener implements Listener  {
 					Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
 						@Override
 						public void run() {
-							Player pl = Util.findPlayerExact(name);
+							Player pl = ServerUtil.findPlayerExact(name);
 							if (pl != null){
 								TeleportController.teleport(p, tp.remove(name));
 							} else {
