@@ -19,7 +19,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.Log;
@@ -34,6 +33,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+
+import com.alk.executors.CustomCommandExecutor.InvalidArgumentException;
 
 public abstract class CustomCommandExecutor implements CommandExecutor{
 	static final boolean DEBUG = false;
@@ -156,7 +157,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		}
 
 		MCCommand mccmd = null;
-		List<InvalidArgumentException> errs =null;
+		List<IllegalArgumentException> errs =null;
 		boolean success = false;
 		for (MethodWrapper mwrapper : methodmap.values()){
 			mccmd = mwrapper.method.getAnnotation(MCCommand.class);
@@ -170,9 +171,9 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				mwrapper.method.invoke(mwrapper.obj,newArgs.args);
 				success = true;
 				break; /// success on one
-			} catch (InvalidArgumentException e){ /// One of the arguments wasn't correct, store the message
+			} catch (IllegalArgumentException e){ /// One of the arguments wasn't correct, store the message
 				if (errs == null)
-					errs = new ArrayList<InvalidArgumentException>();
+					errs = new ArrayList<IllegalArgumentException>();
 				errs.add(e);
 			} catch (Exception e) { /// Just all around bad
 				logInvocationError(e, mwrapper,newArgs);
@@ -186,7 +187,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				return true;
 			}
 			HashSet<String> errstrings = new HashSet<String>();
-			for (InvalidArgumentException e: errs){
+			for (IllegalArgumentException e: errs){
 				errstrings.add(e.getMessage());}
 			for (String msg : errstrings){
 				MessageUtil.sendMessage(sender, msg);}

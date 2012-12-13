@@ -107,9 +107,10 @@ public class ArenaMatchQueue {
 		/// If forceStart we need to track the first Team who joins, we will base how long till the force start off them
 		/// we should also report to the user that the match will start in x seconds, despite the queue size
 		Long time = null;
-		if (Defaults.MATCH_FORCESTART_ENABLED){
+		if (Defaults.MATCH_FORCESTART_ENABLED && to instanceof TeamQObject){
 			IdTime idt = updateTimer(tq,to);
-			time = idt.time;
+			if (idt != null)
+				time = idt.time;
 		}
 		tq.add(to);
 		if (!suspend)

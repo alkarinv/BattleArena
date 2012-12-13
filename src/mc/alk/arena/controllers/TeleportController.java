@@ -66,7 +66,7 @@ public class TeleportController implements Listener{
 
 		/// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
 		/// or game states ... lets not let this happen
-		PermissionsUtil.givePlayerTeleportPerms(player);
+		PermissionsUtil.givePlayerInventoryPerms(player);
 		/// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
 		if (giveBypassPerms && BattleArena.getSelf().isEnabled())
 			player.addAttachment(BattleArena.getSelf(), Defaults.TELEPORT_BYPASS_PERM, true, 1);

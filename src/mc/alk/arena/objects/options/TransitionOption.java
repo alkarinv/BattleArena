@@ -71,6 +71,8 @@ public enum TransitionOption{
 	ALWAYSTEAMNAMES("alwaysTeamNames", false),		/// Always use team Names (found in teamHeads.yml)
 	ADDPERMS("addPerms", false),					/// NOT IMPLEMENTED
 	REMOVEPERMS("removePerms", false),				/// NOT IMPLEMENTED
+	GAMEMODE("gameMode",true),						/// =<GameMode> : sets the given gamemode of the player
+	DOCOMMANDS("doCommands",false),					/// Run a list of commands as either the console or player
 
 	/// onDeath Only Options
 	RESPAWN ("respawn",false),						/// Allow player to respawn in Arena after they have died

@@ -764,7 +764,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return true;
 	}
 
-	@MCCommand(cmds={"forceStart"})
+	@MCCommand(cmds={"forceStart"}, admin=true)
 	public boolean arenaForceStart(CommandSender sender, MatchParams mp) {
 		int qsize = ac.getMatchingQueueSize(mp);
 		if (qsize <= 1){

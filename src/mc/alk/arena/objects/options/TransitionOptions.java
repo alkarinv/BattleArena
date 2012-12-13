@@ -9,6 +9,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
@@ -20,6 +21,7 @@ import mc.alk.arena.util.InventoryUtil.ArmorLevel;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.Util.MinMax;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.inventory.Inventory;
@@ -100,10 +102,20 @@ public class TransitionOptions {
 	public Integer getMagic() { return getInt(TransitionOption.MAGIC);}
 	public Integer getMagicP() { return getInt(TransitionOption.MAGICP);}
 	public Integer getWithinDistance() {return getInt(TransitionOption.WITHINDISTANCE);}
+	public GameMode getGameMode() {return getGameMode(TransitionOption.GAMEMODE);}
+	public List<CommandLineString> getDoCommands() {
+		final Object o = options.get(TransitionOption.DOCOMMANDS);
+		return o == null ? null : (List<CommandLineString>) o;
+	}
 
 	public Integer getInt(TransitionOption option){
 		final Object o = options.get(option);
 		return o == null ? null : (Integer) o;
+	}
+
+	public Double getDouble(TransitionOption option){
+		final Object o = options.get(option);
+		return o == null ? null : (Double) o;
 	}
 
 	public String getString(TransitionOption option){
@@ -111,9 +123,9 @@ public class TransitionOptions {
 		return o == null ? null : (String) o;
 	}
 
-	public Double getDouble(TransitionOption option){
+	public GameMode getGameMode(TransitionOption option){
 		final Object o = options.get(option);
-		return o == null ? null : (Double) o;
+		return o == null ? null : (GameMode) o;
 	}
 
 	public Double getMoney(){return getDouble(TransitionOption.MONEY);}

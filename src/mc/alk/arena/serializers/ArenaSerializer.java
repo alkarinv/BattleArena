@@ -21,7 +21,6 @@ import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.arenas.Persistable;
-import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.spawns.EntitySpawn;
@@ -218,7 +217,7 @@ public class ArenaSerializer {
 				TimedSpawn s;
 				try {
 					s = parseSpawnable(scs);
-				} catch (InvalidArgumentException e) {
+				} catch (IllegalArgumentException e) {
 					e.printStackTrace();
 					continue;
 				}
@@ -343,7 +342,7 @@ public class ArenaSerializer {
 		}
 	}
 
-	private static TimedSpawn parseSpawnable(ConfigurationSection cs) throws InvalidArgumentException {
+	private static TimedSpawn parseSpawnable(ConfigurationSection cs) throws IllegalArgumentException {
 		if (!cs.contains("spawn") || !cs.contains("time") || !cs.contains("loc")){
 			Log.err("configuration section cs = " + cs +"  is missing either spawn,time,or loc");
 			return null;

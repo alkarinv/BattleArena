@@ -177,7 +177,7 @@ public class PlayerStoreController {
 	public static void setGameMode(Player p, GameMode gm){
 		if (Defaults.DEBUG_STORAGE)  Log.info("set gamemode " + p.getName() +" " + p.isOnline()+":"+p.isDead() +" gm=" +gm +"  " + p.getGameMode());
 		if (gm != null && gm != p.getGameMode()){
-			PermissionsUtil.givePlayerTeleportPerms(p);
+			PermissionsUtil.givePlayerInventoryPerms(p);
 			p.getPlayer().setGameMode(gm);
 		}
 	}

@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import mc.alk.arena.objects.exceptions.InvalidArgumentException;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -37,10 +35,10 @@ public class SerializerUtil {
 		}
 	}
 
-	public static Location getLocation(String locstr) throws InvalidArgumentException {
+	public static Location getLocation(String locstr) throws IllegalArgumentException {
 		//		String loc = node.getString(nodestr,null);
 		if (locstr == null)
-			throw new InvalidArgumentException("Error parsing location. Location string was null");
+			throw new IllegalArgumentException("Error parsing location. Location string was null");
 		String split[] = locstr.split(",");
 		String w = split[0];
 		float x = Float.valueOf(split[1]);
@@ -53,7 +51,7 @@ public class SerializerUtil {
 		if (w != null)
 			world = Bukkit.getWorld(w);
 		if (world ==null){
-			throw new InvalidArgumentException("Error parsing location, World was null");}
+			throw new IllegalArgumentException("Error parsing location, World was null");}
 		return new Location(world,x,y,z,yaw,pitch);
 	}
 
@@ -72,7 +70,7 @@ public class SerializerUtil {
 			Location loc = null;
 			try {
 				loc = SerializerUtil.getLocation(cs.getString(locIndexStr));
-			} catch (InvalidArgumentException e) {
+			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 				continue;
 			}

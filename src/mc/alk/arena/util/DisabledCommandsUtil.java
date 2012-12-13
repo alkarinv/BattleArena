@@ -18,7 +18,7 @@ public class DisabledCommandsUtil {
 		if (disabled == null)
 			disabled = new HashSet<String>();
 		for (String s: disabledCommands){
-			disabled.add("/" + s);
+			disabled.add("/" + s.toLowerCase());
 		}
 	}
 }

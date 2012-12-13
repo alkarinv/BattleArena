@@ -138,7 +138,7 @@ public class BAPlayerListener implements Listener  {
 						}
 					});
 				} else {
-					PermissionsUtil.givePlayerTeleportPerms(p);
+					PermissionsUtil.givePlayerInventoryPerms(p);
 					event.setRespawnLocation(tp.remove(name));
 				}
 			} else { /// this is bad, how did they get a null tp loc

@@ -58,6 +58,7 @@ defaultOptions:
     matchEnableForceStart: false
     matchForceStartTime: 180
 
+    ## How long before a player can choose another class
     timeBetweenClassChange: 3
 
     #### Event Options ####

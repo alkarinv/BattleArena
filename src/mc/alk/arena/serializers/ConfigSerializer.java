@@ -17,6 +17,7 @@ import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -25,7 +26,6 @@ import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.ConfigException;
-import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -41,6 +41,7 @@ import mc.alk.arena.util.SerializerUtil;
 import mc.alk.arena.util.Util.MinMax;
 
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.GameMode;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -235,7 +236,7 @@ public class ConfigSerializer extends BaseSerializer{
 		return pi;
 	}
 
-	public static TransitionOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, InvalidArgumentException {
+	public static TransitionOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, IllegalArgumentException {
 		if (cs == null)
 			return null;
 		Set<Object> optionsstr = new HashSet<Object>(cs.getList("options"));
@@ -292,6 +293,15 @@ public class ConfigSerializer extends BaseSerializer{
 				case INVULNERABLE:
 					options.put(to,Integer.valueOf(value)*20); // multiply by number of ticks per second
 					break;
+				case GAMEMODE:
+					GameMode gm = null;
+					try {
+						gm = GameMode.getByValue(Integer.valueOf(value));
+					} catch (Exception e){
+						gm = GameMode.valueOf(value.toUpperCase());
+					}
+					options.put(to,gm); // multiply by number of ticks per second
+					break;
 				default:
 					break;
 				}
@@ -302,26 +312,92 @@ public class ConfigSerializer extends BaseSerializer{
 		}
 		tops.addOptions(options);
 
-		if (cs.contains("teleportTo")){
-			tops.addOption(TransitionOption.TELEPORTTO, SerializerUtil.getLocation(cs.getString("teleportTo")));}
-		if (cs.contains("teleportWinner")){
-			tops.addOption(TransitionOption.TELEPORTWINNER, SerializerUtil.getLocation(cs.getString("teleportWinner")));}
-		if (cs.contains("teleportLoser")){
-			tops.addOption(TransitionOption.TELEPORTLOSER, SerializerUtil.getLocation(cs.getString("teleportLoser")));}
-		if (cs.contains("teleportOnArenaExit")){
-			tops.addOption(TransitionOption.TELEPORTONARENAEXIT, SerializerUtil.getLocation(cs.getString("teleportOnArenaExit")));}
-		if (cs.contains("giveClass")){
-			tops.addOption(TransitionOption.GIVECLASS, getArenaClasses(cs.getConfigurationSection("giveClass")));}
-		if (cs.contains("giveDisguise")){
-			tops.addOption(TransitionOption.GIVEDISGUISE, getArenaDisguises(cs.getConfigurationSection("giveDisguise")));}
-		if (options.containsKey(TransitionOption.NEEDITEMS)){
-			tops.addOption(TransitionOption.NEEDITEMS,getItemList(cs, "items"));}
-		if (options.containsKey(TransitionOption.GIVEITEMS)){
-			tops.addOption(TransitionOption.GIVEITEMS,getItemList(cs, "items"));}
+		try{
+			if (cs.contains("teleportTo")){
+				tops.addOption(TransitionOption.TELEPORTTO, SerializerUtil.getLocation(cs.getString("teleportTo")));}
+		} catch (Exception e){
+			Log.err("Error setting the value of teleportTo ");
+			e.printStackTrace();
+		}
+
+		try{
+			if (cs.contains("teleportWinner")){
+				tops.addOption(TransitionOption.TELEPORTWINNER, SerializerUtil.getLocation(cs.getString("teleportWinner")));}
+		} catch (Exception e){
+			Log.err("Error setting the value of teleportWinner ");
+			e.printStackTrace();
+		}
+		try{
+			if (cs.contains("teleportLoser")){
+				tops.addOption(TransitionOption.TELEPORTLOSER, SerializerUtil.getLocation(cs.getString("teleportLoser")));}
+		} catch (Exception e){
+			Log.err("Error setting the value of teleportLoser ");
+			e.printStackTrace();
+		}
+
+		try{
+			if (cs.contains("teleportOnArenaExit")){
+				tops.addOption(TransitionOption.TELEPORTONARENAEXIT, SerializerUtil.getLocation(cs.getString("teleportOnArenaExit")));}
+		} catch (Exception e){
+			Log.err("Error setting the value of teleportOnArenaExit ");
+			e.printStackTrace();
+		}
+		try{
+			if (cs.contains("giveClass")){
+				tops.addOption(TransitionOption.GIVECLASS, getArenaClasses(cs.getConfigurationSection("giveClass")));}
+		} catch (Exception e){
+			Log.err("Error setting the value of giveClass ");
+			e.printStackTrace();
+		}
+		try{
+			if (cs.contains("giveDisguise")){
+				tops.addOption(TransitionOption.GIVEDISGUISE, getArenaDisguises(cs.getConfigurationSection("giveDisguise")));}
+		} catch (Exception e){
+			Log.err("Error setting the value of giveDisguise ");
+			e.printStackTrace();
+		}
+		try{
+			if (cs.contains("doCommands")){
+				tops.addOption(TransitionOption.DOCOMMANDS, getDoCommands(cs.getStringList("doCommands")));}
+		} catch (Exception e){
+			Log.err("Error setting the value of doCommands ");
+			e.printStackTrace();
+		}
+		try{
+			if (options.containsKey(TransitionOption.NEEDITEMS)){
+				tops.addOption(TransitionOption.NEEDITEMS,getItemList(cs, "items"));}
+		} catch (Exception e){
+			Log.err("Error setting the value of needItems ");
+			e.printStackTrace();
+		}
+		try{
+			if (options.containsKey(TransitionOption.GIVEITEMS)){
+				tops.addOption(TransitionOption.GIVEITEMS,getItemList(cs, "items"));}
+		} catch (Exception e){
+			Log.err("Error setting the value of giveItems ");
+			e.printStackTrace();
+		}
+
+		try{
+			if (options.containsKey(TransitionOption.ENCHANTS)){
+				tops.addOption(TransitionOption.ENCHANTS, getEffectList(cs, "enchants"));}
+		} catch (Exception e){
+			Log.err("Error setting the value of enchants ");
+			e.printStackTrace();
+		}
+
 		setPermissionSection(cs,"addPerms",tops);
-		if (options.containsKey(TransitionOption.ENCHANTS)){
-			tops.addOption(TransitionOption.ENCHANTS, getEffectList(cs, "enchants"));}
+
 		return tops;
+	}
+
+	private static List<CommandLineString> getDoCommands(List<String> list) throws InvalidOptionException {
+		List<CommandLineString> commands = new ArrayList<CommandLineString>();
+		for (String line: list){
+			CommandLineString cls = CommandLineString.parse(line);
+			commands.add(cls);
+		}
+		return commands;
 	}
 
 	private static void setPermissionSection(ConfigurationSection cs, String nodeString, TransitionOptions tops) throws InvalidOptionException {
@@ -424,14 +500,16 @@ public class ConfigSerializer extends BaseSerializer{
 					if (is != null){
 						items.add(is);
 					} else {
-						Log.warn(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
+						Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
 					}
 				} catch (Exception e){
-					Log.warn(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
+					Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
+					e.printStackTrace();
 				}
 			}
 		} catch (Exception e){
-			Log.warn(cs.getCurrentPath() +"."+nodeString + " could not be parsed in config.yml");
+			Log.err(cs.getCurrentPath() +"."+nodeString + " could not be parsed in config.yml");
+			e.printStackTrace();
 		}
 		return items;
 	}

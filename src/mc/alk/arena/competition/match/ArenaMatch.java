@@ -270,6 +270,7 @@ public class ArenaMatch extends Match {
 		if (index != -1){
 			msg = msg.substring(0, index);
 		}
+		msg = msg.toLowerCase();
 		if(DisabledCommandsUtil.contains(msg)){
 			event.setCancelled(true);
 			p.sendMessage(ChatColor.RED+"You cannot use that command when you are in a match");

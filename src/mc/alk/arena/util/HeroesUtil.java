@@ -87,6 +87,10 @@ public class HeroesUtil{
 			Hero hero = getHero(player.getPlayer());
 			if (hero == null)
 				continue;
+			/// Remove from any old parties
+			HeroParty p = hero.getParty();
+			if (p != null){
+				p.removeMember(hero);}
 			if (party == null) {
 				party = new HeroParty(hero, heroes);
 				heroes.getPartyManager().addParty(party);
@@ -96,11 +100,13 @@ public class HeroesUtil{
 			}
 		}
 	}
+
 	public static void removeTeam(Team team){
 		HeroParty party = parties.remove(team);
 		if (party != null){
 			heroes.getPartyManager().removeParty(party);}
 	}
+
 	public static void addedToTeam(Team team, Player player){
 		HeroParty party = parties.get(team);
 		if (party == null) {
@@ -111,6 +117,12 @@ public class HeroesUtil{
 		Hero hero = getHero(player);
 		if (hero == null)
 			return;
+		/// remove from old teams
+		HeroParty old = hero.getParty();
+		if (old != null)
+			old.removeMember(hero);
+
+		/// add to the new team
 		party.addMember(hero);
 	}
 

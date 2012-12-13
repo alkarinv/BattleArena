@@ -8,7 +8,6 @@ import java.util.Map;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.listeners.BAPlayerListener;
-import mc.alk.arena.objects.exceptions.InvalidArgumentException;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.SerializerUtil;
@@ -45,7 +44,7 @@ public class ArenaControllerSerializer {
 				Location loc = null;
 				try {
 					loc = SerializerUtil.getLocation(loccs.getString("loc"));
-				} catch (InvalidArgumentException e) {
+				} catch (IllegalArgumentException e) {
 					e.printStackTrace();
 				}
 				if (loc == null){
