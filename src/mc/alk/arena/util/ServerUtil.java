@@ -5,7 +5,7 @@ import java.util.Set;
 
 import mc.alk.arena.Defaults;
 
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -75,7 +75,7 @@ public class ServerUtil {
 		if (Defaults.DEBUG_VIRTUAL){
 			Player[] online = VirtualPlayers.getOnlinePlayers();
 			Player[] realonline = Bukkit.getOnlinePlayers();
-			return ArrayUtils.addAll(online,realonline);
+			return (Player[]) ArrayUtils.addAll(online,realonline);
 		} else {
 			return Bukkit.getOnlinePlayers();
 		}
