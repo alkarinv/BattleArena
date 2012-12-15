@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -154,6 +155,12 @@ public class MethodController {
 				continue;
 			}
 			Class<? extends Event> bukkitEvent = (Class<? extends Event>)classes[0];
+			/// MethodController only deals with Straight up BukkitEvents, not BAEvents which should be handled from the Match
+			if (BAEvent.class.isAssignableFrom(bukkitEvent)){
+//				Log.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +
+//						bukkitEvent.getSimpleName() +"   " + arenaListener.getName());
+				continue;
+			}
 			Method getPlayerMethod = null;
 			Method getLivingMethod = null;
 			Method getEntityMethod = null;

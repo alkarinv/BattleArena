@@ -107,6 +107,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 	@MCCommand( cmds = {"showListeners","sl"}, admin=true, usage="showListeners")
 	public boolean showListeners(CommandSender sender) {
+		// Log.debug();
 		HashMap<Type, BukkitEventListener> types = MethodController.getEventListeners();
 		for (BukkitEventListener bel: types.values()){
 			Collection<ArenaListener> lists = bel.getMatchListeners();
@@ -315,9 +316,11 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		ArenaClassController.giveClass(player, ac);
 		return sendMessage(sender, "&2Arena class " + ac.getDisplayName() +"&2 given to &6" + player.getName());
 	}
+
 	@MCCommand(cmds={"allowAdminCommands"}, admin=true)
 	public boolean allowAdminCommands(CommandSender sender, Boolean enable) {
 		Defaults.ALLOW_ADMIN_CMDS_IN_MATCH = enable;
 		return sendMessage(sender,"&2Admins can "+ (enable ? "&6use" : "&cnot use")+"&2 commands in match");
 	}
+
 }

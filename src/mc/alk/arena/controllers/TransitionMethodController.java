@@ -45,11 +45,12 @@ public class TransitionMethodController {
 				continue;
 			/// Make sure there is some sort of BAEvent here
 			Class<?>[] classes = method.getParameterTypes();
+			/// We only want BAEvents, not just plain BukkitEvents
 			if (classes.length == 0 || !(BAEvent.class.isAssignableFrom(classes[0]))){
-//				System.err.println("BAEvent was not found for method " + method);
-				continue;
-			}
+				continue;}
 			Class<? extends BAEvent> baEvent = (Class<? extends BAEvent>)classes[0];
+//			Log.debug("##############################  " +transitionListener +"   " + baEvent.getSimpleName());
+//			Util.printStackTrace();
 
 			List<MatchEventMethod> mths = typeMap.get(baEvent);
 			if (mths == null){
@@ -58,6 +59,9 @@ public class TransitionMethodController {
 			}
 
 			mths.add(new MatchEventMethod(method, baEvent,MatchState.NONE,MatchState.NONE,MatchState.NONE,teh.priority()));
+//			for (MatchEventMethod m : mths){
+//				Log.debug("###@@@@@@@@@@@ " + m.getPriority() +"           " + baEvent.getSimpleName() +"   " + m);
+//			}
 			Collections.sort(mths);
 		}
 		MatchEventMethods.put(transitionListener, typeMap);
@@ -70,12 +74,14 @@ public class TransitionMethodController {
 	}
 
 	public void callListeners(BAEvent event) {
+//		Log.debug("############## call Listeners   " + event.getEventName());
 		Set<ArenaListener> mtls = MatchEventMethods.keySet();
 		if (mtls == null){
 			return;}
 		/// For each ArenaListener class that is listening
 		for (ArenaListener tl: mtls){
 			List<MatchEventMethod> methods = getMethods(tl,event);
+//			Log.debug("############## call Listeners   " + event.getEventName()   +"      " + tl  +"    " + methods);
 			if (methods == null){
 				continue;}
 

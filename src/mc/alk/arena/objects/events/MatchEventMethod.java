@@ -29,6 +29,10 @@ public class MatchEventMethod implements Comparable<MatchEventMethod>{
 		this.priority = priority;
 	}
 
+	public EventPriority getPriority(){
+		return priority;
+	}
+
 	public Method getMethod(){
 		return callMethod;
 	}

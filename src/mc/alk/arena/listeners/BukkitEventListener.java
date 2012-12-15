@@ -96,6 +96,10 @@ public class BukkitEventListener extends BAEventListener{
 		} else {
 			addMatchListener(arenaListener);
 		}
+//		if (BAEvent.class.isAssignableFrom(mem.getBukkitEvent()) || mem.getBukkitEvent().isAssignableFrom(BAEvent.class) ){
+//			System.out.println("!!!!!!!!!!!!!!    adding listener " + matchState +"   players="+players+"   mem="+mem);
+////			Util.printStackTrace();
+//		}
 	}
 
 	/**

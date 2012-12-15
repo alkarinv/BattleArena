@@ -331,14 +331,13 @@ public class ArenaMatchQueue {
 				TeamQObject to = (TeamQObject) qo;
 				Team t = to.getTeam();
 				JoinOptions jp = qo.getJoinOptions();
-				if (jp != null &&
-						!(jp.matches(arena) && jp.matches(params) && arena.matches(params, jp))){
-					continue;
-				}
+				if (jp != null && !(jp.matches(arena) && jp.matches(params) && arena.matches(params, jp))){
+					continue;}
+
 				TeamJoinResult tjr = tjh.joiningTeam(to);
 				if (tjr.status == TeamJoinStatus.CANT_FIT){
-					continue;
-				}
+					continue;}
+
 				for (ArenaPlayer ap: t.getPlayers())
 					qteams.put(ap, to);
 			}

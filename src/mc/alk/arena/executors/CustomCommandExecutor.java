@@ -34,8 +34,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
-import com.alk.executors.CustomCommandExecutor.InvalidArgumentException;
-
 public abstract class CustomCommandExecutor implements CommandExecutor{
 	static final boolean DEBUG = false;
 
@@ -202,45 +200,48 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			for (Object o: newArgs.args)
 				Log.err("[BA Error] object=" + (o!=null ? o.toString() : o));
 		}
+		Log.err("[BA Error] Cause=" + e.getCause());
+		e.getCause().printStackTrace();
+		Log.err("[BA Error] Trace Continued ");
 		e.printStackTrace();
 	}
 
 	static final String ONLY_INGAME =ChatColor.RED+"You need to be in game to use this command";
 	private Arguments verifyArgs(MethodWrapper mwrapper, MCCommand cmd,
-			CommandSender sender, Command command, String label, String[] args) throws InvalidArgumentException{
+			CommandSender sender, Command command, String label, String[] args) throws IllegalArgumentException{
 		if (DEBUG)System.out.println("verifyArgs " + cmd +" sender=" +sender+", label=" + label+" args="+args);
 		int strIndex = 1/*skip the label*/, objIndex = 0;
 
 		/// Check our permissions
 		if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
-			throw new InvalidArgumentException(MessageSerializer.getDefaultMessage("main", "no_permission"));
+			throw new IllegalArgumentException(MessageSerializer.getDefaultMessage("main", "no_permission"));
 
 		/// Verify min number of arguments
 		if (args.length < cmd.min()){
-			throw new InvalidArgumentException(ChatColor.RED+"You need at least "+cmd.min()+" arguments");
+			throw new IllegalArgumentException(ChatColor.RED+"You need at least "+cmd.min()+" arguments");
 		}
 		/// Verfiy max number of arguments
 		if (args.length > cmd.max()){
-			throw new InvalidArgumentException(ChatColor.RED+"You need less than "+cmd.max()+" arguments");
+			throw new IllegalArgumentException(ChatColor.RED+"You need less than "+cmd.max()+" arguments");
 		}
 		/// Verfiy max number of arguments
 		if (cmd.exact()!= -1 && args.length != cmd.exact()){
-			throw new InvalidArgumentException(ChatColor.RED+"You need exactly "+cmd.exact()+" arguments");
+			throw new IllegalArgumentException(ChatColor.RED+"You need exactly "+cmd.exact()+" arguments");
 		}
 		final boolean isPlayer = sender instanceof Player;
 		final boolean isOp = (isPlayer && sender.isOp()) || sender == null || sender instanceof ConsoleCommandSender;
 
 		if (cmd.op() && !isOp)
-			throw new InvalidArgumentException(ChatColor.RED +"You need to be op to use this command");
+			throw new IllegalArgumentException(ChatColor.RED +"You need to be op to use this command");
 		if (cmd.admin() && !isOp && (isPlayer && !sender.hasPermission(Defaults.ARENA_ADMIN)))
-			throw new InvalidArgumentException(ChatColor.RED +"You need to be an Admin to use this command");
+			throw new IllegalArgumentException(ChatColor.RED +"You need to be an Admin to use this command");
 
 		/// the first ArenaPlayer or Player parameter is the sender
 		boolean getSenderAsPlayer = cmd.inGame();
 
 		/// In game check
 		if (cmd.inGame() && !isPlayer || getSenderAsPlayer && !isPlayer){
-			throw new InvalidArgumentException(ONLY_INGAME);
+			throw new IllegalArgumentException(ONLY_INGAME);
 		}
 
 		Arguments newArgs = new Arguments(); /// Our return value
@@ -292,7 +293,7 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 				objs[objIndex] = args[strIndex++];
 			}
 			} catch (ArrayIndexOutOfBoundsException e){
-				throw new InvalidArgumentException("You didnt supply enough arguments for this method");
+				throw new IllegalArgumentException("You didnt supply enough arguments for this method");
 			}
 //			System.out.println(objIndex + " : " + strIndex + "  " + objs[objIndex] +" !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + theclass.getCanonicalName());
 
@@ -303,23 +304,23 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		if (cmd.alphanum().length > 0){
 			for (int index: cmd.alphanum()){
 				if (index >= args.length)
-					throw new InvalidArgumentException("String Index out of range. ");
+					throw new IllegalArgumentException("String Index out of range. ");
 				if (!args[index].matches("[a-zA-Z0-9_]*")) {
-					throw new InvalidArgumentException("&eargument '"+args[index]+"' can only be alphanumeric with underscores");
+					throw new IllegalArgumentException("&eargument '"+args[index]+"' can only be alphanumeric with underscores");
 				}
 			}
 		}
 
 		if (cmd.selection()){
 			if (!isPlayer){
-				throw new InvalidArgumentException(ONLY_INGAME);
+				throw new IllegalArgumentException(ONLY_INGAME);
 			}
 			CurrentSelection cs = aec.getCurrentSelection((Player)sender);
 			if (cs == null)
-				throw new InvalidArgumentException(ChatColor.RED + "You need to select an arena first");
+				throw new IllegalArgumentException(ChatColor.RED + "You need to select an arena first");
 
 			if (System.currentTimeMillis() - cs.lastUsed > 5*60*1000){
-				throw new InvalidArgumentException(ChatColor.RED + "its been over a 5 minutes since you selected an arena, reselect it");
+				throw new IllegalArgumentException(ChatColor.RED + "its been over a 5 minutes since you selected an arena, reselect it");
 			}
 		}
 
@@ -330,13 +331,13 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			for (int playerIndex : cmd.online()){
 				if (playerIndex == SELF){
 					if (!isPlayer)
-						throw new InvalidArgumentException(ChatColor.RED + "You can only use this command in game");
+						throw new IllegalArgumentException(ChatColor.RED + "You can only use this command in game");
 				} else {
 					if (playerIndex >= args.length)
-						throw new InvalidArgumentException("PlayerIndex out of range. ");
+						throw new IllegalArgumentException("PlayerIndex out of range. ");
 					Player p = ServerUtil.findPlayer(args[playerIndex]);
 					if (p == null || !p.isOnline())
-						throw new InvalidArgumentException(args[playerIndex]+" must be online ");
+						throw new IllegalArgumentException(args[playerIndex]+" must be online ");
 					/// Change over our string to a player
 					objs[playerIndex] = p;
 				}
@@ -346,42 +347,42 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		return newArgs; /// Success
 	}
 
-//	private Event verifyEvent(String name) throws InvalidArgumentException {
+//	private Event verifyEvent(String name) throws IllegalArgumentException {
 //		Event event = EventController.getEvent(name);
 //		if (event == null)
-//			throw new InvalidArgumentException("Event " + name+" can not be found");
+//			throw new IllegalArgumentException("Event " + name+" can not be found");
 //		return event;
 //	}
 
-	private OfflinePlayer verifyOfflinePlayer(String name) throws InvalidArgumentException {
+	private OfflinePlayer verifyOfflinePlayer(String name) throws IllegalArgumentException {
 		OfflinePlayer p = ServerUtil.findOfflinePlayer(name);
 		if (p == null)
-			throw new InvalidArgumentException("Player " + name+" can not be found");
+			throw new IllegalArgumentException("Player " + name+" can not be found");
 		return p;
 	}
 
-	private ArenaPlayer verifyArenaPlayer(String name) throws InvalidArgumentException {
+	private ArenaPlayer verifyArenaPlayer(String name) throws IllegalArgumentException {
 		Player p = ServerUtil.findPlayer(name);
 		if (p == null || !p.isOnline())
-			throw new InvalidArgumentException(name+" is not online ");
+			throw new IllegalArgumentException(name+" is not online ");
 		return BattleArena.toArenaPlayer(p);
 	}
 
-	private Player verifyPlayer(String name) throws InvalidArgumentException {
+	private Player verifyPlayer(String name) throws IllegalArgumentException {
 		Player p = ServerUtil.findPlayer(name);
 		if (p == null || !p.isOnline())
-			throw new InvalidArgumentException(name+" is not online ");
+			throw new IllegalArgumentException(name+" is not online ");
 		return p;
 	}
 
-	private Arena verifyArena(String name) throws InvalidArgumentException {
+	private Arena verifyArena(String name) throws IllegalArgumentException {
 		Arena arena = ac.getArena(name);
 		if (arena == null){
-			throw new InvalidArgumentException("Arena '" +name+"' doesnt exist" );}
+			throw new IllegalArgumentException("Arena '" +name+"' doesnt exist" );}
 		return arena;
 	}
 
-	private MatchParams verifyMatchParams(Command command) throws InvalidArgumentException {
+	private MatchParams verifyMatchParams(Command command) throws IllegalArgumentException {
 		MatchParams mp = ParamController.getMatchParamCopy(command.getName());
 		if (mp != null){
 			return mp;
@@ -393,10 +394,10 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			}
 		}
 
-		throw new InvalidArgumentException(ChatColor.RED + "Match parameters for a &6" + command.getName()+"&c can't be found");
+		throw new IllegalArgumentException(ChatColor.RED + "Match parameters for a &6" + command.getName()+"&c can't be found");
 	}
 
-	private EventParams verifyEventParams(Command command) throws InvalidArgumentException {
+	private EventParams verifyEventParams(Command command) throws IllegalArgumentException {
 		MatchParams mp = ParamController.getEventParamCopy(command.getName());
 		if (mp != null && mp instanceof EventParams){
 			return (EventParams)mp;
@@ -408,15 +409,15 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 			}
 		}
 
-		throw new InvalidArgumentException(ChatColor.RED + "Event parameters for a &6" + command.getName()+"&c can't be found");
+		throw new IllegalArgumentException(ChatColor.RED + "Event parameters for a &6" + command.getName()+"&c can't be found");
 	}
 
-	private Integer verifyInteger(Object object) throws InvalidArgumentException {
+	private Integer verifyInteger(Object object) throws IllegalArgumentException {
 		/// Verify ints
 		try {
 			return Integer.parseInt(object.toString());
 		}catch (NumberFormatException e){
-			throw new InvalidArgumentException(ChatColor.RED+(String)object+" is not a valid integer.");
+			throw new IllegalArgumentException(ChatColor.RED+(String)object+" is not a valid integer.");
 		}
 	}
 

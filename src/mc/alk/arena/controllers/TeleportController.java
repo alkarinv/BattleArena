@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -12,6 +13,7 @@ import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
+import mc.alk.arena.util.ServerUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -93,7 +95,7 @@ public class TeleportController implements Listener{
 		if (teleporting.remove(event.getPlayer().getName())){
 			event.setCancelled(false);
 
-			final Player player = event.getPlayer();
+			final String playerName = event.getPlayer().getName();
 			final Server server = Bukkit.getServer();
 			final Plugin plugin = BattleArena.getSelf();
 			final int visibleDistance = server.getViewDistance() * 16;
@@ -101,8 +103,11 @@ public class TeleportController implements Listener{
 			server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				@Override
 				public void run() {
+					final Player player = ServerUtil.findPlayer(playerName);
+					if (player == null || !player.isOnline())
+						return;
 					// Refresh nearby clients
-					final List<Player> nearby = getPlayersWithin(player, visibleDistance);
+					final List<Player> nearby = getPlayersWithinDistance(player, visibleDistance);
 					// Hide every player
 					updateEntities(player, nearby, false);
 					// Then show them again
@@ -118,10 +123,12 @@ public class TeleportController implements Listener{
 		}
 	}
 
-	private void updateEntities(Player tpedPlayer, List<Player> players, boolean visible) {
+	private void updateEntities(final Player tpedPlayer, final List<Player> players, boolean visible) {
 		// Hide or show every player to tpedPlayer
 		// and hide or show tpedPlayer to every player.
 		for (Player player : players) {
+			if (!player.isOnline())
+				continue;
 			if (visible){
 				tpedPlayer.showPlayer(player);
 				player.showPlayer(tpedPlayer);
@@ -132,16 +139,21 @@ public class TeleportController implements Listener{
 		}
 	}
 
-	private List<Player> getPlayersWithin(Player player, int distance) {
+	private List<Player> getPlayersWithinDistance(final Player player, final int distance) {
 		List<Player> res = new ArrayList<Player>();
-		int d2 = distance * distance;
+		final int d2 = distance * distance;
+		final UUID uid = player.getWorld().getUID();
 		for (Player p : Bukkit.getOnlinePlayers()) {
 			try{
-				if (p.getWorld().getUID() == player.getWorld().getUID() &&
+				if (p.getWorld().getUID() == uid &&
 						p != player && p.getLocation().distanceSquared(player.getLocation()) <= d2) {
 					res.add(p);
 				}
-			} catch(IllegalArgumentException e){}
+			} catch (IllegalArgumentException e){
+				Log.info(e.getMessage());
+			} catch(Exception e){
+				e.printStackTrace();
+			}
 		}
 		return res;
 	}

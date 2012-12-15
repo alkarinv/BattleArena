@@ -174,8 +174,9 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	}
 
 	private void updateBukkitEvents(MatchState matchState){
+		final ArrayList<String> players = new ArrayList<String>(insideArena);
 		for (ArenaListener al : arenaListeners){
-			MethodController.updateMatchBukkitEvents(al, matchState, new ArrayList<String>(insideArena));
+			MethodController.updateMatchBukkitEvents(al, matchState, players);
 		}
 	}
 
