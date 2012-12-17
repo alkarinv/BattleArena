@@ -637,8 +637,17 @@ public class Arena implements ArenaListener {
 			if (!jp.sameWorld(this)){
 				return false;}
 		}
-
 		return true;
+	}
+
+	public boolean matches(Arena arena) {
+		if (arena == null)
+			return false;
+		if (this == arena)
+			return true;
+		if (arena.name == null || this.name==null)
+			return false;
+		return this.name.equals(arena.name);
 	}
 
 	public List<String> getInvalidMatchReasons(MatchParams matchParams, JoinOptions jp) {

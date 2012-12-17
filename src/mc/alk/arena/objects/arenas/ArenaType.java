@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.util.CaseInsensitiveMap;
 
@@ -127,7 +126,7 @@ public class ArenaType implements Comparable<ArenaType>{
 		if (!types.containsKey(uarenaType)){
 			new ArenaType(arenaType,plugin);
 		}
-		MethodController.addMethods(c,c.getMethods());
+//		MethodController.addBukkitMethods(c,c.getMethods());
 		return types.get(uarenaType);
 	}
 
@@ -140,15 +139,10 @@ public class ArenaType implements Comparable<ArenaType>{
 	 */
 	public static Arena createArena(String arenaName, ArenaParams arenaParams) {
 		ArenaType arenaType = arenaParams.getType();
-		Arena newArena = createArena(arenaType);
-		if (newArena == null)
-			return null;
-		newArena.setName(arenaName);
-		newArena.setParameters(arenaParams);
-		return newArena;
+		return createArena(arenaType, arenaName, arenaParams);
 	}
 
-	private static Arena createArena(ArenaType arenaType){
+	private static Arena createArena(ArenaType arenaType, String arenaName, ArenaParams arenaParams){
 		Class<?> arenaClass = classes.get(arenaType.name);
 		if (arenaClass == null)
 			return null;
@@ -156,6 +150,8 @@ public class ArenaType implements Comparable<ArenaType>{
 		try {
 			Constructor<?> constructor = arenaClass.getConstructor(args);
 			Arena arena = (Arena) constructor.newInstance((Object[])args);
+			arena.setName(arenaName);
+			arena.setParameters(arenaParams);
 			try{arena.init();}catch(Exception e){ e.printStackTrace();}
 			return arena;
 		} catch (NoSuchMethodException e){

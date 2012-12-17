@@ -23,7 +23,6 @@ import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.messaging.EventMessageHandler;
 import mc.alk.arena.controllers.messaging.EventMessageImpl;
 import mc.alk.arena.controllers.messaging.EventMessager;
-import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.events.EventCancelEvent;
 import mc.alk.arena.events.events.EventCompletedEvent;
 import mc.alk.arena.events.events.EventFinishedEvent;
@@ -88,15 +87,6 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		this.name = params.getName();
 	}
 
-	/**
-	 * Notify Bukkit Listeners and specific listeners to this match
-	 * @param BAevent event
-	 */
-	protected void notifyListeners(BAEvent event) {
-		tmc.callListeners(event); /// Call our listeners listening to only this match
-		event.callEvent(); /// Call bukkit listeners for this event
-	}
-
 	public void openEvent() {
 		EventParams mp = ParamController.getEventParamCopy(eventParams.getName());
 		mp.setMinTeams(2); /// TODO do I need this anymore?
@@ -116,11 +106,8 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		joinHandler = TeamJoinFactory.createTeamJoinHandler(params, this);
 
 		EventOpenEvent event = new EventOpenEvent(this);
-		tmc.callListeners(event);
-		if (event.isCancelled())
-			return;
 
-		event.callEvent();
+		callEvent(event);
 		if (event.isCancelled())
 			return;
 
@@ -136,13 +123,6 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		mc.sendCountdownTillEvent(secondsTillStart);
 		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);
 	}
-
-//	public void openAllPlayersEvent(EventParams params) throws NeverWouldJoinException {
-//		openEvent(params);
-//		TimeUtil.testClock();
-//		addAllOnline(params);
-//		startEvent();
-//	}
 
 	public void addAllOnline() {
 		Player[] online = ServerUtil.getOnlinePlayers();
@@ -165,7 +145,9 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		while(iter.hasNext()){
 			Team t = iter.next();
 			if (t.size() == 0){
-				iter.remove();}
+				iter.remove();
+				TeamController.removeTeamHandler(t, this);
+			}
 		}
 	}
 
@@ -181,7 +163,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		joinHandler = null;
 		transitionTo(EventState.RUNNING);
 
-		notifyListeners(new EventStartEvent(this,teams));
+		callEvent(new EventStartEvent(this,teams));
 	}
 
 	protected void eventVictory(Collection<Team> victors, Collection<Team> losers) {
@@ -189,7 +171,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 			mc.sendEventVictory(victors, losers);
 		else
 			mc.sendEventDraw(losers, new HashSet<Team>());
-		notifyListeners(new EventVictoryEvent(this,victors,losers));
+		callEvent(new EventVictoryEvent(this,victors,losers));
 	}
 
 	public void stopTimer(){
@@ -200,7 +182,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	}
 
 	public void eventCompleted(){
-		notifyListeners(new EventCompletedEvent(this));
+		callEvent(new EventCompletedEvent(this));
 		endEvent();
 	}
 
@@ -210,13 +192,13 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 			if (!ac.cancelMatch(tt)){
 				tt.sendMessage("&cEvent was cancelled");}
 		}
-		notifyListeners(new EventCancelEvent(this));
+		callEvent(new EventCancelEvent(this));
 		mc.sendEventCancelled();
 		endEvent(); /// now call the method to clean everything else up
 	}
 
 	protected void eventCancelled(){
-		notifyListeners(new EventCancelEvent(this));
+		callEvent(new EventCancelEvent(this));
 		mc.sendEventCancelled();
 		endEvent();
 	}
@@ -228,7 +210,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 
 		removeAllTeams();
 		teams.clear();
-		notifyListeners(new EventFinishedEvent(this));
+		callEvent(new EventFinishedEvent(this));
 	}
 
 	public boolean canJoin(){
@@ -540,13 +522,6 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 
 	public boolean hasEnough() {
 		return joinHandler != null ? joinHandler.hasEnough(true) : false;
-	}
-
-	public void addArenaListener(ArenaListener transitionListener) {
-		tmc.addListener(transitionListener);
-	}
-	public void removeArenaListener(ArenaListener transitionListener) {
-		tmc.removeListener(transitionListener);
 	}
 
 	@Override

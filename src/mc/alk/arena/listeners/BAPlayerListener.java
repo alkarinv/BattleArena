@@ -216,7 +216,6 @@ public class BAPlayerListener implements Listener  {
 					else {pl = Bukkit.getPlayer(name);}
 					//					System.out.println("### restoring items to " + name +"   pl = " + pl);
 					if (pl != null){
-
 						PInv pinv = itemRestore.remove(pl.getName());
 						ArenaPlayer ap = PlayerController.toArenaPlayer(pl);
 						PlayerStoreController.setInventory(ap, pinv);

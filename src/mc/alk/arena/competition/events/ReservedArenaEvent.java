@@ -80,7 +80,7 @@ public class ReservedArenaEvent extends Event {
 			m = getMatchup(r.getLosers().iterator().next(),0);
 		} else if (r.getDrawers() != null && !r.getDrawers().isEmpty()){
 			m = getMatchup(r.getDrawers().iterator().next(),0);}
-		if (m == null){ /// This match wasnt in our tournament
+		if (m == null){ /// This match wasnt inside our arena
 			return;}
 
 		m.setResult(arenaMatch.getResult());

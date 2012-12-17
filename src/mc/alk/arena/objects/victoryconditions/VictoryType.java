@@ -4,7 +4,6 @@ import java.lang.reflect.Constructor;
 import java.util.LinkedHashMap;
 
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.util.CaseInsensitiveMap;
 
 import org.bukkit.plugin.Plugin;
@@ -80,7 +79,8 @@ public class VictoryType {
 			new VictoryType(vcName,plugin);
 		}
 		/// Register our methods
-		MethodController.addMethods(vc, vc.getMethods());
+//		MethodController.addBukkitMethods(vc, vc.getMethods());
+
 	}
 
 	public static boolean registered(VictoryCondition vc){

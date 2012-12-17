@@ -15,9 +15,12 @@ public class ArenaPlayer {
 	ArenaClass preferredClass;
 	ArenaClass chosenClass;
 
+	boolean isReady;
+
 	public ArenaPlayer(Player player) {
 		this.player = player;
 		this.name = player.getName();
+		this.isReady = false;
 	}
 
 	public String getName() {
@@ -90,6 +93,14 @@ public class ArenaPlayer {
 		return player.isDead();
 	}
 
+	public boolean isReady() {
+		return isReady;
+	}
+
+	public void setReady(boolean isReady) {
+		this.isReady = isReady;
+	}
+
 	public PlayerInventory getInventory() {
 		return player.getInventory();
 	}
@@ -122,5 +133,4 @@ public class ArenaPlayer {
 	public int getLevel() {
 		return (HeroesInterface.enabled()) ? HeroesInterface.getLevel(player) : player.getLevel();
 	}
-
 }

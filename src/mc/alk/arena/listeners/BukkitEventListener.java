@@ -1,26 +1,27 @@
 package mc.alk.arena.listeners;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.events.MatchEventMethod;
+import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.MapOfHash;
+import mc.alk.arena.util.MapOfTreeSet;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
@@ -32,10 +33,13 @@ import org.bukkit.event.entity.EntityDamageEvent;
  */
 public class BukkitEventListener extends BAEventListener{
 	/** map of player to listeners listening for that player */
-	final public MapOfHash<String,ArenaListener> listeners = new MapOfHash<String,ArenaListener>();
+	final public MapOfTreeSet<String,RListener> listeners = new MapOfTreeSet<String,RListener>();
 
 	/** Set of arena listeners */
-	final public HashSet<ArenaListener> mlisteners = new HashSet<ArenaListener>();
+	final public EnumMap<EventPriority, List<RListener>> mlisteners = new EnumMap<EventPriority, List<RListener>>(EventPriority.class);
+
+
+	private volatile RListener[] handlers = null;
 
 	/** The method which will return a Player if invoked */
 	final Method getPlayerMethod;
@@ -62,14 +66,14 @@ public class BukkitEventListener extends BAEventListener{
 	 * Get the map of players to listeners
 	 * @return
 	 */
-	public MapOfHash<String,ArenaListener> getListeners(){
+	public MapOfTreeSet<String,RListener> getListeners(){
 		return listeners;
 	}
 	/**
 	 * Get the set of arena listeners
 	 * @return
 	 */
-	public HashSet<ArenaListener> getMatchListeners(){
+	public EnumMap<EventPriority, List<RListener>> getMatchListeners(){
 		return mlisteners;
 	}
 
@@ -88,18 +92,19 @@ public class BukkitEventListener extends BAEventListener{
 	 * @param mem
 	 * @param players
 	 */
-	public void addListener(ArenaListener arenaListener, MatchState matchState, MatchEventMethod mem, Collection<String> players) {
-		if (Defaults.DEBUG_EVENTS) System.out.println("    adding listener " + matchState +"   players="+players+"   mem="+mem);
-		if (players != null && mem.getPlayerMethod() != null){
+	public void addListener(RListener arenaListener, Collection<String> players) {
+		if (Defaults.DEBUG_EVENTS) System.out.println("    adding listener   players="+players+" listener="+arenaListener);
+		//		final RListener rl = new RListener(arenaListener,mem);
+		if (players != null && arenaListener.getMethod() != null){
 			for (String player: players){
 				addSPListener(player, arenaListener);}
 		} else {
 			addMatchListener(arenaListener);
 		}
-//		if (BAEvent.class.isAssignableFrom(mem.getBukkitEvent()) || mem.getBukkitEvent().isAssignableFrom(BAEvent.class) ){
-//			System.out.println("!!!!!!!!!!!!!!    adding listener " + matchState +"   players="+players+"   mem="+mem);
-////			Util.printStackTrace();
-//		}
+		//		if (BAEvent.class.isAssignableFrom(mem.getBukkitEvent()) || mem.getBukkitEvent().isAssignableFrom(BAEvent.class) ){
+		//			System.out.println("!!!!!!!!!!!!!!    adding listener " + matchState +"   players="+players+"   mem="+mem);
+		////			Util.printStackTrace();
+		//		}
 	}
 
 	/**
@@ -109,14 +114,25 @@ public class BukkitEventListener extends BAEventListener{
 	 * @param mem
 	 * @param players
 	 */
-	public void removeListener(ArenaListener arenaListener, MatchState matchState, MatchEventMethod mem, Collection<String> players) {
-		if (Defaults.DEBUG_EVENTS) System.out.println("    removing listener " + matchState +"   player="+players+"   mem="+mem);
-		if (players != null && mem.getPlayerMethod() != null){
+	public synchronized void removeListener(RListener rl, Collection<String> players) {
+		if (Defaults.DEBUG_EVENTS) System.out.println("    removing listener  player="+players+"   listener="+rl);
+		if (players != null && rl.getMethod() != null){
 			for (String player: players){
-				removeSPListener(player, arenaListener);}
+				removeSPListener(player, rl);}
 		} else {
-			removeMatchListener(arenaListener);
+			removeMatchListener(rl);
 		}
+	}
+
+	public synchronized void removeAllListener(RListener rl) {
+		if (Defaults.DEBUG_EVENTS) System.out.println("    removing all listeners  listener="+rl);
+		synchronized(listeners){
+			for (String name : listeners.keySet()){
+				listeners.remove(name, rl);
+			}
+		}
+		removeMatchListener(rl);
+
 	}
 
 	/**
@@ -124,10 +140,17 @@ public class BukkitEventListener extends BAEventListener{
 	 * @param spl
 	 * @return
 	 */
-	public void addMatchListener(ArenaListener spl) {
+	public synchronized void addMatchListener(RListener spl) {
 		if (!hasListeners()){
 			startMatchListening();}
-		mlisteners.add(spl);
+		List<RListener> l = mlisteners.get(spl.getPriority());
+		if (l == null){
+			l = new ArrayList<RListener>();
+			mlisteners.put(spl.getPriority(), l);
+		}
+		l.add(spl);
+		handlers = null;
+		bake();
 	}
 
 	/**
@@ -135,19 +158,38 @@ public class BukkitEventListener extends BAEventListener{
 	 * @param spl
 	 * @return
 	 */
-	public boolean removeMatchListener(ArenaListener spl) {
-		final boolean removed = mlisteners.remove(spl);
-		if (removed && !hasListeners()){
+	public boolean removeMatchListener(RListener listener) {
+		final List<RListener> list = mlisteners.get(listener.getPriority());
+		if (list==null)
+			return false;
+		boolean changed = false;
+		Iterator<RListener> iter = list.iterator();
+		while (iter.hasNext()){
+			RListener rl = iter.next();
+			if (rl.equals(listener)){
+				iter.remove();
+				changed = true;
+			}
+		}
+		if (!hasListeners()){
 			stopListening();}
-		return removed;
+		if (changed) bake();
+		return changed;
 	}
 
+	private synchronized void bake() {
+		if (handlers != null) return;
+		List<RListener> entries = new ArrayList<RListener>();
+		for (Entry<EventPriority,List<RListener>> entry : mlisteners.entrySet()){
+			entries.addAll(entry.getValue());}
+		handlers = entries.toArray(new RListener[entries.size()]);
+	}
 	/**
 	 * Add a listener for a specific player
 	 * @param player
 	 * @param spl
 	 */
-	public void addSPListener(String p, ArenaListener spl) {
+	public void addSPListener(String p, RListener spl) {
 		if (!hasListeners()){
 			startSpecificPlayerListening();}
 		listeners.add(p,spl);
@@ -159,7 +201,7 @@ public class BukkitEventListener extends BAEventListener{
 	 * @param spl
 	 * @return
 	 */
-	public boolean removeSPListener(String p, ArenaListener spl) {
+	public boolean removeSPListener(String p, RListener spl) {
 		final boolean removed = listeners.remove(p,spl);
 		if (removed && !hasListeners()){
 			stopListening();}
@@ -181,8 +223,7 @@ public class BukkitEventListener extends BAEventListener{
 			doEntityDamageEvent((EntityDamageEvent)event);
 			return;
 		}
-		if (event.getClass() != bukkitEvent) /// This can happen with subclasses such as PlayerDeathEvent and EntityDeathEvent
-			return;
+
 		final Entity entity = getEntityFromMethod(event, getPlayerMethod);
 		if (!(entity instanceof Player))
 			return;
@@ -191,29 +232,31 @@ public class BukkitEventListener extends BAEventListener{
 	}
 
 	private void callListeners(Event event, final Player p) {
-		HashSet<ArenaListener> spls = listeners.getSafe(p.getName());
+		TreeSet<RListener> spls = listeners.getSafe(p.getName());
 		if (spls == null){
 			return;}
+		doMethods(event,p, new ArrayList<RListener>(spls));
 		/// For each ArenaListener class that is listening
-		for (ArenaListener spl: spls){
-			List<MatchEventMethod> methods = MethodController.getMethods(spl,event);
-			if (methods != null){
-				doMethods(event, p, spl, methods);}
-			if (event instanceof EntityDamageByEntityEvent){
-				methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
-			else if (event instanceof EntityDamageByBlockEvent){
-				methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
-			else
-				methods = null;
-			if (methods != null){
-				doMethods(event, p, spl, methods);}
-		}
+		//		for (RListener spl: spls){
+		//			List<MatchEventMethod> methods = MethodController.getMethods(spl,event);
+		//			if (methods != null){
+		//				doMethods(event, p, spl, methods);}
+		//			if (event instanceof EntityDamageByEntityEvent){
+		//				methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
+		//			else if (event instanceof EntityDamageByBlockEvent){
+		//				methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
+		//			else
+		//				methods = null;
+		//			if (methods != null){
+		//				doMethods(event, p, spl, methods);}
+		//		}
 	}
-	private void doMethods(Event event, final Player p, ArenaListener spl, List<MatchEventMethod> methods) {
+	private void doMethods(Event event, final Player p, List<RListener> lmethods) {
 		/// For each of the splisteners methods that deal with this BukkitEvent
 		ArenaPlayer arenaPlayer = null;
-		for(MatchEventMethod method: methods){
-			final Class<?>[] types = method.getMethod().getParameterTypes();
+		for(RListener lmethod: lmethods){
+			final Method method = lmethod.getMethod().getMethod();
+			final Class<?>[] types = method.getParameterTypes();
 			final Object[] os = new Object[types.length];
 			os[0] = event;
 
@@ -235,30 +278,30 @@ public class BukkitEventListener extends BAEventListener{
 							os[i] = arenaPlayer;
 					}
 				}
-				method.getMethod().invoke(spl, os); /// Invoke the listening arenalisteners method
+				method.invoke(lmethod.getListener(), os); /// Invoke the listening arenalisteners method
 			} catch (Exception e){
-				Log.err("[BA:Error] method=" + method + ",  types.length=" +types.length +",  p=" + p +",  spl="+spl);
+				Log.err("[BA:Error] method=" + method + ",  types.length=" +types.length +",  p=" + p +",  listener="+lmethod);
 				e.printStackTrace();
 			}
 		}
 	}
 
 	private void doEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
-		if (event.getEntity() instanceof Player){
+		if (event.getEntity() instanceof Player && listeners.containsKey(((Player)event.getEntity()).getName()) ){
 			callListeners(event, (Player) event.getEntity());
 			return;
 		}
-		if (event.getDamager() instanceof Player){
+		if (event.getDamager() instanceof Player && listeners.containsKey(((Player)event.getDamager()).getName())){
 			callListeners(event, (Player) event.getDamager());
 			return;
 		}
 
 		Player player = null;
 		if (event.getDamager() instanceof Projectile){ /// we have some sort of projectile, maybe shot by a player?
-				Projectile proj = (Projectile) event.getDamager();
-				if (proj.getShooter() instanceof Player){ /// projectile was shot by a player
-					player= (Player) proj.getShooter();
-				}
+			Projectile proj = (Projectile) event.getDamager();
+			if (proj.getShooter() instanceof Player){ /// projectile was shot by a player
+				player= (Player) proj.getShooter();
+			}
 		}
 		if (player != null){
 			callListeners(event, player);
@@ -288,6 +331,11 @@ public class BukkitEventListener extends BAEventListener{
 			callListeners(event, damager);
 		}
 	}
+	public RListener[] getRegisteredListeners() {
+		RListener[] handlers;
+		while ((handlers = this.handlers) == null) bake(); // This prevents fringe cases of returning null
+		return handlers;
+	}
 
 	@Override
 	public void doMatchEvent(Event event){
@@ -295,15 +343,12 @@ public class BukkitEventListener extends BAEventListener{
 			return;
 
 		/// For each ArenaListener class that is listening
-		for (ArenaListener spl: mlisteners){
-			List<MatchEventMethod> methods = MethodController.getMethods(spl,event);
-			/// For each of the splisteners methods that deal with this BukkitEvent
-			for(MatchEventMethod method: methods){
-				try {
-					method.getMethod().invoke(spl, event); /// Invoke the listening arenalisteners method
-				} catch (Exception e){
-					e.printStackTrace();
-				}
+		RListener[] rls = getRegisteredListeners();
+		for (RListener rl: rls){
+			try {
+				rl.getMethod().getMethod().invoke(rl.getListener(), event); /// Invoke the listening arenalisteners method
+			} catch (Exception e){
+				e.printStackTrace();
 			}
 		}
 	}

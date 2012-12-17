@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.competition.events.TournamentEvent;
-import mc.alk.arena.competition.match.ArenaMatch;
-import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.BAEventController;
@@ -17,7 +15,6 @@ import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.EventScheduler;
-import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
@@ -140,8 +137,8 @@ public class BattleArena extends JavaPlugin{
 		VictoryType.register(TimeLimit.class, this);
 		VictoryType.register(OneTeamLeft.class, this);
 
-		MethodController.addMethods(Match.class, Match.class.getMethods());
-		MethodController.addMethods(ArenaMatch.class, ArenaMatch.class.getMethods());
+//		MethodController.addBukkitMethods(Match.class, Match.class.getMethods());
+//		MethodController.addBukkitMethods(ArenaMatch.class, ArenaMatch.class.getMethods());
 
 		/// Load our configs, then arenas
 		cc.setConfig(FileUtil.load(this,dir.getPath() +"/config.yml","/default_files/config.yml"));

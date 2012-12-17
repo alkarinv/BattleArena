@@ -48,6 +48,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", Defaults.NUM_INV_SAVES);
 		Defaults.IGNORE_STACKSIZE = config.getBoolean("ignoreMaxStackSize", Defaults.IGNORE_STACKSIZE);
 		Defaults.USE_ARENAS_ONLY_IN_ORDER = config.getBoolean("useArenasOnlyInOrder", Defaults.USE_ARENAS_ONLY_IN_ORDER);
+		Defaults.ENABLE_TELEPORT_FIX = config.getBoolean("enableInvisibleTeleportFix", Defaults.ENABLE_TELEPORT_FIX);
 		parseOptionSets(config.getConfigurationSection("optionSets"));
 		DisabledCommandsUtil.addAll(config.getStringList("disabledCommands"));
 		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"arena","skirmish","colliseum","battleground"}));

@@ -35,6 +35,8 @@ public abstract class BAEventListener implements Listener  {
 	public void startSpecificPlayerListening(){
 		EventExecutor executor = new EventExecutor() {
 			public void execute(Listener listener, Event event) throws EventException {
+				if (event.getClass() != bukkitEvent && !bukkitEvent.isAssignableFrom(event.getClass())){
+					return;}
 				doSpecificPlayerEvent(event);
 			}
 		};

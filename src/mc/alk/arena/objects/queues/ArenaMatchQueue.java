@@ -87,6 +87,7 @@ public class ArenaMatchQueue {
 	public synchronized QPosTeamPair add(final QueueObject queueObject) {
 		return addToQueue(queueObject);
 	}
+
 	/**
 	 * Add a matchup of teams.  They already have all required teams, so just need to wait for an open arena
 	 * @param matchup

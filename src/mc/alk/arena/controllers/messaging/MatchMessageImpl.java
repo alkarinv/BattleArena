@@ -127,7 +127,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 			}
 		}
 		MatchMessageEvent event = new MatchMessageEvent(match,MatchState.ONMATCHINTERVAL, serverChannel,"", msg);
-		match.notifyListeners(event);
+		match.callEvent(event);
 		String message = event.getMatchMessage();
 		if (message != null && !message.isEmpty())
 			match.sendMessage(message);
@@ -138,7 +138,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 
 	public void sendTimeExpired(Channel serverChannel) {
 		MatchMessageEvent event = new MatchMessageEvent(match,MatchState.ONMATCHTIMEEXPIRED,serverChannel,"", "");
-		match.notifyListeners(event);
+		match.callEvent(event);
 		String message = event.getMatchMessage();
 		if (message != null && !message.isEmpty())
 			match.sendMessage(message);

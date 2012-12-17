@@ -100,5 +100,6 @@ public class Defaults {
 	public static boolean DEBUG_MATCH_TEAMS = false;
 
 	public static boolean ALLOW_ADMIN_CMDS_IN_MATCH = false;
+	public static boolean ENABLE_TELEPORT_FIX = false;
 
 }

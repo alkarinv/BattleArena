@@ -1,4 +1,4 @@
-configVersion: 2.0
+configVersion: 2.0.5
 
 # For help the wiki is a good source of information
 # Wiki: # https://github.com/alkarinv/BattleArena/wiki
@@ -31,6 +31,11 @@ ignoreMaxStackSize: false
 # afterwards the 1v1v1v1 is guaranteed to be the next arena used.
 # if false.  if after the 1v1 is used, and the match ends, the 1v1 can be used again before the 1v1v1v1
 useArenasOnlyInOrder: false
+
+# Bukkit or Minecraft had a bug that sometimes caused players to be invisible after teleporting
+# If this is happening on your server set this to true.  
+# This option will be taken away once I have confirmed bukkit has fixed the problem
+enableInvisibleTeleportFix: false
 
 ### Option sets allow you to give an easy to remember name for a group of options
 # you can add as many of your own as you want

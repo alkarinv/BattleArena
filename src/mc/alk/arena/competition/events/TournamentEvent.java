@@ -79,6 +79,7 @@ public class TournamentEvent extends Event implements Listener{
 		EventParams copy = new EventParams(mp);
 		copy.setMaxTeams(CompetitionSize.MAX);
 		this.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(copy, this));
+
 	}
 
 	@Override
@@ -91,7 +92,6 @@ public class TournamentEvent extends Event implements Listener{
 		int roundteams = (int) Math.pow(minTeams, nrounds);
 		server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&e The " + eventParams.toPrettyString() +
 				oParms.getName() + " tournament is starting!"));
-
 
 		TreeMap<Double,Team> sortTeams = new TreeMap<Double,Team>(Collections.reverseOrder());
 		BTInterface bti = new BTInterface(eventParams);
@@ -128,7 +128,6 @@ public class TournamentEvent extends Event implements Listener{
 	public void matchCancelled(MatchCancelledEvent event){
 		Match am = event.getMatch();
 		Matchup m = getMatchup(am.getTeams().get(0),round);
-		System.out.println("victor ===  am= " +am + " losers=" + am.getLosers() +"   m = " + m +"   am.result="+am.getResult());
 		if (m == null){ /// This match wasnt in our tournament
 			return;}
 		eventCancelled();

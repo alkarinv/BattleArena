@@ -7,7 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mc.alk.arena.controllers.TransitionMethodController;
+import mc.alk.arena.controllers.MethodController;
+import mc.alk.arena.events.BAEvent;
+import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
@@ -18,16 +20,16 @@ import mc.alk.arena.objects.teams.Team;
  * @author alkarin
  *
  */
-public abstract class Competition {
+public abstract class Competition implements ArenaListener {
 
 	/** Our teams */
 	protected List<Team> teams = Collections.synchronizedList(new ArrayList<Team>());
 
-	/** Our Transition Controller that will handle transition from one state to the next*/
-	protected final TransitionMethodController tmc = new TransitionMethodController();
-
 	/** Players that have left the match */
 	protected final Set<String> leftPlayers = Collections.synchronizedSet(new HashSet<String>());
+
+	/** Our Method Controller that will handle anyone listening to this competition*/
+	protected final MethodController methodController = new MethodController();
 
 	/**
 	 * Get the time of when the competition did the given state
@@ -124,6 +126,41 @@ public abstract class Competition {
 	 */
 	public List<Team> getTeams() {
 		return teams;
+	}
+
+	/**
+	 * Notify Bukkit Listeners and specific listeners to this match
+	 * @param BAevent event
+	 */
+	public void callEvent(BAEvent event) {
+		methodController.callListeners(event); /// Call our listeners listening to only this competition
+		event.callEvent(); /// Call anyone using generic bukkit listeners
+	}
+
+
+	/**
+	 * Add a collection of listeners for this competition
+	 * @param transitionListeners
+	 */
+	public void addArenaListeners(Collection<ArenaListener> transitionListeners){
+		for (ArenaListener tl: transitionListeners){
+			addArenaListener(tl);}
+	}
+
+	/**
+	 * Add an arena listener for this competition
+	 * @param al
+	 */
+	public void addArenaListener(ArenaListener al){
+		methodController.addListener(al);
+	}
+
+	/**
+	 * Remove an arena listener for this competition
+	 * @param al
+	 */
+	public boolean removeArenaListener(ArenaListener al){
+		return methodController.removeListener(al);
 	}
 
 }

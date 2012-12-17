@@ -50,8 +50,11 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	final private Map<ArenaType,Set<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,Set<Match>>());
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
 	long lastTimeCheck = 0;
+	final MethodController methodController;
+
 	public BattleArenaController(){
-		MethodController.addMethods(this.getClass(), this.getClass().getMethods());
+		methodController = new MethodController();
+		methodController.addBukkitMethods(this);
 	}
 	/// Run is Thread Safe as well as every method and object it uses
 	public void run() {
@@ -99,7 +102,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	private void unhandle(final Team team) {
 		TeamController.removeTeamHandler(team, this);
 		for (ArenaPlayer ap: team.getPlayers()){
-			MethodController.updateAllEventListeners(this, MatchState.ONFINISH, ap);}
+			methodController.updateAllEventListeners(MatchState.ONFINISH, ap);}
 		if (team instanceof CompositeTeam){
 			for (Team t: ((CompositeTeam)team).getOldTeams()){
 				TeamController.removeTeamHandler(t, this);
@@ -139,6 +142,12 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	}
 
 	public Map<String, Arena> getArenas(){return allarenas;}
+
+	/**
+	 * Add the TeamQueueing object to the queue
+	 * @param Add the TeamQueueing object to the queue
+	 * @return
+	 */
 	public QPosTeamPair addToQue(TeamQObject tqo) {
 		Team team = tqo.getTeam();
 		if (joinExistingMatch(tqo)){
@@ -148,7 +157,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			TeamController.addTeamHandler(team,this);
 			/// If the same world flag is set, lets not let them change worlds while waiting in the queue
 			if (tqo.getMatchParams().getTransitionOptions().hasOptionAt(MatchState.PREREQS, TransitionOption.SAMEWORLD)){
-				MethodController.updateAllEventListeners(this, MatchState.PREREQS, team.getPlayers());}
+				methodController.updateAllEventListeners(MatchState.PREREQS, team.getPlayers());}
 		}
 		return qpp;
 	}

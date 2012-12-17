@@ -3,6 +3,7 @@ package mc.alk.arena.objects.victoryconditions;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.DmgDeathUtil;
@@ -15,7 +16,7 @@ public class PvPCount extends OneTeamLeft{
 		super(match);
 	}
 
-	@MatchEventHandler(suppressCastWarnings=true)
+	@MatchEventHandler(suppressCastWarnings=true, priority=EventPriority.LOW)
 	public void playerDeathEvent(PlayerDeathEvent event) {
 		if (match.isWon()){
 			return;}

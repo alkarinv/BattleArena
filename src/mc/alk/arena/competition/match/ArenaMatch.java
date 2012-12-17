@@ -18,6 +18,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.PVPState;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
@@ -63,7 +64,7 @@ public class ArenaMatch extends Match {
 		super(arena, mp);
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerQuit(PlayerQuitEvent event){
 		ArenaPlayer player = BattleArena.toArenaPlayer(event.getPlayer());
 		if (woolTeams)
@@ -77,10 +78,10 @@ public class ArenaMatch extends Match {
 			return;
 		t.killMember(player);
 		PerformTransition.transition(this, MatchState.ONCOMPLETE, player, t, true);
-		notifyListeners(new PlayerLeftEvent(player));
+		callEvent(new PlayerLeftEvent(player));
 	}
 
-	@MatchEventHandler(suppressCastWarnings=true)
+	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGH)
 	public void onPlayerDeath(PlayerDeathEvent event, ArenaPlayer target){
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE || !insideArena.contains(target.getName())){
 			return;}
@@ -111,7 +112,7 @@ public class ArenaMatch extends Match {
 			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);}
 	}
 
-	@MatchEventHandler(suppressCastWarnings=true)
+	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGH)
 	public void onEntityDamage(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player))
 			return;
@@ -162,7 +163,7 @@ public class ArenaMatch extends Match {
 		}
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerRespawn(PlayerRespawnEvent event, final ArenaPlayer p){
 		if (isWon()){
 			return;}
@@ -212,31 +213,31 @@ public class ArenaMatch extends Match {
 		}
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerBlockBreak(BlockBreakEvent event){
 		if (tops.hasOptionAt(state, TransitionOption.BLOCKBREAKOFF)){
 			event.setCancelled(true);}
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerBlockPlace(BlockPlaceEvent event){
 		if (tops.hasOptionAt(state, TransitionOption.BLOCKPLACEOFF)){
 			event.setCancelled(true);}
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerDropItem(PlayerDropItemEvent event){
 		if (tops.hasOptionAt(state, TransitionOption.DROPITEMOFF)){
 			event.setCancelled(true);}
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerInventoryClick(InventoryClickEvent event, ArenaPlayer p) {
 		if (woolTeams && event.getSlot() == 39/*Helm Slot*/)
 			event.setCancelled(true);
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerMove(PlayerMoveEvent event){
 		TransitionOptions to = tops.getOptions(state);
 		if (to==null)
@@ -257,7 +258,7 @@ public class ArenaMatch extends Match {
 	}
 
 
-	@MatchEventHandler
+	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
 		if (event.isCancelled() || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL){
 			return;}
@@ -279,7 +280,7 @@ public class ArenaMatch extends Match {
 		}
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerInteract(PlayerInteractEvent event){
 		if (event.isCancelled())
 			return;
@@ -368,7 +369,7 @@ public class ArenaMatch extends Match {
 				return;
 			}
 		}
-		notifyListeners(new MatchClassSelectedEvent(this,ac));
+		callEvent(new MatchClassSelectedEvent(this,ac));
 
 		/// Clear their inventory first, then give them the class and whatever items were due to them from the config
 		InventoryUtil.clearInventory(p, woolTeams);
@@ -392,7 +393,7 @@ public class ArenaMatch extends Match {
 		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
 	}
 
-	@MatchEventHandler
+	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerTeleport(PlayerTeleportEvent event){
 		if (event.isCancelled() || event.getPlayer().hasPermission(Defaults.TELEPORT_BYPASS_PERM))
 			return;

@@ -17,7 +17,6 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.controllers.HeroesInterface;
-import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TagAPIInterface;
 import mc.alk.arena.controllers.TeamController;
@@ -25,7 +24,6 @@ import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.controllers.WorldGuardInterface.WorldGuardFlag;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
 import mc.alk.arena.controllers.messaging.MatchMessager;
-import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.PlayerLeftEvent;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
@@ -37,7 +35,6 @@ import mc.alk.arena.events.matches.MatchPrestartEvent;
 import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.matches.MatchTimerIntervalEvent;
 import mc.alk.arena.events.matches.MatchVictoryEvent;
-import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
@@ -66,6 +63,7 @@ import mc.alk.tracker.objects.WLT;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -81,7 +79,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 
 
-public abstract class Match extends Competition implements Runnable, ArenaListener, TeamHandler {
+public abstract class Match extends Competition implements Runnable, TeamHandler {
 	public enum PlayerState{OUTOFMATCH,INMATCH};
 	static int count =0;
 
@@ -103,7 +101,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	final Set<String> insideWaitRoom = new HashSet<String>(); /// who is still inside the wait room
 	MatchTransitions tops = null; /// Our match options for this arena match
 	final PlayerStoreController psc = new PlayerStoreController(); /// Store items and exp for players if specified
-	List<ArenaListener> arenaListeners = new ArrayList<ArenaListener>();
+//	List<ArenaListener> arenaListeners = new ArrayList<ArenaListener>();
+//	Map<ArenaListener,MethodController> arenaListeners = Collections.synchronizedMap(new HashMap<ArenaListener,MethodController>());
 	Set<ArenaPlayer> readyPlayers = null; /// Do we have ready Players
 	List<MatchState> waitRoomStates = null; /// which states are inside a waitRoom
 	Long joinCutoffTime = null; /// at what point do we cut people off from joining
@@ -134,8 +133,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		this.params = params;
 		this.arena = arena;
 		arenaInterface =new ArenaInterface(arena);
-		arenaListeners.add(arena);
-
+		addArenaListener(arena);
+//		methodController = new MethodController(this);
 		this.mc = new MatchMessager(this);
 		this.oldlocs = new HashMap<String,Location>();
 		this.tops = params.getTransitionOptions();
@@ -175,15 +174,18 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	private void updateBukkitEvents(MatchState matchState){
 		final ArrayList<String> players = new ArrayList<String>(insideArena);
-		for (ArenaListener al : arenaListeners){
-			MethodController.updateMatchBukkitEvents(al, matchState, players);
-		}
+
+		methodController.updateMatchBukkitEvents(matchState, players);
+//		for (MethodController al : arenaListeners.values()){
+//			al.updateMatchBukkitEvents(matchState, players);
+//		}
 	}
 
 	private void updateBukkitEvents(MatchState matchState,ArenaPlayer player){
-		for (ArenaListener al : arenaListeners){
-			MethodController.updateAllEventListeners(al, matchState, player);
-		}
+		methodController.updateAllEventListeners(matchState, player);
+//		for (MethodController al : arenaListeners.values()){
+//			al.updateAllEventListeners(matchState, player);
+//		}
 	}
 
 	/**
@@ -197,7 +199,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			public void run() {
 				transitionTo(MatchState.ONOPEN);
 				MatchOpenEvent event = new MatchOpenEvent(match);
-				tmc.callListeners(event); /// Call our listeners listening to only this match
+				methodController.callListeners(event); /// Call our listeners listening to only this match
 				if (event.isCancelled()){
 					match.cancelMatch();
 					return;
@@ -250,7 +252,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 				checkReady(t,tops.getOptions(MatchState.PREREQS));				}
 		}
 
-		notifyListeners(new MatchPrestartEvent(this,teams));
+		callEvent(new MatchPrestartEvent(this,teams));
 
 		updateBukkitEvents(MatchState.ONPRESTART);
 		PerformTransition.transition(this, MatchState.ONPRESTART, teams, true);
@@ -296,13 +298,13 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		int nCompetingTeams = competingTeams.size();
 
 		MatchFindNeededTeamsEvent findevent = new MatchFindNeededTeamsEvent(this);
-		notifyListeners(findevent);
+		callEvent(findevent);
 		int neededTeams = findevent.getNeededTeams();
 		if (Defaults.DEBUG) Log.info("[BattleArena] competing teams = " + competingTeams +":"+neededTeams+"   allteams=" + teams);
 
 		if (nCompetingTeams >= neededTeams){
 			MatchStartEvent event= new MatchStartEvent(this,teams);
-			notifyListeners(event);
+			callEvent(event);
 			updateBukkitEvents(MatchState.ONSTART);
 			PerformTransition.transition(this, state,competingTeams, true);
 			arenaInterface.onStart();
@@ -348,7 +350,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		if (state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL)
 			return;
 		MatchVictoryEvent event = new MatchVictoryEvent(this,matchResult);
-		notifyListeners(event);
+		callEvent(event);
 		if (event.isCancelled()){
 			return;
 		}
@@ -392,6 +394,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		public void run() {
 			transitionTo(MatchState.ONCOMPLETE);
 			final Collection<Team> victors = am.getVictors();
+
 			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + victors);
 			/// ONCOMPLETE can teleport people out of the arena,
 			/// So the order of events is usually
@@ -409,7 +412,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 					if (am.getVictors() != null)
 						PerformTransition.transition(am, MatchState.WINNER, am.getVictors(), false);
 					arenaInterface.onComplete();
-					notifyListeners(new MatchCompletedEvent(am));
+					callEvent(new MatchCompletedEvent(am));
 					updateBukkitEvents(MatchState.ONCOMPLETE);
 					deconstruct();
 				}
@@ -426,7 +429,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 			PerformTransition.transition(this, MatchState.ONCANCEL,t,true);
 		}
 		updateBukkitEvents(MatchState.ONCANCEL);
-		notifyListeners(new MatchCancelledEvent(this));
+		callEvent(new MatchCancelledEvent(this));
 		deconstruct();
 	}
 
@@ -434,7 +437,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		/// Teleport out happens 1 tick after oncancel/oncomplete, we also must wait 1 tick
 		final Match match = this;
 		updateBukkitEvents(MatchState.ONFINISH);
-		notifyListeners(new MatchFinishedEvent(match));
+		callEvent(new MatchFinishedEvent(match));
 		for (Team t: teams){
 			TeamController.removeTeamHandler(t, match);
 			PerformTransition.transition(this, MatchState.ONFINISH,t,true);
@@ -446,19 +449,11 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		insideArena.clear();
 		insideWaitRoom.clear();
 		teams.clear();
-		arenaListeners.clear();
+		methodController.deconstruct();
+//		arenaListeners.clear();
 		if (joinHandler != null){
 			joinHandler.deconstruct();}
 		joinHandler = null;
-	}
-
-	/**
-	 * Notify Bukkit Listeners and specific listeners to this match
-	 * @param BAevent event
-	 */
-	public void notifyListeners(BAEvent event) {
-		tmc.callListeners(event); /// Call our listeners listening to only this match
-		event.callEvent(); /// Call bukkit listeners for this event
 	}
 
 	@Override
@@ -602,55 +597,47 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	 * Called when a player or team joins the arena
 	 * @param p
 	 */
-	@SuppressWarnings("unchecked")
 	protected void startTracking(final ArenaPlayer p){
 		final MatchState ms = MatchState.ONENTER;
-		MethodController.updateEventListeners(this, ms,p,PlayerQuitEvent.class,PlayerRespawnEvent.class);
-		MethodController.updateEventListeners(this, ms,p, PlayerCommandPreprocessEvent.class);
-		MethodController.updateEventListeners(this,ms, p,PlayerDeathEvent.class);
-		MethodController.updateEventListeners(this,ms, p,PlayerInteractEvent.class); /// for sign clicks
-		if (needsDamageEvents){
-			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);}
+//		methodController.ad
+		updateStartStopTracking(p,ms);
 		if (WorldGuardInterface.hasWorldGuard() && arena.getRegion() != null){
 			psc.addMember(p, arena.getRegionWorld(),arena.getRegion());}
-		if (noLeave){
-			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);}
-		if (needsBlockEvents){
-			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);}
-		if (needsItemDropEvents){
-			MethodController.updateEventListeners(this,ms, p,PlayerDropItemEvent.class);}
-		if (stopsTeleports){
-			MethodController.updateEventListeners(this,ms, p,PlayerTeleportEvent.class);
-		}
-		updateBukkitEvents(ms,p);
 		p.setChosenClass(null);
 	}
 
-	@SuppressWarnings("unchecked")
 	protected void stopTracking(final ArenaPlayer p){
 		final MatchState ms = MatchState.ONLEAVE;
-		MethodController.updateEventListeners(this,ms, p,PlayerQuitEvent.class,PlayerRespawnEvent.class);
-		MethodController.updateEventListeners(this, ms,p, PlayerCommandPreprocessEvent.class);
-		MethodController.updateEventListeners(this,ms, p,PlayerDeathEvent.class);
-		MethodController.updateEventListeners(this,ms, p,PlayerInteractEvent.class); /// for sign clicks
-		if (WorldGuardInterface.hasWorldGuard() && arena.getRegion() != null)
-			psc.removeMember(p, arena.getRegionWorld(), arena.getRegion());
-
-		if (needsDamageEvents){
-			MethodController.updateEventListeners(this,ms, p,EntityDamageEvent.class);}
-		if (noLeave){
-			MethodController.updateEventListeners(this,ms, p,PlayerMoveEvent.class);}
-		if (needsBlockEvents){
-			MethodController.updateEventListeners(this,ms, p,BlockBreakEvent.class, BlockPlaceEvent.class);}
-		if (needsItemDropEvents){
-			MethodController.updateEventListeners(this,ms, p,PlayerDropItemEvent.class);}
-		if (woolTeams || needsInventoryClick){
-			MethodController.updateEventListeners(this,ms, p,InventoryClickEvent.class);}
-		if (stopsTeleports){
-			MethodController.updateEventListeners(this,ms, p,PlayerTeleportEvent.class);
-		}
+		updateStartStopTracking(p,ms);
 		p.setChosenClass(null);
 		BTInterface.resumeTracking(p);
+		if (WorldGuardInterface.hasWorldGuard() && arena.getRegion() != null)
+			psc.removeMember(p, arena.getRegionWorld(), arena.getRegion());
+	}
+
+	@SuppressWarnings("unchecked")
+	private void updateStartStopTracking(final ArenaPlayer p, MatchState ms){
+		ArrayList<Class<? extends Event>> events = new ArrayList<Class<? extends Event>>();
+		events.addAll(Arrays.asList(PlayerQuitEvent.class, PlayerRespawnEvent.class,
+				PlayerCommandPreprocessEvent.class, PlayerDeathEvent.class, PlayerInteractEvent.class));
+
+		if (needsDamageEvents){
+			events.add(EntityDamageEvent.class);}
+		if (noLeave){
+			events.add(PlayerMoveEvent.class);}
+		if (needsBlockEvents){
+			events.add(BlockBreakEvent.class);
+			events.add(BlockPlaceEvent.class);
+		}
+		if (needsItemDropEvents){
+			events.add(PlayerDropItemEvent.class);}
+		if (stopsTeleports){
+			events.add(PlayerTeleportEvent.class);
+		}
+		if (ms == MatchState.ONENTER){
+			methodController.addBukkitMethods(this, events);}
+
+		methodController.updateEventListeners(ms, p,events);
 		updateBukkitEvents(ms,p);
 	}
 
@@ -698,7 +685,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		insideArena.add(p.getName());
 		Integer index = null;
 		if (woolTeams){
-			MethodController.updateEventListeners(this, MatchState.ONENTER, p,InventoryClickEvent.class);
+			methodController.updateEventListeners(MatchState.ONENTER, p,InventoryClickEvent.class);
 			index = teams.indexOf(t);
 			if (index != -1){ /// TODO Really I would like to know how this is -1.  Should I remove the team now?
 				TeamUtil.setTeamHead(index, p);}
@@ -725,7 +712,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 		Team t = getTeam(p);
 		PerformTransition.transition(this, MatchState.ONLEAVE, p, t, false);
 		arenaInterface.onLeave(p,t);
-		notifyListeners(new PlayerLeftEvent(p));
+		callEvent(new PlayerLeftEvent(p));
 
 		if (woolTeams){
 			int index = getTeamIndex(t);
@@ -782,7 +769,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	public void addVictoryCondition(VictoryCondition vc){
 		vcs.add(vc);
 		addArenaListener(vc);
-		tmc.addListener(vc);
+//		methodController.addListener(vc);
 	}
 
 	/**
@@ -791,27 +778,11 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 	 */
 	public void removeVictoryCondition(VictoryCondition vc){
 		vcs.remove(vc);
-		tmc.removeListener(vc);
-		arenaListeners.remove(vc);
+//		methodController.removeListener(vc);
+//		arenaListeners.remove(vc);
+		removeArenaListener(vc);
 	}
 
-	/**
-	 * Add a collection of listeners for this match
-	 * @param transitionListeners
-	 */
-	public void addArenaListeners(Collection<ArenaListener> transitionListeners){
-		for (ArenaListener tl: transitionListeners){
-			addArenaListener(tl);}
-	}
-
-	/**
-	 * Add a listener for this match
-	 * @param al
-	 */
-	public void addArenaListener(ArenaListener al){
-		arenaListeners.add(al);
-		tmc.addListener(al);
-	}
 
 	/**
 	 * Gets the arena currently being used by this match
@@ -980,7 +951,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	@Override
 	public String toString(){
-		StringBuilder sb = new StringBuilder("[Match:"+id+":" + arena.getName() +" ,");
+		StringBuilder sb = new StringBuilder("[Match:"+id+":" + (arena != null ? arena.getName():"none") +" ,");
 		for (Team t: teams){
 			sb.append("["+t.getDisplayName() + "] ,");}
 		sb.append("]");
@@ -997,7 +968,7 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	public void timeExpired() {
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
-		notifyListeners(event);
+		callEvent(event);
 		try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
 		List<Team> leaders = event.getCurrentLeaders();
 		if (leaders != null)
@@ -1008,8 +979,8 @@ public abstract class Match extends Competition implements Runnable, ArenaListen
 
 	public void intervalTick(int remaining) {
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
-		notifyListeners(event);
-		notifyListeners(new MatchTimerIntervalEvent(this, remaining));
+		callEvent(event);
+		callEvent(new MatchTimerIntervalEvent(this, remaining));
 		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeaders());}catch(Exception e){e.printStackTrace();}
 	}
 

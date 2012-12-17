@@ -365,14 +365,20 @@ public class ConfigSerializer extends BaseSerializer{
 		}
 		try{
 			if (options.containsKey(TransitionOption.NEEDITEMS)){
-				tops.addOption(TransitionOption.NEEDITEMS,getItemList(cs, "items"));}
+				List<ItemStack> items = getItemList(cs, "items");
+				if (items!=null)
+					tops.addOption(TransitionOption.NEEDITEMS,items);
+			}
 		} catch (Exception e){
 			Log.err("Error setting the value of needItems ");
 			e.printStackTrace();
 		}
 		try{
 			if (options.containsKey(TransitionOption.GIVEITEMS)){
-				tops.addOption(TransitionOption.GIVEITEMS,getItemList(cs, "items"));}
+				List<ItemStack> items = getItemList(cs, "items");
+				if (items!=null)
+					tops.addOption(TransitionOption.GIVEITEMS,items);
+			}
 		} catch (Exception e){
 			Log.err("Error setting the value of giveItems ");
 			e.printStackTrace();
@@ -380,7 +386,10 @@ public class ConfigSerializer extends BaseSerializer{
 
 		try{
 			if (options.containsKey(TransitionOption.ENCHANTS)){
-				tops.addOption(TransitionOption.ENCHANTS, getEffectList(cs, "enchants"));}
+				List<PotionEffect> effects = getEffectList(cs, "enchants");
+				if (effects!=null)
+					tops.addOption(TransitionOption.ENCHANTS, effects);
+			}
 		} catch (Exception e){
 			Log.err("Error setting the value of enchants ");
 			e.printStackTrace();
@@ -469,6 +478,8 @@ public class ConfigSerializer extends BaseSerializer{
 	}
 
 	public static List<PotionEffect> getEffectList(ConfigurationSection cs, String nodeString) {
+		if (cs == null || cs.getList(nodeString) == null)
+			return null;
 		final int strengthDefault = 1;
 		final int timeDefault = 60;
 		ArrayList<PotionEffect> effects = new ArrayList<PotionEffect>();
@@ -490,6 +501,8 @@ public class ConfigSerializer extends BaseSerializer{
 	}
 
 	public static ArrayList<ItemStack> getItemList(ConfigurationSection cs, String nodeString) {
+		if (cs == null || cs.getList(nodeString) == null)
+			return null;
 		ArrayList<ItemStack> items = new ArrayList<ItemStack>();
 		try {
 			String str = null;

@@ -62,9 +62,12 @@ public class JoinOptions extends ArenaSize{
 	/** When the player joined, can be null */
 	Long joinTime;
 
-	public boolean matches(Arena a) {
-		return options.containsKey(JoinOption.ARENA) ?
-				((Arena)options.get(JoinOption.ARENA)).getName().equals(a.getName()) : true;
+	public boolean matches(Arena arena) {
+		if (options.containsKey(JoinOption.ARENA)){
+			Arena a = (Arena) options.get(JoinOption.ARENA);
+			return a != null ? arena.matches(a) : false;
+		}
+		return true;
 	}
 
 	public boolean matches(MatchParams params) {
@@ -125,6 +128,8 @@ public class JoinOptions extends ArenaSize{
 			Object obj = null;
 			Arena a = BattleArena.getBAC().getArena(op);
 			if (a != null){
+				if (!a.valid()){
+					throw new InvalidOptionException("&cThe specified arena is not valid!");}
 				if (arena != null){
 					throw new InvalidOptionException("&cYou specified 2 arenas!");}
 				arena = a;

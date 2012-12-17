@@ -30,8 +30,6 @@ public class TeleportController implements Listener{
 	static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
 	private final int TELEPORT_FIX_DELAY = 15; // ticks
 
-	///TODO remove these work around teleport hacks when bukkit fixes the invisibility on teleport issue
-	/// modified from the teleportFix2 found online
 	public static void teleportPlayer(final Player player, final Location location, final boolean wipe, boolean giveBypassPerms){
 		if (!player.isOnline() || player.isDead()){
 			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + player.getName() + " loc=" + location +":"+ wipe);
@@ -94,33 +92,40 @@ public class TeleportController implements Listener{
 	public void onPlayerTeleport(PlayerTeleportEvent event){
 		if (teleporting.remove(event.getPlayer().getName())){
 			event.setCancelled(false);
-
-			final String playerName = event.getPlayer().getName();
-			final Server server = Bukkit.getServer();
-			final Plugin plugin = BattleArena.getSelf();
-			final int visibleDistance = server.getViewDistance() * 16;
-			// Fix the visibility issue one tick later
-			server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-				@Override
-				public void run() {
-					final Player player = ServerUtil.findPlayer(playerName);
-					if (player == null || !player.isOnline())
-						return;
-					// Refresh nearby clients
-					final List<Player> nearby = getPlayersWithinDistance(player, visibleDistance);
-					// Hide every player
-					updateEntities(player, nearby, false);
-					// Then show them again
-					server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-						@Override
-						public void run() {
-							updateEntities(player, nearby, true);
-						}
-					}, 2);
-				}
-			}, TELEPORT_FIX_DELAY);
-
+			if (Defaults.ENABLE_TELEPORT_FIX){
+				invisbleTeleportWorkaround(event.getPlayer().getName());
+			}
 		}
+	}
+
+	///TODO remove these work around teleport hacks when bukkit fixes the invisibility on teleport issue
+	/// modified from the teleportFix2 found online
+	private void invisbleTeleportWorkaround(final String playerName) {
+		final Server server = Bukkit.getServer();
+		final Plugin plugin = BattleArena.getSelf();
+		final int visibleDistance = server.getViewDistance() * 16;
+		// Fix the visibility issue one tick later
+		server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			@Override
+			public void run() {
+				final Player player = ServerUtil.findPlayer(playerName);
+				if (player == null || !player.isOnline())
+					return;
+				// Refresh nearby clients
+				final List<Player> nearby = getPlayersWithinDistance(player, visibleDistance);
+				// Hide every player
+				updateEntities(player, nearby, false);
+				// Then show them again
+				server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+					@Override
+					public void run() {
+						// Refresh nearby clients
+						final List<Player> nearby = getPlayersWithinDistance(player, visibleDistance);
+						updateEntities(player, nearby, true);
+					}
+				}, 2);
+			}
+		}, TELEPORT_FIX_DELAY);
 	}
 
 	private void updateEntities(final Player tpedPlayer, final List<Player> players, boolean visible) {

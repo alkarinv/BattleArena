@@ -97,6 +97,8 @@ public class YamlFileUpdater {
 			yfu.to2Point0(BattleArena.getSelf(), bacs.getConfig(), version);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		}
+		if (version.compareTo("2.0.5")<0){
+			yfu.to2Point05(bacs, bacs.getConfig(), version);}
 
 	}
 
@@ -603,6 +605,37 @@ public class YamlFileUpdater {
 			}
 			closeFiles();
 			renameTo(tempFile, configFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
+	private void to2Point05(ConfigSerializer bacs, FileConfiguration fc, Version version) {
+		Log.warn("BattleArena updating config to 2.0.5");
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			boolean updatedDefaultSection = false;
+			while ((line = br.readLine()) != null){
+				if (line.contains("configVersion")){
+					fw.write("configVersion: 2.0.5\n\n");
+				} else if (!updatedDefaultSection && (line.matches(".*useArenasOnlyInOrder:.*"))){
+					fw.write(line+"\n\n");
+					fw.write("## Bukkit or Minecraft had a bug that sometimes caused players to be invisible after teleporting\n");
+					fw.write("# If this is happening on your server set this to true.  \n");
+					fw.write("# This option will be taken away once I have confirmed bukkit has fixed the problem\n");
+					fw.write("enableInvisibleTeleportFix: false\n\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			closeFiles();
+			renameTo(tempFile, configFile);
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally{
