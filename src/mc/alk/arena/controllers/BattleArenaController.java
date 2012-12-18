@@ -56,21 +56,35 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		methodController = new MethodController();
 		methodController.addBukkitMethods(this);
 	}
-	/// Run is Thread Safe as well as every method and object it uses
+
+	/// Run is Thread Safe
 	public void run() {
 		Match match = null;
 		while (!stop){
 			match = amq.getArenaMatch();
 			if (match != null){
-				openMatch(match);
-				startMatch(match);
+				Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new OpenAndStartMatch(match));
 			}
+		}
+	}
+
+	/**
+	 *
+	 */
+	private class OpenAndStartMatch implements Runnable{
+		Match match;
+		public OpenAndStartMatch(Match match){
+			this.match = match;
+		}
+		@Override
+		public void run() {
+			openMatch(match);
+			startMatch(match);
 		}
 	}
 
 	public void openMatch(Match match){
 		match.addArenaListener(this);
-//		match.addTransitionListener(this);
 		synchronized(running_matches){
 			running_matches.add(match);
 		}
@@ -99,6 +113,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			unhandle(team);
 		}
 	}
+
 	private void unhandle(final Team team) {
 		TeamController.removeTeamHandler(team, this);
 		for (ArenaPlayer ap: team.getPlayers()){
