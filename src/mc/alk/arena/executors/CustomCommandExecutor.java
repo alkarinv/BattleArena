@@ -250,52 +250,56 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		newArgs.args = objs; /// Set our return object with the new castable arguments
 		for (Class<?> theclass : mwrapper.method.getParameterTypes()){
 			try{
-			//			System.out.println(objIndex + " : " + strIndex +"  !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + theclass.getCanonicalName());
-			if (CommandSender.class == theclass){
-				objs[objIndex] = sender;
-			} else if (Command.class == theclass){
-				objs[objIndex] = command;
-			} else if (Player.class ==theclass){
-				if (getSenderAsPlayer){
+				//			System.out.println(objIndex + " : " + strIndex +"  !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + theclass.getCanonicalName());
+				if (CommandSender.class == theclass){
 					objs[objIndex] = sender;
-					getSenderAsPlayer = false;
-				} else {
-					objs[objIndex] = verifyPlayer(args[strIndex++]);
+				} else if (Command.class == theclass){
+					objs[objIndex] = command;
+				} else if (Player.class ==theclass){
+					if (getSenderAsPlayer){
+						objs[objIndex] = sender;
+						getSenderAsPlayer = false;
+					} else {
+						objs[objIndex] = verifyPlayer(args[strIndex++]);
+					}
+				} else if (OfflinePlayer.class ==theclass){
+					objs[objIndex] = verifyOfflinePlayer(args[strIndex++]);
+				} else if (ArenaPlayer.class == theclass){
+					if (getSenderAsPlayer){
+						objs[objIndex] = BattleArena.toArenaPlayer((Player)sender);
+						getSenderAsPlayer = false;
+					} else {
+						objs[objIndex] = verifyArenaPlayer(args[strIndex++]);
+					}
+				} else if (EventParams.class == theclass){
+					objs[objIndex] = verifyEventParams(command);
+				} else if (MatchParams.class == theclass){
+					objs[objIndex] = verifyMatchParams(command);
+				} else if (Arena.class == theclass){
+					objs[objIndex] = verifyArena(args[strIndex++]);
+				} else if (String.class == theclass){
+					objs[objIndex] = args[strIndex++];
+				} else if (Integer.class == theclass){
+					objs[objIndex] = verifyInteger(args[strIndex++]);
+				} else if (String[].class == theclass){
+					objs[objIndex] = args;
+					//			} else if (Event.class == theclass){
+					//				objs[objIndex] = verifyEvent(args[strIndex++]);
+				} else if (Object[].class == theclass){
+					objs[objIndex] = args;
+				} else if (Boolean.class == theclass){
+					objs[objIndex] = Boolean.parseBoolean(args[strIndex++]);
+				} else if (Object.class == theclass){
+					objs[objIndex] = args[strIndex++];
+				} else if (Float.class == theclass){
+					objs[objIndex] = verifyFloat(args[strIndex++]);
+				} else if (Double.class == theclass){
+					objs[objIndex] = verifyDouble(args[strIndex++]);
 				}
-			} else if (OfflinePlayer.class ==theclass){
-				objs[objIndex] = verifyOfflinePlayer(args[strIndex++]);
-			} else if (ArenaPlayer.class == theclass){
-				if (getSenderAsPlayer){
-					objs[objIndex] = BattleArena.toArenaPlayer((Player)sender);
-					getSenderAsPlayer = false;
-				} else {
-					objs[objIndex] = verifyArenaPlayer(args[strIndex++]);
-				}
-			} else if (EventParams.class == theclass){
-				objs[objIndex] = verifyEventParams(command);
-			} else if (MatchParams.class == theclass){
-				objs[objIndex] = verifyMatchParams(command);
-			} else if (Arena.class == theclass){
-				objs[objIndex] = verifyArena(args[strIndex++]);
-			} else if (String.class == theclass){
-				objs[objIndex] = args[strIndex++];
-			} else if (Integer.class == theclass){
-				objs[objIndex] = verifyInteger(args[strIndex++]);
-			} else if (String[].class == theclass){
-				objs[objIndex] = args;
-//			} else if (Event.class == theclass){
-//				objs[objIndex] = verifyEvent(args[strIndex++]);
-			} else if (Object[].class == theclass){
-				objs[objIndex] = args;
-			} else if (Boolean.class == theclass){
-				objs[objIndex] = Boolean.parseBoolean(args[strIndex++]);
-			} else if (Object.class == theclass){
-				objs[objIndex] = args[strIndex++];
-			}
 			} catch (ArrayIndexOutOfBoundsException e){
 				throw new IllegalArgumentException("You didnt supply enough arguments for this method");
 			}
-//			System.out.println(objIndex + " : " + strIndex + "  " + objs[objIndex] +" !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + theclass.getCanonicalName());
+			//			System.out.println(objIndex + " : " + strIndex + "  " + objs[objIndex] +" !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + theclass.getCanonicalName());
 
 			objIndex++;
 		}
@@ -347,12 +351,12 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 		return newArgs; /// Success
 	}
 
-//	private Event verifyEvent(String name) throws IllegalArgumentException {
-//		Event event = EventController.getEvent(name);
-//		if (event == null)
-//			throw new IllegalArgumentException("Event " + name+" can not be found");
-//		return event;
-//	}
+	//	private Event verifyEvent(String name) throws IllegalArgumentException {
+	//		Event event = EventController.getEvent(name);
+	//		if (event == null)
+	//			throw new IllegalArgumentException("Event " + name+" can not be found");
+	//		return event;
+	//	}
 
 	private OfflinePlayer verifyOfflinePlayer(String name) throws IllegalArgumentException {
 		OfflinePlayer p = ServerUtil.findOfflinePlayer(name);
@@ -413,11 +417,26 @@ public abstract class CustomCommandExecutor implements CommandExecutor{
 	}
 
 	private Integer verifyInteger(Object object) throws IllegalArgumentException {
-		/// Verify ints
 		try {
 			return Integer.parseInt(object.toString());
 		}catch (NumberFormatException e){
 			throw new IllegalArgumentException(ChatColor.RED+(String)object+" is not a valid integer.");
+		}
+	}
+
+	private Float verifyFloat(Object object) throws IllegalArgumentException {
+		try {
+			return Float.parseFloat(object.toString());
+		}catch (NumberFormatException e){
+			throw new IllegalArgumentException(ChatColor.RED+(String)object+" is not a valid float.");
+		}
+	}
+
+	private Double verifyDouble(Object object) throws IllegalArgumentException {
+		try {
+			return Double.parseDouble(object.toString());
+		}catch (NumberFormatException e){
+			throw new IllegalArgumentException(ChatColor.RED+(String)object+" is not a valid double.");
 		}
 	}
 

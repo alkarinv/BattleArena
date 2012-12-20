@@ -366,8 +366,10 @@ public class ConfigSerializer extends BaseSerializer{
 		try{
 			if (options.containsKey(TransitionOption.NEEDITEMS)){
 				List<ItemStack> items = getItemList(cs, "items");
-				if (items!=null)
+				if (items!=null && !items.isEmpty())
 					tops.addOption(TransitionOption.NEEDITEMS,items);
+				else
+					options.remove(TransitionOption.NEEDITEMS);
 			}
 		} catch (Exception e){
 			Log.err("Error setting the value of needItems ");
@@ -376,8 +378,10 @@ public class ConfigSerializer extends BaseSerializer{
 		try{
 			if (options.containsKey(TransitionOption.GIVEITEMS)){
 				List<ItemStack> items = getItemList(cs, "items");
-				if (items!=null)
+				if (items!=null && !items.isEmpty())
 					tops.addOption(TransitionOption.GIVEITEMS,items);
+				else
+					options.remove(TransitionOption.GIVEITEMS);
 			}
 		} catch (Exception e){
 			Log.err("Error setting the value of giveItems ");

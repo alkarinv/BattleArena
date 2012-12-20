@@ -20,11 +20,16 @@ public class ArenaPlayer {
 	public ArenaPlayer(Player player) {
 		this.player = player;
 		this.name = player.getName();
-		this.isReady = false;
+		reset();
 	}
 
 	public String getName() {
 		return name;
+	}
+
+	public void reset() {
+		this.isReady = false;
+		this.chosenClass = null;
 	}
 
 	@Override
@@ -133,4 +138,5 @@ public class ArenaPlayer {
 	public int getLevel() {
 		return (HeroesInterface.enabled()) ? HeroesInterface.getLevel(player) : player.getLevel();
 	}
+
 }

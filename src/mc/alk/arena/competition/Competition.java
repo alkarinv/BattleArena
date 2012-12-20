@@ -133,7 +133,7 @@ public abstract class Competition implements ArenaListener {
 	 * @param BAevent event
 	 */
 	public void callEvent(BAEvent event) {
-		methodController.callListeners(event); /// Call our listeners listening to only this competition
+//		methodController.callListeners(event); /// Call our listeners listening to only this competition
 		event.callEvent(); /// Call anyone using generic bukkit listeners
 	}
 

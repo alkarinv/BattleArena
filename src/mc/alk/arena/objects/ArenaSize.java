@@ -3,10 +3,10 @@ package mc.alk.arena.objects;
 import mc.alk.arena.util.Util.MinMax;
 
 public class ArenaSize implements CompetitionSize{
-	Integer minTeamSize = 1;
-	Integer maxTeamSize = MAX;
-	Integer minTeams = 2;
-	Integer maxTeams = MAX;
+	int minTeamSize = 1;
+	int maxTeamSize = MAX;
+	int minTeams = 2;
+	int maxTeams = MAX;
 
 	public ArenaSize(){}
 

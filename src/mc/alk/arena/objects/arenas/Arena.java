@@ -611,7 +611,7 @@ public class Arena implements ArenaListener {
 	 * @param jp
 	 * @return
 	 */
-	public boolean matches(MatchParams matchParams, JoinOptions jp) {
+	public boolean matches(final MatchParams matchParams, final JoinOptions jp) {
 		boolean matches = getParameters().matches(matchParams);
 		if (!matches)
 			return false;

@@ -520,6 +520,7 @@ public class InventoryUtil {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public static void clearInventory(Player p) {
 		if(Defaults.DEBUG_STORAGE) Log.info("Clearing inventory of " + p.getName());
 		try{
@@ -530,10 +531,13 @@ public class InventoryUtil {
 				inv.setArmorContents(null);
 				inv.setItemInHand(null);
 			}
+			p.updateInventory();
 		} catch(Exception ee){
 			ee.printStackTrace();
 		}
 	}
+
+	@SuppressWarnings("deprecation")
 	public static void clearInventory(Player p, boolean skipHead) {
 		if (!skipHead){
 			clearInventory(p);
@@ -550,6 +554,7 @@ public class InventoryUtil {
 				inv.setLeggings(null);
 				inv.setItemInHand(null);
 			}
+			p.updateInventory();
 		} catch(Exception ee){
 			ee.printStackTrace();
 		}

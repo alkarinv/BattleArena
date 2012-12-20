@@ -46,6 +46,7 @@ public class TeleportController implements Listener{
 	}
 
 	public static void teleport(final Player player, final Location location, boolean giveBypassPerms){
+		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
 		Location loc = location.clone();
 		loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
 		teleporting(player,true);
@@ -73,6 +74,7 @@ public class TeleportController implements Listener{
 
 		if (!player.teleport(loc)){
 			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + loc);}
+		if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());
 	}
 
 	private static void teleporting(Player player, boolean isteleporting){

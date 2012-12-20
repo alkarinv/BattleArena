@@ -77,7 +77,7 @@ public class Defaults {
 
 	public static double TELEPORT_Y_OFFSET = 1.0; /// offset for teleportation
 
-	public static final Material READY_BLOCK = Material.IRON_BLOCK;
+	public static Material READY_BLOCK = Material.IRON_BLOCK;
 
 	/// SIGN OPTIONS
 	public static final String SIGN_PREFIX = "*";
@@ -101,5 +101,6 @@ public class Defaults {
 
 	public static boolean ALLOW_ADMIN_CMDS_IN_MATCH = false;
 	public static boolean ENABLE_TELEPORT_FIX = false;
+	public static boolean ENABLE_PLAYER_READY_BLOCK = true;
 
 }

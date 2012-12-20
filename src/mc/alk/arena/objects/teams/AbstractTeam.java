@@ -54,7 +54,18 @@ public abstract class AbstractTeam implements Team{
 
 	@Override
 	public void init(){
+		reset();
+	}
 
+	public void reset() {
+		deaths.clear();
+		kills.clear();
+		setAlive();
+		for (ArenaPlayer ap: players){
+			if (leftplayers.contains(ap))
+				continue;
+			ap.reset();
+		}
 	}
 
 	protected void createName() {
@@ -141,11 +152,18 @@ public abstract class AbstractTeam implements Team{
 		return living.size() <= offline;
 	}
 
-	public int size() {return players.size()-leftplayers.size();}
-	public void resetScores() {
-		deaths.clear();
-		kills.clear();
+	@Override
+	public boolean isReady() {
+		for (ArenaPlayer ap: getLivingPlayers()){
+			if (!ap.isReady())
+				return false;
+		}
+		return true;
 	}
+
+	public int size() {return players.size()-leftplayers.size();}
+
+
 
 	public void addDeath(ArenaPlayer teamMemberWhoDied) {
 		Integer d = deaths.get(teamMemberWhoDied);

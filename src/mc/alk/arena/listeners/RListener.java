@@ -11,7 +11,9 @@ public class RListener implements Comparable<RListener> {
 		this.al = spl;
 		this.mem = mem;
 	}
-
+	public boolean isSpecificPlayerMethod(){
+		return mem.isSpecificPlayerMethod();
+	}
 	public MatchEventMethod getMethod() {
 		return mem;
 	}

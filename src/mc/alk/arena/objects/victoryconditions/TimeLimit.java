@@ -48,6 +48,4 @@ public class TimeLimit extends VictoryCondition implements CountdownCallback {
 		}
 		return true;
 	}
-
-
 }

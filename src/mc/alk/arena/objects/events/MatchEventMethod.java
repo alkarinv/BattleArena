@@ -29,6 +29,11 @@ public class MatchEventMethod implements Comparable<MatchEventMethod>{
 		this.priority = priority;
 	}
 
+
+	public boolean isSpecificPlayerMethod() {
+		return getPlayerMethod != null;
+	}
+
 	public EventPriority getPriority(){
 		return priority;
 	}
@@ -67,4 +72,5 @@ public class MatchEventMethod implements Comparable<MatchEventMethod>{
 	public int compareTo(MatchEventMethod arg0) {
 		return this.priority.compareTo(arg0.priority);
 	}
+
 }

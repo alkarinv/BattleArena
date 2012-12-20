@@ -207,7 +207,7 @@ public class ArenaMatchQueue {
 	 * @param forceStart : whether we are trying to start a match that usually would need more players
 	 * @return Match if one can be created from the specified TeamQueue
 	 */
-	private Match findMatch(TeamQueue tq, boolean forceStart) {
+	private Match findMatch(final TeamQueue tq, boolean forceStart) {
 		if (suspend)
 			return null;
 		if (Defaults.DEBUG) System.out.println("findMatch " + tq +"  " + tq.size() +"  mp=" + tq.getMatchParams());
@@ -219,7 +219,6 @@ public class ArenaMatchQueue {
 		/// With a force start we are trying to be as permissive as possible,
 		/// this means changing the minimum teamsize and teams.  It also means later on we will do the same
 		/// with the arena params
-
 		if (Defaults.MATCH_FORCESTART_ENABLED){
 			IdTime idt = forceTimers.get(tq);
 			if (idt != null && idt.time <= System.currentTimeMillis()){

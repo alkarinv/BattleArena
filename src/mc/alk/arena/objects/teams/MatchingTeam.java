@@ -106,7 +106,7 @@ public class MatchingTeam implements Team{
 	}
 
 	@Override
-	public void resetScores() {}
+	public void reset() {}
 
 	@Override
 	public void addDeath(ArenaPlayer teamMemberWhoDied) {}
@@ -206,6 +206,11 @@ public class MatchingTeam implements Team{
 	@Override
 	public void removePlayers(Collection<ArenaPlayer> players) {
 		this.players.removeAll(players);
+	}
+
+	@Override
+	public boolean isReady() {
+		return true;
 	}
 
 }

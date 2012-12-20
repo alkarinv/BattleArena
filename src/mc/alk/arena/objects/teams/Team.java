@@ -29,6 +29,12 @@ public interface Team {
 
 	public boolean isPickupTeam();
 
+	/**
+	 * Is this team ready to play
+	 * @return true if all players are "ready" to play
+	 */
+	public boolean isReady();
+
 	public void setPickupTeam(boolean isPickupTeam);
 
 	public int getId();
@@ -47,7 +53,7 @@ public interface Team {
 
 	public int size();
 
-	public void resetScores() ;
+	public void reset() ;
 
 	public void addDeath(ArenaPlayer teamMemberWhoDied);
 

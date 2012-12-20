@@ -314,6 +314,18 @@ public class BAExecutor extends CustomCommandExecutor  {
 		return true;
 	}
 
+//	@MCCommand(cmds={"ready","r"}, inGame=true)
+//	public boolean ready(ArenaPlayer player) {
+//		boolean wasReady = player.isReady();
+//		if (wasReady){
+//			return sendMessage(player,"&cYou are already ready");
+//		}
+//		player.setReady(true);
+//		sendMessage(player,"&2You are now ready");
+//		new PlayerReadyEvent(player,player.isReady()).callEvent();
+//		return true;
+//	}
+
 	@MCCommand(cmds={"cancel"},admin=true,exact=2,usage="cancel <arenaname or player>")
 	public boolean arenaCancel(CommandSender sender, String[] args) {
 		if (args[1].equalsIgnoreCase("all")){

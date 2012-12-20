@@ -89,7 +89,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 			if (event != null){
 				event.addArenaListener(scheduler);
 			} else {  /// wait then start up the scheduler again in x seconds
-				currentTimer = Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(),
+				currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(),
 						scheduler, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			}
 		}
@@ -101,7 +101,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 		e.removeArenaListener(this);
 		if (continuous){
 			/// Wait x sec then start the next event
-			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, (long) (20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS*Defaults.TICK_MULT));
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), this, (long) (20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS*Defaults.TICK_MULT));
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
 				Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"Next event will start in "+Defaults.TIME_BETWEEN_SCHEDULED_EVENTS+" seconds");}
 		} else {

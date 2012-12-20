@@ -9,6 +9,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.events.PlayerLeftEvent;
+import mc.alk.arena.events.PlayerReadyEvent;
 import mc.alk.arena.events.matches.MatchClassSelectedEvent;
 import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
 import mc.alk.arena.listeners.BAPlayerListener;
@@ -306,7 +307,7 @@ public class ArenaMatch extends Match {
 		if (readyPlayers != null && readyPlayers.contains(ap)) /// they are already ready
 			return;
 		setReady(ap);
-		MessageUtil.sendMessage(ap, "&cYou ready yourself for the arena");
+		MessageUtil.sendMessage(ap, "&2You ready yourself for the arena");
 		int size = getAlivePlayers().size();
 		if (size == readyPlayers.size()){
 			new MatchPlayersReadyEvent(this).callEvent();
@@ -411,5 +412,21 @@ public class ArenaMatch extends Match {
 				event.setCancelled(true);
 			}
 		}
+	}
+
+	@MatchEventHandler
+	public void onPlayerReady(PlayerReadyEvent event){
+		if (!Defaults.ENABLE_PLAYER_READY_BLOCK){
+			return;}
+		int tcount = 0;
+		for (Team t: teams){
+			if (!t.isReady())
+				return;
+			if (t.size() > 0)
+				tcount++;
+		}
+		if (tcount < neededTeams)
+			return;
+		this.start();
 	}
 }

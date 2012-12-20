@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 
 import mc.alk.arena.BattleArena;
@@ -15,7 +14,6 @@ import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeleportController;
-import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.listeners.RListener;
 import mc.alk.arena.objects.ArenaClass;
@@ -25,7 +23,6 @@ import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.EventPriority;
-import mc.alk.arena.objects.events.MatchEventMethod;
 import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.InventorySerializer;
@@ -126,22 +123,14 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 					continue;
 				TreeSet<RListener> rls = lists2.get(p);
 				for (RListener rl : rls){
-					sendMessage(sender, rl.getPriority() +" " + bel.getEvent().getSimpleName() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
+					sendMessage(sender, "!!! "+rl.getPriority() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
 				}
 			}
 			EnumMap<EventPriority, List<RListener>> lists = bel.getMatchListeners();
 			for (EventPriority ep: lists.keySet()){
-				sendMessage(sender, "Event Priority = " + ep);
-				for (RListener al : lists.get(ep)){
-					sendMessage(sender, "   !!!  " + ep  + "  -  " + al);
+				for (RListener rl : lists.get(ep)){
+					sendMessage(sender, "!!! " + ep  + "  -  " + rl);
 				}
-			}
-		}
-		Map<Class<? extends BAEvent>,List<MatchEventMethod>> methods = MethodController.getArenaMethods(arena);
-		for (Class<? extends BAEvent> event : methods.keySet()){
-			sendMessage(sender, "---- Event " + event.getSimpleName());
-			for (MatchEventMethod mem : methods.get(event)){
-				sendMessage(sender, mem.getPriority() + "   " + mem.getMethod().getName() );
 			}
 		}
 		return true;

@@ -51,7 +51,7 @@ public class BukkitEventListener extends BAEventListener{
 	 */
 	public BukkitEventListener(final Class<? extends Event> bukkitEvent, Method getPlayerMethod) {
 		super(bukkitEvent);
-		if (Defaults.DEBUG_EVENTS) System.out.println("Registering GenericPlayerEventListener for type " + bukkitEvent);
+		if (Defaults.DEBUG_EVENTS) Log.info("Registering GenericPlayerEventListener for type " + bukkitEvent +" pm="+getPlayerMethod);
 		this.getPlayerMethod = getPlayerMethod;
 	}
 
@@ -87,24 +87,20 @@ public class BukkitEventListener extends BAEventListener{
 
 	/**
 	 * Add a player listener to this bukkit event
-	 * @param arenaListener
+	 * @param rl
 	 * @param matchState
 	 * @param mem
 	 * @param players
 	 */
-	public void addListener(RListener arenaListener, Collection<String> players) {
-		if (Defaults.DEBUG_EVENTS) System.out.println("    adding listener   players="+players+" listener="+arenaListener);
-		//		final RListener rl = new RListener(arenaListener,mem);
-		if (players != null && arenaListener.getMethod() != null){
+	public void addListener(RListener rl, Collection<String> players) {
+		if (Defaults.DEBUG_EVENTS) Log.info("--adding listener   players="+players+" listener="+rl + "  " +
+				((players != null && rl.isSpecificPlayerMethod()) ? " MatchListener" : " SpecificPlayerListener" ));
+		if (players != null && rl.isSpecificPlayerMethod()){
 			for (String player: players){
-				addSPListener(player, arenaListener);}
+				addSPListener(player, rl);}
 		} else {
-			addMatchListener(arenaListener);
+			addMatchListener(rl);
 		}
-		//		if (BAEvent.class.isAssignableFrom(mem.getBukkitEvent()) || mem.getBukkitEvent().isAssignableFrom(BAEvent.class) ){
-		//			System.out.println("!!!!!!!!!!!!!!    adding listener " + matchState +"   players="+players+"   mem="+mem);
-		////			Util.printStackTrace();
-		//		}
 	}
 
 	/**
@@ -116,7 +112,8 @@ public class BukkitEventListener extends BAEventListener{
 	 */
 	public synchronized void removeListener(RListener rl, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("    removing listener  player="+players+"   listener="+rl);
-		if (players != null && rl.getMethod() != null){
+
+		if (players != null && rl.isSpecificPlayerMethod()){
 			for (String player: players){
 				removeSPListener(player, rl);}
 		} else {
@@ -338,12 +335,9 @@ public class BukkitEventListener extends BAEventListener{
 	}
 
 	@Override
-	public void doMatchEvent(Event event){
-		if (event.getClass() != bukkitEvent) /// This can happen with subclasses such as PlayerDeathEvent and EntityDeathEvent
-			return;
-
+	public void doMatchEvent(final Event event){
 		/// For each ArenaListener class that is listening
-		RListener[] rls = getRegisteredListeners();
+		final RListener[] rls = getRegisteredListeners();
 		for (RListener rl: rls){
 			try {
 				rl.getMethod().getMethod().invoke(rl.getListener(), event); /// Invoke the listening arenalisteners method

@@ -49,5 +49,10 @@ public class FormingTeam extends AbstractTeam{
 
 	public boolean hasAllPlayers() {return joined_players.size() == players.size();}
 
+	@Override
+	public boolean isReady() {
+		return false;
+	}
+
 }
 

@@ -23,6 +23,7 @@ import mc.alk.arena.util.DisabledCommandsUtil;
 import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -111,6 +112,10 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.ALLOW_PLAYER_EVENT_CREATION = cs.getBoolean("allowPlayerCreation", Defaults.ALLOW_PLAYER_EVENT_CREATION);
 		Defaults.TIME_BETWEEN_SCHEDULED_EVENTS = cs.getInt("timeBetweenScheduledEvents", Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 		Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT = cs.getBoolean("announceTimeTillNextEvent", Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT);
+
+		Defaults.ENABLE_PLAYER_READY_BLOCK = cs.getBoolean("enablePlayerReadyBlock", Defaults.ENABLE_PLAYER_READY_BLOCK);
+		int value = cs.getInt("readyBlockType", Defaults.READY_BLOCK.getId());
+		Defaults.READY_BLOCK = value > 0 && value < Material.values().length ? Material.values()[value] : Defaults.READY_BLOCK;
 
 		parseOnServerStartOptions(cs);
 		AnnouncementOptions an = new AnnouncementOptions();

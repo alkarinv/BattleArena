@@ -64,7 +64,7 @@ public class ArenaAlterController {
 		BattleArenaController ac = BattleArena.getBAC();
 		String arenaName = arena.getName();
 		String changetype = args[2];
-		String value = null;
+		String value = "1";
 		if (args.length > 3)
 			value = args[3];
 		String[] otherOptions = args.length > 4 ? Arrays.copyOfRange(args, 4, args.length) : null;

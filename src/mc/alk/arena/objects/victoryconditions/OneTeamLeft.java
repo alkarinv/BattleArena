@@ -19,6 +19,7 @@ public class OneTeamLeft extends VictoryCondition{
 
 	@MatchEventHandler
 	public void onPlayerLeft(PlayerLeftEvent event) {
+
 		ArenaPlayer p = event.getPlayer();
 		if (match.isWon() || !match.isStarted()){
 			return;}
@@ -26,8 +27,8 @@ public class OneTeamLeft extends VictoryCondition{
 		Team team = match.getTeam(p);
 		if (team == null)
 			return;
-		if (team.killMember(p))
-			handleDeath(team);
+		if (team.killMember(p)){
+			handleDeath(team);}
 	}
 
 	protected void handleDeath(Team team) {
