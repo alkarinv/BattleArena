@@ -3,12 +3,17 @@ package mc.alk.arena.controllers;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.events.Event;
@@ -16,22 +21,77 @@ import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.ConfigException;
 import mc.alk.arena.serializers.ArenaSerializer;
+import mc.alk.arena.serializers.BaseSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class APIRegistrationController {
+	static Set<String> delayedInits = Collections.synchronizedSet(new HashSet<String>());
 
+	static class DelayedRegistrationHandler implements Runnable{
+		JavaPlugin plugin;
+
+		public DelayedRegistrationHandler(JavaPlugin plugin) {
+			this.plugin = plugin;
+		}
+
+		@Override
+		public void run() {
+			if (!plugin.isEnabled()) /// lets not try to register plugins that aren't loaded
+				return;
+			File dir = plugin.getDataFolder();
+			FileFilter fileFilter = new FileFilter() {
+				public boolean accept(File file) { return file.toString().contains("Config.yml"); }
+			};
+			for (File file : dir.listFiles(fileFilter)){
+				String n = file.getName().substring(0, file.getName().length()-"Config.yml".length());
+				Log.debug("############   " + file.getName() +  "           " + n + "    " + ArenaType.contains(n));
+				if (ArenaType.contains(n)){ /// we already loaded this type
+					continue;}
+
+				BaseSerializer bs = new BaseSerializer();
+				bs.setConfig(file);
+				FileConfiguration config = bs.getConfig();
+				/// Initialize custom matches or events
+				Set<String> keys = config.getKeys(false);
+				for (String key: keys){
+					ConfigurationSection cs = config.getConfigurationSection(key);
+					if (cs == null)
+						continue;
+					try {
+						/// A new match/event needs the params, an executor, and the command to use
+						boolean isMatch = !config.getBoolean(key+".isEvent",false);
+						MatchParams mp = ConfigSerializer.setTypeConfig(plugin,key,cs, isMatch);
+						BAExecutor executor = isMatch ? BattleArena.getBAExecutor() : new ReservedArenaEventExecutor();
+						ArenaCommand arenaCommand = new ArenaCommand(mp.getCommand(),"","", new ArrayList<String>(), BattleArena.getSelf());
+						arenaCommand.setExecutor(executor);
+						CommandController.registerCommand(arenaCommand);
+					} catch (Exception e) {
+						Log.err("Couldnt configure arenaType " + key+". " + e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}
+
+
+		}
+
+	}
 	private void init(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, boolean match){
 		if (plugin == null){
 			Log.err("Plugin can not be null");
@@ -50,6 +110,15 @@ public class APIRegistrationController {
 		ArenaSerializer as = new ArenaSerializer(plugin, plugin.getDataFolder()+File.separator+"arenas.yml"); /// arena config
 		as.loadArenas(plugin,at);
 
+		loadem(plugin, name, cmd, match, dir, at);
+
+		if (!delayedInits.contains(plugin.getName())){
+			delayedInits.add(plugin.getName());
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new DelayedRegistrationHandler(plugin));
+		}
+	}
+
+	private void loadem(JavaPlugin plugin, String name, String cmd, boolean match, File dir, ArenaType at) {
 		ConfigSerializer cc = new ConfigSerializer(); /// Our config.yml
 
 		String configFileName = name+"Config.yml";
@@ -96,6 +165,7 @@ public class APIRegistrationController {
 			e.printStackTrace();
 		}
 	}
+
 	private static boolean loadFile(Plugin plugin, File defaultFile, File defaultPluginFile, File pluginFile){
 		if (pluginFile.exists())
 			return true;

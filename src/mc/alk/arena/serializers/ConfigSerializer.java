@@ -102,15 +102,12 @@ public class ConfigSerializer extends BaseSerializer{
 		/// Set up match options.. specifying defaults where not specified
 		/// Set Arena Type
 		ArenaType at;
-		if (cs.contains("arenaType")){
-			at = ArenaType.fromString(cs.getString("arenaType"));
-			if (at == null)
-				throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
-		} else if (cs.contains("type")){ /// old config option for setting arenaType
-			String type = cs.getString("type");
+		if (cs.contains("arenaType") || cs.contains("type")){
+			String type = cs.contains("type") ? cs.getString("type") : cs.getString("arenaType");
 			at = ArenaType.fromString(type);
 			if (at == null && type != null && !type.isEmpty()){ /// User is trying to make a custom type... let them
-				at = ArenaType.register(type, Arena.class, plugin);
+				Class<? extends Arena> arenaClass = ArenaType.getArenaClass(cs.getString("arenaClass","Arena"));
+				at = ArenaType.register(type, arenaClass, plugin);
 			}
 			if (at == null)
 				throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());

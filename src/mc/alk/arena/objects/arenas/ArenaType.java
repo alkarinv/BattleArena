@@ -189,6 +189,14 @@ public class ArenaType implements Comparable<ArenaType>{
 	}
 
 	public static Class<? extends Arena> getArenaClass(ArenaType arenaType){
-		return classes.get(arenaType.getName());
+		return getArenaClass(arenaType.getName());
+	}
+
+	public static Class<? extends Arena> getArenaClass(String arenaType){
+		return classes.get(arenaType);
+	}
+
+	public static boolean contains(String arenaType) {
+		return types.containsKey(arenaType);
 	}
 }
