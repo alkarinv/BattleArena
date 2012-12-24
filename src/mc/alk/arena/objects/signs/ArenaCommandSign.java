@@ -1,12 +1,18 @@
-package mc.alk.arena.objects;
+package mc.alk.arena.objects.signs;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
-import mc.alk.arena.util.SignUtil.ARENA_COMMAND;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.MatchParams;
 
 public class ArenaCommandSign {
+	public static enum ARENA_COMMAND{
+		JOIN, LEAVE, START;
+	}
+
 	MatchParams mp;
 	ARENA_COMMAND command;
 	String options1;

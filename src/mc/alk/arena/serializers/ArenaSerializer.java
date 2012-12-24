@@ -2,6 +2,7 @@ package mc.alk.arena.serializers;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -121,33 +122,69 @@ public class ArenaSerializer {
 			return;
 		}
 		ConfigurationSection as = cs.getConfigurationSection("arenas");
-		if (as == null){
+		ConfigurationSection bks = cs.getConfigurationSection("brokenArenas");
+		if (as == null && bks == null){
 			Log.info(pname+"has no arenas, cs section =" + cs.getCurrentPath());
 			return;
 		}
-		Set<String> keys = as.getKeys(false);
-		StringBuilder loadedArenas = new StringBuilder(pname+"Successfully loaded arenas");
-		StringBuilder failedArenas = new StringBuilder(pname+"Failed loading arenas");
-		boolean hasFailed = false, hasAny = false;
+		List<String> keys = new ArrayList<String>(as.getKeys(false));
+		int oldGoodSize = keys.size();
+		Set<String> brokenKeys = bks == null ? new HashSet<String>() : bks.getKeys(false);
+		int oldBrokenSize = brokenKeys.size();
+		keys.addAll(brokenKeys);
+
+		Set<String> brokenArenas = new HashSet<String>();
+		Set<String> loadedArenas = new HashSet<String>();
 		for (String name : keys){
+			if (loadedArenas.contains(name) || brokenArenas.contains(name)) /// We already tried to load this arena
+				continue;
 			if (arenaType != null){ /// Are we looking for 1 particular arena type to load
 				if (!cs.getString("arenas."+name+".type","").equalsIgnoreCase(arenaType.getName())){
 					continue;}
 			}
-			if (loadArena(bac,cs.getConfigurationSection("arenas."+name))){
-				hasAny = true;
-				loadedArenas.append(","+name);
-			} else{
-				hasFailed = true;
-				failedArenas.append(","+name);
+			boolean success = false;
+			boolean broken = brokenKeys.contains(name);
+			String section = broken ? "brokenArenas" : "arenas";
+			try{
+				success = loadArena(bac,cs.getConfigurationSection(section+"."+name));
+				if (success){
+					loadedArenas.add(name);
+					if (broken){
+						transfer(cs,"brokenArenas."+name, "arenas."+name);}
+				}
+			} catch(IllegalArgumentException e){
+				Log.err(e.getMessage());
+			} catch(Exception e){
+				e.printStackTrace();
+			}
+			if (!success){
+				brokenArenas.add(name);
+				if (!broken){
+					transfer(cs,"arenas."+name, "brokenArenas."+name);}
 			}
 		}
-		if (hasAny)
-			Log.info(loadedArenas.toString());
-		else
+
+		if (!loadedArenas.isEmpty()) {
+			Log.info("Successfully loaded arenas: " + StringUtils.join(loadedArenas,", "));
+		} else {
 			Log.info(pname + "No arenas found for " + cs.getCurrentPath() +"  arenatype="+arenaType);
-		if (hasFailed)
-			Log.info(failedArenas.toString());
+		}
+		if (!brokenArenas.isEmpty()){
+			Log.info("Failed loading arenas: " + StringUtils.join(brokenArenas, ", "));
+		}
+		if (oldGoodSize != loadedArenas.size() || oldBrokenSize != brokenArenas.size()){
+			saveArenas(plugin);
+		}
+	}
+
+	private static void transfer(ConfigurationSection cs, String string, String string2) {
+		try{
+			Map<String,Object> map = new HashMap<String,Object>(cs.getConfigurationSection(string).getValues(false));
+			cs.createSection(string2, map);
+			cs.set(string,null);
+		} catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	public static boolean loadArena(BattleArenaController bac, ConfigurationSection cs) {
@@ -263,59 +300,68 @@ public class ArenaSerializer {
 	}
 
 	private static void saveArenas(Collection<Arena> arenas, File f, ConfigurationSection config, Plugin plugin, boolean log){
-		ConfigurationSection maincs = config.createSection("arenas");
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		for (Arena arena : arenas){
-			ArenaType at = arena.getArenaType();
-			if (at.getPlugin().getName() != plugin.getName())
-				continue;
-			String arenaname = arena.getName();
+			String arenaname = null;
+			try{
+				arenaname = arena.getName();
+				ArenaType at = arena.getArenaType();
+				if (at.getPlugin().getName() != plugin.getName())
+					continue;
 
-			HashMap<String, Object> amap = new HashMap<String, Object>();
-			amap.put("type", arena.getArenaType().getName());
-			amap.put("teamSize", arena.getParameters().getTeamSizeRange());
-			amap.put("nTeams", arena.getParameters().getNTeamRange());
+				HashMap<String, Object> amap = new HashMap<String, Object>();
+				amap.put("type", arena.getArenaType().getName());
+				amap.put("teamSize", arena.getParameters().getTeamSizeRange());
+				amap.put("nTeams", arena.getParameters().getNTeamRange());
 
-			/// Spawn locations
-			Map<Integer, Location> mlocs = arena.getSpawnLocs();
-			if (mlocs != null){
-				HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
-				amap.put("locations", locations);
-			}
-
-			/// Wait room spawns
-			mlocs = arena.getWaitRoomSpawnLocs();
-			if (mlocs!= null){
-				HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
-				amap.put("waitRoomLocations", locations);
-			}
-
-			/// Timed spawns
-			Map<Long, TimedSpawn> timedSpawns = arena.getTimedSpawns();
-			if (timedSpawns != null && !timedSpawns.isEmpty()){
-				HashMap<String,Object> spawnmap = new HashMap<String,Object>();
-				for (Long key: timedSpawns.keySet() ){
-					TimedSpawn ts = timedSpawns.get(key);
-					HashMap<String,Object> itemSpawnMap = saveSpawnable(key, ts);
-					spawnmap.put(key.toString(), itemSpawnMap);
+				/// Spawn locations
+				Map<Integer, Location> mlocs = arena.getSpawnLocs();
+				if (mlocs != null){
+					HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
+					amap.put("locations", locations);
 				}
-				amap.put("spawns", spawnmap);
+
+				/// Wait room spawns
+				mlocs = arena.getWaitRoomSpawnLocs();
+				if (mlocs!= null){
+					HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
+					amap.put("waitRoomLocations", locations);
+				}
+
+				/// Timed spawns
+				Map<Long, TimedSpawn> timedSpawns = arena.getTimedSpawns();
+				if (timedSpawns != null && !timedSpawns.isEmpty()){
+					HashMap<String,Object> spawnmap = new HashMap<String,Object>();
+					for (Long key: timedSpawns.keySet() ){
+						TimedSpawn ts = timedSpawns.get(key);
+						HashMap<String,Object> itemSpawnMap = saveSpawnable(key, ts);
+						spawnmap.put(key.toString(), itemSpawnMap);
+					}
+					amap.put("spawns", spawnmap);
+				}
+
+				Location vloc = arena.getVisitorLoc();
+				if (vloc != null)
+					amap.put("vloc",SerializerUtil.getLocString(vloc));
+
+				Map<String,Object> persisted = Persistable.objectsToYamlMap(arena, Arena.class);
+				if (persisted != null && !persisted.isEmpty()){
+					amap.put("persistable", persisted);
+				}
+
+				map.put(arenaname, amap);
+				config.set("brokenArenas."+arenaname, null); /// take out any duplicate names in broken arenas
+			} catch (Exception e){
+				e.printStackTrace();
+				if (arenaname != null){
+					transfer(config, "arenas."+arenaname, "brokenArenas."+arenaname);
+				}
 			}
-
-			Location vloc = arena.getVisitorLoc();
-			if (vloc != null)
-				amap.put("vloc",SerializerUtil.getLocString(vloc));
-
-			Map<String,Object> persisted = Persistable.objectsToYamlMap(arena, Arena.class);
-			if (persisted != null && !persisted.isEmpty()){
-				amap.put("persistable", persisted);
-			}
-
-			map.put(arenaname, amap);
 		}
 		if (log)
 			Log.info(plugin.getName() + " Saving arenas " + StringUtils.join(map.keySet(),",") +" to " +
 					f.getPath() + " configSection="+config.getCurrentPath()+"." + config.getName());
+		ConfigurationSection maincs = config.createSection("arenas");
 		SerializerUtil.expandMapIntoConfig(maincs, map);
 	}
 
@@ -387,7 +433,7 @@ public class ArenaSerializer {
 		} else if (si instanceof EntitySpawn){
 			EntitySpawn in = (EntitySpawn) si;
 			key = in.getEntityString() + " " + in.getNumber();
-//			value = in.getNumber() +"";
+			//			value = in.getNumber() +"";
 		} else {
 
 		}

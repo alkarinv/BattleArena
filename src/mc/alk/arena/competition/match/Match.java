@@ -147,7 +147,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		boolean needsBlockEvents = tops.hasAnyOption(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF,
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
 		boolean needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
-		boolean needsItemDropEvents = tops.hasAnyOption(TransitionOption.DROPITEMOFF);
+		boolean needsItemDropEvents = tops.hasAnyOption(TransitionOption.ITEMDROPOFF);
 		this.alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
 		this.cancelExpLoss = tops.hasAnyOption(TransitionOption.NOEXPERIENCELOSS);
 		this.matchResult = new MatchResult();
@@ -191,16 +191,16 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		if (stopsTeleports){
 			events.add(PlayerTeleportEvent.class);}
 
-		methodController.addBukkitMethods(this, events);
+		methodController.addSpecificEvents(this, events);
 	}
 
 	private void updateBukkitEvents(MatchState matchState){
 		final ArrayList<String> players = new ArrayList<String>(insideArena);
-		methodController.updateMatchBukkitEvents(matchState, players);
+		methodController.updateEvents(matchState, players);
 	}
 
 	private void updateBukkitEvents(MatchState matchState,ArenaPlayer player){
-		methodController.updateAllEventListeners(matchState, player);
+		methodController.updateEvents(matchState, player);
 	}
 
 	/**
@@ -215,7 +215,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 				transitionTo(MatchState.ONOPEN);
 				MatchOpenEvent event = new MatchOpenEvent(match);
 
-				event.callEvent(); /// Call bukkit listeners for this event
+				callEvent(event);
 				if (event.isCancelled()){
 					match.cancelMatch();
 					return;
@@ -444,7 +444,6 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		/// Teleport out happens 1 tick after oncancel/oncomplete, we also must wait 1 tick
 		final Match match = this;
 		callEvent(new MatchFinishedEvent(match));
-
 		updateBukkitEvents(MatchState.ONFINISH);
 		for (Team t: teams){
 			TeamController.removeTeamHandler(t, match);
@@ -490,6 +489,8 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 
 	@Override
 	public boolean removeTeam(Team team){
+		if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" removeTeam("+team.getName()+":"+team.getId()+")");
+
 		if (teams.contains(team)){
 			onLeave(team);
 			return true;
@@ -533,6 +534,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 
 	@Override
 	public void removedFromTeam(Team team, ArenaPlayer player) {
+		if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" removedFromTeam("+team.getName()+":"+team.getId()+")"+player.getName());
 		HeroesInterface.removedFromTeam(team, player.getPlayer());
 	}
 
@@ -661,7 +663,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		insideArena.add(p.getName());
 		Integer index = null;
 		if (woolTeams){
-			methodController.updateEventListeners(MatchState.ONENTER, p,InventoryClickEvent.class);
+			methodController.updateSpecificEvents(MatchState.ONENTER, p,InventoryClickEvent.class);
 			index = teams.indexOf(t);
 			if (index != -1){ /// TODO Really I would like to know how this is -1.  Should I remove the team now?
 				TeamUtil.setTeamHead(index, p);}
@@ -726,6 +728,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 			if (t.hasAliveMember(p)) return true;}
 		return false;
 	}
+
 	public void setMessageHandler(MatchMessageHandler mc){this.mc.setMessageHandler(mc);}
 	public MatchMessageHandler getMessageHandler(){return mc.getMessageHandler();}
 
@@ -838,11 +841,19 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		matchResult.setResult(WinLossDraw.WIN);
 		endMatchWithResult(matchResult);
 	}
+
 	public synchronized void setDraw(){
 		matchResult.setResult(WinLossDraw.DRAW);
 		matchResult.setDrawers(teams);
 		endMatchWithResult(matchResult);
 	}
+
+	public synchronized void setLosers(){
+		matchResult.setResult(WinLossDraw.LOSS);
+		matchResult.setLosers(teams);
+		endMatchWithResult(matchResult);
+	}
+
 	public MatchResult getResult(){return matchResult;}
 	public Set<Team> getVictors() {return matchResult.getVictors();}
 	public Set<Team> getLosers() {return matchResult.getLosers();}
@@ -943,11 +954,8 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
 		callEvent(event);
 		try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
-		List<Team> leaders = event.getCurrentLeaders();
-		if (leaders != null)
-			setVictor(leaders);
-		else
-			setDraw();
+		MatchResult result = event.getResult();
+		endMatchWithResult(result);
 	}
 
 	public void intervalTick(int remaining) {

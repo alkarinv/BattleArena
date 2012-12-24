@@ -60,20 +60,19 @@ public class SerializerUtil {
 		return l.getWorld().getName() +"," + l.getX() + "," + l.getY() + "," + l.getZ()+","+l.getYaw()+","+l.getPitch();
 	}
 
+	public static String getBlockLocString(Location l){
+		if (l == null) return null;
+		return l.getWorld().getName() +"," + l.getBlockX() + "," + l.getBlockY() + "," + l.getBlockZ();
+	}
 
-	public static Map<Integer, Location> parseLocations(ConfigurationSection cs) {
+	public static Map<Integer, Location> parseLocations(ConfigurationSection cs) throws IllegalArgumentException {
 		if (cs == null)
 			return null;
 		HashMap<Integer,Location> locs = new HashMap<Integer,Location>();
 		Set<String> indices = cs.getKeys(false);
 		for (String locIndexStr : indices){
 			Location loc = null;
-			try {
-				loc = SerializerUtil.getLocation(cs.getString(locIndexStr));
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-				continue;
-			}
+			loc = SerializerUtil.getLocation(cs.getString(locIndexStr));
 			Integer i = Integer.valueOf(locIndexStr);
 			locs.put(i, loc);
 		}

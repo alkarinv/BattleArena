@@ -228,7 +228,7 @@ public class ArenaMatch extends Match {
 
 	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerDropItem(PlayerDropItemEvent event){
-		if (tops.hasOptionAt(state, TransitionOption.DROPITEMOFF)){
+		if (tops.hasOptionAt(state, TransitionOption.ITEMDROPOFF)){
 			event.setCancelled(true);}
 	}
 

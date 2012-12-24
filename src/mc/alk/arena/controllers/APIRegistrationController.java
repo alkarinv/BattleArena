@@ -60,7 +60,6 @@ public class APIRegistrationController {
 			};
 			for (File file : dir.listFiles(fileFilter)){
 				String n = file.getName().substring(0, file.getName().length()-"Config.yml".length());
-				Log.debug("############   " + file.getName() +  "           " + n + "    " + ArenaType.contains(n));
 				if (ArenaType.contains(n)){ /// we already loaded this type
 					continue;}
 

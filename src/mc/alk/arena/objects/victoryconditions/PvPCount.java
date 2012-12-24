@@ -10,10 +10,10 @@ import mc.alk.arena.util.DmgDeathUtil;
 
 import org.bukkit.event.entity.PlayerDeathEvent;
 
-public class PvPCount extends OneTeamLeft{
+public class PvPCount extends NTeamsNeeded{
 
 	public PvPCount(Match match) {
-		super(match);
+		super(match,2);
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true, priority=EventPriority.LOW)

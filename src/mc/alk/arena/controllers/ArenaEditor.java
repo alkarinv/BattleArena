@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import mc.alk.arena.objects.arenas.Arena;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class ArenaEditor {
@@ -17,12 +18,12 @@ public class ArenaEditor {
 
 	HashMap<String, CurrentSelection> selections = new HashMap<String,CurrentSelection>();
 
-	public void setCurrentArena(Player p, Arena arena) {
+	public void setCurrentArena(CommandSender p, Arena arena) {
 		CurrentSelection cs = new CurrentSelection(System.currentTimeMillis(), arena);
 		selections.put(p.getName(), cs);
 	}
 
-	public Arena getArena(Player p) {
+	public Arena getArena(CommandSender p) {
 		CurrentSelection cs = selections.get(p.getName());
 		if (cs == null)
 			return null;

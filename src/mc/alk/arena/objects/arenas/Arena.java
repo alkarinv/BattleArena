@@ -268,6 +268,14 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
+	 * add a timed spawn to this arena
+	 * @return
+	 */
+	public TimedSpawn deleteTimedSpawn(Long num) {
+		return timedSpawns == null ? null : timedSpawns.remove(num);
+	}
+
+	/**
 	 * Set which match this arena belongs to
 	 */
 	public void setMatch(Match arenaMatch) {

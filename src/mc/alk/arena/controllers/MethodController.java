@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.listeners.RListener;
@@ -37,7 +38,13 @@ public class MethodController {
 	static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<MatchEventMethod>>> bukkitEventMethods =
 			new HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<MatchEventMethod>>>();
 
+	/** Our registered bukkit events and the methods to call when they happen*/
+	static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends BAEvent>,List<MatchEventMethod>>> matchEventMethods =
+			new HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends BAEvent>,List<MatchEventMethod>>>();
+
 	HashMap<Class<? extends Event>,List<RListener>> bukkitMethods = new HashMap<Class<? extends Event>,List<RListener>>();
+
+	HashMap<Class<? extends BAEvent>,List<RListener>> matchMethods = new HashMap<Class<? extends BAEvent>,List<RListener>>();
 
 	public MethodController(){}
 
@@ -45,33 +52,29 @@ public class MethodController {
 		return bukkitListeners;
 	}
 
-	public void updateMatchBukkitEvents(MatchState matchState, List<String> players) {
-		try {
-//			Map<Class<? extends Event>,List<MatchEventMethod>> map = getBukkitMethods(arenaListener);
-			Collection<Class<? extends Event>> keys = bukkitMethods.keySet();
-			if (keys==null)
-				return;
-//			if (map == null){
-//				return;}
-			for (Class<? extends Event> event: keys){
-				//				RListener rl = getRListener(arenaListener,event);
-				updateEventListener(matchState, players, event);}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void updateAllEventListeners(MatchState matchState, ArenaPlayer player){
+	public void updateEvents(MatchState matchState, ArenaPlayer player){
 		List<String> players = new ArrayList<String>();
 		players.add(player.getName());
-		updateMatchBukkitEvents(matchState,players);
+		updateEvents(matchState,players);
 	}
 
-	public void updateAllEventListeners(MatchState matchState, Collection<ArenaPlayer> players){
+	public void updateEvents(MatchState matchState, Collection<ArenaPlayer> players){
 		List<String> strplayers = new ArrayList<String>();
 		for (ArenaPlayer ap: players){
 			strplayers.add(ap.getName());}
-		updateMatchBukkitEvents(matchState,strplayers);
+		updateEvents(matchState,strplayers);
+	}
+
+	public void updateEvents(MatchState matchState, List<String> players) {
+		try {
+			Collection<Class<? extends Event>> keys = bukkitMethods.keySet();
+			if (keys==null)
+				return;
+			for (Class<? extends Event> event: keys){
+				updateEvent(matchState, players, event);}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -80,36 +83,28 @@ public class MethodController {
 	 * @param player
 	 * @param events
 	 */
-	public void updateEventListeners(MatchState matchState, ArenaPlayer player, Class<? extends Event>... events) {
+	public void updateSpecificEvents(MatchState matchState, ArenaPlayer player, Class<? extends Event>... events) {
 		try {
 			List<String> players = new ArrayList<String>();
 			players.add(player.getName());
 
 			for (Class<? extends Event> event: events){
-				updateEventListener(matchState,players, event);}
+				updateEvent(matchState,players, event);}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	/**
-	 *
-	 * @param matchState
-	 * @param player
-	 * @param events
-	 */
-	public void updateEventListeners(MatchState matchState, ArenaPlayer player, List<Class<? extends Event>> events) {
-		try {
-			List<String> players = new ArrayList<String>();
-			players.add(player.getName());
+//	/**
+//	 *
+//	 * @param matchState
+//	 * @param player
+//	 * @param events
+//	 */
+//	public void updateSpecificEvents(MatchState matchState, ArenaPlayer player, Collection<Class<? extends Event>> events) {
+//		updateSpecificEvents(matchState, player, events.toArray());
+//	}
 
-			for (Class<? extends Event> event: events){
-				updateEventListener(matchState,players, event);}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void updateEventListener(MatchState matchState, Collection<String> players, final Class<? extends Event> event) {
+	private void updateEvent(MatchState matchState, Collection<String> players, final Class<? extends Event> event) {
 		final List<RListener> at = bukkitMethods.get(event);
 		if (at == null || at.isEmpty()){
 			//			System.err.println(arenaListener +" has no method that uses the bukkit event +"+event+", but is trying to register it");
@@ -152,7 +147,7 @@ public class MethodController {
 		return getMethods(ael,event.getClass());
 	}
 
-	public static List<MatchEventMethod> getMethods(ArenaListener ael, Class<? extends Event> eventClass) {
+	private static List<MatchEventMethod> getMethods(ArenaListener ael, Class<? extends Event> eventClass) {
 		HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap = bukkitEventMethods.get(ael.getClass());
 		if (Defaults.DEBUG_EVENTS) System.out.println("!! getEvent "+ael.getClass()+ " " +eventClass+"  methods="+
 				(typeMap==null?"null" :typeMap.size() +":"+ (typeMap.get(eventClass) != null ? typeMap.get(eventClass).size() : 0) ) );
@@ -161,17 +156,26 @@ public class MethodController {
 		return typeMap.get(eventClass);
 	}
 
-	public static Map<Class<? extends Event>,List<MatchEventMethod>> getBukkitMethods(ArenaListener ael) {
+	private static Map<Class<? extends Event>,List<MatchEventMethod>> getBukkitMethods(ArenaListener ael) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("!!!! getEvent "+ael.getClass().getSimpleName()+" contains=" + bukkitEventMethods.containsKey(ael.getClass()));
 		return bukkitEventMethods.get(ael.getClass());
 	}
 
+	private static Map<Class<? extends BAEvent>,List<MatchEventMethod>> getMatchMethods(ArenaListener ael) {
+		if (Defaults.DEBUG_EVENTS) System.out.println("!!!! getEvent "+ael.getClass().getSimpleName()+" contains=" + bukkitEventMethods.containsKey(ael.getClass()));
+		return matchEventMethods.get(ael.getClass());
+	}
+
 
 	@SuppressWarnings("unchecked")
-	private static void addBukkitMethods(Class<? extends ArenaListener> alClass){
-		HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap =
+	private static void addMethods(Class<? extends ArenaListener> alClass){
+		HashMap<Class<? extends Event>,List<MatchEventMethod>> bukkitTypeMap =
 				new HashMap<Class<? extends Event>,List<MatchEventMethod>>();
+		HashMap<Class<? extends BAEvent>, List<MatchEventMethod>> matchTypeMap =
+				new HashMap<Class<? extends BAEvent>,List<MatchEventMethod>>();
+
 		Method[] methodArray = alClass.getMethods();
+
 		for (Method method : methodArray){
 			MatchEventHandler meh = method.getAnnotation(MatchEventHandler.class);
 			if (meh == null)
@@ -182,7 +186,11 @@ public class MethodController {
 				System.err.println("Bukkit Event was null for method " + method);
 				continue;
 			}
+
 			Class<? extends Event> bukkitEvent = (Class<? extends Event>)classes[0];
+			boolean baEvent = BAEvent.class.isAssignableFrom(bukkitEvent);
+			HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap =
+					(HashMap<Class<? extends Event>, List<MatchEventMethod>>) (baEvent? matchTypeMap : bukkitTypeMap);
 
 			MatchState beginState = meh.begin(),endState = meh.end(), cancelState=MatchState.NONE;
 			boolean needsTeamOrPlayer = false;
@@ -251,10 +259,11 @@ public class MethodController {
 			}
 			Collections.sort(mths);
 		}
-		bukkitEventMethods.put(alClass, typeMap);
+		bukkitEventMethods.put(alClass, bukkitTypeMap);
+		matchEventMethods.put(alClass, matchTypeMap);
 	}
 
-	public boolean removeListener(ArenaListener listener) {
+	private boolean removeListener(ArenaListener listener, HashMap<?,List<RListener>> methods){
 		synchronized(bukkitMethods){
 			for (List<RListener> rls: bukkitMethods.values()){
 				Iterator<RListener> iter = rls.iterator();
@@ -273,25 +282,36 @@ public class MethodController {
 					}
 				}
 			}
+			return true;
 		}
+	}
+
+	public boolean removeListener(ArenaListener listener) {
+		removeListener(listener, bukkitMethods);
+		removeListener(listener, matchMethods);
 		return true;
 	}
 
+
 	public void addListener(ArenaListener listener) {
-		addBukkitMethods(listener);
+		addAllEvents(listener);
 	}
 
 	/**
 	 * Add all of the bukkit events found in the listener
 	 * @param listener
 	 */
-	public void addBukkitMethods(ArenaListener listener) {
-		if (!bukkitEventMethods.containsKey(listener.getClass())){
-			MethodController.addBukkitMethods(listener.getClass());
+	public void addAllEvents(ArenaListener listener) {
+		if (!bukkitEventMethods.containsKey(listener.getClass()) && !matchEventMethods.containsKey(listener.getClass())){
+			MethodController.addMethods(listener.getClass());
 		}
 		Map<Class<? extends Event>,List<MatchEventMethod>> map = getBukkitMethods(listener);
 		for (Class<? extends Event> clazz : map.keySet()){
-			addBukkitMethod(listener, map, clazz);
+			addEventMethod(listener, map, clazz);
+		}
+		Map<Class<? extends BAEvent>,List<MatchEventMethod>> map2 = getMatchMethods(listener);
+		for (Class<? extends BAEvent> clazz : map2.keySet()){
+			addBAEventMethod(listener, map2, clazz);
 		}
 	}
 
@@ -300,18 +320,22 @@ public class MethodController {
 	 * @param listener
 	 * @param events
 	 */
-	public void addBukkitMethods(ArenaListener listener, List<Class<? extends Event>> events) {
-		if (!bukkitEventMethods.containsKey(listener.getClass())){
-			MethodController.addBukkitMethods(listener.getClass());
+	public void addSpecificEvents(ArenaListener listener, List<Class<? extends Event>> events) {
+		if (!bukkitEventMethods.containsKey(listener.getClass()) && !matchEventMethods.containsKey(listener.getClass())){
+			MethodController.addMethods(listener.getClass());
 		}
 		Map<Class<? extends Event>,List<MatchEventMethod>> map = getBukkitMethods(listener);
 		for (Class<? extends Event> clazz : events){
-			addBukkitMethod(listener, map, clazz);
+			addEventMethod(listener, map, clazz);
+		}
+		Map<Class<? extends BAEvent>,List<MatchEventMethod>> map2 = getMatchMethods(listener);
+		for (Class<? extends BAEvent> clazz : map2.keySet()){
+			addBAEventMethod(listener, map2, clazz);
 		}
 	}
 
 
-	private void addBukkitMethod(ArenaListener listener, Map<Class<? extends Event>, List<MatchEventMethod>> map,
+	private void addEventMethod(ArenaListener listener, Map<Class<? extends Event>, List<MatchEventMethod>> map,
 			Class<? extends Event> clazz) {
 		List<MatchEventMethod> list = map.get(clazz);
 		if (list == null || list.isEmpty())
@@ -328,8 +352,38 @@ public class MethodController {
 		Collections.sort(rls);
 	}
 
+	private void addBAEventMethod(ArenaListener listener, Map<Class<? extends BAEvent>, List<MatchEventMethod>> map,
+			Class<? extends BAEvent> clazz) {
+		List<MatchEventMethod> list = map.get(clazz);
+		if (list == null || list.isEmpty())
+			return;
+
+		List<RListener> rls = matchMethods.get(clazz);
+		if (rls == null){
+			rls = new ArrayList<RListener>();
+			matchMethods.put(clazz, rls);
+		}
+		for (MatchEventMethod mem: list){
+			rls.add(new RListener(listener, mem));
+		}
+		Collections.sort(rls);
+	}
+
 	public void deconstruct() {
 		bukkitMethods.clear();
 	}
 
+	public void callEvent(BAEvent event) {
+		List<RListener> rls = matchMethods.get(event.getClass());
+		if (rls == null){
+			return;}
+		for (RListener rl : rls){
+			try {
+//				System.out.println("  " + event.getClass().getSimpleName() +"    " + rl.getListener());
+				rl.getMethod().getMethod().invoke(rl.getListener(), event); /// Invoke the listening arenalisteners method
+			} catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+	}
 }

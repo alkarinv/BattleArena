@@ -168,9 +168,17 @@ public class EventExecutor extends BAExecutor{
 		return  sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers+" that have joined");
 	}
 
+	@Override
+	@MCCommand(cmds={"join"},inGame=true)
+	public boolean join(ArenaPlayer player, MatchParams mp, String args[]) {
+		if (mp instanceof EventParams){
+			return eventJoin(player, (EventParams)mp, args);}
+		return true; /// awkward, how did they get here???
+	}
+
 	@MCCommand(cmds={"join"},inGame=true,usage="join", order=2)
-	public boolean eventJoin(ArenaPlayer p, EventParams eventParams, String[] args) {
-		eventJoin(p, eventParams, args, false);
+	public boolean eventJoin(ArenaPlayer player, EventParams eventParams, String[] args) {
+		eventJoin(player, eventParams, args, false);
 		return true;
 	}
 

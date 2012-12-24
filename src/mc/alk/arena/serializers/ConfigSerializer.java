@@ -253,7 +253,7 @@ public class ConfigSerializer extends BaseSerializer{
 
 			TransitionOption to = null;
 			try{
-				to = TransitionOption.valueOf(key);
+				to = TransitionOption.fromString(key);
 				if (to != null && to.hasValue() && split.length==1){
 					Log.err("Transition Option " + to +" needs a value! " + key+"=<value>");
 					continue;
@@ -388,7 +388,7 @@ public class ConfigSerializer extends BaseSerializer{
 		try{
 			if (options.containsKey(TransitionOption.ENCHANTS)){
 				List<PotionEffect> effects = getEffectList(cs, "enchants");
-				if (effects!=null)
+				if (effects!=null && !effects.isEmpty())
 					tops.addOption(TransitionOption.ENCHANTS, effects);
 			}
 		} catch (Exception e){

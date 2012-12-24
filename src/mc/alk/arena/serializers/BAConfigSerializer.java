@@ -96,6 +96,10 @@ public class BAConfigSerializer extends ConfigSerializer{
 	}
 
 	protected static void parseDefaultOptions(ConfigurationSection cs) {
+		if (cs == null){
+			Log.err("[BA Error] defaultConfig section not found!!! Using default settings" );
+			return;
+		}
 		Defaults.SECONDS_TILL_MATCH = cs.getInt("secondsTillMatch", Defaults.SECONDS_TILL_MATCH);
 		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT);
 		Defaults.MATCH_TIME = cs.getInt("matchTime", Defaults.MATCH_TIME);

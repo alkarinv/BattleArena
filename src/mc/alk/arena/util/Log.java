@@ -10,18 +10,21 @@ public class Log {
 	private static Logger log = Bukkit.getLogger() != null ? Bukkit.getLogger() : Logger.getLogger("Arena");
 
 	public static void info(String msg){
+		if (msg == null) return;
 		if (log != null)
 			log.info(colorChat(msg));
 		else
 			System.out.println(colorChat(msg));
 	}
 	public static void warn(String msg){
+		if (msg == null) return;
 		if (log != null)
 			log.warning(colorChat(msg));
 		else
 			System.err.println(colorChat(msg));
 	}
 	public static void err(String msg){
+		if (msg == null) return;
 		if (log != null)
 			log.severe(colorChat(msg));
 		else

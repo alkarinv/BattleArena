@@ -224,8 +224,7 @@ public class BukkitEventListener extends BAEventListener{
 		final Entity entity = getEntityFromMethod(event, getPlayerMethod);
 		if (!(entity instanceof Player))
 			return;
-		final Player p = (Player) entity;
-		callListeners(event, p);
+		callListeners(event, (Player) entity);
 	}
 
 	private void callListeners(Event event, final Player p) {
@@ -233,21 +232,8 @@ public class BukkitEventListener extends BAEventListener{
 		if (spls == null){
 			return;}
 		doMethods(event,p, new ArrayList<RListener>(spls));
-		/// For each ArenaListener class that is listening
-		//		for (RListener spl: spls){
-		//			List<MatchEventMethod> methods = MethodController.getMethods(spl,event);
-		//			if (methods != null){
-		//				doMethods(event, p, spl, methods);}
-		//			if (event instanceof EntityDamageByEntityEvent){
-		//				methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
-		//			else if (event instanceof EntityDamageByBlockEvent){
-		//				methods = MethodController.getMethods(spl,EntityDamageEvent.class);}
-		//			else
-		//				methods = null;
-		//			if (methods != null){
-		//				doMethods(event, p, spl, methods);}
-		//		}
 	}
+
 	private void doMethods(Event event, final Player p, List<RListener> lmethods) {
 		/// For each of the splisteners methods that deal with this BukkitEvent
 		ArenaPlayer arenaPlayer = null;

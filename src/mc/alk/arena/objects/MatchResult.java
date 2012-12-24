@@ -14,7 +14,7 @@ public class MatchResult{
 	WinLossDraw wld = WinLossDraw.UNKNOWN;
 
 	public static enum WinLossDraw{
-		UNKNOWN, WIN, DRAW
+		UNKNOWN, LOSS, DRAW, WIN
 	};
 
 	public void setResult(WinLossDraw wld){
@@ -31,6 +31,11 @@ public class MatchResult{
 	public void setDrawers(Collection<Team> victors) {
 		this.drawers.clear();
 		this.drawers.addAll(victors);
+	}
+
+	public void setLosers(Collection<Team> losers) {
+		this.losers.clear();
+		this.losers.addAll(losers);
 	}
 
 	public void addLosers(Collection<Team> losers) {
@@ -55,7 +60,7 @@ public class MatchResult{
 
 	@Override
 	public String toString(){
-		StringBuilder sb = new StringBuilder(wld+"  victor=" + victors + " losers=" + losers +"  drawers=" + drawers);
+		StringBuilder sb = new StringBuilder("["+wld+",victor=" + victors + ",losers=" + losers +",drawers=" + drawers+"]");
 		return sb.toString() + toPrettyString();
 	}
 

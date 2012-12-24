@@ -32,17 +32,32 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		this.aac = BattleArena.getArenaEditor();
 	}
 
-	@MCCommand(cmds={"select","sel"}, inGame=true, admin=true)
+	@MCCommand(cmds={"select","sel"}, admin=true)
 	public boolean arenaSelect(CommandSender sender, Arena arena) {
-		aac.setCurrentArena((Player) sender, arena);
+		aac.setCurrentArena(sender, arena);
 		return MessageUtil.sendMessage(sender,"&2You have selected arena &6" + arena.getName());
+	}
+
+	@MCCommand(cmds={"ds","deletespawn"}, selection=true, admin=true,
+			usage="/aa deleteSpawn <index>")
+	public boolean arenaDeleteSpawn(CommandSender sender, Integer number) {
+		if (number <= 0 || number > 10000){
+			return MessageUtil.sendMessage(sender, "&cYou need to specify an index within the range &61-10000");}
+		Arena a = aac.getArena(sender);
+		TimedSpawn ts = a.deleteTimedSpawn(new Long(number));
+		if (ts != null){
+			ac.updateArena(a);
+			return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e has deleted index=&4" + number+"&e that had spawn="+ts);
+		} else {
+			return MessageUtil.sendMessage(sender, "&cThere was no spawn at that index");
+		}
 	}
 
 	@MCCommand(cmds={"as","addspawn"}, selection=true, inGame=true, admin=true, min=2,
 			usage="/aa addspawn <mob/item/block/spawnGroup> [buffs or effects] [number] [fs=first spawn time] [rt=respawn time] [trigger=<trigger type>]")
 	public boolean arenaAddSpawn(Player sender, String[] args) {
 		Long number = -1L;
-		try {number = Long.parseLong(args[args.length-1].toString());} 
+		try {number = Long.parseLong(args[args.length-1].toString());}
 		catch(Exception e){
 			return MessageUtil.sendMessage(sender, "&cYou need to specify an index as the final value. &61-10000");
 		}
@@ -54,7 +69,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		Arena a = aac.getArena(sender);
 		SpawnInstance spawn = parseSpawn(Arrays.copyOfRange(args, 0, args.length-1));
 		if (spawn == null){
-			return MessageUtil.sendMessage(sender,"Couldnt recognize spawn " + args[1]);			
+			return MessageUtil.sendMessage(sender,"Couldnt recognize spawn " + args[1]);
 		}
 		Location l = sender.getLocation();
 		spawn.setLocation(l);
@@ -63,7 +78,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 
 		a.addTimedSpawn(number,ts);
 		ac.updateArena(a);
-		BattleArena.saveArenas();	
+		BattleArena.saveArenas();
 		return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e now has spawn &6" + spawn +"&2  index=&4" + number);
 	}
 
@@ -71,7 +86,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		List<String> spawnArgs = new ArrayList<String>();
 		//		List<EditOption> optionArgs = new ArrayList<EditOption>();
 		for (int i=1;i< args.length;i++){
-			String arg = (String) args[i];
+			String arg = args[i];
 			if (arg.contains("=")){
 
 			} else {
@@ -90,21 +105,6 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		}
 		return spawn.get(0);
 	}
-
-//	@MCCommand(cmds={"region","addregion","addr"}, selection=true, admin=true)
-//	public boolean arenaAddWorldGuardRegion(CommandSender sender, Player p, Object[] args) {
-//		Arena a = aac.getArena(p);
-//		Selection sel = wep.getSelection(p);
-//		if (sel == null)
-//			return MessageUtil.sendMessage(sender, ChatColor.RED + "Please select the protection area first.");
-		//		String regionName = idPrefix+a.getName();
-		//		ProtectedRegion region = pc.addRegion(p, sel, regionName);
-		//		if (region == null)
-		//			return MessageUtil.sendMessage(sender, ChatColor.RED + "Selected region could not be made");
-		//		a.addRegion(sel.getWorld().getName(), regionName);
-		//		ac.updateArena(a);
-//		return MessageUtil.sendMessage(sender, ChatColor.GREEN + "Region added to &6" + a.getName());
-//	}
 
 	@MCCommand(cmds={"hidespawns"}, admin=true, inGame=true, selection=true, usage="hidespawns")
 	public boolean arenaHideSpawns(Player sender) {

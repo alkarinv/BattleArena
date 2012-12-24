@@ -1,7 +1,6 @@
 package mc.alk.arena.controllers.messaging;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.competition.match.Match;
@@ -34,21 +33,21 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	@Override
-	public void sendOnBeginMsg(Channel serverChannel,List<Team> teams) {
+	public void sendOnBeginMsg(Channel serverChannel,Collection<Team> teams) {
 		sendMessageToTeams(serverChannel,teams,"onbegin","server_onbegin", mp.getSecondsTillMatch());
 	}
 
 	@Override
-	public void sendOnPreStartMsg(Channel serverChannel,List<Team> teams) {
+	public void sendOnPreStartMsg(Channel serverChannel,Collection<Team> teams) {
 		sendMessageToTeams(serverChannel,teams,"prestart","server_prestart", mp.getSecondsTillMatch());
 	}
 
 	@Override
-	public void sendOnStartMsg(Channel serverChannel, List<Team> teams) {
+	public void sendOnStartMsg(Channel serverChannel, Collection<Team> teams) {
 		sendMessageToTeams(serverChannel,teams,"start","server_start",null);
 	}
 
-	private void sendMessageToTeams(Channel serverChannel, List<Team> teams, String path, String serverpath, Integer seconds){
+	private void sendMessageToTeams(Channel serverChannel, Collection<Team> teams, String path, String serverpath, Integer seconds){
 		final String nTeamPath = getStringPathFromSize(teams.size());
 		Message message = getMessage("match."+ nTeamPath+"."+path);
 		Message serverMessage = getMessage("match."+ nTeamPath+"."+serverpath);
@@ -109,7 +108,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		t1.sendMessage(msgf.getFormattedMessage(message));
 	}
 
-	public void sendOnIntervalMsg(Channel serverChannel, List<Team> currentLeaders, int remaining) {
+	public void sendOnIntervalMsg(Channel serverChannel, Collection<Team> currentLeaders, int remaining) {
 		TimeUtil.testClock();
 		final String timeStr = TimeUtil.convertSecondsToString(remaining);
 		String msg;
@@ -117,7 +116,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr;
 		} else {
 			if (currentLeaders.size() == 1){
-				Team currentLeader = currentLeaders.get(0);
+				Team currentLeader = currentLeaders.iterator().next();
 				msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr+". &6"+
 						currentLeader.getDisplayName()+"&e leads with &2" + currentLeader.getNKills() +
 						"&e kills &4"+currentLeader.getNDeaths()+"&e deaths";

@@ -61,7 +61,7 @@ public enum TransitionOption{
 	BLOCKBREAKON("blockBreakOn",false),				/// Allow block breaks
 	BLOCKPLACEOFF("blockPlaceOff",false),			/// Disallow block place
 	BLOCKPLACEON("blockPlaceOn",false),				/// Allow player to place blocks
-	DROPITEMOFF("dropItemOff",false),				/// Stop the player from throwing/dropping items
+	ITEMDROPOFF("itemDropOff",false),				/// Stop the player from throwing/dropping items
 	DISGUISEALLAS("disguiseAllAs",true),			/// =<String> : Disguise the players as the given mob/player (needs DisguiseCraft)
 	UNDISGUISE("undisguise",false),					/// Undisguise all players in the arena (needs DisguiseCraft)
 	ENCHANTS("enchants",false),						/// Give the Enchants found in enchants:
@@ -99,4 +99,15 @@ public enum TransitionOption{
 	public String toString(){return name;}
 
 	public boolean hasValue(){return hasValue;}
+
+	public static TransitionOption fromString(String str){
+		str = str.toUpperCase();
+		try {
+			return TransitionOption.valueOf(str);
+		} catch (IllegalArgumentException e){
+			if (str.equals("DROPITEMOFF"))
+				return TransitionOption.ITEMDROPOFF;
+			throw new IllegalArgumentException(e.getMessage());
+		}
+	}
 };

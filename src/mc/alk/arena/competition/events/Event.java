@@ -375,7 +375,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	}
 
 	public Matchup getMatchup(Team t,int round){
-		if (rounds == null)
+		if (rounds == null || rounds.size() <= round)
 			return null;
 		Round tr = rounds.get(round);
 		if (tr == null)

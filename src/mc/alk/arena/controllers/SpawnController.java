@@ -46,10 +46,12 @@ public class SpawnController {
 			Bukkit.getScheduler().cancelTask(timerId);
 			timerId = null;
 		}
-		for (NextSpawn ns: spawnQ){
-			try{
-				ns.is.despawn();
-			} catch (Exception e){}
+		if (spawnQ != null){
+			for (NextSpawn ns: spawnQ){
+				try{
+					ns.is.despawn();
+				} catch (Exception e){}
+			}
 		}
 	}
 

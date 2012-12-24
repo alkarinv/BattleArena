@@ -24,6 +24,12 @@ public class YamlFileUpdater {
 	BufferedWriter fw =null;
 	File tempFile = null;
 	File configFile = null;
+	File backupDir;
+	public YamlFileUpdater(){
+		backupDir = new File(BattleArena.getSelf().getDataFolder() +"/backups");
+		if (!backupDir.exists()){
+			backupDir.mkdirs();}
+	}
 
 	public void updateMessageSerializer(MessageSerializer ms) {
 		FileConfiguration fc = ms.getConfig();
@@ -99,6 +105,8 @@ public class YamlFileUpdater {
 		}
 		if (version.compareTo("2.0.5")<0){
 			yfu.to2Point05(bacs, bacs.getConfig(), version);}
+		if (version.compareTo("2.1.0")<0){
+			yfu.to2Point10(bacs, bacs.getConfig(), version, new Version("2.1.0"));}
 
 	}
 
@@ -513,6 +521,7 @@ public class YamlFileUpdater {
 				}
 			}
 			closeFiles();
+			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+"1.7"));
 			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
@@ -524,7 +533,8 @@ public class YamlFileUpdater {
 	}
 
 	private void to1Point73(ConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.7.3");
+		Version newVersion = new Version("1.7.3");
+		Log.warn("BattleArena updating config to "+newVersion.getVersion());
 		if (!openFiles())
 			return;
 		String line =null;
@@ -533,7 +543,7 @@ public class YamlFileUpdater {
 			while ((line = br.readLine()) != null){
 				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
 				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.7.3\n\n");
+					fw.write("configVersion: "+newVersion.getVersion()+"\n\n");
 				} else if (!updatedDefaultSection && (line.matches(".*useArenasOnlyInOrder:.*"))){
 					fw.write(line+"\n\n");
 					fw.write("### Option sets allow you to give an easy to remember name for a group of options\n");
@@ -551,6 +561,7 @@ public class YamlFileUpdater {
 				}
 			}
 			closeFiles();
+			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+"1.7.3"));
 			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
@@ -562,20 +573,21 @@ public class YamlFileUpdater {
 	}
 
 	private void to2Point0(Plugin plugin, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating "+plugin.getName() +" configuration file='" + fc.getName() +"' to 2.0");
+		Version newVersion = new Version("2.0");
+		Log.warn("BattleArena updating "+plugin.getName() +" configuration file='" + fc.getName() +"' to "+newVersion.getVersion());
 		if (!openFiles())
 			return;
 		String line =null;
 		try {
 			if (version.compareTo(0)==0){
-				fw.write("configVersion: 2.0\n");
+				fw.write("configVersion: "+newVersion.getVersion()+"\n");
 			}
 			boolean updatedDefaultSection = false;
 			boolean lineRightAfterPreReqs = false;
 			while ((line = br.readLine()) != null){
 				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
 				if (line.contains("configVersion")){
-					fw.write("configVersion: 2.0\n\n");
+					fw.write("configVersion: "+newVersion.getVersion()+"\n\n");
 				} else if (line.matches(".*preReqs:.*")){
 					lineRightAfterPreReqs = true;
 					line = line.replace("enableForceStart", "matchEnableForceStart");
@@ -604,6 +616,7 @@ public class YamlFileUpdater {
 				}
 			}
 			closeFiles();
+			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+newVersion.getVersion()));
 			renameTo(tempFile, configFile);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -614,7 +627,8 @@ public class YamlFileUpdater {
 	}
 
 	private void to2Point05(ConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 2.0.5");
+		Version newVersion = new Version("2.0.5");
+		Log.warn("BattleArena updating config to "+newVersion.getVersion());
 		if (!openFiles())
 			return;
 		String line =null;
@@ -622,7 +636,7 @@ public class YamlFileUpdater {
 			boolean updatedDefaultSection = false;
 			while ((line = br.readLine()) != null){
 				if (line.contains("configVersion")){
-					fw.write("configVersion: 2.0.5\n\n");
+					fw.write("configVersion: "+newVersion.getVersion()+"\n\n");
 				} else if (!updatedDefaultSection && (line.matches(".*useArenasOnlyInOrder:.*"))){
 					fw.write(line+"\n\n");
 					fw.write("## Bukkit or Minecraft had a bug that sometimes caused players to be invisible after teleporting\n");
@@ -634,6 +648,38 @@ public class YamlFileUpdater {
 				}
 			}
 			closeFiles();
+			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+newVersion.getVersion()));
+			renameTo(tempFile, configFile);
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
+	private void to2Point10(ConfigSerializer bacs, FileConfiguration fc, Version version, Version newVersion) {
+		Log.warn("BattleArena updating config to "+newVersion.getVersion());
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			boolean updatedDefaultSection = false;
+			while ((line = br.readLine()) != null){
+				if (line.contains("configVersion")){
+					fw.write("configVersion: "+newVersion.getVersion()+"\n\n");
+				} else if (!updatedDefaultSection && (line.matches(".*matchForceStartTime:.*"))){
+					fw.write(line+"\n\n");
+					fw.write("    ## Enable ready block (a block players can click to signify they are ready)\n");
+					fw.write("    enablePlayerReadyBlock: false\n");
+					fw.write("    readyBlockType: 42  ## what is the ready block (42 is iron_block)\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			closeFiles();
+			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+newVersion.getVersion()));
 			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
@@ -671,6 +717,7 @@ public class YamlFileUpdater {
 				}
 			}
 			closeFiles();
+			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+"1.5"));
 			renameTo(tempFile,configFile);
 		} catch (IOException e) {
 			e.printStackTrace();

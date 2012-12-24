@@ -54,7 +54,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	public BattleArenaController(){
 		methodController = new MethodController();
-		methodController.addBukkitMethods(this);
+		methodController.addAllEvents(this);
 	}
 
 	/// Run is Thread Safe
@@ -117,7 +117,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	private void unhandle(final Team team) {
 		TeamController.removeTeamHandler(team, this);
 		for (ArenaPlayer ap: team.getPlayers()){
-			methodController.updateAllEventListeners(MatchState.ONFINISH, ap);}
+			methodController.updateEvents(MatchState.ONFINISH, ap);}
 		if (team instanceof CompositeTeam){
 			for (Team t: ((CompositeTeam)team).getOldTeams()){
 				TeamController.removeTeamHandler(t, this);
@@ -172,7 +172,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			TeamController.addTeamHandler(team,this);
 			/// If the same world flag is set, lets not let them change worlds while waiting in the queue
 			if (tqo.getMatchParams().getTransitionOptions().hasOptionAt(MatchState.PREREQS, TransitionOption.SAMEWORLD)){
-				methodController.updateAllEventListeners(MatchState.PREREQS, team.getPlayers());}
+				methodController.updateEvents(MatchState.PREREQS, team.getPlayers());}
 		}
 		return qpp;
 	}

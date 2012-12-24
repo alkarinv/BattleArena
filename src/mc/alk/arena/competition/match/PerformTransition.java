@@ -270,6 +270,8 @@ public class PerformTransition {
 		if (woolTeams && insideArena){
 			TeamUtil.setTeamHead(teamIndex, p);}
 		if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+ms+" transition giving items to " + p.getName());
+		if (items == null || items.isEmpty())
+			return;
 		InventoryUtil.addItemsToInventory(p.getPlayer(),items,woolTeams);
 	}
 

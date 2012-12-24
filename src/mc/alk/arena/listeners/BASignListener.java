@@ -2,10 +2,11 @@ package mc.alk.arena.listeners;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.ArenaClassController;
+import mc.alk.arena.controllers.SignController;
 import mc.alk.arena.objects.ArenaClass;
-import mc.alk.arena.objects.ArenaCommandSign;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.signs.ArenaCommandSign;
+import mc.alk.arena.objects.signs.ArenaStatusSign;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.SignUtil;
 
@@ -21,6 +22,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class BASignListener implements Listener{
+	SignController signController;
+	public BASignListener(SignController signController){
+		this.signController = signController;
+	}
 
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
@@ -66,7 +71,7 @@ public class BASignListener implements Listener{
 		/// Is the sign a arena class sign?
 		final boolean admin = p.isOp() || p.hasPermission(Defaults.ARENA_ADMIN);
 		String lines[] = event.getLines();
-		ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(lines[0]).replaceAll("\\"+Defaults.SIGN_PREFIX, ""));
+		ArenaClass ac = SignUtil.getArenaClassSign(lines);
 		if (ac != null){
 			if (!admin){
 				cancelSignPlace(event,block);
@@ -85,6 +90,17 @@ public class BASignListener implements Listener{
 			makeArenaCommandSign(event, acs, lines);
 			return;
 		}
+		/// is the sign a command sign
+		ArenaStatusSign ass = SignUtil.ArenaStatusSign(lines);
+		if (ass != null){
+			if (!admin){
+				cancelSignPlace(event,block);
+				return;
+			}
+			makeArenaStatusSign(event, ass, lines);
+			return;
+		}
+
 	}
 
 	private void makeArenaClassSign(SignChangeEvent event, ArenaClass ac, String[] lines) {
@@ -133,10 +149,33 @@ public class BASignListener implements Listener{
 		}
 	}
 
+	private void makeArenaStatusSign(SignChangeEvent event, ArenaStatusSign acs, String[] lines) {
+		if (acs == null)
+			return;
+		final Block block = event.getBlock();
+		for (int i=3;i<lines.length;i++){
+			if (!lines[i].isEmpty()) /// other text, not our sign
+				return;
+		}
+
+		try{
+			String match = acs.getType().toLowerCase();
+			match = Character.toUpperCase(match.charAt(0)) + match.substring(1);
+			event.setLine(0, MessageUtil.colorChat( ChatColor.GOLD+Defaults.SIGN_PREFIX+
+					acs.getMatchParams().getColor()+match));
+			signController.addStatusSign(acs);
+			MessageUtil.sendMessage(event.getPlayer(), "&2Arena status sign created");
+		} catch (Exception e){
+			MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Status Sign");
+			e.printStackTrace();
+			cancelSignPlace(event,block);
+			return;
+		}
+	}
+
 	public static void cancelSignPlace(SignChangeEvent event, Block block){
 		event.setCancelled(true);
 		block.setType(Material.AIR);
 		block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.SIGN, 1));
 	}
-
 }

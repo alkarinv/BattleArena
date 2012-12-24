@@ -1,4 +1,4 @@
-configVersion: 2.0.5
+configVersion: 2.1.0
 
 # For help the wiki is a good source of information
 # Wiki: # https://github.com/alkarinv/BattleArena/wiki
@@ -62,6 +62,10 @@ defaultOptions:
     ## the forceStartTime is exceeded only 2 teams of 1 person is needed to start.
     matchEnableForceStart: false
     matchForceStartTime: 180
+
+    ## Enable ready block (a block players can click to signify they are ready)
+    enablePlayerReadyBlock: false
+    readyBlockType: 42  ## what is the ready block (42 is iron_block)
 
     ## How long before a player can choose another class
     timeBetweenClassChange: 3

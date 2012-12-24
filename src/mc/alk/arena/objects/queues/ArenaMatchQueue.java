@@ -100,8 +100,8 @@ public class ArenaMatchQueue {
 	private synchronized QPosTeamPair addToQueue(final QueueObject to) {
 		if (!ready_matches.isEmpty())
 			notifyAll();
-
-		TeamQueue tq = getTeamQ(to.getMatchParams());
+		final MatchParams tomp = to.getMatchParams();
+		TeamQueue tq = getTeamQ(tomp);
 
 		if (tq == null){
 			return null;}
@@ -119,18 +119,20 @@ public class ArenaMatchQueue {
 		/// This is solely for displaying you are in position 2/8, your match will start when 8 players join
 		/// So if this ever is a speed issue, remove
 		QPosTeamPair qtp = null;
+		int nplayers = tq.getNPlayers();
 		synchronized(arenaqueue){
 			for (Arena a : arenaqueue){
-				if (a == null || !a.valid() || !a.matches(to.getMatchParams(), null))
+				if (a == null || !a.valid() || !a.matches(tomp, null))
 					continue;
-				MatchParams newParams = new MatchParams(to.getMatchParams());
+				MatchParams newParams = new MatchParams(tomp);
 				if (!newParams.intersect(a.getParameters()))
 					continue;
-				qtp = new QPosTeamPair(newParams,tq.size(),tq.getNPlayers(),to);
+				qtp = new QPosTeamPair(newParams,tq.size(),nplayers,to);
+				break;
 			}
 		}
 		if (qtp == null)
-			qtp = new QPosTeamPair(to.getMatchParams(),tq.size(),tq.getNPlayers(),to);
+			qtp = new QPosTeamPair(tomp,tq.size(),nplayers,to);
 		qtp.time = time;
 
 		return qtp;

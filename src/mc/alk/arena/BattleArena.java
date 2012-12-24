@@ -17,6 +17,7 @@ import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.EventScheduler;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.controllers.SignController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.executors.ArenaEditorExecutor;
@@ -38,6 +39,7 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
 import mc.alk.arena.objects.victoryconditions.LastManStanding;
 import mc.alk.arena.objects.victoryconditions.NDeaths;
+import mc.alk.arena.objects.victoryconditions.NoTeamsLeft;
 import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
 import mc.alk.arena.objects.victoryconditions.TimeLimit;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
@@ -78,7 +80,9 @@ public class BattleArena extends JavaPlugin{
 	private static BAExecutor commandExecutor;
 	private final BAPlayerListener playerListener = new BAPlayerListener(arenaController);
 	private final BAPluginListener pluginListener = new BAPluginListener();
-	private final BASignListener signListener = new BASignListener();
+	private final SignController signController = new SignController();
+	private final BASignListener signListener = new BASignListener(signController);
+
 	private ArenaControllerSerializer yacs;
 	private static final BAConfigSerializer cc = new BAConfigSerializer();
 	private static final BAClassesSerializer bacs = new BAClassesSerializer();
@@ -136,6 +140,7 @@ public class BattleArena extends JavaPlugin{
 		VictoryType.register(LastManStanding.class, this);
 		VictoryType.register(TimeLimit.class, this);
 		VictoryType.register(OneTeamLeft.class, this);
+		VictoryType.register(NoTeamsLeft.class, this);
 
 //		MethodController.addBukkitMethods(Match.class, Match.class.getMethods());
 //		MethodController.addBukkitMethods(ArenaMatch.class, ArenaMatch.class.getMethods());

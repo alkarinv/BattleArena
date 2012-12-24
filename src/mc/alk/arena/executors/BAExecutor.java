@@ -872,7 +872,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		Match am = ac.getMatch(p);
 		if (am != null){
 			Team t = am.getTeam(p);
-			if (am.insideArena(p) || !t.hasLeft(p)){
+			if (am.insideArena(p) || (!t.hasLeft(p) && t.hasAliveMember(p))){
 				if (showMessages) sendMessage(p,"&eYou are already in a match.");
 				return false;
 			} else{

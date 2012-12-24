@@ -277,7 +277,7 @@ public class TransitionOptions {
 			hasSomething = true;
 			sb.append("&5 - &6" + getMoney()+" " + Defaults.MONEY_STR);
 		}
-		if (hasItems()){
+		if (getGiveItems() != null){
 			hasSomething = true;
 			List<ItemStack> items = getGiveItems();
 			ArmorLevel lvl = InventoryUtil.hasArmorSet(items);
