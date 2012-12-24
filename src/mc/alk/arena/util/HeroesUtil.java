@@ -81,24 +81,19 @@ public class HeroesUtil{
 			hero.removeEffect(effect);}
 	}
 
-	public static void createTeam(Team team) {
-		HeroParty party = null;
-		for (ArenaPlayer player: team.getPlayers()){
-			Hero hero = getHero(player.getPlayer());
-			if (hero == null)
-				continue;
-			/// Remove from any old parties
-			HeroParty p = hero.getParty();
-			if (p != null){
-				p.removeMember(hero);}
-			if (party == null) {
-				party = new HeroParty(hero, heroes);
-				heroes.getPartyManager().addParty(party);
-				parties.put(team, party);
-			} else {
-				party.addMember(hero);
-			}
-		}
+	public static HeroParty createParty(Team team, Hero hero){
+		HeroParty party = new HeroParty(hero, heroes);
+		heroes.getPartyManager().addParty(party);
+		parties.put(team, party);
+		return party;
+	}
+
+	private static void removeOldParty(Hero hero){
+		HeroParty party = hero.getParty();
+		if (party == null)
+			return;
+		party.removeMember(hero);
+		hero.setParty(null);
 	}
 
 	public static void removeTeam(Team team){
@@ -107,23 +102,39 @@ public class HeroesUtil{
 			heroes.getPartyManager().removeParty(party);}
 	}
 
+	public static void createTeam(Team team) {
+		HeroParty party = null;
+		for (ArenaPlayer player: team.getPlayers()){
+			Hero hero = getHero(player.getPlayer());
+			if (hero == null)
+				continue;
+
+			removeOldParty(hero); /// Remove from any old parties
+			/// if the party doesnt exist create it
+			if (party == null) {
+				party = createParty(team,hero);}
+			/// Add the hero to the party,
+			/// and the tell the hero which party they are in
+			party.addMember(hero);
+			hero.setParty(party);
+		}
+	}
+
 	public static void addedToTeam(Team team, Player player){
 		HeroParty party = parties.get(team);
-		if (party == null) {
-			createTeam(team);
-			party = parties.get(team);
-		}
-
 		Hero hero = getHero(player);
 		if (hero == null)
 			return;
-		/// remove from old teams
-		HeroParty old = hero.getParty();
-		if (old != null)
-			old.removeMember(hero);
 
-		/// add to the new team
+		removeOldParty(hero);
+
+		if (party == null) {
+			party = createParty(team,hero);}
+
+		/// Add the hero to the party,
+		/// and the tell the hero which party they are in
 		party.addMember(hero);
+		hero.setParty(party);
 	}
 
 	public static void removedFromTeam(Team team, Player player){

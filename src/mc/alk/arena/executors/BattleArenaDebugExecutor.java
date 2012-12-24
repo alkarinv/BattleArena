@@ -68,7 +68,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			Defaults.DEBUG_STORAGE = on;
 		} else if(section.equalsIgnoreCase("damage")){
 //			Defaults.DEBUG_DAMAGE = on;
-		} else if(section.equalsIgnoreCase("teamJoin")){
+		} else if(section.equalsIgnoreCase("teams")){
 			Defaults.DEBUG_MATCH_TEAMS = on;
 		} else {
 			sendMessage(sender, "&cDebugging couldnt find code section &6"+ section);
