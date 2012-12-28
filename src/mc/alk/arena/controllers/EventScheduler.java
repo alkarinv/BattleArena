@@ -25,7 +25,6 @@ import org.bukkit.command.CommandSender;
 public class EventScheduler implements Runnable, ArenaListener{
 
 	int curEvent = 0;
-	Long delay = 5L;
 	boolean continuous= false;
 	boolean running = false;
 	boolean stop = false;
@@ -65,11 +64,8 @@ public class EventScheduler implements Runnable, ArenaListener{
 				return;
 			}
 			CommandSender sender = Bukkit.getConsoleSender();
-//			CommandSender sender = ColouredConsoleSender.getInstance();
 			EventParams eventParams = eventPair.getEventParams();
-			//			event.addTransitionListener(scheduler);
 			String args[] = eventPair.getArgs();
-			//			boolean success = false;
 			Event event = null;
 			try {
 				if (ee instanceof ReservedArenaEventExecutor){
@@ -101,7 +97,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 		e.removeArenaListener(this);
 		if (continuous){
 			/// Wait x sec then start the next event
-			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), this, (long) (20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS*Defaults.TICK_MULT));
+			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
 				Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"Next event will start in "+Defaults.TIME_BETWEEN_SCHEDULED_EVENTS+" seconds");}
 		} else {

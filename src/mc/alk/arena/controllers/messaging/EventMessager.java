@@ -61,8 +61,8 @@ public class EventMessager {
 		try{impl.sendTeamJoinedEvent(getChannel(MatchState.ONJOIN),t);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public void sendEventCancelled() {
-		try{impl.sendEventCancelled(getChannel(MatchState.ONCANCEL));}catch(Exception e){e.printStackTrace();}
+	public void sendEventCancelled(Collection<Team> teams) {
+		try{impl.sendEventCancelled(getChannel(MatchState.ONCANCEL), teams);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendCantFitTeam(Team t) {

@@ -53,26 +53,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		final String nTeamPath = getStringPathFromSize(teams.size());
 		Message message = getMessage("event."+ nTeamPath+".start");
 		Message serverMessage = getMessage("event."+ nTeamPath+".server_start");
-		Set<MessageOption> ops = message.getOptions();
-		if (serverChannel != Channel.NullChannel){
-			ops.addAll(serverMessage.getOptions());
-		}
-
-		String msg = message.getMessage();
-		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), teams.size(), message, ops);
-		msgf.formatCommonOptions(teams);
-		for (Team t: teams){
-			msgf.formatTeamOptions(t,false);
-			msgf.formatTwoTeamsOptions(t, teams);
-			msgf.formatTeams(teams);
-			String newmsg = msgf.getFormattedMessage(message);
-			t.sendMessage(newmsg);
-		}
-
-		if (serverChannel != Channel.NullChannel){
-			msg = msgf.getFormattedMessage(serverMessage);
-			serverChannel.broadcast(msg);
-		}
+		formatAndSend(serverChannel, teams, message, serverMessage);
 	}
 
 	@Override
@@ -113,8 +94,32 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 	}
 
 	@Override
-	public void sendEventCancelled(Channel serverChannel) {
-		serverChannel.broadcast(mp.getPrefix()+"&e has been cancelled!");
+	public void sendEventCancelled(Channel serverChannel, Collection<Team> teams) {
+		Message message = getMessage("event.team_cancelled");
+		Message serverMessage = getMessage("event.server_cancelled");
+		formatAndSend(serverChannel, teams, message, serverMessage);
+	}
+
+	private void formatAndSend(Channel serverChannel, Collection<Team> teams, Message message, Message serverMessage) {
+		Set<MessageOption> ops = message.getOptions();
+		if (serverChannel != Channel.NullChannel){
+			ops.addAll(serverMessage.getOptions());
+		}
+
+		String msg = message.getMessage();
+		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), teams.size(), message, ops);
+		msgf.formatCommonOptions(teams);
+		for (Team t: teams){
+			msgf.formatTeamOptions(t,false);
+			msgf.formatTeams(teams);
+			String newmsg = msgf.getFormattedMessage(message);
+			t.sendMessage(newmsg);
+		}
+
+		if (serverChannel != Channel.NullChannel){
+			msg = msgf.getFormattedMessage(serverMessage);
+			serverChannel.broadcast(msg);
+		}
 	}
 
 	@Override
