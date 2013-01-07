@@ -128,6 +128,12 @@ public abstract class AbstractTeam implements Team{
 		createName();
 		return name;
 	}
+	
+	/**
+	 * Returns this teams unique ID.
+	 * Team ID is unique to everything, and no two teams will have the same ID.
+	 * This is NOT equivilant to Arena.getMatch().getTeams().indexOf(this)!
+	 */
 	public int getId(){ return id;}
 	public void setName(String name) {
 		this.name = name;
