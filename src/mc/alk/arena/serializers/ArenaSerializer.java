@@ -278,6 +278,9 @@ public class ArenaSerializer {
 		String worldName = arena.getRegionWorld();
 		if (region == null || worldName == null)
 			return;
+		if (!WorldGuardInterface.hasRegion(worldName, region)){
+			Log.err("Arena " + arena.getName() +" has a world guard region defined but it no longer exists inside of WorldGuard."+
+					"You will have to remake the region.  /arena alter <arena name> addregion");}
 		MatchParams mp = ParamController.getMatchParamCopy(arena.getArenaType().getName());
 		if (mp == null)
 			return;

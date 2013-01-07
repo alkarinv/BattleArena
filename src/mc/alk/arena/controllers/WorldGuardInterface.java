@@ -49,6 +49,10 @@ public class WorldGuardInterface {
 		return WorldGuardUtil.hasRegion(world, id);
 	}
 
+	public static boolean hasRegion(String world, String id){
+		return WorldGuardUtil.hasRegion(world, id);
+	}
+
 	public static void updateProtectedRegion(Player p, String id) throws Exception {
 		WorldGuardUtil.updateProtectedRegion(p, id);
 	}

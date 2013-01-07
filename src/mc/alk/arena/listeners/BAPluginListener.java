@@ -204,7 +204,7 @@ public class BAPluginListener implements Listener {
 	}
 
 	public void loadWorldEdit(){
-		if (WorldGuardInterface.hasWorldEdit()){
+		if (!WorldGuardInterface.hasWorldEdit()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("WorldEdit");
 			if (plugin != null) {
 				if (WorldGuardInterface.setWorldEdit(plugin)){
@@ -215,7 +215,7 @@ public class BAPluginListener implements Listener {
 	}
 
 	public void loadWorldGuard(){
-		if (WorldGuardInterface.hasWorldGuard()){
+		if (!WorldGuardInterface.hasWorldGuard()){
 			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
 			if (plugin != null) {
 				if (WorldGuardInterface.setWorldGuard(plugin)){

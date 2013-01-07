@@ -89,6 +89,14 @@ public class WorldGuardUtil {
 		return mgr.hasRegion(id);
 	}
 
+	public static boolean hasRegion(String world, String id){
+		World w = Bukkit.getWorld(world);
+		if (w == null)
+			return false;
+		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
+		return mgr.hasRegion(id);
+	}
+
 
 	public static void updateProtectedRegion(Player p, String id) throws Exception {
 		Selection sel = WorldEditUtil.getSelection(p);
@@ -140,6 +148,8 @@ public class WorldGuardUtil {
 
 	public static boolean isLeavingArea(final Location from, final Location to, final World w, final String id) {
 		ProtectedRegion pr = getRegion(w, id);
+		if (pr == null)
+			return false;
 		return (!pr.contains(to.getBlockX(), to.getBlockY(), to.getBlockZ()) &&
 				pr.contains(from.getBlockX(), from.getBlockY(), from.getBlockZ()));
 	}
