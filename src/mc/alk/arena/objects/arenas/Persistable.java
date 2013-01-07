@@ -150,15 +150,6 @@ public class Persistable {
 					} else if (ConfigurationSerializable.class.isAssignableFrom(type)){
 //						obj = cs.get // TODO
 					} else if (YamlSerializable.class.isAssignableFrom(type)){
-//						Log.debug("  need to check ########################  " + name   +"  -- " +
-//								cs.getConfigurationSection(name) +
-//								"   _-- " + cs.getString(name) + "    " +
-//								cs.getCurrentPath() +"   ---------   " + cs.get(name));
-//						if (cs.getConfigurationSection(name) == null){
-//							String str = cs.getString(name);
-//							if (str == null){
-//								continue;}
-//						}
 						obj = createYamlSerializable(type,cs.getConfigurationSection(name), cs.getString(name));
 					} else {
 						obj = yamlToObj(name,type,cs);
@@ -211,9 +202,7 @@ public class Persistable {
 			return null;
 		Class<?>[] args = {};
 		try {
-//			Log.debug("  " + clazz.getSimpleName() +"       " + cs);
 			Constructor<?> constructor = clazz.getConstructor(args);
-//			Log.debug("  " + clazz.getSimpleName() +"  ------  " + constructor);
 			YamlSerializable ys = (YamlSerializable) constructor.newInstance((Object[])args);
 			if (ys == null)
 				return null;

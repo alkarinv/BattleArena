@@ -117,22 +117,11 @@ public class MessageSerializer extends BaseSerializer {
 	}
 
 	protected void sendVictory(Channel serverChannel, Collection<Team> victors, Collection<Team> losers, MatchParams mp, String winnerpath,String loserpath, String serverPath){
-//		Log.debug("----------------   "  + winnerpath +"             " + loserpath);
-//		if (victors != null)
-//		for (Team t: victors){
-//			Log.debug("  VVV = " + t);
-//		}
-//		if (losers != null)
-//		for (Team t: losers){
-//			Log.debug("  LLL = " + t);
-//		}
 		int size = victors != null ? victors.size() : 0;
 		size += losers != null ? losers.size() : 0;
 		Message winnermessage = getMessage(winnerpath);
 		Message losermessage = getMessage(loserpath);
 		Message serverMessage = getMessage(serverPath);
-//		Log.debug(" wm = " + winnermessage);
-//		Log.debug(" lm = " + losermessage);
 
 		Set<MessageOption> ops = winnermessage.getOptions();
 		if (ops == null)

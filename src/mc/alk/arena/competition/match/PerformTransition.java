@@ -25,7 +25,6 @@ import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
-import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
@@ -74,8 +73,6 @@ public class PerformTransition {
 			return true;
 		if (performOncePerTransitionOptions){
 			/// Options that don't affect players first
-			if (Defaults.DEBUG_TRANSITIONS) Log.debug("[BA Info] wg=" + WorldGuardInterface.hasWorldGuard() +"  region="+
-					am.getArena().getRegion() +"  reset=" + mo.hasOption(TransitionOption.WGRESETREGION));
 			if (WorldGuardInterface.hasWorldGuard() && am.getArena().hasRegion()){
 				String region = am.getArena().getRegion();
 				String worldName = am.getArena().getRegionWorld();

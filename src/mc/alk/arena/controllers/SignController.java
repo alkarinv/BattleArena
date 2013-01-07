@@ -7,7 +7,6 @@ import java.util.Map;
 import mc.alk.arena.events.matches.TeamJoinedQueueEvent;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.signs.ArenaStatusSign;
-import mc.alk.arena.util.Log;
 import mc.alk.arena.util.SerializerUtil;
 
 import org.bukkit.Location;
@@ -60,18 +59,15 @@ public class SignController implements Listener{
 	public void onTeamJoinedQueueEvent(TeamJoinedQueueEvent event){
 		ArenaParams params = event.getParams();
 		Map<String,ArenaStatusSign> signs = statusSigns.get(params.getType().getName());
-		Log.debug("#@@@@@@@@@@@@@@@@@@   signs = " + signs);
 		if (signs == null)
 			return;
 
 		for (ArenaStatusSign sign: signs.values()){
-			Log.debug("#@@@@@@@@@@@@@@@@@@   sign = " + sign);
 			Location l = sign.getLocation();
 			final Material type = l.getBlock().getState().getType();
 			if (type != Material.SIGN_POST && type != Material.SIGN){
 				continue;}
 			Sign s = (Sign) l.getBlock().getState();
-			Log.debug("#@@@@@@@@@@@@@@@@@@   s = " + s);
 			s.setLine(3, event.getPos() +"/" + params.getMinTeams());
 			s.update();
 		}
