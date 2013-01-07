@@ -44,10 +44,6 @@ public class EventMessager {
 		try{impl.sendEventStarting(getChannel(MatchState.ONSTART), teams);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public void sendEventVictory(Collection<Team> victors, Collection<Team> losers) {
-		try{impl.sendEventVictory(getChannel(MatchState.ONVICTORY), victors,losers);}catch(Exception e){e.printStackTrace();}
-	}
-
 	public void sendEventOpenMsg() {
 		try{impl.sendEventOpenMsg(getChannel(MatchState.ONOPEN));}catch(Exception e){e.printStackTrace();}
 	}
@@ -57,9 +53,9 @@ public class EventMessager {
 	}catch(Exception e){e.printStackTrace();}
 	}
 
-	public void sendTeamJoinedEvent(Team t) {
-		try{impl.sendTeamJoinedEvent(getChannel(MatchState.ONJOIN),t);}catch(Exception e){e.printStackTrace();}
-	}
+//	public void sendTeamJoinedEvent(Team t) {
+//		try{impl.sendTeamJoinedEvent(getChannel(MatchState.ONJOIN),t);}catch(Exception e){e.printStackTrace();}
+//	}
 
 	public void sendEventCancelled(Collection<Team> teams) {
 		try{impl.sendEventCancelled(getChannel(MatchState.ONCANCEL), teams);}catch(Exception e){e.printStackTrace();}
@@ -76,8 +72,16 @@ public class EventMessager {
 		this.silent = silent;
 	}
 
+	public void sendEventVictory(Collection<Team> victors, Collection<Team> losers) {
+		try{impl.sendEventVictory(getChannel(MatchState.ONVICTORY), victors,losers);}catch(Exception e){e.printStackTrace();}
+	}
+
 	public void sendEventDraw(Collection<Team> drawers, Collection<Team> losers) {
 		try{impl.sendEventDraw(getChannel(MatchState.ONVICTORY), drawers, losers);}catch(Exception e){e.printStackTrace();}
 	}
+
+//	public void sendEventJoin(Team team, ArenaPlayer player) {
+//		try{impl.sendEventJoin(getChannel(MatchState.ONJOIN), drawers, losers);}catch(Exception e){e.printStackTrace();}
+//	}
 
 }

@@ -47,6 +47,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	private final ArenaMatchQueue amq = new ArenaMatchQueue();
 	final private Set<Match> running_matches = Collections.synchronizedSet(new CopyOnWriteArraySet<Match>());
+	final private Map<String, Integer> runningMatchTypes = Collections.synchronizedMap(new HashMap<String,Integer>());
 	final private Map<ArenaType,Set<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,Set<Match>>());
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
 	long lastTimeCheck = 0;
@@ -83,11 +84,37 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		}
 	}
 
+	public Integer getNumberOpenMatches(String type){
+		Integer count = runningMatchTypes.get(type);
+		if (count==null){
+			count = 0;
+			runningMatchTypes.put(type, count);
+		}
+		return count;
+	}
+
+	public Integer incNumberOpenMatches(String type){
+		Integer count = runningMatchTypes.get(type);
+		if (count==null){
+			count = 0;}
+		runningMatchTypes.put(type, ++count);
+		return count;
+	}
+
+	public Integer decNumberOpenMatches(String type){
+		Integer count = runningMatchTypes.get(type);
+		if (count==null){
+			count = 1;}
+		runningMatchTypes.put(type, --count);
+		return count;
+	}
+
 	public void openMatch(Match match){
 		match.addArenaListener(this);
 		synchronized(running_matches){
 			running_matches.add(match);
 		}
+		incNumberOpenMatches(match.getParams().getType().getName());
 		/// BattleArena controller only tracks the players while they are in the queue
 		/// now that a match is starting the players are no longer our responsibility
 		unhandle(match);
@@ -137,23 +164,23 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		//		if (Defaults.DEBUG ) System.out.println("BattleArenaController::matchComplete=" + am + ":" );
 		Match am = event.getMatch();
 		removeMatch(am); /// handles removing running match from the BArenaController
-
+		decNumberOpenMatches(am.getArena().getArenaType().getName());
 		unhandle(am);/// unhandle any teams that were added during the match
 		Arena arena = allarenas.get(am.getArena().getName());
 		if (arena != null)
-			amq.add(arena); /// add it back into the queue
+			amq.add(arena,shouldStart(arena)); /// add it back into the queue
 	}
 
 	public void updateArena(Arena arena) {
 		allarenas.put(arena.getName(), arena);
 		if (amq.removeArena(arena) != null){ /// if its not being used
-			amq.add(arena);
+			amq.add(arena,shouldStart(arena));
 		}
 	}
 
 	public void addArena(Arena arena) {
 		allarenas.put(arena.getName(), arena);
-		amq.add(arena);
+		amq.add(arena, shouldStart(arena));
 	}
 
 	public Map<String, Arena> getArenas(){return allarenas;}
@@ -167,7 +194,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		Team team = tqo.getTeam();
 		if (joinExistingMatch(tqo)){
 			return null;}
-		QPosTeamPair qpp = amq.add(tqo);
+		QPosTeamPair qpp = amq.add(tqo, shouldStart(tqo.getMatchParams()));
 		if (qpp != null && qpp.pos >=0){
 			TeamController.addTeamHandler(team,this);
 			/// If the same world flag is set, lets not let them change worlds while waiting in the queue
@@ -175,6 +202,21 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 				methodController.updateEvents(MatchState.PREREQS, team.getPlayers());}
 		}
 		return qpp;
+	}
+
+	private boolean shouldStart(MatchParams matchParams) {
+		return shouldStart(matchParams.getType().getName(), matchParams);
+	}
+
+	private boolean shouldStart(Arena arena) {
+		final String arenaType = arena.getArenaType().getName();
+		return shouldStart(arenaType, ParamController.getMatchParams(arenaType));
+	}
+
+	private boolean shouldStart(String type, MatchParams mp){
+		if (type == null || mp == null)
+			return true;
+		return getNumberOpenMatches(type) < mp.getNConcurrentCompetitions();
 	}
 
 	@MatchEventHandler(begin=MatchState.PREREQS, end=MatchState.ONFINISH)
@@ -247,7 +289,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		TeamController.removeTeamHandler(t, this);
 		return amq.removeFromQue(t);
 	}
-	public void addMatchup(Matchup m) {amq.addMatchup(m);}
+	public void addMatchup(Matchup m) {amq.addMatchup(m, shouldStart(m.getMatchParams()));}
 	public Arena reserveArena(Arena arena) {return amq.reserveArena(arena);}
 	public Arena getArena(String arenaName) {return allarenas.get(arenaName);}
 
@@ -376,7 +418,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 				if (a != null){
 					Arena arena = allarenas.get(a.getName());
 					if (arena == null)
-						amq.add(arena);
+						amq.add(arena, false);
 				}
 			}
 			running_matches.clear();

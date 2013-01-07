@@ -102,7 +102,7 @@ public class HeroesUtil{
 			heroes.getPartyManager().removeParty(party);}
 	}
 
-	public static void createTeam(Team team) {
+	public static HeroParty createTeam(Team team) {
 		HeroParty party = null;
 		for (ArenaPlayer player: team.getPlayers()){
 			Hero hero = getHero(player.getPlayer());
@@ -118,10 +118,14 @@ public class HeroesUtil{
 			party.addMember(hero);
 			hero.setParty(party);
 		}
+		return party;
 	}
 
 	public static void addedToTeam(Team team, Player player){
 		HeroParty party = parties.get(team);
+		if (party == null)
+			party = createTeam(team);
+
 		Hero hero = getHero(player);
 		if (hero == null)
 			return;
@@ -144,7 +148,7 @@ public class HeroesUtil{
 		Hero hero = getHero(player);
 		if (hero == null){
 			return;}
-		party.removeMember(hero);
+		removeOldParty(hero);
 	}
 
 	public static Team getTeam(Player player) {
@@ -155,14 +159,17 @@ public class HeroesUtil{
 		if (party == null)
 			return null;
 		Team t = TeamFactory.createCompositeTeam();
-		t.addPlayer(BattleArena.toArenaPlayer(party.getLeader().getPlayer()));
+		Hero leader = party.getLeader();
+		if (leader != null)
+			t.addPlayer(BattleArena.toArenaPlayer(leader.getPlayer()));
+
 		Set<Hero> members = party.getMembers();
 		if (members != null){
 			for (Hero h: members){
 				t.addPlayer(BattleArena.toArenaPlayer(h.getPlayer()));
 			}
 		}
-		return t;
+		return t.size() > 0 ? t : null;
 	}
 
 	public static Integer getMagicLevel(Player player) {

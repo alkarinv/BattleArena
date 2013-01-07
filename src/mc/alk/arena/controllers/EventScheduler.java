@@ -32,11 +32,6 @@ public class EventScheduler implements Runnable, ArenaListener{
 
 	final CopyOnWriteArrayList<EventPair> events = new CopyOnWriteArrayList<EventPair>();
 
-	public boolean scheduleEvent(EventParams eventParams, String[] args) {
-		events.add(new EventPair(eventParams,args)); /// TODO verify these arguments here instead of waiting until running them
-		return true;
-	}
-
 	@Override
 	public void run() {
 		if (events.isEmpty() || stop)
@@ -58,6 +53,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 		public void run() {
 			if (stop)
 				return;
+
 			EventExecutor ee = EventController.getEventExecutor(eventPair.getEventParams().getName());
 			if (ee == null){
 				Log.err("executor for " + eventPair.getEventParams() +" was not found");
@@ -82,10 +78,11 @@ public class EventScheduler implements Runnable, ArenaListener{
 			} catch (Exception e){
 				e.printStackTrace();
 			}
+			if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] Running event ee=" + ee  +"  event" + event +"  args=" + args);
 			if (event != null){
 				event.addArenaListener(scheduler);
 			} else {  /// wait then start up the scheduler again in x seconds
-				currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(),
+				currentTimer = Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(),
 						scheduler, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			}
 		}
@@ -96,6 +93,8 @@ public class EventScheduler implements Runnable, ArenaListener{
 		Event e = event.getEvent();
 		e.removeArenaListener(this);
 		if (continuous){
+			if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] finished event "+ e+"  scheduling next event in "+ 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS + " ticks");
+
 			/// Wait x sec then start the next event
 			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
@@ -133,8 +132,14 @@ public class EventScheduler implements Runnable, ArenaListener{
 		new Thread(this).start();
 	}
 
-	public void deleteEvent(int i) {
-		events.remove(i);
+
+	public boolean scheduleEvent(EventParams eventParams, String[] args) {
+		events.add(new EventPair(eventParams,args)); /// TODO verify these arguments here instead of waiting until running them
+		return true;
+	}
+
+	public EventPair deleteEvent(int i) {
+		return events.remove(i);
 	}
 
 }

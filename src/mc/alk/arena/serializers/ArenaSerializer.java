@@ -445,7 +445,7 @@ public class ArenaSerializer {
 		//			System.out.println("k="+k +"  vlaue=" + key+":"+value);
 		//		}
 		spawnmap.put("loc", SerializerUtil.getLocString(si.getLocation()));
-		spawnmap.put("time", ts.getTimeToStart()+" " + ts.getRespawnInterval()+" " + ts.getTimeToDespawn());
+		spawnmap.put("time", ts.getFirstSpawnTime()+" " + ts.getRespawnTime()+" " + ts.getTimeToDespawn());
 		return spawnmap;
 	}
 

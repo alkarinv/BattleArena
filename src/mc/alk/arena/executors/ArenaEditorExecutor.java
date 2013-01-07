@@ -47,6 +47,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		TimedSpawn ts = a.deleteTimedSpawn(new Long(number));
 		if (ts != null){
 			ac.updateArena(a);
+			BattleArena.saveArenas();
 			return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e has deleted index=&4" + number+"&e that had spawn="+ts);
 		} else {
 			return MessageUtil.sendMessage(sender, "&cThere was no spawn at that index");
@@ -67,28 +68,41 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 			return MessageUtil.sendMessage(sender, "&cYou need to specify an index within the range &61-10000");}
 
 		Arena a = aac.getArena(sender);
-		SpawnInstance spawn = parseSpawn(Arrays.copyOfRange(args, 0, args.length-1));
+		TimedSpawn spawn = parseSpawn(Arrays.copyOfRange(args, 0, args.length-1));
 		if (spawn == null){
 			return MessageUtil.sendMessage(sender,"Couldnt recognize spawn " + args[1]);
 		}
 		Location l = sender.getLocation();
-		spawn.setLocation(l);
-		TimedSpawn ts = new TimedSpawn(0,30,0,spawn);
+		spawn.getSpawn().setLocation(l);
 
 
-		a.addTimedSpawn(number,ts);
+		a.addTimedSpawn(number,spawn);
 		ac.updateArena(a);
 		BattleArena.saveArenas();
 		return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e now has spawn &6" + spawn +"&2  index=&4" + number);
 	}
 
-	private SpawnInstance parseSpawn(String[] args) {
+	private TimedSpawn parseSpawn(String[] args) {
 		List<String> spawnArgs = new ArrayList<String>();
 		//		List<EditOption> optionArgs = new ArrayList<EditOption>();
+		Integer fs = 0; /// first spawn time
+		Integer rs = 30; /// Respawn time
+		Integer ds = 0; /// Despawn time
 		for (int i=1;i< args.length;i++){
 			String arg = args[i];
 			if (arg.contains("=")){
-
+				String as[] = arg.split("=");
+				Integer time = null;
+				try{
+					time = Integer.valueOf(as[1]);
+				} catch (Exception e){}
+				if (as[0].equalsIgnoreCase("fs")){
+					fs = time;
+				} else if (as[0].equalsIgnoreCase("rs")){
+					rs = time;
+				} else if (as[0].equalsIgnoreCase("ds")){
+					ds = time;
+				}
 			} else {
 				spawnArgs.add(arg);
 			}
@@ -103,7 +117,11 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		if (spawn == null){
 			return null;
 		}
-		return spawn.get(0);
+		SpawnInstance si = spawn.get(0);
+		if (si == null)
+			return null;
+		TimedSpawn ts = new TimedSpawn(fs,rs,ds,si);
+		return ts;
 	}
 
 	@MCCommand(cmds={"hidespawns"}, admin=true, inGame=true, selection=true, usage="hidespawns")

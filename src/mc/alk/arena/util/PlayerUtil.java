@@ -3,7 +3,7 @@ package mc.alk.arena.util;
 import java.util.List;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.HeroesInterface;
+import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.objects.CommandLineString;
 
 import org.bukkit.Bukkit;
@@ -26,8 +26,8 @@ public class PlayerUtil {
 	}
 
 	public static void setHealthP(final Player player, final Integer health) {
-		if (HeroesInterface.enabled()){
-			HeroesInterface.setHealthP(player,health);
+		if (HeroesController.enabled()){
+			HeroesController.setHealthP(player,health);
 			return;
 		}
 		int val = (int) ((double)player.getMaxHealth() * health/100.0);
@@ -35,8 +35,8 @@ public class PlayerUtil {
 	}
 
 	public static void setHealth(final Player player, final Integer health) {
-		if (HeroesInterface.enabled()){
-			HeroesInterface.setHealth(player,health);
+		if (HeroesController.enabled()){
+			HeroesController.setHealth(player,health);
 			return;
 		}
 		final int oldHealth = player.getHealth();
@@ -59,7 +59,7 @@ public class PlayerUtil {
 	}
 
 	public static Integer getHealth(Player player) {
-		return HeroesInterface.enabled() ? HeroesInterface.getHealth(player) : player.getHealth();
+		return HeroesController.enabled() ? HeroesController.getHealth(player) : player.getHealth();
 	}
 
 	public static void setInvulnerable(Player player, Integer invulnerableTime) {

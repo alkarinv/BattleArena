@@ -3,6 +3,7 @@ package mc.alk.arena.objects.signs;
 import java.util.HashMap;
 import java.util.Map;
 
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.SerializerUtil;
 
@@ -16,13 +17,20 @@ public class ArenaStatusSign implements ConfigurationSerializable{
 
 	String arenaType;
 
-	StatusUpdate update;
+	StatusUpdate update = StatusUpdate.STATUS;
 	Location location;
-	MatchParams mp;
+	MatchParams params;
 
 	public ArenaStatusSign(MatchParams mp) {
 		this.arenaType = mp.getType().getName();
-		this.mp = mp;
+		this.params = mp;
+	}
+
+	public ArenaStatusSign(String arenaType, StatusUpdate update, Location location, MatchParams params) {
+		this.arenaType = arenaType;
+		this.update = update;
+		this.location = location;
+		this.params = params;
 	}
 
 	public Location getLocation() {
@@ -41,12 +49,23 @@ public class ArenaStatusSign implements ConfigurationSerializable{
 	public Map<String, Object> serialize() {
 		HashMap<String,Object> map = new HashMap<String,Object>();
 		map.put("arenaType", arenaType);
-		map.put("updateType", update);
+		map.put("updateType", update.toString());
 		map.put("location", SerializerUtil.getBlockLocString(location));
 		return map;
 	}
 
+	public static ArenaStatusSign deserialize(Map<String, Object> map) {
+		String arenaType = (String) map.get("arenaType");
+		StatusUpdate update = StatusUpdate.valueOf((String) map.get("updateType"));
+		Location location = SerializerUtil.getLocation((String) map.get("location"));
+		if (arenaType == null || update == null || location == null)
+			return null;
+		MatchParams mp = ParamController.getMatchParamCopy(arenaType);
+
+		return new ArenaStatusSign(arenaType, update, location,mp);
+	}
+
 	public MatchParams getMatchParams() {
-		return mp;
+		return params;
 	}
 }

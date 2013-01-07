@@ -22,6 +22,7 @@ import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.regions.PylamoRegion;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.Persist;
@@ -53,6 +54,9 @@ public class Arena implements ArenaListener {
 	protected String wgRegionName;
 	@Persist
 	protected String wgRegionWorld;
+
+	@Persist
+	protected PylamoRegion pylamoRegion;
 
 	/**
 	 * Arena constructor
@@ -410,6 +414,13 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
+	 * private Arena crate events, calls create for subclasses to be able to override
+	 */
+	void privateCreate(){
+		try{create();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
 	 * private Arena delete events, calls delete for subclasses to be able to override
 	 */
 	void privateDelete(){
@@ -417,6 +428,11 @@ public class Arena implements ArenaListener {
 		if (wgRegionName != null && wgRegionWorld != null && WorldGuardInterface.hasWorldGuard())
 			WorldGuardInterface.deleteRegion(wgRegionWorld, wgRegionName);
 	}
+
+	/**
+	 * Called when an arena is first created by a command (not after its constructed or initialized)
+	 */
+	protected void create(){}
 
 	/**
 	 * Called when an arena is deleted
@@ -735,6 +751,14 @@ public class Arena implements ArenaListener {
 			spawnController = new SpawnController(timedSpawns);
 		}
 		return spawnController;
+	}
+
+	public void setPylamoRegion(PylamoRegion region) {
+		this.pylamoRegion = region;
+	}
+
+	public PylamoRegion getPylamoRegion() {
+		return pylamoRegion;
 	}
 
 

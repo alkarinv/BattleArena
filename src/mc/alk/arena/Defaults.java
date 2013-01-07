@@ -90,6 +90,8 @@ public class Defaults {
 	public static final boolean DEBUG_EVENTS = false;
 	public static final boolean DEBUG_TEVENTS = false;
 	public static final boolean DEBUG_DAMAGE = false;
+	public static final boolean DEBUG_SCHEDULER = false;
+	public static boolean DEBUG_COMMANDS = false;
 
 	public static int TIME_BETWEEN_CLASS_CHANGE = 3;
 

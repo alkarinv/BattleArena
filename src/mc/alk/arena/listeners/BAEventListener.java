@@ -48,6 +48,7 @@ public abstract class BAEventListener implements Listener  {
 		};
 		Bukkit.getPluginManager().registerEvent(bukkitEvent, this, EventPriority.HIGHEST, executor,BattleArena.getSelf());
 	}
+
 	static long total = 0;
 	static long count=0;
 

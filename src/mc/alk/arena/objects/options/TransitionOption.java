@@ -4,7 +4,7 @@ public enum TransitionOption{
 	/// preReq only Options
 	NEEDARMOR ("needArmor",false),					/// PREREQ only: player needs armor to join the match
 	NOINVENTORY("noInventory",false),				/// PREREQ only: player needs to have no inventory to join
-	CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter",false),
+//	CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter",false),
 	NEEDITEMS ("needItems",false),					/// PREREQ only: player needs the following items to join
 	SAMEWORLD("sameWorld",false),					/// PREREQ only: player can only join from the same world
 	WITHINDISTANCE("withinDistance",true),			/// PREREQ only: player needs to be within the following distance to join
@@ -107,6 +107,8 @@ public enum TransitionOption{
 		} catch (IllegalArgumentException e){
 			if (str.equals("DROPITEMOFF"))
 				return TransitionOption.ITEMDROPOFF;
+			else if (str.equals("RESETREGION"))
+				return TransitionOption.WGRESETREGION;
 			throw new IllegalArgumentException(e.getMessage());
 		}
 	}

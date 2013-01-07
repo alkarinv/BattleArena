@@ -14,6 +14,7 @@ public class EffectUtil {
 	static{
 		effectToName.put(PotionEffectType.FAST_DIGGING, "HASTE");
 		effectToName.put(PotionEffectType.SLOW_DIGGING,"SLOWSWING");
+		effectToName.put(PotionEffectType.SLOW,"SLOWNESS");
 		effectToName.put(PotionEffectType.SLOW_DIGGING,"SLOWDIG");
 		effectToName.put(PotionEffectType.INCREASE_DAMAGE, "STRENGTH");
 		effectToName.put(PotionEffectType.REGENERATION, "REGEN");
@@ -21,6 +22,7 @@ public class EffectUtil {
 		effectToName.put(PotionEffectType.DAMAGE_RESISTANCE, "PROT");
 		nameToEffect.put("HASTE", PotionEffectType.FAST_DIGGING);
 		nameToEffect.put("SLOW", PotionEffectType.SLOW);
+		nameToEffect.put("SLOWNESS", PotionEffectType.SLOW);
 		nameToEffect.put("SLOWDIG", PotionEffectType.SLOW_DIGGING);
 		nameToEffect.put("SLOWSWING", PotionEffectType.SLOW_DIGGING);
 		nameToEffect.put("STRENGTH", PotionEffectType.INCREASE_DAMAGE);
@@ -79,17 +81,14 @@ public class EffectUtil {
 	public static PotionEffect parseArg(String arg, int defaultStrength, int defaultTime) {
 		arg = arg.replaceAll(",", ":");
 		String split[] = arg.split(":");
-		try {
-			PotionEffectType type = getEffect(split[0]);
-			if (type == null)
-				return null;
-			Integer strength = defaultStrength;
-			Integer time = defaultTime;
-			if (split.length > 1){try{strength = Integer.valueOf(split[1]) -1;} catch (Exception e){}}
-			if (split.length > 2){try{time = Integer.valueOf(split[2])*20/*ticks*/;} catch (Exception e){}}
-			return new PotionEffect(type,time, strength);
-		} catch (Exception e){}
-		return null;
+		PotionEffectType type = getEffect(split[0]);
+		if (type == null)
+			throw new IllegalArgumentException("PotionEffectType "+ arg +" not found");
+		Integer strength = defaultStrength;
+		Integer time = defaultTime;
+		if (split.length > 1){try{strength = Integer.valueOf(split[1]) -1;} catch (Exception e){}}
+		if (split.length > 2){try{time = Integer.valueOf(split[2])*20/*ticks*/;} catch (Exception e){}}
+		return new PotionEffect(type,time, strength);
 	}
 
 	public static void deEnchantAll(Player p) {

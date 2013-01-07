@@ -1,4 +1,4 @@
-configVersion: 2.1.0
+configVersion: 2.1.1
 
 # For help the wiki is a good source of information
 # Wiki: # https://github.com/alkarinv/BattleArena/wiki
@@ -22,6 +22,9 @@ numberSavedInventories: 5
 
 # which player commands should be disabled when they enter an arena
 disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]
+
+# which heroes skills should be disabled when they enter an arena
+disabledHeroesSkills: []
 
 # If set to true, items that are usually not stackable will be stacked when
 # a player is given items.  Examples: 64 mushroom soup, or 64 snow_ball, instead of 1 or 16
@@ -244,7 +247,7 @@ colliseum:
             - diamond_leggings: 1
             - diamond_boot: 1
     onDeath:
-        options: [respawn, clearInventory]
+        options: [clearInventory]
     winner:
         options: [enchants, money=1,experience=300, health=20, hunger=20]
         enchants:

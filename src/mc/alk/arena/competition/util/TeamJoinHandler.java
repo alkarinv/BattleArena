@@ -2,6 +2,7 @@ package mc.alk.arena.competition.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -105,26 +106,43 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		return tplayers;
 	}
 
+
+	public List<Team> removeImproperTeams(){
+		List<Team> improper = new ArrayList<Team>();
+		Iterator<Team> iter = teams.iterator();
+		while(iter.hasNext()){
+			Team t = iter.next();
+			if (t.size() < minTeamSize || t.size() > maxTeamSize){
+				iter.remove();
+				TeamController.removeTeamHandler(t, this);
+				improper.add(t);
+			}
+		}
+		return improper;
+	}
+
 	public boolean hasEnough(boolean allowDifferentTeamSizes){
 		if (teams ==null)
 			return false;
 		final int teamssize = teams.size();
-		if (teamssize < minTeams || teamssize > maxTeams)
+		if (teamssize < minTeams)
 			return false;
 		int min = Integer.MAX_VALUE;
 		int max = Integer.MIN_VALUE;
+		int valid = 0;
 		for (Team t: teams){
 			final int tsize = t.size();
 			if (tsize < minTeamSize || tsize > maxTeamSize)
-				return false;
+				continue;
 			if (!allowDifferentTeamSizes){
 				min = Math.min(min, tsize);
 				max = Math.max(max, tsize);
 				if (min != tsize || max != tsize)
-					return false;
+					continue;
 			}
+			valid++;
 		}
-		return true;
+		return valid >= minTeams && valid <= maxTeams;
 	}
 
 	public boolean isFull() {

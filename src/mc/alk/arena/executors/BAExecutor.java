@@ -16,7 +16,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
-import mc.alk.arena.controllers.HeroesInterface;
+import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
@@ -33,6 +33,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
@@ -72,7 +73,7 @@ import org.bukkit.plugin.Plugin;
  * @author alkarin
  *
  */
-public class BAExecutor extends CustomCommandExecutor  {
+public class BAExecutor extends CustomCommandExecutor {
 	Map<String, Location> visitors = new HashMap<String, Location>();
 	Set<String> disabled = new HashSet<String>();
 
@@ -155,6 +156,8 @@ public class BAExecutor extends CustomCommandExecutor  {
 				!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".join") ){
 			return sendSystemMessage(player,"no_join_perms", mp.getCommand());}
 
+		mp = new MatchParams(mp);
+
 		/// Can the player join this match/event at this moment?
 		if (!canJoin(player)){
 			return true;}
@@ -172,7 +175,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 				}
 			}
 		}
-		mp = new MatchParams(mp);
+
 		JoinOptions jp = null;
 		WantedTeamSizePair wtsr = null;
 		try {
@@ -210,14 +213,14 @@ public class BAExecutor extends CustomCommandExecutor  {
 				return sendSystemMessage(player,"valid_arena_not_built",mp.toPrettyString());
 			}
 		}
-
-		final MatchTransitions ops = mp.getTransitionOptions();
-		if (ops == null){
-			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
 		//		BTInterface bti = BTInterface.getInterface(mp);
 		//		if (bti.isValid()){
 		//			bti.updateRanking(t);
 		//		}
+
+		final MatchTransitions ops = mp.getTransitionOptions();
+		if (ops == null){
+			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
 		/// Check ready
 		if(!ops.teamReady(t,null)){
 			t.sendMessage(ops.getRequiredString(MessageHandler.getSystemMessage("need_the_following")+"\n"));
@@ -600,6 +603,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		Arena arena = ArenaType.createArena(name, ap);
 		arena.setSpawnLoc(0, p.getLocation());
 		ac.addArena(arena);
+		new ArenaInterface(arena).create();
 		new ArenaCreateEvent(arena).callEvent();
 
 		sendMessage(sender,"&2You have created the arena &6" + arena);
@@ -687,6 +691,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 		/// Can the player join this match/event at this moment?
 		if (!canJoin(player)){
 			return true;}
+
 		if (EventController.isEventType(mp.getName())){
 			return sendMessage(player,"&4[Duel] &cYou can't duel someone in an Event type!");}
 
@@ -707,6 +712,16 @@ public class BAExecutor extends CustomCommandExecutor  {
 		for (ArenaPlayer ap: duelOptions.getChallengedPlayers()){
 			if (!canJoin(ap)){
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c is in a match, event, or queue");}
+			final MatchTransitions ops = mp.getTransitionOptions();
+			if (ops != null){
+				Team t = TeamController.createTeam(ap);
+				/// Check ready
+				if(!ops.teamReady(t,null)){
+					sendMessage(player, "&c"+t.getDisplayName()+"&c doesn't have the prerequisites for this duel");
+					return true;
+				}
+			}
+
 			if (dc.isChallenged(ap)){
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c already has been challenged!");}
 			if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".duel") &&
@@ -840,16 +855,17 @@ public class BAExecutor extends CustomCommandExecutor  {
 	}
 
 	public boolean canJoin(ArenaPlayer p){
-		return canJoin(p,true);
+		return canJoin(p, true);
 	}
+
 	public boolean canJoin(ArenaPlayer p, boolean showMessages) {
 		/// Inside MobArena?
 		if (MobArenaInterface.hasMobArena() && MobArenaInterface.insideMobArena(p)){
 			if (showMessages) sendMessage(p,"&cYou need to finish with MobArena first!");
 			return false;
 		}
-		if (HeroesInterface.enabled()){
-			if (HeroesInterface.isInCombat(p.getPlayer())){
+		if (HeroesController.enabled()){
+			if (HeroesController.isInCombat(p.getPlayer())){
 				if (showMessages) sendMessage(p,"&cYou can't join the arena while in combat!");
 				return false;
 			}
@@ -902,6 +918,7 @@ public class BAExecutor extends CustomCommandExecutor  {
 			if (showMessages) sendMessage(p,"&cYou need to leave first.  &6/arena leave");
 			return false;
 		}
+
 		return true;
 	}
 

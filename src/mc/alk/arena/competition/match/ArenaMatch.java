@@ -3,6 +3,7 @@ package mc.alk.arena.competition.match;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -261,19 +262,28 @@ public class ArenaMatch extends Match {
 
 	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
+		if (Defaults.DEBUG_COMMANDS){
+			event.getPlayer().sendMessage("event Message=" + event.getMessage() +"   isCancelled=" + event.isCancelled());}
 		if (event.isCancelled() || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL){
 			return;}
 		final Player p = event.getPlayer();
 		if (PermissionsUtil.isAdmin(p) && Defaults.ALLOW_ADMIN_CMDS_IN_MATCH){
 			return;}
 
-		String msg = event.getMessage();
-		final int index = msg.indexOf(' ');
+		String cmd = event.getMessage();
+		final int index = cmd.indexOf(' ');
 		if (index != -1){
-			msg = msg.substring(0, index);
+			cmd = cmd.substring(0, index);
 		}
-		msg = msg.toLowerCase();
-		if(DisabledCommandsUtil.contains(msg)){
+		cmd = cmd.toLowerCase();
+		if (Defaults.DEBUG_COMMANDS){
+			p.sendMessage("Command=" + cmd +" contains="+DisabledCommandsUtil.contains(cmd));
+			Set<String> cmds = DisabledCommandsUtil.getDisabledCommands();
+			for (String c: cmds){
+				p.sendMessage("Disabled contains cmd="+c);
+			}
+		}
+		if(DisabledCommandsUtil.contains(cmd)){
 			event.setCancelled(true);
 			p.sendMessage(ChatColor.RED+"You cannot use that command when you are in a match");
 			if (PermissionsUtil.isAdmin(p)){

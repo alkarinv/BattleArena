@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.controllers.HeroesController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -43,14 +44,27 @@ public enum TagAPIListener implements Listener {
 		TagAPI.refreshPlayer(player);
 	}
 
-	public static void removeNameColor(Player player) {
-		if (!player.isOnline())
+	public static void removeNameColor(final Player player) {
+		if (!player.isOnline() || !BattleArena.getSelf().isEnabled())
 			return;
 		if (INSTANCE.playerName.remove(player.getName()) != null){
-			TagAPI.refreshPlayer(player);
-			/// Unregister if we aren't listening for any players
-			if (INSTANCE.playerName.isEmpty()){
-				HandlerList.unregisterAll(INSTANCE);}
+			if (HeroesController.enabled()){
+				Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+					@Override
+					public void run() {
+						INSTANCE.removeName(player);
+					}
+				});
+			} else {
+				INSTANCE.removeName(player);
+			}
 		}
+	}
+
+	private void removeName(Player player){
+		TagAPI.refreshPlayer(player);
+		/// Unregister if we aren't listening for any players
+		if (INSTANCE.playerName.isEmpty()){
+			HandlerList.unregisterAll(INSTANCE);}
 	}
 }

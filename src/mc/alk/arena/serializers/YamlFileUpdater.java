@@ -25,8 +25,8 @@ public class YamlFileUpdater {
 	File tempFile = null;
 	File configFile = null;
 	File backupDir;
-	public YamlFileUpdater(){
-		backupDir = new File(BattleArena.getSelf().getDataFolder() +"/backups");
+	public YamlFileUpdater(Plugin plugin){
+		backupDir = new File(plugin.getDataFolder() +"/backups");
 		if (!backupDir.exists()){
 			backupDir.mkdirs();}
 	}
@@ -39,9 +39,6 @@ public class YamlFileUpdater {
 		/// configVersion: 1.2, move over to new messages.yml
 		/// this will delete their previous messages.yml
 		if (version.compareTo(1.2)<0){
-			File backupdir = new File(dir+"/backups");
-			if (!backupdir.exists()){
-				backupdir.mkdir();}
 			File msgdir = new File(dir+"/messages");
 			if (!msgdir.renameTo(new File(dir+"/backups/messages1.1"))){
 				Log.warn("Couldn't rename the messages yml");
@@ -57,22 +54,25 @@ public class YamlFileUpdater {
 		} else if (version.compareTo("1.5") < 0){
 			messageTo1Point5(ms.getConfig(), version);
 			ms.setConfig(new File(dir+"/messages.yml"));
+		} else if (version.compareTo("1.5.1") < 0){
+			messageTo1Point51(ms.getConfig(), version, new Version("1.5.1"));
+			ms.setConfig(new File(dir+"/messages.yml"));
 		}
 	}
 
 	public static void updateAllConfig(Plugin plugin, ConfigSerializer cc) {
 		Version version = new Version(cc.getString("configVersion","0"));
-		YamlFileUpdater yfu = new YamlFileUpdater();
+		YamlFileUpdater yfu = new YamlFileUpdater(plugin);
 		yfu.configFile = cc.getFile();
 		if (version.compareTo("2.0")<0){
 			yfu.to2Point0(plugin, cc.getConfig(), version);}
 	}
 
-	public static void updateBaseConfig(BAConfigSerializer bacs) {
+	public static void updateBaseConfig(Plugin plugin, BAConfigSerializer bacs) {
 		File tempFile = null;
 		FileConfiguration fc = bacs.getConfig();
 		Version version = new Version(fc.getString("configVersion","0"));
-		YamlFileUpdater yfu = new YamlFileUpdater();
+		YamlFileUpdater yfu = new YamlFileUpdater(plugin);
 		yfu.configFile = bacs.getFile();
 		/// configVersion: 1.1, move over to classes.yml
 		if (version.compareTo(1.1) <0){
@@ -107,6 +107,8 @@ public class YamlFileUpdater {
 			yfu.to2Point05(bacs, bacs.getConfig(), version);}
 		if (version.compareTo("2.1.0")<0){
 			yfu.to2Point10(bacs, bacs.getConfig(), version, new Version("2.1.0"));}
+		if (version.compareTo("2.1.1")<0){
+			yfu.to2Point11(bacs, bacs.getConfig(), version, new Version("2.1.1"));}
 
 	}
 
@@ -690,6 +692,35 @@ public class YamlFileUpdater {
 		}
 	}
 
+	private void to2Point11(ConfigSerializer bacs, FileConfiguration fc, Version version, Version newVersion) {
+		Log.warn("BattleArena updating config to "+newVersion.getVersion());
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			boolean updatedDefaultSection = false;
+			while ((line = br.readLine()) != null){
+				if (line.contains("configVersion")){
+					fw.write("configVersion: "+newVersion.getVersion()+"\n\n");
+				} else if (!updatedDefaultSection && (line.matches(".*disabledCommands:.*"))){
+					fw.write(line+"\n\n");
+					fw.write("# which heroes skills should be disabled when they enter an arena\n");
+					fw.write("disabledHeroesSkills: []\n");
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			closeFiles();
+			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+newVersion.getVersion()));
+			renameTo(tempFile, configFile);
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
 
 	private void messageTo1Point5(FileConfiguration fc, Version version) {
 		Log.warn("BattleArena updating messages.yml to 1.5");
@@ -759,6 +790,36 @@ public class YamlFileUpdater {
 		fw.write("    event_will_start_in: '&2The event will start in &6%s'\n");
 		fw.write("    event_invalid_team_size: '&cThis Event can only support up to &6%s&e your team has &6%s'\n");
 	}
+
+	private void messageTo1Point51(FileConfiguration fc, Version version, Version newVersion) {
+		Log.warn("BattleArena updating messages.yml to "+newVersion.getVersion());
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			while ((line = br.readLine()) != null){
+				if (line.contains("version")){
+					fw.write("version: "+newVersion.getVersion()+"\n");
+				} else if ((line.matches(".*countdownTillEvent:.*"))){
+					fw.write(line+"\n");
+					fw.write("    team_cancelled: ''\n");
+					fw.write("    server_cancelled: '&cEvent was cancelled'\n");
+					messageWrites1Point5();
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			closeFiles();
+			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+newVersion.getVersion()));
+			renameTo(tempFile,configFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
 
 	private static boolean isWindows() {
 		return System.getProperty("os.name").toUpperCase().contains("WINDOWS");

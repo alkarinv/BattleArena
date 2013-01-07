@@ -19,21 +19,26 @@ import org.bukkit.plugin.Plugin;
  *
  */
 public class WorldGuardInterface {
-	static boolean hasWorldGuardInterface = false;
+	static boolean hasWorldGuard = false;
+	static boolean hasWorldEdit = false;
+
 	public static enum WorldGuardFlag{
 		ENTRY, EXIT
 	}
-	public static void init(){
-		hasWorldGuardInterface = true;
-	}
+
 	public static class WorldGuardException extends Exception{
 		private static final long serialVersionUID = 1L;
 		public WorldGuardException(String msg) {
 			super(msg);
 		}
 	}
+
 	public static boolean hasWorldGuard() {
-		return hasWorldGuardInterface;
+		return hasWorldGuard;
+	}
+
+	public static boolean hasWorldEdit() {
+		return hasWorldEdit;
 	}
 
 	public boolean addRegion(Player sender, String id) throws Exception {
@@ -61,11 +66,13 @@ public class WorldGuardInterface {
 	}
 
 	public static boolean setWorldGuard(Plugin plugin) {
-		return WorldGuardUtil.setWorldGuard(plugin);
+		hasWorldGuard = WorldGuardUtil.setWorldGuard(plugin);
+		return hasWorldGuard;
 	}
 
 	public static boolean setWorldEdit(Plugin plugin) {
-		return WorldEditUtil.setWorldEdit(plugin);
+		hasWorldEdit = WorldEditUtil.setWorldEdit(plugin);
+		return hasWorldEdit;
 	}
 
 	public static boolean setFlag(String worldName, String id, WorldGuardFlag flag, boolean enable) {
@@ -93,6 +100,10 @@ public class WorldGuardInterface {
 
 	public static void pasteSchematic(CommandSender sender, String regionWorld, String id) {
 		WorldGuardUtil.pasteSchematic(sender,regionWorld,id);
+	}
+
+	public static void pasteSchematic(String regionWorld, String id) {
+		WorldGuardUtil.pasteSchematic(regionWorld,id);
 	}
 
 }

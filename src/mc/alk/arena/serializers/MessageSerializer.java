@@ -57,6 +57,7 @@ public class MessageSerializer extends BaseSerializer {
 	public void initMessageOptions(){
 		if (config == null)
 			return;
+		msgOptions.clear();
 		Set<String> keys = config.getKeys(true);
 		keys.remove("version");
 		for (String key: keys){
@@ -66,7 +67,6 @@ public class MessageSerializer extends BaseSerializer {
 			msgOptions.put(key, new MessageOptions((String)obj));
 		}
 	}
-
 
 	public static Message getDefaultMessage(String path) {
 		return defaultMessages != null ? defaultMessages.getMessage(path) : null;

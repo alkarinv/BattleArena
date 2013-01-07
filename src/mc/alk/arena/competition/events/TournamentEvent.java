@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
@@ -17,7 +19,9 @@ import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
+import mc.alk.arena.listeners.MatchCreationListener;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
@@ -32,6 +36,7 @@ import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
+import mc.alk.arena.util.Util;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -41,7 +46,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.ChatPaginator;
 
-public class TournamentEvent extends Event implements Listener{
+public class TournamentEvent extends Event implements Listener, MatchCreationListener{
 	public long timeBetweenRounds;
 
 	int round = -1;
@@ -52,10 +57,17 @@ public class TournamentEvent extends Event implements Listener{
 	final EventParams oParms ; /// Our original default tourney params from the config
 	Random rand = new Random();
 	Integer curTimer = null;
+	Map<Match, Matchup> matchups = Collections.synchronizedMap(new HashMap<Match,Matchup>());
+
 	public TournamentEvent(EventParams params) {
 		super(params);
 		oParms = params;
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
+	}
+
+	@Override
+	public void matchCreated(Match match, Matchup matchup) {
+		matchups.put(match, matchup);
 	}
 
 	@Override
@@ -79,7 +91,6 @@ public class TournamentEvent extends Event implements Listener{
 		EventParams copy = new EventParams(mp);
 		copy.setMaxTeams(CompetitionSize.MAX);
 		this.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(copy, this));
-
 	}
 
 	@Override
@@ -126,38 +137,37 @@ public class TournamentEvent extends Event implements Listener{
 
 	@MatchEventHandler
 	public void matchCancelled(MatchCancelledEvent event){
-		Match am = event.getMatch();
-		Matchup m = getMatchup(am.getTeams().get(0),round);
-		if (m == null){ /// This match wasnt in our tournament
-			return;}
 		eventCancelled();
 	}
+
 	@Override
 	public void endEvent(){
 		super.endEvent();
 		aliveTeams.clear();
 		competingTeams.clear();
+		matchups.clear();
 		if (curTimer != null){
 			Bukkit.getScheduler().cancelTask(curTimer);
 			curTimer = null;
 		}
 	}
+
 	@MatchEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
 		Match am = event.getMatch();
-		MatchResult r = am.getResult();
-		Matchup m = null;
-		if (r.getVictors() != null && !r.getVictors().isEmpty()){
-			m = getMatchup(r.getVictors().iterator().next(),round);
-		}else if (r.getLosers() != null && !r.getLosers().isEmpty()){
-			m = getMatchup(r.getLosers().iterator().next(),round);
-		} else if (r.getDrawers() != null && !r.getDrawers().isEmpty()){
-			m = getMatchup(r.getDrawers().iterator().next(),round);}
-		if (m == null){ /// This match wasnt in our tournament
-			return;}
+
 		if (am.getState() == MatchState.ONCANCEL){
 			endEvent();
 			return;}
+
+		MatchResult r = am.getResult();
+		Matchup m = matchups.get(am);
+		if (m==null){
+			eventCancelled();
+			Log.err("[BA Error] match completed but not found in tournament");
+			Util.printStackTrace();
+			return;
+		}
 		Team victor = null;
 		if (r.isDraw()){ /// match was a draw, pick a random lucky winner
 			victor = pickRandomWinner(r, r.getDrawers());
@@ -183,7 +193,10 @@ public class TournamentEvent extends Event implements Listener{
 				HashSet<Team> losers = new HashSet<Team>(competingTeams);
 				losers.remove(victor);
 				Set<Team> victors = new HashSet<Team>(Arrays.asList(victor));
-				eventVictory(victors,losers);
+				CompetitionResult result = new CompetitionResult();
+				result.setVictors(victors);
+				result.setLosers(losers);
+				setEventResult(result);
 				PerformTransition.transition(am, MatchState.FIRSTPLACE, t,false);
 				PerformTransition.transition(am, MatchState.PARTICIPANTS, losers,false);
 				eventCompleted();
@@ -256,6 +269,7 @@ public class TournamentEvent extends Event implements Listener{
 			}
 			m = new Matchup(eventParams,newTeams);
 			m.addArenaListener(this);
+			m.addMatchCreationListener(this);
 			tr.addMatchup(m);
 		}
 	}
@@ -277,6 +291,7 @@ public class TournamentEvent extends Event implements Listener{
 			}
 			m = new Matchup(eventParams,newTeams);
 			m.addArenaListener(this);
+			m.addMatchCreationListener(this);
 			tr.addMatchup(m);
 		}
 	}
@@ -403,5 +418,6 @@ public class TournamentEvent extends Event implements Listener{
 		sb.append("&4 " + (round+1)+" &eComplete Matches: &6 " + ncomplete +"/" +total);
 		return sb.toString();
 	}
+
 
 }

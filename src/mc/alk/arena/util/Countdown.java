@@ -1,12 +1,14 @@
 package mc.alk.arena.util;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 public class Countdown implements Runnable{
+	static int count = 0;
+	int id = count++;
+
 	public static interface CountdownCallback{
 		/**
 		 *
@@ -33,27 +35,29 @@ public class Countdown implements Runnable{
 		this.seconds = seconds - (rem != 0? rem : interval);
 		startTime = System.currentTimeMillis();
 		expectedEndTime = startTime + seconds*1000;
+
 		this.timerId  = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, this,
 				(long)(time * Defaults.TICK_MULT));
 	}
 
 	public void run() {
 		timerId = null;
+
 		final boolean continueOn = callback.intervalTick(seconds);
-		if (!continueOn)
+		if (!continueOn || seconds <=0)
 			return;
 		TimeUtil.testClock();
-		final Plugin plugin = BattleArena.getSelf();
-		seconds -= interval;
 
-		if (seconds >= 0){
-			timerId  = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, this,
+		if (seconds > 0){
+			timerId  = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this,
 					(long) (interval*20L * Defaults.TICK_MULT));
 		}
+		seconds -= interval;
 	}
 	public void stop(){
 		if (timerId != null){
 			Bukkit.getScheduler().cancelTask(timerId);
+			timerId = null;
 		}
 	}
 	@Override

@@ -10,6 +10,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaCommand;
 import mc.alk.arena.controllers.CommandController;
+import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
@@ -52,6 +53,12 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.ENABLE_TELEPORT_FIX = config.getBoolean("enableInvisibleTeleportFix", Defaults.ENABLE_TELEPORT_FIX);
 		parseOptionSets(config.getConfigurationSection("optionSets"));
 		DisabledCommandsUtil.addAll(config.getStringList("disabledCommands"));
+		if (HeroesController.enabled()){
+			List<String> disabled = config.getStringList("disabledHeroesSkills");
+			if (disabled != null && !disabled.isEmpty()){
+				HeroesController.addDisabledCommands(disabled);
+			}
+		}
 		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"arena","skirmish","colliseum","battleground"}));
 		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"freeForAll","deathMatch","tourney"}));
 		JavaPlugin plugin = BattleArena.getSelf();
@@ -170,7 +177,8 @@ public class BAConfigSerializer extends ConfigSerializer{
 			tops.addOption(TransitionOption.STOREHEALTH);
 			tops.addOption(TransitionOption.STOREHUNGER);
 			tops.addOption(TransitionOption.STOREMAGIC);
-			tops.addOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
+//			tops.addOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
+			tops.addOption(TransitionOption.CLEARINVENTORY);
 			tops.addOption(TransitionOption.CLEAREXPERIENCE);
 			tops.addOption(TransitionOption.STOREITEMS);
 			tops.addOption(TransitionOption.DEENCHANT);

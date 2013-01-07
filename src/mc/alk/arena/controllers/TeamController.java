@@ -106,8 +106,8 @@ public enum TeamController implements Listener, TeamHandler {
 			if (t.hasMember(pl))
 				return t;
 		}
-		if (HeroesInterface.hasHeroes)
-			return HeroesInterface.getTeam(pl.getPlayer());
+		if (HeroesController.hasHeroes)
+			return HeroesController.getTeam(pl.getPlayer());
 		return null;
 	}
 

@@ -5,7 +5,7 @@ import mc.alk.arena.listeners.TagAPIListener;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-public class TagAPIInterface {
+public class TagAPIController {
 	static boolean hasTagAPI = false;
 
 	public static boolean enabled() {

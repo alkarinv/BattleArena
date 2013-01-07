@@ -23,7 +23,6 @@ import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinStatus;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.messaging.MatchMessageImpl;
-import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
@@ -72,7 +71,7 @@ public class ArenaMatchQueue {
 		return null;
 	}
 
-	public synchronized void add(Arena arena) {
+	public synchronized void add(Arena arena, boolean checkStart) {
 		synchronized(arenaqueue){
 			for (Arena a : arenaqueue){
 				if (a.getName().equals(arena.getName()))
@@ -84,8 +83,8 @@ public class ArenaMatchQueue {
 			notifyIfNeeded();
 	}
 
-	public synchronized QPosTeamPair add(final QueueObject queueObject) {
-		return addToQueue(queueObject);
+	public synchronized QPosTeamPair add(final QueueObject queueObject, boolean checkStart) {
+		return addToQueue(queueObject,checkStart);
 	}
 
 	/**
@@ -93,18 +92,16 @@ public class ArenaMatchQueue {
 	 * @param matchup
 	 * @return
 	 */
-	public synchronized QPosTeamPair addMatchup(Matchup matchup) {
-		return addToQueue(new MatchTeamQObject(matchup));
+	public synchronized QPosTeamPair addMatchup(Matchup matchup, boolean checkStart) {
+		return addToQueue(new MatchTeamQObject(matchup), checkStart);
 	}
 
-	private synchronized QPosTeamPair addToQueue(final QueueObject to) {
-		if (!ready_matches.isEmpty())
+	private synchronized QPosTeamPair addToQueue(final QueueObject to, boolean checkStart) {
+		if (!ready_matches.isEmpty() && checkStart)
 			notifyAll();
 		final MatchParams tomp = to.getMatchParams();
 		TeamQueue tq = getTeamQ(tomp);
 
-		if (tq == null){
-			return null;}
 		/// If forceStart we need to track the first Team who joins, we will base how long till the force start off them
 		/// we should also report to the user that the match will start in x seconds, despite the queue size
 		Long time = null;
@@ -114,7 +111,9 @@ public class ArenaMatchQueue {
 				time = idt.time;
 		}
 		tq.add(to);
-		if (!suspend)
+		/// return if we aren't going to check for a start (aka we already have too many matches running)
+
+		if (!suspend && checkStart)
 			notifyIfNeeded(tq);
 		/// This is solely for displaying you are in position 2/8, your match will start when 8 players join
 		/// So if this ever is a speed issue, remove
@@ -236,7 +235,9 @@ public class ArenaMatchQueue {
 
 		boolean skipNonMatched = false;
 		synchronized(arenaqueue){ synchronized(tq){
+//			Set<String> seenArenas = new HashSet<String>();
 			for (Arena a : arenaqueue){
+//				seenArenas.add(a.getName())
 				if (a == null || !a.valid() || (!a.matches(baseParams, null) && !forceStart))
 					continue;
 				MatchParams newParams = new MatchParams(baseParams);
@@ -407,22 +408,21 @@ public class ArenaMatchQueue {
 		m.setTeamJoinHandler(null); /// we don't want any custom team joining.
 		m.addArenaListeners(matchup.getArenaListeners());
 		m.onJoin(matchup.getTeams());
+		if (matchup.getMatchCreationListener() != null){
+			matchup.getMatchCreationListener().matchCreated(m, matchup);
+		}
 		matchup.addMatch(m);
 		return m;
 	}
 
 	private TeamQueue getTeamQ(MatchParams mp) {
-		final int teamSize = mp.getMinTeamSize();
-		if (teamSize != ArenaParams.MAX){
-			if (tqs.containsKey(mp.getType())){
-				return tqs.get(mp.getType());
-			} else {
-				TeamQueue tq = new TeamQueue(mp, new TeamQueueComparator());
-				tqs.put(mp.getType(), tq);
-				return tq;
-			}
+		if (tqs.containsKey(mp.getType())){
+			return tqs.get(mp.getType());
+		} else {
+			TeamQueue tq = new TeamQueue(mp, new TeamQueueComparator());
+			tqs.put(mp.getType(), tq);
+			return tq;
 		}
-		return null;
 	}
 
 	public synchronized boolean isInQue(ArenaPlayer p) {

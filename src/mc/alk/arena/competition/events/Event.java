@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +16,7 @@ import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinStatus;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeamController;
@@ -27,11 +27,12 @@ import mc.alk.arena.events.events.EventCancelEvent;
 import mc.alk.arena.events.events.EventCompletedEvent;
 import mc.alk.arena.events.events.EventFinishedEvent;
 import mc.alk.arena.events.events.EventOpenEvent;
+import mc.alk.arena.events.events.EventResultEvent;
 import mc.alk.arena.events.events.EventStartEvent;
-import mc.alk.arena.events.events.EventVictoryEvent;
 import mc.alk.arena.events.events.TeamJoinedEvent;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
@@ -140,19 +141,11 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		mc.setMessageHandler(new EventMessageImpl(this));
 	}
 
-	public void removeEmptyTeams(){
-		Iterator<Team> iter = teams.iterator();
-		while(iter.hasNext()){
-			Team t = iter.next();
-			if (t.size() == 0){
-				iter.remove();
-				TeamController.removeTeamHandler(t, this);
-			}
-		}
-	}
-
 	public void startEvent() {
-		removeEmptyTeams();
+		List<Team> improper = joinHandler.removeImproperTeams();
+		for (Team t: improper){
+			t.sendMessage("&cYour team has been excluded to having an improper team size");
+		}
 		/// TODO rebalance teams
 		Set<ArenaPlayer> excludedPlayers = getExcludedPlayers();
 		for (ArenaPlayer p : excludedPlayers){
@@ -166,12 +159,13 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		callEvent(new EventStartEvent(this,teams));
 	}
 
-	protected void eventVictory(Collection<Team> victors, Collection<Team> losers) {
-		if (victors != null)
-			mc.sendEventVictory(victors, losers);
-		else
-			mc.sendEventDraw(losers, new HashSet<Team>());
-		callEvent(new EventVictoryEvent(this,victors,losers));
+	protected void setEventResult(CompetitionResult result) {
+		if (result.hasVictor()){
+			mc.sendEventVictory(result.getVictors(), result.getLosers());
+		} else {
+			mc.sendEventDraw(result.getDrawers(), result.getLosers());
+		}
+		callEvent(new EventResultEvent(this,result));
 	}
 
 	public void stopTimer(){
@@ -181,32 +175,30 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		}
 	}
 
+
+	public void cancelEvent() {
+		eventCancelled();
+	}
+
 	public void eventCompleted(){
 		callEvent(new EventCompletedEvent(this));
 		endEvent();
 	}
 
-	public void cancelEvent() {
-		List<Team> newTeams = new ArrayList<Team>(teams);
-		for (Team tt : newTeams){ /// for anyone in a match, cancel them
-			if (!ac.cancelMatch(tt)){
-				tt.sendMessage("&cEvent was cancelled");}
-		}
-		callEvent(new EventCancelEvent(this));
-		mc.sendEventCancelled();
-		endEvent(); /// now call the method to clean everything else up
-	}
-
 	protected void eventCancelled(){
+		stopTimer();
+		List<Team> newTeams = new ArrayList<Team>(teams);
 		callEvent(new EventCancelEvent(this));
-		mc.sendEventCancelled();
+		mc.sendEventCancelled(newTeams);
 		endEvent();
 	}
 
 	protected void endEvent() {
+		if (state == EventState.CLOSED)
+			return;
+		transitionTo(EventState.CLOSED);
 		if (Defaults.DEBUG_TRACE) System.out.println("BAEvent::endEvent");
 		stopTimer();
-		transitionTo(EventState.CLOSED);
 
 		removeAllTeams();
 		teams.clear();
@@ -271,7 +263,6 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		TeamController.addTeamHandler(team, this);
 		new TeamJoinedEvent(this,team).callEvent();
 		teams.add(team);
-		mc.sendTeamJoinedEvent(team);
 	}
 
 	public void addTeam(Player p){
@@ -295,6 +286,9 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 			tjr = TeamJoinHandler.NOTOPEN;
 		else
 			tjr = joinHandler.joiningTeam(tqo);
+		if (tjr.status != TeamJoinStatus.CANT_FIT){
+//			mc.sendEventTeamJoiningMessage(tqo.getTeam()); /// TODO
+		}
 		switch(tjr.status){
 		case ADDED:
 			break;
@@ -371,23 +365,6 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 				return tt;}
 		}
 
-		return null;
-	}
-
-	public Matchup getMatchup(Team t,int round){
-		if (rounds == null || rounds.size() <= round)
-			return null;
-		Round tr = rounds.get(round);
-		if (tr == null)
-			return null;
-		for (Matchup m : tr.getMatchups()){
-			for (Team team: m.getTeams()){
-				for (ArenaPlayer ap: t.getPlayers()){
-					if (team.hasMember(ap))
-						return m;
-				}
-			}
-		}
 		return null;
 	}
 

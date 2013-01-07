@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaClassController;
@@ -96,7 +95,7 @@ public class ConfigSerializer extends BaseSerializer{
 
 	public static MatchParams setTypeConfig(Plugin plugin, final String name, ConfigurationSection cs, boolean match) throws ConfigException, InvalidOptionException {
 		if (cs == null){
-			Log.err("[BattleArena] configSerializer can't load " + name +" with a config section of " + cs);
+			Log.err(plugin.getName() + " configSerializer can't load " + name +" with a config section of " + cs);
 			return null;
 		}
 		/// Set up match options.. specifying defaults where not specified
@@ -175,6 +174,7 @@ public class ConfigSerializer extends BaseSerializer{
 
 		pi.setOverrideBattleTracker(cs.getBoolean("overrideBattleTracker", true));
 		pi.setNDeaths(cs.getInt("nDeaths",1));
+		pi.setNConcurrentCompetitions(cs.getInt("nConcurrentCompetitions",Integer.MAX_VALUE));
 
 		if (cs.contains("customMessages") && cs.getBoolean("customMessages")){
 			APIRegistrationController api = new APIRegistrationController();
@@ -200,7 +200,8 @@ public class ConfigSerializer extends BaseSerializer{
 		/// Set all Transition Options
 		for (MatchState transition : MatchState.values()){
 			/// OnCancel gets taken from onComplete and modified, ONENTERWAITROOM gets its values from ONENTER
-			if (transition == MatchState.ONCANCEL || transition == MatchState.ONENTERWAITROOM)
+//			if (transition == MatchState.ONCANCEL || transition == MatchState.ONENTERWAITROOM)
+			if (transition == MatchState.ONCANCEL)
 				continue;
 			TransitionOptions tops = null;
 			try{
@@ -218,18 +219,19 @@ public class ConfigSerializer extends BaseSerializer{
 				TransitionOptions cancelOps = new TransitionOptions(tops);
 				allTops.addTransitionOptions(MatchState.ONCANCEL, cancelOps);
 				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
-			} else if (transition == MatchState.ONENTER){
-				TransitionOptions newOps = new TransitionOptions(tops);
-				allTops.addTransitionOptions(MatchState.ONENTERWAITROOM, newOps);
-				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONENTERWAITROOM +" "+newOps);
 			}
+//			else if (transition == MatchState.ONENTER){
+//				TransitionOptions newOps = new TransitionOptions(tops);
+//				allTops.addTransitionOptions(MatchState.ONENTERWAITROOM, newOps);
+//				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONENTERWAITROOM +" "+newOps);
+//			}
 
 			allTops.addTransitionOptions(transition,tops);
 		}
 		ParamController.setTransitionOptions(pi, allTops);
 		ParamController.removeMatchType(pi);
 		ParamController.addMatchType(pi);
-		Log.info(BattleArena.getPName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none"));
+		Log.info(plugin.getName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none"));
 		return pi;
 	}
 
@@ -488,15 +490,15 @@ public class ConfigSerializer extends BaseSerializer{
 			String str = null;
 			for (Object o : cs.getList(nodeString)){
 				str = o.toString();
-				PotionEffect ewa = EffectUtil.parseArg(str,strengthDefault,timeDefault);
-				if (ewa != null) {
+				try{
+					PotionEffect ewa = EffectUtil.parseArg(str,strengthDefault,timeDefault);
 					effects.add(ewa);
-				} else {
-					Log.warn(cs.getCurrentPath() +"."+nodeString + " could not be parsed in config.yml");
+				} catch (Exception e){
+					Log.err("Effect "+cs.getCurrentPath() +"."+nodeString +"."+str+ " could not be parsed in classes.yml");
 				}
 			}
 		} catch (Exception e){
-			Log.warn(cs.getCurrentPath() +"."+nodeString + " could not be parsed in config.yml");
+			Log.err("Effect "+cs.getCurrentPath() +"."+nodeString + " could not be parsed in classes.yml");
 		}
 		return effects;
 	}

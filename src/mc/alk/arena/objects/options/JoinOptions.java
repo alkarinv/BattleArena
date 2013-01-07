@@ -119,7 +119,7 @@ public class JoinOptions extends ArenaSize{
 			jos.setTeamSize(teamSize.size);
 			jos.specific = true;
 		}
-//		int length = teamSize.manuallySet ? args.length -1 : args.length;
+
 		ops.put(JoinOption.TEAMSIZE, teamSize);
 		for (int i=0;i<length;i++){
 			String op = args[i];

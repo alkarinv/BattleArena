@@ -5,10 +5,10 @@ import mc.alk.arena.objects.MatchResult;
 
 import org.bukkit.event.Cancellable;
 
-public class MatchVictoryEvent extends MatchEvent implements Cancellable{
+public class MatchResultEvent extends MatchEvent implements Cancellable{
 	MatchResult matchResult;
 	boolean cancelled;
-	public MatchVictoryEvent(Match match, MatchResult matchResult) {
+	public MatchResultEvent(Match match, MatchResult matchResult) {
 		super(match);
 		this.matchResult = matchResult;
 	}

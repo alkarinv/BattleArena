@@ -60,11 +60,16 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		if (openevent != null){
 			throw new InvalidEventException("&cThere is already an event open!");
 		}
+		EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null);
+		Arena arena = eoo.getArena(eventParams,null);
+		eventParams.intersect(arena.getParameters());
+		//System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
+		arena.setParameters(eventParams);
+
 		ReservedArenaEvent event = new ReservedArenaEvent(eventParams);
 
 		checkOpenOptions(event, eventParams, args);
-		EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null);
-		openEvent(event, eventParams, eoo);
+		openEvent(event, eventParams, eoo,arena);
 
 		controller.addOpenEvent(event);
 		return event;
@@ -90,13 +95,10 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		return true;
 	}
 
-	public static Arena openEvent(ReservedArenaEvent rae, EventParams ep, EventOpenOptions eoo) throws InvalidOptionException, InvalidEventException{
+	public static void openEvent(ReservedArenaEvent rae, EventParams ep, EventOpenOptions eoo, Arena arena) throws InvalidOptionException, InvalidEventException{
 		if (rae.isOpen())
 			throw new InvalidOptionException("&cThe event is already open");
 		eoo.updateParams(ep);
-		Arena arena = eoo.getArena(ep,null);
-		//System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
-		arena.setParameters(ep);
 		rae.setSilent(eoo.isSilent());
 		if (eoo.hasOption(EventOpenOption.AUTO)){
 			ep.setSecondsTillStart(eoo.getSecTillStart());
@@ -108,7 +110,6 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
 			rae.addAllOnline();}
 
-		return arena;
 	}
 
 }

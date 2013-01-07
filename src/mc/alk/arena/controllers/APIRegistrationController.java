@@ -13,10 +13,12 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.executors.ArenaExecutor;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
@@ -56,41 +58,42 @@ public class APIRegistrationController {
 				return;
 			File dir = plugin.getDataFolder();
 			FileFilter fileFilter = new FileFilter() {
-				public boolean accept(File file) { return file.toString().contains("Config.yml"); }
+				public boolean accept(File file) {return file.toString().contains("Config.yml");}
 			};
 			for (File file : dir.listFiles(fileFilter)){
 				String n = file.getName().substring(0, file.getName().length()-"Config.yml".length());
 				if (ArenaType.contains(n)){ /// we already loaded this type
 					continue;}
-
-				BaseSerializer bs = new BaseSerializer();
-				bs.setConfig(file);
-				FileConfiguration config = bs.getConfig();
-				/// Initialize custom matches or events
-				Set<String> keys = config.getKeys(false);
-				for (String key: keys){
-					ConfigurationSection cs = config.getConfigurationSection(key);
-					if (cs == null)
-						continue;
-					try {
-						/// A new match/event needs the params, an executor, and the command to use
-						boolean isMatch = !config.getBoolean(key+".isEvent",false);
-						MatchParams mp = ConfigSerializer.setTypeConfig(plugin,key,cs, isMatch);
-						BAExecutor executor = isMatch ? BattleArena.getBAExecutor() : new ReservedArenaEventExecutor();
-						ArenaCommand arenaCommand = new ArenaCommand(mp.getCommand(),"","", new ArrayList<String>(), BattleArena.getSelf());
-						arenaCommand.setExecutor(executor);
-						CommandController.registerCommand(arenaCommand);
-					} catch (Exception e) {
-						Log.err("Couldnt configure arenaType " + key+". " + e.getMessage());
-						e.printStackTrace();
-					}
-				}
+				register(plugin, file);
 			}
-
-
 		}
-
 	}
+
+	public static void register(Plugin plugin, File configFile){
+		BaseSerializer bs = new BaseSerializer();
+		bs.setConfig(configFile);
+		FileConfiguration config = bs.getConfig();
+		/// Initialize custom matches or events
+		Set<String> keys = config.getKeys(false);
+		for (String key: keys){
+			ConfigurationSection cs = config.getConfigurationSection(key);
+			if (cs == null)
+				continue;
+			try {
+				/// A new match/event needs the params, an executor, and the command to use
+				boolean isMatch = !config.getBoolean(key+".isEvent",false);
+				MatchParams mp = ConfigSerializer.setTypeConfig(plugin,key,cs, isMatch);
+				ArenaExecutor executor = isMatch ? BattleArena.getBAExecutor() : new ReservedArenaEventExecutor();
+				ArenaCommand arenaCommand = new ArenaCommand(mp.getCommand(),"","", new ArrayList<String>(), BattleArena.getSelf());
+				arenaCommand.setExecutor(executor);
+				CommandController.registerCommand(arenaCommand);
+			} catch (Exception e) {
+				Log.err("Couldnt configure arenaType " + key+". " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
+	}
+
 	private void init(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, boolean match){
 		if (plugin == null){
 			Log.err("Plugin can not be null");
@@ -233,17 +236,37 @@ public class APIRegistrationController {
 		init(plugin,name,cmd,arenaClass,true);
 
 		/// Set up command executors
-		registerCommand(plugin, cmd, executor);
+		setCommandToExecutor(plugin, cmd, executor);
 	}
 
-	private void registerCommand(JavaPlugin plugin, String cmd, CommandExecutor executor) {
-		try{
-			plugin.getCommand(cmd).setExecutor(executor);
-		} catch(Exception e){
-			Log.err(plugin.getName() + " command " + cmd +" was not found. Did you register it in your plugin.yml?");
+	private void setCommandToExecutor(JavaPlugin plugin, String wantedCommand, CommandExecutor executor) {
+		if (!setCommandToExecutor(plugin,wantedCommand, executor, true)){
+			Log.err("Searching for alternative commands to register");
+			Map<String, Map<String, Object>> commands = plugin.getDescription().getCommands();
+			for (String cmd: commands.keySet()){
+				if (setCommandToExecutor(plugin, cmd, executor,false)){ /// we found one!
+					Log.info("Alternative command found cmd=" + cmd);
+					return;
+				}
+				Map<String,Object> aliases = commands.get(cmd);
+				for (String alias: aliases.keySet()){
+					if (setCommandToExecutor(plugin, alias, executor,false)){ /// we found one!
+						return;
+					}
+				}
+			}
 		}
 	}
-
+	private boolean setCommandToExecutor(JavaPlugin plugin, String command, CommandExecutor executor, boolean displayError){
+		try{
+			plugin.getCommand(command).setExecutor(executor);
+			return true;
+		} catch(Exception e){
+			if (displayError)
+				Log.err(plugin.getName() + " command " + command +" was not found. Did you register it in your plugin.yml?");
+			return false;
+		}
+	}
 	public void createMessageSerializer(Plugin plugin, String name, boolean match, File dir) throws ConfigException {
 		File pluginFile;
 		/// Make a message serializer for this match/event, and make the messages.yml file if it doesnt exist
@@ -271,6 +294,11 @@ public class APIRegistrationController {
 		return pluginFile;
 	}
 
+	public void registerCompetition(JavaPlugin plugin, String name, Class<? extends Arena> arenaClass) {
+
+		//		registerEventType(plugin,name,arenaClass,new ReservedArenaEventExecutor());
+	}
+
 
 	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass) {
 		registerEventType(plugin,name,cmd,arenaClass,new ReservedArenaEventExecutor());
@@ -280,7 +308,7 @@ public class APIRegistrationController {
 		init(plugin,name,cmd,arenaClass,false);
 		EventParams mp = ParamController.getEventParamCopy(name);
 		if (mp != null){
-			registerCommand(plugin, cmd, executor);
+			setCommandToExecutor(plugin, cmd, executor);
 			EventController.addEventExecutor(mp, executor);
 		} else {
 			Log.err(name+" type not found");

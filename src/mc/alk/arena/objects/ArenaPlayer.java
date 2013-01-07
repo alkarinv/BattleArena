@@ -1,6 +1,6 @@
 package mc.alk.arena.objects;
 
-import mc.alk.arena.controllers.HeroesInterface;
+import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
 
@@ -136,7 +136,7 @@ public class ArenaPlayer {
 	}
 
 	public int getLevel() {
-		return (HeroesInterface.enabled()) ? HeroesInterface.getLevel(player) : player.getLevel();
+		return (HeroesController.enabled()) ? HeroesController.getLevel(player) : player.getLevel();
 	}
 
 }

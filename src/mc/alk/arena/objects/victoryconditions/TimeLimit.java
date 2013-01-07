@@ -4,7 +4,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.events.matches.MatchStartEvent;
-import mc.alk.arena.events.matches.MatchVictoryEvent;
+import mc.alk.arena.events.matches.MatchResultEvent;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.util.Countdown;
@@ -24,7 +24,7 @@ public class TimeLimit extends VictoryCondition implements CountdownCallback {
 	}
 
 	@MatchEventHandler(priority=EventPriority.LOW)
-	public void onVictory(MatchVictoryEvent event){
+	public void onVictory(MatchResultEvent event){
 		cancelTimers();
 	}
 

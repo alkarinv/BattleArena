@@ -8,27 +8,25 @@ public class TimedSpawn{
 	SpawnInstance sg;
 	final int id = count++;
 
-//	private Long timeToNext;
-
 	Long firstSpawnTime, respawnInterval, timeToDespawn;
 
-	public TimedSpawn(long timeToStart, long respawnInterval, long timeToDespawn, SpawnInstance sg){
-		this.firstSpawnTime = timeToStart;
+	public TimedSpawn(long firstSpawnTime, long respawnTime, long timeToDespawn, SpawnInstance sg){
+		this.firstSpawnTime = firstSpawnTime;
 		this.sg = sg;
-		this.respawnInterval = respawnInterval;
+		this.respawnInterval = respawnTime;
 		this.timeToDespawn = timeToDespawn;
 
 	}
 
-	public Long getTimeToNext() {
+	public Long getRespawnTime() {
 		return respawnInterval;
 	}
 
-	public void setRespawnInterval(Long timeToNext) {
+	public void setRespawnTime(Long timeToNext) {
 		this.respawnInterval = timeToNext;
 	}
 
-	public Long getTimeToStart() {
+	public Long getFirstSpawnTime() {
 		return firstSpawnTime;
 	}
 
@@ -56,9 +54,7 @@ public class TimedSpawn{
 		return timeToDespawn;
 	}
 
-	public Long getRespawnInterval() {
-		return respawnInterval;
-	}
+	@Override
 	public String toString(){
 		return "[TimedSpawn "+id+" loc="+SerializerUtil.getLocString(sg.getLocation()) + " sg=" + sg+"]";
 	}

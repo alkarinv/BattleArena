@@ -101,13 +101,13 @@ public class PlayerStoreController {
 	}
 
 	public void storeMagic(ArenaPlayer player) {
-		if (!HeroesInterface.enabled())
+		if (!HeroesController.enabled())
 			return;
 		final String name = player.getName();
 		if (magicmap.containsKey(name))
 			return;
 
-		Integer val = HeroesInterface.getMagicLevel(player.getPlayer());
+		Integer val = HeroesController.getMagicLevel(player.getPlayer());
 		if (val == null)
 			return;
 		magicmap.put(name, val);
@@ -120,7 +120,7 @@ public class PlayerStoreController {
 		if (val == null)
 			return;
 		if (p.isOnline() && !p.isDead()){
-			HeroesInterface.setMagicLevel(p.getPlayer(), val);
+			HeroesController.setMagicLevel(p.getPlayer(), val);
 		} else {
 			BAPlayerListener.restoreMagicOnReenter(p.getName(), val);
 		}
@@ -212,42 +212,42 @@ public class PlayerStoreController {
 	}
 
 	public void storeArenaClass(ArenaPlayer player) {
-		if (!HeroesInterface.enabled())
+		if (!HeroesController.enabled())
 			return;
 		final String name = player.getName();
 		if (arenaclass.containsKey(name))
 			return;
 
-		String heroClass = HeroesInterface.getHeroClassName(player.getPlayer());
+		String heroClass = HeroesController.getHeroClassName(player.getPlayer());
 		if (heroClass == null)
 			return;
 		arenaclass.put(name, heroClass);
 	}
 
 	public void restoreHeroClass(ArenaPlayer p) {
-		if (!HeroesInterface.enabled())
+		if (!HeroesController.enabled())
 			return;
 		String heroClass = arenaclass.get(p.getName());
 		if (heroClass == null)
 			return;
-		HeroesInterface.setHeroClass(p.getPlayer(), heroClass);
+		HeroesController.setHeroClass(p.getPlayer(), heroClass);
 	}
 
 	public void setNameColor(ArenaPlayer p, ChatColor teamColor) {
-		if (!TagAPIInterface.enabled())
+		if (!TagAPIController.enabled())
 			return;
-		TagAPIInterface.setNameColor(p.getPlayer(), teamColor);
+		TagAPIController.setNameColor(p.getPlayer(), teamColor);
 	}
 
 	public void removeNameColor(ArenaPlayer p) {
-		if (!TagAPIInterface.enabled())
+		if (!TagAPIController.enabled() || !p.isOnline())
 			return;
-		TagAPIInterface.removeNameColor(p.getPlayer());
+		TagAPIController.removeNameColor(p.getPlayer());
 	}
 
 	public void cancelExpLoss(ArenaPlayer p, boolean cancel) {
-		if (!HeroesInterface.enabled())
+		if (!HeroesController.enabled())
 			return;
-		HeroesInterface.cancelExpLoss(p.getPlayer(),cancel);
+		HeroesController.cancelExpLoss(p.getPlayer(),cancel);
 	}
 }

@@ -8,6 +8,7 @@ import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.regions.PylamoRegion;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.Util;
@@ -25,7 +26,20 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class ArenaAlterController {
 	public enum ChangeType{
-		NTEAMS, TEAMSIZE, WAITROOM, SPAWNLOC, VLOC, TYPE, ADDREGION;
+		NTEAMS(true,true), TEAMSIZE(true,false), WAITROOM(true,false),
+		SPAWNLOC(true,false), VLOC(true,true), TYPE(true,false),
+		ADDREGION(false,true), ADDPYLAMOREGION(false,true);
+
+		final boolean needsValue; /// whether the transition needs a value
+
+		final boolean needsPlayer; /// whether we need a player
+
+		ChangeType(Boolean hasValue, Boolean needsPlayer){
+			this.needsValue = hasValue;
+			this.needsPlayer = needsPlayer;
+		}
+
+		public boolean hasValue(){return needsValue;}
 
 		public static ChangeType fromName(String str){
 			str = str.toUpperCase();
@@ -77,6 +91,15 @@ public class ArenaAlterController {
 			showAlterHelp(sender);
 			return false;
 		}
+		if (value == null && ct.needsValue){
+			sendMessage(sender,ChatColor.RED+ "Option: &6" + changetype+"&c needs a value");}
+		if (!(sender instanceof Player) && ct.needsPlayer){
+			sendMessage(sender,ChatColor.RED+ "Option: &6" + changetype+"&c needs you to be online");}
+		Player player = null;
+		if (ct.needsPlayer){
+			player = (Player) sender;
+		}
+
 		switch(ct){
 		case TEAMSIZE: success = changeTeamSize(sender, arena, ac, value); break;
 		case NTEAMS: success = changeNTeams(sender, arena, ac, value); break;
@@ -84,7 +107,8 @@ public class ArenaAlterController {
 		case SPAWNLOC: success = changeSpawn(sender, arena, ac, changetype, value, otherOptions); break;
 		case VLOC: success = changeVisitorSpawn(sender,arena,ac,changetype,value,otherOptions); break;
 		case WAITROOM: success = changeWaitroomSpawn(sender,arena,ac,changetype,value,otherOptions); break;
-		case ADDREGION: success = addWorldGuardRegion(sender,arena,ac,value); break;
+		case ADDREGION: success = addWorldGuardRegion(player,arena,ac,value); break;
+		case ADDPYLAMOREGION: success = addPylamoRegion(player,arena,ac,value); break;
 		default:
 			sendMessage(sender,ChatColor.RED+ "Option: &6" + changetype+"&c does not exist. \n&cValid options are &6"+ChangeType.getValidList());
 			break;
@@ -106,12 +130,32 @@ public class ArenaAlterController {
 		return true;
 	}
 
-	private static boolean addWorldGuardRegion(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
+	private static boolean addPylamoRegion(Player sender, Arena arena, BattleArenaController ac, String value) {
+		if (!WorldGuardInterface.hasWorldEdit()){
+			sendMessage(sender,"&cYou need world edit to use this command");
+			return false;}
+		if (!PylamoController.enabled()){
+			sendMessage(sender,"&cYou need PylamoRestorationSystem to use this command");
+			return false;}
+		WorldEditPlugin wep = WorldEditUtil.getWorldEditPlugin();
+		Selection sel = wep.getSelection(sender);
+		if (sel == null){
+			sendMessage(sender,"&cYou need to select a region to use this command.");
+			return false;
+		}
+		String id = makeRegionName(arena);
+		PylamoController.createRegion(id, sel.getMinimumPoint(), sel.getMaximumPoint());
+		PylamoRegion region = new PylamoRegion(id);
+		region.setID(id);
+		arena.setPylamoRegion(region);
+		return true;
+	}
+
+	private static boolean addWorldGuardRegion(Player sender, Arena arena, BattleArenaController ac, String value) {
 		if (!checkWorldGuard(sender)){
 			return false;}
-		Player p = (Player)sender;
 		WorldEditPlugin wep = WorldEditUtil.getWorldEditPlugin();
-		Selection sel = wep.getSelection(p);
+		Selection sel = wep.getSelection(sender);
 		if (sel == null){
 			sendMessage(sender,"&cYou need to select a region to use this command.");
 			return false;
@@ -122,14 +166,14 @@ public class ArenaAlterController {
 		try{
 			String id = makeRegionName(arena);
 			if (region != null){
-				WorldGuardInterface.updateProtectedRegion(p,id);
+				WorldGuardInterface.updateProtectedRegion(sender,id);
 				sendMessage(sender,"&2Region updated! ");
 			} else {
-				WorldGuardInterface.createProtectedRegion(p, id);
+				WorldGuardInterface.createProtectedRegion(sender, id);
 				sendMessage(sender,"&2Region added! ");
 			}
 			arena.addRegion(w.getName(), id);
-			WorldGuardInterface.saveSchematic(p, id);
+			WorldGuardInterface.saveSchematic(sender, id);
 		} catch (Exception e) {
 			sendMessage(sender,"&cAdding WorldGuard region failed!");
 			sendMessage(sender, "&c" + e.getMessage());

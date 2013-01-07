@@ -2,10 +2,12 @@ package mc.alk.arena.listeners;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.HeroesInterface;
+import mc.alk.arena.controllers.FactionsController;
+import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
-import mc.alk.arena.controllers.TagAPIInterface;
+import mc.alk.arena.controllers.PylamoController;
+import mc.alk.arena.controllers.TagAPIController;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.util.BTInterface;
@@ -37,47 +39,65 @@ public class BAPluginListener implements Listener {
 	@EventHandler
 	public void onPluginEnable(PluginEnableEvent event) {
 		if (event.getPlugin().getName() == "BattleTracker")
-			loadBT();
-		else if (event.getPlugin().getName() == "MassDisguise")
-			loadDisguiseCraft();
-		else if (event.getPlugin().getName() == "MultiInv")
-			loadMultiInv();
-		else if (event.getPlugin().getName() == "Multiverse-Inventories")
-			loadMultiverseInventory();
-		else if (event.getPlugin().getName() == "Multiverse-Core")
-			loadMultiverseCore();
+			loadBattleTracker();
+		else if (event.getPlugin().getName() == "Factions")
+			loadFactions();
 		else if (event.getPlugin().getName() == "Herochat")
 			loadHeroChat();
-		else if (event.getPlugin().getName() == "WorldGuard")
-			loadWorldGuard();
-		else if (event.getPlugin().getName() == "WorldEdit")
-			loadWorldEdit();
-		else if (event.getPlugin().getName() == "MobArena")
-			loadMobArena();
 		else if (event.getPlugin().getName() == "Heroes")
 			loadHeroes();
-		else if (event.getPlugin().getName() == "TagAPI")
-			loadTagAPI();
-		else if (event.getPlugin().getName() == "Vault")
-			loadVault();
+		else if (event.getPlugin().getName() == "DisguiseCraft")
+			loadDisguiseCraft();
+		else if (event.getPlugin().getName() == "MobArena")
+			loadMobArena();
+		else if (event.getPlugin().getName() == "MultiInv")
+			loadMultiInv();
+		else if (event.getPlugin().getName() == "Multiverse-Core")
+			loadMultiverseCore();
+		else if (event.getPlugin().getName() == "Multiverse-Inventories")
+			loadMultiverseInventory();
+		else if (event.getPlugin().getName() == "PylamoRestorationSystem")
+			loadPylamoRestoration();
 		else if (event.getPlugin().getName() == "Register")
 			loadRegister();
+		else if (event.getPlugin().getName() == "TagAPI")
+			loadTagAPI();
+		else if (event.getPlugin().getName() == "WorldEdit")
+			loadWorldEdit();
+		else if (event.getPlugin().getName() == "WorldGuard")
+			loadWorldGuard();
+		else if (event.getPlugin().getName() == "Vault")
+			loadVault();
 	}
 
 	public void loadAll(){
+		loadBattleTracker();
 		loadDisguiseCraft();
-		loadBT();
+		loadFactions();
 		loadHeroChat();
+		loadHeroes();
+		loadMobArena();
+		loadMultiInv();
+		loadMultiverseCore();
+		loadMultiverseInventory();
+		loadPylamoRestoration();
+		loadRegister();
+		loadTagAPI();
 		loadWorldEdit();
 		loadWorldGuard();
-		loadMultiInv();
-		loadMultiverseInventory();
-		loadMultiverseCore();
-		loadMobArena();
-		loadHeroes();
-		loadTagAPI();
 		loadVault();
-		loadRegister();
+	}
+
+
+	public void loadBattleTracker(){
+		if (BTInterface.battleTracker == null){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("BattleTracker");
+			if (plugin != null) {
+				BTInterface.battleTracker = (Tracker) plugin;
+			} else {
+				Log.info("[BattleArena] BattleTracker not detected, not tracking wins");
+			}
+		}
 	}
 
 	public void loadDisguiseCraft(){
@@ -90,13 +110,45 @@ public class BAPluginListener implements Listener {
 		}
 	}
 
-	public void loadBT(){
-		if (BTInterface.battleTracker == null){
-			Plugin plugin = Bukkit.getPluginManager().getPlugin("BattleTracker");
+	public void loadFactions(){
+		if (!FactionsController.enabled()){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Factions");
 			if (plugin != null) {
-				BTInterface.battleTracker = (Tracker) plugin;
-			} else {
-				Log.info("[BattleArena] BattleTracker not detected, not tracking wins");
+				if (FactionsController.enableFactions(true)){
+					Log.info("[BattleArena] Factions detected. Configurable power loss enabled (default no powerloss)");
+				} else {
+					Log.info("[BattleArena] Old Factions detected that does not have a PowerLossEvent");
+				}
+			}
+		}
+	}
+
+	public void loadHeroChat(){
+		if (AnnouncementOptions.hc == null){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Herochat");
+			if (plugin != null) {
+				AnnouncementOptions.setHerochat((Herochat) plugin);
+				Log.info("[BattleArena] Herochat detected, adding channel options");
+			}
+		}
+	}
+
+	public void loadHeroes(){
+		if (!HeroesController.enabled()){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Heroes");
+			if (plugin != null) {
+				HeroesController.setHeroes(plugin);
+				Log.info("[BattleArena] Heroes detected. Implementing heroes class options");
+			}
+		}
+	}
+
+	public void loadMobArena(){
+		if (!MobArenaInterface.hasMobArena()){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("MobArena");
+			if (plugin != null) {
+				MobArenaInterface.init(plugin);
+				Log.info("[BattleArena] MobArena detected.  Implementing no join when in MobArena");
 			}
 		}
 	}
@@ -131,65 +183,53 @@ public class BAPluginListener implements Listener {
 		}
 	}
 
+	public void loadPylamoRestoration(){
+		if (!PylamoController.enabled()){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("PylamoRestorationSystem");
+			if (plugin != null){
+				PylamoController.setPylamo(plugin);
+				Log.info(BattleArena.getPName() +" found PylamoRestorationSystem");
+			}
+		}
+	}
+
+	public void loadRegister(){
+		if (!MoneyController.hasVaultEconomy() && !MoneyController.hasRegisterEconomy()){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Register");
+			if (plugin != null){
+				MoneyController.setRegisterEconomy();
+				Log.info(BattleArena.getPName() +" found economy plugin Register");
+			}
+		}
+	}
+
 	public void loadWorldEdit(){
-		if (!Defaults.PLUGIN_MULTI_INV){
+		if (WorldGuardInterface.hasWorldEdit()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("WorldEdit");
 			if (plugin != null) {
 				if (WorldGuardInterface.setWorldEdit(plugin)){
-					WorldGuardInterface.init();
-					Log.info("[BattleArena] WorldGuard detected. WorldGuard regions now enabled");
+					Log.info("[BattleArena] WorldEdit detected.");
 				}
 			}
 		}
 	}
 
 	public void loadWorldGuard(){
-		if (Defaults.PLUGIN_MULTI_INV == false){
+		if (WorldGuardInterface.hasWorldGuard()){
 			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
 			if (plugin != null) {
 				if (WorldGuardInterface.setWorldGuard(plugin)){
-					WorldGuardInterface.init();
-					Log.info("[BattleArena] WorldGuard detected. WorldGuard regions now be used");
+					Log.info("[BattleArena] WorldGuard detected. WorldGuard regions can now be used");
 				}
 			}
 		}
 	}
-	public void loadMobArena(){
-		if (!MobArenaInterface.hasMobArena()){
-			Plugin plugin = Bukkit.getPluginManager().getPlugin("MobArena");
-			if (plugin != null) {
-				MobArenaInterface.init(plugin);
-				Log.info("[BattleArena] MobArena detected.  Implementing no join when in MobArena");
-			}
-		}
-	}
-
-	public void loadHeroes(){
-		if (!HeroesInterface.enabled()){
-			Plugin plugin = Bukkit.getPluginManager().getPlugin("Heroes");
-			if (plugin != null) {
-				HeroesInterface.setHeroes(plugin);
-				Log.info("[BattleArena] Heroes detected. Implementing heroes class options");
-			}
-		}
-	}
-
-	public void loadHeroChat(){
-		if (AnnouncementOptions.hc == null){
-			Plugin plugin = Bukkit.getPluginManager().getPlugin("Herochat");
-			if (plugin != null) {
-				AnnouncementOptions.setHerochat((Herochat) plugin);
-				Log.info("[BattleArena] Herochat detected, adding channel options");
-			}
-		}
-	}
-
 
 	public void loadTagAPI(){
-		if (!TagAPIInterface.enabled()){
+		if (!TagAPIController.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("TagAPI");
 			if (plugin != null) {
-				TagAPIInterface.enableTagAPI(true);
+				TagAPIController.enableTagAPI(true);
 				Log.info("[BattleArena] TagAPI detected. Implementing Team colored player names");
 			}
 		}
@@ -223,13 +263,4 @@ public class BAPluginListener implements Listener {
 		}
 	}
 
-	public void loadRegister(){
-		if (!MoneyController.hasVaultEconomy() && !MoneyController.hasRegisterEconomy()){
-			Plugin plugin = Bukkit.getPluginManager().getPlugin("Register");
-			if (plugin != null){
-				MoneyController.setRegisterEconomy();
-				Log.info(BattleArena.getPName() +" found economy plugin Register");
-			}
-		}
-	}
 }

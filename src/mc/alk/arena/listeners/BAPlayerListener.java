@@ -8,7 +8,7 @@ import java.util.List;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
-import mc.alk.arena.controllers.HeroesInterface;
+import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TeleportController;
@@ -201,7 +201,7 @@ public class BAPlayerListener implements Listener  {
 				public void run() {
 					Player pl = Bukkit.getPlayerExact(name);
 					if (pl != null){
-						HeroesInterface.setMagicLevel(pl, val);
+						HeroesController.setMagicLevel(pl, val);
 					}
 				}
 			});

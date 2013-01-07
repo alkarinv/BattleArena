@@ -68,6 +68,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			Defaults.DEBUG_STORAGE = on;
 		} else if(section.equalsIgnoreCase("damage")){
 //			Defaults.DEBUG_DAMAGE = on;
+		} else if(section.equalsIgnoreCase("commands")){
+			Defaults.DEBUG_COMMANDS = on;
 		} else if(section.equalsIgnoreCase("teams")){
 			Defaults.DEBUG_MATCH_TEAMS = on;
 		} else {
@@ -77,13 +79,13 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		sendMessage(sender, "&4[BattleArena] &2debugging for &6" + section +"&2 now &6" + on);
 	}
 
-	@MCCommand( cmds = {"giveTeam","gt"}, online={1}, op=true, usage="giveTeam <player> <team index>")
+	@MCCommand( cmds = {"giveTeam"}, online={1}, op=true, usage="giveTeam <player> <team index>")
 	public boolean giveTeamHelmOther(CommandSender sender, ArenaPlayer p, Integer index){
 		TeamUtil.setTeamHead(index, p);
 		return sendMessage(sender, p.getName() +" Given team " + index);
 	}
 
-	@MCCommand( cmds = {"giveTeam","gt"}, inGame=true, op=true, usage="giveTeam <team index>")
+	@MCCommand( cmds = {"giveTeam"}, inGame=true, op=true, usage="giveTeam <team index>")
 	public boolean giveTeamHelm(ArenaPlayer p, Integer index){
 		if (index < 0){
 			p.getPlayer().setDisplayName(p.getName());
@@ -96,11 +98,11 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 
 	@MCCommand( cmds = {"giveHelm","gh"}, inGame=true, op=true, exact=2, usage="giveHelm <item>")
-	public boolean giveHelm(CommandSender sender, Command command, String label, Object[] args) {
+	public boolean giveHelm(CommandSender sender, Command command, String label, String[] args) {
 		Player p = (Player) sender;
 		ItemStack is;
 		try {
-			is = InventoryUtil.parseItem((String) args[1]);
+			is = InventoryUtil.parseItem(args[1]);
 		} catch (Exception e) {
 			return sendMessage(sender, "&e couldnt parse item " + args[1]);
 		}
@@ -229,6 +231,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			sendMessage(sender,line);}
 		return true;
 	}
+
 	@MCCommand(cmds={"online"}, admin=true)
 	public boolean arenaVerify(CommandSender sender, OfflinePlayer p) {
 		return sendMessage(sender, "Player " + p.getName() +"  is " + p.isOnline());

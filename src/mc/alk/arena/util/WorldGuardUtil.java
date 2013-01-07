@@ -51,7 +51,7 @@ public class WorldGuardUtil {
 	public static boolean hasWorldGuard = false;
 
 	public static boolean hasWorldGuard() {
-		return WorldEditUtil.hasWorldEdit && hasWorldGuard;
+		return WorldEditUtil.hasWorldEdit() && hasWorldGuard;
 	}
 
 	public static boolean addRegion(Player sender, String id) throws Exception {
@@ -228,6 +228,10 @@ public class WorldGuardUtil {
 		if (pr == null)
 			return false;
 		return pasteSchematic(consoleSender,pr,id,w);
+	}
+
+	public static boolean pasteSchematic(String worldName, String id) {
+		return pasteSchematic(Bukkit.getConsoleSender(),worldName,id);
 	}
 
 	public static boolean pasteSchematic(CommandSender sender, ProtectedRegion pr, String schematic, World world) {

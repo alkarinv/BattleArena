@@ -24,6 +24,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.Vector;
 
 
 public class TeleportController implements Listener{
@@ -32,7 +33,6 @@ public class TeleportController implements Listener{
 
 	public static void teleportPlayer(final Player player, final Location location, final boolean wipe, boolean giveBypassPerms){
 		if (!player.isOnline() || player.isDead()){
-			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + player.getName() + " loc=" + location +":"+ wipe);
 			BAPlayerListener.teleportOnReenter(player.getName(),location);
 			if (wipe){
 				InventoryUtil.clearInventory(player);}
@@ -45,8 +45,14 @@ public class TeleportController implements Listener{
 		teleport(player,location,false);
 	}
 
-	public static void teleport(final Player player, final Location location, boolean giveBypassPerms){
+	private static void teleport(final Player player, final Location location, boolean giveBypassPerms){
 		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
+		if (!player.isOnline() || player.isDead()){
+			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + player.getName() + " loc=" + location);
+			BAPlayerListener.teleportOnReenter(player.getName(),location);
+			return;
+		}
+		player.setVelocity(new Vector(0,0,0));
 		Location loc = location.clone();
 		loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
 		teleporting(player,true);

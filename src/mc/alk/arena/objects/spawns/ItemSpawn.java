@@ -12,12 +12,13 @@ public class ItemSpawn extends SpawnInstance{
 	public ItemSpawn(ItemStack is){
 		super(null);
 		this.is = is;
-		
+
 	}
 
 	public int spawn() {
-		if (uid != null)
+		if (uid != null && !uid.isDead()){
 			return spawnId;
+		}
 		uid = loc.getWorld().dropItemNaturally(loc, is);
 		return spawnId;
 	}
@@ -31,10 +32,11 @@ public class ItemSpawn extends SpawnInstance{
 	public ItemStack getItemStack() {
 		return is;
 	}
-	
+
+	@Override
 	public String toString(){
 		return "[ItemSpawn "+InventoryUtil.getItemString(is)+"]";
 	}
-	
-	
+
+
 }

@@ -20,6 +20,7 @@ import mc.alk.arena.util.SerializerUtil;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 
 public class Persistable {
@@ -52,6 +53,7 @@ public class Persistable {
 				if (!(a instanceof Persist || !cs.contains(name))){
 					continue;
 				}
+
 //				System.out.println("Type = " + type +"  " + name +"   " + annotations + "   " + cs.getString(name));
 				field.setAccessible(true);
 				try {
@@ -145,8 +147,19 @@ public class Persistable {
 								newMap.put(k,v);
 						}
 						obj = newMap;
+					} else if (ConfigurationSerializable.class.isAssignableFrom(type)){
+//						obj = cs.get // TODO
 					} else if (YamlSerializable.class.isAssignableFrom(type)){
-						obj = createYamlSerializable(type,cs.getConfigurationSection(name));
+//						Log.debug("  need to check ########################  " + name   +"  -- " +
+//								cs.getConfigurationSection(name) +
+//								"   _-- " + cs.getString(name) + "    " +
+//								cs.getCurrentPath() +"   ---------   " + cs.get(name));
+//						if (cs.getConfigurationSection(name) == null){
+//							String str = cs.getString(name);
+//							if (str == null){
+//								continue;}
+//						}
+						obj = createYamlSerializable(type,cs.getConfigurationSection(name), cs.getString(name));
 					} else {
 						obj = yamlToObj(name,type,cs);
 					}
@@ -193,16 +206,18 @@ public class Persistable {
 		throw new NotPersistableException("Type " + type +" is not persistable. Not loading values for "+name);
 	}
 
-	private static Object createYamlSerializable(Class<?> clazz, ConfigurationSection cs) {
+	private static Object createYamlSerializable(Class<?> clazz, ConfigurationSection cs, String value) {
 		if (clazz == null)
 			return null;
 		Class<?>[] args = {};
 		try {
+//			Log.debug("  " + clazz.getSimpleName() +"       " + cs);
 			Constructor<?> constructor = clazz.getConstructor(args);
+//			Log.debug("  " + clazz.getSimpleName() +"  ------  " + constructor);
 			YamlSerializable ys = (YamlSerializable) constructor.newInstance((Object[])args);
 			if (ys == null)
 				return null;
-			ys = (YamlSerializable) ys.yamlToObject(cs);
+			ys = (YamlSerializable) ys.yamlToObject(cs, value);
 			return ys;
 		} catch (NoSuchMethodException e){
 			System.err.println("If you have custom constructors for your YamlSerializable class you must also have a public default constructor");

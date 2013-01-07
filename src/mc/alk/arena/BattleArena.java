@@ -49,6 +49,7 @@ import mc.alk.arena.serializers.BAClassesSerializer;
 import mc.alk.arena.serializers.BAConfigSerializer;
 import mc.alk.arena.serializers.EventScheduleSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
+import mc.alk.arena.serializers.SignSerializer;
 import mc.alk.arena.serializers.SpawnSerializer;
 import mc.alk.arena.serializers.StateFlagSerializer;
 import mc.alk.arena.serializers.TeamHeadSerializer;
@@ -65,6 +66,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+
 
 public class BattleArena extends JavaPlugin{
 	static private String pluginname;
@@ -83,10 +85,11 @@ public class BattleArena extends JavaPlugin{
 	private final SignController signController = new SignController();
 	private final BASignListener signListener = new BASignListener(signController);
 
-	private ArenaControllerSerializer yacs;
-	private static final BAConfigSerializer cc = new BAConfigSerializer();
-	private static final BAClassesSerializer bacs = new BAClassesSerializer();
-	private static final EventScheduleSerializer ess = new EventScheduleSerializer();
+	private ArenaControllerSerializer arenaControllerSerializer;
+	private static final BAConfigSerializer baConfigSerializer = new BAConfigSerializer();
+	private static final BAClassesSerializer classesSerializer = new BAClassesSerializer();
+	private static final EventScheduleSerializer eventSchedulerSerializer = new EventScheduleSerializer();
+	private static final SignSerializer signSerializer = new SignSerializer();
 
 	@Override
 	public void onEnable() {
@@ -102,7 +105,7 @@ public class BattleArena extends JavaPlugin{
 			dir.mkdirs();}
 
 		/// For potential updates to default yml files
-		YamlFileUpdater yfu = new YamlFileUpdater();
+		YamlFileUpdater yfu = new YamlFileUpdater(this);
 
 		/// Set up our messages first before other initialization needs messages
 		MessageSerializer defaultMessages = new MessageSerializer("default");
@@ -116,7 +119,7 @@ public class BattleArena extends JavaPlugin{
 
 		pluginListener.loadAll(); /// try and load plugins we want
 
-		yacs = new ArenaControllerSerializer();
+		arenaControllerSerializer = new ArenaControllerSerializer();
 
 		// Register our events
 		Bukkit.getPluginManager().registerEvents(playerListener, this);
@@ -142,21 +145,18 @@ public class BattleArena extends JavaPlugin{
 		VictoryType.register(OneTeamLeft.class, this);
 		VictoryType.register(NoTeamsLeft.class, this);
 
-//		MethodController.addBukkitMethods(Match.class, Match.class.getMethods());
-//		MethodController.addBukkitMethods(ArenaMatch.class, ArenaMatch.class.getMethods());
-
 		/// Load our configs, then arenas
-		cc.setConfig(FileUtil.load(this,dir.getPath() +"/config.yml","/default_files/config.yml"));
-		YamlFileUpdater.updateBaseConfig(cc); /// Update our config if necessary
+		baConfigSerializer.setConfig(FileUtil.load(this,dir.getPath() +"/config.yml","/default_files/config.yml"));
+		YamlFileUpdater.updateBaseConfig(this,baConfigSerializer); /// Update our config if necessary
 
-		bacs.setConfig(FileUtil.load(this,dir.getPath() +"/classes.yml","/default_files/classes.yml")); /// Load classes
-		bacs.loadAll();
+		classesSerializer.setConfig(FileUtil.load(this,dir.getPath() +"/classes.yml","/default_files/classes.yml")); /// Load classes
+		classesSerializer.loadAll();
 
 		TeamHeadSerializer ts = new TeamHeadSerializer();
 		ts.setConfig(FileUtil.load(this,dir.getPath() +"/teamHeads.yml","/default_files/teamHeads.yml")); /// Load team heads
 		ts.loadAll();
 
-		cc.loadAll(); /// Load our defaults for BattleArena
+		baConfigSerializer.loadAll(); /// Load our defaults for BattleArena
 
 		/// persist our disabled arena types
 		StateFlagSerializer sfs = new StateFlagSerializer();
@@ -169,7 +169,12 @@ public class BattleArena extends JavaPlugin{
 
 		SpawnSerializer ss = new SpawnSerializer();
 		ss.setConfig(FileUtil.load(this,dir.getPath() +"/spawns.yml","/default_files/spawns.yml"));
-		yacs.load();
+		arenaControllerSerializer.load();
+
+		/// Load up our signs
+		signSerializer.setConfig(dir.getPath()+"/signs.yml");
+		signSerializer.loadAll(signController);
+		signController.updateAllSigns();
 
 		/// Set our commands
 		getCommand("arena").setExecutor(commandExecutor);
@@ -187,8 +192,8 @@ public class BattleArena extends JavaPlugin{
 		createEvents();
 
 		/// Reload our scheduled events
-		ess.setConfig(dir.getPath() +"/scheduledEvents.yml");
-		ess.addScheduler(es);
+		eventSchedulerSerializer.setConfig(dir.getPath() +"/scheduledEvents.yml");
+		eventSchedulerSerializer.addScheduler(es);
 
 		createMessageSerializers();
 		FileLogger.init(); /// shrink down log size
@@ -200,7 +205,7 @@ public class BattleArena extends JavaPlugin{
 		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
 			@Override
 			public void run() {
-				ess.loadAll();
+				eventSchedulerSerializer.loadAll();
 				if (Defaults.START_NEXT)
 					es.startNext();
 				else if (Defaults.START_CONTINUOUS)
@@ -234,9 +239,10 @@ public class BattleArena extends JavaPlugin{
 
 		BattleArena.getSelf();
 		arenaController.stop();
-		ArenaSerializer.saveAllArenas(true);
-		yacs.save();
-		ess.saveScheduledEvents();
+		/// we no longer save arenas as those get saved after each alteration now
+		arenaControllerSerializer.save();
+		eventSchedulerSerializer.saveScheduledEvents();
+		signSerializer.saveAll(signController);
 		if (Defaults.AUTO_UPDATE)
 			PluginUpdater.updatePlugin(this);
 		FileLogger.saveAll();
@@ -306,8 +312,8 @@ public class BattleArena extends JavaPlugin{
 	 */
 	public void reloadConfig(){
 		super.reloadConfig();
-		cc.loadAll();
-		bacs.loadAll();
+		baConfigSerializer.loadAll();
+		classesSerializer.loadAll();
 	}
 
 	public static String getVersion() {
@@ -343,6 +349,10 @@ public class BattleArena extends JavaPlugin{
 
 	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor){
 		new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass,executor);
+	}
+
+	public static void registerCompetition(JavaPlugin plugin, String name, Class<? extends Arena> arenaClass){
+		new APIRegistrationController().registerCompetition(plugin,name,arenaClass);
 	}
 
 	public static Arena getArena(String arenaName) {return BattleArena.getBAC().getArena(arenaName);}

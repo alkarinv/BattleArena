@@ -2,6 +2,7 @@ package mc.alk.arena.util;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 public class DisabledCommandsUtil {
 	static HashSet<String> disabled = new HashSet<String>();
@@ -20,5 +21,9 @@ public class DisabledCommandsUtil {
 		for (String s: disabledCommands){
 			disabled.add("/" + s.toLowerCase());
 		}
+	}
+
+	public static Set<String> getDisabledCommands(){
+		return new HashSet<String>(disabled);
 	}
 }

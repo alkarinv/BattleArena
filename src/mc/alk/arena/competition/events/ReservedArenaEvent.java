@@ -1,7 +1,5 @@
 package mc.alk.arena.competition.events;
 
-import java.util.Collection;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.ArenaMatch;
@@ -12,7 +10,6 @@ import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
-import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
@@ -70,21 +67,8 @@ public class ReservedArenaEvent extends Event {
 	@MatchEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
 		if (Defaults.DEBUG_TRACE) System.out.println("ReservedArenaEvent::matchComplete " +arenaMatch +"   isRunning()=" + isRunning());
-		Collection<Team> victors = event.getMatch().getResult().getVictors();
 
-		MatchResult r = event.getMatch().getResult();
-		Matchup m = null;
-		if (r.getVictors() != null && !r.getVictors().isEmpty()){
-			m = getMatchup(r.getVictors().iterator().next(),0);
-		}else if (r.getLosers() != null && !r.getLosers().isEmpty()){
-			m = getMatchup(r.getLosers().iterator().next(),0);
-		} else if (r.getDrawers() != null && !r.getDrawers().isEmpty()){
-			m = getMatchup(r.getDrawers().iterator().next(),0);}
-		if (m == null){ /// This match wasnt inside our arena
-			return;}
-
-		m.setResult(arenaMatch.getResult());
-		eventVictory(victors,m.getResult().getLosers());
+		setEventResult(arenaMatch.getResult());
 	}
 
 	@MatchEventHandler
@@ -112,7 +96,6 @@ public class ReservedArenaEvent extends Event {
 			for (ArenaPlayer p : t.getPlayers()){
 				tjr.team.sendToOtherMembers(p, str +" has joined the team!");
 			}
-
 			break;
 		default:
 		}

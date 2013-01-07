@@ -12,9 +12,9 @@ import org.bukkit.Location;
 public class SignController {
 	Map<String, Map<String,ArenaStatusSign>> statusSigns = new HashMap<String, Map<String,ArenaStatusSign>>();
 
-	public void addStatusSign(ArenaStatusSign acs) {
-		Map<String,ArenaStatusSign> map = getMatchSigns(acs.getType());
-		map.put(toKey(acs.getLocation()), acs);
+	public void addStatusSign(ArenaStatusSign arenaStatusSign) {
+		Map<String,ArenaStatusSign> map = getMatchSigns(arenaStatusSign.getType());
+		map.put(toKey(arenaStatusSign.getLocation()), arenaStatusSign);
 	}
 
 	private Map<String, ArenaStatusSign> getMatchSigns(String arenaType) {
@@ -32,5 +32,14 @@ public class SignController {
 
 	public Map<String, Map<String, ArenaStatusSign>> getStatusSigns() {
 		return statusSigns;
+	}
+
+	public void updateAllSigns() {
+		for (String arenaType : statusSigns.keySet()){
+			Map<String,ArenaStatusSign> signs = statusSigns.get(arenaType);
+			for (ArenaStatusSign sign: signs.values()){
+//				sign.update();
+			}
+		}
 	}
 }

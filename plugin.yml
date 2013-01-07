@@ -1,10 +1,10 @@
 name: BattleArena
 
-version: 3.7.8.5.4
+version: 3.7.9.2
 author: alkarin
 
 description: Arena system for BattleCraft
-softdepend: [BattleTracker, Vault, Herochat, WorldGuard, WorldEdit, MultiInv, Multiworld, GroupManager, Multiverse-Inventories, Heroes, TagAPI, Factions]
+softdepend: [BattleTracker, Essentials, Herochat, Heroes, Factions, GroupManager, MultiInv, Multiworld, Multiverse-Inventories, TagAPI, WorldEdit, WorldGuard, Vault]
 main: mc.alk.arena.BattleArena
 commands:
     team:

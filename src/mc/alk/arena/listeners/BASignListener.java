@@ -100,7 +100,6 @@ public class BASignListener implements Listener{
 			makeArenaStatusSign(event, ass, lines);
 			return;
 		}
-
 	}
 
 	private void makeArenaClassSign(SignChangeEvent event, ArenaClass ac, String[] lines) {
@@ -163,6 +162,8 @@ public class BASignListener implements Listener{
 			match = Character.toUpperCase(match.charAt(0)) + match.substring(1);
 			event.setLine(0, MessageUtil.colorChat( ChatColor.GOLD+Defaults.SIGN_PREFIX+
 					acs.getMatchParams().getColor()+match));
+			acs.setLocation(event.getBlock().getLocation());
+
 			signController.addStatusSign(acs);
 			MessageUtil.sendMessage(event.getPlayer(), "&2Arena status sign created");
 		} catch (Exception e){

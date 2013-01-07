@@ -1,4 +1,4 @@
-version: 1.5
+version: 1.5.1
 
 system:
     type_enabled: "&2 type &6%s&2 enabled"
@@ -42,7 +42,9 @@ common:
     your_team_not_ready: '&eYour team was not ready to join'
 
 event:
-    countdownTillEvent: ""
+    countdownTillEvent: ''
+    team_cancelled: ''
+    server_cancelled: '&cEvent was cancelled'
     server_countdownTillEvent: "{eventprefix}Starts in {time}, &6/{cmd} join&e, &6/{cmd} info"
     oneTeam: ### 1 team events
         server_open: |

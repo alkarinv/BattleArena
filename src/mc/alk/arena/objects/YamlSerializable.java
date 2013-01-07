@@ -4,6 +4,6 @@ import org.bukkit.configuration.ConfigurationSection;
 
 public interface YamlSerializable {
 
-	Object yamlToObject(ConfigurationSection cs);
+	Object yamlToObject(ConfigurationSection cs, String value);
 	Object objectToYaml();
 }

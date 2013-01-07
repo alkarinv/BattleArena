@@ -1,5 +1,7 @@
 package mc.alk.arena.controllers;
 
+import java.util.List;
+
 import mc.alk.arena.listeners.HeroesListener;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.HeroesUtil;
@@ -7,7 +9,7 @@ import mc.alk.arena.util.HeroesUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-public class HeroesInterface {
+public class HeroesController {
 	static boolean hasHeroes = false;
 	HeroesUtil heroes = null;
 
@@ -124,5 +126,16 @@ public class HeroesInterface {
 			HeroesListener.setCancelExpLoss(player);
 		else
 			HeroesListener.removeCancelExpLoss(player);
+	}
+
+	public static void enterArena(Player player) {
+		try{HeroesListener.enterArena(player);}catch(Exception e){e.printStackTrace();}
+	}
+
+	public static void leaveArena(Player player) {
+		try{HeroesListener.leaveArena(player);}catch(Exception e){e.printStackTrace();}
+	}
+	public static void addDisabledCommands(List<String> disabled) {
+		try{HeroesListener.addDisabledCommands(disabled);}catch(Exception e){e.printStackTrace();}
 	}
 }

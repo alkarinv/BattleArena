@@ -18,7 +18,7 @@ import org.bukkit.plugin.Plugin;
 
 
 public class SpawnController {
-	static final boolean DEBUG = false;
+	static final boolean DEBUG_SPAWNS = false;
 	static CaseInsensitiveMap<SpawnInstance> allSpawns = new CaseInsensitiveMap<SpawnInstance>();
 
 	PriorityQueue<NextSpawn> spawnQ = null;
@@ -32,7 +32,7 @@ public class SpawnController {
 		Long timeToNext;
 		/// We are given time in matchEndTime, convert to time in millis
 		NextSpawn(TimedSpawn is, Long timeToSpawn){
-			this.is = is; this.timeToNext = is.getTimeToNext();
+			this.is = is; this.timeToNext = timeToSpawn;
 		}
 	}
 
@@ -68,8 +68,8 @@ public class SpawnController {
 			/// TeamJoinResult our items into the Q
 			ArrayList<NextSpawn> nextspawns = new ArrayList<NextSpawn>();
 			for (TimedSpawn is: timedSpawns.values()){
-//				System.out.println("itemSpawns = " + timedSpawns.size() + " " + is.getTimeToStart()+ "  ts=" + is);
-				long tts = is.getTimeToStart();
+//				System.out.println("itemSpawns = " + timedSpawns.size() + " " + is.getFirstSpawnTime()+ "  ts=" + is);
+				long tts = is.getFirstSpawnTime();
 				if (tts == 0)
 					is.spawn();
 				NextSpawn ns = new NextSpawn(is, tts);
@@ -88,13 +88,13 @@ public class SpawnController {
 		}
 
 		public void run() {
-			if (DEBUG) System.out.println("SpawnNextEvent::run " + nextTimeToSpawn);
+			if (DEBUG_SPAWNS) System.out.println("SpawnNextEvent::run " + nextTimeToSpawn);
 			TimeUtil.testClock();
 
 			/// Subtract the time passed from each element
 			for (NextSpawn next : spawnQ){ /// we dont need to resort after this as we are subtracting a constant from all
 				next.timeToNext -= nextTimeToSpawn;
-				if (DEBUG) System.out.println("     " + next.timeToNext +"  " + next.is +"   ");
+				if (DEBUG_SPAWNS) System.out.println("     " + next.timeToNext +"  " + next.is +"   ");
 			}
 			/// Find all the elements that should spawn at this time
 			NextSpawn ns = null;
@@ -106,14 +106,14 @@ public class SpawnController {
 					ns = spawnQ.remove();
 					ns.is.spawn();
 					/// Now we have to add back the items we spawned into the Q with their original time lengths
-					ns.timeToNext = ns.is.getTimeToNext();
+					ns.timeToNext = ns.is.getRespawnTime();
 					/// spawn time!!
 					spawnQ.add(ns);
 				}
 			}
 
 			nextTimeToSpawn = spawnQ.peek().timeToNext;
-			if (DEBUG) System.out.println("run SpawnNextEvent " + spawnQ.size() +"  next=" + nextTimeToSpawn);
+			if (DEBUG_SPAWNS) System.out.println("run SpawnNextEvent " + spawnQ.size() +"  next=" + nextTimeToSpawn);
 			timerId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new SpawnNextEvent(nextTimeToSpawn),
 					(long)(Defaults.TICK_MULT*nextTimeToSpawn*20));
 		}

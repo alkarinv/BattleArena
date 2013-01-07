@@ -9,9 +9,10 @@ import java.util.Random;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
-import mc.alk.arena.controllers.HeroesInterface;
+import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PlayerStoreController;
+import mc.alk.arena.controllers.PylamoController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.WorldGuardInterface;
 import mc.alk.arena.objects.ArenaClass;
@@ -24,6 +25,7 @@ import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
@@ -72,14 +74,21 @@ public class PerformTransition {
 			return true;
 		if (performOncePerTransitionOptions){
 			/// Options that don't affect players first
+			if (Defaults.DEBUG_TRANSITIONS) Log.debug("[BA Info] wg=" + WorldGuardInterface.hasWorldGuard() +"  region="+
+					am.getArena().getRegion() +"  reset=" + mo.hasOption(TransitionOption.WGRESETREGION));
 			if (WorldGuardInterface.hasWorldGuard() && am.getArena().hasRegion()){
 				String region = am.getArena().getRegion();
 				String worldName = am.getArena().getRegionWorld();
 				/// Clear the area
 				if (mo.shouldClearRegion()){
 					WorldGuardInterface.clearRegion(worldName,region);}
+
 				if (mo.hasOption(TransitionOption.WGRESETREGION)){
-					WorldGuardInterface.pasteSchematic(Bukkit.getConsoleSender(), worldName, region);
+					if (PylamoController.enabled() && am.getArena().getPylamoRegion() != null){
+						PylamoController.resetRegion(am.getArena().getPylamoRegion());
+					} else {
+						WorldGuardInterface.pasteSchematic(Bukkit.getConsoleSender(), worldName, region);
+					}
 				}
 			}
 		}
@@ -107,8 +116,9 @@ public class PerformTransition {
 		if (onlyInMatch && !insideArena && !(teleportIn || teleportWaitRoom)){
 			return true;}
 		final boolean teleportOut = mo.shouldTeleportOut();
-		final boolean wipeOnFirstEnter = !insideArena && mo.hasOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
-		final boolean wipeInventory = mo.clearInventory() || wipeOnFirstEnter;
+//		final boolean wipeOnFirstEnter = !insideArena && mo.hasOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
+//		final boolean wipeInventory = mo.clearInventory() || wipeOnFirstEnter;
+		final boolean wipeInventory = mo.clearInventory();
 
 		List<PotionEffect> effects = mo.getEffects()!=null ? new ArrayList<PotionEffect>(mo.getEffects()) : null;
 		final Integer health = mo.getHealth();
@@ -241,15 +251,15 @@ public class PerformTransition {
 
 	private static void deEnchant(Player p) {
 		try{ EffectUtil.deEnchantAll(p);} catch (Exception e){}
-		HeroesInterface.deEnchant(p);
+		HeroesController.deEnchant(p);
 	}
 
 	private static void setMagicLevel(Player p, Integer magic) {
-		HeroesInterface.setMagicLevel(p, magic);
+		HeroesController.setMagicLevel(p, magic);
 	}
 
 	private static void setMagicLevelP(Player p, Integer magic) {
-		HeroesInterface.setMagicLevelP(p, magic);
+		HeroesController.setMagicLevelP(p, magic);
 	}
 	private static void removePerms(ArenaPlayer p, List<String> perms) {
 		if (perms == null || perms.isEmpty())
