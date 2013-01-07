@@ -11,6 +11,10 @@ import mc.alk.arena.objects.teams.Team;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
+/**
+ * Represents a reward event, called when rewards are given out to players.
+ * See also: ArenaDrawersPrizeEvent, ArenaLosersPrizeEvent, ArenaWinnersPrizeEvent
+ */
 public class ArenaPrizeEvent extends BAEvent {
 	final Competition competition;
 	final Collection<Team> teams;
@@ -49,12 +53,29 @@ public class ArenaPrizeEvent extends BAEvent {
 	public void setEffects(List<PotionEffect> effects) {
 		this.effects = effects;
 	}
+	/**
+	 * Returns a list of all reward objects for this arena.
+	 * Does not contain rewards listed in the ArenaConfig.yml file.
+	 */
 	public List<Reward> getRewards() {
 		return rewards;
 	}
 	public void setRewards(List<Reward> rewards) {
 		this.rewards = rewards;
 	}
+	/**
+	 * Adds a new reward for the supplied teams.
+	 * @param reward The reward to give the teams involved in this event.
+	 * 
+	 * Usage:
+	 * Reward r = new Reward(){
+	 *		@Override
+	 *		public void reward(Team team) {
+	 *			//Whatever you'd like to do with the winning team...
+	 * 			//Teleport, give potion effects, kill them all.
+	 *		}
+	 *	};
+	 */
 	public void addReward(Reward reward){
 		if (this.rewards == null){
 			this.rewards = new ArrayList<Reward>();}
