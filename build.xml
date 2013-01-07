@@ -21,21 +21,23 @@
 		<javac srcdir="${src}" destdir="${bin}" debug="on" debuglevel="lines,vars,source" includeantruntime="false" encoding="Cp1252">
 			<classpath>
 				<pathelement path="${lib}" />
-				<pathelement location="${lib}/commons-lang3-3.1.jar" />
+				<pathelement location="${lib}/BattleTracker.jar" />
 				<pathelement location="${lib}/bukkit.jar" /> 
-				<pathelement location="${lib}/Herochat.jar" />
+				<pathelement location="${lib}/commons-lang3-3.1.jar" />
 				<pathelement location="${lib}/DisguiseCraft.jar" />
-				<pathelement location="${lib}/Vault.jar" />
-				<pathelement location="${lib}/Register-1.5.jar" />
+				<pathelement location="${lib}/Factions.jar" />
+				<pathelement location="${lib}/Herochat.jar" />
+				<pathelement location="${lib}/Heroes.jar" />
+				<pathelement location="${lib}/Register-1.5.jar" /> 
+				<pathelement location="${lib}/MassDisguise.jar" />
 				<pathelement location="${lib}/MobArena.jar" />
+				<pathelement location="${lib}/PluginUpdater.jar" />
+				<pathelement location="${lib}/PylamoRestorationSystem.jar" />
+				<pathelement location="${lib}/TagAPI.jar" />
+				<pathelement location="${lib}/Vault.jar" />
+				<pathelement location="${lib}/VirtualPlayers.jar" />
 				<pathelement location="${lib}/WorldGuard.jar" />
 				<pathelement location="${lib}/WorldEdit.jar" />
-				<pathelement location="${lib}/BattleTracker.jar" />
-				<pathelement location="${lib}/VirtualPlayers.jar" />
-				<pathelement location="${lib}/MassDisguise.jar" />
-				<pathelement location="${lib}/PluginUpdater.jar" />
-				<pathelement location="${lib}/Heroes.jar" />
-				<pathelement location="${lib}/TagAPI.jar" />
 			</classpath>
 		</javac>
 		<antcall target="dist" />
