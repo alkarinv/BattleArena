@@ -125,6 +125,7 @@ public class BattleArena extends JavaPlugin{
 		Bukkit.getPluginManager().registerEvents(playerListener, this);
 		Bukkit.getPluginManager().registerEvents(pluginListener, this);
 		Bukkit.getPluginManager().registerEvents(signListener, this);
+		Bukkit.getPluginManager().registerEvents(signController, this);
 		Bukkit.getPluginManager().registerEvents(tc, this);
 		Bukkit.getPluginManager().registerEvents(new TeleportController(), this);
 
@@ -305,6 +306,9 @@ public class BattleArena extends JavaPlugin{
 	public static EventController getEventController(){return ec;}
 	public static ArenaEditor getArenaEditor() {return aac;}
 	public static BAExecutor getBAExecutor() {return commandExecutor;}
+	public static boolean insideArena(Player player){
+		return getBAController().insideArena(BattleArena.toArenaPlayer(player));
+	}
 
 	@Override
 	/**

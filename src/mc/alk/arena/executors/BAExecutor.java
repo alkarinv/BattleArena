@@ -124,6 +124,11 @@ public class BAExecutor extends CustomCommandExecutor {
 		return sendMessage(sender, MessageHandler.getSystemMessage(node,args));
 	}
 
+	public static boolean sendSystemMessage(Team team, String node, Object... args) {
+		team.sendMessage(MessageHandler.getSystemMessage(node,args));
+		return true;
+	}
+
 	public static boolean sendSystemMessage(ArenaPlayer sender, String node, Object... args) {
 		return sendMessage(sender, MessageHandler.getSystemMessage(node,args));
 	}
@@ -600,11 +605,12 @@ public class BAExecutor extends CustomCommandExecutor {
 			return sendMessage(sender,"That size not recognized.  Examples: 1 or 2 or 1-5 or 2+");
 		}
 
-		Arena arena = ArenaType.createArena(name, ap);
+		Arena arena = ArenaType.createArena(name, ap,false);
 		arena.setSpawnLoc(0, p.getLocation());
 		ac.addArena(arena);
 		new ArenaInterface(arena).create();
 		new ArenaCreateEvent(arena).callEvent();
+		try{arena.init();}catch(Exception e){ e.printStackTrace();}
 
 		sendMessage(sender,"&2You have created the arena &6" + arena);
 		sendMessage(sender,"&2A spawn point has been created where you are standing");

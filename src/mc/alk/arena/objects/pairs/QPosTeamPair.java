@@ -11,21 +11,24 @@ public class QPosTeamPair {
 	public final int pos;
 	public final Team t;
 	public final int playersInQueue;
+	public final int teamsInQueue;
 	public Long time;
 
-	public QPosTeamPair(){this(null,-1,-1,(Team)null);}
+	public QPosTeamPair(){this(null,-1,-1,(Team)null,-1);}
 
-	public QPosTeamPair(ArenaParams params, int pos, int playersInQueue, Team t){
+	public QPosTeamPair(ArenaParams params, int pos, int playersInQueue, Team t, int teamsInQueue){
 		this.params=params;
 		this.pos=pos;
 		this.t =t;
 		this.playersInQueue = playersInQueue;
+		this.teamsInQueue = teamsInQueue;
 	}
 
-	public QPosTeamPair(MatchParams params, int pos, int playersInQueue, QueueObject to) {
+	public QPosTeamPair(MatchParams params, int pos, int playersInQueue, QueueObject to, int teamsInQueue) {
 		this.params=params;
 		this.pos=pos;
 		this.t =null;
 		this.playersInQueue = playersInQueue;
+		this.teamsInQueue = teamsInQueue;
 	}
 }

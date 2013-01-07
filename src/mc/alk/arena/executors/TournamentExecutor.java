@@ -83,7 +83,7 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 		}
 		final int max = ep.getMaxPlayers();
 		final String maxPlayers = max == ArenaParams.MAX ? "&6any&2 number of players" : max+"&2 players";
-		sendMessage(sender,"&2You have "+eoo.getOpenCmd()+"ed a &6" + event.getDetailedName() +
+		sendMessage(sender,"&2You have "+eoo.getOpenCmd()+"ed a &6" + event.getDisplayName() +
 				" &2TeamSize=&6" + ep.getTeamSizeRange() +"&2 #Teams=&6"+
 				ep.getNTeamRange() +"&2 supporting "+maxPlayers);
 		return event;

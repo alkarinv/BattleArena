@@ -139,10 +139,23 @@ public class ArenaType implements Comparable<ArenaType>{
 	 */
 	public static Arena createArena(String arenaName, ArenaParams arenaParams) {
 		ArenaType arenaType = arenaParams.getType();
-		return createArena(arenaType, arenaName, arenaParams);
+		return createArena(arenaType, arenaName, arenaParams, true);
 	}
 
-	private static Arena createArena(ArenaType arenaType, String arenaName, ArenaParams arenaParams){
+	/**
+	 * Create an arena from a name and parameters
+	 * This will not load persistable objects, which must be done by the caller
+	 * @param arenaName
+	 * @param arenaParams
+	 * @param init : whether we should call init directly after arena creation
+	 * @return
+	 */
+	public static Arena createArena(String arenaName, ArenaParams arenaParams, boolean init) {
+		ArenaType arenaType = arenaParams.getType();
+		return createArena(arenaType, arenaName, arenaParams, true);
+	}
+
+	private static Arena createArena(ArenaType arenaType, String arenaName, ArenaParams arenaParams, boolean init){
 		Class<?> arenaClass = classes.get(arenaType.name);
 		if (arenaClass == null)
 			return null;
@@ -152,7 +165,8 @@ public class ArenaType implements Comparable<ArenaType>{
 			Arena arena = (Arena) constructor.newInstance((Object[])args);
 			arena.setName(arenaName);
 			arena.setParameters(arenaParams);
-			try{arena.init();}catch(Exception e){ e.printStackTrace();}
+			if (init)
+				try{arena.init();}catch(Exception e){ e.printStackTrace();}
 			return arena;
 		} catch (NoSuchMethodException e){
 			System.err.println("If you have custom constructors for your class you must also have a public default constructor");

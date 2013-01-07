@@ -1,4 +1,4 @@
-version: 1.5.1
+version: 1.5.2
 
 system:
     type_enabled: "&2 type &6%s&2 enabled"
@@ -33,6 +33,7 @@ system:
     you_will_join_when_matched: "&eYou have already joined the and will enter when you get matched up with a team"
     event_will_start_in: "&2The event will start in &6%s"
     event_invalid_team_size: "&cThis Event can only support up to &6%s&e your team has &6%s"
+    you_joined_event: '&eYou have joined the &6%s'
 
 common:
     team: '&7{name}&e'

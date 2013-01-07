@@ -52,7 +52,7 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		int i=0;
 		for (QueueObject t: this){
 			if (t.hasMember(p))
-				return new QPosTeamPair(getMatchParams(),i,getNPlayers(),t.getTeam(p));
+				return new QPosTeamPair(getMatchParams(),i,getNPlayers(),t.getTeam(p), this.size());
 			i++;
 		}
 		return null;

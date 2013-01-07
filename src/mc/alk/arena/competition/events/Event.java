@@ -310,7 +310,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	}
 
 	public String getCommand(){return eventParams.getCommand();}
-	public String getDetailedName() {
+	public String getDisplayName() {
 		return getName();
 	}
 

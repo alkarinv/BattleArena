@@ -41,7 +41,7 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 			Arena arena = event.getArena();
 			final int max = arena.getParameters().getMaxPlayers();
 			final String maxPlayers = max == ArenaParams.MAX ? "&6any&2 number of players" : max+"&2 players";
-			sendMessage(sender,"&2You have "+args[0]+"ed a &6" + event.getDetailedName() +
+			sendMessage(sender,"&2You have "+args[0]+"ed a &6" + event.getDisplayName() +
 					"&2 inside &6" + arena.getName() +" &2TeamSize=&6" + arena.getParameters().getTeamSizeRange() +"&2 #Teams=&6"+
 					arena.getParameters().getNTeamRange() +"&2 supporting "+maxPlayers +"&2 at &5"+arena.getName() );
 		} catch (InvalidEventException e) {

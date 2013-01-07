@@ -13,7 +13,7 @@ moneyName: Gold
 ### Misc Options
 # some servers like to teleport people into the floor, you can adjust the Y offset of the teleport
 # to make them teleport higher by default, 1.0 = 1 block
-teleportYOffset: 1.0
+teleportYOffset: 0.0
 
 # When a player joins an arena and their inventory is stored
 # how many old inventories should be saved

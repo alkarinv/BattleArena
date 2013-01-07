@@ -126,12 +126,12 @@ public class ArenaMatchQueue {
 				MatchParams newParams = new MatchParams(tomp);
 				if (!newParams.intersect(a.getParameters()))
 					continue;
-				qtp = new QPosTeamPair(newParams,tq.size(),nplayers,to);
+				qtp = new QPosTeamPair(newParams,tq.size(),nplayers,to,tq.size());
 				break;
 			}
 		}
 		if (qtp == null)
-			qtp = new QPosTeamPair(tomp,tq.size(),nplayers,to);
+			qtp = new QPosTeamPair(tomp,tq.size(),nplayers,to,tq.size());
 		qtp.time = time;
 
 		return qtp;

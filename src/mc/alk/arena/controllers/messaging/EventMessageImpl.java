@@ -124,12 +124,12 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 
 	@Override
 	public void sendCantFitTeam(Team t) {
-		t.sendMessage("&cThe &6" + event.getDetailedName()+"&c is full");
+		t.sendMessage("&cThe &6" + event.getDisplayName()+"&c is full");
 	}
 
 	@Override
 	public void sendWaitingForMorePlayers(Team team, int remaining) {
-		team.sendMessage("&eYou have joined the &6" + event.getDetailedName());
+		team.sendMessage("&eYou have joined the &6" + event.getDisplayName());
 		team.sendMessage("&eYou will enter the Event when &6" +remaining+"&e more "+MessageUtil.playerOrPlayers(remaining)+
 				"&e have joined to make your team");
 	}

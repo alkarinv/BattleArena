@@ -260,6 +260,7 @@ public class EventExecutor extends BAExecutor{
 
 		/// Finally actually join the event
 		event.joining(tqo);
+		sendSystemMessage(t, "you_joined_event", event.getDisplayName());
 		if (sq.getSecondsTillStart() != null){
 			Long time = event.getTimeTillStart();
 			if (time != null)
@@ -336,9 +337,9 @@ public class EventExecutor extends BAExecutor{
 
 		StringBuilder sb = new StringBuilder(event.getResultString());
 		if (sb.length() == 0){
-			return sendMessage(sender,"&eThere are no results for a previous &6" +event.getDetailedName() +"&e right now");
+			return sendMessage(sender,"&eThere are no results for a previous &6" +event.getDisplayName() +"&e right now");
 		}
-		return sendMessage(sender,"&eResults for the &6" + event.getDetailedName() + "&e\n" + sb.toString());
+		return sendMessage(sender,"&eResults for the &6" + event.getDisplayName() + "&e\n" + sb.toString());
 	}
 
 	public static boolean checkOpenOptions(Event event, MatchParams mp, String[] args) throws InvalidEventException {

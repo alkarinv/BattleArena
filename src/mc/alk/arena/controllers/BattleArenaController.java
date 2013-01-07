@@ -17,6 +17,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
+import mc.alk.arena.events.matches.TeamJoinedQueueEvent;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -195,6 +196,9 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		if (joinExistingMatch(tqo)){
 			return null;}
 		QPosTeamPair qpp = amq.add(tqo, shouldStart(tqo.getMatchParams()));
+		if (qpp != null){
+			new TeamJoinedQueueEvent(qpp).callEvent();
+		}
 		if (qpp != null && qpp.pos >=0){
 			TeamController.addTeamHandler(team,this);
 			/// If the same world flag is set, lets not let them change worlds while waiting in the queue
@@ -482,6 +486,17 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			}
 		}
 		return null;
+	}
+
+	public boolean insideArena(ArenaPlayer p) {
+		synchronized(running_matches){
+			for (Match am: running_matches){
+				if (am.insideArena(p)){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public Match getMatch(ArenaPlayer p) {

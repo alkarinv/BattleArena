@@ -57,6 +57,9 @@ public class YamlFileUpdater {
 		} else if (version.compareTo("1.5.1") < 0){
 			messageTo1Point51(ms.getConfig(), version, new Version("1.5.1"));
 			ms.setConfig(new File(dir+"/messages.yml"));
+		} else if (version.compareTo("1.5.2") < 0){
+			messageTo1Point52(ms.getConfig(), version, new Version("1.5.2"));
+			ms.setConfig(new File(dir+"/messages.yml"));
 		}
 	}
 
@@ -804,7 +807,33 @@ public class YamlFileUpdater {
 					fw.write(line+"\n");
 					fw.write("    team_cancelled: ''\n");
 					fw.write("    server_cancelled: '&cEvent was cancelled'\n");
-					messageWrites1Point5();
+				} else {
+					fw.write(line+"\n");
+				}
+			}
+			closeFiles();
+			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+newVersion.getVersion()));
+			renameTo(tempFile,configFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
+	private void messageTo1Point52(FileConfiguration fc, Version version, Version newVersion) {
+		Log.warn("BattleArena updating messages.yml to "+newVersion.getVersion());
+		if (!openFiles())
+			return;
+		String line =null;
+		try {
+			while ((line = br.readLine()) != null){
+				if (line.contains("version")){
+					fw.write("version: "+newVersion.getVersion()+"\n");
+				} else if ((line.matches(".*event_invalid_team_size.*"))){
+					fw.write(line+"\n");
+					fw.write("    you_joined_event: 'You have joined the %s'\n");
 				} else {
 					fw.write(line+"\n");
 				}
