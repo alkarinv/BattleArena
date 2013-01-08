@@ -29,7 +29,7 @@ public class BASignListener implements Listener{
 
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
-		if (event.isCancelled()) return;
+//		if (event.isCancelled()) return;
 		final Block clickedBlock = event.getClickedBlock();
 		if (clickedBlock == null) return; /// This has happenned, minecraft is a strange beast
 		final Material clickedMat = clickedBlock.getType();
@@ -162,6 +162,7 @@ public class BASignListener implements Listener{
 			match = Character.toUpperCase(match.charAt(0)) + match.substring(1);
 			event.setLine(0, MessageUtil.colorChat( ChatColor.GOLD+Defaults.SIGN_PREFIX+
 					acs.getMatchParams().getColor()+match));
+			event.setLine(1, MessageUtil.colorChat( ""));
 			acs.setLocation(event.getBlock().getLocation());
 
 			signController.addStatusSign(acs);

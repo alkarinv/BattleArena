@@ -1,21 +1,16 @@
 package mc.alk.arena.controllers;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import mc.alk.arena.events.matches.TeamJoinedQueueEvent;
-import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.signs.ArenaStatusSign;
 import mc.alk.arena.util.SerializerUtil;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Sign;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 
-public class SignController implements Listener{
+public class SignController{
 	Map<String, Map<String,ArenaStatusSign>> statusSigns = new HashMap<String, Map<String,ArenaStatusSign>>();
 
 	public void addStatusSign(ArenaStatusSign arenaStatusSign) {
@@ -52,25 +47,11 @@ public class SignController implements Listener{
 		for (ArenaStatusSign sign: signs.values()){
 
 		}
-
 	}
 
-	@EventHandler
-	public void onTeamJoinedQueueEvent(TeamJoinedQueueEvent event){
-		ArenaParams params = event.getParams();
-		Map<String,ArenaStatusSign> signs = statusSigns.get(params.getType().getName());
-		if (signs == null)
-			return;
-
-		for (ArenaStatusSign sign: signs.values()){
-			Location l = sign.getLocation();
-			final Material type = l.getBlock().getState().getType();
-			if (type != Material.SIGN_POST && type != Material.SIGN){
-				continue;}
-			Sign s = (Sign) l.getBlock().getState();
-			s.setLine(3, event.getPos() +"/" + params.getMinTeams());
-			s.update();
-		}
+	public Collection<ArenaStatusSign> getSigns(String arenaType) {
+		Map<String,ArenaStatusSign> signs = statusSigns.get(arenaType);
+		return signs == null ? null : signs.values();
 	}
 
 }

@@ -39,6 +39,7 @@ import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.matches.MatchTimerIntervalEvent;
 import mc.alk.arena.events.prizes.ArenaDrawersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaLosersPrizeEvent;
+import mc.alk.arena.events.prizes.ArenaPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaWinnersPrizeEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
@@ -423,19 +424,19 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 					/// Losers and winners get handled after the match is complete
 					if (am.getLosers() != null){
 						PerformTransition.transition(am, MatchState.LOSERS, am.getLosers(), false);
-						ArenaLosersPrizeEvent event = new ArenaLosersPrizeEvent(am, am.getLosers());
+						ArenaPrizeEvent event = new ArenaLosersPrizeEvent(am, am.getLosers());
 						callEvent(event);
 						new RewardController(event,psc).giveRewards();
 					}
 					if (am.getDrawers() != null){
 						PerformTransition.transition(am, MatchState.LOSERS, am.getDrawers(), false);
-						ArenaDrawersPrizeEvent event = new ArenaDrawersPrizeEvent(am, am.getDrawers());
+						ArenaPrizeEvent event = new ArenaDrawersPrizeEvent(am, am.getDrawers());
 						callEvent(event);
 						new RewardController(event,psc).giveRewards();
 					}
 					if (am.getVictors() != null){
 						PerformTransition.transition(am, MatchState.WINNER, am.getVictors(), false);
-						ArenaWinnersPrizeEvent event = new ArenaWinnersPrizeEvent(am, am.getVictors());
+						ArenaPrizeEvent event = new ArenaWinnersPrizeEvent(am, am.getVictors());
 						callEvent(event);
 						new RewardController(event,psc).giveRewards();
 					}
@@ -984,6 +985,9 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		callEvent(event);
 		try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
 		MatchResult result = event.getResult();
+		/// No one has an opinion of how this match ends... so declare it a draw
+		if (result.isUnknown()){
+			result.setDrawers(teams);}
 		endMatchWithResult(result);
 	}
 

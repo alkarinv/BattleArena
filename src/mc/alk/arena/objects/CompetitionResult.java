@@ -27,27 +27,30 @@ public class CompetitionResult{
 	public void setResult(WinLossDraw wld){
 		this.wld = wld;
 	}
-	
+
 	public void setVictor(Team vic) {
 		this.victors.clear();
 		this.victors.add(vic);
+		wld = WinLossDraw.WIN;
 	}
 
 	public void setVictors(Collection<Team> victors) {
 		this.victors.clear();
 		this.victors.addAll(victors);
+		wld = WinLossDraw.WIN;
 	}
 
 	public void setDrawers(Collection<Team> drawers) {
 		this.drawers.clear();
 		this.drawers.addAll(drawers);
+		wld = WinLossDraw.DRAW;
 	}
-	
+
 	public void setLosers(Collection<Team> losers) {
 		this.losers.clear();
 		this.losers.addAll(losers);
 	}
-	
+
 	public void addLosers(Collection<Team> losers) {
 		this.losers.addAll(losers);
 	}
@@ -87,6 +90,9 @@ public class CompetitionResult{
 		return sb.toString();
 	}
 
+	public boolean isUnknown() {
+		return wld == WinLossDraw.UNKNOWN;
+	}
 	public boolean isDraw() {
 		return wld == WinLossDraw.DRAW;
 	}

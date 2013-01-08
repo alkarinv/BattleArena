@@ -24,9 +24,9 @@ import mc.alk.arena.util.Log;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityDamageEvent;
 
 
 public class MethodController {
@@ -94,15 +94,15 @@ public class MethodController {
 			e.printStackTrace();
 		}
 	}
-//	/**
-//	 *
-//	 * @param matchState
-//	 * @param player
-//	 * @param events
-//	 */
-//	public void updateSpecificEvents(MatchState matchState, ArenaPlayer player, Collection<Class<? extends Event>> events) {
-//		updateSpecificEvents(matchState, player, events.toArray());
-//	}
+	//	/**
+	//	 *
+	//	 * @param matchState
+	//	 * @param player
+	//	 * @param events
+	//	 */
+	//	public void updateSpecificEvents(MatchState matchState, ArenaPlayer player, Collection<Class<? extends Event>> events) {
+	//		updateSpecificEvents(matchState, player, events.toArray());
+	//	}
 
 	private void updateEvent(MatchState matchState, Collection<String> players, final Class<? extends Event> event) {
 		final List<RListener> at = bukkitMethods.get(event);
@@ -199,19 +199,44 @@ public class MethodController {
 			Method getEntityMethod = null;
 
 			if (meh.needsPlayer()){
+				List<Method> playerMethods = new ArrayList<Method>();
+				List<Method> entityMethods = new ArrayList<Method>();
+				final String entityMethod = meh.entityMethod();
 				/// From our bukkit bukkitEvent. find any methods that return a Player, HumanEntity, or LivingEntity
 				for (Method m : bukkitEvent.getMethods()){
+					/// Check first for a specified method
+					if (!entityMethod.isEmpty() && m.getName().equals(entityMethod)){
+						getPlayerMethod = m;
+						break;
+					}
 					Type t = m.getReturnType();
 					if (Player.class.isAssignableFrom((Class<?>) t) || HumanEntity.class.isAssignableFrom((Class<?>) t)){
-						if (getPlayerMethod != null){
-							System.err.println("Method "+method.getName() +" has multiple methods that return a player ");
-							return;
-						}
+						playerMethods.add(m);
 						getPlayerMethod = m;
-					} else if (LivingEntity.class.isAssignableFrom((Class<?>) t) || Entity.class.isAssignableFrom((Class<?>) t)){
+					} else if (Entity.class.isAssignableFrom((Class<?>) t)){
+						entityMethods.add(m);
 						getLivingMethod = m;
 					}
 				}
+				/// If we haven't already found the specified player method.. try and get it from our lists
+				if (getPlayerMethod == null){
+					if (!playerMethods.isEmpty()){
+						if (playerMethods.size() > 1){
+							System.err.println(alClass+". Method "+method.getName() +" has multiple methods that return a player");
+							System.err.println(alClass+". Use @MatchEventHandler(entityMethod=\"methodWhichYouWantToUse\")");
+							return;
+						}
+						getPlayerMethod = playerMethods.get(0);
+					} else if (!entityMethods.isEmpty()){
+						if (entityMethods.size() > 1 && !EntityDamageEvent.class.isAssignableFrom(bukkitEvent)){
+							System.err.println(alClass+". Method "+method.getName() +" has multiple methods that return an entity");
+							System.err.println(alClass+". Use @MatchEventHandler(entityMethod=\"methodWhichYouWantToUse\")");
+							return;
+						}
+						getEntityMethod = entityMethods.get(0);
+					}
+				}
+
 			}
 
 			/// Go over the rest of the parameters to see if we should give a Team or Player
@@ -306,12 +331,16 @@ public class MethodController {
 			MethodController.addMethods(listener.getClass());
 		}
 		Map<Class<? extends Event>,List<MatchEventMethod>> map = getBukkitMethods(listener);
-		for (Class<? extends Event> clazz : map.keySet()){
-			addEventMethod(listener, map, clazz);
+		if (map != null){
+			for (Class<? extends Event> clazz : map.keySet()){
+				addEventMethod(listener, map, clazz);
+			}
 		}
 		Map<Class<? extends BAEvent>,List<MatchEventMethod>> map2 = getMatchMethods(listener);
-		for (Class<? extends BAEvent> clazz : map2.keySet()){
-			addBAEventMethod(listener, map2, clazz);
+		if (map2 != null){
+			for (Class<? extends BAEvent> clazz : map2.keySet()){
+				addBAEventMethod(listener, map2, clazz);
+			}
 		}
 	}
 
@@ -374,16 +403,24 @@ public class MethodController {
 	}
 
 	public void callEvent(BAEvent event) {
-		List<RListener> rls = matchMethods.get(event.getClass());
-		if (rls == null){
-			return;}
-		for (RListener rl : rls){
-			try {
-//				System.out.println("  " + event.getClass().getSimpleName() +"    " + rl.getListener());
-				rl.getMethod().getMethod().invoke(rl.getListener(), event); /// Invoke the listening arenalisteners method
-			} catch (Exception e){
-				e.printStackTrace();
+		callEvent(event.getClass(), event);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void callEvent(Class<? extends BAEvent> clazz, BAEvent event) {
+		List<RListener> rls = matchMethods.get(clazz);
+		if (rls != null){
+			for (RListener rl : rls){
+				try {
+					rl.getMethod().getMethod().invoke(rl.getListener(), event); /// Invoke the listening arenalisteners method
+				} catch (Exception e){
+					e.printStackTrace();
+				}
 			}
+		}
+		Class<?> superClass = clazz.getSuperclass();
+		if (superClass != BAEvent.class && BAEvent.class.isAssignableFrom(superClass)){
+			callEvent((Class<? extends BAEvent>) superClass,event);
 		}
 	}
 }

@@ -66,7 +66,6 @@ public class PerformTransition {
 
 	static boolean transition(Match am, final MatchState transition, Team team, boolean onlyInMatch,
 			boolean performOncePerTransitionOptions) {
-		//		final Set<ArenaPlayer> validPlayers = team.getPlayers();
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo );
 		if (mo == null)
@@ -113,8 +112,6 @@ public class PerformTransition {
 		if (onlyInMatch && !insideArena && !(teleportIn || teleportWaitRoom)){
 			return true;}
 		final boolean teleportOut = mo.shouldTeleportOut();
-//		final boolean wipeOnFirstEnter = !insideArena && mo.hasOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
-//		final boolean wipeInventory = mo.clearInventory() || wipeOnFirstEnter;
 		final boolean wipeInventory = mo.clearInventory();
 
 		List<PotionEffect> effects = mo.getEffects()!=null ? new ArrayList<PotionEffect>(mo.getEffects()) : null;

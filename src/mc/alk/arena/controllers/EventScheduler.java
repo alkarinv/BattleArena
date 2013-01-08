@@ -17,6 +17,7 @@ import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.pairs.EventPair;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.TimeUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -98,7 +99,8 @@ public class EventScheduler implements Runnable, ArenaListener{
 			/// Wait x sec then start the next event
 			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
-				Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"Next event will start in "+Defaults.TIME_BETWEEN_SCHEDULED_EVENTS+" seconds");}
+				Bukkit.getServer().broadcastMessage(ChatColor.GOLD+"Next event will start in "+
+						TimeUtil.convertSecondsToString(Defaults.TIME_BETWEEN_SCHEDULED_EVENTS));}
 		} else {
 			running = false;
 		}

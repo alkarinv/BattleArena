@@ -31,6 +31,7 @@ import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.BAPluginListener;
 import mc.alk.arena.listeners.BASignListener;
+import mc.alk.arena.listeners.MatchListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
@@ -84,6 +85,7 @@ public class BattleArena extends JavaPlugin{
 	private final BAPluginListener pluginListener = new BAPluginListener();
 	private final SignController signController = new SignController();
 	private final BASignListener signListener = new BASignListener(signController);
+	private final MatchListener matchListener = new MatchListener(signController);
 
 	private ArenaControllerSerializer arenaControllerSerializer;
 	private static final BAConfigSerializer baConfigSerializer = new BAConfigSerializer();
@@ -125,7 +127,7 @@ public class BattleArena extends JavaPlugin{
 		Bukkit.getPluginManager().registerEvents(playerListener, this);
 		Bukkit.getPluginManager().registerEvents(pluginListener, this);
 		Bukkit.getPluginManager().registerEvents(signListener, this);
-		Bukkit.getPluginManager().registerEvents(signController, this);
+		Bukkit.getPluginManager().registerEvents(matchListener, this);
 		Bukkit.getPluginManager().registerEvents(tc, this);
 		Bukkit.getPluginManager().registerEvents(new TeleportController(), this);
 

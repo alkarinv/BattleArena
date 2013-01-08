@@ -28,7 +28,12 @@ public class RListener implements Comparable<RListener> {
 
 	@Override
 	public int compareTo(RListener arg0) {
-		return this.mem.getPriority().compareTo(arg0.mem.getPriority());
+		int c = this.mem.getPriority().compareTo(arg0.mem.getPriority());
+		if (c != 0)
+			return c;
+		if (this.al == arg0.al){
+			return this.mem.getMethod().getName().compareTo(arg0.mem.getMethod().getName());}
+		return this.al.getClass().toString().compareTo(arg0.al.getClass().toString());
 	}
 
 	@Override

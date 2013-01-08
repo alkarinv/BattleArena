@@ -212,7 +212,7 @@ battleground:
             - speed:1:900
             - resistance:1:900
             
-### Colliseum
+### Colosseum (colliseum is wrong, but I haven't found a good way to retroactively fix the spelling)
 colliseum:
     enabled: true
     command: col

@@ -14,9 +14,9 @@ import java.util.TreeSet;
 public class MapOfTreeSet<K,V> extends HashMap<K,TreeSet<V>>{
 	private static final long serialVersionUID = 1L;
 
-	public void add(K k, V v) {
+	public boolean add(K k, V v) {
 		TreeSet<V> set = getOrMake(k);
-		set.add(v);
+		return set.add(v);
 	}
 
 	public boolean remove(K k, V v) {

@@ -19,7 +19,7 @@ import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
-import mc.alk.arena.listeners.MatchCreationListener;
+import mc.alk.arena.listeners.MatchCreationCallback;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.CompetitionSize;
@@ -46,7 +46,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.ChatPaginator;
 
-public class TournamentEvent extends Event implements Listener, MatchCreationListener{
+public class TournamentEvent extends Event implements Listener, MatchCreationCallback{
 	public long timeBetweenRounds;
 
 	int round = -1;
@@ -169,7 +169,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationLis
 			return;
 		}
 		Team victor = null;
-		if (r.isDraw()){ /// match was a draw, pick a random lucky winner
+		if (r.isDraw() || r.isUnknown()){ /// match was a draw, pick a random lucky winner
 			victor = pickRandomWinner(r, r.getDrawers());
 		} else if (r.hasVictor() && r.getVictors().size() != 1){
 			victor = pickRandomWinner(r, r.getVictors());
@@ -187,15 +187,12 @@ public class TournamentEvent extends Event implements Listener, MatchCreationLis
 			if (Defaults.DEBUG) System.out.println("ROUND FINISHED !!!!!   " + aliveTeams);
 
 			if (round+1 == nrounds || isFinished()){
-				Server server = Bukkit.getServer();
 				Team t = aliveTeams.get(0);
-				server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&e Congratulations to &6" + t.getDisplayName() + "&e for winning!"));
 				HashSet<Team> losers = new HashSet<Team>(competingTeams);
 				losers.remove(victor);
 				Set<Team> victors = new HashSet<Team>(Arrays.asList(victor));
 				CompetitionResult result = new CompetitionResult();
 				result.setVictors(victors);
-				result.setLosers(losers);
 				setEventResult(result);
 				PerformTransition.transition(am, MatchState.FIRSTPLACE, t,false);
 				PerformTransition.transition(am, MatchState.PARTICIPANTS, losers,false);

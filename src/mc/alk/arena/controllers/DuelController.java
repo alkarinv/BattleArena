@@ -15,7 +15,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.listeners.ArenaListener;
-import mc.alk.arena.listeners.MatchCreationListener;
+import mc.alk.arena.listeners.MatchCreationCallback;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.MatchResult;
@@ -25,7 +25,7 @@ import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.MessageUtil;
 
-public class DuelController implements ArenaListener, MatchCreationListener{
+public class DuelController implements ArenaListener, MatchCreationCallback{
 	List<Duel> formingDuels = new CopyOnWriteArrayList<Duel>();
 	HashMap<String, Long> rejectTimers = new HashMap<String,Long>();
 	HashMap<Matchup,Duel> ongoingDuels = new HashMap<Matchup,Duel>();

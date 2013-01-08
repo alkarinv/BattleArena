@@ -6,7 +6,7 @@ import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.listeners.ArenaListener;
-import mc.alk.arena.listeners.MatchCreationListener;
+import mc.alk.arena.listeners.MatchCreationCallback;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
@@ -27,7 +27,7 @@ public class Matchup {
 	List<ArenaListener> listeners = new ArrayList<ArenaListener>();
 
 	MatchParams params = null;
-	MatchCreationListener creationListener;
+	MatchCreationCallback creationListener;
 	Match match = null;
 
 	public Matchup(MatchParams params, Team team, Team team2) {
@@ -119,11 +119,11 @@ public class Matchup {
 		}
 		return size;
 	}
-	public void addMatchCreationListener(MatchCreationListener listener) {
+	public void addMatchCreationListener(MatchCreationCallback listener) {
 		creationListener = listener;
 	}
 
-	public MatchCreationListener getMatchCreationListener() {
+	public MatchCreationCallback getMatchCreationListener() {
 		return creationListener;
 	}
 }
