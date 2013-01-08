@@ -8,33 +8,46 @@ import mc.alk.arena.objects.MatchResult.WinLossDraw;
 import mc.alk.arena.objects.teams.Team;
 
 
+/**
+ * Represents the result of a competition.
+ * Modifying this object will modify the outcome of the match.
+ */
 public class CompetitionResult{
 	Set<Team> victors = new HashSet<Team>();
 	Set<Team> losers = new HashSet<Team>();
 	Set<Team> drawers = new HashSet<Team>();
 	WinLossDraw wld = WinLossDraw.UNKNOWN;
 
+	/**
+	 * Changes the outcome type of this match to the given type.
+	 * Example, adding winners to this match will not change the outcome,
+	 * unless this match is set to a WinLossDraw.WIN
+	 * @param wld The WinLossDraw type.
+	 */
 	public void setResult(WinLossDraw wld){
 		this.wld = wld;
 	}
+	
 	public void setVictor(Team vic) {
 		this.victors.clear();
 		this.victors.add(vic);
 	}
+
 	public void setVictors(Collection<Team> victors) {
 		this.victors.clear();
 		this.victors.addAll(victors);
 	}
-	public void setDrawers(Collection<Team> victors) {
-		this.drawers.clear();
-		this.drawers.addAll(victors);
-	}
 
+	public void setDrawers(Collection<Team> drawers) {
+		this.drawers.clear();
+		this.drawers.addAll(drawers);
+	}
+	
 	public void setLosers(Collection<Team> losers) {
 		this.losers.clear();
 		this.losers.addAll(losers);
 	}
-
+	
 	public void addLosers(Collection<Team> losers) {
 		this.losers.addAll(losers);
 	}
