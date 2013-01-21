@@ -1,26 +1,30 @@
 package mc.alk.arena.objects.victoryconditions;
 
-import java.util.Collection;
+import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
-import mc.alk.arena.objects.events.EventPriority;
-import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.victoryconditions.extensions.PvPCount;
+import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
 import mc.alk.arena.util.VictoryUtil;
 
-public class HighestKills extends PvPCount{
+public class HighestKills extends VictoryCondition implements DefinesLeaderRanking{
+	PvPCount pvpcount;
+
 	public HighestKills(Match match) {
 		super(match);
+		pvpcount = new PvPCount(match);
+		match.addArenaListener(pvpcount);
 	}
 
-	@MatchEventHandler(priority = EventPriority.LOW)
-	public void onFindCurrentLeader(MatchFindCurrentLeaderEvent event) {
-		Collection<Team> leaders = VictoryUtil.highestKills(match);
-		if (leaders.size() > 1){
-			event.setCurrentDrawers(leaders);
-		} else {
-			event.setCurrentLeaders(leaders);
-		}
+	@Override
+	public List<Team> getLeaders() {
+		return VictoryUtil.getLeaderByHighestKills(match);
 	}
+
+	@Override
+	public List<Team> getRankings() {
+		return VictoryUtil.getRankingByHighestKills(match.getTeams());
+	}
+
 }

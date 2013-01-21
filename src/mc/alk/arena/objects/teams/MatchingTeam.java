@@ -109,10 +109,10 @@ public class MatchingTeam implements Team{
 	public void reset() {}
 
 	@Override
-	public void addDeath(ArenaPlayer teamMemberWhoDied) {}
+	public int addDeath(ArenaPlayer teamMemberWhoDied) {return 0;}
 
 	@Override
-	public void addKill(ArenaPlayer teamMemberWhoKilled) {}
+	public int addKill(ArenaPlayer teamMemberWhoKilled) {return 0;}
 
 	@Override
 	public int getNKills() {

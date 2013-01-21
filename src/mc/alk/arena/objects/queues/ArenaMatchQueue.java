@@ -157,7 +157,7 @@ public class ArenaMatchQueue {
 				idt.id = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
 					@Override
 					public void run() {
-						Match m = findMatch(tq,true);
+						Match m = findMatch(tq,true, true);
 						if (m == null)
 							return;
 						forceTimers.remove(tq);
@@ -189,7 +189,7 @@ public class ArenaMatchQueue {
 		if (tq==null || arenaqueue.isEmpty() || tq.isEmpty())
 			return false;
 
-		Match match = findMatch(tq, false);
+		Match match = findMatch(tq, false, true);
 		if (match == null)
 			return false;
 		addToReadyMatches(match);
@@ -208,7 +208,7 @@ public class ArenaMatchQueue {
 	 * @param forceStart : whether we are trying to start a match that usually would need more players
 	 * @return Match if one can be created from the specified TeamQueue
 	 */
-	private Match findMatch(final TeamQueue tq, boolean forceStart) {
+	private Match findMatch(final TeamQueue tq, boolean forceStart, boolean forceStartRespectMinimumPlayers) {
 		if (suspend)
 			return null;
 		if (Defaults.DEBUG) System.out.println("findMatch " + tq +"  " + tq.size() +"  mp=" + tq.getMatchParams());
@@ -226,8 +226,8 @@ public class ArenaMatchQueue {
 				forceStart = true;}
 		}
 		if (forceStart){
-			baseParams.setMinTeamSize(1);
-			baseParams.setMinTeams(2);
+			baseParams.setMinTeamSize(forceStartRespectMinimumPlayers ? baseParams.getMinTeamSize() : 1);
+			baseParams.setMinTeams(forceStartRespectMinimumPlayers ? baseParams.getMinTeams(): 1);
 		}
 
 		if (baseParams==null || tq.isEmpty())
@@ -235,9 +235,7 @@ public class ArenaMatchQueue {
 
 		boolean skipNonMatched = false;
 		synchronized(arenaqueue){ synchronized(tq){
-//			Set<String> seenArenas = new HashSet<String>();
 			for (Arena a : arenaqueue){
-//				seenArenas.add(a.getName())
 				if (a == null || !a.valid() || (!a.matches(baseParams, null) && !forceStart))
 					continue;
 				MatchParams newParams = new MatchParams(baseParams);
@@ -606,7 +604,7 @@ public class ArenaMatchQueue {
 		TeamQueue tq = getTeamQ(mp);
 		if (tq == null)
 			return false;
-		Match match = findMatch(tq, true);
+		Match match = findMatch(tq, true, false);
 		if (match == null)
 			return false;
 		addToReadyMatches(match);

@@ -2,8 +2,14 @@ package mc.alk.arena.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
-import mc.alk.arena.controllers.WorldGuardInterface.WorldGuardFlag;
+import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
+import mc.alk.arena.objects.exceptions.RegionNotFound;
+import mc.alk.arena.objects.regions.WorldGuardRegion;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -49,6 +55,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 public class WorldGuardUtil {
 	public static WorldGuardPlugin wgp;
 	public static boolean hasWorldGuard = false;
+	static Map<String,Set<String>> trackedRegions = new ConcurrentHashMap<String,Set<String>>();
 
 	public static boolean hasWorldGuard() {
 		return WorldEditUtil.hasWorldEdit() && hasWorldGuard;
@@ -82,6 +89,10 @@ public class WorldGuardUtil {
 		if (w == null)
 			return null;
 		return wgp.getRegionManager(w).getRegion(id);
+	}
+
+	public static boolean hasRegion(WorldGuardRegion region){
+		return hasRegion(region.getWorld(),region.getRegionID());
 	}
 
 	public static boolean hasRegion(World world, String id){
@@ -129,6 +140,10 @@ public class WorldGuardUtil {
 		return region;
 	}
 
+	public static void clearRegion(WorldGuardRegion region) {
+		clearRegion(region.getRegionWorld(),region.getRegionID());
+	}
+
 	public static void clearRegion(String world, String id) {
 		World w = Bukkit.getWorld(world);
 		if (w==null)
@@ -145,14 +160,21 @@ public class WorldGuardUtil {
 			}
 		}
 	}
-
-	public static boolean isLeavingArea(final Location from, final Location to, final World w, final String id) {
-		ProtectedRegion pr = getRegion(w, id);
+	public static boolean isLeavingArea(final Location from, final Location to, final WorldGuardRegion region) {
+		return isLeavingArea(from,to,region.getWorld(),region.getRegionID());
+	}
+	public static boolean isLeavingArea(final Location from, final Location to, final World w,  String id) {
+		ProtectedRegion pr = getRegion(w,id);
 		if (pr == null)
 			return false;
 		return (!pr.contains(to.getBlockX(), to.getBlockY(), to.getBlockZ()) &&
 				pr.contains(from.getBlockX(), from.getBlockY(), from.getBlockZ()));
 	}
+
+	public static boolean setFlag(WorldGuardRegion region, WorldGuardFlag flag, boolean enable) {
+		return setFlag(region.getRegionWorld(), region.getRegionID(), flag,enable);
+	}
+
 	public static boolean setFlag(String worldName, String id, WorldGuardFlag flag, boolean enable) {
 		World w = Bukkit.getWorld(worldName);
 		if (w == null)
@@ -193,12 +215,18 @@ public class WorldGuardUtil {
 		return true;
 	}
 
-	public static boolean addMember(String name, String regionWorld, String id) {
-		return changeMember(name,regionWorld,id,true);
+	public static boolean addMember(String playerName, WorldGuardRegion region) {
+		return addMember(playerName, region.getRegionWorld(),region.getRegionID());
+	}
+	public static boolean addMember(String playerName, String regionWorld, String id) {
+		return changeMember(playerName,regionWorld,id,true);
 	}
 
-	public static boolean removeMember(String name, String regionWorld, String id) {
-		return changeMember(name,regionWorld,id,false);
+	public static boolean removeMember(String playerName, WorldGuardRegion region) {
+		return removeMember(playerName, region.getRegionWorld(),region.getRegionID());
+	}
+	public static boolean removeMember(String playerName, String regionWorld, String id) {
+		return changeMember(playerName,regionWorld,id,false);
 	}
 
 	private static boolean changeMember(String name, String regionWorld, String id, boolean add){
@@ -238,6 +266,10 @@ public class WorldGuardUtil {
 		if (pr == null)
 			return false;
 		return pasteSchematic(consoleSender,pr,id,w);
+	}
+
+	public static boolean pasteSchematic(WorldGuardRegion region) {
+		return pasteSchematic(region.getRegionWorld(),region.getRegionID());
 	}
 
 	public static boolean pasteSchematic(String worldName, String id) {
@@ -366,6 +398,66 @@ public class WorldGuardUtil {
 		} else {
 			player.printError(msg);
 		}
+	}
+
+	public static boolean contains(Location location, WorldGuardRegion region) {
+		ProtectedRegion pr = getRegion(region.getWorld(),region.getRegionID());
+		if (pr == null)
+			return false;
+		return pr.contains(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+	}
+
+	public static boolean hasPlayer(String playerName, WorldGuardRegion region) {
+		ProtectedRegion pr = getRegion(region.getWorld(),region.getRegionID());
+		if (pr == null)
+			return true;
+		DefaultDomain dd = pr.getMembers();
+		if (dd.contains(playerName))
+			return true;
+		dd = pr.getOwners();
+		return dd.contains(playerName);
+	}
+
+	public static boolean trackRegion(WorldGuardRegion region) throws RegionNotFound {
+		return trackRegion(region.getRegionWorld(), region.getRegionID());
+	}
+
+	public static boolean trackRegion(String world, String id) throws RegionNotFound{
+		ProtectedRegion pr = WorldGuardUtil.getRegion(world, id);
+		if (pr == null){
+			throw new RegionNotFound("The region " + id +" not found in world " + world);}
+		Set<String> regions = trackedRegions.get(world);
+		if (regions == null){
+			regions = new CopyOnWriteArraySet<String>();
+			trackedRegions.put(world, regions);
+		}
+		return regions.add(id);
+	}
+
+	public static int regionCount() {
+		int count = 0;
+		for (String world : trackedRegions.keySet()){
+			Set<String> sets = trackedRegions.get(world);
+			if (sets != null)
+				count += sets.size();
+		}
+		return count;
+	}
+
+	public static WorldGuardRegion getContainingRegion(Location location) {
+		for (String world : trackedRegions.keySet()){
+			World w = Bukkit.getWorld(world);
+			if (w == null)
+				continue;
+			for (String id: trackedRegions.get(world)){
+				ProtectedRegion pr = getRegion(w,id);
+				if (pr == null)
+					continue;
+				if (pr.contains(location.getBlockX(), location.getBlockY(), location.getBlockZ()))
+					return new WorldGuardRegion(world, id);
+			}
+		}
+		return null;
 	}
 
 }

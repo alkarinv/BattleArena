@@ -11,9 +11,9 @@ import mc.alk.arena.objects.teams.Team;
  * helper class to access private members of arena
  * I sorely want the ability to have a friend class like in C++
  */
-public class ArenaInterface {
+public class ArenaControllerInterface {
 	final Arena arena;
-	public ArenaInterface(Arena arena){
+	public ArenaControllerInterface(Arena arena){
 		this.arena = arena;
 	}
 
@@ -30,5 +30,6 @@ public class ArenaInterface {
 	public void onLeave(ArenaPlayer p, Team t) {arena.privateOnLeave(p,t);}
 	public void onJoin(ArenaPlayer p, Team t) {arena.privateOnJoin(p,t);}
 	public void create() {arena.privateCreate();}
+	public void init() {arena.privateInit();}
 	public void delete() {arena.privateDelete();}
 }

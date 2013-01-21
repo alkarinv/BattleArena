@@ -18,7 +18,6 @@ import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinStatus;
 import mc.alk.arena.controllers.BattleArenaController;
-import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.messaging.EventMessageHandler;
 import mc.alk.arena.controllers.messaging.EventMessageImpl;
@@ -84,18 +83,13 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	public Event(EventParams params) {
 		transitionTo(EventState.CLOSED);
 		setParamInst(params);
-		this.ac = BattleArena.getBAC();
+		this.ac = BattleArena.getBAController();
 		this.name = params.getName();
 	}
 
 	public void openEvent() {
-		EventParams mp = ParamController.getEventParamCopy(eventParams.getName());
-		mp.setMinTeams(2); /// TODO do I need this anymore?
-		mp.setMaxTeams(2);
-		mp.setMinTeamSize(1);
-		mp.setMaxTeamSize(Integer.MAX_VALUE);
 		try {
-			openEvent(mp);
+			openEvent(eventParams);
 		} catch (NeverWouldJoinException e) {
 			e.printStackTrace();
 		}
@@ -135,7 +129,8 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	}
 
 	public void setParamInst(EventParams eventParams) {
-		this.eventParams = new EventParams(eventParams);
+		if (this.eventParams != eventParams)
+			this.eventParams = new EventParams(eventParams);
 		if (mc == null)
 			mc = new EventMessager(this);
 		mc.setMessageHandler(new EventMessageImpl(this));

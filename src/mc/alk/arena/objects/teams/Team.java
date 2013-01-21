@@ -55,9 +55,9 @@ public interface Team {
 
 	public void reset() ;
 
-	public void addDeath(ArenaPlayer teamMemberWhoDied);
+	public int addDeath(ArenaPlayer teamMemberWhoDied);
 
-	public void addKill(ArenaPlayer teamMemberWhoKilled);
+	public int addKill(ArenaPlayer teamMemberWhoKilled);
 
 	public int getNKills();
 

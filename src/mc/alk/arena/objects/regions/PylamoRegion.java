@@ -1,5 +1,7 @@
 package mc.alk.arena.objects.regions;
 
+import mc.alk.arena.controllers.PylamoController;
+
 import org.bukkit.configuration.ConfigurationSection;
 
 public class PylamoRegion implements ArenaRegion{
@@ -29,5 +31,7 @@ public class PylamoRegion implements ArenaRegion{
 	public String getID() {
 		return regionName;
 	}
-
+	public boolean valid(){
+		return regionName != null && PylamoController.enabled();
+	}
 }

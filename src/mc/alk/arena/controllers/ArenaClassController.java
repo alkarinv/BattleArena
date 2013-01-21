@@ -8,6 +8,7 @@ import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
 
+import org.bukkit.Color;
 import org.bukkit.entity.Player;
 
 public class ArenaClassController {
@@ -26,14 +27,16 @@ public class ArenaClassController {
 	}
 
 	public static void giveClass(Player player, ArenaClass ac) {
+		giveClass(player,ac,null);
+	}
+	public static void giveClass(Player player, ArenaClass ac, Color color) {
 		if (HeroesController.enabled())
 			ac = giveHeroClass(player,ac);
-		try{if (ac.getItems() != null) InventoryUtil.addItemsToInventory(player, ac.getItems(),true);} catch (Exception e){}
+		try{if (ac.getItems() != null) InventoryUtil.addItemsToInventory(player, ac.getItems(),true, color);} catch (Exception e){}
 		try{if (ac.getEffects() != null) EffectUtil.enchantPlayer(player, ac.getEffects());} catch (Exception e){}
 		if (ac.getDisguiseName()!=null && DisguiseInterface.enabled())
 			DisguiseInterface.disguisePlayer(player, ac.getDisguiseName());
 	}
-
 	private static ArenaClass giveHeroClass(Player player, ArenaClass ac){
 		if (ac == ArenaClass.CHOSEN_CLASS){
 			String className = HeroesController.getHeroClassName(player);

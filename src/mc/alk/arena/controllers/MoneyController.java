@@ -3,6 +3,7 @@ package mc.alk.arena.controllers;
 import mc.alk.arena.Defaults;
 import net.milkbowl.vault.economy.Economy;
 
+import com.alk.util.Log;
 import com.nijikokun.register.payment.Methods;
 
 public class MoneyController {
@@ -66,7 +67,13 @@ public class MoneyController {
 		try{
 			Defaults.MONEY_STR = economy.currencyNameSingular();
 			Defaults.MONEY_SET = true;
-		} catch (Exception e){}
+		} catch (Error e){
+			Log.err("[BattleArena] Error setting currency name through vault");
+			e.printStackTrace();
+		} catch (Exception e){
+			Log.err("[BattleArena] Error setting currency name through vault");
+			e.printStackTrace();
+		}
 	}
 
 	public static void setRegisterEconomy() {

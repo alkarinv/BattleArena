@@ -1,6 +1,5 @@
 package mc.alk.arena.serializers;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -8,14 +7,13 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.ArenaCommand;
-import mc.alk.arena.controllers.CommandController;
+import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.OptionSetController;
-import mc.alk.arena.executors.BAExecutor;
-import mc.alk.arena.executors.ReservedArenaEventExecutor;
-import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -60,41 +58,47 @@ public class BAConfigSerializer extends ConfigSerializer{
 			}
 		}
 		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"arena","skirmish","colliseum","battleground"}));
-		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"freeForAll","deathMatch","tourney"}));
+		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"freeForAll","deathMatch"}));
+		Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {"defaultOptions","tourney","optionSets"}));
+
+		Set<String> allTypes = new HashSet<String>(defaultMatchTypes);
+		allTypes.addAll(defaultEventTypes);
 		JavaPlugin plugin = BattleArena.getSelf();
 
-		/// Now initialize the specific match settings
-		for (String defaultType: defaultMatchTypes){
+		APIRegistrationController api = new APIRegistrationController();
+		/// For legacy reasons
+		ArenaType.register("ffa", Arena.class, BattleArena.getSelf());
+
+		/// Setup tournament solo as it's a bit different
+		try {
+			setTypeConfig(plugin,"tourney",config.getConfigurationSection("tourney"), false);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		/// Now initialize the specific types
+		for (String defaultType: allTypes){
+			boolean isMatch = defaultMatchTypes.contains(defaultType);
 			try {
-				setTypeConfig(plugin,defaultType,config.getConfigurationSection(defaultType), true);
+				api.registerCompetition(plugin, defaultType, defaultType, Arena.class, null, this.getFile(), isMatch,true);
 			} catch (Exception e) {
 				Log.err("Couldnt configure arenaType " + defaultType+". " + e.getMessage());
 				e.printStackTrace();
 			}
 		}
-		/// Now initialize the specific event settings
-		for (String defaultType: defaultEventTypes){
-			try {
-				setTypeConfig(plugin,defaultType,config.getConfigurationSection(defaultType), false);
-			} catch (Exception e) {
-				Log.err("Couldnt configure arenaType " + defaultType+". " + e.getMessage());
-				e.printStackTrace();
-			}
-		}
+
 		/// Initialize custom matches or events
 		Set<String> keys = config.getKeys(false);
 		for (String key: keys){
 			ConfigurationSection cs = config.getConfigurationSection(key);
-			if (cs == null || defaultMatchTypes.contains(key) || defaultEventTypes.contains(key) || key.equals("defaultOptions"))
+			if (cs == null || allTypes.contains(key) || exclude.contains(key))
 				continue;
 			try {
-				/// A new match/event needs the params, an executor, and the command to use
-				boolean isMatch = !config.getBoolean(key+".isEvent",false);
-				MatchParams mp = setTypeConfig(plugin,key,cs, isMatch);
-				BAExecutor executor = isMatch ? BattleArena.getBAExecutor() : new ReservedArenaEventExecutor();
-				ArenaCommand arenaCommand = new ArenaCommand(mp.getCommand(),"","", new ArrayList<String>(), BattleArena.getSelf());
-				arenaCommand.setExecutor(executor);
-				CommandController.registerCommand(arenaCommand);
+				String cmd = config.getString(key+".command",null);
+				cmd = config.getString(key+".cmd",cmd);
+				if (cmd==null || cmd.isEmpty()){
+					throw new InvalidOptionException("For a custom competition you must specify a command:");}
+				api.registerCompetition(plugin, key, cmd, Arena.class, null, this.getFile(), true,true);
 			} catch (Exception e) {
 				Log.err("Couldnt configure arenaType " + key+". " + e.getMessage());
 				e.printStackTrace();
@@ -208,7 +212,6 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Set<String> keys = cs.getKeys(false);
 		for (String key: keys){
 			MatchState ms = MatchState.fromName(key);
-			//			System.out.println("contains " +key + "  ms=" + ms);
 			if (ms == null){
 				Log.err("Couldnt recognize matchstate " + key +" in the announcement options");
 				continue;
@@ -221,7 +224,6 @@ public class BAConfigSerializer extends ConfigSerializer{
 					Log.err("Couldnt recognize AnnouncementOption " + s);
 					continue;
 				}
-				//				System.out.println("!!!!! Setting broadcast option " +ms +"  " + bo + "  " + kv.value);
 				an.setBroadcastOption(match, ms, bo,kv.value);
 			}
 		}

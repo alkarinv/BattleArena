@@ -8,7 +8,7 @@ import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PylamoController;
 import mc.alk.arena.controllers.TagAPIController;
-import mc.alk.arena.controllers.WorldGuardInterface;
+import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.DisguiseInterface;
@@ -204,10 +204,10 @@ public class BAPluginListener implements Listener {
 	}
 
 	public void loadWorldEdit(){
-		if (!WorldGuardInterface.hasWorldEdit()){
+		if (!WorldGuardController.hasWorldEdit()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("WorldEdit");
 			if (plugin != null) {
-				if (WorldGuardInterface.setWorldEdit(plugin)){
+				if (WorldGuardController.setWorldEdit(plugin)){
 					Log.info("[BattleArena] WorldEdit detected.");
 				}
 			}
@@ -215,10 +215,10 @@ public class BAPluginListener implements Listener {
 	}
 
 	public void loadWorldGuard(){
-		if (!WorldGuardInterface.hasWorldGuard()){
+		if (!WorldGuardController.hasWorldGuard()){
 			Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
 			if (plugin != null) {
-				if (WorldGuardInterface.setWorldGuard(plugin)){
+				if (WorldGuardController.setWorldGuard(plugin)){
 					Log.info("[BattleArena] WorldGuard detected. WorldGuard regions can now be used");
 				}
 			}
@@ -240,24 +240,34 @@ public class BAPluginListener implements Listener {
 		if (plugin != null ){
 			/// Load vault economy
 			if (!MoneyController.hasVaultEconomy()){
-				RegisteredServiceProvider<Economy> provider = Bukkit.getServer().
-						getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-				if (provider==null || provider.getProvider() == null){
-					Log.warn(BattleArena.getPName() +" found no economy plugin. Attempts to use money in arenas might result in errors.");
-					return;
-				} else {
-					MoneyController.setEconomy(provider.getProvider());
-					Log.info(BattleArena.getPName() +" found economy plugin Vault. [Default]");
+				try{
+					RegisteredServiceProvider<Economy> provider = Bukkit.getServer().
+							getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+					if (provider==null || provider.getProvider() == null){
+						Log.warn(BattleArena.getPName() +" found no economy plugin. Attempts to use money in arenas might result in errors.");
+						return;
+					} else {
+						MoneyController.setEconomy(provider.getProvider());
+						Log.info(BattleArena.getPName() +" found economy plugin Vault. [Default]");
+					}
+				} catch (Error e){
+					Log.err(BattleArena.getPName() +" exception loading economy through Vault");
+					e.printStackTrace();
 				}
 			}
 			/// Load Vault chat
 			if (AnnouncementOptions.chat == null){
-				RegisteredServiceProvider<Chat> provider = Bukkit.getServer().
-						getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
-				if (provider != null && provider.getProvider() != null) {
-					AnnouncementOptions.setVaultChat(provider.getProvider());
-				} else if (AnnouncementOptions.hc == null){
-					Log.info("[BattleArena] Vault chat not detected, ignoring channel options");
+				try{
+					RegisteredServiceProvider<Chat> provider = Bukkit.getServer().
+							getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
+					if (provider != null && provider.getProvider() != null) {
+						AnnouncementOptions.setVaultChat(provider.getProvider());
+					} else if (AnnouncementOptions.hc == null){
+						Log.info("[BattleArena] Vault chat not detected, ignoring channel options");
+					}
+				} catch (Error e){
+					Log.err(BattleArena.getPName() +" exception loading chat through Vault");
+					e.printStackTrace();
 				}
 			}
 		}

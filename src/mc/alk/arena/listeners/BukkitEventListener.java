@@ -38,7 +38,6 @@ public class BukkitEventListener extends BAEventListener{
 	/** Set of arena listeners */
 	final public EnumMap<EventPriority, List<RListener>> mlisteners = new EnumMap<EventPriority, List<RListener>>(EventPriority.class);
 
-
 	private volatile RListener[] handlers = null;
 
 	/** The method which will return a Player if invoked */
@@ -49,8 +48,9 @@ public class BukkitEventListener extends BAEventListener{
 	 * @param bukkitEvent : which event we will listen for
 	 * @param getPlayerMethod : a method which when not null and invoked will return a Player
 	 */
-	public BukkitEventListener(final Class<? extends Event> bukkitEvent, Method getPlayerMethod) {
-		super(bukkitEvent);
+	public BukkitEventListener(final Class<? extends Event> bukkitEvent,
+			org.bukkit.event.EventPriority bukkitPriority, Method getPlayerMethod) {
+		super(bukkitEvent, bukkitPriority);
 		if (Defaults.DEBUG_EVENTS) Log.info("Registering GenericPlayerEventListener for type " + bukkitEvent +" pm="+getPlayerMethod);
 		this.getPlayerMethod = getPlayerMethod;
 	}

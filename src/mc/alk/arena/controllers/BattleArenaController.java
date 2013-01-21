@@ -23,7 +23,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.arenas.ArenaInterface;
+import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.options.JoinOptions;
@@ -306,7 +306,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	public void deleteArena(Arena arena) {
 		removeArena(arena);
-		ArenaInterface ai = new ArenaInterface(arena);
+		ArenaControllerInterface ai = new ArenaControllerInterface(arena);
 		ai.delete();
 	}
 

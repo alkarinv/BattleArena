@@ -54,7 +54,7 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 				m.addMatchCreationListener(this);
 				formingDuels.remove(d);
 				ongoingDuels.put(m, d);
-				BattleArena.getBAC().addMatchup(m);
+				BattleArena.getBAController().addMatchup(m);
 			}
 		}
 		return d;

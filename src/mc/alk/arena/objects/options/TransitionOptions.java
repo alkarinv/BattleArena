@@ -18,8 +18,7 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.ArmorLevel;
-import mc.alk.arena.util.Util;
-import mc.alk.arena.util.Util.MinMax;
+import mc.alk.arena.util.MinMax;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -365,7 +364,7 @@ public class TransitionOptions {
 		String firstPlacePrizes = at.getGiveString(MatchState.FIRSTPLACE);
 		String participantPrizes = at.getGiveString(MatchState.PARTICIPANTS);
 		boolean rated = sq.isRated();
-		String teamSizes = Util.getStr(sq.getMinTeamSize(),sq.getMaxTeamSize());
+		String teamSizes = MinMax.getStr(sq.getMinTeamSize(),sq.getMaxTeamSize());
 		sb.append("&eThis is "+ (rated? "a &4Rated" : "an &aUnrated") +"&e "+name+". " );
 		sb.append("&eTeam size=&6" + teamSizes);
 		sb.append("\n&eRequirements to Join:");

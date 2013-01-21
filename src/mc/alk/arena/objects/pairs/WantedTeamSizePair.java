@@ -4,7 +4,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.util.Util.MinMax;
+import mc.alk.arena.util.MinMax;
 
 
 public class WantedTeamSizePair {

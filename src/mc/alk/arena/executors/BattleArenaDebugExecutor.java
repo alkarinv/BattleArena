@@ -79,13 +79,13 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		sendMessage(sender, "&4[BattleArena] &2debugging for &6" + section +"&2 now &6" + on);
 	}
 
-	@MCCommand( cmds = {"giveTeam"}, online={1}, op=true, usage="giveTeam <player> <team index>")
+	@MCCommand( cmds = {"giveTeam"}, op=true, usage="giveTeam <player> <team index>")
 	public boolean giveTeamHelmOther(CommandSender sender, ArenaPlayer p, Integer index){
 		TeamUtil.setTeamHead(index, p);
 		return sendMessage(sender, p.getName() +" Given team " + index);
 	}
 
-	@MCCommand( cmds = {"giveTeam"}, inGame=true, op=true, usage="giveTeam <team index>")
+	@MCCommand( cmds = {"giveTeam"}, op=true, usage="giveTeam <team index>")
 	public boolean giveTeamHelm(ArenaPlayer p, Integer index){
 		if (index < 0){
 			p.getPlayer().setDisplayName(p.getName());
@@ -97,41 +97,45 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return sendMessage(p, "&2Giving team " +index);
 	}
 
-	@MCCommand( cmds = {"giveHelm","gh"}, inGame=true, op=true, exact=2, usage="giveHelm <item>")
-	public boolean giveHelm(CommandSender sender, Command command, String label, String[] args) {
-		Player p = (Player) sender;
+	@MCCommand( cmds = {"giveHelm"}, op=true, exact=2, usage="giveHelm <item>")
+	public boolean giveHelm(Player sender, Command command, String label, String[] args) {
 		ItemStack is;
 		try {
 			is = InventoryUtil.parseItem(args[1]);
 		} catch (Exception e) {
 			return sendMessage(sender, "&e couldnt parse item " + args[1]);
 		}
-		p.getInventory().setHelmet(is);
+		sender.getInventory().setHelmet(is);
 		return sendMessage(sender, "&2Giving helm " +InventoryUtil.getCommonName(is));
 	}
 
 
-	@MCCommand( cmds = {"showListeners","sl"}, admin=true)
-	public boolean showListeners(CommandSender sender, Arena arena, String args[]) {
-		String limitToPlayer = args.length > 2 ? args[2] : null;
+	@MCCommand( cmds = {"showListeners"}, admin=true)
+	public boolean showListeners(CommandSender sender, String args[]) {
+		String limitToPlayer = args.length > 1 ? args[1] : null;
 
-		HashMap<Type, BukkitEventListener> types = MethodController.getEventListeners();
-		for (BukkitEventListener bel: types.values()){
-			MapOfTreeSet<String,RListener> lists2 = bel.getListeners();
-			String str = MessageUtil.joinBukkitPlayers(bel.getPlayers(),", ");
-			sendMessage(sender, "---- Event " + bel.getEvent().getSimpleName() +", players="+str);
-			for (String p : lists2.keySet()){
-				if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
-					continue;
-				TreeSet<RListener> rls = lists2.get(p);
-				for (RListener rl : rls){
-					sendMessage(sender, "!!! "+rl.getPriority() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
+		EnumMap<org.bukkit.event.EventPriority, HashMap<Type, BukkitEventListener>> gels = MethodController.getEventListeners();
+		for (org.bukkit.event.EventPriority bp: gels.keySet()){
+			sendMessage(sender, "&4#### &f----!! Bukkit Priority=&5"+bp+"&f !!---- &4####");
+			HashMap<Type, BukkitEventListener> types = gels.get(bp);
+			for (BukkitEventListener bel: types.values()){
+				MapOfTreeSet<String,RListener> lists2 = bel.getListeners();
+				String str = MessageUtil.joinBukkitPlayers(bel.getPlayers(),", ");
+				String has = bel.hasListeners() ? "&2true" : "&cfalse";
+				sendMessage(sender, "---- Event &e" + bel.getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
+				for (String p : lists2.keySet()){
+					if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
+						continue;
+					TreeSet<RListener> rls = lists2.get(p);
+					for (RListener rl : rls){
+						sendMessage(sender, "!!! "+rl.getPriority() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
+					}
 				}
-			}
-			EnumMap<EventPriority, List<RListener>> lists = bel.getMatchListeners();
-			for (EventPriority ep: lists.keySet()){
-				for (RListener rl : lists.get(ep)){
-					sendMessage(sender, "!!! " + ep  + "  -  " + rl);
+				EnumMap<EventPriority, List<RListener>> lists = bel.getMatchListeners();
+				for (EventPriority ep: lists.keySet()){
+					for (RListener rl : lists.get(ep)){
+						sendMessage(sender, "!!! " + ep  + "  -  " + rl);
+					}
 				}
 			}
 		}
@@ -143,12 +147,16 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		Match am = ac.getMatch(pl);
 		if (am == null){
 			return sendMessage(sender,"&ePlayer " + pl.getName() +" is not in a match");}
-		am.addKill(pl);
+//		am.addKill(pl);
+		Team t = am.getTeam(pl);
+		if (t != null){
+			t.addKill(pl);
+		}
 		return sendMessage(sender,pl.getName()+" has received a kill");
 	}
 
 
-	@MCCommand(cmds={"getExp"}, inGame=true, admin=true)
+	@MCCommand(cmds={"getExp"}, admin=true)
 	public boolean getExp(Player player) {
 		return sendMessage(player,ChatColor.GREEN+ "Experience  " + player.getTotalExperience() +" " + ExpUtil.getTotalExperience(player));
 	}
@@ -180,6 +188,15 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	@MCCommand(cmds={"showArenaVars"}, admin=true)
 	public boolean showArenaVars(CommandSender sender, Arena arena) {
 		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(arena, ToStringStyle.MULTI_LINE_STYLE);
+		return sendMessage(sender, rtsb.toString());
+	}
+
+	@MCCommand(cmds={"showMatchVars"}, admin=true)
+	public boolean showMatchVars(CommandSender sender, Arena arena) {
+		Match m = BattleArena.getBAController().getMatch(arena);
+		if (m == null){
+			return sendMessage(sender, "&cMatch not currently running in arena " + arena.getName());}
+		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(m, ToStringStyle.MULTI_LINE_STYLE);
 		return sendMessage(sender, rtsb.toString());
 	}
 
@@ -313,7 +330,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return sendMessage(sender,"&2Player's exp set to " + exp );
 	}
 
-	@MCCommand(cmds={"tp"}, admin=true, inGame=true)
+	@MCCommand(cmds={"tp"}, admin=true)
 	public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, Integer spawnIndex) {
 		Location loc = arena.getSpawnLoc(spawnIndex);
 		if (loc ==null){

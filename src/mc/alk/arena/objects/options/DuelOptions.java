@@ -109,7 +109,7 @@ public class DuelOptions {
 				obj = money;
 				break;
 			case ARENA:
-				obj = BattleArena.getBAC().getArena(val);
+				obj = BattleArena.getBAController().getArena(val);
 				if (obj==null){
 					throw new InvalidOptionException("&cCouldnt find the arena &6" +val);}
 			default: break;

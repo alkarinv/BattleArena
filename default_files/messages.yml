@@ -97,6 +97,8 @@ event:
         server_draw: "{eventprefix}&e ended in a draw!"
 
 match:    
+    leading_header: "&6 O---[{==========> &fCurrent Leaders &6<==========}]---O"
+    leading_row: "&6{rank} : {name}({wins}{losses})" ## rank/wins/losses are all per match
     oneTeam: ### 1 team matches
         prestart: '&eYour {matchname}&e starts in {time}.'
         server_prestart: '&6{matchprefix} is entering the {matchname}!'

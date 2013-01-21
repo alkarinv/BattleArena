@@ -8,7 +8,7 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
-import mc.alk.arena.controllers.WorldGuardInterface;
+import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.events.PlayerLeftEvent;
 import mc.alk.arena.events.PlayerReadyEvent;
 import mc.alk.arena.events.matches.MatchClassSelectedEvent;
@@ -35,6 +35,7 @@ import mc.alk.arena.util.TeamUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -61,6 +62,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class ArenaMatch extends Match {
 	private HashMap<String, Long> userTime = new HashMap<String, Long>();
+	private HashMap<String, Integer> deathTimer = new HashMap<String, Integer>();
 
 	public ArenaMatch(Arena arena, MatchParams mp) {
 		super(arena, mp);
@@ -76,24 +78,26 @@ public class ArenaMatch extends Match {
 				state == MatchState.ONOPEN || !insideArena.contains(player.getName())){
 			return;}
 		Team t = getTeam(player);
-		if (t==null)
-			return;
+		if (t==null){
+			return;}
 		t.killMember(player);
 		PerformTransition.transition(this, MatchState.ONCOMPLETE, player, t, true);
 		callEvent(new PlayerLeftEvent(player));
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGH)
-	public void onPlayerDeath(PlayerDeathEvent event, ArenaPlayer target){
+	public void onPlayerDeath(PlayerDeathEvent event, final ArenaPlayer target){
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE || !insideArena.contains(target.getName())){
 			return;}
 		if (cancelExpLoss)
 			event.setKeepLevel(true);
-		Team t = getTeam(target);
+		final Team t = getTeam(target);
 		if (t==null)
 			return;
 		/// Handle Drops from bukkitEvent
-		if (clearsInventoryOnDeath){ /// Very important for deathmatches.. otherwise tons of items on floor
+		if (clearsInventoryOnDeath || keepsInventory){ /// clear the drops
+			if (keepsInventory){
+				psc.storeMatchItems(target);}
 			try {event.getDrops().clear();} catch (Exception e){}
 		} else if (woolTeams){  /// Get rid of the wool from teams so it doesnt drop
 			final int index = teams.indexOf(t);
@@ -110,8 +114,27 @@ public class ArenaMatch extends Match {
 				}
 			}
 		}
-		if (!respawns){
-			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);}
+
+		Integer nDeaths = t.getNDeaths(target);
+
+		if (!respawns || (nDeaths != null && nDeaths >= nLivesPerPlayer) ){
+			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);
+		} else {
+			/// We can't let them just sit on the respawn screen... schedule them to lose
+			/// We will cancel this onRespawn
+			final ArenaMatch am = this;
+			Integer timer = deathTimer.get(target.getName());
+			if (timer != null){
+				Bukkit.getScheduler().cancelTask(timer);
+			}
+			timer = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+				@Override
+				public void run() {
+					PerformTransition.transition(am, MatchState.ONCOMPLETE, target, t, true);
+				}
+			}, 15*20L);
+			deathTimer.put(target.getName(), timer);
+		}
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGH)
@@ -172,7 +195,12 @@ public class ArenaMatch extends Match {
 		final TransitionOptions mo = tops.getOptions(MatchState.ONDEATH);
 		if (mo == null)
 			return;
+
 		if (respawns){
+			/// Lets cancel our death respawn timer
+			Integer timer = deathTimer.get(p.getName());
+			if (timer != null){
+				Bukkit.getScheduler().cancelTask(timer);}
 			Location loc = getTeamSpawn(getTeam(p), mo.randomRespawn());
 			event.setRespawnLocation(loc);
 			/// For some reason, the player from onPlayerRespawn Event isnt the one in the main thread, so we need to
@@ -194,6 +222,9 @@ public class ArenaMatch extends Match {
 						} catch(Exception e){}
 					} else {
 						p.setChosenClass(null);
+					}
+					if (keepsInventory){
+						psc.restoreMatchItems(p);
 					}
 					try{
 						if (woolTeams){
@@ -244,28 +275,36 @@ public class ArenaMatch extends Match {
 		TransitionOptions to = tops.getOptions(state);
 		if (to==null)
 			return;
-		if (arena.hasRegion() && to.hasOption(TransitionOption.WGNOLEAVE) && WorldGuardInterface.hasWorldGuard()){
+		if (arena.hasRegion() && to.hasOption(TransitionOption.WGNOLEAVE) && WorldGuardController.hasWorldGuard()){
 			/// Did we actually even move
 			if (event.getFrom().getBlockX() != event.getTo().getBlockX()
 					|| event.getFrom().getBlockY() != event.getTo().getBlockY()
 					|| event.getFrom().getBlockZ() != event.getTo().getBlockZ()){
 				/// Now check world
-				World w = Bukkit.getWorld(arena.getRegionWorld());
+				World w = arena.getWorldGuardRegion().getWorld();
 				if (w==null || w.getUID() != event.getTo().getWorld().getUID())
 					return;
-				if (WorldGuardInterface.isLeavingArea(event.getFrom(), event.getTo(), w, arena.getRegion())){
+				if (WorldGuardController.isLeavingArea(event.getFrom(), event.getTo(),arena.getWorldGuardRegion())){
 					event.setCancelled(true);}
 			}
 		}
 	}
 
+	@MatchEventHandler(priority=EventPriority.HIGH, bukkitPriority=org.bukkit.event.EventPriority.LOWEST)
+	public void onPlayerCommandPreprocess1(PlayerCommandPreprocessEvent event){
+		handlePreprocess(event);
+	}
 
 	@MatchEventHandler(priority=EventPriority.HIGH)
-	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
-		if (Defaults.DEBUG_COMMANDS){
-			event.getPlayer().sendMessage("event Message=" + event.getMessage() +"   isCancelled=" + event.isCancelled());}
+	public void onPlayerCommandPreprocess2(PlayerCommandPreprocessEvent event){
 		if (event.isCancelled() || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL){
 			return;}
+		handlePreprocess(event);
+	}
+
+	public static void handlePreprocess(PlayerCommandPreprocessEvent event){
+		if (Defaults.DEBUG_COMMANDS){
+			event.getPlayer().sendMessage("event Message=" + event.getMessage() +"   isCancelled=" + event.isCancelled());}
 		final Player p = event.getPlayer();
 		if (PermissionsUtil.isAdmin(p) && Defaults.ALLOW_ADMIN_CMDS_IN_MATCH){
 			return;}
@@ -386,13 +425,13 @@ public class ArenaMatch extends Match {
 		InventoryUtil.clearInventory(p, woolTeams);
 		/// Also debuff them
 		EffectUtil.deEnchantAll(p);
-
+		Color color = this.armorTeams ? TeamUtil.getTeamColor(getTeamIndex(getTeam(ap))) : null;
 		/// Regive class/items
 		ArenaClassController.giveClass(p, ac);
 		if (mo != null && mo.hasItems()){
-			try{ InventoryUtil.addItemsToInventory(p, mo.getGiveItems(), true);} catch(Exception e){e.printStackTrace();}}
+			try{ InventoryUtil.addItemsToInventory(p, mo.getGiveItems(), true,color);} catch(Exception e){e.printStackTrace();}}
 		if (ro != null && ro.hasItems()){
-			try{ InventoryUtil.addItemsToInventory(p, ro.getGiveItems(), true);} catch(Exception e){e.printStackTrace();}}
+			try{ InventoryUtil.addItemsToInventory(p, ro.getGiveItems(), true,color);} catch(Exception e){e.printStackTrace();}}
 
 		/// Deal with effects/buffs
 		if (mo != null && mo.getEffects()!=null){

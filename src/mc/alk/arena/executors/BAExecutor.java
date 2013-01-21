@@ -33,7 +33,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.arenas.ArenaInterface;
+import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
@@ -55,9 +55,9 @@ import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.arena.util.Util.MinMax;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
@@ -140,7 +140,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return sendMessage(sender, "&5Enabled types = &6 " + ParamController.getAvaibleTypes(disabled));
 	}
 
-	@MCCommand(cmds={"join","j"},inGame=true,usage="join [options]")
+	@MCCommand(cmds={"join","j"},usage="join [options]")
 	public boolean join(ArenaPlayer player, MatchParams mp, String args[]) {
 		return join(player,mp,args,false);
 	}
@@ -277,7 +277,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"leave","l"}, inGame=true, usage="leave")
+	@MCCommand(cmds={"leave","l"}, usage="leave")
 	public boolean leave(ArenaPlayer p) {
 		if (!canLeave(p)){
 			return true;
@@ -408,18 +408,18 @@ public class BAExecutor extends CustomCommandExecutor {
 		return sendMessage(sender,mp.getPrefix()+" &2Elo's and stats for &6"+mp.getName()+"&2 now reset");
 	}
 
-	@MCCommand(cmds={"setElo"}, admin=true, usage="setElo <player> <ranking score>")
-	public boolean setElo(CommandSender sender, MatchParams mp, OfflinePlayer player, Integer elo) {
+	@MCCommand(cmds={"setRating"}, admin=true, usage="setRating <player> <rating>")
+	public boolean setElo(CommandSender sender, MatchParams mp, OfflinePlayer player, Integer rating) {
 		BTInterface bti = new BTInterface(mp);
 		if (!bti.isValid()){
 			return sendMessage(sender,"&eThere is no tracking for " +mp);}
-		if (bti.setRanking(player, elo))
-			return sendMessage(sender,"&6" + player.getName()+"&e now has &6" + elo +"&e ranking");
+		if (bti.setRanking(player, rating))
+			return sendMessage(sender,"&6" + player.getName()+"&e now has &6" + rating +"&e rating");
 		else
-			return sendMessage(sender,"&6Error setting ranking");
+			return sendMessage(sender,"&6Error setting rating");
 	}
 
-	@MCCommand(cmds={"rank"}, inGame=true)
+	@MCCommand(cmds={"rank"})
 	public boolean rank(Player sender,MatchParams mp) {
 		BTInterface bti = new BTInterface(mp);
 		if (!bti.isValid()){
@@ -472,7 +472,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"check"}, inGame=true, usage="check")
+	@MCCommand(cmds={"check"}, usage="check")
 	public boolean arenaCheck(ArenaPlayer p) {
 		if(ac.isInQue(p)){
 			QPosTeamPair qpp = ac.getCurrentQuePos(p);
@@ -587,7 +587,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"create"}, inGame=true, admin=true, min=2,usage="create <arena name> [team size] [# teams]")
+	@MCCommand(cmds={"create"}, admin=true, min=2,usage="create <arena name> [team size] [# teams]")
 	public boolean arenaCreate(CommandSender sender, MatchParams mp, String name, String[] args) {
 		if (Defaults.DEBUG) for (int i =0;i<args.length;i++){System.out.println("args=" + i + "   " + args[i]);}
 		final String strTeamSize = args.length>2 ? (String) args[2] : "1+";
@@ -608,9 +608,10 @@ public class BAExecutor extends CustomCommandExecutor {
 		Arena arena = ArenaType.createArena(name, ap,false);
 		arena.setSpawnLoc(0, p.getLocation());
 		ac.addArena(arena);
-		new ArenaInterface(arena).create();
+		ArenaControllerInterface aci = new ArenaControllerInterface(arena);
+		aci.create();
 		new ArenaCreateEvent(arena).callEvent();
-		try{arena.init();}catch(Exception e){ e.printStackTrace();}
+		aci.init();
 
 		sendMessage(sender,"&2You have created the arena &6" + arena);
 		sendMessage(sender,"&2A spawn point has been created where you are standing");
@@ -625,7 +626,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"rescind"},inGame=true)
+	@MCCommand(cmds={"rescind"})
 	public boolean duelRescind(ArenaPlayer player) {
 		if (!dc.hasChallenger(player)){
 			return sendMessage(player,"&cYou haven't challenged anyone!");}
@@ -638,7 +639,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"reject"},inGame=true)
+	@MCCommand(cmds={"reject"})
 	public boolean duelReject(ArenaPlayer player) {
 		if (!dc.isChallenged(player)){
 			return sendMessage(player,"&cYou haven't been invited to a duel!");}
@@ -656,7 +657,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"accept"},inGame=true)
+	@MCCommand(cmds={"accept"})
 	public boolean duelAccept(ArenaPlayer player) {
 		if (!canJoin(player)){
 			return true;}
@@ -685,7 +686,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return sendMessage(player,"&cYou have accepted the duel!");
 	}
 
-	@MCCommand(cmds={"duel","d"},inGame=true)
+	@MCCommand(cmds={"duel","d"})
 	public boolean duel(ArenaPlayer player, MatchParams mp, String args[]) {
 		if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".duel") &&
 				!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".duel") ){

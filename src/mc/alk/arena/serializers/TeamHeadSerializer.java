@@ -4,12 +4,13 @@ import java.util.List;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.exceptions.ConfigException;
+import mc.alk.arena.objects.teams.TeamAppearance;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
-import mc.alk.arena.util.TeamUtil.TeamHead;
 
+import org.bukkit.Color;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
@@ -22,7 +23,7 @@ public class TeamHeadSerializer extends BaseSerializer{
 
 	public static void loadTeams(ConfigurationSection cs) {
 		if (cs == null){
-			Log.info(BattleArena.getPName() +" has no teamHeads");
+			Log.info(BattleArena.getPName() +" has no teamColors");
 			return;}
 		StringBuilder sb = new StringBuilder();
 		List<String> keys = cs.getStringList("teams");
@@ -41,15 +42,15 @@ public class TeamHeadSerializer extends BaseSerializer{
 			sb.append(teamName);
 		}
 		if (first){
-			Log.info(BattleArena.getPName() +" no predefined teamHeads found. inside of " + cs.getCurrentPath());
+			Log.info(BattleArena.getPName() +" no predefined teamColors found. inside of " + cs.getCurrentPath());
 		}
 	}
 
 
 	private static String addTeamHead(String str) throws Exception {
 		String[] split = str.split(",");
-		if (split.length != 2){
-			throw new ConfigException("Team Head must be in format 'Name,ItemStack'");
+		if (split.length != 5){
+			throw new ConfigException("Team Colors must be in format 'Name,ItemStack,R,G,B'");
 		}
 		String name =MessageUtil.decolorChat(split[0]);
 		if (name.isEmpty()){
@@ -57,7 +58,10 @@ public class TeamHeadSerializer extends BaseSerializer{
 		}
 		ItemStack item = InventoryUtil.parseItem(split[1]);
 		item.setAmount(1);
-		TeamHead th = new TeamHead(item,split[0]);
+		Integer r = Integer.valueOf(split[2]);
+		Integer g = Integer.valueOf(split[3]);
+		Integer b = Integer.valueOf(split[4]);
+		TeamAppearance th = new TeamAppearance(item,split[0], Color.fromRGB(r, g, b));
 		TeamUtil.addTeamHead(name,th);
 		return name;
 	}

@@ -12,12 +12,14 @@ import java.util.logging.Logger;
 
 import mc.alk.arena.Defaults;
 
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 public class InventoryUtil {
 	static final String version = "BA InventoryUtil 2.1.6";
@@ -28,6 +30,7 @@ public class InventoryUtil {
 		final public ArmorType type;
 		Armor(ArmorType at, ArmorLevel al){this.level = al; this.type = at;}
 	}
+
 	public static class EnchantmentWithLevel{
 		public EnchantmentWithLevel(){}
 		public EnchantmentWithLevel(boolean all){this.all = all;}
@@ -45,6 +48,10 @@ public class InventoryUtil {
 		public PInv(PlayerInventory inventory) {
 			contents = inventory.getContents();
 			setArmor(inventory);
+		}
+		public PInv(List<ItemStack> items){
+			contents = items.toArray(new ItemStack[items.size()]);
+			armor = new ItemStack[0];
 		}
 		public void setArmor(PlayerInventory inventory){
 			this.armor=new ItemStack[4];
@@ -302,27 +309,37 @@ public class InventoryUtil {
 	}
 
 	public static void addItemToInventory(Player player, ItemStack itemStack) {
-		addItemToInventory(player,itemStack,itemStack.getAmount(),true,false);
+		addItemToInventory(player,itemStack,itemStack.getAmount(),true,false,null);
 	}
 
 	public static void addItemToInventory(Player player, ItemStack itemStack, int stockAmount, boolean update) {
-		addItemToInventory(player,itemStack,stockAmount,update,false);
+		addItemToInventory(player,itemStack,stockAmount,update,false,null);
+	}
+
+	public static void addItemsToInventory(Player p, List<ItemStack> items, boolean ignoreCustomHelmet) {
+		addItemsToInventory(p,items, ignoreCustomHelmet,null);
 	}
 
 	@SuppressWarnings("deprecation")
-	public static void addItemsToInventory(Player p, List<ItemStack> items, final boolean ignoreCustomHelmet) {
+	public static void addItemsToInventory(Player p, List<ItemStack> items, boolean ignoreCustomHelmet, Color color) {
 		for (ItemStack is : items){
-			InventoryUtil.addItemToInventory(p, is.clone(), is.getAmount(), false, ignoreCustomHelmet);
+			InventoryUtil.addItemToInventory(p, is.clone(), is.getAmount(), false, ignoreCustomHelmet, color);
 		}
 		try { p.updateInventory(); } catch (Exception e){}
 	}
 
+	public static void addItemToInventory(Player player, ItemStack itemStack, int stockAmount,
+			boolean update, boolean ignoreCustomHelmet) {
+		addItemToInventory(player,itemStack,stockAmount,update,ignoreCustomHelmet,null);
+	}
+
 	@SuppressWarnings("deprecation")
-	public static void addItemToInventory(Player player, ItemStack itemStack, int stockAmount, boolean update, boolean ignoreCustomHelmet) {
+	public static void addItemToInventory(Player player, ItemStack itemStack, int stockAmount,
+			boolean update, boolean ignoreCustomHelmet, Color color) {
 		PlayerInventory inv = player.getInventory();
 		Material itemType =itemStack.getType();
 		if (armor.containsKey(itemType)){
-			addArmorToInventory(inv,itemStack,stockAmount,ignoreCustomHelmet);
+			addArmorToInventory(inv,itemStack,stockAmount,ignoreCustomHelmet, color);
 		} else {
 			addItemToInventory(inv, itemStack,stockAmount);
 		}
@@ -332,15 +349,21 @@ public class InventoryUtil {
 
 
 	private static void addArmorToInventory(PlayerInventory inv,
-			ItemStack itemStack, int stockAmount, boolean ignoreCustomHelmet) {
+			ItemStack itemStack, int stockAmount, boolean ignoreCustomHelmet, Color color) {
 		Material itemType =itemStack.getType();
 		final boolean isHelmet = armor.get(itemType).type == ArmorType.HELM;
 		/// no item: add to armor slot
 		/// item better: add old to inventory, new to armor slot
 		/// item notbetter: add to inventory
-		final ItemStack oldArmor = getArmorSlot(inv,armor.get(itemType).type);
+		Armor a = armor.get(itemType);
+		final ItemStack oldArmor = getArmorSlot(inv,a.type);
 		boolean empty = (oldArmor == null || oldArmor.getType() == Material.AIR);
-		boolean better = empty ? true : armorSlotBetter(armor.get(oldArmor.getType()),armor.get(itemType));
+		boolean better = empty ? true : armorSlotBetter(armor.get(oldArmor.getType()),a);
+		if (color != null && a.level == ArmorLevel.LEATHER){
+			LeatherArmorMeta lam = (LeatherArmorMeta) itemStack.getItemMeta();
+			lam.setColor(color);
+			itemStack.setItemMeta(lam);
+		}
 		if (empty || better){
 			switch (armor.get(itemType).type){
 			case HELM:
@@ -679,6 +702,11 @@ public class InventoryUtil {
 		}
 		sb.append(is.getAmount());
 		return sb.toString();
+	}
+
+	public static boolean isColorable(ItemStack item){
+		Armor a = armor.get(item.getType());
+		return a != null && a.level == ArmorLevel.LEATHER;
 	}
 
 	public static boolean hasEnchantedItem(Player p) {

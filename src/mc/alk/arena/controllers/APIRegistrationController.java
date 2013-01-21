@@ -20,6 +20,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.executors.ArenaExecutor;
 import mc.alk.arena.executors.BAExecutor;
+import mc.alk.arena.executors.CustomCommandExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.objects.EventParams;
@@ -27,6 +28,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.ConfigException;
+import mc.alk.arena.objects.exceptions.ExtensionPluginException;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.BaseSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
@@ -64,41 +66,44 @@ public class APIRegistrationController {
 				String n = file.getName().substring(0, file.getName().length()-"Config.yml".length());
 				if (ArenaType.contains(n)){ /// we already loaded this type
 					continue;}
-				register(plugin, file);
+				registerCustomCompetition(plugin, file);
 			}
 		}
 	}
 
-	public static void register(Plugin plugin, File configFile){
+	public static void registerCustomCompetition(Plugin plugin, File configFile){
 		BaseSerializer bs = new BaseSerializer();
 		bs.setConfig(configFile);
 		FileConfiguration config = bs.getConfig();
 		/// Initialize custom matches or events
 		Set<String> keys = config.getKeys(false);
 		for (String key: keys){
-			ConfigurationSection cs = config.getConfigurationSection(key);
-			if (cs == null)
-				continue;
-			try {
-				/// A new match/event needs the params, an executor, and the command to use
-				boolean isMatch = !config.getBoolean(key+".isEvent",false);
-				MatchParams mp = ConfigSerializer.setTypeConfig(plugin,key,cs, isMatch);
-				ArenaExecutor executor = isMatch ? BattleArena.getBAExecutor() : new ReservedArenaEventExecutor();
-				ArenaCommand arenaCommand = new ArenaCommand(mp.getCommand(),"","", new ArrayList<String>(), BattleArena.getSelf());
-				arenaCommand.setExecutor(executor);
-				CommandController.registerCommand(arenaCommand);
-			} catch (Exception e) {
-				Log.err("Couldnt configure arenaType " + key+". " + e.getMessage());
-				e.printStackTrace();
-			}
+			registerCustomCompetition(plugin, config, key);
 		}
 	}
 
-	private void init(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, boolean match){
-		if (plugin == null){
-			Log.err("Plugin can not be null");
+	private static void registerCustomCompetition(Plugin plugin, FileConfiguration config, String key) {
+		ConfigurationSection cs = config.getConfigurationSection(key);
+		if (cs == null)
 			return;
+		try {
+			/// A new match/event needs the params, an executor, and the command to use
+			boolean isMatch = !config.getBoolean(key+".isEvent",false);
+			MatchParams mp = ConfigSerializer.setTypeConfig(plugin,key,cs, isMatch);
+			ArenaExecutor executor = isMatch ? BattleArena.getBAExecutor() : new ReservedArenaEventExecutor();
+			ArenaCommand arenaCommand = new ArenaCommand(mp.getCommand(),"","", new ArrayList<String>(), BattleArena.getSelf());
+			arenaCommand.setExecutor(executor);
+			CommandController.registerCommand(arenaCommand);
+		} catch (Exception e) {
+			Log.err("Couldnt configure arenaType " + key+". " + e.getMessage());
+			e.printStackTrace();
 		}
+	}
+
+	private void init(JavaPlugin plugin, String name, String cmd,
+			Class<? extends Arena> arenaClass, boolean match) throws ExtensionPluginException{
+		if (plugin == null){
+			throw new ExtensionPluginException(plugin, "Plugin can not be null");}
 		/// Create our plugin folder if its not there
 		File dir = plugin.getDataFolder();
 		if (!dir.exists()){
@@ -155,6 +160,7 @@ public class APIRegistrationController {
 				return;
 			}
 		}
+
 		ms.setConfig(pluginFile);
 		ms.loadAll();
 		MessageSerializer.addMessageSerializer(name,ms);
@@ -232,11 +238,16 @@ public class APIRegistrationController {
 		registerMatchType(plugin,name,cmd,arenaClass,new BAExecutor());
 	}
 
-	public void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, BAExecutor executor) {
-		init(plugin,name,cmd,arenaClass,true);
+	public void registerMatchType(JavaPlugin plugin, String name, String cmd,
+			Class<? extends Arena> arenaClass, BAExecutor executor) {
+		try {
+			init(plugin,name,cmd,arenaClass,true);
+			/// Set up command executors
+			setCommandToExecutor(plugin, cmd, executor);
+		} catch (ExtensionPluginException e) {
+			e.printStackTrace();
+		}
 
-		/// Set up command executors
-		setCommandToExecutor(plugin, cmd, executor);
 	}
 
 	private void setCommandToExecutor(JavaPlugin plugin, String wantedCommand, CommandExecutor executor) {
@@ -257,6 +268,7 @@ public class APIRegistrationController {
 			}
 		}
 	}
+
 	private boolean setCommandToExecutor(JavaPlugin plugin, String command, CommandExecutor executor, boolean displayError){
 		try{
 			plugin.getCommand(command).setExecutor(executor);
@@ -267,6 +279,7 @@ public class APIRegistrationController {
 			return false;
 		}
 	}
+
 	public void createMessageSerializer(Plugin plugin, String name, boolean match, File dir) throws ConfigException {
 		File pluginFile;
 		/// Make a message serializer for this match/event, and make the messages.yml file if it doesnt exist
@@ -277,6 +290,7 @@ public class APIRegistrationController {
 		ms.loadAll();
 		MessageSerializer.addMessageSerializer(name,ms);
 	}
+
 	private static File createMessageFile(Plugin plugin, String name, boolean match, File dir) throws ConfigException {
 		String messagesFileName = name+"Messages.yml";
 		String fileName = match ? "defaultMatchMessages.yml": "defaultEventMessages.yml";
@@ -294,37 +308,103 @@ public class APIRegistrationController {
 		return pluginFile;
 	}
 
-	public void registerCompetition(JavaPlugin plugin, String name, Class<? extends Arena> arenaClass) {
-
-		//		registerEventType(plugin,name,arenaClass,new ReservedArenaEventExecutor());
-	}
-
-
 	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass) {
-		registerEventType(plugin,name,cmd,arenaClass,new ReservedArenaEventExecutor());
+		try{
+			registerEventType(plugin,name,cmd,arenaClass,new ReservedArenaEventExecutor());
+		} catch (ExtensionPluginException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor) {
+	public void registerEventType(JavaPlugin plugin, String name, String cmd,
+			Class<? extends Arena> arenaClass, EventExecutor executor) throws ExtensionPluginException {
 		init(plugin,name,cmd,arenaClass,false);
 		EventParams mp = ParamController.getEventParamCopy(name);
 		if (mp != null){
 			setCommandToExecutor(plugin, cmd, executor);
 			EventController.addEventExecutor(mp, executor);
 		} else {
-			Log.err(name+" type not found");
+			throw new ExtensionPluginException(plugin, name+" type not found");
 		}
 	}
 
 	public void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass,
-			Event event, EventExecutor executor) {
+			Event event, EventExecutor executor) throws ExtensionPluginException {
 		init(plugin,name,cmd,arenaClass,false);
 		EventParams mp = ParamController.getEventParamCopy(name);
 		if (mp != null){
 			plugin.getCommand(cmd).setExecutor(executor);
 			EventController.addEventExecutor(mp, executor);
 		} else {
-			Log.err(name+" type not found");
+			throw new ExtensionPluginException(plugin, name+" type not found");
 		}
 	}
 
+
+	public boolean registerCompetition(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass) {
+		return registerCompetition(plugin,name,cmd, arenaClass,null);
+	}
+
+	public boolean registerCompetition(JavaPlugin plugin, String name, String cmd,
+			Class<? extends Arena> arenaClass, CustomCommandExecutor executor) {
+		try{
+			if (executor != null && executor.getClass() != CustomCommandExecutor.class){
+
+			}
+			File dir = plugin.getDataFolder();
+			File configFile = new File(dir.getAbsoluteFile()+"/"+name+"Config.yml");
+			if (!configFile.exists()){
+				throw new ExtensionPluginException(plugin, "Error loading config file " + configFile);
+			}
+			registerCompetition(plugin, name, cmd, arenaClass, executor, configFile);
+			return true;
+		} catch (Exception e){
+			return false;
+		}
+	}
+
+	public void registerCompetition(JavaPlugin plugin, String name, String cmd,
+			Class<? extends Arena> arenaClass, CustomCommandExecutor executor, File configFile)
+			throws Exception {
+		registerCompetition(plugin,name,cmd,arenaClass,executor, configFile,true,false);
+	}
+
+	public void registerCompetition(JavaPlugin plugin, String name, String cmd,
+			Class<? extends Arena> arenaClass, CustomCommandExecutor executor, File configFile,
+			boolean defaultIsMatch, boolean defaultCompetition)
+			throws Exception{
+		BaseSerializer bs = new BaseSerializer();
+		bs.setConfig(configFile);
+		FileConfiguration config = bs.getConfig();
+
+		boolean isMatch = !config.getBoolean(name+".isEvent",!defaultIsMatch);
+		isMatch = config.getBoolean(name+".queue",isMatch);
+		if (isMatch){
+			BAExecutor exe = new BAExecutor();
+			if (executor != null){
+				exe.addMethods(executor, executor.getClass().getMethods());}
+			if (!defaultCompetition){
+				this.registerMatchType(plugin, name, cmd, arenaClass,exe);
+			} else {
+				/// SetTypeConfig doesn't register ArenaType or commands
+				ArenaType.register(name, Arena.class, BattleArena.getSelf());
+				ConfigSerializer.setTypeConfig(plugin, name,config.getConfigurationSection(name), true);
+				/// Set up command executors
+				setCommandToExecutor(plugin, cmd, exe);
+			}
+		} else {
+			ReservedArenaEventExecutor exe = new ReservedArenaEventExecutor();
+			if (executor != null){
+				exe.addMethods(executor, executor.getClass().getMethods());}
+			if (!defaultCompetition){
+				this.registerEventType(plugin, name, cmd, arenaClass,exe);
+			} else {
+				/// SetTypeConfig doesn't register ArenaType or commands
+				ArenaType.register(name, Arena.class, BattleArena.getSelf());
+				MatchParams mp = ConfigSerializer.setTypeConfig(plugin, name,config.getConfigurationSection(name), false);
+				setCommandToExecutor(plugin, cmd, exe);
+				EventController.addEventExecutor((EventParams) mp, exe);
+			}
+		}
+	}
 }

@@ -38,7 +38,7 @@ useArenasOnlyInOrder: false
 # Bukkit or Minecraft had a bug that sometimes caused players to be invisible after teleporting
 # If this is happening on your server set this to true.  
 # This option will be taken away once I have confirmed bukkit has fixed the problem
-enableInvisibleTeleportFix: false
+enableInvisibleTeleportFix: true
 
 ### Option sets allow you to give an easy to remember name for a group of options
 # you can add as many of your own as you want
@@ -63,7 +63,7 @@ defaultOptions:
     ## start after the forceStartTime regardless if the minimum amount of people
     ## have joined.  Example: say 2 teams of 4 people each is needed, if after
     ## the forceStartTime is exceeded only 2 teams of 1 person is needed to start.
-    matchEnableForceStart: false
+    matchEnableForceStart: true
     matchForceStartTime: 180
 
     ## Enable ready block (a block players can click to signify they are ready)
@@ -124,8 +124,8 @@ arena:
     database: arena
     rated: true
     prefix: "&6[Arena]&e"
-    nTeams: 2+
-    teamSize: 1+
+    nTeams: 2
+    teamSize: 1
     preReqs:
         options: []
     onEnter:
@@ -133,7 +133,7 @@ arena:
     onLeave:
         options: [restoreAll]
     onStart:
-        options: [teleportIn, blockBreakOff, woolTeams]
+        options: [teleportIn, blockBreakOff, woolTeams, pvpOn]
     onSpawn:
         options: [deEnchant, hunger=20, health=20]
         giveClass:

@@ -6,13 +6,16 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.regions.PylamoRegion;
+import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.Util;
-import mc.alk.arena.util.Util.MinMax;
 import mc.alk.arena.util.WorldEditUtil;
 
 import org.bukkit.ChatColor;
@@ -75,7 +78,7 @@ public class ArenaAlterController {
 			//			sendMessage(sender,ChatColor.YELLOW+ "      or /arena alter MainArena spawnitem <itemname>:<matchEndTime between spawn> ");
 			return false;
 		}
-		BattleArenaController ac = BattleArena.getBAC();
+		BattleArenaController ac = BattleArena.getBAController();
 		String arenaName = arena.getName();
 		String changetype = args[2];
 		String value = "1";
@@ -119,7 +122,7 @@ public class ArenaAlterController {
 	}
 
 	private static boolean checkWorldGuard(CommandSender sender){
-		if (!WorldGuardInterface.hasWorldGuard()){
+		if (!WorldGuardController.hasWorldGuard()){
 			sendMessage(sender,"&cWorldGuard is not enabled");
 			return false;
 		}
@@ -131,7 +134,7 @@ public class ArenaAlterController {
 	}
 
 	private static boolean addPylamoRegion(Player sender, Arena arena, BattleArenaController ac, String value) {
-		if (!WorldGuardInterface.hasWorldEdit()){
+		if (!WorldGuardController.hasWorldEdit()){
 			sendMessage(sender,"&cYou need world edit to use this command");
 			return false;}
 		if (!PylamoController.enabled()){
@@ -161,19 +164,22 @@ public class ArenaAlterController {
 			return false;
 		}
 
-		String region = arena.getRegion();
+		WorldGuardRegion region = arena.getWorldGuardRegion();
 		World w = sel.getWorld();
 		try{
 			String id = makeRegionName(arena);
 			if (region != null){
-				WorldGuardInterface.updateProtectedRegion(sender,id);
+				WorldGuardController.updateProtectedRegion(sender,id);
 				sendMessage(sender,"&2Region updated! ");
 			} else {
-				WorldGuardInterface.createProtectedRegion(sender, id);
+				WorldGuardController.createProtectedRegion(sender, id);
 				sendMessage(sender,"&2Region added! ");
 			}
-			arena.addRegion(w.getName(), id);
-			WorldGuardInterface.saveSchematic(sender, id);
+			arena.addWorldGuardRegion(w.getName(), id);
+			WorldGuardController.saveSchematic(sender, id);
+			MatchParams mp = ParamController.getMatchParams(arena.getArenaType().getName());
+			if (mp != null && mp.getTransitionOptions().hasAnyOption(TransitionOption.WGNOENTER)){
+				WorldGuardController.trackRegion(w.getName(), id);}
 		} catch (Exception e) {
 			sendMessage(sender,"&cAdding WorldGuard region failed!");
 			sendMessage(sender, "&c" + e.getMessage());

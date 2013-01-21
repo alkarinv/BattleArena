@@ -3,14 +3,15 @@ package mc.alk.arena.objects.victoryconditions;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
-import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.matches.MatchResultEvent;
+import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.victoryconditions.interfaces.DefinesTimeLimit;
 import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Countdown.CountdownCallback;
 
-public class TimeLimit extends VictoryCondition implements CountdownCallback {
+public class TimeLimit extends VictoryCondition implements DefinesTimeLimit, CountdownCallback {
 
 	Countdown timer = null; /// Timer for when victory condition is time based
 	public TimeLimit(Match match) {
@@ -40,6 +41,7 @@ public class TimeLimit extends VictoryCondition implements CountdownCallback {
 		}
 	}
 
+	@Override
 	public boolean intervalTick(int remaining){
 		if (remaining <= 0){
 			match.timeExpired();
@@ -47,5 +49,10 @@ public class TimeLimit extends VictoryCondition implements CountdownCallback {
 			match.intervalTick(remaining);
 		}
 		return true;
+	}
+
+	@Override
+	public int getMatchTime() {
+		return match.getParams().getMatchTime();
 	}
 }

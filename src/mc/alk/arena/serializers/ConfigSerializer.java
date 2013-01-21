@@ -36,8 +36,8 @@ import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.SerializerUtil;
-import mc.alk.arena.util.Util.MinMax;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.GameMode;
@@ -115,7 +115,7 @@ public class ConfigSerializer extends BaseSerializer{
 		}
 		if (at == null)
 			at = ArenaType.fromString("Arena");
-		if (at == null)
+		if (at == null && !name.equalsIgnoreCase("tourney"))
 			throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
 
 		/// What is the default rating for this match type
@@ -173,7 +173,8 @@ public class ConfigSerializer extends BaseSerializer{
 		pi.setIntervalTime(cs.getInt("matchUpdateInterval",Defaults.MATCH_UPDATE_INTERVAL));
 
 		pi.setOverrideBattleTracker(cs.getBoolean("overrideBattleTracker", true));
-		pi.setNDeaths(cs.getInt("nDeaths",1));
+		pi.setNLives(cs.getInt("nDeaths",1));
+		pi.setNLives(cs.getInt("nLives",pi.getNLives()));
 		pi.setNConcurrentCompetitions(cs.getInt("nConcurrentCompetitions",Integer.MAX_VALUE));
 
 		if (cs.contains("customMessages") && cs.getBoolean("customMessages")){
@@ -188,7 +189,7 @@ public class ConfigSerializer extends BaseSerializer{
 			pi.setAnnouncementOptions(an);
 		}
 		/// TeamJoinResult in tracking for this match type
-		String dbName = cs.getString("database");
+		String dbName = cs.getString("database", name);
 		if (dbName != null){
 			pi.setDBName(dbName);
 			if (!BTInterface.addBTI(pi))
@@ -199,8 +200,7 @@ public class ConfigSerializer extends BaseSerializer{
 
 		/// Set all Transition Options
 		for (MatchState transition : MatchState.values()){
-			/// OnCancel gets taken from onComplete and modified, ONENTERWAITROOM gets its values from ONENTER
-//			if (transition == MatchState.ONCANCEL || transition == MatchState.ONENTERWAITROOM)
+			/// OnCancel gets taken from onComplete and modified
 			if (transition == MatchState.ONCANCEL)
 				continue;
 			TransitionOptions tops = null;
@@ -215,23 +215,28 @@ public class ConfigSerializer extends BaseSerializer{
 				allTops.removeTransitionOptions(transition);
 				continue;}
 			if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + transition +" "+tops);
-			if (transition == MatchState.ONCOMPLETE){
+			switch (transition){
+			case ONCOMPLETE:
 				TransitionOptions cancelOps = new TransitionOptions(tops);
 				allTops.addTransitionOptions(MatchState.ONCANCEL, cancelOps);
 				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
+				break;
+			case ONLEAVE:
+				if (tops.hasOption(TransitionOption.TELEPORTOUT)){
+					tops.removeOption(TransitionOption.TELEPORTOUT);
+					Log.warn("You should never use the option teleportOut inside of onLeave!");
+				}
+				break;
+			default:
+				break;
 			}
-//			else if (transition == MatchState.ONENTER){
-//				TransitionOptions newOps = new TransitionOptions(tops);
-//				allTops.addTransitionOptions(MatchState.ONENTERWAITROOM, newOps);
-//				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONENTERWAITROOM +" "+newOps);
-//			}
 
 			allTops.addTransitionOptions(transition,tops);
 		}
 		ParamController.setTransitionOptions(pi, allTops);
 		ParamController.removeMatchType(pi);
 		ParamController.addMatchType(pi);
-		Log.info(plugin.getName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none"));
+		Log.info(plugin.getName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none")+",queue="+match);
 		return pi;
 	}
 

@@ -1,5 +1,7 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.objects.exceptions.RegionNotFound;
+import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.util.WorldEditUtil;
 import mc.alk.arena.util.WorldGuardUtil;
 
@@ -18,7 +20,7 @@ import org.bukkit.plugin.Plugin;
  * Also other classes should not declare variables of the OD as a class variable
  *
  */
-public class WorldGuardInterface {
+public class WorldGuardController {
 	static boolean hasWorldGuard = false;
 	static boolean hasWorldEdit = false;
 
@@ -45,6 +47,9 @@ public class WorldGuardInterface {
 		return WorldGuardUtil.addRegion(sender, id);
 	}
 
+	public static boolean hasRegion(WorldGuardRegion region){
+		return WorldGuardUtil.hasRegion(region);
+	}
 	public static boolean hasRegion(World world, String id){
 		return WorldGuardUtil.hasRegion(world, id);
 	}
@@ -65,6 +70,13 @@ public class WorldGuardInterface {
 		WorldGuardUtil.clearRegion(world, id);
 	}
 
+	public static void clearRegion(WorldGuardRegion region) {
+		WorldGuardUtil.clearRegion(region);
+	}
+
+	public static boolean isLeavingArea(final Location from, final Location to, WorldGuardRegion region) {
+		return WorldGuardUtil.isLeavingArea(from , to , region);
+	}
 	public static boolean isLeavingArea(final Location from, final Location to, World w, String id) {
 		return WorldGuardUtil.isLeavingArea(from , to , w, id);
 	}
@@ -79,6 +91,10 @@ public class WorldGuardInterface {
 		return hasWorldEdit;
 	}
 
+	public static boolean setFlag(WorldGuardRegion region, WorldGuardFlag flag, boolean enable) {
+		return WorldGuardUtil.setFlag(region, flag, enable);
+	}
+
 	public static boolean setFlag(String worldName, String id, WorldGuardFlag flag, boolean enable) {
 		return WorldGuardUtil.setFlag(worldName, id, flag, enable);
 	}
@@ -87,11 +103,20 @@ public class WorldGuardInterface {
 		WorldGuardUtil.allowEntry(player,regionWorld, id);
 	}
 
-	public static void addMember(String name, String regionWorld, String id) {
-		WorldGuardUtil.addMember(name,regionWorld, id);
+	public static void addMember(String playerName, WorldGuardRegion region) {
+		WorldGuardUtil.addMember(playerName, region);
 	}
-	public static void removeMember(String name, String regionWorld, String id) {
-		WorldGuardUtil.removeMember(name,regionWorld, id);
+
+	public static void addMember(String playerName, String regionWorld, String id) {
+		WorldGuardUtil.addMember(playerName,regionWorld, id);
+	}
+
+	public static void removeMember(String playerName, WorldGuardRegion region) {
+		WorldGuardUtil.removeMember(playerName,region);
+	}
+
+	public static void removeMember(String playerName, String regionWorld, String id) {
+		WorldGuardUtil.removeMember(playerName,regionWorld, id);
 	}
 
 	public static void deleteRegion(String worldName, String id) {
@@ -110,4 +135,31 @@ public class WorldGuardInterface {
 		WorldGuardUtil.pasteSchematic(regionWorld,id);
 	}
 
+	public static void pasteSchematic(WorldGuardRegion region) {
+		WorldGuardUtil.pasteSchematic(region);
+	}
+
+	public static boolean regionContains(Location location, WorldGuardRegion region) {
+		return WorldGuardUtil.contains(location, region);
+	}
+
+	public static boolean hasPlayer(String playerName, WorldGuardRegion region) {
+		return WorldGuardUtil.hasPlayer(playerName,region);
+	}
+
+	public static int regionCount() {
+		return WorldGuardUtil.regionCount();
+	}
+
+	public static WorldGuardRegion getContainingRegion(Location location) {
+		return WorldGuardUtil.getContainingRegion(location);
+	}
+
+	public static boolean trackRegion(WorldGuardRegion region) throws RegionNotFound{
+		return WorldGuardUtil.trackRegion(region);
+	}
+
+	public static boolean trackRegion(String world, String id) throws RegionNotFound{
+		return WorldGuardUtil.trackRegion(world, id);
+	}
 }

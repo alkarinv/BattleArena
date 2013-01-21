@@ -55,6 +55,7 @@ public class VictoryType {
 	public String getName() {
 		return name;
 	}
+
 	public static VictoryCondition createVictoryCondition(Match match) {
 		VictoryType vt = match.getParams().getVictoryType();
 		Class<?> vcClass = classes.get(vt.getName());
@@ -64,6 +65,8 @@ public class VictoryType {
 		try {
 			Constructor<?> constructor = vcClass.getConstructor(args);
 			VictoryCondition newVC = (VictoryCondition) constructor.newInstance(match);
+			if (newVC instanceof NLives){
+				((NLives)newVC).setMaxLives(match.getParams().getNLives());}
 			return newVC;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -78,9 +81,6 @@ public class VictoryType {
 		if (!types.containsKey(vcName)){
 			new VictoryType(vcName,plugin);
 		}
-		/// Register our methods
-//		MethodController.addBukkitMethods(vc, vc.getMethods());
-
 	}
 
 	public static boolean registered(VictoryCondition vc){

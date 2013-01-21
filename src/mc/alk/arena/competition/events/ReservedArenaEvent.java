@@ -1,5 +1,7 @@
 package mc.alk.arena.competition.events;
 
+import java.util.List;
+
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.ArenaMatch;
@@ -17,8 +19,11 @@ import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
+import mc.alk.arena.objects.victoryconditions.VictoryCondition;
+import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
 import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.TeamUtil;
 
 public class ReservedArenaEvent extends Event {
 	public ReservedArenaEvent(EventParams params) {
@@ -38,6 +43,23 @@ public class ReservedArenaEvent extends Event {
 		mc.sendCountdownTillEvent(mp.getSecondsTillStart());
 		/// Set a countdown to announce updates every minute
 		timer = new Countdown(BattleArena.getSelf(),mp.getSecondsTillStart(), mp.getAnnouncementInterval(), this);
+	}
+
+	@Override
+	public String getStatus() {
+		StringBuilder sb = new StringBuilder(super.getStatus());
+		List<VictoryCondition> vcs = arenaMatch.getVictoryConditions();
+		for (VictoryCondition vc: vcs){
+			if (vc instanceof DefinesLeaderRanking){
+				List<Team> leaders = ((DefinesLeaderRanking)vc).getRankings();
+				sb.append("\n");
+				for (int i = 0;i<leaders.size();i++){
+					sb.append("&6"+(i+1) +"&e : "+TeamUtil.formatName(leaders.get(i))+"\n");
+				}
+				break;
+			}
+		}
+		return sb.toString();
 	}
 
 	@Override

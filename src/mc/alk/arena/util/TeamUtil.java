@@ -6,8 +6,10 @@ import java.util.List;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.TeamAppearance;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -15,28 +17,8 @@ import org.bukkit.inventory.PlayerInventory;
 
 public class TeamUtil {
 	static final int NTEAMS = 35;
-	static final List<TeamHead> teamHeads = new ArrayList<TeamHead>();
+	static final List<TeamAppearance> teamHeads = new ArrayList<TeamAppearance>();
 	static final HashMap<String,Integer> map = new HashMap<String,Integer>();
-
-	public static class TeamHead {
-		final ItemStack is;
-		final String name;
-		final ChatColor color;
-		public TeamHead(ItemStack is, String name){
-			this.is = is;
-			this.name = name;
-			this.color = MessageUtil.getFirstColor(name);
-		}
-		public String getName(){
-			return name;
-		}
-		public ItemStack getItem(){
-			return is;
-		}
-		public ChatColor getColor(){
-			return color;
-		}
-	}
 
 	public static void removeTeamHead(final int color, Player p) {
 		ItemStack item = getTeamHead(color);
@@ -56,8 +38,12 @@ public class TeamUtil {
 		return index < teamHeads.size() ? teamHeads.get(index).getItem() : new ItemStack(Material.DIRT);
 	}
 
-	public static ChatColor getTeamColor(int index){
-		return index < teamHeads.size() ? teamHeads.get(index).getColor() : ChatColor.WHITE;
+	public static ChatColor getTeamChatColor(int index){
+		return index < teamHeads.size() ? teamHeads.get(index).getChatColor() : ChatColor.WHITE;
+	}
+
+	public static Color getTeamColor(Integer index){
+		return index != null && index < teamHeads.size() ? teamHeads.get(index).getColor() : Color.WHITE;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -84,9 +70,21 @@ public class TeamUtil {
 		return map.get(op.toUpperCase());
 	}
 
-	public static void addTeamHead(String name, TeamHead th) {
+	public static void addTeamHead(String name, TeamAppearance th) {
 		teamHeads.add(th);
 		map.put(name.toUpperCase(), teamHeads.size()-1);
 	}
 
+	public static String formatName(Team t){
+		StringBuilder sb = new StringBuilder("&e " + t.getDisplayName());
+
+		for (ArenaPlayer p: t.getPlayers()){
+			Integer k = t.getNKills(p);
+			Integer d = t.getNDeaths(p);
+			if (k==null) k=0;
+			if (d==null) d=0;
+			sb.append("&e(&c"+k+"&e,&7"+d+"&e)");
+		}
+		return sb.toString();
+	}
 }

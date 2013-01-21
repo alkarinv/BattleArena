@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers.messaging;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.competition.match.Match;
@@ -11,8 +12,11 @@ import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.victoryconditions.VictoryCondition;
+import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.TimeUtil;
 
 /**
@@ -78,6 +82,29 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	public void sendOnVictoryMsg(Channel serverChannel, Collection<Team> victors, Collection<Team> losers) {
 		int size = (victors != null ? victors.size() : 0) + (losers != null ? losers.size() : 0);
 		final String nTeamPath = getStringPathFromSize(size);
+		for (VictoryCondition vc: match.getVictoryConditions()){
+			if (vc instanceof DefinesLeaderRanking){
+				List<Team> leaders = ((DefinesLeaderRanking)vc).getRankings();
+				if (leaders==null)
+					continue;
+				int max = Math.min(leaders.size(), 4);
+				StringBuilder sb = new StringBuilder();
+				for (int i = 0;i<max;i++){
+					sb.append("&6"+(i+1) +"&e : "+TeamUtil.formatName(leaders.get(i))+"\n");
+				}
+				String leaderStr = sb.toString();
+				if (victors != null){
+					for (Team t: victors){
+						t.sendMessage(leaderStr);}
+				}
+				if (losers != null){
+					for (Team t: losers){
+						t.sendMessage(leaderStr);}
+				}
+				break;
+			}
+		}
+
 		sendVictory(serverChannel,victors,losers,mp,"match."+nTeamPath+".victory","match."+nTeamPath+".loss",
 				"match."+nTeamPath+".server_victory");
 	}

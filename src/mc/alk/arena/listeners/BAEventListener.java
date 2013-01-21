@@ -20,10 +20,12 @@ import org.bukkit.plugin.EventExecutor;
 public abstract class BAEventListener implements Listener  {
 
 	final Class<? extends Event> bukkitEvent;
+	final EventPriority bukkitPriority;
 
-	public BAEventListener(final Class<? extends Event> bukkitEvent) {
+	public BAEventListener(final Class<? extends Event> bukkitEvent, EventPriority bukkitPriority) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("Registering BAEventListener for type " + bukkitEvent);
 		this.bukkitEvent = bukkitEvent;
+		this.bukkitPriority = bukkitPriority;
 	}
 	public Class<? extends Event> getEvent(){
 		return bukkitEvent;
@@ -46,7 +48,7 @@ public abstract class BAEventListener implements Listener  {
 //					System.out.println(count +"   " + t + "   : " + total);
 			}
 		};
-		Bukkit.getPluginManager().registerEvent(bukkitEvent, this, EventPriority.HIGHEST, executor,BattleArena.getSelf());
+		Bukkit.getPluginManager().registerEvent(bukkitEvent, this, bukkitPriority, executor,BattleArena.getSelf());
 	}
 
 	static long total = 0;
@@ -67,7 +69,7 @@ public abstract class BAEventListener implements Listener  {
 
 			}
 		};
-		Bukkit.getPluginManager().registerEvent(bukkitEvent, this, EventPriority.HIGHEST, executor,BattleArena.getSelf());
+		Bukkit.getPluginManager().registerEvent(bukkitEvent, this, bukkitPriority, executor,BattleArena.getSelf());
 	}
 
 	public abstract void doSpecificPlayerEvent(Event event);

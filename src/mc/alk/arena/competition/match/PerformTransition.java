@@ -14,12 +14,13 @@ import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.PylamoController;
 import mc.alk.arena.controllers.TeleportController;
-import mc.alk.arena.controllers.WorldGuardInterface;
+import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
@@ -29,7 +30,7 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
 
-import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -72,18 +73,17 @@ public class PerformTransition {
 			return true;
 		if (performOncePerTransitionOptions){
 			/// Options that don't affect players first
-			if (WorldGuardInterface.hasWorldGuard() && am.getArena().hasRegion()){
-				String region = am.getArena().getRegion();
-				String worldName = am.getArena().getRegionWorld();
+			if (WorldGuardController.hasWorldGuard() && am.getArena().hasRegion()){
+				WorldGuardRegion region = am.getArena().getWorldGuardRegion();
 				/// Clear the area
 				if (mo.shouldClearRegion()){
-					WorldGuardInterface.clearRegion(worldName,region);}
+					WorldGuardController.clearRegion(region);}
 
 				if (mo.hasOption(TransitionOption.WGRESETREGION)){
 					if (PylamoController.enabled() && am.getArena().getPylamoRegion() != null){
 						PylamoController.resetRegion(am.getArena().getPylamoRegion());
 					} else {
-						WorldGuardInterface.pasteSchematic(Bukkit.getConsoleSender(), worldName, region);
+						WorldGuardController.pasteSchematic(region);
 					}
 				}
 			}
@@ -106,7 +106,6 @@ public class PerformTransition {
 			return true;}
 		final boolean teleportIn = mo.shouldTeleportIn();
 		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
-
 		final boolean insideArena = am.insideArena(player);
 		/// If the flag onlyInMatch is set, we should leave if the player isnt inside.  disregard if we are teleporting people in
 		if (onlyInMatch && !insideArena && !(teleportIn || teleportWaitRoom)){
@@ -181,7 +180,11 @@ public class PerformTransition {
 				final ArenaClass ac = getArenaClass(mo,teamIndex);
 				if (ac != null){ /// Give class items and effects
 					if (am.woolTeams) TeamUtil.setTeamHead(teamIndex, player); // give wool heads first
-					ArenaClassController.giveClass(p, ac);
+					if (am.armorTeams){
+						ArenaClassController.giveClass(p, ac, TeamUtil.getTeamColor(teamIndex));
+					} else{
+						ArenaClassController.giveClass(p, ac);
+					}
 					player.setChosenClass(ac);
 				}
 			}
@@ -191,7 +194,8 @@ public class PerformTransition {
 					DisguiseInterface.disguisePlayer(p, disguise);}
 			}
 			if (mo.hasOption(TransitionOption.GIVEITEMS)){
-				giveItems(transition, player, mo.getGiveItems(),teamIndex, am.woolTeams, insideArena);}
+				Color color = am.armorTeams ? TeamUtil.getTeamColor(teamIndex) : null;
+				giveItems(transition, player, mo.getGiveItems(),teamIndex, am.woolTeams, insideArena,color);}
 
 			try{if (effects != null)
 				EffectUtil.enchantPlayer(p, effects);} catch (Exception e){}
@@ -270,13 +274,13 @@ public class PerformTransition {
 	}
 
 	private static void giveItems(final MatchState ms, final ArenaPlayer p, final List<ItemStack> items,
-			final int teamIndex,final boolean woolTeams, final boolean insideArena) {
+			final int teamIndex,final boolean woolTeams, final boolean insideArena, Color color) {
 		if (woolTeams && insideArena){
 			TeamUtil.setTeamHead(teamIndex, p);}
 		if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+ms+" transition giving items to " + p.getName());
 		if (items == null || items.isEmpty())
 			return;
-		InventoryUtil.addItemsToInventory(p.getPlayer(),items,woolTeams);
+		InventoryUtil.addItemsToInventory(p.getPlayer(),items,woolTeams,color);
 	}
 
 	private static ArenaClass getArenaClass(TransitionOptions mo, final int teamIndex) {

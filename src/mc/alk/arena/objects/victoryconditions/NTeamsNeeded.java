@@ -5,21 +5,21 @@ import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.PlayerLeftEvent;
-import mc.alk.arena.events.matches.MatchFindNeededTeamsEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumTeams;
+import mc.alk.arena.util.MinMax;
 
-public class NTeamsNeeded extends VictoryCondition{
-	final int neededTeams;
+public class NTeamsNeeded extends VictoryCondition implements DefinesNumTeams{
+	MinMax neededTeams;
 	public NTeamsNeeded(Match match, int nTeams) {
 		super(match);
-		this.neededTeams = nTeams;
+		this.neededTeams = new MinMax(nTeams);
 	}
 
-	@MatchEventHandler
-	public void onNeededTeams(MatchFindNeededTeamsEvent event) {
-		event.setNeededTeams(neededTeams);
+	public MinMax getNeededNumberOfTeams(){
+		return neededTeams;
 	}
 
 	@MatchEventHandler
@@ -40,14 +40,14 @@ public class NTeamsNeeded extends VictoryCondition{
 			return;}
 
 		/// Killing this player killed the team
-		List<Team> leftAlive = new ArrayList<Team>(neededTeams+1);
+		List<Team> leftAlive = new ArrayList<Team>(neededTeams.min+1);
 		/// Iterate over the players to see if we have one team left standing
 
 		for (Team t: match.getTeams()){
 			if (t.isDead())
 				continue;
 			leftAlive.add(t);
-			if (leftAlive.size() >= neededTeams){ /// obviously more than one team is still in the match
+			if (leftAlive.size() >= neededTeams.min){ /// obviously more than one team is still in the match
 				return;
 			}
 		}
@@ -55,7 +55,7 @@ public class NTeamsNeeded extends VictoryCondition{
 			match.setLosers();
 			return;
 		}
-		switch(neededTeams){
+		switch(neededTeams.min){
 		case 2:
 			if (leftAlive.size() ==1){
 				match.setVictor(leftAlive.get(0));

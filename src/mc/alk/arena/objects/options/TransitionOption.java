@@ -4,7 +4,6 @@ public enum TransitionOption{
 	/// preReq only Options
 	NEEDARMOR ("needArmor",false),					/// PREREQ only: player needs armor to join the match
 	NOINVENTORY("noInventory",false),				/// PREREQ only: player needs to have no inventory to join
-//	CLEARINVENTORYONFIRSTENTER ("clearInventoryOnFirstEnter",false),
 	NEEDITEMS ("needItems",false),					/// PREREQ only: player needs the following items to join
 	SAMEWORLD("sameWorld",false),					/// PREREQ only: player can only join from the same world
 	WITHINDISTANCE("withinDistance",true),			/// PREREQ only: player needs to be within the following distance to join
@@ -28,6 +27,12 @@ public enum TransitionOption{
 	STOREHEROCLASS("storeHeroClass",false),			/// HEROES only: Store the hero class
 	RESTOREHEROCLASS("restoreHeroClass",false),		/// HEROES only: Restore the hero class
 
+	/// Default Options (options that need only be specified once anywhere (usually in defaults: ))
+	ARMORTEAMS("armorTeams",false),					/// Use team armor colors when appropriate (right now just leather)
+	WOOLTEAMS("woolTeams",false),					/// Use team Heads when team sizes are greater than 1 (found in teamColors.yml)
+	ALWAYSWOOLTEAMS("alwaysWoolTeams", false),		/// Always use team Heads (found in teamColors.yml)
+	ALWAYSTEAMNAMES("alwaysTeamNames", false),		/// Always use team Names (found in teamColors.yml)
+
 	/// Teleport Options
 	TELEPORTWAITROOM("teleportWaitRoom",false), 	/// Teleport players to the waitroom
 	TELEPORTIN ("teleportIn",false),  				/// Teleport players into the arena
@@ -40,7 +45,7 @@ public enum TransitionOption{
 	NOTELEPORT("noTeleport", false), 				/// Prevent players from teleporting
 	NOWORLDCHANGE("noWorldChange",false),			/// Prevent players from changing world
 
-	/// Normal Options
+	/// Normal Stage Options
 	CLEARINVENTORY ("clearInventory",false), 		/// Clear the players inventory
 	CLEAREXPERIENCE("clearExperience",false), 		/// Clear the players experience
 	GIVEITEMS("giveItems",false), 					/// Give the player the items specified in items:
@@ -66,9 +71,6 @@ public enum TransitionOption{
 	UNDISGUISE("undisguise",false),					/// Undisguise all players in the arena (needs DisguiseCraft)
 	ENCHANTS("enchants",false),						/// Give the Enchants found in enchants:
 	DEENCHANT("deEnchant",false),					/// DeEnchant all positive and negative effects from the player
-	WOOLTEAMS("woolTeams",false),					/// Use team Heads when team sizes are greater than 1 (found in teamHeads.yml)
-	ALWAYSWOOLTEAMS("alwaysWoolTeams", false),		/// Always use team Heads (found in teamHeads.yml)
-	ALWAYSTEAMNAMES("alwaysTeamNames", false),		/// Always use team Names (found in teamHeads.yml)
 	ADDPERMS("addPerms", false),					/// NOT IMPLEMENTED
 	REMOVEPERMS("removePerms", false),				/// NOT IMPLEMENTED
 	GAMEMODE("gameMode",true),						/// =<GameMode> : sets the given gamemode of the player
@@ -78,6 +80,7 @@ public enum TransitionOption{
 	RESPAWN ("respawn",false),						/// Allow player to respawn in Arena after they have died
 	RANDOMRESPAWN ("randomRespawn",false), 			/// Respawn player at a random spawn location after they have died
 	NOEXPERIENCELOSS("noExperienceLoss",false),		/// cancel exp loss on death
+	KEEPINVENTORY("keepInventory", false),			/// Allow the players to keep whatever inventory they currently have when they respawn
 
 	/// onSpawn Only Options
 	RESPAWNWITHCLASS("respawnWithClass", false),	/// Respawn player with their previously selected class

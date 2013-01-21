@@ -70,10 +70,10 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public void setIntervalTime(Integer intervalTime) {
 		this.intervalTime = intervalTime;
 	}
-	public void setNDeaths(Integer ndeaths){
+	public void setNLives(Integer ndeaths){
 		this.nDeaths = ndeaths;
 	}
-	public Integer getNDeaths(){
+	public Integer getNLives(){
 		return nDeaths;
 	}
 	@Override

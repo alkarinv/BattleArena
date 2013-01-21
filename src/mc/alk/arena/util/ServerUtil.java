@@ -29,9 +29,9 @@ public class ServerUtil {
 	public static Player findPlayer(String name) {
 		if (name == null)
 			return null;
-		Player lastPlayer = Bukkit.getPlayer(name);
-		if (lastPlayer != null)
-			return lastPlayer;
+		Player foundPlayer = Bukkit.getPlayer(name);
+		if (foundPlayer != null)
+			return foundPlayer;
 
 		Player[] online = Bukkit.getOnlinePlayers();
 		if (Defaults.DEBUG_VIRTUAL){online = VirtualPlayers.getOnlinePlayers();}
@@ -40,19 +40,19 @@ public class ServerUtil {
 			String playerName = player.getName();
 
 			if (playerName.equalsIgnoreCase(name)) {
-				lastPlayer = player;
+				foundPlayer = player;
 				break;
 			}
 
 			if (playerName.toLowerCase().indexOf(name.toLowerCase()) != -1) {
-				if (lastPlayer != null) {
+				if (foundPlayer != null) {
 					return null;}
 
-				lastPlayer = player;
+				foundPlayer = player;
 			}
 		}
 
-		return lastPlayer;
+		return foundPlayer;
 	}
 
 	public static OfflinePlayer findOfflinePlayer(String name) {

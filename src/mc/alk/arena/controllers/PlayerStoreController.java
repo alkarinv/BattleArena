@@ -6,6 +6,7 @@ import java.util.List;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
@@ -28,6 +29,7 @@ public class PlayerStoreController {
 	final HashMap <String, Integer> magicmap = new HashMap<String,Integer>();
 	final HashMap <String, Integer> magicpmap = new HashMap<String,Integer>();
 	final HashMap <String, PInv> itemmap = new HashMap<String,PInv>();
+	final HashMap <String, PInv> matchitemmap = new HashMap<String,PInv>();
 	final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
 	final HashMap <String, String> arenaclass = new HashMap<String,String>();
 
@@ -137,9 +139,26 @@ public class PlayerStoreController {
 		InventorySerializer.saveInventory(name,pinv);
 	}
 
+	public void storeMatchItems(ArenaPlayer player) {
+		final String name= player.getName();
+		if (Defaults.DEBUG_STORAGE) Log.info("storing in match items for = " + name +" contains=" + matchitemmap.containsKey(name));
+		if (matchitemmap.containsKey(name))
+			return;
+		final PInv pinv = new PInv(player.getInventory());
+		matchitemmap.put(name, pinv);
+	}
+
 	public void restoreItems(ArenaPlayer p) {
 		if (Defaults.DEBUG_STORAGE)  Log.info("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
 		final PInv pinv = itemmap.remove(p.getName());
+		if (pinv == null)
+			return;
+		setInventory(p, pinv);
+	}
+
+	public void restoreMatchItems(ArenaPlayer p){
+		if (Defaults.DEBUG_STORAGE)  Log.info("   "+p.getName()+" psc matchitemmap=" + matchitemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
+		final PInv pinv = matchitemmap.remove(p.getName());
 		if (pinv == null)
 			return;
 		setInventory(p, pinv);
@@ -198,17 +217,11 @@ public class PlayerStoreController {
 		}
 	}
 
-	public void allowEntry(ArenaPlayer p, String regionWorld, String region) {
-		if (!WorldGuardInterface.hasWorldGuard()){
-			return;}
-		WorldGuardInterface.allowEntry(p.getPlayer(), regionWorld, region);
+	public void addMember(ArenaPlayer p, WorldGuardRegion region) {
+		WorldGuardController.addMember(p.getName(), region);
 	}
-
-	public void addMember(ArenaPlayer p, String regionWorld, String region) {
-		WorldGuardInterface.addMember(p.getName(), regionWorld, region);
-	}
-	public void removeMember(ArenaPlayer p, String regionWorld, String region) {
-		WorldGuardInterface.removeMember(p.getName(), regionWorld, region);
+	public void removeMember(ArenaPlayer p, WorldGuardRegion region) {
+		WorldGuardController.removeMember(p.getName(), region);
 	}
 
 	public void storeArenaClass(ArenaPlayer player) {
@@ -250,4 +263,5 @@ public class PlayerStoreController {
 			return;
 		HeroesController.cancelExpLoss(p.getPlayer(),cancel);
 	}
+
 }

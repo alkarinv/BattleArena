@@ -12,7 +12,9 @@ import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
@@ -31,6 +33,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.alk.virtualPlayer.VirtualPlayers;
@@ -237,6 +240,21 @@ public class BAPlayerListener implements Listener  {
 					}
 				}
 			});
+		}
+	}
+
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onPlayerTeleport(PlayerTeleportEvent event){
+		if (event.isCancelled() || !WorldGuardController.hasWorldGuard() ||
+				WorldGuardController.regionCount() == 0 ||
+				event.getPlayer().hasPermission(Defaults.TELEPORT_BYPASS_PERM))
+			return;
+		WorldGuardRegion region = WorldGuardController.getContainingRegion(event.getTo());
+		if (region != null && !WorldGuardController.hasPlayer(event.getPlayer().getName(), region)){
+			MessageUtil.sendMessage(event.getPlayer(), "&cYou can't enter the arena through teleports");
+			event.setCancelled(true);
+			return;
 		}
 	}
 

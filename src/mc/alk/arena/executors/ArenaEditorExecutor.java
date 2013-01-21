@@ -28,7 +28,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 	final ArenaEditor aac;
 	public ArenaEditorExecutor(){
 		super();
-		this.ac = BattleArena.getBAC();
+		this.ac = BattleArena.getBAController();
 		this.aac = BattleArena.getArenaEditor();
 	}
 
@@ -54,7 +54,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		}
 	}
 
-	@MCCommand(cmds={"as","addspawn"}, selection=true, inGame=true, admin=true, min=2,
+	@MCCommand(cmds={"as","addspawn"}, selection=true, admin=true, min=2,
 			usage="/aa addspawn <mob/item/block/spawnGroup> [buffs or effects] [number] [fs=first spawn time] [rt=respawn time] [trigger=<trigger type>]")
 	public boolean arenaAddSpawn(Player sender, String[] args) {
 		Long number = -1L;
@@ -124,7 +124,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		return ts;
 	}
 
-	@MCCommand(cmds={"hidespawns"}, admin=true, inGame=true, selection=true, usage="hidespawns")
+	@MCCommand(cmds={"hidespawns"}, admin=true, selection=true, usage="hidespawns")
 	public boolean arenaHideSpawns(Player sender) {
 		Arena arena = aac.getArena(sender);
 		ArenaDebugger ad = ArenaDebugger.getDebugger(arena);
@@ -133,7 +133,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		return sendMessage(sender,ChatColor.YELLOW+ "You are hiding spawns for &6" + arena.getName());
 	}
 
-	@MCCommand(cmds={"showspawns"}, admin=true, inGame=true,selection=true, usage="showspawns")
+	@MCCommand(cmds={"showspawns"}, admin=true, selection=true, usage="showspawns")
 	public boolean arenaShowSpawns(Player sender) {
 		Arena arena = aac.getArena(sender);
 

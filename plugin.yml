@@ -1,11 +1,13 @@
 name: BattleArena
+version: 3.7.9.4.4
+description: Arena system for BattleCraft
 
-version: 3.7.9.3
+main: mc.alk.arena.BattleArena
+
 author: alkarin
 
-description: Arena system for BattleCraft
 softdepend: [BattleTracker, Essentials, Herochat, Heroes, Factions, GroupManager, MultiInv, Multiworld, Multiverse-Inventories, TagAPI, Towny, WorldEdit, WorldGuard, Vault]
-main: mc.alk.arena.BattleArena
+
 commands:
     team:
         aliases: [arenateam]
@@ -19,7 +21,7 @@ commands:
         description: Skirmish commands
         usage: /arena <join|leave> [arguments]
     battleground:
-        aliases: [bg,battlegrounds]
+        aliases: [bg]
         description: battleground commands
         usage: /arena <join|leave> [arguments]
     watch:

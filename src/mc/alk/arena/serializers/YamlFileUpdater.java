@@ -13,6 +13,7 @@ import java.io.OutputStream;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.Log;
+import mc.alk.plugin.updater.FileUpdater;
 import mc.alk.plugin.updater.Version;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -77,6 +78,8 @@ public class YamlFileUpdater {
 		Version version = new Version(fc.getString("configVersion","0"));
 		YamlFileUpdater yfu = new YamlFileUpdater(plugin);
 		yfu.configFile = bacs.getFile();
+		File configFile = bacs.getFile();
+
 		/// configVersion: 1.1, move over to classes.yml
 		if (version.compareTo(1.1) <0){
 			yfu.to1Point1(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);}
@@ -111,7 +114,9 @@ public class YamlFileUpdater {
 		if (version.compareTo("2.1.0")<0){
 			yfu.to2Point10(bacs, bacs.getConfig(), version, new Version("2.1.0"));}
 		if (version.compareTo("2.1.1")<0){
-			yfu.to2Point11(bacs, bacs.getConfig(), version, new Version("2.1.1"));}
+			yfu.to2Point11(configFile, version, new Version("2.1.1"));
+			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+		}
 
 	}
 
@@ -695,34 +700,13 @@ public class YamlFileUpdater {
 		}
 	}
 
-	private void to2Point11(ConfigSerializer bacs, FileConfiguration fc, Version version, Version newVersion) {
-		Log.warn("BattleArena updating config to "+newVersion.getVersion());
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				if (line.contains("configVersion")){
-					fw.write("configVersion: "+newVersion.getVersion()+"\n\n");
-				} else if (!updatedDefaultSection && (line.matches(".*disabledCommands:.*"))){
-					fw.write(line+"\n\n");
-					fw.write("# which heroes skills should be disabled when they enter an arena\n");
-					fw.write("disabledHeroesSkills: []\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+newVersion.getVersion()));
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally{
-			try {br.close();} catch (Exception e) {}
-			try {fw.close();} catch (Exception e) {}
-		}
+	private boolean to2Point11(File file, Version oldVersion, Version newVersion) {
+		FileUpdater fu = new FileUpdater(file, backupDir, newVersion, oldVersion);
+		fu.replace("configVersion:.*", "configVersion: "+newVersion.getVersion());
+		fu.addAfter(".*disabledCommands:.*", "\n",
+				"# which heroes skills should be disabled when they enter an arena",
+				"disabledHeroesSkills: []");
+		return fu.update();
 	}
 
 	private void messageTo1Point5(FileConfiguration fc, Version version) {
@@ -848,7 +832,6 @@ public class YamlFileUpdater {
 			try {fw.close();} catch (Exception e) {}
 		}
 	}
-
 
 	private static boolean isWindows() {
 		return System.getProperty("os.name").toUpperCase().contains("WINDOWS");

@@ -1,6 +1,6 @@
 package mc.alk.arena.objects;
 
-import mc.alk.arena.util.Util.MinMax;
+import mc.alk.arena.util.MinMax;
 
 public class ArenaSize implements CompetitionSize{
 	int minTeamSize = 1;

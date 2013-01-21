@@ -126,7 +126,7 @@ public class JoinOptions extends ArenaSize{
 			if (op.isEmpty())
 				continue;
 			Object obj = null;
-			Arena a = BattleArena.getBAC().getArena(op);
+			Arena a = BattleArena.getBAController().getArena(op);
 			if (a != null){
 				if (!a.valid()){
 					throw new InvalidOptionException("&cThe specified arena is not valid!");}
@@ -163,7 +163,7 @@ public class JoinOptions extends ArenaSize{
 			String val = args[++i];
 			switch(jo){
 			case ARENA:
-				obj = BattleArena.getBAC().getArena(val);
+				obj = BattleArena.getBAController().getArena(val);
 				if (obj==null){
 					throw new InvalidOptionException("&cCouldnt find the arena &6" +val);}
 			default:

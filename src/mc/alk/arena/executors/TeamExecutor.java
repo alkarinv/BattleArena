@@ -64,7 +64,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return sendMessage(sender,sb.toString());
 	}
 
-	@MCCommand(cmds={"join"},inGame=true,usage="join")
+	@MCCommand(cmds={"join"}, usage="join")
 	public boolean teamJoin(ArenaPlayer player) {
 
 		Team t = teamc.getSelfFormedTeam(player);
@@ -95,7 +95,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"create"},inGame=true,usage="create <player 1> <player 2>...<player x>")
+	@MCCommand(cmds={"create"}, usage="create <player 1> <player 2>...<player x>")
 	public boolean teamCreate(ArenaPlayer player, String[] args) {
 		if (args.length<2){
 			sendMessage(player,ChatColor.YELLOW + "create <player 1> <player 2>...<player x>");
@@ -161,7 +161,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"info"},inGame=true, usage="info")
+	@MCCommand(cmds={"info"}, usage="info")
 	public boolean teamInfo(ArenaPlayer player) {
 		Map<TeamHandler,Team> teams = teamc.getTeamMap(player);
 		if (teams == null || teams.isEmpty()){
@@ -189,7 +189,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"disband","leave"},usage="disband", inGame=true)
+	@MCCommand(cmds={"disband","leave"},usage="disband")
 	public boolean teamDisband(ArenaPlayer player) {
 		/// Try to disband a forming team first
 		FormingTeam ft = teamc.getFormingTeam(player);
@@ -228,7 +228,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"delete"},admin=true,online={1}, usage="delete")
+	@MCCommand(cmds={"delete"}, usage="delete")
 	public boolean teamDelete(CommandSender sender, ArenaPlayer player) {
 		Team t = teamc.getSelfFormedTeam(player);
 		if (t== null){
@@ -244,7 +244,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 	}
 
 
-	@MCCommand(cmds={"decline"},inGame=true, usage="decline")
+	@MCCommand(cmds={"decline"}, usage="decline")
 	public boolean teamDecline(ArenaPlayer p) {
 		FormingTeam t = teamc.getFormingTeam(p);
 		if (t== null){

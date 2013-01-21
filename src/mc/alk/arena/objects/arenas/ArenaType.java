@@ -166,7 +166,7 @@ public class ArenaType implements Comparable<ArenaType>{
 			arena.setName(arenaName);
 			arena.setParameters(arenaParams);
 			if (init)
-				try{arena.init();}catch(Exception e){ e.printStackTrace();}
+				arena.privateInit();
 			return arena;
 		} catch (NoSuchMethodException e){
 			System.err.println("If you have custom constructors for your class you must also have a public default constructor");
@@ -185,6 +185,14 @@ public class ArenaType implements Comparable<ArenaType>{
 			return;
 		at1.addCompatibleType(at2);
 		at2.addCompatibleType(at1);
+	}
+
+	public static void addAliasForType(String type, String alias) {
+		ArenaType at = fromString(type);
+		if (at == null)
+			return;
+		types.put(alias, at);
+		classes.put(alias, getArenaClass(at));
 	}
 
 

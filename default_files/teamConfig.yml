@@ -1,0 +1,42 @@
+version: 1.0
+
+### You can add new teams here
+# Format
+## Team name, ItemStack, R, G, B
+## RG values are 0-255
+teams:
+  - "&cRed,wool:14,255,0,0" # &4 hard to see
+  - "&bBlue,wool:11,0,0,255" # &2 was hard to see
+  - "&fWhite,wool:0,255,255,255"
+  - "&0Black,wool:15,0,0,0"
+  - "&6Orange,wool:1,255,165,0"
+  - "&2Green,wool:13,0,128,0"
+  - "&dPink,wool:6,255,204,255"
+  - "&bAqua,wool:3,0,255,255"
+  - "&8Gray,wool:7,128,128,128"
+  - "&eYellow,wool:4,255,255,0"
+  - "&aLime,wool:5,0,255,0"
+  - "&7Silver,wool:8,192,192,192"
+  - "&3Cyan,wool:9,0,255,255"
+  - "&5Purple,wool:10,192,0,192"
+  - "&8Brown,wool:12,188,143,143"
+  - "&9Magenta,wool:2,238,0,238"
+  - "&9Ice,ice,153,153,255"
+  - "&7Iron,iron_block,208,208,208"
+  - "&bDiamond,diamond_block,102,204,255"
+  - "&cBrick,brick,255,102,0"
+  - "&fGlass,glass,255,255,255"
+  - "&fSand,sand,150,100,0"
+  - "&2Leaf,leaves,0,153,51"
+  - "&4Nether,netherrack,102,0,0"
+  - "&0Obby,obsidian,10,10,0"
+  - "&8Gravel,gravel,128,128,128"
+  - "&1Lapis,lapis_block,0,10,255"
+  - "&2Mossy,mossy_cobblestone,50,255,50"
+  - "&6Pumpkin,pumpkin,204,0,0"
+  - "&fSnow,snow,255,255,255"
+  - "&7Coal,coal_ore,50,50,50"
+  - "&7Cobblestone,cobblestone,150,150,150"
+  - "&8Wood,wood,150,100,0"
+  - "&cTNT,tnt,200,50,50"
+  - "&eSponge,sponge,255,130,100"

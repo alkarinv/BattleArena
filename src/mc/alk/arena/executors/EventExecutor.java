@@ -144,7 +144,7 @@ public class EventExecutor extends BAExecutor{
 		return sendMessage(sender,sb.toString());
 	}
 
-	@MCCommand(cmds={"leave"},inGame=true,usage="leave", order=2)
+	@MCCommand(cmds={"leave"}, usage="leave", order=2)
 	public boolean eventLeave(ArenaPlayer p) {
 		Event event = controller.getEvent(p);
 		if (event == null){
@@ -169,14 +169,14 @@ public class EventExecutor extends BAExecutor{
 	}
 
 	@Override
-	@MCCommand(cmds={"join"},inGame=true)
+	@MCCommand(cmds={"join"})
 	public boolean join(ArenaPlayer player, MatchParams mp, String args[]) {
 		if (mp instanceof EventParams){
 			return eventJoin(player, (EventParams)mp, args);}
 		return true; /// awkward, how did they get here???
 	}
 
-	@MCCommand(cmds={"join"},inGame=true,usage="join", order=2)
+	@MCCommand(cmds={"join"},usage="join", order=2)
 	public boolean eventJoin(ArenaPlayer player, EventParams eventParams, String[] args) {
 		eventJoin(player, eventParams, args, false);
 		return true;

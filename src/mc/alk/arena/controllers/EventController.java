@@ -40,7 +40,6 @@ public class EventController {
 	public static void addEventExecutor(EventParams eventParams, EventExecutor executor) {
 		registeredExecutors.put(eventParams.getName().toLowerCase(), executor);
 		registeredExecutors.put(eventParams.getCommand().toLowerCase(),executor);
-
 	}
 
 	public static EventExecutor getEventExecutor(Event event){

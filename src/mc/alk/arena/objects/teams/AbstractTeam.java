@@ -128,7 +128,7 @@ public abstract class AbstractTeam implements Team{
 		createName();
 		return name;
 	}
-	
+
 	/**
 	 * Returns this teams unique ID.
 	 * Team ID is unique to everything, and no two teams will have the same ID.
@@ -171,18 +171,20 @@ public abstract class AbstractTeam implements Team{
 
 
 
-	public void addDeath(ArenaPlayer teamMemberWhoDied) {
+	public int addDeath(ArenaPlayer teamMemberWhoDied) {
 		Integer d = deaths.get(teamMemberWhoDied);
 		if (d == null){
 			d = 0;}
 		deaths.put(teamMemberWhoDied, ++d);
+		return d;
 	}
 
-	public void addKill(ArenaPlayer teamMemberWhoKilled){
+	public int addKill(ArenaPlayer teamMemberWhoKilled){
 		Integer d = kills.get(teamMemberWhoKilled);
 		if (d == null){
 			d = 0;}
 		kills.put(teamMemberWhoKilled, ++d);
+		return d;
 	}
 
 	public int getNKills() {

@@ -13,17 +13,17 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.controllers.WorldGuardInterface;
-import mc.alk.arena.controllers.WorldGuardInterface.WorldGuardFlag;
+import mc.alk.arena.controllers.WorldGuardController;
+import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.arenas.Persistable;
+import mc.alk.arena.objects.exceptions.RegionNotFound;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.spawns.EntitySpawn;
 import mc.alk.arena.objects.spawns.ItemSpawn;
 import mc.alk.arena.objects.spawns.SpawnGroup;
@@ -32,8 +32,8 @@ import mc.alk.arena.objects.spawns.SpawnTime;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.SerializerUtil;
-import mc.alk.arena.util.Util.MinMax;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
@@ -106,21 +106,23 @@ public class ArenaSerializer {
 	public void loadArenas(Plugin plugin){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
 		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getPath()+" using config "+ config.getName());
-		loadArenas(plugin, BattleArena.getBAC(), config,null);
+		loadArenas(plugin, BattleArena.getBAController(), config,null);
 	}
 
 	public void loadArenas(Plugin plugin, ArenaType arenaType){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
-		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getPath() +" using config "+ config.getName());
-		loadArenas(plugin, BattleArena.getBAC(), config, arenaType);
+		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getPath() +" using config "+ config.getName() +" at=" + arenaType);
+		loadArenas(plugin, BattleArena.getBAController(), config, arenaType);
 	}
 
-	protected static void loadArenas(Plugin plugin, BattleArenaController bac, ConfigurationSection cs, ArenaType arenaType){
+	protected void loadArenas(Plugin plugin, BattleArenaController bac, //ArenaSerializer arenaSerializer,
+			ConfigurationSection cs, ArenaType arenaType){
 		final String pname = "["+plugin.getName()+"] ";
 		if (cs == null){
 			Log.info(pname+" has no arenas, cs is null");
 			return;
 		}
+
 		ConfigurationSection as = cs.getConfigurationSection("arenas");
 		ConfigurationSection bks = cs.getConfigurationSection("brokenArenas");
 		if (as == null && bks == null){
@@ -138,13 +140,20 @@ public class ArenaSerializer {
 		for (String name : keys){
 			if (loadedArenas.contains(name) || brokenArenas.contains(name)) /// We already tried to load this arena
 				continue;
-			if (arenaType != null){ /// Are we looking for 1 particular arena type to load
-				if (!cs.getString("arenas."+name+".type","").equalsIgnoreCase(arenaType.getName())){
-					continue;}
-			}
-			boolean success = false;
 			boolean broken = brokenKeys.contains(name);
 			String section = broken ? "brokenArenas" : "arenas";
+			if (arenaType != null){ /// Are we looking for 1 particular arena type to load
+				String path = section+"."+name;
+				if (!cs.getString(path+".type","").equalsIgnoreCase(arenaType.getName())){
+					if (brokenArenas.remove(name)){
+						oldBrokenSize--;
+					} else{
+						oldGoodSize--;
+					}
+					continue;
+				}
+			}
+			boolean success = false;
 			try{
 				success = loadArena(bac,cs.getConfigurationSection(section+"."+name));
 				if (success){
@@ -173,7 +182,11 @@ public class ArenaSerializer {
 			Log.info("Failed loading arenas: " + StringUtils.join(brokenArenas, ", "));
 		}
 		if (oldGoodSize != loadedArenas.size() || oldBrokenSize != brokenArenas.size()){
-			saveArenas(plugin);
+			try {
+				config.save(f);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -225,7 +238,7 @@ public class ArenaSerializer {
 			return false;
 		}
 
-		Arena arena = ArenaType.createArena(name, q);
+		Arena arena = ArenaType.createArena(name, q,false);
 		if (arena == null){
 			Log.err("Couldnt load the Arena " + name);
 			return false;
@@ -267,18 +280,18 @@ public class ArenaSerializer {
 		Persistable.yamlToObjects(arena, cs,Arena.class);
 		arena.setParameters(q);
 		updateRegions(arena);
+		ArenaControllerInterface aci = new ArenaControllerInterface(arena);
+		aci.init();
 		bac.addArena(arena);
 		return true;
 	}
 
 	private static void updateRegions(Arena arena) {
-		if (!WorldGuardInterface.hasWorldGuard())
+		if (!WorldGuardController.hasWorldGuard())
 			return;
-		String region = arena.getRegion();
-		String worldName = arena.getRegionWorld();
-		if (region == null || worldName == null)
+		if (!arena.hasRegion())
 			return;
-		if (!WorldGuardInterface.hasRegion(worldName, region)){
+		if (!WorldGuardController.hasRegion(arena.getWorldGuardRegion())){
 			Log.err("Arena " + arena.getName() +" has a world guard region defined but it no longer exists inside of WorldGuard."+
 					"You will have to remake the region.  /arena alter <arena name> addregion");}
 		MatchParams mp = ParamController.getMatchParamCopy(arena.getArenaType().getName());
@@ -287,14 +300,16 @@ public class ArenaSerializer {
 		MatchTransitions trans = mp.getTransitionOptions();
 		if (trans == null)
 			return;
-		TransitionOptions tops = trans.getOptions(MatchState.DEFAULTS);
-		if (tops == null)
-			return;
-		WorldGuardInterface.setFlag(region,worldName, WorldGuardFlag.ENTRY, !tops.hasOption(TransitionOption.WGNOENTER));
+		WorldGuardController.setFlag(arena.getWorldGuardRegion(), WorldGuardFlag.ENTRY, !trans.hasAnyOption(TransitionOption.WGNOENTER));
+		try {
+			WorldGuardController.trackRegion(arena.getWorldGuardRegion());
+		} catch (RegionNotFound e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void saveArenas(boolean log) {
-		ArenaSerializer.saveArenas(BattleArena.getBAC().getArenas().values(), f, config, plugin,log);
+		ArenaSerializer.saveArenas(BattleArena.getBAController().getArenas().values(), f, config, plugin,log);
 		try {
 			config.save(f);
 		} catch (IOException e) {
@@ -444,9 +459,6 @@ public class ArenaSerializer {
 			spawnmap.put("spawn", key);
 		else
 			spawnmap.put("spawn", key+":" + value);
-		//		for (String k: spawnmap.keySet()){
-		//			System.out.println("k="+k +"  vlaue=" + key+":"+value);
-		//		}
 		spawnmap.put("loc", SerializerUtil.getLocString(si.getLocation()));
 		spawnmap.put("time", ts.getFirstSpawnTime()+" " + ts.getRespawnTime()+" " + ts.getTimeToDespawn());
 		return spawnmap;

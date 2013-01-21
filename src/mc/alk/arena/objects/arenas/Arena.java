@@ -11,7 +11,7 @@ import java.util.TreeMap;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.SpawnController;
-import mc.alk.arena.controllers.WorldGuardInterface;
+import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -23,9 +23,11 @@ import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.regions.PylamoRegion;
+import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.Persist;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;
@@ -51,9 +53,15 @@ public class Arena implements ArenaListener {
 	protected Match match = null;
 
 	@Persist
+	@Deprecated
 	protected String wgRegionName;
+
 	@Persist
+	@Deprecated
 	protected String wgRegionWorld;
+
+	@Persist
+	protected WorldGuardRegion wgRegion;
 
 	@Persist
 	protected PylamoRegion pylamoRegion;
@@ -67,10 +75,222 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
+	 * Called after construction or after persistance variables have been assigned, whichever is later
+	 */
+	void privateInit(){
+		/// Transition to the new way of making regions (actually still only halfway complete)
+		if (wgRegionWorld != null && wgRegionName != null && wgRegion == null){
+			wgRegion = new WorldGuardRegion(wgRegionWorld, wgRegionName);
+			wgRegionWorld = wgRegionName = null;
+		}
+		try{init();}catch(Exception e){e.printStackTrace();}
+	}
+	/**
+	 * private Arena crate events, calls create for subclasses to be able to override
+	 */
+	void privateCreate(){
+		try{create();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena delete events, calls delete for subclasses to be able to override
+	 */
+	void privateDelete(){
+		try{delete();}catch(Exception e){e.printStackTrace();}
+		if (wgRegionName != null && wgRegionWorld != null && WorldGuardController.hasWorldGuard())
+			WorldGuardController.deleteRegion(wgRegionWorld, wgRegionName);
+	}
+
+	/**
+	 * private Arena onOpen events, calls onOpen for subclasses to be able to override
+	 */
+	void privateOnOpen(){
+		try{onOpen();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onBegin events, calls onBegin for subclasses to be able to override
+	 */
+	void privateOnBegin(){
+		try{onBegin();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onPrestart events, calls onPrestart for subclasses to be able to override
+	 */
+	void privateOnPrestart(){
+		try{onPrestart();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onStart events, calls onStart for subclasses to be able to override
+	 */
+	void privateOnStart(){
+		startSpawns();
+		try{onStart();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onStart events, calls onStart for subclasses to be able to override
+	 */
+	void privateOnVictory(MatchResult result){
+		stopSpawns();
+		try{onVictory(result);}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onComplete events, calls onComplete for subclasses to be able to override
+	 */
+	void privateOnComplete(){
+		stopSpawns();
+		try{onComplete();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onCancel events, calls onCancel for subclasses to be able to override
+	 */
+	void privateOnCancel(){
+		stopSpawns();
+		try{onCancel();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onFinish events, calls onFinish for subclasses to be able to override
+	 */
+	void privateOnFinish(){
+		try{onFinish();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onEnter events, calls onEnter for subclasses to be able to override
+	 */
+	void privateOnEnter(ArenaPlayer player, Team team){
+		try{onEnter(player,team);}catch(Exception e){e.printStackTrace();}
+	}
+	/**
+	 * private Arena onEnterWaitRoom events, calls onEnterWaitRoom for subclasses to be able to override
+	 */
+	void privateOnEnterWaitRoom(ArenaPlayer player, Team team){
+		try{onEnterWaitRoom(player,team);}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onJoin events, calls onJoin for subclasses to be able to override
+	 * Happens when a player joins a team
+	 */
+	void privateOnJoin(ArenaPlayer player, Team team){
+		try{onJoin(player,team);}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
+	 * private Arena onLeave events, calls onLeave for subclasses to be able to override
+	 * Happens when a player leaves a team
+	 */
+	void privateOnLeave(ArenaPlayer player, Team team){
+		try{onLeave(player,team);}catch(Exception e){e.printStackTrace();}
+	}
+
+
+	/**
+	 * private Arena onFinish events, calls onFinish for subclasses to be able to override
+	 */
+	void privateOnFinish(ArenaPlayer player, Team team){
+		try{onFinish();}catch(Exception e){e.printStackTrace();}
+	}
+
+	/**
 	 * Subclasses can override to initialize their own values right after construction
 	 * Or subclasses can override the default constructor
 	 */
-	public void init(){}
+	protected void init(){}
+
+	/**
+	 * Called when an arena is first created by a command (not after its constructed or initialized)
+	 */
+	protected void create(){}
+
+	/**
+	 * Called when an arena is deleted
+	 */
+	protected void delete(){}
+
+	/**
+	 * Called when the match is first opened
+	 */
+	protected void onOpen() {}
+
+	/**
+	 * Called when a player joins the Event
+	 * @param p the player
+	 * @param t the team they are on
+	 */
+	protected void onJoin(ArenaPlayer p, Team t){}
+
+	/**
+	 * Called when a player is leaving the match ( via typing a command usually) ,
+	 * but its still acceptable to leave(usually before the match starts)
+	 * @param p the player
+	 * @param t the team they were on
+	 */
+	protected void onLeave(ArenaPlayer p, Team t) {}
+
+	/**
+	 * Called when the match is first called upon to begin starting
+	 */
+	protected void onBegin() {}
+
+	/**
+	 * Called after onBegin and before onStart
+	 */
+	protected void onPrestart(){}
+
+	/**
+	 * Called when the match starts
+	 */
+	protected void onStart(){}
+
+	/**
+	 * Called after the victor team has won the match
+	 * @param victor
+	 */
+	protected void onVictory(MatchResult result){}
+
+	/**
+	 * Called when the match is complete
+	 */
+	protected void onComplete(){}
+
+	/**
+	 * Called when a command is given to cancel the match
+	 */
+	protected void onCancel(){}
+
+	/**
+	 * Called after a match is completed or cancelled
+	 */
+	protected void onFinish(){}
+
+	/**
+	 * Called after a player first gets teleported into a match ( does not include a waitroom )
+	 * @param Player p
+	 * @param team : the team they were in
+	 */
+	protected void onEnter(ArenaPlayer p, Team team) {}
+
+	/**
+	 * Called if a player is teleported into a waiting room before a match
+	 * @param Player p
+	 * @param team: the team they are in
+	 */
+	protected void onEnterWaitRoom(ArenaPlayer p, Team team) {}
+
+	/**
+	 * Called when a player is exiting the match (usually through a death)
+	 * @param p
+	 * @param team : the team they were in
+	 */
+	protected void onExit(ArenaPlayer p, Team team) {}
+
 
 	/**
 	 * Returns the spawn location of this index
@@ -224,9 +444,8 @@ public class Arena implements ArenaListener {
 	 * TeamJoinResult a Protected Region (only available with worldguard)
 	 * @param wgRegionName
 	 */
-	public void addRegion(String regionWorld, String regionName) {
-		this.wgRegionName = regionName;
-		this.wgRegionWorld = regionWorld;
+	public void addWorldGuardRegion(String regionWorld, String regionName) {
+		wgRegion = new WorldGuardRegion(regionWorld, regionName);
 	}
 
 	/**
@@ -234,24 +453,16 @@ public class Arena implements ArenaListener {
 	 * @returns
 	 */
 	public boolean hasRegion() {
-		return wgRegionName != null && wgRegionWorld != null;
+		return wgRegion != null && wgRegion.valid();
 	}
 
 	/**
 	 * Get the worldguard wgRegionName for this arena
 	 * @return
 	 */
-	public String getRegion() {
-		return wgRegionName;
+	public WorldGuardRegion getWorldGuardRegion() {
+		return wgRegion;
 	}
-	/**
-	 * Get the worldguard wgRegionWolrd for this arena
-	 * @return
-	 */
-	public String getRegionWorld() {
-		return wgRegionWorld;
-	}
-
 
 	/**
 	 * Return the timed spawns for this arena
@@ -414,222 +625,6 @@ public class Arena implements ArenaListener {
 	}
 
 	/**
-	 * private Arena crate events, calls create for subclasses to be able to override
-	 */
-	void privateCreate(){
-		try{create();}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena delete events, calls delete for subclasses to be able to override
-	 */
-	void privateDelete(){
-		try{delete();}catch(Exception e){e.printStackTrace();}
-		if (wgRegionName != null && wgRegionWorld != null && WorldGuardInterface.hasWorldGuard())
-			WorldGuardInterface.deleteRegion(wgRegionWorld, wgRegionName);
-	}
-
-	/**
-	 * Called when an arena is first created by a command (not after its constructed or initialized)
-	 */
-	protected void create(){}
-
-	/**
-	 * Called when an arena is deleted
-	 */
-	protected void delete(){}
-
-	//
-	//	public String itemSpawnString(){
-	//		if (spawnsGroups == null)
-	//			return null;
-	//		StringBuilder sb = new StringBuilder();
-	//		for (Integer i: spawnsGroups.keySet() ){
-	//			ItemSpawn is = spawnsGroups.get(i);
-	//			if (is != null) sb.append("["+(i+1)+":"+InventoryUtil.getItemString(is.is)+":"+getLocString(is.loc)+"] ");
-	//		}
-	//		return sb.toString();
-	//	}
-
-	public String headerString(){
-		return ("&eTeamSizes=&6"+ap.getTeamSizeRange() + " &eTypes=&6" +ap.getType());
-	}
-
-	/**
-	 * private Arena onOpen events, calls onOpen for subclasses to be able to override
-	 */
-	void privateOnOpen(){
-		try{onOpen();}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena onBegin events, calls onBegin for subclasses to be able to override
-	 */
-	void privateOnBegin(){
-		try{onBegin();}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena onPrestart events, calls onPrestart for subclasses to be able to override
-	 */
-	void privateOnPrestart(){
-		try{onPrestart();}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena onStart events, calls onStart for subclasses to be able to override
-	 */
-	void privateOnStart(){
-		startSpawns();
-		try{onStart();}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena onStart events, calls onStart for subclasses to be able to override
-	 */
-	void privateOnVictory(MatchResult result){
-		stopSpawns();
-		try{onVictory(result);}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena onComplete events, calls onComplete for subclasses to be able to override
-	 */
-	void privateOnComplete(){
-		stopSpawns();
-		try{onComplete();}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena onCancel events, calls onCancel for subclasses to be able to override
-	 */
-	void privateOnCancel(){
-		stopSpawns();
-		try{onCancel();}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena onFinish events, calls onFinish for subclasses to be able to override
-	 */
-	void privateOnFinish(){
-		try{onFinish();}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena onEnter events, calls onEnter for subclasses to be able to override
-	 */
-	void privateOnEnter(ArenaPlayer player, Team team){
-		try{onEnter(player,team);}catch(Exception e){e.printStackTrace();}
-	}
-	/**
-	 * private Arena onEnterWaitRoom events, calls onEnterWaitRoom for subclasses to be able to override
-	 */
-	void privateOnEnterWaitRoom(ArenaPlayer player, Team team){
-		try{onEnterWaitRoom(player,team);}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena onJoin events, calls onJoin for subclasses to be able to override
-	 * Happens when a player joins a team
-	 */
-	void privateOnJoin(ArenaPlayer player, Team team){
-		try{onJoin(player,team);}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * private Arena onLeave events, calls onLeave for subclasses to be able to override
-	 * Happens when a player leaves a team
-	 */
-	void privateOnLeave(ArenaPlayer player, Team team){
-		try{onLeave(player,team);}catch(Exception e){e.printStackTrace();}
-	}
-
-
-	/**
-	 * private Arena onFinish events, calls onFinish for subclasses to be able to override
-	 */
-	void privateOnFinish(ArenaPlayer player, Team team){
-		try{onFinish();}catch(Exception e){e.printStackTrace();}
-	}
-
-	/**
-	 * Called when the match is first opened
-	 */
-	protected void onOpen() {}
-
-	/**
-	 * Called when a player joins the Event
-	 * @param p the player
-	 * @param t the team they are on
-	 */
-	protected void onJoin(ArenaPlayer p, Team t){}
-
-	/**
-	 * Called when a player is leaving the match ( via typing a command usually) ,
-	 * but its still acceptable to leave(usually before the match starts)
-	 * @param p the player
-	 * @param t the team they were on
-	 */
-	protected void onLeave(ArenaPlayer p, Team t) {}
-
-	/**
-	 * Called when the match is first called upon to begin starting
-	 */
-	protected void onBegin() {}
-
-	/**
-	 * Called after onBegin and before onStart
-	 */
-	protected void onPrestart(){}
-
-	/**
-	 * Called when the match starts
-	 */
-	protected void onStart(){}
-
-	/**
-	 * Called after the victor team has won the match
-	 * @param victor
-	 */
-	protected void onVictory(MatchResult result){}
-
-	/**
-	 * Called when the match is complete
-	 */
-	protected void onComplete(){}
-
-	/**
-	 * Called when a command is given to cancel the match
-	 */
-	protected void onCancel(){}
-
-	/**
-	 * Called after a match is completed or cancelled
-	 */
-	protected void onFinish(){}
-
-	/**
-	 * Called after a player first gets teleported into a match ( does not include a waitroom )
-	 * @param Player p
-	 * @param team : the team they were in
-	 */
-	protected void onEnter(ArenaPlayer p, Team team) {}
-
-	/**
-	 * Called if a player is teleported into a waiting room before a match
-	 * @param Player p
-	 * @param team: the team they are in
-	 */
-	protected void onEnterWaitRoom(ArenaPlayer p, Team team) {}
-
-	/**
-	 * Called when a player is exiting the match (usually through a death)
-	 * @param p
-	 * @param team : the team they were in
-	 */
-	protected void onExit(ArenaPlayer p, Team team) {}
-
-	/**
 	 * Checks to see whether this arena has paramaters that match the given matchparams
 	 * @param eventParams
 	 * @param jp
@@ -716,7 +711,7 @@ public class Arena implements ArenaListener {
 	 */
 	public String toDetailedString(){
 		StringBuilder sb = new StringBuilder("&6" + name+" &e");
-		sb.append(headerString());
+		sb.append("&eTeamSizes=&6"+ap.getTeamSizeRange() + " &eTypes=&6" +ap.getType());
 		sb.append("&e, #Teams:&6"+ap.getNTeamRange());
 		sb.append("&e, #spawns:&6" +locs.size() +"\n");
 		sb.append("&eteamSpawnLocs=&b"+getSpawnLocationString()+"\n");

@@ -22,15 +22,14 @@ import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.RewardController;
 import mc.alk.arena.controllers.TagAPIController;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.controllers.WorldGuardInterface;
-import mc.alk.arena.controllers.WorldGuardInterface.WorldGuardFlag;
+import mc.alk.arena.controllers.WorldGuardController;
+import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
 import mc.alk.arena.controllers.messaging.MatchMessager;
 import mc.alk.arena.events.PlayerLeftEvent;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
-import mc.alk.arena.events.matches.MatchFindNeededTeamsEvent;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.events.matches.MatchOpenEvent;
 import mc.alk.arena.events.matches.MatchPrestartEvent;
@@ -49,16 +48,23 @@ import mc.alk.arena.objects.MatchResult.WinLossDraw;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.arenas.ArenaInterface;
+import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
-import mc.alk.arena.objects.victoryconditions.NDeaths;
+import mc.alk.arena.objects.victoryconditions.HighestKills;
+import mc.alk.arena.objects.victoryconditions.LastManStanding;
+import mc.alk.arena.objects.victoryconditions.NLives;
+import mc.alk.arena.objects.victoryconditions.NoTeamsLeft;
+import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
 import mc.alk.arena.objects.victoryconditions.TimeLimit;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
+import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumLivesPerPlayer;
+import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumTeams;
+import mc.alk.arena.objects.victoryconditions.interfaces.DefinesTimeLimit;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
@@ -92,7 +98,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 	final int id = count++;
 	final MatchParams params; /// Our parameters for this match
 	final Arena arena; /// The arena we are using
-	final ArenaInterface arenaInterface; /// Our interface to access arena methods w/o reflection
+	final ArenaControllerInterface arenaInterface; /// Our interface to access arena methods w/o reflection
 
 	Map<Team,Integer> teamIndexes = Collections.synchronizedMap(new HashMap<Team,Integer>());
 
@@ -117,14 +123,16 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
-	final boolean respawns, noLeave;
-	boolean woolTeams = false;
+	final boolean keepsInventory;
+	final boolean respawns, noLeave, noEnter;
+	final boolean woolTeams, armorTeams;
 	final boolean alwaysTeamNames;
 	final boolean respawnsWithClass;
 	final boolean cancelExpLoss;
 
-	final int neededTeams; /// How many teams do we need to properly start this match
+	int neededTeams; /// How many teams do we need to properly start this match
 	final Plugin plugin;
+	int nLivesPerPlayer = Integer.MAX_VALUE; /// This will change as victory conditions are added
 
 	Random rand = new Random(); /// Our randomizer
 	MatchMessager mc; /// Our message instance
@@ -136,7 +144,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		this.plugin = BattleArena.getSelf();
 		this.params = params;
 		this.arena = arena;
-		this.arenaInterface =new ArenaInterface(arena);
+		this.arenaInterface =new ArenaControllerInterface(arena);
 		addArenaListener(arena);
 
 		this.mc = new MatchMessager(this);
@@ -144,12 +152,13 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		this.tops = params.getTransitionOptions();
 		arena.setMatch(this);
 		addVictoryConditions();
-		boolean noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
+		noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
 		if (noEnter && arena.hasRegion())
-			WorldGuardInterface.setFlag(arena.getRegionWorld(), arena.getRegion(), WorldGuardFlag.ENTRY, !noEnter);
+			WorldGuardController.setFlag(arena.getWorldGuardRegion(), WorldGuardFlag.ENTRY, !noEnter);
 		this.noLeave = tops.hasAnyOption(TransitionOption.WGNOLEAVE);
 		this.woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() >1 ||
 				tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS);
+		this.armorTeams = tops.hasAnyOption(TransitionOption.ARMORTEAMS);
 		boolean needsBlockEvents = tops.hasAnyOption(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF,
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
 		boolean needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
@@ -162,6 +171,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		mo = tops.getOptions(MatchState.ONCOMPLETE);
 		this.clearsInventory = mo != null ? mo.clearInventory(): false;
 		mo = tops.getOptions(MatchState.ONDEATH);
+		this.keepsInventory = mo != null ? mo.hasOption(TransitionOption.KEEPINVENTORY) : false;
 		this.clearsInventoryOnDeath = mo != null ? mo.clearInventory(): false;
 		this.respawns = mo != null ? (mo.respawn() || mo.randomRespawn()): false;
 		boolean stopsTeleports = tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE);
@@ -174,10 +184,6 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 			if (waitRoomStates.isEmpty()){
 				waitRoomStates = null;}
 		}
-
-		MatchFindNeededTeamsEvent findevent = new MatchFindNeededTeamsEvent(this);
-		callEvent(findevent);
-		neededTeams = findevent.getNeededTeams();
 
 		/// Register the events we are listening to
 		ArrayList<Class<? extends Event>> events = new ArrayList<Class<? extends Event>>();
@@ -194,7 +200,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		}
 		if (needsItemDropEvents){
 			events.add(PlayerDropItemEvent.class);}
-		if (stopsTeleports){
+		if (stopsTeleports || noEnter){
 			events.add(PlayerTeleportEvent.class);}
 		if (woolTeams){
 			events.add(InventoryClickEvent.class);}
@@ -369,7 +375,6 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		if (event.isCancelled()){
 			return;
 		}
-
 		transitionTo(MatchState.ONVICTORY);
 		arenaInterface.onVictory(matchResult);
 		/// Call the rest after a 2 tick wait to ensure the calling transitionMethods complete before the
@@ -628,8 +633,8 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 	protected void startTracking(final ArenaPlayer p){
 		final MatchState ms = MatchState.ONENTER;
 		updateBukkitEvents(ms,p);
-		if (WorldGuardInterface.hasWorldGuard() && arena.getRegion() != null){
-			psc.addMember(p, arena.getRegionWorld(),arena.getRegion());}
+		if (WorldGuardController.hasWorldGuard() && arena.hasRegion()){
+			psc.addMember(p, arena.getWorldGuardRegion());}
 		p.reset();
 	}
 
@@ -637,9 +642,8 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		final MatchState ms = MatchState.ONLEAVE;
 		updateBukkitEvents(ms,p);
 		p.reset(); /// reset their isReady status, chosen class, etc.
-		BTInterface.resumeTracking(p);
-		if (WorldGuardInterface.hasWorldGuard() && arena.getRegion() != null)
-			psc.removeMember(p, arena.getRegionWorld(), arena.getRegion());
+		if (WorldGuardController.hasWorldGuard() && arena.hasRegion())
+			psc.removeMember(p, arena.getWorldGuardRegion());
 	}
 
 	/**
@@ -649,7 +653,6 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 	protected void enterWaitRoom(ArenaPlayer p){
 		preEnter(p);
 		Team t = getTeam(p);
-		//		PerformTransition.transition(this, MatchState.ONENTERWAITROOM, p, t, false);
 		PerformTransition.transition(this, MatchState.ONENTER, p, t, false);
 		insideWaitRoom.add(p.getName());
 		postEnter(p,t);
@@ -693,7 +696,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		if (TagAPIController.enabled()){
 			if (index == null) index = teams.indexOf(t);
 			if (index != -1) /// Same, how did this get -1
-				psc.setNameColor(p,TeamUtil.getTeamColor(index));
+				psc.setNameColor(p,TeamUtil.getTeamChatColor(index));
 		}
 		if (cancelExpLoss){
 			psc.cancelExpLoss(p,true);}
@@ -715,6 +718,9 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		Team t = getTeam(p);
 		PerformTransition.transition(this, MatchState.ONLEAVE, p, t, false);
 		arenaInterface.onLeave(p,t);
+		if (params.getOverrideBattleTracker())
+			BTInterface.resumeTracking(p);
+
 		callEvent(new PlayerLeftEvent(p));
 		if (FactionsController.enabled()){
 			FactionsController.removePlayer(p.getPlayer());}
@@ -764,10 +770,25 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 
 	private void addVictoryConditions(){
 		VictoryCondition vt = VictoryType.createVictoryCondition(this);
-		if (!(vt instanceof TimeLimit))
-			addVictoryCondition(new TimeLimit(this));
-		if (vt instanceof NDeaths)
-			((NDeaths)vt).setMaxDeaths(this.getParams().getNDeaths());
+		/// Add a time limit unless one is provided by default
+		if (!(vt instanceof DefinesTimeLimit) && params.getMatchTime() > 0){
+			addVictoryCondition(new TimeLimit(this));}
+		/// Add a default number of teams unless the specified victory condition handles it
+		if (!(vt instanceof DefinesNumTeams)){
+			if (params.getMinTeams() == 1){
+				addVictoryCondition(new NoTeamsLeft(this));
+			} else {
+				addVictoryCondition(new OneTeamLeft(this));
+			}
+		}
+		/// Add a default number of lives unless specified... and unless HighestKills is specified...
+		if (!(vt instanceof HighestKills) && !(vt instanceof DefinesNumLivesPerPlayer)){
+			if (params.getNLives() <= 1){
+				addVictoryCondition(new LastManStanding(this));
+			} else {
+				addVictoryCondition(new NLives(this, params.getNLives()));
+			}
+		}
 		addVictoryCondition(vt);
 	}
 
@@ -778,6 +799,11 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 	public void addVictoryCondition(VictoryCondition vc){
 		vcs.add(vc);
 		addArenaListener(vc);
+		if (vc instanceof DefinesNumTeams){
+			neededTeams = Math.max(neededTeams, ((DefinesNumTeams)vc).getNeededNumberOfTeams().max);}
+		if (vc instanceof DefinesNumLivesPerPlayer){
+			if (nLivesPerPlayer== Integer.MAX_VALUE) nLivesPerPlayer = 1;
+			nLivesPerPlayer = Math.max(nLivesPerPlayer, ((DefinesNumLivesPerPlayer)vc).getLivesPerPlayer());}
 	}
 
 	/**
@@ -890,11 +916,6 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 	public Set<Team> getDrawers() {return matchResult.getDrawers();}
 	public Map<String,Location> getOldLocations() {return oldlocs;}
 	public int indexOf(Team t){return teams.indexOf(t);}
-	/// For debugging events
-	public void addKill(ArenaPlayer player) {
-		Team t = getTeam(player);
-		t.addKill(player);
-	}
 
 	public boolean insideArena(ArenaPlayer p){
 		return insideArena.contains(p.getName());

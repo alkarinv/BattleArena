@@ -71,17 +71,22 @@ public abstract class CustomCommandExecutor implements ArenaExecutor{
 
 	protected CustomCommandExecutor(){
 		addMethods(this, getClass().getMethods());
-		this.ac = BattleArena.getBAC();
+		this.ac = BattleArena.getBAController();
 		this.ec = BattleArena.getEventController();
 		this.aec = BattleArena.getArenaEditor();
 	}
 
-	protected void addMethods(Object obj, Method[] methodArray){
+	public void addMethods(Object obj, Method[] methodArray){
 		for (Method method : methodArray){
 			MCCommand mc = method.getAnnotation(MCCommand.class);
 			if (mc == null)
 				continue;
-
+			Class<?> types[] = method.getParameterTypes();
+			if (types.length == 0 || (types[0] != CommandSender.class && types[0]!= Player.class
+					&& types[0] != ArenaPlayer.class)){
+				System.err.println("MCCommands must start with a CommandSender,Player, or ArenaPlayer");
+				continue;
+			}
 			/// For each of the cmds, store them with the method
 			for (String cmd : mc.cmds()){
 				cmd = cmd.toLowerCase();
@@ -109,7 +114,8 @@ public abstract class CustomCommandExecutor implements ArenaExecutor{
 	private String createUsage(Method method) {
 		MCCommand cmd = method.getAnnotation(MCCommand.class);
 		StringBuilder sb = new StringBuilder(cmd.cmds()[0] +" ");
-		boolean firstPlayerSender = cmd.inGame();
+		Class<?> types[] = method.getParameterTypes();
+		boolean firstPlayerSender = types[0] == Player.class || types[0] == ArenaPlayer.class;
 		for (Class<?> theclass : method.getParameterTypes()){
 			if (Player.class ==theclass){
 				if (firstPlayerSender)
@@ -232,14 +238,16 @@ public abstract class CustomCommandExecutor implements ArenaExecutor{
 
 		if (cmd.op() && !isOp)
 			throw new IllegalArgumentException(ChatColor.RED +"You need to be op to use this command");
+
 		if (cmd.admin() && !isOp && (isPlayer && !sender.hasPermission(Defaults.ARENA_ADMIN)))
 			throw new IllegalArgumentException(ChatColor.RED +"You need to be an Admin to use this command");
 
-		/// the first ArenaPlayer or Player parameter is the sender
-		boolean getSenderAsPlayer = cmd.inGame();
+		Class<?> types[] = mwrapper.method.getParameterTypes();
 
-		/// In game check
-		if (cmd.inGame() && !isPlayer || getSenderAsPlayer && !isPlayer){
+//		/// the first ArenaPlayer or Player parameter is the sender
+		boolean getSenderAsPlayer = types[0] == Player.class || types[0] == ArenaPlayer.class;
+//		/// In game check
+		if (getSenderAsPlayer && !isPlayer){
 			throw new IllegalArgumentException(ONLY_INGAME);
 		}
 
@@ -247,7 +255,7 @@ public abstract class CustomCommandExecutor implements ArenaExecutor{
 		Object[] objs = new Object[mwrapper.method.getParameterTypes().length]; /// Our new array of castable arguments
 		//		System.arraycopy( args, 0, objs, 0, args.length );
 		newArgs.args = objs; /// Set our return object with the new castable arguments
-		for (Class<?> theclass : mwrapper.method.getParameterTypes()){
+		for (Class<?> theclass : types){
 			try{
 				//			System.out.println(objIndex + " : " + strIndex +"  !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + theclass.getCanonicalName());
 				if (CommandSender.class == theclass){
@@ -327,35 +335,8 @@ public abstract class CustomCommandExecutor implements ArenaExecutor{
 			}
 		}
 
-		/// Check to see if the players are online
-		if (cmd.online().length > 0){
-			if (DEBUG)System.out.println("isPlayer " + cmd.online());
-
-			for (int playerIndex : cmd.online()){
-				if (playerIndex == SELF){
-					if (!isPlayer)
-						throw new IllegalArgumentException(ChatColor.RED + "You can only use this command in game");
-				} else {
-					if (playerIndex >= args.length)
-						throw new IllegalArgumentException("PlayerIndex out of range. ");
-					Player p = ServerUtil.findPlayer(args[playerIndex]);
-					if (p == null || !p.isOnline())
-						throw new IllegalArgumentException(args[playerIndex]+" must be online ");
-					/// Change over our string to a player
-					objs[playerIndex] = p;
-				}
-			}
-		}
-
 		return newArgs; /// Success
 	}
-
-	//	private Event verifyEvent(String name) throws IllegalArgumentException {
-	//		Event event = EventController.getEvent(name);
-	//		if (event == null)
-	//			throw new IllegalArgumentException("Event " + name+" can not be found");
-	//		return event;
-	//	}
 
 	private OfflinePlayer verifyOfflinePlayer(String name) throws IllegalArgumentException {
 		OfflinePlayer p = ServerUtil.findOfflinePlayer(name);

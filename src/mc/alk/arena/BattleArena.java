@@ -24,8 +24,8 @@ import mc.alk.arena.executors.ArenaEditorExecutor;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.BattleArenaDebugExecutor;
 import mc.alk.arena.executors.BattleArenaSchedulerExecutor;
+import mc.alk.arena.executors.CustomCommandExecutor;
 import mc.alk.arena.executors.EventExecutor;
-import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.executors.TeamExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.listeners.BAPlayerListener;
@@ -36,10 +36,10 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.exceptions.ExtensionPluginException;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
 import mc.alk.arena.objects.victoryconditions.LastManStanding;
-import mc.alk.arena.objects.victoryconditions.NDeaths;
+import mc.alk.arena.objects.victoryconditions.NLives;
 import mc.alk.arena.objects.victoryconditions.NoTeamsLeft;
 import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
 import mc.alk.arena.objects.victoryconditions.TimeLimit;
@@ -131,18 +131,9 @@ public class BattleArena extends JavaPlugin{
 		Bukkit.getPluginManager().registerEvents(tc, this);
 		Bukkit.getPluginManager().registerEvents(new TeleportController(), this);
 
-		/// Register our different arenas
-		ArenaType.register("Any", Arena.class, this);
-		ArenaType.register("BattleGround", Arena.class, this);
-		ArenaType.register("Colliseum", Arena.class, this);
-		ArenaType.register("DeathMatch", Arena.class, this);
-		ArenaType.register("FFA", Arena.class, this);
-		ArenaType.register("Arena", Arena.class, this);
-		ArenaType.register("Skirmish", Arena.class, this);
-		ArenaType.register("Versus", Arena.class, this);
-
+		/// Register our different Victory Types
 		VictoryType.register(HighestKills.class, this);
-		VictoryType.register(NDeaths.class, this);
+		VictoryType.register(NLives.class, this);
 		VictoryType.register(LastManStanding.class, this);
 		VictoryType.register(TimeLimit.class, this);
 		VictoryType.register(OneTeamLeft.class, this);
@@ -156,7 +147,7 @@ public class BattleArena extends JavaPlugin{
 		classesSerializer.loadAll();
 
 		TeamHeadSerializer ts = new TeamHeadSerializer();
-		ts.setConfig(FileUtil.load(this,dir.getPath() +"/teamHeads.yml","/default_files/teamHeads.yml")); /// Load team heads
+		ts.setConfig(FileUtil.load(this,dir.getPath() +"/teamConfig.yml","/default_files/teamConfig.yml")); /// Load team Colors
 		ts.loadAll();
 
 		baConfigSerializer.loadAll(); /// Load our defaults for BattleArena
@@ -180,10 +171,6 @@ public class BattleArena extends JavaPlugin{
 		signController.updateAllSigns();
 
 		/// Set our commands
-		getCommand("arena").setExecutor(commandExecutor);
-		getCommand("skirmish").setExecutor(commandExecutor);
-		getCommand("colliseum").setExecutor(commandExecutor);
-		getCommand("battleground").setExecutor(commandExecutor);
 		getCommand("watch").setExecutor(commandExecutor);
 		getCommand("team").setExecutor(new TeamExecutor(commandExecutor));
 		getCommand("arenaAlter").setExecutor(new ArenaEditorExecutor());
@@ -269,38 +256,9 @@ public class BattleArena extends JavaPlugin{
 		} else {
 			Log.err("Tournament type not found");
 		}
-
-		/// Reserve an arena.  Hold people in the area till ffa starts
-		mp = ParamController.getEventParamCopy("FreeForAll");
-		if (mp != null){
-			try{
-				EventExecutor executor = new ReservedArenaEventExecutor(null);
-				getCommand("ffa").setExecutor(executor);
-				EventController.addEventExecutor(mp, executor);
-			} catch (Exception e){
-				Log.err("command ffa not found");
-			}
-		} else {
-			Log.err("FFA type not found");
-		}
-
-		/// Reserve an arena.  Let people join and enter at will
-		mp = ParamController.getEventParamCopy("DeathMatch");
-		if (mp != null){
-			try{
-				EventExecutor executor = new ReservedArenaEventExecutor(null);
-				getCommand("dm").setExecutor(executor);
-				EventController.addEventExecutor(mp, executor);
-			} catch (Exception e){
-				Log.err("command dm not found");
-			}
-		} else {
-			Log.err("DM type not found");
-		}
 	}
 
 	public static BattleArena getSelf() {return plugin;}
-	public static BattleArenaController getBAC(){return arenaController;}
 	public static BattleArenaController getBAController(){return arenaController;}
 	public static BAEventController getBAEventController(){return eventController;}
 	public static TeamController getTeamController(){return tc;}
@@ -342,26 +300,62 @@ public class BattleArena extends JavaPlugin{
 	public static Set<Player> toPlayerSet(Collection<ArenaPlayer> players) {return PlayerController.toPlayerSet(players);}
 	public static List<Player> toPlayerList(Collection<ArenaPlayer> players) {return PlayerController.toPlayerList(players);}
 
+	public static Arena getArena(String arenaName) {return BattleArena.getBAC().getArena(arenaName);}
+
+	public static void saveArenas(Plugin plugin) {ArenaSerializer.saveArenas(plugin);}
+
+
+	public static void registerCompetition(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
+		new APIRegistrationController().registerCompetition(plugin,name,cmd,arenaClass);
+	}
+
+	public static void registerCompetition(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, CustomCommandExecutor executor){
+		new APIRegistrationController().registerCompetition(plugin,name,cmd,arenaClass, executor);
+	}
+
+	@Deprecated
+	/**
+	 * Please start using BattleArena.getBAController()
+	 */
+	public static BattleArenaController getBAC(){return arenaController;}
+
+	@Deprecated
+	/**
+	 * Please start using BattleArena.registerCompetition(...)
+	 * These will be around till at least 2/01/13, but I will be phasing them out then.
+	 */
 	public static void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
 		new APIRegistrationController().registerMatchType(plugin, name, cmd, arenaClass);
 	}
+	@Deprecated
+	/**
+	 * Please start using BattleArena.registerCompetition(...)
+	 * These will be around till at least 2/01/13, but I will be phasing them out then.
+	 */
 	public static void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, BAExecutor executor){
 		new APIRegistrationController().registerMatchType(plugin,name,cmd,arenaClass,executor);
 	}
 
+	@Deprecated
+	/**
+	 * Please start using BattleArena.registerCompetition(...)
+	 * These will be around till at least 2/01/13, but I will be phasing them out then
+	 */
 	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
 		new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass);
 	}
 
+	@Deprecated
+	/**
+	 * Please start using BattleArena.registerCompetition(...)
+	 * These will be around till at least 2/01/13, but I will be phasing them out then
+	 */
 	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor){
-		new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass,executor);
+		try {
+			new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass,executor);
+		} catch (ExtensionPluginException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public static void registerCompetition(JavaPlugin plugin, String name, Class<? extends Arena> arenaClass){
-		new APIRegistrationController().registerCompetition(plugin,name,arenaClass);
-	}
-
-	public static Arena getArena(String arenaName) {return BattleArena.getBAC().getArena(arenaName);}
-
-	public static void saveArenas(Plugin plugin) {ArenaSerializer.saveArenas(plugin);}
 }
