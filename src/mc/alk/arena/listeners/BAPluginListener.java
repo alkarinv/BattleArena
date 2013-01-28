@@ -188,7 +188,7 @@ public class BAPluginListener implements Listener {
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("PylamoRestorationSystem");
 			if (plugin != null){
 				PylamoController.setPylamo(plugin);
-				Log.info(BattleArena.getPName() +" found PylamoRestorationSystem");
+				Log.info(BattleArena.getPluginName() +" found PylamoRestorationSystem");
 			}
 		}
 	}
@@ -198,7 +198,7 @@ public class BAPluginListener implements Listener {
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("Register");
 			if (plugin != null){
 				MoneyController.setRegisterEconomy();
-				Log.info(BattleArena.getPName() +" found economy plugin Register");
+				Log.info(BattleArena.getPluginName() +" found economy plugin Register");
 			}
 		}
 	}
@@ -244,14 +244,14 @@ public class BAPluginListener implements Listener {
 					RegisteredServiceProvider<Economy> provider = Bukkit.getServer().
 							getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
 					if (provider==null || provider.getProvider() == null){
-						Log.warn(BattleArena.getPName() +" found no economy plugin. Attempts to use money in arenas might result in errors.");
+						Log.warn(BattleArena.getPluginName() +" found no economy plugin. Attempts to use money in arenas might result in errors.");
 						return;
 					} else {
 						MoneyController.setEconomy(provider.getProvider());
-						Log.info(BattleArena.getPName() +" found economy plugin Vault. [Default]");
+						Log.info(BattleArena.getPluginName() +" found economy plugin Vault. [Default]");
 					}
 				} catch (Error e){
-					Log.err(BattleArena.getPName() +" exception loading economy through Vault");
+					Log.err(BattleArena.getPluginName() +" exception loading economy through Vault");
 					e.printStackTrace();
 				}
 			}
@@ -266,7 +266,7 @@ public class BAPluginListener implements Listener {
 						Log.info("[BattleArena] Vault chat not detected, ignoring channel options");
 					}
 				} catch (Error e){
-					Log.err(BattleArena.getPName() +" exception loading chat through Vault");
+					Log.err(BattleArena.getPluginName() +" exception loading chat through Vault");
 					e.printStackTrace();
 				}
 			}

@@ -127,7 +127,7 @@ public class MessageSerializer extends BaseSerializer {
 		if (ops == null)
 			ops =new HashSet<MessageOption>();
 		ops.addAll(losermessage.getOptions());
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channel.NullChannel && serverMessage != null){
 			ops.addAll(serverMessage.getOptions());
 		}
 
@@ -168,7 +168,7 @@ public class MessageSerializer extends BaseSerializer {
 			}
 		}
 
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channel.NullChannel && serverMessage != null){
 			msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}

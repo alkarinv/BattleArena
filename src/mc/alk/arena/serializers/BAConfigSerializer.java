@@ -27,17 +27,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class BAConfigSerializer extends ConfigSerializer{
-
-	public void loadAll(){
-		/// Do this after 0 ticks so all Custom Arena/Victory or other types can be registered by other plugins first
-		//		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
-		//			@Override
-		//			public void run() {
-		synchronizedLoadAll();
-		//			}
-		//		});
-	}
-	private void synchronizedLoadAll(){
+	public void loadDefaults(){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
 
 		parseDefaultOptions(config.getConfigurationSection("defaultOptions"));
@@ -46,7 +36,8 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", Defaults.AUTO_UPDATE);
 		Defaults.TELEPORT_Y_OFFSET = config.getDouble("teleportYOffset", Defaults.TELEPORT_Y_OFFSET);
 		Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", Defaults.NUM_INV_SAVES);
-		Defaults.IGNORE_STACKSIZE = config.getBoolean("ignoreMaxStackSize", Defaults.IGNORE_STACKSIZE);
+		Defaults.ITEMS_IGNORE_STACKSIZE = config.getBoolean("ignoreMaxStackSize", Defaults.ITEMS_IGNORE_STACKSIZE);
+		Defaults.ITEMS_UNSAFE_ENCHANTMENTS = config.getBoolean("unsafeItemEnchants", Defaults.ITEMS_UNSAFE_ENCHANTMENTS);
 		Defaults.USE_ARENAS_ONLY_IN_ORDER = config.getBoolean("useArenasOnlyInOrder", Defaults.USE_ARENAS_ONLY_IN_ORDER);
 		Defaults.ENABLE_TELEPORT_FIX = config.getBoolean("enableInvisibleTeleportFix", Defaults.ENABLE_TELEPORT_FIX);
 		parseOptionSets(config.getConfigurationSection("optionSets"));
@@ -57,6 +48,10 @@ public class BAConfigSerializer extends ConfigSerializer{
 				HeroesController.addDisabledCommands(disabled);
 			}
 		}
+	}
+
+	public void loadCompetitions(){
+		try {config.load(file);} catch (Exception e){e.printStackTrace();}
 		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"arena","skirmish","colliseum","battleground"}));
 		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"freeForAll","deathMatch"}));
 		Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {"defaultOptions","tourney","optionSets"}));
@@ -115,7 +110,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT);
 		Defaults.MATCH_TIME = cs.getInt("matchTime", Defaults.MATCH_TIME);
 		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", Defaults.MATCH_UPDATE_INTERVAL);
-		Defaults.MATCH_FORCESTART_ENABLED = cs.getBoolean("matchEnableForceStart", Defaults.MATCH_FORCESTART_ENABLED);
+//		Defaults.MATCH_FORCESTART_ENABLED = cs.getBoolean("matchEnableForceStart", Defaults.MATCH_FORCESTART_ENABLED);
 		Defaults.MATCH_FORCESTART_TIME = cs.getLong("matchForceStartTime", Defaults.MATCH_FORCESTART_TIME);
 		Defaults.TIME_BETWEEN_CLASS_CHANGE = cs.getInt("timeBetweenClassChange", Defaults.TIME_BETWEEN_CLASS_CHANGE);
 
@@ -141,7 +136,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 
 	private static void parseOnServerStartOptions( ConfigurationSection cs) {
 		if (cs ==null || !cs.contains("onServerStart")){
-			Log.warn(BattleArena.getPName() +" No onServerStart options found");
+			Log.warn(BattleArena.getPluginName() +" No onServerStart options found");
 			return;
 		}
 		List<String> options = cs.getStringList("onServerStart");

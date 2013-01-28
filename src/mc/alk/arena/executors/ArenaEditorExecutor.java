@@ -15,7 +15,6 @@ import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -28,7 +27,6 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 	final ArenaEditor aac;
 	public ArenaEditorExecutor(){
 		super();
-		this.ac = BattleArena.getBAController();
 		this.aac = BattleArena.getArenaEditor();
 	}
 
@@ -141,11 +139,6 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 		ad.hideSpawns(sender);
 		ad.showSpawns(sender);
 		return sendMessage(sender,ChatColor.GREEN+ "You are showing spawns for &6" + arena.getName());
-	}
-
-	@MCCommand( cmds = {"help","?"})
-	public void help(CommandSender sender, Command command, String label, Object[] args){
-		super.help(sender, command, args);
 	}
 
 }

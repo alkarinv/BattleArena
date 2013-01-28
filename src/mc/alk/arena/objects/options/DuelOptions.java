@@ -10,6 +10,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
@@ -60,7 +61,7 @@ public class DuelOptions {
 	final List<ArenaPlayer> challengedPlayers = new ArrayList<ArenaPlayer>();
 	final Map<DuelOption,Object> options = new EnumMap<DuelOption,Object>(DuelOption.class);
 
-	public static DuelOptions parseOptions(ArenaPlayer challenger, String[] args) throws InvalidOptionException{
+	public static DuelOptions parseOptions(MatchParams params, ArenaPlayer challenger, String[] args) throws InvalidOptionException{
 		DuelOptions eoo = new DuelOptions();
 		Map<DuelOption,Object> ops = eoo.options;
 
@@ -109,9 +110,12 @@ public class DuelOptions {
 				obj = money;
 				break;
 			case ARENA:
-				obj = BattleArena.getBAController().getArena(val);
-				if (obj==null){
+				Arena a = BattleArena.getBAController().getArena(val);
+				if (a==null){
 					throw new InvalidOptionException("&cCouldnt find the arena &6" +val);}
+				if (!a.getArenaType().matches(params.getType())){
+					throw new InvalidOptionException("&cThe arena is used for a different type!");}
+				obj = a;
 			default: break;
 			}
 			ops.put(to, obj);

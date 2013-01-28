@@ -1,5 +1,6 @@
 package mc.alk.arena.util;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,20 +12,38 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.util.compat.IInventoryHelper;
 
-import org.bukkit.Color;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
+//import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 public class InventoryUtil {
 	static final String version = "BA InventoryUtil 2.1.6";
 	static final boolean DEBUG = false;
+	static IInventoryHelper handler = null;
 
+	static {
+		final String pkg = Bukkit.getServer().getClass().getPackage().getName();
+		String version = pkg.substring(pkg.lastIndexOf('.') + 1);
+		final Class<?> clazz;
+		try {
+			if (version.equalsIgnoreCase("craftbukkit")){
+				clazz = Class.forName("mc.alk.arena.util.compat.pre.InventoryHelper");
+			} else{
+				clazz = Class.forName("mc.alk.arena.util.compat.post.InventoryHelper");
+			}
+			Class<?>[] args = {};
+			handler = (IInventoryHelper) clazz.getConstructor(args).newInstance((Object[])args);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	public static class Armor{
 		final public ArmorLevel level;
 		final public ArmorType type;
@@ -359,10 +378,9 @@ public class InventoryUtil {
 		final ItemStack oldArmor = getArmorSlot(inv,a.type);
 		boolean empty = (oldArmor == null || oldArmor.getType() == Material.AIR);
 		boolean better = empty ? true : armorSlotBetter(armor.get(oldArmor.getType()),a);
+
 		if (color != null && a.level == ArmorLevel.LEATHER){
-			LeatherArmorMeta lam = (LeatherArmorMeta) itemStack.getItemMeta();
-			lam.setColor(color);
-			itemStack.setItemMeta(lam);
+			handler.setItemColor(itemStack,color);
 		}
 		if (empty || better){
 			switch (armor.get(itemType).type){
@@ -503,7 +521,7 @@ public class InventoryUtil {
 	public static void addItemToInventory(Inventory inv, ItemStack is, int left){
 		if (is == null || is.getType() == Material.AIR)
 			return;
-		if (Defaults.IGNORE_STACKSIZE){
+		if (Defaults.ITEMS_IGNORE_STACKSIZE){
 			inv.addItem(is);
 			return;
 		}
@@ -654,7 +672,8 @@ public class InventoryUtil {
 		EnchantmentWithLevel ewl = new EnchantmentWithLevel();
 		ewl.e = e;
 		if (lvl < e.getStartLevel()){lvl = e.getStartLevel();}
-		if (lvl > e.getMaxLevel()){lvl = e.getMaxLevel();}
+		if (!Defaults.ITEMS_UNSAFE_ENCHANTMENTS &&
+				lvl > e.getMaxLevel()){lvl = e.getMaxLevel();}
 		ewl.lvl = lvl;
 		return ewl;
 	}

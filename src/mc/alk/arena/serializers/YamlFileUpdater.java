@@ -114,10 +114,28 @@ public class YamlFileUpdater {
 		if (version.compareTo("2.1.0")<0){
 			yfu.to2Point10(bacs, bacs.getConfig(), version, new Version("2.1.0"));}
 		if (version.compareTo("2.1.1")<0){
-			yfu.to2Point11(configFile, version, new Version("2.1.1"));
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+			yfu.to2Point11(configFile, version, new Version("2.1.1"));}
+
+		Version newVersion = new Version("2.1.2");
+		if (version.compareTo(newVersion) < 0){
+			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+			fu.replace("configVersion:.*", "configVersion: "+newVersion);
+			fu.addAfter(".*ignoreMaxStackSize:.*", "",
+					"# if set to true, given enchanted items will not be limited to 'normal' safe enchantment levels",
+					"# Example, most weapons are limited to sharpness 5.  if unsafeItemEnchants: true, this can be any level",
+					"unsafeItemEnchants: false");
+			version = fu.update();
 		}
 
+		newVersion = new Version("2.1.3");
+		if (version.compareTo(newVersion) < 0){
+			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+			fu.replace("configVersion:.*", "configVersion: "+newVersion);
+			fu.delete(".*matchEnableForce.*");
+			version = fu.update();
+		}
+
+		bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 	}
 
 	private void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
@@ -703,10 +721,10 @@ public class YamlFileUpdater {
 	private boolean to2Point11(File file, Version oldVersion, Version newVersion) {
 		FileUpdater fu = new FileUpdater(file, backupDir, newVersion, oldVersion);
 		fu.replace("configVersion:.*", "configVersion: "+newVersion.getVersion());
-		fu.addAfter(".*disabledCommands:.*", "\n",
+		fu.addAfter(".*disabledCommands:.*", "",
 				"# which heroes skills should be disabled when they enter an arena",
 				"disabledHeroesSkills: []");
-		return fu.update();
+		return fu.update() != null;
 	}
 
 	private void messageTo1Point5(FileConfiguration fc, Version version) {

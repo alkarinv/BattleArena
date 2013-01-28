@@ -39,4 +39,8 @@ public class PermissionsUtil {
 		return sender.isOp() || sender.hasPermission(Defaults.ARENA_ADMIN);
 	}
 
+	public static void givePlayerAdminPerms(Player player, Boolean enable) {
+
+	}
+
 }

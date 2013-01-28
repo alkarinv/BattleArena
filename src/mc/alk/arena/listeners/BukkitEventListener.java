@@ -11,7 +11,6 @@ import java.util.TreeSet;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerController;
-import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.teams.Team;
@@ -253,7 +252,7 @@ public class BukkitEventListener extends BAEventListener{
 						if (arenaPlayer == null){
 							arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;}
 						if (arenaPlayer != null)
-							os[i] = TeamController.getTeam(arenaPlayer);
+							os[i] = arenaPlayer.getTeam();
 					} else if (ArenaPlayer.class.isAssignableFrom(t)){
 						if (arenaPlayer == null){
 							arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;}

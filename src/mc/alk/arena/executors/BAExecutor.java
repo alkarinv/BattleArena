@@ -44,7 +44,7 @@ import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.JoinOptions.JoinOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
-import mc.alk.arena.objects.pairs.QPosTeamPair;
+import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.pairs.WantedTeamSizePair;
 import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.queues.TeamQObject;
@@ -63,7 +63,6 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -140,22 +139,15 @@ public class BAExecutor extends CustomCommandExecutor {
 		return sendMessage(sender, "&5Enabled types = &6 " + ParamController.getAvaibleTypes(disabled));
 	}
 
-	@MCCommand(cmds={"join","j"},usage="join [options]")
+	@MCCommand(cmds={"join","j"},usage="join [options]", helpOrder=1)
 	public boolean join(ArenaPlayer player, MatchParams mp, String args[]) {
 		return join(player,mp,args,false);
 	}
 
 	public boolean join(ArenaPlayer player, MatchParams mp, String args[], boolean adminJoin){
 		/// Check if this match type is disabled
-		if (disabled.contains(mp.getName())){
-			sendSystemMessage(player, "match_disabled",mp.getName());
-			final String enabled = ParamController.getAvaibleTypes(disabled);
-			if (enabled.isEmpty()){
-				return sendSystemMessage(player,"all_disabled");
-			} else {
-				return sendSystemMessage(player,"currently_enabled", enabled);
-			}
-		}
+		if (isDisabled(player, mp)){
+			return true;}
 		/// Check Perms
 		if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".join") &&
 				!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".join") ){
@@ -238,7 +230,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		TeamQObject tqo = new TeamQObject(t,mp,jp);
 
 		/// Add them to the queue
-		QPosTeamPair qpp = ac.addToQue(tqo);
+		QueueResult qpp = ac.addToQue(tqo);
 		if (qpp == null){
 			t.sendMessage(MessageHandler.getSystemMessage("you_added_to_team"));
 		} else if (qpp.pos== -2){
@@ -277,7 +269,20 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"leave","l"}, usage="leave")
+	private boolean isDisabled(ArenaPlayer player, MatchParams mp) {
+		if (disabled.contains(mp.getName())){
+			sendSystemMessage(player, "match_disabled",mp.getName());
+			final String enabled = ParamController.getAvaibleTypes(disabled);
+			if (enabled.isEmpty()){
+				return sendSystemMessage(player,"all_disabled");
+			} else {
+				return sendSystemMessage(player,"currently_enabled", enabled);
+			}
+		}
+		return false;
+	}
+
+	@MCCommand(cmds={"leave","l"}, usage="leave", helpOrder=2)
 	public boolean leave(ArenaPlayer p) {
 		if (!canLeave(p)){
 			return true;
@@ -409,7 +414,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	}
 
 	@MCCommand(cmds={"setRating"}, admin=true, usage="setRating <player> <rating>")
-	public boolean setElo(CommandSender sender, MatchParams mp, OfflinePlayer player, Integer rating) {
+	public boolean setElo(CommandSender sender, MatchParams mp, OfflinePlayer player, int rating) {
 		BTInterface bti = new BTInterface(mp);
 		if (!bti.isValid()){
 			return sendMessage(sender,"&eThere is no tracking for " +mp);}
@@ -419,7 +424,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			return sendMessage(sender,"&6Error setting rating");
 	}
 
-	@MCCommand(cmds={"rank"})
+	@MCCommand(cmds={"rank"}, helpOrder=3)
 	public boolean rank(Player sender,MatchParams mp) {
 		BTInterface bti = new BTInterface(mp);
 		if (!bti.isValid()){
@@ -429,7 +434,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return MessageUtil.sendMessage(sender, rankMsg);
 	}
 
-	@MCCommand(cmds={"rank"})
+	@MCCommand(cmds={"rank"}, helpOrder=4)
 	public boolean rankOther(CommandSender sender,MatchParams mp, OfflinePlayer player) {
 		BTInterface bti = new BTInterface(mp);
 		if (bti.isValid()){
@@ -439,7 +444,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return MessageUtil.sendMessage(sender, rankMsg);
 	}
 
-	@MCCommand(cmds={"top"})
+	@MCCommand(cmds={"top"}, helpOrder=5)
 	public boolean top(CommandSender sender,MatchParams mp, String[] args) {
 		final int length = args.length;
 		int teamSize = 1;
@@ -475,7 +480,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"check"}, usage="check")
 	public boolean arenaCheck(ArenaPlayer p) {
 		if(ac.isInQue(p)){
-			QPosTeamPair qpp = ac.getCurrentQuePos(p);
+			QueueResult qpp = ac.getCurrentQuePos(p);
 			if (qpp != null){
 				return sendMessage(p,"&e"+qpp.params.toPrettyString()+"&e Queue Position: "+
 						" &6" + (qpp.pos+1) +"&e. &6"+qpp.playersInQueue+" &eplayers in queue");
@@ -517,6 +522,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			ConfigSerializer.reloadConfig(plugin, mp.getType());
 			MessageSerializer.reloadConfig(mp.getName());
 			ArenaSerializer.loadAllArenas(plugin, mp.getType());
+			plugin.reloadConfig();
 		}
 		ac.resume();
 		return sendMessage(sender, "&6" + plugin.getName()+"&e configuration reloaded");
@@ -528,7 +534,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return sendMessage(sender, info);
 	}
 
-	@MCCommand(cmds={"info"}, op=true, usage="info <arenaname>", order=1)
+	@MCCommand(cmds={"info"}, op=true, usage="info <arenaname>", order=1, helpOrder=6)
 	public boolean info(CommandSender sender, Arena arena) {
 		sendMessage(sender, arena.toDetailedString());
 		Match match = ac.getMatch(arena);
@@ -595,6 +601,9 @@ public class BAExecutor extends CustomCommandExecutor {
 
 		if (ac.getArena(name) != null){
 			return sendMessage(sender, "&cThere is already an arena named &6"+name);}
+		if (ParamController.getMatchParams(name) != null){
+			return sendMessage(sender, "&cYou can't choose an arena type as an arena name");}
+
 		Player p = (Player) sender;
 
 		ArenaParams ap = new ArenaParams(mp.getType());
@@ -626,7 +635,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"rescind"})
+	@MCCommand(cmds={"rescind"},helpOrder=13)
 	public boolean duelRescind(ArenaPlayer player) {
 		if (!dc.hasChallenger(player)){
 			return sendMessage(player,"&cYou haven't challenged anyone!");}
@@ -639,7 +648,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"reject"})
+	@MCCommand(cmds={"reject"},helpOrder=12)
 	public boolean duelReject(ArenaPlayer player) {
 		if (!dc.isChallenged(player)){
 			return sendMessage(player,"&cYou haven't been invited to a duel!");}
@@ -657,7 +666,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"accept"})
+	@MCCommand(cmds={"accept"},helpOrder=11)
 	public boolean duelAccept(ArenaPlayer player) {
 		if (!canJoin(player)){
 			return true;}
@@ -686,11 +695,14 @@ public class BAExecutor extends CustomCommandExecutor {
 		return sendMessage(player,"&cYou have accepted the duel!");
 	}
 
-	@MCCommand(cmds={"duel","d"})
+	@MCCommand(cmds={"duel","d"},helpOrder=10)
 	public boolean duel(ArenaPlayer player, MatchParams mp, String args[]) {
 		if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".duel") &&
 				!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".duel") ){
 			return sendMessage(player, "&cYou don't have permission to duel in a &6" + mp.getCommand());}
+		if (isDisabled(player, mp)){
+			return true;}
+
 		if (dc.isChallenged(player)){
 			sendMessage(player,"&4[Duel] &cYou have already been challenged to a duel!");
 			return sendMessage(player,"&4[Duel] &6/"+mp.getCommand()+" reject&c to cancel the duel before starting your own");
@@ -705,7 +717,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		/// Parse the duel options
 		DuelOptions duelOptions = null;
 		try {
-			duelOptions = DuelOptions.parseOptions(player, Arrays.copyOfRange(args, 1, args.length));
+			duelOptions = DuelOptions.parseOptions(mp, player, Arrays.copyOfRange(args, 1, args.length));
 		} catch (InvalidOptionException e1) {
 			return sendMessage(player, e1.getMessage());
 		}
@@ -804,7 +816,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		if (qsize <= 1){
 			return sendMessage(sender, "&c" + mp.getType()+" does not have enough teams queued");}
 
-		if (ac.forceStart(mp)){
+		if (ac.forceStart(mp,false)){
 			return sendMessage(sender, "&2" + mp.getType()+" has been started");
 		} else {
 			return sendMessage(sender, "&c" + mp.getType()+" could not be started");
@@ -873,7 +885,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		}
 		if (HeroesController.enabled()){
 			if (HeroesController.isInCombat(p.getPlayer())){
-				if (showMessages) sendMessage(p,"&cYou can't join the arena while in combat!");
+				if (showMessages) sendMessage(p,"&cYou are in combat!");
 				return false;
 			}
 		}
@@ -884,9 +896,9 @@ public class BAExecutor extends CustomCommandExecutor {
 			return false;
 		}
 		/// Inside the queue waiting for a match?
-		QPosTeamPair qpp = ac.getCurrentQuePos(p);
+		QueueResult qpp = ac.getCurrentQuePos(p);
 		if(qpp != null && qpp.pos != -1){
-			if (showMessages) sendMessage(p,"&eYou are already in the " + qpp.params.toPrettyString() + " queue.");
+			if (showMessages) sendMessage(p,"&eYou are in the " + qpp.params.toPrettyString() + " queue.");
 			String cmd = qpp.params.getCommand();
 			if (showMessages) sendMessage(p,"&eType &6/"+cmd+" leave");
 			return false;
@@ -984,11 +996,6 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	protected Arena getArena(String name){
 		return ac.getArena(name);
-	}
-
-	@MCCommand( cmds = {"help","?"})
-	public void help(CommandSender sender, Command command, String label, Object[] args){
-		super.help(sender, command, args);
 	}
 
 	public static boolean checkPlayer(CommandSender sender) {

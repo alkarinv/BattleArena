@@ -6,6 +6,8 @@ import java.util.Set;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchMessageEvent;
+import mc.alk.arena.events.matches.messages.MatchIntervalMessageEvent;
+import mc.alk.arena.events.matches.messages.MatchTimeExpiredMessageEvent;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.Channel;
@@ -152,7 +154,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 				msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr+"&e. Tied between " + teamStr;
 			}
 		}
-		MatchMessageEvent event = new MatchMessageEvent(match,MatchState.ONMATCHINTERVAL, serverChannel,"", msg);
+		MatchMessageEvent event = new MatchIntervalMessageEvent(match,MatchState.ONMATCHINTERVAL, serverChannel,"", msg,remaining);
 		match.callEvent(event);
 		String message = event.getMatchMessage();
 		if (message != null && !message.isEmpty())
@@ -163,7 +165,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	public void sendTimeExpired(Channel serverChannel) {
-		MatchMessageEvent event = new MatchMessageEvent(match,MatchState.ONMATCHTIMEEXPIRED,serverChannel,"", "");
+		MatchMessageEvent event = new MatchTimeExpiredMessageEvent(match,MatchState.ONMATCHTIMEEXPIRED,serverChannel,"", "");
 		match.callEvent(event);
 		String message = event.getMatchMessage();
 		if (message != null && !message.isEmpty())

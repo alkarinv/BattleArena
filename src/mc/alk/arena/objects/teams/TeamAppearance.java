@@ -1,9 +1,10 @@
 package mc.alk.arena.objects.teams;
 
+import java.awt.Color;
+
 import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Color;
 import org.bukkit.inventory.ItemStack;
 
 public class TeamAppearance {

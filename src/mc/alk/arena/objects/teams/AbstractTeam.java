@@ -68,12 +68,13 @@ public abstract class AbstractTeam implements Team{
 		}
 	}
 
-	protected void createName() {
+	protected String createName() {
 		if (nameManuallySet || !nameChanged){ ///
-			return;}
+			return name;}
 		/// Sort the names and then append them together
 		ArrayList<String> list = new ArrayList<String>(players.size());
 		for (ArenaPlayer p:players){list.add(p.getName());}
+		for (ArenaPlayer p:leftplayers){list.add(p.getName());}
 		if (list.size() > 1)
 			Collections.sort(list);
 		StringBuilder sb = new StringBuilder();
@@ -85,6 +86,7 @@ public abstract class AbstractTeam implements Team{
 		}
 		name= sb.toString();
 		nameChanged = false;
+		return name;
 	}
 
 	public Set<ArenaPlayer> getPlayers() {
@@ -117,16 +119,19 @@ public abstract class AbstractTeam implements Team{
 		return living.isEmpty() || living.size() <= offline;
 	}
 
-	public boolean hasMember(ArenaPlayer p) {return players.contains(p) && !leftplayers.contains(p);}
+	public boolean hasMember(ArenaPlayer p) {return players.contains(p);}
 	public boolean hasLeft(ArenaPlayer p) {return leftplayers.contains(p);}
 	public boolean hasAliveMember(ArenaPlayer p) {return hasMember(p) && !deadplayers.contains(p);}
 	public boolean isPickupTeam() {return isPickupTeam;}
 	public void setPickupTeam(boolean isPickupTeam) {this.isPickupTeam = isPickupTeam;}
 	public void setHealth(int health) {for (ArenaPlayer p: players){p.setHealth(health);}}
 	public void setHunger(int hunger) {for (ArenaPlayer p: players){p.setFoodLevel(hunger);}}
-	public String getName() {
-		createName();
-		return name;
+
+	public String getName() {return createName();}
+
+	public void setName(String name) {
+		this.name = name;
+		this.nameManuallySet = true;
 	}
 
 	/**
@@ -135,10 +140,7 @@ public abstract class AbstractTeam implements Team{
 	 * This is NOT equivilant to Arena.getMatch().getTeams().indexOf(this)!
 	 */
 	public int getId(){ return id;}
-	public void setName(String name) {
-		this.name = name;
-		this.nameManuallySet = true;
-	}
+
 	public void setAlive() {deadplayers.clear();}
 
 	@Override
@@ -167,9 +169,7 @@ public abstract class AbstractTeam implements Team{
 		return true;
 	}
 
-	public int size() {return players.size()-leftplayers.size();}
-
-
+	public int size() {return players.size();}
 
 	public int addDeath(ArenaPlayer teamMemberWhoDied) {
 		Integer d = deaths.get(teamMemberWhoDied);
@@ -220,13 +220,13 @@ public abstract class AbstractTeam implements Team{
 	}
 
 	/**
-	 *
-	 * @param p
-	 * @return whether all players are dead
+	 * Call when a player has left this team
 	 */
 	public void playerLeft(ArenaPlayer p) {
 		if (!hasMember(p))
-			return ;
+			return;
+		deadplayers.remove(p);
+		players.remove(p);
 		leftplayers.add(p);
 	}
 
@@ -240,8 +240,7 @@ public abstract class AbstractTeam implements Team{
 
 	public void sendMessage(String message) {
 		for (ArenaPlayer p: players){
-			if (!leftplayers.contains(p)){
-				MessageUtil.sendMessage(p, message);}}
+			MessageUtil.sendMessage(p, message);}
 	}
 	public void sendToOtherMembers(ArenaPlayer player, String message) {
 		for (ArenaPlayer p: players){
@@ -250,7 +249,7 @@ public abstract class AbstractTeam implements Team{
 	}
 
 	public String getDisplayName(){return displayName == null ? getName() : displayName;}
-	public void setDisplayName(String n){displayName = n;}
+	public void setDisplayName(String teamName){displayName = teamName;}
 
 	@Override
 	public boolean equals(Object other) {
@@ -343,6 +342,7 @@ public abstract class AbstractTeam implements Team{
 	public void removePlayer(ArenaPlayer player) {
 		this.players.remove(player);
 		this.deadplayers.remove(player);
+		this.leftplayers.remove(player);
 		this.kills.remove(player);
 		this.deaths.remove(player);
 		this.nameChanged = true;
@@ -358,6 +358,7 @@ public abstract class AbstractTeam implements Team{
 	public void removePlayers(Collection<ArenaPlayer> players) {
 		this.players.removeAll(players);
 		this.deadplayers.removeAll(players);
+		this.leftplayers.removeAll(players);
 		for (ArenaPlayer ap: players){
 			this.kills.remove(ap);
 			this.deaths.remove(ap);

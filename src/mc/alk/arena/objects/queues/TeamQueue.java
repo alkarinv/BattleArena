@@ -8,7 +8,7 @@ import java.util.PriorityQueue;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.pairs.QPosTeamPair;
+import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.teams.Team;
 
 
@@ -48,11 +48,11 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		return -1;
 	}
 
-	public synchronized QPosTeamPair getPos(ArenaPlayer p) {
+	public synchronized QueueResult getPos(ArenaPlayer p) {
 		int i=0;
 		for (QueueObject t: this){
 			if (t.hasMember(p))
-				return new QPosTeamPair(getMatchParams(),i,getNPlayers(),t.getTeam(p), this.size());
+				return new QueueResult(getMatchParams(),i,getNPlayers(),t.getTeam(p), this.size());
 			i++;
 		}
 		return null;

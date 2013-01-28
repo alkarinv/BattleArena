@@ -47,4 +47,10 @@ public class BlankCompetition extends Competition{
 	@Override
 	public void removedFromTeam(Team team, ArenaPlayer player) {/* do nothing */}
 
+	@Override
+	public boolean canLeave(ArenaPlayer p) {return true;}
+
+	@Override
+	public boolean leave(ArenaPlayer p) {return true;}
+
 }

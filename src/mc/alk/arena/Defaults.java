@@ -33,7 +33,7 @@ public class Defaults {
 	public static int MATCH_UPDATE_INTERVAL = 30;
 	public static int JOIN_CUTOFF_TIME = 15;
 
-	public static boolean MATCH_FORCESTART_ENABLED = false;
+	public final static boolean MATCH_FORCESTART_ENABLED = true;
 	public static long MATCH_FORCESTART_TIME = 180;
 
 
@@ -82,7 +82,8 @@ public class Defaults {
 	/// SIGN OPTIONS
 	public static final String SIGN_PREFIX = "*";
 
-	public static boolean IGNORE_STACKSIZE = true;
+	public static boolean ITEMS_IGNORE_STACKSIZE = true;
+	public static boolean ITEMS_UNSAFE_ENCHANTMENTS = false;
 
     /// DEBUG OPTIONS
 	public static final boolean DEBUG = false;

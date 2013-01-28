@@ -54,6 +54,7 @@ public class BAPlayerListener implements Listener  {
 	public static HashMap<String,Integer> hungerRestore = new HashMap<String,Integer>();
 	public static HashMap<String,Integer> magicRestore = new HashMap<String,Integer>();
 	public static HashMap<String,PInv> itemRestore = new HashMap<String,PInv>();
+	public static HashMap<String,PInv> matchItemRestore = new HashMap<String,PInv>();
 	public static HashMap<String,List<ItemStack>> itemRemove = new HashMap<String,List<ItemStack>>();
 	public static HashMap<String,GameMode> gamemodeRestore = new HashMap<String,GameMode>();
 	public static HashMap<String,String> messagesOnRespawn = new HashMap<String,String>();
@@ -67,6 +68,7 @@ public class BAPlayerListener implements Listener  {
 		tp.clear();
 		expRestore.clear();
 		itemRestore.clear();
+		matchItemRestore.clear();
 		gamemodeRestore.clear();
 		messagesOnRespawn.clear();
 		this.bac = bac;
@@ -88,12 +90,12 @@ public class BAPlayerListener implements Listener  {
 			for (ItemStack is: p.getInventory().getContents()){
 				if (is == null || is.getType()==Material.AIR)
 					continue;
-//				FileLogger.log("d  itemstack="+ InventoryUtil.getItemString(is));
+				//				FileLogger.log("d  itemstack="+ InventoryUtil.getItemString(is));
 			}
 			for (ItemStack is: p.getInventory().getArmorContents()){
 				if (is == null || is.getType()==Material.AIR)
 					continue;
-//				FileLogger.log("d aitemstack="+ InventoryUtil.getItemString(is));
+				//				FileLogger.log("d aitemstack="+ InventoryUtil.getItemString(is));
 			}
 			InventoryUtil.clearInventory(p);
 		}
@@ -127,7 +129,7 @@ public class BAPlayerListener implements Listener  {
 
 		/// Teleport players, or set respawn point
 		if (tp.containsKey(name)){
-			Location loc = tp.get(name);
+			final Location loc = tp.get(name);
 			if (loc != null){
 				if (event == null){
 					Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
@@ -144,6 +146,25 @@ public class BAPlayerListener implements Listener  {
 				} else {
 					PermissionsUtil.givePlayerInventoryPerms(p);
 					event.setRespawnLocation(tp.remove(name));
+					/// Set a timed event to check to make sure the player actually arrived
+					/// Then do a teleport if needed
+					/// This can happen on servers where plugin conflicts prevent the respawn (somehow!!!)
+					if (HeroesController.enabled()){
+						Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+							@Override
+							public void run() {
+								Player pl = ServerUtil.findPlayerExact(name);
+								if (pl != null){
+									if (pl.getLocation().getWorld().getUID()!=loc.getWorld().getUID() ||
+											pl.getLocation().distanceSquared(loc) > 100){
+										TeleportController.teleport(p, loc);
+									}
+								} else {
+									Util.printStackTrace();
+								}
+							}
+						},2L);
+					}
 				}
 			} else { /// this is bad, how did they get a null tp loc
 				Log.err(name + " respawn loc =null");
@@ -227,6 +248,22 @@ public class BAPlayerListener implements Listener  {
 			});
 		}
 
+		/// Restore Match Items
+		if (matchItemRestore.containsKey(p.getName())){
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+				public void run() {
+					Player pl;
+					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);}
+					else {pl = Bukkit.getPlayer(name);}
+					if (pl != null){
+						PInv pinv = matchItemRestore.remove(pl.getName());
+						ArenaPlayer ap = PlayerController.toArenaPlayer(pl);
+						PlayerStoreController.setInventory(ap, pinv);
+					}
+				}
+			});
+		}
+
 		/// Remove Items
 		if (itemRemove.containsKey(p.getName())){
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
@@ -278,6 +315,14 @@ public class BAPlayerListener implements Listener  {
 
 	public static void restoreItemsOnReenter(String playerName, PInv pinv) {
 		itemRestore.put(playerName,pinv);
+	}
+
+	public static void restoreMatchItemsOnReenter(String playerName, PInv pinv) {
+		matchItemRestore.put(playerName,pinv);
+	}
+
+	public static void removeMatchItems(String playerName) {
+		matchItemRestore.remove(playerName);
 	}
 
 	public static void clearWoolOnReenter(String playerName, int color) {

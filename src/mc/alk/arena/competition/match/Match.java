@@ -53,7 +53,6 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
 import mc.alk.arena.objects.victoryconditions.LastManStanding;
 import mc.alk.arena.objects.victoryconditions.NLives;
@@ -80,6 +79,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -90,8 +90,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 
-
-public abstract class Match extends Competition implements Runnable, TeamHandler {
+public abstract class Match extends Competition implements Runnable {
 	public enum PlayerState{OUTOFMATCH,INMATCH};
 	static int count =0;
 
@@ -163,6 +162,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
 		boolean needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
 		boolean needsItemDropEvents = tops.hasAnyOption(TransitionOption.ITEMDROPOFF);
+		boolean needsPotionEvents = tops.hasAnyOption(TransitionOption.POTIONDAMAGEON);
 		this.alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
 		this.cancelExpLoss = tops.hasAnyOption(TransitionOption.NOEXPERIENCELOSS);
 		this.matchResult = new MatchResult();
@@ -204,7 +204,8 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 			events.add(PlayerTeleportEvent.class);}
 		if (woolTeams){
 			events.add(InventoryClickEvent.class);}
-
+		if (needsPotionEvents){
+			events.add(PotionSplashEvent.class);}
 		methodController.addSpecificEvents(this, events);
 	}
 
@@ -475,6 +476,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 			PerformTransition.transition(this, MatchState.ONFINISH,t,true);
 			for (ArenaPlayer p: t.getPlayers()){
 				stopTracking(p);
+				p.removeCompetition(this);
 			}
 		}
 		arenaInterface.onFinish();
@@ -491,8 +493,8 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 	@Override
 	public void addTeam(Team team){
 		if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addTeam("+team.getName()+":"+team.getId()+")");
-		teams.add(team);
 		teamIndexes.put(team, teams.size());
+		teams.add(team);
 		team.reset();/// reset scores, set alive
 		TeamController.addTeamHandler(team, this);
 		if ( alwaysTeamNames || (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND)){
@@ -502,11 +504,13 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		PerformTransition.transition(this, MatchState.ONJOIN, team, true);
 	}
 
+	/** Called during both, addTeam and addedToTeam */
 	private void privateAddPlayer(Team team, ArenaPlayer player){
 		leftPlayers.remove(player.getName()); /// remove players from the list as they are now joining again
 		insideArena.remove(player.getName());
 		team.setAlive(player);
 		player.reset();
+		player.addCompetition(this);
 		startTracking(player);
 		arenaInterface.onJoin(player,team);
 	}
@@ -552,13 +556,12 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 	@Override
 	public void removedFromTeam(Team team, Collection<ArenaPlayer> players) {
 		for (ArenaPlayer ap:players)
-			removedFromTeam(team,ap);
+			privateRemovedFromTeam(ap,team);
 	}
 
 	@Override
 	public void removedFromTeam(Team team, ArenaPlayer player) {
-		if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" removedFromTeam("+team.getName()+":"+team.getId()+")"+player.getName());
-		HeroesController.removedFromTeam(team, player.getPlayer());
+		privateRemovedFromTeam(player, team);
 	}
 
 	public void onJoin(Collection<Team> teams){
@@ -599,7 +602,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 	 */
 	public void onLeave(Team team) {
 		for (ArenaPlayer ap: team.getPlayers()){
-			onLeave(ap,team);}
+			privateOnLeave(ap,team);}
 		privateRemoveTeam(team);
 	}
 
@@ -608,16 +611,22 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		Team t = getTeam(p);
 		if (t==null) /// really? trying to make a player leave who isnt in the match
 			return;
-		onLeave(p,t);
+		privateOnLeave(p,t);
 	}
 
-	private void onLeave(ArenaPlayer ap, Team team){
+	private void privateOnLeave(ArenaPlayer ap, Team team){
 		if (insideArena(ap)){ /// Only leave if they haven't already left.
 			/// The onCancel should teleport them out, and call leaveArena(ap)
 			PerformTransition.transition(this, MatchState.ONCANCEL, ap, team, false);
 		}
 		team.playerLeft(ap);
 		leftPlayers.add(ap.getName());
+		ap.removeCompetition(this);
+	}
+
+	private void privateRemovedFromTeam(ArenaPlayer ap, Team team){
+		if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" removedFromTeam("+team.getName()+":"+team.getId()+")"+ap.getName());
+		HeroesController.removedFromTeam(team, ap.getPlayer());
 	}
 
 	private void privateRemoveTeam(Team team){
@@ -737,32 +746,6 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		if (HeroesController.enabled()){
 			HeroesController.leaveArena(p.getPlayer());}
 
-	}
-
-	public Team getTeam(ArenaPlayer p) {
-		for (Team t: teams) {
-			if (t.hasMember(p)) return t;}
-		return null;
-	}
-
-	public boolean hasPlayer(ArenaPlayer p) {
-		for (Team t: teams) {
-			if (t.hasMember(p)) return true;}
-		return false;
-	}
-
-	public Set<ArenaPlayer> getPlayers() {
-		HashSet<ArenaPlayer> players = new HashSet<ArenaPlayer>();
-		for (Team t: teams){
-			players.addAll(t.getPlayers());
-		}
-		return players;
-	}
-
-	public boolean hasAlivePlayer(ArenaPlayer p) {
-		for (Team t: teams) {
-			if (t.hasAliveMember(p)) return true;}
-		return false;
 	}
 
 	public void setMessageHandler(MatchMessageHandler mc){this.mc.setMessageHandler(mc);}
@@ -1004,11 +987,11 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 	public void timeExpired() {
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
 		callEvent(event);
-		try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
 		MatchResult result = event.getResult();
 		/// No one has an opinion of how this match ends... so declare it a draw
 		if (result.isUnknown()){
 			result.setDrawers(teams);}
+		try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
 		endMatchWithResult(result);
 	}
 
@@ -1038,6 +1021,7 @@ public abstract class Match extends Competition implements Runnable, TeamHandler
 		if (readyPlayers == null)
 			readyPlayers = new HashSet<ArenaPlayer>();
 		readyPlayers.add(ap);
+		ap.setReady(true);
 	}
 
 	@Override

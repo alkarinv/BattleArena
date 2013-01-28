@@ -96,10 +96,19 @@ public class CompetitionResult{
 	public boolean isDraw() {
 		return wld == WinLossDraw.DRAW;
 	}
+	public boolean isWon(){
+		return hasVictor();
+	}
+	public boolean isLost() {
+		return wld == WinLossDraw.LOSS;
+	}
 	public boolean isFinished(){
 		return wld == WinLossDraw.WIN || wld == WinLossDraw.DRAW;
 	}
 	public boolean hasVictor() {
 		return wld == WinLossDraw.WIN;
+	}
+	public WinLossDraw getResult(){
+		return wld;
 	}
 }

@@ -139,13 +139,27 @@ public class PlayerStoreController {
 		InventorySerializer.saveInventory(name,pinv);
 	}
 
+	/**
+	 * Warning!!! Unlike most other methods in the StoreController, this one
+	 * overwrites previous values
+	 * @param player
+	 */
 	public void storeMatchItems(ArenaPlayer player) {
 		final String name= player.getName();
 		if (Defaults.DEBUG_STORAGE) Log.info("storing in match items for = " + name +" contains=" + matchitemmap.containsKey(name));
-		if (matchitemmap.containsKey(name))
-			return;
+		InventoryUtil.closeInventory(player.getPlayer());
 		final PInv pinv = new PInv(player.getInventory());
-		matchitemmap.put(name, pinv);
+		if (matchitemmap.put(name, pinv) != null){
+			/// on the first entry, lets log that to disk
+			InventorySerializer.saveInventory(name,pinv);
+		}
+		BAPlayerListener.restoreMatchItemsOnReenter(name, pinv);
+	}
+
+	public void clearMatchItems(ArenaPlayer player) {
+		final String name= player.getName();
+		matchitemmap.remove(name);
+		BAPlayerListener.removeMatchItems(name);
 	}
 
 	public void restoreItems(ArenaPlayer p) {
@@ -161,7 +175,17 @@ public class PlayerStoreController {
 		final PInv pinv = matchitemmap.remove(p.getName());
 		if (pinv == null)
 			return;
-		setInventory(p, pinv);
+		setMatchInventory(p, pinv);
+	}
+
+
+	public static void setMatchInventory(ArenaPlayer p, PInv pinv) {
+		if (Defaults.DEBUG_STORAGE) Log.info("restoring match items for " + p.getName() +"= "+" o="+p.isOnline() +"  dead="+p.isDead() +" h=" + p.getHealth()+"");
+		if (p.isOnline() && !p.isDead()){
+			InventoryUtil.addToInventory(p.getPlayer(), pinv);
+		} else {
+			BAPlayerListener.restoreItemsOnReenter(p.getName(), pinv);
+		}
 	}
 
 	public static void setInventory(ArenaPlayer p, PInv pinv) {

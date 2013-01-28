@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
@@ -29,7 +30,7 @@ import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
-import mc.alk.arena.objects.pairs.QPosTeamPair;
+import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
 import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.queues.TeamQObject;
@@ -37,8 +38,13 @@ import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.tournament.Matchup;
+import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 
@@ -71,7 +77,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	}
 
 	/**
-	 *
+	 * opens and starts the match
 	 */
 	private class OpenAndStartMatch implements Runnable{
 		Match match;
@@ -152,6 +158,12 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			}
 		}
 	}
+	private void handle(final MatchParams params, final Team team){
+		TeamController.addTeamHandler(team,this);
+		/// If the same world flag is set, lets not let them change worlds while waiting in the queue
+		if (params.getTransitionOptions().hasOptionAt(MatchState.PREREQS, TransitionOption.SAMEWORLD)){
+			methodController.updateEvents(MatchState.PREREQS, team.getPlayers());}
+	}
 
 	public void startMatch(Match arenaMatch) {
 		/// arenaMatch run calls.... broadcastMessage ( which unfortunately is not thread safe)
@@ -191,19 +203,16 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	 * @param Add the TeamQueueing object to the queue
 	 * @return
 	 */
-	public QPosTeamPair addToQue(TeamQObject tqo) {
+	public QueueResult addToQue(TeamQObject tqo) {
 		Team team = tqo.getTeam();
 		if (joinExistingMatch(tqo)){
 			return null;}
-		QPosTeamPair qpp = amq.add(tqo, shouldStart(tqo.getMatchParams()));
+		QueueResult qpp = amq.add(tqo, shouldStart(tqo.getMatchParams()));
 		if (qpp != null){
 			new TeamJoinedQueueEvent(qpp).callEvent();
 		}
 		if (qpp != null && qpp.pos >=0){
-			TeamController.addTeamHandler(team,this);
-			/// If the same world flag is set, lets not let them change worlds while waiting in the queue
-			if (tqo.getMatchParams().getTransitionOptions().hasOptionAt(MatchState.PREREQS, TransitionOption.SAMEWORLD)){
-				methodController.updateEvents(MatchState.PREREQS, team.getPlayers());}
+			handle(tqo.getMatchParams(), team);
 		}
 		return qpp;
 	}
@@ -236,6 +245,29 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			}
 		}
 	}
+
+	@MatchEventHandler(begin=MatchState.PREREQS, end=MatchState.ONFINISH)
+	public void onPlayerInteract(PlayerInteractEvent event){
+		if (event.isCancelled())
+			return;
+		final Block b = event.getClickedBlock();
+		if (b == null)
+			return;
+		/// Check to see if it's a sign
+		final Material m = b.getType();
+		if (m.equals(Defaults.READY_BLOCK)) {
+			final Action action = event.getAction();
+			if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the block
+				event.setCancelled(true);}
+			final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
+			if (ap.isReady()) /// they are already ready
+				return;
+			QueueResult qtp = amq.getQueuePos(ap);
+			MessageUtil.sendMessage(ap, "&2You ready yourself for the arena");
+			this.forceStart(qtp.params, true);
+		}
+	}
+
 	private boolean joinExistingMatch(TeamQObject tqo) {
 		if (unfilled_matches.isEmpty()){
 			return false;}
@@ -275,7 +307,8 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	}
 
 	public boolean isInQue(ArenaPlayer p) {return amq.isInQue(p);}
-	public QPosTeamPair getCurrentQuePos(ArenaPlayer p) {return amq.getQueuePos(p);}
+
+	public QueueResult getCurrentQuePos(ArenaPlayer p) {return amq.getQueuePos(p);}
 
 	/**
 	 * Remove the player from the queue
@@ -612,7 +645,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	public int getMatchingQueueSize(MatchParams mp) {
 		return amq.getMatchingQueueSize(mp);
 	}
-	public boolean forceStart(MatchParams mp) {
-		return amq.forceStart(mp);
+	public boolean forceStart(MatchParams mp, boolean respectMinimumPlayers) {
+		return amq.forceStart(mp, respectMinimumPlayers);
 	}
 }

@@ -63,21 +63,30 @@ public interface Team {
 
 	public int getNDeaths();
 
+	/**
+	 * Get the number of deaths of the specified player
+	 * @param player
+	 * @return number of deaths, null if player doesn't exist or has no deaths
+	 */
 	public Integer getNDeaths(ArenaPlayer player);
 
+	/**
+	 * Get the number of kills of the specified player
+	 * @param player
+	 * @return number of kills, null if player doesn't exist or has no kills
+	 */
 	public Integer getNKills(ArenaPlayer player);
 
 	/**
-	 *
-	 * @param p
+	 * Kill off a team member
+	 * @param player that died
 	 * @return whether all players are dead
 	 */
 	public boolean killMember(ArenaPlayer player);
 
 	/**
-	 *
-	 * @param p
-	 * @return whether all players are dead
+	 * Call when a player has left the team
+	 * @param player
 	 */
 	public void playerLeft(ArenaPlayer player);
 

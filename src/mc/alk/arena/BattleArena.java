@@ -141,7 +141,12 @@ public class BattleArena extends JavaPlugin{
 
 		/// Load our configs, then arenas
 		baConfigSerializer.setConfig(FileUtil.load(this,dir.getPath() +"/config.yml","/default_files/config.yml"));
-		YamlFileUpdater.updateBaseConfig(this,baConfigSerializer); /// Update our config if necessary
+		try{
+			YamlFileUpdater.updateBaseConfig(this,baConfigSerializer); /// Update our config if necessary
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+		baConfigSerializer.loadDefaults(); /// Load our defaults for BattleArena, has to happen before classes are loaded
 
 		classesSerializer.setConfig(FileUtil.load(this,dir.getPath() +"/classes.yml","/default_files/classes.yml")); /// Load classes
 		classesSerializer.loadAll();
@@ -150,7 +155,7 @@ public class BattleArena extends JavaPlugin{
 		ts.setConfig(FileUtil.load(this,dir.getPath() +"/teamConfig.yml","/default_files/teamConfig.yml")); /// Load team Colors
 		ts.loadAll();
 
-		baConfigSerializer.loadAll(); /// Load our defaults for BattleArena
+		baConfigSerializer.loadCompetitions(); /// Load our competitions, has to happen after classes and teams
 
 		/// persist our disabled arena types
 		StateFlagSerializer sfs = new StateFlagSerializer();
@@ -258,14 +263,92 @@ public class BattleArena extends JavaPlugin{
 		}
 	}
 
+	/**
+	 * Return the BattleArena plugin
+	 * @return BattleArena
+	 */
 	public static BattleArena getSelf() {return plugin;}
+
+	/**
+	 * Return the BattleArenaController, which handles queuing and arenas
+	 * @return BattleArenaController
+	 */
 	public static BattleArenaController getBAController(){return arenaController;}
+
+	/**
+	 * Return the BAEventController, which handles Events
+	 * @return BAEventController
+	 */
 	public static BAEventController getBAEventController(){return eventController;}
+
+	/**
+	 * Get the TeamController, deals with self made teams
+	 * @return TeamController
+	 */
 	public static TeamController getTeamController(){return tc;}
+
+	/**
+	 * Get the DuelController, deals with who is currently trying to duel other people/teams
+	 * @return
+	 */
 	public DuelController getDuelController(){return dc;}
+
+	/**
+	 * Get the EventController, deals with what events can be run
+	 * @return
+	 */
 	public static EventController getEventController(){return ec;}
+
+	/**
+	 * Get the Arena Editor, deals with Altering and changing Arenas
+	 * @return ArenaEditor
+	 */
 	public static ArenaEditor getArenaEditor() {return aac;}
+
+	/**
+	 * Get the BAExecutor, deals with the Arena related commands
+	 * @return BAExecutor
+	 */
 	public static BAExecutor getBAExecutor() {return commandExecutor;}
+
+	/**
+	 * Is the player inside of the BattleArena system
+	 * This means one of the following
+	 * Player is in a queue, in a competition, being challenged, inside MobArena,
+	 * being challenged to a duel, being invited to a team
+	 *
+	 * @param player: the player you want to check
+	 * @param showReasons: if player is in system, show the player a message about how to exit
+	 * @return true or false: whether they are in the system
+	 */
+	public static boolean inSystem(Player player, boolean showReasons){
+		return !getBAExecutor().canJoin(BattleArena.toArenaPlayer(player), showReasons);
+	}
+
+	/**
+	 * Is the player currently inside a competition
+	 * @param player: the player you want to check
+	 * @return true or false: whether they are in a competition
+	 */
+	public static boolean inCompetition(Player player){
+		return BattleArena.toArenaPlayer(player).getCompetition() != null;
+	}
+
+	/**
+	 * Is the player physically inside an arena
+	 * @param player: the player you want to check
+	 * @return true or false: whether they are in inside an arena
+	 */
+	public static boolean inArena(Player player){
+		return getBAController().insideArena(BattleArena.toArenaPlayer(player));
+	}
+
+	/**
+	 * Use the newer inArena
+	 * @param player
+	 * @return
+	 */
+	@Deprecated
 	public static boolean insideArena(Player player){
 		return getBAController().insideArena(BattleArena.toArenaPlayer(player));
 	}
@@ -276,39 +359,113 @@ public class BattleArena extends JavaPlugin{
 	 */
 	public void reloadConfig(){
 		super.reloadConfig();
-		baConfigSerializer.loadAll();
+		baConfigSerializer.loadDefaults();
 		classesSerializer.loadAll();
+		baConfigSerializer.loadCompetitions();
 	}
 
-	public static String getVersion() {
+	/**
+	 * Get the a versioning String
+	 * @return
+	 */
+	public static String getNameAndVersion() {
 		return "[" + pluginname + " v" + version +"]";
 	}
-	public static String getPName() {
+
+	/**
+	 * Get the plugin name
+	 * @return
+	 */
+	public static String getPluginName() {
 		return "[" + pluginname+"]";
 	}
 
+	/**
+	 * Save the arenas for a given plugin
+	 * @param plugin
+	 */
+	public static void saveArenas(Plugin plugin) {ArenaSerializer.saveArenas(plugin);}
+
+	/**
+	 * Save all the arenas for all plugins
+	 */
 	public static void saveArenas() {ArenaSerializer.saveAllArenas(false);	}
+
+	/**
+	 * Save all arenas for all plugins and log to server.log
+	 * @param log
+	 */
 	public static void saveArenas(boolean log) {ArenaSerializer.saveAllArenas(log);	}
 
+	/**
+	 * Load all arenas
+	 */
 	public void loadArenas() {
 		ArenaSerializer.loadAllArenas();
 	}
 
+	/**
+	 * Convert a bukkit Player into an ArenaPlayer
+	 * @param player: player to convert
+	 * @return ArenaPlayer: corresponding to the player
+	 */
 	public static ArenaPlayer toArenaPlayer(Player player) {return PlayerController.toArenaPlayer(player);}
+
+	/**
+	 * Convert bukkit Players to ArenaPlayers
+	 * @param players
+	 * @return
+	 */
 	public static Set<ArenaPlayer> toArenaPlayerSet(Collection<Player> players) {return PlayerController.toArenaPlayerSet(players);}
+
+	/**
+	 * Convert bukkit Players to ArenaPlayers
+	 * @param players
+	 * @return
+	 */
 	public static List<ArenaPlayer> toArenaPlayerList(Collection<Player> players) {return PlayerController.toArenaPlayerList(players);}
+
+	/**
+	 * Convert ArenaPlayers to BukkitPlayers
+	 * @param players
+	 * @return
+	 */
 	public static Set<Player> toPlayerSet(Collection<ArenaPlayer> players) {return PlayerController.toPlayerSet(players);}
+
+	/**
+	 * Convert ArenaPlayers to BukkitPlayers
+	 * @param players
+	 * @return
+	 */
 	public static List<Player> toPlayerList(Collection<ArenaPlayer> players) {return PlayerController.toPlayerList(players);}
 
-	public static Arena getArena(String arenaName) {return BattleArena.getBAC().getArena(arenaName);}
+	/**
+	 * Get the arena a player is inside (if any)
+	 * @param arenaName
+	 * @return An arena, or null if player is not inside an arena
+	 */
+	public static Arena getArena(String arenaName) {return BattleArena.getBAController().getArena(arenaName);}
 
-	public static void saveArenas(Plugin plugin) {ArenaSerializer.saveArenas(plugin);}
 
-
+	/**
+	 * Register a competiton with BattleArena
+	 * @param plugin: The plugin that is registering the Arena
+	 * @param name: Name of the competition
+	 * @param cmd: The cmd you would like to use (can be an alias)
+	 * @param arenaClass: The Arena Class for your competition
+	 */
 	public static void registerCompetition(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
 		new APIRegistrationController().registerCompetition(plugin,name,cmd,arenaClass);
 	}
 
+	/**
+	 * Register a competiton with BattleArena
+	 * @param plugin: The plugin that is registering the Arena
+	 * @param name: Name of the competition
+	 * @param cmd: The cmd you would like to use (can be an alias)
+	 * @param arenaClass: The Arena Class for your competition
+	 * @param executor: The executor you would like to receive commands
+	 */
 	public static void registerCompetition(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, CustomCommandExecutor executor){
 		new APIRegistrationController().registerCompetition(plugin,name,cmd,arenaClass, executor);
 	}

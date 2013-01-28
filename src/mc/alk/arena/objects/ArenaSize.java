@@ -23,6 +23,11 @@ public class ArenaSize implements CompetitionSize{
 	}
 
 	@Override
+	public int getMaxPlayers(){
+		return (maxTeams == MAX || maxTeamSize == MAX) ? MAX : maxTeams * maxTeamSize;
+	}
+
+	@Override
 	public boolean matchesTeamSize(int i) {
 		return minTeamSize <= i && i <= maxTeamSize;
 	}
@@ -42,11 +47,6 @@ public class ArenaSize implements CompetitionSize{
 		maxTeams = mm.max;
 	}
 
-	@Override
-	public int getMaxPlayers(){
-		return (maxTeams == ArenaParams.MAX || maxTeamSize == ArenaParams.MAX) ?
-				CompetitionSize.MAX : maxTeams * maxTeamSize;
-	}
 	@Override
 	public int getMinTeams() {return minTeams;}
 

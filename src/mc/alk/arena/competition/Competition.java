@@ -14,13 +14,14 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.TeamHandler;
 
 /**
  * Base class for Matches and Events
  * @author alkarin
  *
  */
-public abstract class Competition implements ArenaListener {
+public abstract class Competition implements ArenaListener, TeamHandler {
 
 	/** Our teams */
 	protected List<Team> teams = Collections.synchronizedList(new ArrayList<Team>());
@@ -137,7 +138,6 @@ public abstract class Competition implements ArenaListener {
 		methodController.callEvent(event); /// Call our listeners listening to only this competition
 	}
 
-
 	/**
 	 * Add a collection of listeners for this competition
 	 * @param transitionListeners
@@ -159,8 +159,51 @@ public abstract class Competition implements ArenaListener {
 	 * Remove an arena listener for this competition
 	 * @param al
 	 */
-	public boolean removeArenaListener(ArenaListener al){
-		return methodController.removeListener(al);
+	public boolean removeArenaListener(ArenaListener arenaListener){
+		return methodController.removeListener(arenaListener);
 	}
 
+	/**
+	 * Get the team that this player is inside of
+	 * @param player
+	 * @return ArenaPlayer, or null if no team contains this player
+	 */
+	public Team getTeam(ArenaPlayer player) {
+		for (Team t: teams) {
+			if (t.hasMember(player)) return t;}
+		return null;
+	}
+
+	/**
+	 * Is the player inside of this competition?
+	 * @param player to check for
+	 * @return true or false
+	 */
+	public boolean hasPlayer(ArenaPlayer player) {
+		for (Team t: teams) {
+			if (t.hasMember(player)) return true;}
+		return false;
+	}
+
+	/**
+	 * Is the player alive and inside of this competition?
+	 * @param player to check for
+	 * @return true or false
+	 */
+	public boolean hasAlivePlayer(ArenaPlayer p) {
+		for (Team t: teams) {
+			if (t.hasAliveMember(p)) return true;}
+		return false;
+	}
+
+	/**
+	 * Get the players that are currently inside of this competition
+	 * @return Set of ArenaPlayers
+	 */
+	public Set<ArenaPlayer> getPlayers() {
+		HashSet<ArenaPlayer> players = new HashSet<ArenaPlayer>();
+		for (Team t: teams){
+			players.addAll(t.getPlayers());}
+		return players;
+	}
 }

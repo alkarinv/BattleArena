@@ -31,6 +31,8 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.MapOfTreeSet;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.NotifierUtil;
+import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
@@ -45,16 +47,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class BattleArenaDebugExecutor extends CustomCommandExecutor{
-
-	@Override
-	public void showHelp(CommandSender sender, Command command){
-		help(sender,command,null,null);
-	}
-
-	@MCCommand( cmds = {"help","?"})
-	public void help(CommandSender sender, Command command, String label, Object[] args){
-		super.help(sender, command, args);
-	}
 
 	@MCCommand( cmds = {"enableDebugging"}, admin=true,min=3, usage="enableDebugging <code section> <true | false>")
 	public void enableDebugging(CommandSender sender, String section, Boolean on){
@@ -185,6 +177,12 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return true;
 	}
 
+	@MCCommand(cmds={"showPlayerVars"}, admin=true)
+	public boolean showPlayerVars(CommandSender sender, ArenaPlayer player) {
+		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(player, ToStringStyle.MULTI_LINE_STYLE);
+		return sendMessage(sender, rtsb.toString());
+	}
+
 	@MCCommand(cmds={"showArenaVars"}, admin=true)
 	public boolean showArenaVars(CommandSender sender, Arena arena) {
 		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(arena, ToStringStyle.MULTI_LINE_STYLE);
@@ -202,7 +200,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 	@MCCommand(cmds={"version"}, admin=true)
 	public boolean showVersion(CommandSender sender) {
-		sendMessage(sender, BattleArena.getVersion());
+		sendMessage(sender, BattleArena.getNameAndVersion());
 		for (ArenaType at : ArenaType.getTypes()){
 			String name = at.getPlugin().getName();
 			String version = at.getPlugin().getDescription().getVersion();
@@ -332,7 +330,9 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 	@MCCommand(cmds={"tp"}, admin=true)
 	public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, Integer spawnIndex) {
-		Location loc = arena.getSpawnLoc(spawnIndex);
+		if (spawnIndex < 1)
+			spawnIndex=1;
+		Location loc = arena.getSpawnLoc(spawnIndex-1);
 		if (loc ==null){
 			return sendMessage(sender,"&2Spawn " + spawnIndex +" doesn't exist");}
 		TeleportController.teleport(sender.getPlayer(), loc);
@@ -352,6 +352,29 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public boolean allowAdminCommands(CommandSender sender, Boolean enable) {
 		Defaults.ALLOW_ADMIN_CMDS_IN_MATCH = enable;
 		return sendMessage(sender,"&2Admins can "+ (enable ? "&6use" : "&cnot use")+"&2 commands in match");
+	}
+
+	@MCCommand(cmds={"giveAdminPerms"}, op=true)
+	public boolean giveAdminPerms(CommandSender sender, Player player, Boolean enable) {
+		PermissionsUtil.givePlayerAdminPerms(player,enable);
+		if (enable){
+			return sendMessage(sender,"&2 "+player.getName()+" &6now has&2 admin perms");
+		} else {
+			return sendMessage(sender,"&2 "+player.getName()+" &4no longer has&2 admin perms");
+		}
+	}
+
+	@MCCommand(cmds={"notify"}, admin=true)
+	public boolean addNotifyListener(CommandSender sender, Player player, String type, Boolean enable) {
+		if (enable){
+			NotifierUtil.addListener(player, type);
+			if (!sender.getName().equals(player.getName()))sendMessage(player,"&2 "+player.getName()+" &6now listening &2to " + type+" debugging messages");
+			return sendMessage(sender,"&2 "+player.getName()+" &6now listening &2to " + type+" debugging messages");
+		} else {
+			NotifierUtil.removeListener(player, type);
+			if (!sender.getName().equals(player.getName()))sendMessage(player,"&2 "+player.getName()+" &cstopped listening&2 to " + type+" debugging messages");
+			return sendMessage(sender,"&2 "+player.getName()+" &cstopped listening&2 to " + type+" debugging messages");
+		}
 	}
 
 }

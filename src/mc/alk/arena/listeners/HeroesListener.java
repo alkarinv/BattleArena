@@ -45,6 +45,9 @@ public enum HeroesListener implements Listener {
 			return;}
 		if (!inArena.contains(event.getPlayer().getName())){
 			return;}
+		if (event.getSkill().getName().equals("Revive")){
+			Player p = event.getArgs().length > 0 ? Bukkit.getPlayer(event.getArgs()[0]) : null;
+		}
 		if (!containsHeroesSkill(event.getSkill().getName()))
 			return;
 		event.setCancelled(true);

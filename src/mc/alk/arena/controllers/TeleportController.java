@@ -41,16 +41,16 @@ public class TeleportController implements Listener{
 		teleport(player,location,giveBypassPerms);
 	}
 
-	public static void teleport(final Player player, final Location location){
-		teleport(player,location,false);
+	public static boolean teleport(final Player player, final Location location){
+		return teleport(player,location,false);
 	}
 
-	private static void teleport(final Player player, final Location location, boolean giveBypassPerms){
+	private static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
 		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
 		if (!player.isOnline() || player.isDead()){
-			if (Defaults.DEBUG)Log.warn(BattleArena.getPName()+" Offline teleporting Player=" + player.getName() + " loc=" + location);
+			if (Defaults.DEBUG)Log.warn(BattleArena.getPluginName()+" Offline teleporting Player=" + player.getName() + " loc=" + location);
 			BAPlayerListener.teleportOnReenter(player.getName(),location);
-			return;
+			return false;
 		}
 		player.setVelocity(new Vector(0,0,0));
 		Location loc = location.clone();
@@ -79,8 +79,11 @@ public class TeleportController implements Listener{
 			player.addAttachment(BattleArena.getSelf(), Defaults.TELEPORT_BYPASS_PERM, true, 1);
 
 		if (!player.teleport(loc)){
-			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + loc);}
+			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + loc);
+			return false;
+		}
 		if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());
+		return true;
 	}
 
 	private static void teleporting(Player player, boolean isteleporting){

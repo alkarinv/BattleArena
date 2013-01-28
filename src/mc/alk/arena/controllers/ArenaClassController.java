@@ -1,5 +1,6 @@
 package mc.alk.arena.controllers;
 
+import java.awt.Color;
 import java.util.HashMap;
 
 import mc.alk.arena.objects.ArenaClass;
@@ -8,7 +9,6 @@ import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
 
-import org.bukkit.Color;
 import org.bukkit.entity.Player;
 
 public class ArenaClassController {

@@ -1,8 +1,13 @@
 package mc.alk.arena.objects;
 
+import java.util.Stack;
+
+import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
+import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -10,11 +15,24 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.PlayerInventory;
 
 public class ArenaPlayer {
+
+	/** Player name, needed if Player is not available or null */
 	final String name;
+
+	/** The bukkit player, refreshed with each new event having the player */
 	Player player;
-	ArenaClass preferredClass;
+
+	/**
+	 * Which competitions is the player inside
+	 * This can be up to 2, in cases of a tournament or a reserved arena event
+	 * where they have the event, and the match
+	 */
+	Stack<Competition> competitions = new Stack<Competition>();
+
+	/** Which class did the player pick during the competition */
 	ArenaClass chosenClass;
 
+	/** Has the player specified they are "ready" by clicking a block or sign */
 	boolean isReady;
 
 	public ArenaPlayer(Player player) {
@@ -114,15 +132,6 @@ public class ArenaPlayer {
 		return player.hasPermission(perm);
 	}
 
-
-	public ArenaClass getPreferredClass() {
-		return preferredClass;
-	}
-
-	public void setPreferredClass(ArenaClass preferredClass) {
-		this.preferredClass = preferredClass;
-	}
-
 	public ArenaClass getChosenClass() {
 		return chosenClass;
 	}
@@ -137,6 +146,30 @@ public class ArenaPlayer {
 
 	public int getLevel() {
 		return (HeroesController.enabled()) ? HeroesController.getLevel(player) : player.getLevel();
+	}
+
+	public Competition getCompetition() {
+		return competitions.peek();
+	}
+
+	public void addCompetition(Competition competition) {
+		competitions.push(competition);
+		if (competitions.size() > 2){ /// TODO remove once I'm confident about new system
+			Util.printStackTrace();
+		}
+	}
+
+	public boolean removeCompetition(Competition competition) {
+		return competitions.remove(competition);
+	}
+
+	/**
+	 * Returns their current team, based on whichever competition is top of the stack
+	 * This is NOT a self made team, only the team from the competition
+	 * @return Team, or null if they are not inside a competition
+	 */
+	public Team getTeam() {
+		return competitions.isEmpty() ? null : competitions.peek().getTeam(this);
 	}
 
 }

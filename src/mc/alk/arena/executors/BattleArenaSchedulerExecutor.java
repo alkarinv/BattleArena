@@ -9,23 +9,12 @@ import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.pairs.EventPair;
 
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
 	EventScheduler es;
 	public BattleArenaSchedulerExecutor(EventScheduler es){
 		this.es = es;
-	}
-
-	@Override
-	public void showHelp(CommandSender sender, Command command){
-		help(sender,command,null,null);
-	}
-
-	@MCCommand( cmds = {"help","?"})
-	public void help(CommandSender sender, Command command, String label, Object[] args){
-		super.help(sender, command, args);
 	}
 
 	@MCCommand(cmds={"add"}, admin=true)

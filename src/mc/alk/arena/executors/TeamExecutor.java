@@ -19,7 +19,6 @@ import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.ServerUtil;
 
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -255,11 +254,4 @@ public class TeamExecutor extends CustomCommandExecutor {
 		teamc.removeFormingTeam(t);
 		return true;
 	}
-
-
-	@MCCommand( cmds = {"help","?"})
-	public void help(CommandSender sender, Command command, String label, Object[] args){
-		super.help(sender, command, args);
-	}
-
 }

@@ -58,6 +58,7 @@ public enum TransitionOption{
 	MAGIC("magic",true),							/// =<int>: set the players magic to the given amount
 	MAGICP("magicp",true),							/// =<int>: set the players magic to the given percent
 	MONEY("money",true),							/// =<double>: give the player money.  PREREQ: charge a fee to enter
+	POTIONDAMAGEON("potionDamageOn",false),			/// force potion damage to be on
 	PVPON("pvpOn",false),							/// Turn on PvP, by default friendly fire is off
 	PVPOFF("pvpOff",false),							/// Turn off all Pvp
 	INVINCIBLE("invincible",false),					/// Players are invincible

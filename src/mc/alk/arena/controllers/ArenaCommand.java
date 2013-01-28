@@ -9,12 +9,13 @@ import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.plugin.Plugin;
 
 public class ArenaCommand extends Command implements PluginIdentifiableCommand{
-	CommandExecutor executor;
-	Plugin plugin;
+	final CommandExecutor executor;
+	final Plugin plugin;
 
-	public ArenaCommand(String name, String description, String usageMessage, List<String> aliases, Plugin plugin) {
+	public ArenaCommand(String name, String description, String usageMessage, List<String> aliases, Plugin plugin, CommandExecutor executor) {
 		super(name, description, usageMessage, aliases);
 		this.plugin = plugin;
+		this.executor = executor;
 	}
 
 	@Override
@@ -25,9 +26,5 @@ public class ArenaCommand extends Command implements PluginIdentifiableCommand{
 	@Override
 	public Plugin getPlugin() {
 		return plugin;
-	}
-
-	public void setExecutor(CommandExecutor executor){
-		this.executor = executor;
 	}
 }

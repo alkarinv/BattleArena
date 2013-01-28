@@ -2,7 +2,7 @@ package mc.alk.arena.events.matches;
 
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.objects.ArenaParams;
-import mc.alk.arena.objects.pairs.QPosTeamPair;
+import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.teams.Team;
 
 public class TeamJoinedQueueEvent extends BAEvent{
@@ -13,8 +13,8 @@ public class TeamJoinedQueueEvent extends BAEvent{
 	final Long timeToStart;
 	final ArenaParams params;
 
-	public TeamJoinedQueueEvent(QPosTeamPair qpp) {
-		this.team = qpp.t;
+	public TeamJoinedQueueEvent(QueueResult qpp) {
+		this.team = qpp.team;
 		this.playersInQueue = qpp.playersInQueue;
 		this.pos = qpp.pos;
 		this.timeToStart = qpp.time;

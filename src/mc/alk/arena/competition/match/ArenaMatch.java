@@ -1,5 +1,6 @@
 package mc.alk.arena.competition.match;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +36,6 @@ import mc.alk.arena.util.TeamUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -49,6 +49,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -89,15 +90,32 @@ public class ArenaMatch extends Match {
 	public void onPlayerDeath(PlayerDeathEvent event, final ArenaPlayer target){
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE || !insideArena.contains(target.getName())){
 			return;}
+
 		if (cancelExpLoss)
 			event.setKeepLevel(true);
+
 		final Team t = getTeam(target);
 		if (t==null)
 			return;
+		Integer nDeaths = t.getNDeaths(target);
+		boolean exiting = !respawns || (nDeaths != null && nDeaths >= nLivesPerPlayer);
+
+		/// If keepInventory is specified, but not restoreAll, then we have a case
+		/// where we need to give them back the current Inventory they have on them
+		/// even if they log out
+		if (keepsInventory){
+			boolean restores = getParams().getTransitionOptions().hasAnyOption(TransitionOption.RESTOREALL);
+			/// Restores and exiting, means clear their match inventory so they won't
+			/// get their match and their already stored inventory
+			if (restores && exiting){
+				psc.clearMatchItems(target);
+			} else { /// keep their current inv
+				psc.storeMatchItems(target);
+			}
+		}
+
 		/// Handle Drops from bukkitEvent
 		if (clearsInventoryOnDeath || keepsInventory){ /// clear the drops
-			if (keepsInventory){
-				psc.storeMatchItems(target);}
 			try {event.getDrops().clear();} catch (Exception e){}
 		} else if (woolTeams){  /// Get rid of the wool from teams so it doesnt drop
 			final int index = teams.indexOf(t);
@@ -115,9 +133,7 @@ public class ArenaMatch extends Match {
 			}
 		}
 
-		Integer nDeaths = t.getNDeaths(target);
-
-		if (!respawns || (nDeaths != null && nDeaths >= nLivesPerPlayer) ){
+		if (exiting){
 			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);
 		} else {
 			/// We can't let them just sit on the respawn screen... schedule them to lose
@@ -134,6 +150,8 @@ public class ArenaMatch extends Match {
 				}
 			}, 15*20L);
 			deathTimer.put(target.getName(), timer);
+
+
 		}
 	}
 
@@ -459,6 +477,20 @@ public class ArenaMatch extends Match {
 			if (event.getFrom().getWorld().getUID() != event.getTo().getWorld().getUID()){
 				MessageUtil.sendMessage(event.getPlayer(), "&cWorldChanges are disabled in this arena");
 				event.setCancelled(true);
+			}
+		}
+	}
+
+	@MatchEventHandler(needsPlayer=false)
+	public void onPotionSplash(PotionSplashEvent event) {
+		if (!event.isCancelled())
+			return;
+		if (event.getEntity().getShooter() instanceof Player){
+			Player p = (Player) event.getEntity().getShooter();
+			ArenaPlayer ap = BattleArena.toArenaPlayer(p);
+			if (insideArena(ap) &&
+					getParams().getTransitionOptions().hasOptionAt(getState(), TransitionOption.POTIONDAMAGEON)){
+				event.setCancelled(false);
 			}
 		}
 	}

@@ -27,7 +27,6 @@ import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.Persist;
-import mc.alk.arena.util.Log;
 import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;

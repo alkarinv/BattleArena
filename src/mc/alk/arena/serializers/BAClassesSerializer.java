@@ -21,7 +21,7 @@ public class BAClassesSerializer extends BaseSerializer{
 
 	public void loadClasses(ConfigurationSection cs) {
 		if (cs == null){
-			Log.info(BattleArena.getPName() +" has no classes");
+			Log.info(BattleArena.getPluginName() +" has no classes");
 			return;}
 		StringBuilder sb = new StringBuilder();
 		Set<String> keys = cs.getKeys(false);
@@ -41,9 +41,9 @@ public class BAClassesSerializer extends BaseSerializer{
 			}
 		}
 		if (first){
-			Log.info(BattleArena.getPName() +" no predefined classes found. inside of " + cs.getCurrentPath());
+			Log.info(BattleArena.getPluginName() +" no predefined classes found. inside of " + cs.getCurrentPath());
 		} else {
-			Log.info(BattleArena.getPName()+" registering classes: " +sb.toString());
+			Log.info(BattleArena.getPluginName()+" registering classes: " +sb.toString());
 		}
 	}
 

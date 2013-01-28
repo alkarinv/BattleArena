@@ -31,7 +31,7 @@ public class EventScheduleSerializer extends BaseSerializer {
 
 	public void loadScheduledEvents(ConfigurationSection cs) {
 		if (cs == null){
-			Log.info(BattleArena.getPName() +" has no scheduled events");
+			Log.info(BattleArena.getPluginName() +" has no scheduled events");
 			return;}
 		List<String> keys = new ArrayList<String>(cs.getKeys(false));
 		Collections.sort(keys);
@@ -42,7 +42,7 @@ public class EventScheduleSerializer extends BaseSerializer {
 			String[] fullargs = se.split(" ");
 			EventParams eventParams = ParamController.getEventParamCopy(fullargs[0]);
 			if (eventParams == null){
-				Log.err(BattleArena.getPName()+" couldn't reparse the scheduled event " + fullargs[0]);
+				Log.err(BattleArena.getPluginName()+" couldn't reparse the scheduled event " + fullargs[0]);
 				continue;
 			}
 			String[] args = Arrays.copyOfRange(fullargs, 1, fullargs.length);

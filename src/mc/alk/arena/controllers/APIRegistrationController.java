@@ -13,7 +13,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
@@ -91,8 +91,8 @@ public class APIRegistrationController {
 			boolean isMatch = !config.getBoolean(key+".isEvent",false);
 			MatchParams mp = ConfigSerializer.setTypeConfig(plugin,key,cs, isMatch);
 			ArenaExecutor executor = isMatch ? BattleArena.getBAExecutor() : new ReservedArenaEventExecutor();
-			ArenaCommand arenaCommand = new ArenaCommand(mp.getCommand(),"","", new ArrayList<String>(), BattleArena.getSelf());
-			arenaCommand.setExecutor(executor);
+			ArenaCommand arenaCommand = new ArenaCommand(mp.getCommand(),"","", new ArrayList<String>(), BattleArena.getSelf(), executor);
+//			arenaCommand.setExecutor(executor);
 			CommandController.registerCommand(arenaCommand);
 		} catch (Exception e) {
 			Log.err("Couldnt configure arenaType " + key+". " + e.getMessage());
@@ -251,21 +251,24 @@ public class APIRegistrationController {
 	}
 
 	private void setCommandToExecutor(JavaPlugin plugin, String wantedCommand, CommandExecutor executor) {
-		if (!setCommandToExecutor(plugin,wantedCommand, executor, true)){
-			Log.err("Searching for alternative commands to register");
-			Map<String, Map<String, Object>> commands = plugin.getDescription().getCommands();
-			for (String cmd: commands.keySet()){
-				if (setCommandToExecutor(plugin, cmd, executor,false)){ /// we found one!
-					Log.info("Alternative command found cmd=" + cmd);
-					return;
-				}
-				Map<String,Object> aliases = commands.get(cmd);
-				for (String alias: aliases.keySet()){
-					if (setCommandToExecutor(plugin, alias, executor,false)){ /// we found one!
-						return;
-					}
-				}
-			}
+		if (!setCommandToExecutor(plugin,wantedCommand, executor, false)){
+			List<String> aliases = new ArrayList<String>();
+//			Log.err("Searching for alternative commands to register");
+			ArenaCommand arenaCommand = new ArenaCommand(wantedCommand,"","", aliases, BattleArena.getSelf(),executor);
+			CommandController.registerCommand(arenaCommand);
+//			Map<String, Map<String, Object>> commands = plugin.getDescription().getCommands();
+//			for (String cmd: commands.keySet()){
+//				if (setCommandToExecutor(plugin, cmd, executor,false)){ /// we found one!
+//					Log.info("Alternative command found cmd=" + cmd);
+//					return;
+//				}
+//				Map<String,Object> aliases = commands.get(cmd);
+//				for (String alias: aliases.keySet()){
+//					if (setCommandToExecutor(plugin, alias, executor,false)){ /// we found one!
+//						return;
+//					}
+//				}
+//			}
 		}
 	}
 
@@ -353,12 +356,10 @@ public class APIRegistrationController {
 			}
 			File dir = plugin.getDataFolder();
 			File configFile = new File(dir.getAbsoluteFile()+"/"+name+"Config.yml");
-			if (!configFile.exists()){
-				throw new ExtensionPluginException(plugin, "Error loading config file " + configFile);
-			}
 			registerCompetition(plugin, name, cmd, arenaClass, executor, configFile);
 			return true;
 		} catch (Exception e){
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -373,9 +374,28 @@ public class APIRegistrationController {
 			Class<? extends Arena> arenaClass, CustomCommandExecutor executor, File configFile,
 			boolean defaultIsMatch, boolean defaultCompetition)
 			throws Exception{
+
+		/// Create our plugin folder if its not there
+		File dir = plugin.getDataFolder();
+		if (!dir.exists()){
+			dir.mkdirs();}
+
+		String configFileName = name+"Config.yml";
+		String fileName = defaultIsMatch ? "defaultMatchTypeConfig.yml" : "defaultEventTypeConfig.yml";
+
+		File pluginFile = new File(dir.getPath()+File.separator+configFileName);
+		File defaultPluginFile = configFile;
+		File defaultFile = new File("default_files"+File.separator+fileName);
+
+		if (!loadConfigFile(plugin, defaultFile, defaultPluginFile, pluginFile, name,cmd)){
+			Log.err(plugin.getName() + " " + pluginFile.getName() + " could not be loaded");
+			return;
+		}
+
 		BaseSerializer bs = new BaseSerializer();
 		bs.setConfig(configFile);
 		FileConfiguration config = bs.getConfig();
+
 
 		boolean isMatch = !config.getBoolean(name+".isEvent",!defaultIsMatch);
 		isMatch = config.getBoolean(name+".queue",isMatch);

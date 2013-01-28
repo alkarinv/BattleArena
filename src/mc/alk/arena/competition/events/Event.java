@@ -40,7 +40,6 @@ import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.util.Countdown;
@@ -53,7 +52,7 @@ import mc.alk.arena.util.TimeUtil;
 import org.bukkit.entity.Player;
 
 
-public abstract class Event extends Competition implements CountdownCallback, TeamHandler, ArenaListener {
+public abstract class Event extends Competition implements CountdownCallback, ArenaListener {
 	static int eventCount = 0;
 	final int id = eventCount++;
 
@@ -99,7 +98,6 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		setParamInst(params);
 		teams.clear();
 		joinHandler = TeamJoinFactory.createTeamJoinHandler(params, this);
-
 		EventOpenEvent event = new EventOpenEvent(this);
 
 		callEvent(event);
@@ -170,7 +168,6 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		}
 	}
 
-
 	public void cancelEvent() {
 		eventCancelled();
 	}
@@ -229,6 +226,7 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	 */
 	public boolean leave(ArenaPlayer p) {
 		Team t = getTeam(p);
+		p.removeCompetition(this);
 		if (t==null) /// they arent in this Event
 			return true;
 		t.playerLeft(p);
@@ -237,7 +235,11 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 
 	public void removeAllTeams(){
 		for (Team t: teams){
-			TeamController.removeTeamHandler(t,this);}
+			TeamController.removeTeamHandler(t,this);
+			for (ArenaPlayer p: t.getPlayers()){
+				p.removeCompetition(this);
+			}
+		}
 		teams.clear();
 	}
 
@@ -245,6 +247,9 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	public boolean removeTeam(Team team){
 		if (teams.remove(team)){
 			TeamController.removeTeamHandler(team,this);
+			for (ArenaPlayer p: team.getPlayers()){
+				p.removeCompetition(this);
+			}
 			return true;
 		}
 		return false;
@@ -285,13 +290,16 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 //			mc.sendEventTeamJoiningMessage(tqo.getTeam()); /// TODO
 		}
 		switch(tjr.status){
+		case WAITING_FOR_PLAYERS:
+			mc.sendWaitingForMorePlayers(team, tjr.remaining);
+			/* drop down into ADDED, to add the players competition */
+		case ADDED_TO_EXISTING: /* drop down into added */
 		case ADDED:
+			for (ArenaPlayer player: tqo.getTeam().getPlayers()){
+				player.addCompetition(this);}
 			break;
 		case CANT_FIT:
 			mc.sendCantFitTeam(team);
-			break;
-		case WAITING_FOR_PLAYERS:
-			mc.sendWaitingForMorePlayers(team, tjr.remaining);
 			break;
 		default:
 			break;
@@ -354,25 +362,9 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		}
 	}
 
-	public Team getTeam(ArenaPlayer p) {
-		for (Team tt : teams){
-			if (tt.hasMember(p)){
-				return tt;}
-		}
-
-		return null;
-	}
 
 	protected Set<ArenaPlayer> getExcludedPlayers() {
 		return joinHandler == null ? null :  joinHandler.getExcludedPlayers();
-	}
-
-	public boolean hasPlayer(ArenaPlayer p) {
-		for (Team t: teams){
-			if (t.hasMember(p))
-				return true;
-		}
-		return false;
 	}
 
 	public String getStatus() {
@@ -429,8 +421,6 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 		return sb.toString();
 	}
 
-	@Override
-	public List<Team> getTeams(){return teams;}
 	public boolean canLeaveTeam(ArenaPlayer p) {return canLeave(p);}
 
 	/**
@@ -465,7 +455,8 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	 * if Event is open will return those players still waiting for a team as well
 	 * @return
 	 */
-	private Set<ArenaPlayer> getPlayers() {
+	@Override
+	public Set<ArenaPlayer> getPlayers() {
 		Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
 		for (Team t: getTeams()){
 			players.addAll(t.getPlayers());}
@@ -512,6 +503,4 @@ public abstract class Event extends Competition implements CountdownCallback, Te
 	public int getID(){
 		return id;
 	}
-
-
 }

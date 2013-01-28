@@ -174,7 +174,13 @@ public class ConfigSerializer extends BaseSerializer{
 
 		pi.setOverrideBattleTracker(cs.getBoolean("overrideBattleTracker", true));
 		pi.setNLives(cs.getInt("nDeaths",1));
-		pi.setNLives(cs.getInt("nLives",pi.getNLives()));
+		String nLives = cs.getString("nLives", "1");
+		if (nLives.equalsIgnoreCase("infinite")){
+			pi.setNLives(Integer.MAX_VALUE);
+		} else {
+			pi.setNLives(Integer.valueOf(nLives));
+		}
+
 		pi.setNConcurrentCompetitions(cs.getInt("nConcurrentCompetitions",Integer.MAX_VALUE));
 
 		if (cs.contains("customMessages") && cs.getBoolean("customMessages")){
@@ -230,10 +236,13 @@ public class ConfigSerializer extends BaseSerializer{
 			default:
 				break;
 			}
-
 			allTops.addTransitionOptions(transition,tops);
 		}
 		ParamController.setTransitionOptions(pi, allTops);
+		/// By Default if they respawn in the arena.. people must want infinite lives
+		if (pi.getTransitionOptions().hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWN) && !cs.contains("nLives")){
+			pi.setNLives(Integer.MAX_VALUE);
+		}
 		ParamController.removeMatchType(pi);
 		ParamController.addMatchType(pi);
 		Log.info(plugin.getName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none")+",queue="+match);
