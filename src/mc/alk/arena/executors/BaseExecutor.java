@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -32,7 +33,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 			new HashMap<String,Map<String,TreeMap<Integer,MethodWrapper>>>();
 	public static final int SELF = -2; /// Which index defines the sender
 
-	protected TreeMap<MCCommand, List<String>> usage = new TreeMap<MCCommand, List<String>>(new Comparator<MCCommand>(){
+	protected TreeMap<MCCommand, Set<String>> usage = new TreeMap<MCCommand, Set<String>>(new Comparator<MCCommand>(){
 		@Override
 		public int compare(MCCommand cmd1, MCCommand cmd2) {
 			int c = new Float(cmd1.helpOrder()).compareTo(cmd2.helpOrder());
@@ -128,9 +129,9 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		}
 	}
 	private void addUsage(Method method, MCCommand mc) {
-		List<String> usages = usage.get(mc);
+		Set<String> usages = usage.get(mc);
 		if (usages == null){
-			usages = new ArrayList<String>();
+			usages = new HashSet<String>();
 			usage.put(mc, usages);
 		}
 		/// save the usages, for showing help messages
@@ -457,15 +458,17 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		List<String> onlyop = new ArrayList<String>();
 
 		for (MCCommand cmd : usage.keySet()){
-			final String use = "&6/" + command.getName() +" " + usage.get(cmd);
-			if (cmd.op() && !sender.isOp())
-				onlyop.add(use);
-			else if (cmd.admin() && !hasAdminPerms(sender))
-				onlyop.add(use);
-			else if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
-				unavailable.add(use);
-			else
-				available.add(use);
+			for (String str: usage.get(cmd)){
+				final String use = "&6/" + command.getName() +" " + str;
+				if (cmd.op() && !sender.isOp())
+					onlyop.add(use);
+				else if (cmd.admin() && !hasAdminPerms(sender))
+					onlyop.add(use);
+				else if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
+					unavailable.add(use);
+				else
+					available.add(use);
+			}
 		}
 		int npages = available.size()+unavailable.size();
 		if (sender.isOp())
