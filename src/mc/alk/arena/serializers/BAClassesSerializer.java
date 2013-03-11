@@ -12,7 +12,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
-public class BAClassesSerializer extends BaseSerializer{
+public class BAClassesSerializer extends BaseConfig{
 
 	public void loadAll(){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}

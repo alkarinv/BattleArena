@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>mc.alk</groupId>
+    <artifactId>BattleArena</artifactId>
+    <packaging>jar</packaging>
+    <version>3.7.9.9.9</version>
+    <name>BattleArena</name>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <url>http://maven.apache.org</url>
+    <!-- Locations for jar repositories -->
+    <repositories>
+        <repository>
+            <id>bukkit-repo</id>
+            <url>http://repo.bukkit.org/content/groups/public</url>
+        </repository>
+        <repository>
+            <id>sk89q-repo</id>
+            <url>http://maven.sk89q.com/repo/</url>
+        </repository>
+        <repository>
+            <id>vault-repo</id>
+            <url>http://ci.herocraftonline.com/plugin/repository/everything</url>
+        </repository>
+    </repositories>
+    <!-- Dependencies -->
+    <dependencies>
+        <!-- Dependencies that have maven repos -->
+        <dependency>
+            <groupId>mc.alk</groupId>
+            <artifactId>BattleTracker</artifactId>
+            <version>[2.3.2.1,)</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>1.4.7-R1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>mc.alk</groupId>
+            <artifactId>PluginUpdater</artifactId>
+            <version>1.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>Vault</artifactId>
+            <version>[1.2.0,)</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>mc.alk</groupId>
+            <artifactId>VirtualPlayers</artifactId>
+            <version>1.3.9.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldguard</artifactId>
+            <version>[5.6.4,)</version>
+            <scope>provided</scope>
+        </dependency>        
+        <!-- unknown plugins that I had to add to the repo -->
+        <dependency>
+            <groupId>unknown.plugins</groupId>
+            <artifactId>DisguiseCraft</artifactId>
+            <version>4.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>unknown.plugins</groupId>
+            <artifactId>Factions</artifactId>
+            <version>[1.6.9.4,)</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>unknown.plugins</groupId>
+            <artifactId>Herochat</artifactId>
+            <version>[5.6.5,)</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>unknown.plugins</groupId>
+            <artifactId>Heroes</artifactId>
+            <version>[1.5.1,)</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>unknown.plugins</groupId>
+            <artifactId>MobArena</artifactId>
+            <version>0.94.4.95</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>unknown.plugins</groupId>
+            <artifactId>PylamoRestorationSystem</artifactId>
+            <version>0.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>unknown.plugins</groupId>
+            <artifactId>TagAPI</artifactId>
+            <version>2.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- test dependencies -->
+        
+    </dependencies>
+    <!-- How we will compile the plugin -->
+    
+    <build>
+        <defaultGoal>install</defaultGoal>
+        <!-- Where our source directory is -->
+        <sourceDirectory>${basedir}/src/mc</sourceDirectory>
+        <!-- Include all the resources we need -->            
+        <resources>
+            <resource>
+                <targetPath>.</targetPath>
+                <filtering>true</filtering>
+                <directory>${basedir}</directory>
+                <includes>
+                    <include>plugin.yml</include>
+                    <include>default_files/*</include>
+                </includes>
+            </resource>
+            <!-- Exclude JUnit test directory -->
+            <resource>
+                <directory>src/test</directory>
+                <excludes>
+                    <exclude>**/*</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- Specify how we build the plugin.jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <!-- Shade (includes these in the final jar) -->
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>mc.alk:PluginUpdater</include>
+                                </includes>
+                            </artifactSet>
+                            <!-- Specify to remove all unneeded classes -->
+                            <!-- <minimizeJar>true</minimizeJar> -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

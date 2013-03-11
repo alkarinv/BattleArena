@@ -47,6 +47,7 @@ public enum TeamController implements Listener, TeamHandler {
 	public static Team getTeam(ArenaPlayer player) {
 		return INSTANCE.handledTeams(player);
 	}
+
 	public static Team getTeamNotTeamController(ArenaPlayer player) {
 		return INSTANCE.handledTeamsNotTeamController(player);
 	}
@@ -249,21 +250,24 @@ public enum TeamController implements Listener, TeamHandler {
 	}
 
 
-	public static void removeTeamHandler(Team team, TeamHandler teamHandler) {
-		INSTANCE.removeHandler(team, teamHandler);
+	public static boolean removeTeamHandler(Team team, TeamHandler teamHandler) {
+		return INSTANCE.removeHandler(team, teamHandler);
 	}
-	private void removeHandler(Team team, TeamHandler teamHandler){
+
+	private boolean removeHandler(Team team, TeamHandler teamHandler){
 		if (DEBUG) System.out.println("------- removing team="+team+" and handler =" + teamHandler);
 		List<TeamHandler> ths = handlers.get(team);
 		if (ths != null){
 			ths.remove(teamHandler);
 			if (ths.isEmpty())
 				handlers.remove(team);
+			return true;
 		} else {
-			handlers.remove(team);
+			return handlers.remove(team) != null;
 		}
 		//		logHandlerList("removeTeam " + t +"   " + th);
 	}
+
 	public static void removeTeams(Collection<Team> teams, TeamHandler teamHandler) {
 		for (Team t: teams){
 			removeTeamHandler(t,teamHandler);

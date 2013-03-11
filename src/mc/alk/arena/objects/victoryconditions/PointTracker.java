@@ -41,7 +41,7 @@ public class PointTracker extends VictoryCondition implements DefinesLeaderRanki
 	}
 
 	public Integer getPoints(Team team) {
-		return teamPoints.get(team);
+		return teamPoints.containsKey(team) ? teamPoints.get(team) : 0;
 	}
 
 	public Integer addPoints(Team team, int points) {
@@ -53,7 +53,7 @@ public class PointTracker extends VictoryCondition implements DefinesLeaderRanki
 	}
 
 	public Integer getPoints(ArenaPlayer player) {
-		return playerPoints.get(player);
+		return playerPoints.containsKey(player) ? playerPoints.get(player) : 0;
 	}
 
 	public Integer addPoints(Player player, int points) {

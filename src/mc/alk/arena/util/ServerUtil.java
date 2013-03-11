@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Set;
 
 import mc.alk.arena.Defaults;
+import mc.alk.virtualPlayer.VirtualPlayers;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
@@ -11,10 +12,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import com.alk.virtualPlayer.VirtualPlayers;
 
 public class ServerUtil {
-
 
 	public static Player findPlayerExact(String name) {
 		if (name == null)

@@ -1,6 +1,8 @@
+configVersion: 2.0
+
 ## for more help configuring see the wiki
 ## https://github.com/alkarinv/BattleArena/wiki
-## Change this file to customize your event
+## Change this file to customize your competition
 
 <name>:
     enabled: true
@@ -8,15 +10,22 @@
     rated: true # if database is enabled
     prefix: "&6[<name>]&e"
     command: <cmd>
-
     ### You can delete any stages/transitions that have no options
     ### for a list of options see wiki
+    defaults: ## Global options for the entire match
+        options: [woolTeams]
     preReqs: ## Prerequisites for joining
         options: []
-    onJoin:  ## when they join the event
+    onEnter:
+        options: [storeAll]
+    onLeave:
+        options: [restoreAll]
+    onOpen:  ## opening the event
         options: [pvpOff]
-    onPreStart: ## x seconds before onStart
+    onJoin:  ## when they join the event
         options: []
+    onPreStart: ## x seconds before onStart
+        options: [pvpOff]
     onStart: ## Starting
         options: [teleportIn, pvpOn]
     onSpawn: ## what happens when a player spawns

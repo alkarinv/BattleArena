@@ -6,8 +6,7 @@ public class Util {
 
 	static public void printStackTrace(){
 		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-			System.out.println(ste);
-		}
+			System.out.println(ste);}
 	}
 
 	static public String getLocString(Location l){

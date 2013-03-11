@@ -1,31 +1,20 @@
 package mc.alk.arena.controllers;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.util.Log;
 import net.milkbowl.vault.economy.Economy;
-
-import com.alk.util.Log;
-import com.nijikokun.register.payment.Methods;
 
 public class MoneyController {
 	static boolean initialized = false;
 	static boolean hasVault = false;
-	static boolean hasRegister = false;
 	static boolean useVault = false;
-
-	protected static Economy economy = null;
+	public static Economy economy = null;
 	public static boolean hasEconomy(){
-		return initialized && (hasRegister || hasVault);
+		return initialized;
 	}
-	public static boolean hasRegisterEconomy(){
-		return initialized && hasRegister;
-	}
-	public static boolean hasVaultEconomy(){
-		return initialized && hasVault;
-	}
-
 	public static boolean hasAccount(String name) {
 		if (!initialized) return true;
-		return useVault? economy.hasAccount(name) : Methods.getMethod().hasAccount(name);
+		return useVault? economy.hasAccount(name) : true;
 	}
 	public static boolean hasEnough(String name, double fee) {
 		if (!initialized) return true;
@@ -33,30 +22,50 @@ public class MoneyController {
 	}
 	public static boolean hasEnough(String name, float amount) {
 		if (!initialized) return true;
-		return useVault? economy.getBalance(name) >= amount :Methods.getMethod().getAccount(name).hasEnough(amount);
+		return useVault? economy.getBalance(name) >= amount : true;
 	}
-	public static void subtract(String name, double fee) {
-		if (!initialized) return;
-		subtract(name,(float) fee);
+
+	public static boolean hasEnough(String name, float amount, String world) {
+		return hasEnough(name,amount);
 	}
+
+	public static void subtract(String name, float amount, String world) {
+		subtract(name,amount);
+	}
+
+	public static void subtract(String name, double amount) {
+		subtract(name,(float) amount);
+	}
+
 	public static void subtract(String name, float amount) {
 		if (!initialized) return;
 		if (useVault) economy.withdrawPlayer(name, amount);
-		else Methods.getMethod().getAccount(name).subtract(amount);
 	}
-	public static void add(String name, float amount) {
-		if (!initialized) return;
-		if (useVault) economy.depositPlayer(name, amount) ;
-		else Methods.getMethod().getAccount(name).add(amount);
+
+
+	public static void add(String name, float amount, String world) {
+		add(name,amount);
 	}
-	public static Double balance(String name) {
-		if (!initialized) return 0.0;
-		return useVault ? economy.getBalance(name) : Methods.getMethod().getAccount(name).balance();
-	}
+
 	public static void add(String name, double amount) {
 		if (!initialized) return;
 		add(name,(float)amount);
 	}
+
+	public static void add(String name, float amount) {
+		if (!initialized) return;
+		if (useVault) economy.depositPlayer(name, amount) ;
+	}
+
+	public static Double balance(String name, String world) {
+		return balance(name);
+	}
+
+	public static Double balance(String name) {
+		if (!initialized) return 0.0;
+		return useVault ? economy.getBalance(name) : 0;
+	}
+
 
 	public static void setEconomy(Economy economy) {
 		MoneyController.economy = economy;
@@ -77,7 +86,6 @@ public class MoneyController {
 	}
 
 	public static void setRegisterEconomy() {
-		hasRegister = true;
 		initialized = true;
 	}
 

@@ -33,6 +33,7 @@ public enum MatchState implements CompetitionState{
 		str = str.toUpperCase();
 		return MatchState.valueOf(str);
 	}
+
 	public boolean isRunning() {
 		return this == MatchState.ONSTART;
 	}

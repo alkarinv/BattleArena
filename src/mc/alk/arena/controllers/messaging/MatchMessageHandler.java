@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers.messaging;
 
 import java.util.Collection;
+import java.util.Map;
 
 import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.teams.Team;
@@ -15,4 +16,9 @@ public interface MatchMessageHandler {
 	public void sendOtherTeamNotReadyMsg(Team team);
 	public void sendOnIntervalMsg(Channel serverChannel,Collection<Team> currentLeaders, int remaining);
 	public void sendTimeExpired(Channel serverChannel);
+	public String getMessage(String node);
+	public String getMessage(String node, Map<String, String> params);
+	public void sendMessage(String node);
+	public void sendMessage(String node, Map<String, String> params);
+	public String format(String text, Map<String, String> params);
 }

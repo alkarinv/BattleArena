@@ -228,7 +228,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		Team t = getTeam(p);
 		p.removeCompetition(this);
 		if (t==null) /// they arent in this Event
-			return true;
+			return false;
 		t.playerLeft(p);
 		return true;
 	}
@@ -308,6 +308,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		return tjr;
 	}
 
+	@Override
 	public String getName(){
 		return name;
 	}

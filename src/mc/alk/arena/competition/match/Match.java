@@ -68,6 +68,7 @@ import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
+import mc.alk.arena.util.Util;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.WLT;
 
@@ -275,7 +276,7 @@ public abstract class Match extends Competition implements Runnable {
 		TransitionOptions ts = tops.getOptions(state);
 		if (ts != null && ts.teleportsIn()){
 			for (Team t: teams){
-				checkReady(t,tops.getOptions(MatchState.PREREQS));				}
+				checkReady(t,tops.getOptions(MatchState.PREREQS));	}
 		}
 
 		updateBukkitEvents(MatchState.ONPRESTART);
@@ -371,6 +372,7 @@ public abstract class Match extends Competition implements Runnable {
 		/// window of time.  But only let the first one through
 		if (state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL)
 			return;
+
 		MatchResultEvent event = new MatchResultEvent(this,matchResult);
 		callEvent(event);
 		if (event.isCancelled()){
@@ -403,6 +405,8 @@ public abstract class Match extends Competition implements Runnable {
 			}
 			updateBukkitEvents(MatchState.ONVICTORY);
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
+			Log.debug("!!!!!!!!!!!!!!!!!!!!!!!  MatchVictory: " + teams);
+			Util.printStackTrace();
 			currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 					new MatchCompleted(am), (long) (params.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
 		}
@@ -410,8 +414,8 @@ public abstract class Match extends Competition implements Runnable {
 
 	class MatchCompleted implements Runnable{
 		final Match am;
-		MatchCompleted(Match am){this.am = am;}
 
+		MatchCompleted(Match am){this.am = am;}
 		public void run() {
 			transitionTo(MatchState.ONCOMPLETE);
 			final Collection<Team> victors = am.getVictors();
@@ -593,7 +597,7 @@ public abstract class Match extends Competition implements Runnable {
 	 */
 	@Override
 	public boolean leave(ArenaPlayer p) {
-		return true;
+		return onLeave(p);
 	}
 
 	/**
@@ -606,12 +610,13 @@ public abstract class Match extends Competition implements Runnable {
 		privateRemoveTeam(team);
 	}
 
-	public void onLeave(ArenaPlayer p) {
+	public boolean onLeave(ArenaPlayer p) {
 		/// remove them from the match, they don't want to be here
 		Team t = getTeam(p);
 		if (t==null) /// really? trying to make a player leave who isnt in the match
-			return;
+			return false;
 		privateOnLeave(p,t);
+		return true;
 	}
 
 	private void privateOnLeave(ArenaPlayer ap, Team team){
@@ -798,6 +803,14 @@ public abstract class Match extends Competition implements Runnable {
 		removeArenaListener(vc);
 	}
 
+
+	public VictoryCondition getVictoryCondition(Class<? extends VictoryCondition> clazz) {
+		for (VictoryCondition vc : vcs){
+			if (vc.getClass() == clazz)
+				return vc;
+		}
+		return null;
+	}
 
 	/**
 	 * Gets the arena currently being used by this match
@@ -1029,12 +1042,19 @@ public abstract class Match extends Competition implements Runnable {
 		return id;
 	}
 
+	@Override
+	public String getName(){
+		return params.getName();
+	}
+
 	public void setOriginalTeams(Collection<Team> originalTeams) {
 		this.originalTeams = originalTeams;
 	}
+
 	public Collection<Team> getOriginalTeams(){
 		return originalTeams;
 	}
+
 	public Set<String> getInsidePlayers(){
 		Set<String> inside = new HashSet<String>(insideArena);
 		return inside;

@@ -149,7 +149,7 @@ public class ArenaPlayer {
 	}
 
 	public Competition getCompetition() {
-		return competitions.peek();
+		return competitions.isEmpty() ? null : competitions.peek();
 	}
 
 	public void addCompetition(Competition competition) {

@@ -32,7 +32,7 @@ public class YamlFileUpdater {
 			backupDir.mkdirs();}
 	}
 
-	public void updateMessageSerializer(MessageSerializer ms) {
+	public void updateMessageSerializer(Plugin plugin, MessageSerializer ms) {
 		FileConfiguration fc = ms.getConfig();
 		configFile = ms.getFile();
 		Version version = new Version(fc.getString("version","0"));
@@ -62,6 +62,28 @@ public class YamlFileUpdater {
 			messageTo1Point52(ms.getConfig(), version, new Version("1.5.2"));
 			ms.setConfig(new File(dir+"/messages.yml"));
 		}
+		version = new Version(fc.getString("version","0"));
+		YamlFileUpdater yfu = new YamlFileUpdater(plugin);
+		Version newVersion = new Version("1.5.3");
+		if (version.compareTo(newVersion) < 0){
+			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+			fu.replace("version:.*", "version: "+newVersion);
+			fu.delete(".*you_joined_the_queue.*");
+			fu.delete(".*you_left_event.*");
+			fu.replace(".*joined_the_queue:.*",
+					"    joined_the_queue: '&eYou joined the &6%s&e queue. Position: &6%s/%s'",
+					"    match_starts_players_or_time: '&eMatch start when &6%s&e more players join or in %s &ewith at least &6%s&e players'",
+					"    match_starts_when_time: '&eMatch start in %s'");
+			fu.replace(".*you_left_match:.*","    you_left_competition: '&eYou have left the %s event'");
+			fu.replace(".*you_left_queue:.*", "    you_left_queue: '&eYou have left the &6%s queue'");
+			fu.replace(".*teammate_cant_join.*", "    teammate_cant_join: \"&cOne of your teammates can't join\"");
+			try {
+				version = fu.update();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		ms.setConfig(new File(dir+"/messages.yml"));
 	}
 
 	public static void updateAllConfig(Plugin plugin, ConfigSerializer cc) {
@@ -79,63 +101,75 @@ public class YamlFileUpdater {
 		YamlFileUpdater yfu = new YamlFileUpdater(plugin);
 		yfu.configFile = bacs.getFile();
 		File configFile = bacs.getFile();
+		try{
+			/// configVersion: 1.1, move over to classes.yml
+			if (version.compareTo(1.1) <0){
+				yfu.to1Point1(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);}
+			if (version.compareTo(1.2)<0){
+				yfu.to1Point2(bacs, bacs.getConfig(), version);}
+			if (version.compareTo(1.3)<0){
+				yfu.to1Point3(bacs, bacs.getConfig(), version);}
+			if (version.compareTo("1.3.5")<0){
+				yfu.to1Point35(bacs, bacs.getConfig(), version);}
+			if (version.compareTo(1.4)<0){
+				yfu.to1Point4(bacs, bacs.getConfig(), version);}
+			if (version.compareTo("1.4.5")<0){
+				yfu.to1Point45(bacs, bacs.getConfig(), version);}
+			if (version.compareTo("1.5")<0){
+				yfu.to1Point5(bacs, bacs.getConfig(), version);}
+			if (version.compareTo("1.5.5")<0){
+				yfu.to1Point55(bacs, bacs.getConfig(), version);}
+			if (version.compareTo("1.6")<0){
+				yfu.to1Point6(bacs, bacs.getConfig(), version);}
+			if (version.compareTo("1.6.5")<0){
+				yfu.to1Point65(bacs, bacs.getConfig(), version);}
+			if (version.compareTo("1.7")<0){
+				yfu.to1Point7(bacs, bacs.getConfig(), version);}
+			if (version.compareTo("1.7.3")<0){
+				yfu.to1Point73(bacs, bacs.getConfig(), version);}
+			if (version.compareTo("2.0")<0){
+				yfu.to2Point0(BattleArena.getSelf(), bacs.getConfig(), version);
+				bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+			}
+			if (version.compareTo("2.0.5")<0){
+				yfu.to2Point05(bacs, bacs.getConfig(), version);}
+			if (version.compareTo("2.1.0")<0){
+				yfu.to2Point10(bacs, bacs.getConfig(), version, new Version("2.1.0"));}
+			if (version.compareTo("2.1.1")<0){
+				yfu.to2Point11(configFile, version, new Version("2.1.1"));}
 
-		/// configVersion: 1.1, move over to classes.yml
-		if (version.compareTo(1.1) <0){
-			yfu.to1Point1(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);}
-		if (version.compareTo(1.2)<0){
-			yfu.to1Point2(bacs, bacs.getConfig(), version);}
-		if (version.compareTo(1.3)<0){
-			yfu.to1Point3(bacs, bacs.getConfig(), version);}
-		if (version.compareTo("1.3.5")<0){
-			yfu.to1Point35(bacs, bacs.getConfig(), version);}
-		if (version.compareTo(1.4)<0){
-			yfu.to1Point4(bacs, bacs.getConfig(), version);}
-		if (version.compareTo("1.4.5")<0){
-			yfu.to1Point45(bacs, bacs.getConfig(), version);}
-		if (version.compareTo("1.5")<0){
-			yfu.to1Point5(bacs, bacs.getConfig(), version);}
-		if (version.compareTo("1.5.5")<0){
-			yfu.to1Point55(bacs, bacs.getConfig(), version);}
-		if (version.compareTo("1.6")<0){
-			yfu.to1Point6(bacs, bacs.getConfig(), version);}
-		if (version.compareTo("1.6.5")<0){
-			yfu.to1Point65(bacs, bacs.getConfig(), version);}
-		if (version.compareTo("1.7")<0){
-			yfu.to1Point7(bacs, bacs.getConfig(), version);}
-		if (version.compareTo("1.7.3")<0){
-			yfu.to1Point73(bacs, bacs.getConfig(), version);}
-		if (version.compareTo("2.0")<0){
-			yfu.to2Point0(BattleArena.getSelf(), bacs.getConfig(), version);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		}
-		if (version.compareTo("2.0.5")<0){
-			yfu.to2Point05(bacs, bacs.getConfig(), version);}
-		if (version.compareTo("2.1.0")<0){
-			yfu.to2Point10(bacs, bacs.getConfig(), version, new Version("2.1.0"));}
-		if (version.compareTo("2.1.1")<0){
-			yfu.to2Point11(configFile, version, new Version("2.1.1"));}
-
-		Version newVersion = new Version("2.1.2");
-		if (version.compareTo(newVersion) < 0){
-			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
-			fu.replace("configVersion:.*", "configVersion: "+newVersion);
-			fu.addAfter(".*ignoreMaxStackSize:.*", "",
-					"# if set to true, given enchanted items will not be limited to 'normal' safe enchantment levels",
-					"# Example, most weapons are limited to sharpness 5.  if unsafeItemEnchants: true, this can be any level",
-					"unsafeItemEnchants: false");
-			version = fu.update();
-		}
-
-		newVersion = new Version("2.1.3");
-		if (version.compareTo(newVersion) < 0){
-			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
-			fu.replace("configVersion:.*", "configVersion: "+newVersion);
-			fu.delete(".*matchEnableForce.*");
-			version = fu.update();
+			Version newVersion = new Version("2.1.2");
+			if (version.compareTo(newVersion) < 0){
+				FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+				fu.replace("configVersion:.*", "configVersion: "+newVersion);
+				fu.addAfter(".*ignoreMaxStackSize:.*", "",
+						"# if set to true, given enchanted items will not be limited to 'normal' safe enchantment levels",
+						"# Example, most weapons are limited to sharpness 5.  if unsafeItemEnchants: true, this can be any level",
+						"unsafeItemEnchants: false");
+				version = fu.update();
+			}
+			newVersion = new Version("2.1.4");
+			if (version.compareTo(newVersion) < 0){
+				version = to2Point14(version, yfu, configFile, newVersion);}
+		} catch (IOException e){
+			e.printStackTrace();
 		}
 
 		bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
+	}
+
+	private static Version to2Point14(Version version, YamlFileUpdater yfu,
+			File configFile, Version newVersion) throws IOException {
+		BaseConfig bs = new BaseConfig(configFile);
+
+//		bs.save();
+		FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+		fu.replace("configVersion:.*", "configVersion: "+newVersion);
+		fu.delete(".*matchEnableForce.*");
+		fu.addAfter(".*disabledCommands.*", "",
+				"# What commands should be disabled when the player is inside of a queue, but not in a match",
+				"disabledQueueCommands: []");
+		return fu.update();
 	}
 
 	private void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
@@ -719,12 +753,17 @@ public class YamlFileUpdater {
 	}
 
 	private boolean to2Point11(File file, Version oldVersion, Version newVersion) {
-		FileUpdater fu = new FileUpdater(file, backupDir, newVersion, oldVersion);
-		fu.replace("configVersion:.*", "configVersion: "+newVersion.getVersion());
-		fu.addAfter(".*disabledCommands:.*", "",
-				"# which heroes skills should be disabled when they enter an arena",
-				"disabledHeroesSkills: []");
-		return fu.update() != null;
+		try{
+			FileUpdater fu = new FileUpdater(file, backupDir, newVersion, oldVersion);
+			fu.replace("configVersion:.*", "configVersion: "+newVersion.getVersion());
+			fu.addAfter(".*disabledCommands:.*", "",
+					"# which heroes skills should be disabled when they enter an arena",
+					"disabledHeroesSkills: []");
+			return fu.update() != null;
+		} catch (Exception e){
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	private void messageTo1Point5(FileConfiguration fc, Version version) {
@@ -851,31 +890,8 @@ public class YamlFileUpdater {
 		}
 	}
 
-	private static boolean isWindows() {
-		return System.getProperty("os.name").toUpperCase().contains("WINDOWS");
-	}
-
-	private static void renameTo(File file1, File file2) {
-		/// That's right, I can't just rename the file, i need to move and delete
-		if (isWindows()){
-			File temp = new File(file2.getAbsoluteFile() +".backup");
-			if (temp.exists()){
-				temp.delete();
-			}
-			if (file2.exists()){
-				file2.renameTo(temp);
-				file2.delete();
-			}
-			if (!file1.renameTo(file2)){
-				System.err.println(temp.getName() +" could not be renamed to " + file2.getName());
-			} else {
-				temp.delete();
-			}
-		} else {
-			if (!file1.renameTo(file2)){
-				System.err.println(file1.getName() +" could not be renamed to " + file2.getName());
-			}
-		}
+	private static void renameTo(File file1, File file2) throws IOException {
+		FileUpdater.renameTo(file1, file2);
 	}
 
 	private boolean openFiles() {

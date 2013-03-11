@@ -9,6 +9,9 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamFactory;
+import mc.alk.arena.util.heroes.Heroes_1_5_2;
+import mc.alk.arena.util.heroes.Heroes_pre1_5_2;
+import mc.alk.plugin.updater.Version;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -21,9 +24,14 @@ import com.herocraftonline.heroes.characters.classes.HeroClassManager;
 import com.herocraftonline.heroes.characters.effects.Effect;
 import com.herocraftonline.heroes.characters.party.HeroParty;
 
-public class HeroesUtil{
+public abstract class HeroesUtil {
 	static Heroes heroes = null;
 	static Map<Team,HeroParty> parties = Collections.synchronizedMap(new HashMap<Team,HeroParty>());
+	static HeroesUtil util = null;
+
+	public abstract void setHeroPlayerHealth(Player player, int health);
+	public abstract int getHeroHealth(Player player);
+	public abstract void setHeroHealthP(Player player, int health);
 
 	public static boolean hasHeroClass(String name) {
 		if (heroes == null)
@@ -48,6 +56,12 @@ public class HeroesUtil{
 
 	public static void setHeroes(Plugin plugin){
 		heroes = (Heroes) plugin;
+		Version v = new Version(heroes.getDescription().getVersion());
+		if (v.compareTo("1.5.2") >= 0){
+			util = new Heroes_1_5_2();
+		} else {
+			util = new Heroes_pre1_5_2();
+		}
 	}
 
 	public static String getHeroClassName(Player player) {
@@ -63,7 +77,7 @@ public class HeroesUtil{
 		return hero == null ? -1 : hero.getLevel();
 	}
 
-	private static Hero getHero(Player player) {
+	protected static Hero getHero(Player player) {
 		final CharacterManager cm = heroes.getCharacterManager();
 		return cm.getHero(player);
 	}
@@ -88,9 +102,9 @@ public class HeroesUtil{
 		return party;
 	}
 
-	private static void removeOldParty(Hero hero){
+	private static void removeOldParty(Hero hero, HeroParty newParty){
 		HeroParty party = hero.getParty();
-		if (party == null)
+		if (party == null || (newParty != null && newParty==party))
 			return;
 		party.removeMember(hero);
 		hero.setParty(null);
@@ -109,7 +123,7 @@ public class HeroesUtil{
 			if (hero == null)
 				continue;
 
-			removeOldParty(hero); /// Remove from any old parties
+			removeOldParty(hero,null); /// Remove from any old parties
 			/// if the party doesnt exist create it
 			if (party == null) {
 				party = createParty(team,hero);}
@@ -130,7 +144,7 @@ public class HeroesUtil{
 		if (hero == null)
 			return;
 
-		removeOldParty(hero);
+		removeOldParty(hero, party);
 
 		if (party == null) {
 			party = createParty(team,hero);}
@@ -148,7 +162,7 @@ public class HeroesUtil{
 		Hero hero = getHero(player);
 		if (hero == null){
 			return;}
-		removeOldParty(hero);
+		removeOldParty(hero,null);
 	}
 
 	public static Team getTeam(Player player) {
@@ -166,8 +180,7 @@ public class HeroesUtil{
 		Set<Hero> members = party.getMembers();
 		if (members != null){
 			for (Hero h: members){
-				t.addPlayer(BattleArena.toArenaPlayer(h.getPlayer()));
-			}
+				t.addPlayer(BattleArena.toArenaPlayer(h.getPlayer()));}
 		}
 		return t.size() > 0 ? t : null;
 	}
@@ -192,30 +205,16 @@ public class HeroesUtil{
 		hero.setMana((int)val);
 	}
 
-	public static int getHealth(Player player) {
-		Hero hero = getHero(player);
-		return hero == null ? player.getHealth() : hero.getHealth();
-	}
-
 	public static void setHealth(Player player, int health) {
-		Hero hero = getHero(player);
-		if (hero == null){
-			player.setHealth(health);
-		} else{
-			hero.setHealth(health);
-			hero.syncHealth();
-		}
+		util.setHeroPlayerHealth(player, health);
 	}
 
 	public static void setHealthP(Player player, int health) {
-		Hero hero = getHero(player);
-		if (hero == null){
-			double val = (double)player.getMaxHealth() * health/100.0;
-			player.setHealth((int)val);
-		} else{
-			double val = (double)hero.getMaxHealth() * health/100.0;
-			hero.setHealth((int)val);
-			hero.syncHealth();
-		}
+		util.setHeroHealthP(player, health);
 	}
+
+	public static int getHealth(Player player) {
+		return util.getHeroHealth(player);
+	}
+
 }

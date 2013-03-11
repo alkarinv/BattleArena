@@ -27,7 +27,7 @@ import org.bukkit.inventory.ItemStack;
 public class InventorySerializer {
 
 	public static List<String> getDates(final String name){
-		BaseSerializer serializer = getSerializer(name);
+		BaseConfig serializer = getSerializer(name);
 		if (serializer == null)
 			return null;
 		PriorityQueue<Long> dates = new PriorityQueue<Long>(Defaults.NUM_INV_SAVES, Collections.reverseOrder());
@@ -59,7 +59,7 @@ public class InventorySerializer {
 	public static PInv getInventory(final String name, int index){
 		if (index < 0 || index >= Defaults.NUM_INV_SAVES){
 			return null;}
-		BaseSerializer serializer = getSerializer(name);
+		BaseConfig serializer = getSerializer(name);
 		if (serializer == null)
 			return null;
 		PriorityQueue<KeyValue<Long,PInv>> dates =
@@ -102,7 +102,7 @@ public class InventorySerializer {
 		Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), new Runnable(){
 			@Override
 			public void run() {
-				BaseSerializer serializer = getSerializer(name);
+				BaseConfig serializer = getSerializer(name);
 				if (serializer == null)
 					return;
 				Date now = new Date();
@@ -129,8 +129,8 @@ public class InventorySerializer {
 		});
 	}
 
-	private static BaseSerializer getSerializer(String name) {
-		BaseSerializer bs = new BaseSerializer();
+	private static BaseConfig getSerializer(String name) {
+		BaseConfig bs = new BaseConfig();
 		File dir = new File(BattleArena.getSelf().getDataFolder()+"/inventories/");
 		if (!dir.exists()){
 			dir.mkdirs();}

@@ -229,10 +229,10 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		boolean success = false;
 		for (MethodWrapper mwrapper : methodmap.values()){
 			mccmd = mwrapper.method.getAnnotation(MCCommand.class);
-			final boolean isOp = sender == null || sender.isOp() || sender instanceof ConsoleCommandSender;
-
-			if (mccmd.op() && !isOp || mccmd.admin() && !hasAdminPerms(sender)) /// no op, no pass
-				continue;
+//			final boolean isOp = sender == null || sender.isOp() || sender instanceof ConsoleCommandSender;
+//
+//			if (mccmd.op() && !isOp || mccmd.admin() && !hasAdminPerms(sender)) /// no op, no pass
+//				continue;
 			Arguments newArgs = null;
 			try {
 				newArgs= verifyArgs(mwrapper,mccmd,sender,command, label, args, startIndex);
@@ -287,10 +287,6 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		if (DEBUG)System.out.println("verifyArgs " + cmd +" sender=" +sender+", label=" + label+" args="+args);
 		final int paramLength = mwrapper.method.getParameterTypes().length;
 
-		/// Check our permissions
-		if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
-			throw new IllegalArgumentException(MessageSerializer.getDefaultMessage("main", "no_permission"));
-
 		/// Verify min number of arguments
 		if (args.length < cmd.min()){
 			throw new IllegalArgumentException(ChatColor.RED+"You need at least "+cmd.min()+" arguments");
@@ -305,12 +301,19 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		}
 		final boolean isPlayer = sender instanceof Player;
 		final boolean isOp = (isPlayer && sender.isOp()) || sender == null || sender instanceof ConsoleCommandSender;
-
+		final boolean isAdmin = isOp || hasAdminPerms(sender);
 		if (cmd.op() && !isOp)
 			throw new IllegalArgumentException(ChatColor.RED +"You need to be op to use this command");
+		if (!cmd.perm().isEmpty() || cmd.admin()){
+			boolean needsPerm = !cmd.perm().isEmpty();
+			boolean hasPerm = sender.hasPermission(cmd.perm());
+			/// Check our permissions
+			if (needsPerm && !hasPerm && !(cmd.admin() && isAdmin)){
+				throw new IllegalArgumentException(MessageSerializer.getDefaultMessage("main", "no_permission"));}
 
-		if (cmd.admin() && !isOp && (isPlayer && !hasAdminPerms(sender)))
-			throw new IllegalArgumentException(ChatColor.RED +"You need to be an Admin to use this command");
+			if (cmd.admin() && !isAdmin && !(needsPerm && hasPerm))
+				throw new IllegalArgumentException(ChatColor.RED +"You need to be an Admin to use this command");
+		}
 
 		Class<?> types[] = mwrapper.method.getParameterTypes();
 

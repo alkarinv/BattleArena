@@ -8,6 +8,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.signs.ArenaCommandSign;
 import mc.alk.arena.objects.signs.ArenaStatusSign;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.SignUtil;
 
 import org.bukkit.ChatColor;
@@ -69,7 +70,7 @@ public class BASignListener implements Listener{
 		Player p = event.getPlayer();
 
 		/// Is the sign a arena class sign?
-		final boolean admin = p.isOp() || p.hasPermission(Defaults.ARENA_ADMIN);
+		final boolean admin = PermissionsUtil.isAdmin(p);
 		String lines[] = event.getLines();
 		ArenaClass ac = SignUtil.getArenaClassSign(lines);
 		if (ac != null){

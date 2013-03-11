@@ -41,7 +41,12 @@ public enum TagAPIListener implements Listener {
 		if (INSTANCE.playerName.isEmpty()){
 			Bukkit.getPluginManager().registerEvents(INSTANCE, BattleArena.getSelf());}
 		INSTANCE.playerName.put(player.getName(), teamColor);
-		TagAPI.refreshPlayer(player);
+		try{
+			TagAPI.refreshPlayer(player);
+		} catch (ClassCastException e){
+			/* For the plugin CommandSigns which use a "ProxyPlayer" which can't be cast to
+			 * a CraftPlayer, ignore the error */
+		}
 	}
 
 	public static void removeNameColor(final Player player) {
@@ -62,7 +67,12 @@ public enum TagAPIListener implements Listener {
 	}
 
 	private void removeName(Player player){
-		TagAPI.refreshPlayer(player);
+		try{
+			TagAPI.refreshPlayer(player);
+		} catch (ClassCastException e){
+			/* For the plugin CommandSigns which use a "ProxyPlayer" which can't be cast to
+			 * a CraftPlayer, ignore the error */
+		}
 		/// Unregister if we aren't listening for any players
 		if (INSTANCE.playerName.isEmpty()){
 			HandlerList.unregisterAll(INSTANCE);}

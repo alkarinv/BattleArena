@@ -4,11 +4,9 @@ import org.bukkit.Material;
 
 public class Defaults {
 
-	public static final String ADMIN_NODE = "arena.admin";
-
 	/// Use auto updating
-	public static boolean AUTO_UPDATE;
-	public static boolean REPORT_ERRORS;
+	public static boolean AUTO_UPDATE = false;
+	public static boolean REPORT_ERRORS = false;
 
 	public static double TICK_MULT = 1.0;
 	public static String MONEY_STR = "Gold";
@@ -18,8 +16,6 @@ public class Defaults {
     /// How long can we keep appending player names together
     /// before reverting to team 1, team 2, etc
     public static final int MAX_TEAM_NAME_APPEND = 4;
-
-	public static final String ARENA_ADMIN = "arena.admin";
 
 	/// ARENA QUEUING OPTIONS
 	public static boolean USE_ARENAS_ONLY_IN_ORDER = false;
@@ -33,7 +29,7 @@ public class Defaults {
 	public static int MATCH_UPDATE_INTERVAL = 30;
 	public static int JOIN_CUTOFF_TIME = 15;
 
-	public final static boolean MATCH_FORCESTART_ENABLED = true;
+	public static boolean MATCH_FORCESTART_ENABLED = true;
 	public static long MATCH_FORCESTART_TIME = 180;
 
 
@@ -66,12 +62,6 @@ public class Defaults {
 	public static boolean PLUGIN_MULITVERSE_INV = false;
 	public static boolean PLUGIN_MULITVERSE_CORE = false;
 
-	public static final String TELEPORT_BYPASS_PERM = "arena.teleport.bypass";
-	public static final String MULTI_INV_IGNORE_NODE = "multiinv.exempt";
-	public static final String MULTIVERSE_INV_IGNORE_NODE = "mvinv.bypass.*";
-	public static final String MULTIVERSE_CORE_IGNORE_NODE = "mv.bypass.gamemode.*";
-	public static final String WORLDGUARD_BYPASS_NODE = "worldguard.region.bypass.";
-
 	/// MISC OPTIONS
 	public static int NUM_INV_SAVES = 5; /// number of inventory saves
 
@@ -93,6 +83,7 @@ public class Defaults {
 	public static final boolean DEBUG_DAMAGE = false;
 	public static final boolean DEBUG_SCHEDULER = false;
 	public static boolean DEBUG_COMMANDS = false;
+	public static final boolean TESTSERVER = false;
 
 	public static int TIME_BETWEEN_CLASS_CHANGE = 3;
 
@@ -102,7 +93,7 @@ public class Defaults {
 	public static boolean DEBUG_TRACKING = false;
 	public static boolean DEBUG_MATCH_TEAMS = false;
 
-	public static boolean ALLOW_ADMIN_CMDS_IN_MATCH = false;
+	public static boolean ALLOW_ADMIN_CMDS_IN_Q_OR_MATCH = false;
 	public static boolean ENABLE_TELEPORT_FIX = false;
 	public static boolean ENABLE_PLAYER_READY_BLOCK = true;
 

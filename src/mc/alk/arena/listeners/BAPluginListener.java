@@ -24,8 +24,6 @@ import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
-import pgDev.bukkit.DisguiseCraft.DisguiseCraft;
-
 import com.dthielke.herochat.Herochat;
 
 
@@ -101,10 +99,10 @@ public class BAPluginListener implements Listener {
 	}
 
 	public void loadDisguiseCraft(){
-		if (DisguiseInterface.disguiseInterface == null){
+		if (!DisguiseInterface.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("DisguiseCraft");
 			if (plugin != null) {
-				DisguiseInterface.disguiseInterface = DisguiseCraft.getAPI();
+				DisguiseInterface.setDisguiseCraft(plugin);
 				Log.info("[BattleArena] DisguiseCraft detected, enabling disguises");
 			}
 		}
@@ -194,7 +192,7 @@ public class BAPluginListener implements Listener {
 	}
 
 	public void loadRegister(){
-		if (!MoneyController.hasVaultEconomy() && !MoneyController.hasRegisterEconomy()){
+		if (!MoneyController.hasEconomy()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("Register");
 			if (plugin != null){
 				MoneyController.setRegisterEconomy();
@@ -239,7 +237,7 @@ public class BAPluginListener implements Listener {
 		Plugin plugin = Bukkit.getPluginManager().getPlugin("Vault");
 		if (plugin != null ){
 			/// Load vault economy
-			if (!MoneyController.hasVaultEconomy()){
+			if (!MoneyController.hasEconomy()){
 				try{
 					RegisteredServiceProvider<Economy> provider = Bukkit.getServer().
 							getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);

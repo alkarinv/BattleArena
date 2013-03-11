@@ -26,7 +26,7 @@ public class RewardController {
 		for (Team t: event.getTeams()){
 			for (ArenaPlayer player: t.getPlayers()){
 				Player p = player.getPlayer();
-				if (event.getMoney() != null && MoneyController.hasVaultEconomy()){
+				if (event.getMoney() != null && MoneyController.hasEconomy()){
 					MoneyController.add(p.getName(), event.getMoney());}
 				if (!p.isOnline())
 					continue;

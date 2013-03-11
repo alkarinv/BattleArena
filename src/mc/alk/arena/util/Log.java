@@ -2,12 +2,10 @@ package mc.alk.arena.util;
 
 import java.util.logging.Logger;
 
-import org.bukkit.Bukkit;
-
 public class Log {
 	public static final boolean debug = true;
 
-	private static Logger log = Bukkit.getLogger() != null ? Bukkit.getLogger() : Logger.getLogger("Arena");
+	private static Logger log = Logger.getLogger("Arena");
 
 	public static void info(String msg){
 		if (msg == null) return;

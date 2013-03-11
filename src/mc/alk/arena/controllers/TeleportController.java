@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.Permissions;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
@@ -76,7 +77,7 @@ public class TeleportController implements Listener{
 		PermissionsUtil.givePlayerInventoryPerms(player);
 		/// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
 		if (giveBypassPerms && BattleArena.getSelf().isEnabled())
-			player.addAttachment(BattleArena.getSelf(), Defaults.TELEPORT_BYPASS_PERM, true, 1);
+			player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);
 
 		if (!player.teleport(loc)){
 			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + loc);

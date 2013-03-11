@@ -8,24 +8,26 @@ import mc.alk.arena.objects.teams.Team;
 
 public class QueueResult {
 	public static enum QueueStatus{
-		ADDED, ADDED_, RESU
+		ADDED_TO_QUEUE, ADDED_TO_EXISTING_MATCH, MATCH_FOUND, QUEUE_BUSY, INVALID_SIZE, ERROR
 	}
 	public static enum TimeStatus{
-
+		UNKNOWN, CANT_FORCESTART, TIME_EXPIRED, TIME_ONGOING
 	}
 
 	public Match match;
-	public final MatchParams params;
-	public final int pos;
-	public final Team team;
+	public MatchParams params;
+	public int pos;
+	public Team team;
 	public int playersInQueue; ///
 	public int teamsInQueue; ///
-	public final int neededPlayers;
+	public int neededPlayers;
 	public Long time;
+	public QueueStatus status = QueueStatus.ADDED_TO_QUEUE;
+	public TimeStatus timeStatus = TimeStatus.UNKNOWN;
+	public QueueResult(){}
 
-	public QueueResult(){this(null,-1,-1,(Team)null,-1);}
-
-	public QueueResult(MatchParams params, int pos, int playersInQueue, Team t, int teamsInQueue){
+	public QueueResult(Match match, MatchParams params, int pos, int playersInQueue, Team t, int teamsInQueue){
+		this.match = match;
 		this.params=params;
 		this.pos=pos;
 		this.team =t;
@@ -34,7 +36,8 @@ public class QueueResult {
 		this.neededPlayers = params.getMaxPlayers();
 	}
 
-	public QueueResult(MatchParams params, int pos, int playersInQueue, QueueObject to, int teamsInQueue) {
+	public QueueResult(Match match, MatchParams params, int pos, int playersInQueue, QueueObject to, int teamsInQueue) {
+		this.match = match;
 		this.params=params;
 		this.pos=pos;
 		this.team =null;

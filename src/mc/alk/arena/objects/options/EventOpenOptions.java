@@ -15,7 +15,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.MinMax;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 public class EventOpenOptions {
 	public static enum EventOpenOption{

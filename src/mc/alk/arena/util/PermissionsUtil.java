@@ -2,6 +2,7 @@ package mc.alk.arena.util;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.Permissions;
 import mc.alk.arena.objects.ArenaPlayer;
 
 import org.bukkit.command.CommandSender;
@@ -18,11 +19,11 @@ public class PermissionsUtil {
 			if (Defaults.DEBUG_TRACE) Log.info("Giving inventory perms=" + p.getName());
 
 			if (Defaults.PLUGIN_MULTI_INV){ /// Give the multiinv permission node to ignore this player
-				p.getPlayer().addAttachment(BattleArena.getSelf(), Defaults.MULTI_INV_IGNORE_NODE, true, ticks);}
+				p.getPlayer().addAttachment(BattleArena.getSelf(), Permissions.MULTI_INV_IGNORE_NODE, true, ticks);}
 			if (Defaults.PLUGIN_MULITVERSE_CORE){ /// Give the multiverse-core permission node to ignore this player
-				p.getPlayer().addAttachment(BattleArena.getSelf(), Defaults.MULTIVERSE_CORE_IGNORE_NODE, true, ticks);}
+				p.getPlayer().addAttachment(BattleArena.getSelf(), Permissions.MULTIVERSE_CORE_IGNORE_NODE, true, ticks);}
 			if (Defaults.PLUGIN_MULITVERSE_INV){ /// Give the multiverse-inventories permission node to ignore this player
-				p.getPlayer().addAttachment(BattleArena.getSelf(), Defaults.MULTIVERSE_INV_IGNORE_NODE, true, ticks);}
+				p.getPlayer().addAttachment(BattleArena.getSelf(), Permissions.MULTIVERSE_INV_IGNORE_NODE, true, ticks);}
 			if (Defaults.DEBUG_TRACE) Log.info("End giving inventory perms=" + p.getName());
 		}
 	}
@@ -35,8 +36,9 @@ public class PermissionsUtil {
 		else if (player.hasPermission("arena.priority.highest")){ return 200;}
 		return 1000;
 	}
+
 	public static boolean isAdmin(CommandSender sender){
-		return sender.isOp() || sender.hasPermission(Defaults.ARENA_ADMIN);
+		return sender.isOp() || sender.hasPermission(Permissions.ADMIN_NODE);
 	}
 
 	public static void givePlayerAdminPerms(Player player, Boolean enable) {

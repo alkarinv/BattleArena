@@ -7,7 +7,7 @@ import java.util.List;
 import org.bukkit.configuration.ConfigurationSection;
 
 
-public class StateFlagSerializer extends BaseSerializer{	
+public class StateFlagSerializer extends BaseConfig{	
 	public List<String> load(){
 		ConfigurationSection cs = config.getConfigurationSection("enabled");
 		List<String> disabled = new ArrayList<String>();

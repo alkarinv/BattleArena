@@ -2,6 +2,7 @@ package mc.alk.arena.controllers.messaging;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import mc.alk.arena.competition.match.Match;
@@ -55,8 +56,8 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 
 	private void sendMessageToTeams(Channel serverChannel, Collection<Team> teams, String path, String serverpath, Integer seconds){
 		final String nTeamPath = getStringPathFromSize(teams.size());
-		Message message = getMessage("match."+ nTeamPath+"."+path);
-		Message serverMessage = getMessage("match."+ nTeamPath+"."+serverpath);
+		Message message = getNodeMessage("match."+ nTeamPath+"."+path);
+		Message serverMessage = getNodeMessage("match."+ nTeamPath+"."+serverpath);
 		Set<MessageOption> ops = message.getOptions();
 		if (serverChannel != Channel.NullChannel){
 			ops.addAll(serverMessage.getOptions());
@@ -120,7 +121,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	public void sendYourTeamNotReadyMsg(Team t1) {
-		Message message = getMessage("match"+typeName+".your_team_not_ready");
+		Message message = getNodeMessage("match"+typeName+".your_team_not_ready");
 		Set<MessageOption> ops = message.getOptions();
 
 		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), 1, message, ops);
@@ -129,7 +130,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	public void sendOtherTeamNotReadyMsg(Team t1) {
-		Message message = getMessage("match."+typeName+".other_team_not_ready");
+		Message message = getNodeMessage("match."+typeName+".other_team_not_ready");
 		Set<MessageOption> ops = message.getOptions();
 
 		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), 1, message, ops);
@@ -173,6 +174,44 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		message = event.getServerMessage();
 		if (event.getServerChannel() != Channel.NullChannel && message != null && !message.isEmpty())
 			event.getServerChannel().broadcast(message);
+	}
+
+	@Override
+	public String getMessage(String node) {
+		return getMessage(node,null);
+	}
+
+	@Override
+	public String getMessage(String node, Map<String, String> params) {
+		String text = this.getNodeText(node);
+		return text == null ? text : format(text,params);
+	}
+
+	@Override
+	public void sendMessage(String node) {
+		sendMessage(node,null);
+	}
+
+	@Override
+	public void sendMessage(String node, Map<String, String> params) {
+		String msg = getMessage(node,params);
+		if (msg != null && !msg.isEmpty())
+			match.sendMessage(msg);
+	}
+
+	@Override
+	public String format(String text, Map<String, String> params) {
+		if (params == null || params.isEmpty())
+			return text;
+		String[] searchList =new String[params.size()];
+		String[] replaceList =new String[params.size()];
+		int i = 0;
+		for(Map.Entry<String,String> entry : params.entrySet()){
+			searchList[i] = entry.getKey();
+			replaceList[i] = entry.getValue();
+		    i++;
+		}
+		return MessageFormatter.replaceEach(text, searchList, replaceList);
 	}
 
 }

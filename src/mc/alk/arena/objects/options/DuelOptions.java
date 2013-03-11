@@ -7,6 +7,7 @@ import java.util.Map;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -73,6 +74,8 @@ public class DuelOptions {
 					throw new InvalidOptionException("&cPlayer &6" + p.getDisplayName() +"&c is not online!");
 				if (p.getName().equals(challenger.getName()))
 					throw new InvalidOptionException("&cYou can't challenge yourself!");
+				if (p.hasPermission(Permissions.DUEL_EXEMPT)){
+					throw new InvalidOptionException("&cThis player can not be challenged!");}
 				eoo.challengedPlayers.add(BattleArena.toArenaPlayer(p));
 				continue;
 			}

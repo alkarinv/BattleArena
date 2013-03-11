@@ -1,42 +1,30 @@
 package mc.alk.arena.util;
 
 import org.bukkit.entity.Player;
-
-import pgDev.bukkit.DisguiseCraft.api.DisguiseCraftAPI;
-import pgDev.bukkit.DisguiseCraft.disguise.Disguise;
-import pgDev.bukkit.DisguiseCraft.disguise.DisguiseType;
+import org.bukkit.plugin.Plugin;
 
 public class DisguiseInterface {
 	public static final int DEFAULT = Integer.MAX_VALUE;
 
-	public static DisguiseCraftAPI disguiseInterface;
+	private static boolean enabled = false;
+
+	public static void setDisguiseCraft(Plugin plugin){
+		DisguiseUtil.setDisguiseCraft(plugin);
+		enabled = true;
+	}
+
+	public static boolean enabled(){
+		return enabled;
+	}
 
 	public static void undisguise(Player player) {
-		if (disguiseInterface.isDisguised(player)){
-			disguiseInterface.undisguisePlayer(player);}
+		if (!enabled) return;
+		DisguiseUtil.undisguise(player);
 	}
 
 	public static void disguisePlayer(Player player, String disguise) {
-		try{
-			DisguiseType type = DisguiseType.fromString(disguise);
-			if (type == null){
-				return ;}
-			Disguise oldD = disguiseInterface.getDisguise(player);
-			if (oldD.type == type){
-				return;}
-			Disguise d = new Disguise(disguiseInterface.newEntityID(), type);
-			if (disguiseInterface.isDisguised(player)){
-				disguiseInterface.changePlayerDisguise(player, d);
-			} else {
-				disguiseInterface.disguisePlayer(player, d);
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-
-	public static boolean enabled() {
-		return disguiseInterface != null;
+		if (!enabled) return;
+		DisguiseUtil.disguisePlayer(player, disguise);
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -47,6 +48,10 @@ public enum HeroesListener implements Listener {
 			return;}
 		if (event.getSkill().getName().equals("Revive")){
 			Player p = event.getArgs().length > 0 ? Bukkit.getPlayer(event.getArgs()[0]) : null;
+			if (p != null && !inArena.contains(p.getName())){
+				MessageUtil.sendMessage(event.getPlayer(), "&cYou can't revive a player who is not in the arena!");
+				event.setCancelled(true);
+			}
 		}
 		if (!containsHeroesSkill(event.getSkill().getName()))
 			return;

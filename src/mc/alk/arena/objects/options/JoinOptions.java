@@ -79,13 +79,13 @@ public class JoinOptions extends ArenaSize{
 		Location arenajoinloc = arena.getJoinLocation();
 		if (arenajoinloc != null){
 			return (wid == arenajoinloc.getWorld().getUID() &&
-					arenajoinloc.distanceSquared(joinedLocation) <= distance);
+					arenajoinloc.distance(joinedLocation) <= distance);
 		}
 
 		for (Location l : arena.getSpawnLocs().values()){
 			if (l.getWorld().getUID() != wid)
 				return false;
-			if (l.distanceSquared(joinedLocation) <= distance)
+			if (l.distance(joinedLocation) <= distance)
 				return true;
 		}
 		return false;

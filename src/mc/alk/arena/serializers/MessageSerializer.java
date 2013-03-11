@@ -18,7 +18,7 @@ import mc.alk.arena.objects.teams.Team;
 import org.bukkit.configuration.MemorySection;
 
 
-public class MessageSerializer extends BaseSerializer {
+public class MessageSerializer extends BaseConfig {
 	/// Our default messages
 	private static MessageSerializer defaultMessages;
 
@@ -69,15 +69,26 @@ public class MessageSerializer extends BaseSerializer {
 	}
 
 	public static Message getDefaultMessage(String path) {
-		return defaultMessages != null ? defaultMessages.getMessage(path) : null;
+		return defaultMessages != null ? defaultMessages.getNodeMessage(path) : null;
 	}
 
-	public Message getMessage(String path) {
+	public Message getNodeMessage(String path) {
 		if (config != null && config.contains(path)){
 			return new Message(config.getString(path), msgOptions.get(path));
 		}
 		if (this != defaultMessages){
-			return defaultMessages.getMessage(path);
+			return defaultMessages.getNodeMessage(path);
+		} else {
+			return null;
+		}
+	}
+
+	public String getNodeText(String path) {
+		if (config != null && config.contains(path)){
+			return config.getString(path);
+		}
+		if (this != defaultMessages){
+			return defaultMessages.getNodeText(path);
 		} else {
 			return null;
 		}
@@ -103,7 +114,7 @@ public class MessageSerializer extends BaseSerializer {
 		return null;
 	}
 
-	public static String colorChat(String msg) {return msg.replaceAll("&", Character.toString((char) 167));}
+	public static String colorChat(String msg) {return msg.replace('&', '\167');}
 	public static String decolorChat(String msg) { return msg.replaceAll("&", "§").replaceAll("\\§[0-9a-zA-Z]", "");}
 
 	protected static String getStringPathFromSize(int size) {
@@ -119,9 +130,9 @@ public class MessageSerializer extends BaseSerializer {
 	protected void sendVictory(Channel serverChannel, Collection<Team> victors, Collection<Team> losers, MatchParams mp, String winnerpath,String loserpath, String serverPath){
 		int size = victors != null ? victors.size() : 0;
 		size += losers != null ? losers.size() : 0;
-		Message winnermessage = getMessage(winnerpath);
-		Message losermessage = getMessage(loserpath);
-		Message serverMessage = getMessage(serverPath);
+		Message winnermessage = getNodeMessage(winnerpath);
+		Message losermessage = getNodeMessage(loserpath);
+		Message serverMessage = getNodeMessage(serverPath);
 
 		Set<MessageOption> ops = winnermessage.getOptions();
 		if (ops == null)

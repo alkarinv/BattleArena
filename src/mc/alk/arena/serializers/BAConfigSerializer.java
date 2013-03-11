@@ -7,7 +7,9 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.controllers.APIRegistrationController;
+import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.objects.MatchState;
@@ -18,7 +20,6 @@ import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.util.DisabledCommandsUtil;
 import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
 
@@ -41,7 +42,8 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.USE_ARENAS_ONLY_IN_ORDER = config.getBoolean("useArenasOnlyInOrder", Defaults.USE_ARENAS_ONLY_IN_ORDER);
 		Defaults.ENABLE_TELEPORT_FIX = config.getBoolean("enableInvisibleTeleportFix", Defaults.ENABLE_TELEPORT_FIX);
 		parseOptionSets(config.getConfigurationSection("optionSets"));
-		DisabledCommandsUtil.addAll(config.getStringList("disabledCommands"));
+		ArenaMatch.setDisabledCommands(config.getStringList("disabledCommands"));
+		BattleArenaController.setDisabledCommands(config.getStringList("disabledQueueCommands"));
 		if (HeroesController.enabled()){
 			List<String> disabled = config.getStringList("disabledHeroesSkills");
 			if (disabled != null && !disabled.isEmpty()){

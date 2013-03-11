@@ -235,6 +235,13 @@ public class EventExecutor extends BAExecutor{
 		Team t = teamc.getSelfFormedTeam(p);
 		if (t==null){
 			t = TeamController.createTeam(p); }
+		/// Get or Make a team for the Player
+
+		if (!canJoin(t,true)){
+			sendSystemMessage(p, "teammate_cant_join");
+			return sendMessage(p,"&6/team leave: &cto leave the team");
+		}
+
 		/// Check any options specified in the join
 		JoinOptions jp;
 		try {
@@ -254,7 +261,7 @@ public class EventExecutor extends BAExecutor{
 		if (!event.canJoin(t)){
 			return false;}
 		/// Check fee
-		if (!checkFee(sq, p)){
+		if (!checkAndRemoveFee(sq, t)){
 			return false;}
 		TeamQObject tqo = new TeamQObject(t,sq,jp);
 

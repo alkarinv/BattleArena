@@ -5,7 +5,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
+import mc.alk.arena.controllers.BukkitInterface;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
@@ -48,8 +49,8 @@ public class SerializerUtil {
 		if (split.length > 4){yaw = Float.valueOf(split[4]);}
 		if (split.length > 5){pitch = Float.valueOf(split[5]);}
 		World world = null;
-		if (w != null)
-			world = Bukkit.getWorld(w);
+		if (w != null){
+			world = BukkitInterface.getWorld(w);}
 		if (world ==null){
 			throw new IllegalArgumentException("Error parsing location, World was null");}
 		return new Location(world,x,y,z,yaw,pitch);

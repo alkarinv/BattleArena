@@ -30,7 +30,7 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.ConfigException;
 import mc.alk.arena.objects.exceptions.ExtensionPluginException;
 import mc.alk.arena.serializers.ArenaSerializer;
-import mc.alk.arena.serializers.BaseSerializer;
+import mc.alk.arena.serializers.BaseConfig;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.serializers.YamlFileUpdater;
@@ -72,7 +72,7 @@ public class APIRegistrationController {
 	}
 
 	public static void registerCustomCompetition(Plugin plugin, File configFile){
-		BaseSerializer bs = new BaseSerializer();
+		BaseConfig bs = new BaseConfig();
 		bs.setConfig(configFile);
 		FileConfiguration config = bs.getConfig();
 		/// Initialize custom matches or events
@@ -137,6 +137,7 @@ public class APIRegistrationController {
 
 		if (!loadConfigFile(plugin, defaultFile, defaultPluginFile, pluginFile, name,cmd)){
 			Log.err(plugin.getName() + " " + pluginFile.getName() + " could not be loaded");
+			Log.err("Path: " + pluginFile.getAbsolutePath() +"  " + defaultPluginFile.getAbsolutePath());
 			return;
 		}
 		cc.setConfig(at, pluginFile);
@@ -147,14 +148,14 @@ public class APIRegistrationController {
 		MessageSerializer ms = new MessageSerializer(name);
 
 		String messagesFileName = name+"Messages.yml";
-		fileName = match ? "defaultMatchMessages.yml": "defaultEventMessages.yml";
+		fileName ="defaultMessages.yml";
 
 		pluginFile = new File(dir.getPath()+File.separator+messagesFileName);
 		defaultPluginFile = new File(messagesFileName);
 		defaultFile = new File("default_files"+File.separator+fileName);
 
 		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
-			pluginFile = FileUtil.load(BattleArena.getSelf(), pluginFile.getAbsolutePath(),"/default_files/"+fileName);
+			pluginFile = FileUtil.load(BattleArena.getSelf().getClass(), pluginFile.getAbsolutePath(),"/default_files/"+fileName);
 			if (pluginFile == null){
 				Log.err(plugin.getName() + " " + messagesFileName+" could not be loaded");
 				return;
@@ -178,7 +179,7 @@ public class APIRegistrationController {
 		if (pluginFile.exists())
 			return true;
 
-		InputStream inputStream = FileUtil.getInputStream(plugin, defaultFile, defaultPluginFile);
+		InputStream inputStream = FileUtil.getInputStream(plugin.getClass(), defaultFile, defaultPluginFile);
 		if (inputStream == null){
 			return false;}
 
@@ -206,7 +207,9 @@ public class APIRegistrationController {
 			String name, String cmd) {
 		if (pluginFile.exists())
 			return true;
-		InputStream inputStream = FileUtil.getInputStream(plugin, defaultFile, defaultPluginFile);
+		InputStream inputStream = FileUtil.getInputStream(plugin.getClass(), new File(name+"Config.yml"));
+		if (inputStream == null){
+			inputStream = FileUtil.getInputStream(plugin.getClass(), defaultFile, defaultPluginFile);}
 		if (inputStream == null){
 			return false;
 		}
@@ -283,29 +286,38 @@ public class APIRegistrationController {
 		}
 	}
 
-	public void createMessageSerializer(Plugin plugin, String name, boolean match, File dir) throws ConfigException {
+	public boolean hasMessageFile(Plugin plugin, String name, File dir){
+		try {
+			return createMessageFile(plugin, name, dir) != null;
+		} catch (ConfigException e) {
+			return false;
+		}
+	}
+
+	public void createMessageSerializer(Plugin plugin, String name, File dir) throws ConfigException {
 		File pluginFile;
 		/// Make a message serializer for this match/event, and make the messages.yml file if it doesnt exist
 		MessageSerializer ms = new MessageSerializer(name);
 
-		pluginFile = createMessageFile(plugin, name, match, dir);
+		pluginFile = createMessageFile(plugin, name, dir);
 		ms.setConfig(pluginFile);
 		ms.loadAll();
 		MessageSerializer.addMessageSerializer(name,ms);
 	}
 
-	private static File createMessageFile(Plugin plugin, String name, boolean match, File dir) throws ConfigException {
+	private static File createMessageFile(Plugin plugin, String name, File dir) throws ConfigException {
 		String messagesFileName = name+"Messages.yml";
-		String fileName = match ? "defaultMatchMessages.yml": "defaultEventMessages.yml";
+		String fileName = "defaultMessages.yml";
 
 		File pluginFile = new File(dir.getPath()+File.separator+messagesFileName);
 		File defaultPluginFile = new File(messagesFileName);
 		File defaultFile = new File("default_files"+File.separator+fileName);
 
 		if (!loadFile(plugin, defaultFile, defaultPluginFile, pluginFile)){
-			pluginFile = FileUtil.load(BattleArena.getSelf(), pluginFile.getAbsolutePath(),"/default_files/"+fileName);
+			pluginFile = FileUtil.load(BattleArena.getSelf().getClass(), pluginFile.getAbsolutePath(),"/default_files/"+fileName);
 			if (pluginFile == null){
-				throw new ConfigException(plugin.getName() + " " + messagesFileName+" could not be loaded");
+				throw new ConfigException(plugin.getName() + " " + messagesFileName+" could not be loaded\n"+
+						"pluginFile was null");
 			}
 		}
 		return pluginFile;
@@ -389,16 +401,22 @@ public class APIRegistrationController {
 
 		if (!loadConfigFile(plugin, defaultFile, defaultPluginFile, pluginFile, name,cmd)){
 			Log.err(plugin.getName() + " " + pluginFile.getName() + " could not be loaded");
+			Log.err("defaultFile="+defaultFile != null ? defaultFile.getAbsolutePath() : "null");
+			Log.err("defaultPluginFile="+defaultPluginFile != null ? defaultPluginFile.getAbsolutePath() : "null");
+			Log.err("pluginFile="+pluginFile != null ? pluginFile.getAbsolutePath() : "null");
 			return;
 		}
 
-		BaseSerializer bs = new BaseSerializer();
+		BaseConfig bs = new BaseConfig();
 		bs.setConfig(configFile);
 		FileConfiguration config = bs.getConfig();
 
 
 		boolean isMatch = !config.getBoolean(name+".isEvent",!defaultIsMatch);
 		isMatch = config.getBoolean(name+".queue",isMatch);
+		if (executor != null){
+
+		}
 		if (isMatch){
 			BAExecutor exe = new BAExecutor();
 			if (executor != null){

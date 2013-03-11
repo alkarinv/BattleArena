@@ -14,7 +14,7 @@ import mc.alk.arena.util.TeamUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
-public class TeamHeadSerializer extends BaseSerializer{
+public class TeamHeadSerializer extends BaseConfig{
 
 	public void loadAll(){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}

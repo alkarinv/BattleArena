@@ -32,8 +32,8 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 
 	@Override
 	public void sendCountdownTillEvent(Channel serverChannel, int seconds) {
-		Message message = getMessage("event.countdownTillEvent");
-		Message serverMessage = getMessage("event.server_countdownTillEvent");
+		Message message = getNodeMessage("event.countdownTillEvent");
+		Message serverMessage = getNodeMessage("event.server_countdownTillEvent");
 		Set<MessageOption> ops = message.getOptions();
 		if (serverChannel != Channel.NullChannel){
 			ops.addAll(serverMessage.getOptions());
@@ -51,8 +51,8 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 	@Override
 	public void sendEventStarting(Channel serverChannel, Collection<Team> teams) {
 		final String nTeamPath = getStringPathFromSize(teams.size());
-		Message message = getMessage("event."+ nTeamPath+".start");
-		Message serverMessage = getMessage("event."+ nTeamPath+".server_start");
+		Message message = getNodeMessage("event."+ nTeamPath+".start");
+		Message serverMessage = getNodeMessage("event."+ nTeamPath+".server_start");
 		formatAndSend(serverChannel, teams, message, serverMessage);
 	}
 
@@ -72,9 +72,9 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		final String nTeamPath = getStringPathFromSize(mp.getMinTeams());
 		Message serverMessage;
 		if (mp.getMinTeamSize() > 1)
-			serverMessage = getMessage("event."+nTeamPath+".server_open_teamSizeGreaterThanOne");
+			serverMessage = getNodeMessage("event."+nTeamPath+".server_open_teamSizeGreaterThanOne");
 		else
-			serverMessage = getMessage("event."+nTeamPath+".server_open");
+			serverMessage = getNodeMessage("event."+nTeamPath+".server_open");
 		Set<MessageOption> ops = serverMessage.getOptions();
 		String msg = serverMessage.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), ops.size(), 0, serverMessage, ops);
@@ -95,8 +95,8 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 
 	@Override
 	public void sendEventCancelled(Channel serverChannel, Collection<Team> teams) {
-		Message message = getMessage("event.team_cancelled");
-		Message serverMessage = getMessage("event.server_cancelled");
+		Message message = getNodeMessage("event.team_cancelled");
+		Message serverMessage = getNodeMessage("event.server_cancelled");
 		formatAndSend(serverChannel, teams, message, serverMessage);
 	}
 

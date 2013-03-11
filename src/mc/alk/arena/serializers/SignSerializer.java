@@ -8,7 +8,7 @@ import mc.alk.arena.objects.signs.ArenaStatusSign;
 
 import org.bukkit.configuration.ConfigurationSection;
 
-public class SignSerializer extends BaseSerializer {
+public class SignSerializer extends BaseConfig {
 	public void loadAll(SignController sc){
 		Set<String> arenaTypes = config.getKeys(false);
 

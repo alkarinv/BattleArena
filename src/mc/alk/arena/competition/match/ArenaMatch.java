@@ -3,11 +3,12 @@ package mc.alk.arena.competition.match;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.events.PlayerLeftEvent;
@@ -26,11 +27,12 @@ import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.util.DisabledCommandsUtil;
+import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
 
@@ -62,8 +64,10 @@ import org.bukkit.inventory.ItemStack;
 
 
 public class ArenaMatch extends Match {
-	private HashMap<String, Long> userTime = new HashMap<String, Long>();
-	private HashMap<String, Integer> deathTimer = new HashMap<String, Integer>();
+	static HashSet<String> disabledCommands = new HashSet<String>();
+
+	HashMap<String, Long> userTime = new HashMap<String, Long>();
+	HashMap<String, Integer> deathTimer = new HashMap<String, Integer>();
 
 	public ArenaMatch(Arena arena, MatchParams mp) {
 		super(arena, mp);
@@ -266,6 +270,9 @@ public class ArenaMatch extends Match {
 
 	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerBlockBreak(BlockBreakEvent event){
+		NotifierUtil.notify("blockbreak", event.getPlayer().getName() + "  stage= "+
+				state + "  breaking block.. cancelled " + event.isCancelled() +"    contains=" +
+				tops.hasOptionAt(state, TransitionOption.BLOCKBREAKOFF));
 		if (tops.hasOptionAt(state, TransitionOption.BLOCKBREAKOFF)){
 			event.setCancelled(true);}
 	}
@@ -308,6 +315,11 @@ public class ArenaMatch extends Match {
 		}
 	}
 
+	/**
+	 * Factions has slashless commands that get handled and then set to cancelled....
+	 * so we need to act before them
+	 * @param event
+	 */
 	@MatchEventHandler(priority=EventPriority.HIGH, bukkitPriority=org.bukkit.event.EventPriority.LOWEST)
 	public void onPlayerCommandPreprocess1(PlayerCommandPreprocessEvent event){
 		handlePreprocess(event);
@@ -320,31 +332,12 @@ public class ArenaMatch extends Match {
 		handlePreprocess(event);
 	}
 
-	public static void handlePreprocess(PlayerCommandPreprocessEvent event){
-		if (Defaults.DEBUG_COMMANDS){
-			event.getPlayer().sendMessage("event Message=" + event.getMessage() +"   isCancelled=" + event.isCancelled());}
-		final Player p = event.getPlayer();
-		if (PermissionsUtil.isAdmin(p) && Defaults.ALLOW_ADMIN_CMDS_IN_MATCH){
-			return;}
-
-		String cmd = event.getMessage();
-		final int index = cmd.indexOf(' ');
-		if (index != -1){
-			cmd = cmd.substring(0, index);
-		}
-		cmd = cmd.toLowerCase();
-		if (Defaults.DEBUG_COMMANDS){
-			p.sendMessage("Command=" + cmd +" contains="+DisabledCommandsUtil.contains(cmd));
-			Set<String> cmds = DisabledCommandsUtil.getDisabledCommands();
-			for (String c: cmds){
-				p.sendMessage("Disabled contains cmd="+c);
-			}
-		}
-		if(DisabledCommandsUtil.contains(cmd)){
+	private void handlePreprocess(PlayerCommandPreprocessEvent event) {
+		if (CommandUtil.shouldCancel(event, disabledCommands)){
 			event.setCancelled(true);
-			p.sendMessage(ChatColor.RED+"You cannot use that command when you are in a match");
-			if (PermissionsUtil.isAdmin(p)){
-				MessageUtil.sendMessage(p,"&cYou can set &6/bad allowAdminCommands true: &c to change");}
+			event.getPlayer().sendMessage(ChatColor.RED+"You cannot use that command when you are in a match");
+			if (PermissionsUtil.isAdmin(event.getPlayer())){
+				MessageUtil.sendMessage(event.getPlayer(),"&cYou can set &6/bad allowAdminCommands true: &c to change");}
 		}
 	}
 
@@ -463,7 +456,7 @@ public class ArenaMatch extends Match {
 
 	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerTeleport(PlayerTeleportEvent event){
-		if (event.isCancelled() || event.getPlayer().hasPermission(Defaults.TELEPORT_BYPASS_PERM))
+		if (event.isCancelled() || event.getPlayer().hasPermission(Permissions.TELEPORT_BYPASS_PERM))
 			return;
 		TransitionOptions ops = tops.getOptions(state);
 		if (ops==null)
@@ -509,5 +502,10 @@ public class ArenaMatch extends Match {
 		if (tcount < neededTeams)
 			return;
 		this.start();
+	}
+
+	public static void setDisabledCommands(List<String> commands) {
+		for (String s: commands){
+			disabledCommands.add("/" + s.toLowerCase());}
 	}
 }

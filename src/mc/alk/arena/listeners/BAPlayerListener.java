@@ -7,6 +7,7 @@ import java.util.List;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.PlayerController;
@@ -22,6 +23,7 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.Util;
+import mc.alk.virtualPlayer.VirtualPlayers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -36,7 +38,6 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.alk.virtualPlayer.VirtualPlayers;
 
 /**
  *
@@ -285,7 +286,7 @@ public class BAPlayerListener implements Listener  {
 	public void onPlayerTeleport(PlayerTeleportEvent event){
 		if (event.isCancelled() || !WorldGuardController.hasWorldGuard() ||
 				WorldGuardController.regionCount() == 0 ||
-				event.getPlayer().hasPermission(Defaults.TELEPORT_BYPASS_PERM))
+				event.getPlayer().hasPermission(Permissions.TELEPORT_BYPASS_PERM))
 			return;
 		WorldGuardRegion region = WorldGuardController.getContainingRegion(event.getTo());
 		if (region != null && !WorldGuardController.hasPlayer(event.getPlayer().getName(), region)){

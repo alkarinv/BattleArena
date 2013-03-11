@@ -203,8 +203,6 @@ public class TransitionOptions {
 			MinMax mm = (MinMax) options.get(TransitionOption.LEVELRANGE);
 			sb.append("&a - lvl="+mm.toString());
 		}
-
-		sb.append("&5 - &6Armor");
 		return hasSomething ? sb.toString() : null;
 	}
 

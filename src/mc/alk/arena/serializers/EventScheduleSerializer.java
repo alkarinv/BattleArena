@@ -20,7 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 
 
-public class EventScheduleSerializer extends BaseSerializer {
+public class EventScheduleSerializer extends BaseConfig {
 	EventScheduler es;
 
 	public void loadAll(){

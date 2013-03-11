@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
@@ -51,7 +50,7 @@ import org.bukkit.potion.PotionEffect;
  * @author alkarin
  *
  */
-public class ConfigSerializer extends BaseSerializer{
+public class ConfigSerializer extends BaseConfig{
 	static HashMap<ArenaType, ConfigSerializer> configs = new HashMap<ArenaType, ConfigSerializer>();
 
 	public void setConfig(ArenaType at, String f){
@@ -183,10 +182,10 @@ public class ConfigSerializer extends BaseSerializer{
 
 		pi.setNConcurrentCompetitions(cs.getInt("nConcurrentCompetitions",Integer.MAX_VALUE));
 
-		if (cs.contains("customMessages") && cs.getBoolean("customMessages")){
-			APIRegistrationController api = new APIRegistrationController();
-			api.createMessageSerializer(plugin, pi.getName(), match, plugin.getDataFolder());
-		}
+//		APIRegistrationController api = new APIRegistrationController();
+//		if (cs.getBoolean("customMessages", false) || api.hasMessageFile(plugin, pi.getName(), plugin.getDataFolder())){
+//			api.createMessageSerializer(plugin, pi.getName(), plugin.getDataFolder());
+//		}
 
 		if (cs.contains("announcements")){
 			AnnouncementOptions an = new AnnouncementOptions();

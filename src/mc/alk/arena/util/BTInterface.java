@@ -29,7 +29,7 @@ public class BTInterface {
 	static private HashMap<String, TrackerInterface> btis = new HashMap<String, TrackerInterface>();
 	static private HashMap<String, TrackerInterface> currentInterfaces = new HashMap<String, TrackerInterface>();
 	final TrackerInterface ti;
-	boolean valid;
+	boolean valid = false;
 	public BTInterface(MatchParams mp){
 		ti = getInterface(mp);
 		valid = battleTracker != null && ti != null;
@@ -86,6 +86,8 @@ public class BTInterface {
 	}
 
 	public static boolean addBTI(MatchParams pi) {
+		if (battleTracker == null)
+			return false;
 		final String dbName = pi.getDBName();
 		TrackerInterface bti = btis.get(dbName);
 		if (bti == null){

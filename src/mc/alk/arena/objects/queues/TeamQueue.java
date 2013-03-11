@@ -3,8 +3,11 @@ package mc.alk.arena.objects.queues;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -21,6 +24,14 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		this.mp = mp;
 	}
 
+	public synchronized boolean contains(Team team){
+		for (QueueObject qo: this){
+			if (qo.hasTeam(team))
+				return true;
+		}
+		return false;
+	}
+
 	public synchronized boolean contains(ArenaPlayer p){
 		for (QueueObject t: this){
 			if (t.hasMember(p))
@@ -30,14 +41,29 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 	}
 
 	public synchronized Team remove(ArenaPlayer p){
-		for (QueueObject t: this){
-			if (t.hasMember(p)){
-				this.remove(t);
-				return t.getTeam(p);
+		Iterator<QueueObject> iter = this.iterator();
+		while (iter.hasNext()){
+			QueueObject qo = iter.next();
+			if (qo.hasMember(p)){
+				iter.remove();
+				return qo.getTeam(p);
 			}
 		}
 		return null;
 	}
+
+	public synchronized Team remove(Team team){
+		Iterator<QueueObject> iter = this.iterator();
+		while (iter.hasNext()){
+			QueueObject qo = iter.next();
+			if (qo.hasTeam(team)){
+				iter.remove();
+				return team;
+			}
+		}
+		return null;
+	}
+
 	public synchronized int indexOf(ArenaPlayer p){
 		int i=0;
 		for (QueueObject t: this){
@@ -52,7 +78,7 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		int i=0;
 		for (QueueObject t: this){
 			if (t.hasMember(p))
-				return new QueueResult(getMatchParams(),i,getNPlayers(),t.getTeam(p), this.size());
+				return new QueueResult(null,getMatchParams(),i,getNPlayers(),t.getTeam(p), this.size());
 			i++;
 		}
 		return null;
@@ -81,11 +107,21 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		}
 	}
 
-	public synchronized Collection<? extends Team> getTeams() {
+	public synchronized Collection<Team> getTeams() {
 		List<Team> teams = new ArrayList<Team>();
 		for (QueueObject team: this){
 			teams.addAll(team.getTeams());
 		}
 		return teams;
+	}
+
+	public synchronized Collection<ArenaPlayer> getArenaPlayers() {
+		Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
+		for (QueueObject qo: this){
+			for (Team t: qo.getTeams()){
+				players.addAll(t.getPlayers());
+			}
+		}
+		return players;
 	}
 }

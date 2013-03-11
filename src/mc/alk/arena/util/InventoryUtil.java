@@ -29,10 +29,10 @@ public class InventoryUtil {
 	static IInventoryHelper handler = null;
 
 	static {
-		final String pkg = Bukkit.getServer().getClass().getPackage().getName();
-		String version = pkg.substring(pkg.lastIndexOf('.') + 1);
-		final Class<?> clazz;
 		try {
+			final String pkg = Bukkit.getServer().getClass().getPackage().getName();
+			String version = pkg.substring(pkg.lastIndexOf('.') + 1);
+			final Class<?> clazz;
 			if (version.equalsIgnoreCase("craftbukkit")){
 				clazz = Class.forName("mc.alk.arena.util.compat.pre.InventoryHelper");
 			} else{
@@ -44,6 +44,7 @@ public class InventoryUtil {
 			e.printStackTrace();
 		}
 	}
+
 	public static class Armor{
 		final public ArmorLevel level;
 		final public ArmorType type;

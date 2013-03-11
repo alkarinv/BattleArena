@@ -35,7 +35,11 @@ public class PlayerUtil {
 	}
 
 	public static void setHealth(final Player player, final Integer health) {
-		if (HeroesController.enabled()){
+		setHealth(player,health,false);
+	}
+
+	public static void setHealth(final Player player, final Integer health, boolean skipHeroes) {
+		if (!skipHeroes && HeroesController.enabled()){
 			HeroesController.setHealth(player,health);
 			return;
 		}
@@ -59,7 +63,12 @@ public class PlayerUtil {
 	}
 
 	public static Integer getHealth(Player player) {
-		return HeroesController.enabled() ? HeroesController.getHealth(player) : player.getHealth();
+		return getHealth(player,false);
+	}
+
+	public static Integer getHealth(Player player, boolean skipHeroes) {
+		return !skipHeroes && HeroesController.enabled() ?
+				HeroesController.getHealth(player) : player.getHealth();
 	}
 
 	public static void setInvulnerable(Player player, Integer invulnerableTime) {

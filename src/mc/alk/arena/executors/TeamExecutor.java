@@ -10,6 +10,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.EventController;
+import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -63,7 +64,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return sendMessage(sender,sb.toString());
 	}
 
-	@MCCommand(cmds={"join"}, usage="join")
+	@MCCommand(cmds={"join"}, usage="join", perm="arena.team.join")
 	public boolean teamJoin(ArenaPlayer player) {
 
 		Team t = teamc.getSelfFormedTeam(player);
@@ -94,7 +95,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"create"}, usage="create <player 1> <player 2>...<player x>")
+	@MCCommand(cmds={"create"}, usage="create <player 1> <player 2>...<player x>", perm="arena.team.create")
 	public boolean teamCreate(ArenaPlayer player, String[] args) {
 		if (args.length<2){
 			sendMessage(player,ChatColor.YELLOW + "create <player 1> <player 2>...<player x>");
@@ -127,10 +128,9 @@ public class TeamExecutor extends CustomCommandExecutor {
 		}
 		Set<ArenaPlayer> foundArenaPlayers = PlayerController.toArenaPlayerSet(foundplayers);
 		for (ArenaPlayer p: foundArenaPlayers){
-
 			if (Defaults.DEBUG){System.out.println("player=" + player.getName());}
 			Team t = teamc.getSelfFormedTeam(p);
-			if (t!= null || !bae.canJoin(p)){
+			if (t!= null || !bae.canJoin(p,false)){
 				sendMessage(player,"&6"+ p.getName() + "&e is already part of a team or is in an Event");
 				return sendMessage(player,"&eCreate team &4cancelled!");
 			}
@@ -204,6 +204,9 @@ public class TeamExecutor extends CustomCommandExecutor {
 		Team t = teamc.getSelfFormedTeam(player);
 		if (t== null){
 			return sendMessage(player,"&eYou aren't part of a team");}
+
+		if (HeroesController.enabled()){
+			HeroesController.removedFromTeam(t, player.getPlayer());}
 
 		teamc.removeSelfFormedTeam(t);
 		t.sendToOtherMembers(player,"&eYour team has been disbanded by " + player.getName());

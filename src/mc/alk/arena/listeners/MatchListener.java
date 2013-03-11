@@ -3,7 +3,7 @@ package mc.alk.arena.listeners;
 import java.util.Collection;
 
 import mc.alk.arena.controllers.SignController;
-import mc.alk.arena.events.matches.TeamJoinedQueueEvent;
+import mc.alk.arena.events.TeamJoinedQueueEvent;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.signs.ArenaStatusSign;
 import mc.alk.tracker.util.TimeUtil;
@@ -24,6 +24,8 @@ public class MatchListener implements Listener{
 	@EventHandler
 	public void onTeamJoinedQueueEvent(TeamJoinedQueueEvent event){
 		ArenaParams params = event.getParams();
+		if (params == null)
+			return;
 		Collection<ArenaStatusSign> signs = signController.getSigns(params.getType().getName());
 		if (signs == null)
 			return;

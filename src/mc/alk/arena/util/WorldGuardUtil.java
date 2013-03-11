@@ -284,7 +284,7 @@ public class WorldGuardUtil {
 		LocalPlayer bcs = new ConsolePlayer(wep,wep.getServerInterface(),sender, world);
 
 		final LocalSession session = wep.getWorldEdit().getSession(bcs);
-
+		session.setUseInventory(false);
 		EditSession editSession = session.createEditSession(bcs);
 		Vector pos = new Vector(pr.getMinimumPoint());
 		try {
@@ -311,6 +311,11 @@ public class WorldGuardUtil {
 		public LocalWorld getWorld() {
 			return world;
 		}
+//	    @Override
+//	    public BlockBag getInventoryBlockBag() {
+//	        return new BukkitPlayerBlockBag(player);
+//	    }
+
 
 	}
 	public static boolean saveSchematic(Player p, String schematicName){

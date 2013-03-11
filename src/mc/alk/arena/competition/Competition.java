@@ -45,6 +45,12 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	public abstract int getID();
 
 	/**
+	 * Get the Name for this competition
+	 * @return
+	 */
+	public abstract String getName();
+
+	/**
 	 * Returns the current state of the competition
 	 * @return
 	 */

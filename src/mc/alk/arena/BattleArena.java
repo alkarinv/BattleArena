@@ -1,9 +1,7 @@
 package mc.alk.arena;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -12,6 +10,7 @@ import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.BukkitInterface;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.EventScheduler;
@@ -69,7 +68,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 
-public class BattleArena extends JavaPlugin{
+public class BattleArena extends JavaPlugin {
 	static private String pluginname;
 	static private String version;
 	static private BattleArena plugin;
@@ -79,7 +78,7 @@ public class BattleArena extends JavaPlugin{
 	private final static TeamController tc = TeamController.INSTANCE;
 	private final static EventController ec = new EventController();
 	private final static ArenaEditor aac = new ArenaEditor();
-	private final DuelController dc = new DuelController();
+	private final static DuelController dc = new DuelController();
 	private static BAExecutor commandExecutor;
 	private final BAPlayerListener playerListener = new BAPlayerListener(arenaController);
 	private final BAPluginListener pluginListener = new BAPluginListener();
@@ -99,8 +98,12 @@ public class BattleArena extends JavaPlugin{
 		PluginDescriptionFile pdfFile = this.getDescription();
 		pluginname = pdfFile.getName();
 		version = pdfFile.getVersion();
+		Class<?> clazz = this.getClass();
 		ConsoleCommandSender sender = Bukkit.getConsoleSender();
 		MessageUtil.sendMessage(sender,"&4["+pluginname+"] &6v"+version+"&f enabling!");
+
+		BukkitInterface.setServer(Bukkit.getServer()); /// Set the server
+
 		/// Create our plugin folder if its not there
 		File dir = getDataFolder();
 		if (!dir.exists()){
@@ -111,8 +114,8 @@ public class BattleArena extends JavaPlugin{
 
 		/// Set up our messages first before other initialization needs messages
 		MessageSerializer defaultMessages = new MessageSerializer("default");
-		defaultMessages.setConfig(FileUtil.load(this,dir.getPath()+"/messages.yml","/default_files/messages.yml"));
-		yfu.updateMessageSerializer(defaultMessages); /// Update our config if necessary
+		defaultMessages.setConfig(FileUtil.load(clazz,dir.getPath()+"/messages.yml","/default_files/messages.yml"));
+		yfu.updateMessageSerializer(plugin,defaultMessages); /// Update our config if necessary
 		defaultMessages.loadAll();
 		MessageSerializer.setDefaultConfig(defaultMessages);
 
@@ -140,19 +143,20 @@ public class BattleArena extends JavaPlugin{
 		VictoryType.register(NoTeamsLeft.class, this);
 
 		/// Load our configs, then arenas
-		baConfigSerializer.setConfig(FileUtil.load(this,dir.getPath() +"/config.yml","/default_files/config.yml"));
+		baConfigSerializer.setConfig(FileUtil.load(clazz,dir.getPath() +"/config.yml","/default_files/config.yml"));
 		try{
 			YamlFileUpdater.updateBaseConfig(this,baConfigSerializer); /// Update our config if necessary
 		} catch (Exception e){
 			e.printStackTrace();
 		}
+
 		baConfigSerializer.loadDefaults(); /// Load our defaults for BattleArena, has to happen before classes are loaded
 
-		classesSerializer.setConfig(FileUtil.load(this,dir.getPath() +"/classes.yml","/default_files/classes.yml")); /// Load classes
+		classesSerializer.setConfig(FileUtil.load(clazz,dir.getPath() +"/classes.yml","/default_files/classes.yml")); /// Load classes
 		classesSerializer.loadAll();
 
 		TeamHeadSerializer ts = new TeamHeadSerializer();
-		ts.setConfig(FileUtil.load(this,dir.getPath() +"/teamConfig.yml","/default_files/teamConfig.yml")); /// Load team Colors
+		ts.setConfig(FileUtil.load(clazz,dir.getPath() +"/teamConfig.yml","/default_files/teamConfig.yml")); /// Load team Colors
 		ts.loadAll();
 
 		baConfigSerializer.loadCompetitions(); /// Load our competitions, has to happen after classes and teams
@@ -167,7 +171,7 @@ public class BattleArena extends JavaPlugin{
 		as.loadArenas(this);
 
 		SpawnSerializer ss = new SpawnSerializer();
-		ss.setConfig(FileUtil.load(this,dir.getPath() +"/spawns.yml","/default_files/spawns.yml"));
+		ss.setConfig(FileUtil.load(clazz,dir.getPath() +"/spawns.yml","/default_files/spawns.yml"));
 		arenaControllerSerializer.load();
 
 		/// Load up our signs
@@ -216,11 +220,10 @@ public class BattleArena extends JavaPlugin{
 		File f = new File(getDataFolder()+"/messages");
 		if (!f.exists())
 			f.mkdir();
-		HashSet<String> events = new HashSet<String>(Arrays.asList("freeforall","deathmatch","tourney"));
 		for (MatchParams mp: ParamController.getAllParams()){
-			String fileName = events.contains(mp.getName().toLowerCase()) ? "defaultEventMessages.yml": "defaultMatchMessages.yml";
+			String fileName = "defaultMessages.yml";
 			MessageSerializer ms = new MessageSerializer(mp.getName());
-			ms.setConfig(FileUtil.load(this,f.getAbsolutePath()+"/"+mp.getName()+"Messages.yml","/default_files/"+fileName));
+			ms.setConfig(FileUtil.load(this.getClass(),f.getAbsolutePath()+"/"+mp.getName()+"Messages.yml","/default_files/"+fileName));
 			ms.loadAll();
 			MessageSerializer.addMessageSerializer(mp.getName(),ms);
 		}
@@ -291,7 +294,7 @@ public class BattleArena extends JavaPlugin{
 	 * Get the DuelController, deals with who is currently trying to duel other people/teams
 	 * @return
 	 */
-	public DuelController getDuelController(){return dc;}
+	public static DuelController getDuelController(){return dc;}
 
 	/**
 	 * Get the EventController, deals with what events can be run

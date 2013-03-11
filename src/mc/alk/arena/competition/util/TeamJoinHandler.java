@@ -96,7 +96,7 @@ public abstract class TeamJoinHandler implements TeamHandler {
 				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	public Set<ArenaPlayer> getExcludedPlayers() {

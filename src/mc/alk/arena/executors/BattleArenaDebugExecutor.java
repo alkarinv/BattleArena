@@ -247,6 +247,12 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return true;
 	}
 
+	@MCCommand(cmds={"showq"}, admin=true)
+	public boolean showQueue(CommandSender sender) {
+		sendMessage(sender,ac.queuesToString());
+		return true;
+	}
+
 	@MCCommand(cmds={"online"}, admin=true)
 	public boolean arenaVerify(CommandSender sender, OfflinePlayer p) {
 		return sendMessage(sender, "Player " + p.getName() +"  is " + p.isOnline());
@@ -350,7 +356,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 	@MCCommand(cmds={"allowAdminCommands"}, admin=true)
 	public boolean allowAdminCommands(CommandSender sender, Boolean enable) {
-		Defaults.ALLOW_ADMIN_CMDS_IN_MATCH = enable;
+		Defaults.ALLOW_ADMIN_CMDS_IN_Q_OR_MATCH = enable;
 		return sendMessage(sender,"&2Admins can "+ (enable ? "&6use" : "&cnot use")+"&2 commands in match");
 	}
 

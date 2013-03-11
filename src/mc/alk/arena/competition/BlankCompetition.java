@@ -24,6 +24,9 @@ public class BlankCompetition extends Competition{
 	public CompetitionState getState() {return null;}
 
 	@Override
+	public String getName() {return id+"";}
+
+	@Override
 	protected void transitionTo(CompetitionState state) {}
 
 	@Override

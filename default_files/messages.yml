@@ -1,9 +1,9 @@
-version: 1.5.2
+version: 1.5.4
 
 system:
     type_enabled: "&2 type &6%s&2 enabled"
     type_disabled: "&2 type &6%s&2 disabled"
-    time_format: "&6%s&e %s "
+    time_format: "&6%s&e %s"
     zero_time: "&60"
     match_disabled: "&cThe &6%s&c is currently disabled"
     all_disabled: "&cThe arena system and all types are currently disabled"
@@ -15,14 +15,15 @@ system:
     you_added_to_team: "&eYou have been added to a team"
     queue_busy: "&cTeam queue was busy.  Try again in a sec."
     no_arena_for_size: "&cAn arena has not been built yet for that size of team"
-    joined_the_queue: "&eYou have joined the queue for the &6%s&e."
-    server_joined_the_queue: "%s &6%s&e has joined the queue. &6%s/%s"
-    you_joined_the_queue: "&ePosition: &6%s&e. Match start when &6%s&e players join. &6%s/%s"
-    or_time: "&eor in %s when at least 2 players have joined"
+    joined_the_queue: '&eYou joined the &6%s&e queue. Position: &6%s/%s'
+    match_starts_players_or_time: '&eMatch start when &6%s&e more players join or in %s &ewith at least &6%s&e players'
+    match_starts_when_time: '&eMatch start in %s'
     you_start_when_free_pos: "&ePosition: &6%s&e. your match will start when an arena is free"
     you_start_when_free: "&eYour match will start when an arena is free"
+    server_joined_the_queue: "%s &6%s&e has joined the queue. &6%s/%s"
     you_left_match: "&eYou have left the match"
-    you_left_event: "&eYou have left the %s event"
+    you_left_event: "&eYou have left the &6%s&e event"
+    you_left_competition: '&eYou have left the &6%s&e event'
     you_left: "&eYou have left"
     you_not_in_queue: "&eYou are not currently in a queue"
     you_left_queue: "&eYou have left the queue for the &6%s"

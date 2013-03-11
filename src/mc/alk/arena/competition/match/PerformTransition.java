@@ -27,6 +27,7 @@ import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
@@ -38,6 +39,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.potion.PotionEffect;
+
 
 public class PerformTransition {
 
@@ -217,7 +219,10 @@ public class PerformTransition {
 				loc = mo.getTeleportToLoc();
 			else
 				loc = am.oldlocs.get(player.getName());
-			if (insideArena || !onlyInMatch){
+			if (loc == null){
+				Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO)+
+						", teleportOnArenaExit="+mo.hasOption(TransitionOption.TELEPORTONARENAEXIT));
+			} else if (insideArena || !onlyInMatch){
 				TeleportController.teleportPlayer(p, loc, wipeInventory, true);
 				am.leaveArena(player);
 			}
