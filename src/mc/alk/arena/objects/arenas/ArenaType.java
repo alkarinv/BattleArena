@@ -188,6 +188,8 @@ public class ArenaType implements Comparable<ArenaType>{
 	}
 
 	public static void addAliasForType(String type, String alias) {
+		if (type.equals(alias))
+			return;
 		ArenaType at = fromString(type);
 		if (at == null)
 			return;

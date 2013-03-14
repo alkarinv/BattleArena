@@ -1,0 +1,3 @@
+Tourney:
+    enabled: true
+    command: tourney

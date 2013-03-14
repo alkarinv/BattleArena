@@ -1,0 +1,25 @@
+Skirmish:
+    enabled: true
+    joinType: Queue
+    database: arena
+    rated: false
+    prefix: "&b[Skirmish]&e"
+    victoryCondition: LastManStanding
+    nTeams: 2
+    teamSize: 1
+    preReqs:
+        options: []
+    onEnter:
+        options: [storeGamemode]
+    onLeave:
+        options: [restoreGamemode]
+    onStart:
+        options: [teleportIn, pvpOn, blockBreakOff, woolTeams]
+    onSpawn:
+        options: []
+    onDeath:
+        options: []
+    onComplete:
+        options: [teleportOut]
+    winner:
+        options: [health=20, hunger=20]

@@ -10,13 +10,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.Log;
 import mc.alk.plugin.updater.FileUpdater;
 import mc.alk.plugin.updater.Version;
 
-import org.bukkit.configuration.ConfigurationSection;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 
@@ -26,8 +28,15 @@ public class YamlFileUpdater {
 	File tempFile = null;
 	File configFile = null;
 	File backupDir;
+
+	public YamlFileUpdater(File backupDir){
+		this.backupDir = backupDir;
+		if (!backupDir.exists()){
+			backupDir.mkdirs();}
+	}
+
 	public YamlFileUpdater(Plugin plugin){
-		backupDir = new File(plugin.getDataFolder() +"/backups");
+		backupDir = new File(plugin.getDataFolder() +"/saves/backups");
 		if (!backupDir.exists()){
 			backupDir.mkdirs();}
 	}
@@ -37,25 +46,7 @@ public class YamlFileUpdater {
 		configFile = ms.getFile();
 		Version version = new Version(fc.getString("version","0"));
 		File dir = BattleArena.getSelf().getDataFolder();
-		/// configVersion: 1.2, move over to new messages.yml
-		/// this will delete their previous messages.yml
-		if (version.compareTo(1.2)<0){
-			File msgdir = new File(dir+"/messages");
-			if (!msgdir.renameTo(new File(dir+"/backups/messages1.1"))){
-				Log.warn("Couldn't rename the messages yml");
-			}
-			File messageFile = new File(dir+"/messages.yml");
-			messageFile.renameTo(new File(dir+"/backups/messages.1.1.yml"));
-			Log.warn("Updating to messages.yml version 1.2");
-			Log.warn("If you had custom changes to messages you will have to redo them");
-			Log.warn("But the old messages are saved as backups/messages.1.1.yml");
-			Log.warn("You can override specific match/event messages inside the messages folder");
-			move("/default_files/messages.yml",dir+"/messages.yml");
-			ms.setConfig(new File(dir+"/messages.yml"));
-		} else if (version.compareTo("1.5") < 0){
-			messageTo1Point5(ms.getConfig(), version);
-			ms.setConfig(new File(dir+"/messages.yml"));
-		} else if (version.compareTo("1.5.1") < 0){
+		if (version.compareTo("1.5.1") < 0){
 			messageTo1Point51(ms.getConfig(), version, new Version("1.5.1"));
 			ms.setConfig(new File(dir+"/messages.yml"));
 		} else if (version.compareTo("1.5.2") < 0){
@@ -77,54 +68,28 @@ public class YamlFileUpdater {
 			fu.replace(".*you_left_match:.*","    you_left_competition: '&eYou have left the %s event'");
 			fu.replace(".*you_left_queue:.*", "    you_left_queue: '&eYou have left the &6%s queue'");
 			fu.replace(".*teammate_cant_join.*", "    teammate_cant_join: \"&cOne of your teammates can't join\"");
-			try {
-				version = fu.update();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			try {version = fu.update();} catch (IOException e) {e.printStackTrace();}
 		}
+		newVersion = new Version("1.5.5");
+		if (version.compareTo(newVersion) < 0){
+			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+			fu.replace("version:.*", "version: "+newVersion);
+			fu.replace(".*joined_the_queue:.*",
+					"    joined_the_queue: '&eYou joined the &6%s&e queue.'",
+					"    position_in_queue: 'Position: &6%s/%s'");
+			try {version = fu.update();} catch (IOException e) {e.printStackTrace();}
+		}
+
 		ms.setConfig(new File(dir+"/messages.yml"));
 	}
 
-	public static void updateAllConfig(Plugin plugin, ConfigSerializer cc) {
-		Version version = new Version(cc.getString("configVersion","0"));
-		YamlFileUpdater yfu = new YamlFileUpdater(plugin);
-		yfu.configFile = cc.getFile();
-		if (version.compareTo("2.0")<0){
-			yfu.to2Point0(plugin, cc.getConfig(), version);}
-	}
-
 	public static void updateBaseConfig(Plugin plugin, BAConfigSerializer bacs) {
-		File tempFile = null;
 		FileConfiguration fc = bacs.getConfig();
 		Version version = new Version(fc.getString("configVersion","0"));
 		YamlFileUpdater yfu = new YamlFileUpdater(plugin);
 		yfu.configFile = bacs.getFile();
 		File configFile = bacs.getFile();
 		try{
-			/// configVersion: 1.1, move over to classes.yml
-			if (version.compareTo(1.1) <0){
-				yfu.to1Point1(bacs, bacs.getConfig(), bacs.getFile(), tempFile, version);}
-			if (version.compareTo(1.2)<0){
-				yfu.to1Point2(bacs, bacs.getConfig(), version);}
-			if (version.compareTo(1.3)<0){
-				yfu.to1Point3(bacs, bacs.getConfig(), version);}
-			if (version.compareTo("1.3.5")<0){
-				yfu.to1Point35(bacs, bacs.getConfig(), version);}
-			if (version.compareTo(1.4)<0){
-				yfu.to1Point4(bacs, bacs.getConfig(), version);}
-			if (version.compareTo("1.4.5")<0){
-				yfu.to1Point45(bacs, bacs.getConfig(), version);}
-			if (version.compareTo("1.5")<0){
-				yfu.to1Point5(bacs, bacs.getConfig(), version);}
-			if (version.compareTo("1.5.5")<0){
-				yfu.to1Point55(bacs, bacs.getConfig(), version);}
-			if (version.compareTo("1.6")<0){
-				yfu.to1Point6(bacs, bacs.getConfig(), version);}
-			if (version.compareTo("1.6.5")<0){
-				yfu.to1Point65(bacs, bacs.getConfig(), version);}
-			if (version.compareTo("1.7")<0){
-				yfu.to1Point7(bacs, bacs.getConfig(), version);}
 			if (version.compareTo("1.7.3")<0){
 				yfu.to1Point73(bacs, bacs.getConfig(), version);}
 			if (version.compareTo("2.0")<0){
@@ -140,17 +105,17 @@ public class YamlFileUpdater {
 
 			Version newVersion = new Version("2.1.2");
 			if (version.compareTo(newVersion) < 0){
-				FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
-				fu.replace("configVersion:.*", "configVersion: "+newVersion);
-				fu.addAfter(".*ignoreMaxStackSize:.*", "",
-						"# if set to true, given enchanted items will not be limited to 'normal' safe enchantment levels",
-						"# Example, most weapons are limited to sharpness 5.  if unsafeItemEnchants: true, this can be any level",
-						"unsafeItemEnchants: false");
-				version = fu.update();
-			}
+				version = to2Point12(version, yfu, configFile, newVersion);}
+
 			newVersion = new Version("2.1.4");
 			if (version.compareTo(newVersion) < 0){
 				version = to2Point14(version, yfu, configFile, newVersion);}
+
+			newVersion = new Version("2.2");
+			if (version.compareTo(newVersion) < 0){
+				version = to2Point2(version, yfu, configFile, newVersion);}
+
+
 		} catch (IOException e){
 			e.printStackTrace();
 		}
@@ -158,443 +123,8 @@ public class YamlFileUpdater {
 		bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 	}
 
-	private static Version to2Point14(Version version, YamlFileUpdater yfu,
-			File configFile, Version newVersion) throws IOException {
-		BaseConfig bs = new BaseConfig(configFile);
 
-//		bs.save();
-		FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
-		fu.replace("configVersion:.*", "configVersion: "+newVersion);
-		fu.delete(".*matchEnableForce.*");
-		fu.addAfter(".*disabledCommands.*", "",
-				"# What commands should be disabled when the player is inside of a queue, but not in a match",
-				"disabledQueueCommands: []");
-		return fu.update();
-	}
-
-	private void to1Point1(BAConfigSerializer bacs, FileConfiguration fc, File f, File tempFile, Version version) {
-		Log.warn("BattleArena updating config to 1.1");
-		Log.warn("Classes are now located in the classes.yml");
-		Boolean configStillHasClasses = fc.contains("classes");
-		File classesFile = new File(BattleArena.getSelf().getDataFolder()+"/classes.yml");
-		BufferedWriter cfw =null;
-
-		String line =null;
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		BufferedWriter fw =null;
-		try {
-			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
-			fw = new BufferedWriter(new FileWriter(tempFile));
-			cfw = new BufferedWriter(new FileWriter(classesFile));
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
-		}
-
-		try {
-			boolean inClassSection = false;
-			if (version.compareTo(0)==0){
-				fw.write("configVersion: 1.1\n");
-			}
-			while ((line = br.readLine()) != null){
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.1\n");
-					if (!configStillHasClasses) /// we are finished if no classes exist
-						break;
-				} else if (line.matches("classes:") || line.matches(".*You can add new classes here.*")){
-					inClassSection = true;
-					cfw.write(line+"\n");
-				} else if (inClassSection && line.matches("## default Match Options.*")){
-					inClassSection = false;
-					fw.write(line +"\n");
-				} else if (inClassSection) {
-					cfw.write(line+"\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			fw.close();
-			if (br != null) br.close();
-			cfw.close();
-			renameTo(tempFile, f);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void to1Point2(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.2");
-		Log.warn("You will have to remake any changes you made to defaultOptions");
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			boolean updatedDefaultSection = false;
-			boolean inDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches("defaultMatchOptions:.*") || line.matches("## default Match Options.*")) + " "+line);
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.2\n");
-				} else if (!updatedDefaultSection && (line.matches("defaultMatchOptions:.*") || line.matches("## default Match Options.*"))){
-					updatedDefaultSection = true;
-					inDefaultSection = true;
-					fw.write("## default Options (these can be overridden by each match/event type)\n");
-					fw.write("defaultOptions:\n");
-					fw.write("    ### Match Options\n");
-					fw.write("    secondsTillMatch: 3 ## Time between onPrestart and onStart\n");
-					fw.write("    secondsToLoot: 5 ## Time after winning to run around and collect loot\n");
-					fw.write("    matchTime: 120 ## How long do timed matches last, (in seconds)\n");
-					fw.write("    matchUpdateInterval: 30 ## For timed matched, how long between sending players match updates\n");
-					fw.write("\n");
-					fw.write("    ### Event Options\n");
-					fw.write("    eventCountdownTime: 180 ## How long before announcing an automated event and its start\n");
-					fw.write("    eventCountdownInterval: 60 ## How often will it announce a reminder that its open and you can join\n");
-					fw.write("\n");
-					fw.write("    ### Match/Event Announcements\n");
-					fw.write("    ## these only affect the broadcasts to the server or channel, not the messages the fighting players receive\n");
-					fw.write("    ## announce : announce these messages \n");
-					fw.write("    ## dontannounce : dont announce these messages\n");
-					fw.write("    ## server : use herochat with the channel specified\n");
-					fw.write("    ## herochat=<channel> : use herochat with the channel specified\n");
-					fw.write("    announcements:\n");
-					fw.write("        onPreStart: [ announce, server ]  ## match going to happen soon, example 'P1[p1Elo] vs P2[p2elo]'\n");
-					fw.write("        onStart: [ dontannounce ]  ## match starting\n");
-					fw.write("        onVictory:  [ announce, server ] ## match has been won, exmaple 'P1[p1elo] has defeated P2[p2elo]'\n");
-					fw.write("\n");
-					fw.write("    ### Default event Announcements\n");
-					fw.write("    eventAnnouncements:\n");
-					fw.write("        onOpen: [ announce, server ]  ## event is now open\n");
-					fw.write("        onStart: [ announce, server ]  ## event is starting\n");
-					fw.write("        onVictory:  [ announce, server ] ## event has been won\n");
-					fw.write("\n");
-				} else if (inDefaultSection && (line.matches("### Prerequisites.*") || line.matches("arena:.*"))){
-					inDefaultSection = false;
-					fw.write(line +"\n");
-				} else if (inDefaultSection){
-					/// dont print
-				} else if ((line.matches(".*prefix.*FFA.*") || line.matches(".*prefix.*DeathMatch.*"))){
-					fw.write(line +"\n");
-					fw.write("    announcements: ### Override the match victory announcement as the event has one too\n");
-					fw.write("        onVictory:  [ dontannounce ]\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-
-	private void to1Point3(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.3");
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.3\n");
-				} else if (!updatedDefaultSection && (line.matches(".*Event Announcements.*"))){
-					updatedDefaultSection = true;
-					fw.write("    ### Duel Options\n");
-					fw.write("    allowRatedDuels: false\n");
-					fw.write("    # after a player rejects a duel, how long before they can be challenged again\n");
-					fw.write("    challengeInterval: 1800 # (seconds) 1800 = 30minutes\n");
-					fw.write("\n");
-					fw.write(line+"\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void to1Point35(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.3.5");
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.3.5\n");
-				} else if (!updatedDefaultSection && (line.matches(".*challengeInterval.*"))){
-					fw.write(line +"\n");
-					fw.write("\n");
-					fw.write("    ### Scheduled Event Options\n");
-					fw.write("    ### Valid options [startContinuous, startNext]\n");
-					fw.write("    onServerStart: []");
-					fw.write("\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void to1Point4(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.4");
-
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.4\n");
-				} else if (!updatedDefaultSection && (line.matches(".*moneyName:.*"))){
-					fw.write(line +"\n");
-					fw.write("\n");
-					fw.write("### Misc Options\n");
-					fw.write("# some servers like to teleport people into the floor, you can adjust the Y offset of the teleport\n");
-					fw.write("# to make them teleport higher by default, 1.0 = 1 block\n");
-					fw.write("teleportYOffset: 1.0\n");
-					fw.write("\n");
-					fw.write("# which player commands should be disabled when they enter an arena\n");
-					fw.write("disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]\n");
-					fw.write("\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void to1Point45(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.4.5");
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.4.5\n\n");
-					fw.write("# Auto Update the BattleArena plugin (only works for unix/linux/mac)\n");
-					fw.write("# Updates will be retrieved from the latest plugin on the bukkit site\n");
-					fw.write("autoUpdate: true\n");
-					fw.write("\n");
-				} else if (!updatedDefaultSection && (line.matches(".*teleportYOffset.*"))){
-					fw.write(line +"\n");
-					fw.write("\n");
-					fw.write("# When a player joins an arena and their inventory is stored\n");
-					fw.write("# how many old inventories should be saved\n");
-					fw.write("# put in 0 if you don't want this option\n");
-					fw.write("numberSavedInventories: 5\n");
-					fw.write("\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void to1Point5(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.5");
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.5\n\n");
-				} else if (!updatedDefaultSection && (line.matches(".*disabledCommands:.*"))){
-					fw.write(line +"\n");
-					fw.write("\n");
-					fw.write("# If set to true, items that are usually not stackable will be stacked when\n");
-					fw.write("# a player is given items.  Examples: 64 mushroom soup, or 64 snow_ball, instead of 1 or 16\n");
-					fw.write("ignoreMaxStackSize: false\n");
-					fw.write("\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally{
-			try {br.close();} catch (Exception e) {}
-			try {fw.close();} catch (Exception e) {}
-		}
-	}
-
-	private void to1Point55(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.5.5");
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.5.5\n\n");
-				} else if (!updatedDefaultSection && (line.matches(".*eventCountdownInterval:.*"))){
-					fw.write(line +"\n");
-					fw.write("    ## If true, when a player joins and an event that can be opened, it will be\n");
-					fw.write("    ## silently opened and the player will join\n");
-					fw.write("    allowPlayerCreation: true \n");
-					fw.write("\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally{
-			try {br.close();} catch (Exception e) {}
-			try {fw.close();} catch (Exception e) {}
-		}
-	}
-
-	private void to1Point6(BAConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.6");
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.6\n\n");
-				} else if (!updatedDefaultSection && (line.matches(".*ignoreMaxStackSize:.*"))){
-					fw.write(line +"\n\n");
-					fw.write("# If true if a player joins a match which has 2 arenas. 1v1 and 1v1v1v1. Then 1v1 will happen first\n");
-					fw.write("# afterwards the 1v1v1v1 is guaranteed to be the next arena used.\n");
-					fw.write("# if false.  if after the 1v1 is used, and the match ends, the 1v1 can be used again before the 1v1v1v1\n");
-					fw.write("useArenasOnlyInOrder: false\n\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally{
-			try {br.close();} catch (Exception e) {}
-			try {fw.close();} catch (Exception e) {}
-		}
-	}
-
-	private void to1Point65(ConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.6.5");
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			if (version.compareTo(0)==0){
-				fw.write("configVersion: 1.6.5\n");
-			}
-
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.6.5\n\n");
-				} else if (!updatedDefaultSection && (line.matches(".*matchUpdateInterval:.*"))){
-					fw.write(line +"\n\n");
-					fw.write("    ## when set to true when a player joins a queue the match will attempt to \n");
-					fw.write("    ## start after the forceStartTime regardless if the minimum amount of people\n");
-					fw.write("    ## have joined.  Example: say 2 teams of 4 people each is needed, if after\n");
-					fw.write("    ## the forceStartTime is exceeded only 2 teams of 1 person is needed to start.\n");
-					fw.write("    matchEnableForceStart: false\n");
-					fw.write("    matchForceStartTime: 180\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally{
-			try {br.close();} catch (Exception e) {}
-			try {fw.close();} catch (Exception e) {}
-		}
-	}
-
-	private void to1Point7(ConfigSerializer bacs, FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating config to 1.7");
-		if (!openFiles())
-			return;
-		String line =null;
-		try {
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
-				if (line.contains("configVersion")){
-					fw.write("configVersion: 1.7\n\n");
-				} else if (!updatedDefaultSection && (line.matches(".*enableForceStart:.*"))){
-					line = line.replace("enableForceStart", "matchEnableForceStart");
-					fw.write(line+"\n");
-				} else if (!updatedDefaultSection && (line.matches(".*forceStartTime:.*"))){
-					line = line.replace("forceStartTime", "matchForceStartTime");
-					fw.write(line+"\n");
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+"1.7"));
-			renameTo(tempFile, configFile);
-			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally{
-			try {br.close();} catch (Exception e) {}
-			try {fw.close();} catch (Exception e) {}
-		}
-	}
-
-	private void to1Point73(ConfigSerializer bacs, FileConfiguration fc, Version version) {
+	private void to1Point73(BaseConfig bacs, FileConfiguration fc, Version version) {
 		Version newVersion = new Version("1.7.3");
 		Log.warn("BattleArena updating config to "+newVersion.getVersion());
 		if (!openFiles())
@@ -688,7 +218,7 @@ public class YamlFileUpdater {
 		}
 	}
 
-	private void to2Point05(ConfigSerializer bacs, FileConfiguration fc, Version version) {
+	private void to2Point05(BaseConfig bacs, FileConfiguration fc, Version version) {
 		Version newVersion = new Version("2.0.5");
 		Log.warn("BattleArena updating config to "+newVersion.getVersion());
 		if (!openFiles())
@@ -721,7 +251,7 @@ public class YamlFileUpdater {
 		}
 	}
 
-	private void to2Point10(ConfigSerializer bacs, FileConfiguration fc, Version version, Version newVersion) {
+	private void to2Point10(BaseConfig bacs, FileConfiguration fc, Version version, Version newVersion) {
 		Log.warn("BattleArena updating config to "+newVersion.getVersion());
 		if (!openFiles())
 			return;
@@ -766,73 +296,94 @@ public class YamlFileUpdater {
 		}
 	}
 
-	private void messageTo1Point5(FileConfiguration fc, Version version) {
-		Log.warn("BattleArena updating messages.yml to 1.5");
-		if (!openFiles())
-			return;
-		String line =null;
-		ConfigurationSection cs = fc.getConfigurationSection("system");
-		boolean hasSystem = cs != null;
-		try {
-			boolean updatedDefaultSection = false;
-			while ((line = br.readLine()) != null){
-				if (line.contains("version")){
-					fw.write("version: 1.5\n");
-					if (!hasSystem){
-						fw.write("system:\n");
-						fw.write("    type_enabled: '&2 type &6%s&2 enabled'\n");
-						fw.write("    type_disabled: '&2 type &6%s&2 disabled'\n");
-						messageWrites1Point5();
-					}
-				} else if (!updatedDefaultSection && (line.matches(".*type_disabled:.*"))){
-					fw.write(line+"\n");
-					messageWrites1Point5();
-				} else {
-					fw.write(line+"\n");
-				}
-			}
-			closeFiles();
-			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+"1.5"));
-			renameTo(tempFile,configFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally{
-			try {br.close();} catch (Exception e) {}
-			try {fw.close();} catch (Exception e) {}
-		}
+	private static Version to2Point12(Version version, YamlFileUpdater yfu,
+			File configFile, Version newVersion) throws IOException {
+		FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+		fu.replace("configVersion:.*", "configVersion: "+newVersion);
+		fu.addAfter(".*ignoreMaxStackSize:.*", "",
+				"# if set to true, given enchanted items will not be limited to 'normal' safe enchantment levels",
+				"# Example, most weapons are limited to sharpness 5.  if unsafeItemEnchants: true, this can be any level",
+				"unsafeItemEnchants: false");
+		return fu.update();
 	}
 
-	private void messageWrites1Point5() throws IOException {
-		fw.write("    time_format: '&6%s&e %s '\n");
-		fw.write("    zero_time: '&60'\n");
-		fw.write("    match_disabled: '&cThe &6%s&c is currently disabled'\n");
-		fw.write("    all_disabled: '&cThe arena system and all types are currently disabled'\n");
-		fw.write("    currently_enabled: '&cEnabled &6%s'\n");
-		fw.write("    no_join_perms: '&cYou dont have permission to join a &6%s'\n");
-		fw.write("    teammate_cant_join: '&cOne of your teammates cant join the &6%s'\n");
-		fw.write("    valid_arena_not_built: '&cA valid &6%s&c arena has not been built'\n");
-		fw.write("    need_the_following: '&eYou need the following to join'\n");
-		fw.write("    you_added_to_team: '&eYou have been added to a team'\n");
-		fw.write("    queue_busy: '&cTeam queue was busy.  Try again in a sec.'\n");
-		fw.write("    no_arena_for_size: '&cAn arena has not been built yet for that size of team'\n");
-		fw.write("    joined_the_queue: '&eYou have joined the queue for the &6%s&e.'\n");
-		fw.write("    server_joined_the_queue: '%s &6%s&e has joined the queue. &6%s/%s'\n");
-		fw.write("    you_joined_the_queue: '&ePosition: &6%s&e. Match start when &6%s&e players join. &6%s/%s'\n");
-		fw.write("    or_time: '&eor in %s when at least 2 players have joined'\n");
-		fw.write("    you_start_when_free_pos: '&ePosition: &6%s&e. your match will start when an arena is free'\n");
-		fw.write("    you_start_when_free: '&eYour match will start when an arena is free'\n");
-		fw.write("    you_left_match: '&eYou have left the match'\n");
-		fw.write("    you_left_event: '&eYou have left the %s event'\n");
-		fw.write("    you_left: '&eYou have left'\n");
-		fw.write("    you_not_in_queue: '&eYou are not currently in a queue'\n");
-		fw.write("    you_left_queue: '&eYou have left the queue for the &6%s'\n");
-		fw.write("    team_left_queue: '&6The team has left the &6%s&e queue. &6%s&e issued the command'\n");
-		fw.write("    you_cant_join_event: '&cThe event can not be joined at this time'\n");
-		fw.write("    no_event_open: '&cThere is no event currently open'\n");
-		fw.write("    you_cant_join_event_while: '&eYou cant join the &6%s&e while its %s'\n");
-		fw.write("    you_will_join_when_matched: '&eYou have already joined the and will enter when you get matched up with a team'\n");
-		fw.write("    event_will_start_in: '&2The event will start in &6%s'\n");
-		fw.write("    event_invalid_team_size: '&cThis Event can only support up to &6%s&e your team has &6%s'\n");
+	private static Version to2Point14(Version version, YamlFileUpdater yfu,
+			File configFile, Version newVersion) throws IOException {
+		FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+		fu.replace("configVersion:.*", "configVersion: "+newVersion);
+		fu.delete(".*matchEnableForce.*");
+		fu.addAfter(".*disabledCommands.*", "",
+				"# What commands should be disabled when the player is inside of a queue, but not in a match",
+				"disabledQueueCommands: []");
+		return fu.update();
+	}
+
+	private static Version to2Point2(Version version, YamlFileUpdater yfu,
+			File configFile, Version newVersion) throws IOException {
+		Version tv = new Version("2.1.9");
+		FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, tv, version);
+		fu.replace("configVersion:.*", "configVersion: "+tv);
+		fu.delete(".*only works for uniz.*");
+		fu.update();
+
+		File dir = new File(configFile.getParentFile().getAbsolutePath());
+		FileUpdater.makeIfNotExists(new File(dir +"/competitions"));
+		FileUpdater.makeIfNotExists(new File(dir +"/saves"));
+		FileUpdater.makeIfNotExists(new File(dir +"/saves/backups"));
+		FileUpdater.makeIfNotExists(new File(dir +"/saves/inventories"));
+		String moves[] = new String[]{"arenaplayers.yml","log.txt",
+				"arenas.yml","scheduledEvents.yml","signs.yml","state.yml"};
+		for (String s: moves){
+			FileUpdater.moveIfExists(new File(dir+"/"+s), new File(dir+"/saves/"+s));
+		}
+		File f = new File(dir+"/backups");
+		if (f.exists()){
+			for (String s: f.list()){
+				FileUpdater.moveIfExists(new File(dir+"/backups/"+s), new File(dir+"/saves/backups/"+s));
+			}
+		}
+		FileUpdater.deleteIfExists(f);
+		f = new File(dir+"/inventories");
+		if (f.exists()){
+			for (String s: f.list()){
+				FileUpdater.moveIfExists(new File(dir+"/inventories/"+s), new File(dir+"/saves/inventories/"+s));
+			}
+		}
+		FileUpdater.deleteIfExists(f);
+
+		/// now that we have saved and updated the config... do the rest
+		String[] sections = new String[]{"arena","skirmish","battleground","colliseum",
+				"freeForAll","deathMatch","tourney"};
+		for (String section: sections){
+			updateSection(configFile, section);}
+
+		/// move everything around
+		sections = new String[]{"arena","skirmish","battleground","colosseum",
+				"freeForAll","deathMatch","tourney"};
+		for (String section: sections){
+			String s = StringUtils.capitalize(section);
+			FileUpdater.moveIfExists(new File(dir+"/"+s+"Config.yml"), new File(dir+"/competitions/"+s+"Config.yml"));
+		}
+		yfu.backupDir = new File(dir+"/saves/backups");
+
+		sections = new String[]{"Arena","Skirmish","Battleground","Colosseum","FreeForAll","DeathMatch"};
+		HashSet<String> queues = new HashSet<String>(
+				Arrays.asList(new String[]{"Arena","Skirmish","Battleground","Colosseum"}));
+
+		for (String s: sections){
+			FileUpdater fur = new FileUpdater(new File(dir+"/competitions/"+s+"Config.yml"), yfu.backupDir, newVersion, version);
+			if (queues.contains(s)){
+				fur.addAfter(".*enabled:.*", "    joinType: Queue");
+			} else {
+				fur.addAfter(".*enabled:.*", "    joinType: JoinPhase");
+			}
+			fur.update();
+		}
+
+		FileUpdater fur = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+		fur.replace("configVersion:.*", "configVersion: "+newVersion);
+		fur.deleteAllFrom("### Arena");
+		return fur.update();
 	}
 
 	private void messageTo1Point51(FileConfiguration fc, Version version, Version newVersion) {
@@ -935,5 +486,57 @@ public class YamlFileUpdater {
 		} catch (Exception e){
 		}
 		return file;
+	}
+
+	private static void updateSection(File file, String section) {
+		Log.warn("BattleArena updating " + section +" to new form");
+		String colliseum = "colliseum";
+		String capcolliseum = "Colliseum";
+		File dir = file.getParentFile().getAbsoluteFile();
+		FileUpdater.deleteIfExists(new File(dir+"/"+section+"Messages.yml"));
+		FileUpdater.deleteIfExists(new File(dir+"/"+StringUtils.capitalize(section)+"Messages.yml"));
+		FileUpdater.deleteIfExists(new File(dir+"/"+section+"Config.yml"));
+		FileUpdater.deleteIfExists(new File(dir+"/"+StringUtils.capitalize(section)+"Config.yml"));
+
+		if (section.equals(colliseum))
+			section = "colosseum";
+
+		FileWriter fw = null;
+		BufferedReader br = null;
+		String capSection = StringUtils.capitalize(section);
+		try {
+			fw = new FileWriter(dir+"/"+capSection+"Config.yml");
+			br = new BufferedReader(new FileReader(file));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			return;
+		}
+		boolean inSection = false;
+		String line =null;
+		try {
+			fw.write("configVersion: 2.0\n");
+			while ((line = br.readLine()) != null){
+				line = line.replaceAll(colliseum, "colosseum").replaceAll(capcolliseum, "Colosseum");
+				//				System.out.println(inSection +"-"+section+"  :  " + line);
+				if (line.matches(section+":.*")){
+					inSection = true;
+					fw.write(capSection +":\n");
+				} else if (inSection && line.matches("^\\s*$")){
+					break;
+				} else if (inSection){
+					if (!line.contains("type: ffa"))
+						fw.write(line+"\n");
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {br.close();} catch (Exception e) {}
+			try {fw.close();} catch (Exception e) {}
+		}
+	}
+
+	public File getBackupDir() {
+		return backupDir;
 	}
 }

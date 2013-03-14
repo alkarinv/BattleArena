@@ -68,7 +68,6 @@ import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
-import mc.alk.arena.util.Util;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.WLT;
 
@@ -405,8 +404,6 @@ public abstract class Match extends Competition implements Runnable {
 			}
 			updateBukkitEvents(MatchState.ONVICTORY);
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
-			Log.debug("!!!!!!!!!!!!!!!!!!!!!!!  MatchVictory: " + teams);
-			Util.printStackTrace();
 			currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 					new MatchCompleted(am), (long) (params.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
 		}

@@ -89,6 +89,7 @@ public class BTInterface {
 		if (battleTracker == null)
 			return false;
 		final String dbName = pi.getDBName();
+		if (Defaults.DEBUG) System.out.println("adding BTI for " + pi +"  " + dbName);
 		TrackerInterface bti = btis.get(dbName);
 		if (bti == null){
 			/// Try to first the interface from our existing ones
@@ -105,7 +106,6 @@ public class BTInterface {
 				if (aBTI == null)
 					aBTI = bti;
 			}
-			if (Defaults.DEBUG) System.out.println("adding BTI for " + pi +"  " + dbName);
 			btis.put(dbName, bti);
 		}
 		return true;

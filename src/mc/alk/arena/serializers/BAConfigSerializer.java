@@ -1,5 +1,6 @@
 package mc.alk.arena.serializers;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +16,6 @@ import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
-import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -23,11 +23,13 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class BAConfigSerializer extends ConfigSerializer{
+public class BAConfigSerializer extends BaseConfig{
+
 	public void loadDefaults(){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
 
@@ -54,52 +56,30 @@ public class BAConfigSerializer extends ConfigSerializer{
 
 	public void loadCompetitions(){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
-		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"arena","skirmish","colliseum","battleground"}));
-		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"freeForAll","deathMatch"}));
-		Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {"defaultOptions","tourney","optionSets"}));
+		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"Arena","Skirmish","Colosseum","Battleground"}));
+		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"FreeForAll","DeathMatch","Tourney"}));
+		Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {}));
 
 		Set<String> allTypes = new HashSet<String>(defaultMatchTypes);
 		allTypes.addAll(defaultEventTypes);
 		JavaPlugin plugin = BattleArena.getSelf();
 
 		APIRegistrationController api = new APIRegistrationController();
+
 		/// For legacy reasons
 		ArenaType.register("ffa", Arena.class, BattleArena.getSelf());
 
-		/// Setup tournament solo as it's a bit different
-		try {
-			setTypeConfig(plugin,"tourney",config.getConfigurationSection("tourney"), false);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		/// Now initialize the specific types
-		for (String defaultType: allTypes){
-			boolean isMatch = defaultMatchTypes.contains(defaultType);
-			try {
-				api.registerCompetition(plugin, defaultType, defaultType, Arena.class, null, this.getFile(), isMatch,true);
-			} catch (Exception e) {
-				Log.err("Couldnt configure arenaType " + defaultType+". " + e.getMessage());
-				e.printStackTrace();
-			}
-		}
-
-		/// Initialize custom matches or events
-		Set<String> keys = config.getKeys(false);
-		for (String key: keys){
-			ConfigurationSection cs = config.getConfigurationSection(key);
-			if (cs == null || allTypes.contains(key) || exclude.contains(key))
-				continue;
-			try {
-				String cmd = config.getString(key+".command",null);
-				cmd = config.getString(key+".cmd",cmd);
-				if (cmd==null || cmd.isEmpty()){
-					throw new InvalidOptionException("For a custom competition you must specify a command:");}
-				api.registerCompetition(plugin, key, cmd, Arena.class, null, this.getFile(), true,true);
-			} catch (Exception e) {
-				Log.err("Couldnt configure arenaType " + key+". " + e.getMessage());
-				e.printStackTrace();
-			}
+		File dir = plugin.getDataFolder();
+		File compDir = new File(dir+"/competitions");
+		/// Load all default types
+		for (String comp : allTypes){
+			String capComp = StringUtils.capitalize(comp);
+			api.registerCompetition(plugin, capComp, capComp, Arena.class, null,
+					new File(compDir+"/"+capComp+"Config.yml"),
+					new File(dir+"/"+comp+"Messages.yml"),
+					new File("default_files/competitions/"+capComp+"Config.yml"),
+					new File(dir.getPath()+"/saves/arenas.yml"));
+			exclude.add(capComp+"Config.yml");
 		}
 	}
 
@@ -112,7 +92,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT);
 		Defaults.MATCH_TIME = cs.getInt("matchTime", Defaults.MATCH_TIME);
 		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", Defaults.MATCH_UPDATE_INTERVAL);
-//		Defaults.MATCH_FORCESTART_ENABLED = cs.getBoolean("matchEnableForceStart", Defaults.MATCH_FORCESTART_ENABLED);
+		//		Defaults.MATCH_FORCESTART_ENABLED = cs.getBoolean("matchEnableForceStart", Defaults.MATCH_FORCESTART_ENABLED);
 		Defaults.MATCH_FORCESTART_TIME = cs.getLong("matchForceStartTime", Defaults.MATCH_FORCESTART_TIME);
 		Defaults.TIME_BETWEEN_CLASS_CHANGE = cs.getInt("timeBetweenClassChange", Defaults.TIME_BETWEEN_CLASS_CHANGE);
 
@@ -178,7 +158,7 @@ public class BAConfigSerializer extends ConfigSerializer{
 			tops.addOption(TransitionOption.STOREHEALTH);
 			tops.addOption(TransitionOption.STOREHUNGER);
 			tops.addOption(TransitionOption.STOREMAGIC);
-//			tops.addOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
+			//			tops.addOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
 			tops.addOption(TransitionOption.CLEARINVENTORY);
 			tops.addOption(TransitionOption.CLEAREXPERIENCE);
 			tops.addOption(TransitionOption.STOREITEMS);

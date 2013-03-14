@@ -452,7 +452,7 @@ public class WorldGuardUtil {
 	public static WorldGuardRegion getContainingRegion(Location location) {
 		for (String world : trackedRegions.keySet()){
 			World w = Bukkit.getWorld(world);
-			if (w == null)
+			if (w == null || location.getWorld().getUID() != w.getUID())
 				continue;
 			for (String id: trackedRegions.get(world)){
 				ProtectedRegion pr = getRegion(w,id);

@@ -54,9 +54,9 @@ public class ArenaSerializer {
 		arenaController = bac;
 	}
 
-	public ArenaSerializer(Plugin plugin, String path){
+	public ArenaSerializer(Plugin plugin, File file){
 		this.plugin = plugin;
-		this.f = new File(path);
+		this.f = file;
 		if (!f.exists()){
 			try {
 				f.createNewFile();

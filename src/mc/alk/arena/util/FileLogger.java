@@ -19,7 +19,7 @@ import mc.alk.arena.BattleArena;
 
 
 /**
- * 
+ *
  * @author alkarin
  *
  */
@@ -33,18 +33,18 @@ public class FileLogger {
 	public static final Integer maxFileSize = 300000; /// in lines
 	public static final Integer reduceToSize = 100000; /// reduce to this many lines when it exceeds maxFileSize
 	public static synchronized void init(){
-		File f = new File(BattleArena.getSelf().getDataFolder()+"/log.txt");
+		File f = new File(BattleArena.getSelf().getDataFolder()+"/saves/log.txt");
 		int lineCount;
 		try {
 			lineCount = count(f.getAbsolutePath());
 			if (lineCount > maxFileSize){
 				f = trimFile(f,lineCount);
-			}		
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static synchronized int log(String msg) {
 		try {
 			Calendar cal = new GregorianCalendar();
@@ -58,7 +58,7 @@ public class FileLogger {
 				saveAll();
 		}
 		return -1;
-	}	
+	}
 	public static synchronized int log(String node, Object... varArgs) {
 		try {
 			Calendar cal = new GregorianCalendar();
@@ -82,13 +82,13 @@ public class FileLogger {
 	public static synchronized void saveAll() {
 		BufferedWriter out = null;
 		try {
-			File f = new File(BattleArena.getSelf().getDataFolder()+"/log.txt");
+			File f = new File(BattleArena.getSelf().getDataFolder()+"/saves/log.txt");
 			out = new BufferedWriter(new FileWriter(f,true));
 			for (String msg : msgs){
-				out.write(msg);	
+				out.write(msg);
 			}
 			msgs.clear();
-			
+
 		} catch (Exception e){
 			e.printStackTrace();
 		} finally{
@@ -96,7 +96,7 @@ public class FileLogger {
 				try {out.close();} catch (IOException e) {}
 		}
 	}
-	
+
 	private static File trimFile(File f, int lineCount) {
 		File f2 = new File(BattleArena.getSelf().getDataFolder()+"/log2.txt");
 		BufferedWriter out = null;
@@ -123,11 +123,11 @@ public class FileLogger {
 		}
 		return f2;
 	}
-	
+
 	/**
-	 * Code from 
+	 * Code from
 	 * http://stackoverflow.com/questions/453018/number-of-lines-in-a-file-in-java
-	 * 
+	 *
 	 * @param filename
 	 * @return
 	 * @throws IOException

@@ -6,10 +6,14 @@ configVersion: 2.0
 
 <name>:
     enabled: true
+    joinType: Queue
     database: <name> # or delete if you dont want wins/losses/top, needs BattleTracker
     rated: true # if database is enabled
     prefix: "&6[<name>]&e"
     command: <cmd>
+    victoryCondition: LastManStanding
+    nTeams: 2
+    teamSize: 1+
     ### You can delete any stages/transitions that have no options
     ### for a list of options see wiki
     defaults: ## Global options for the entire match
@@ -23,11 +27,11 @@ configVersion: 2.0
     onOpen:  ## opening the event
         options: [pvpOff]
     onJoin:  ## when they join the event
-        options: []
+        options: [teleportIn]
     onPreStart: ## x seconds before onStart
         options: [pvpOff]
     onStart: ## Starting
-        options: [teleportIn, pvpOn]
+        options: [pvpOn]
     onSpawn: ## what happens when a player spawns
         options: [hunger=20, health=20]
     onDeath: ## what happens when a player dies

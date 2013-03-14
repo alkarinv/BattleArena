@@ -1,0 +1,40 @@
+Colosseum:
+    enabled: true
+    joinType: Queue
+    database: col
+    victoryCondition: LastManStanding
+    nTeams: 4
+    teamSize: 1
+    preReqs:
+        options: [clearInventory]
+    onEnter:
+        options: [storeAll]
+    onLeave:
+        options: [restoreAll]
+    onJoin:
+        options: [pvpOff]
+    onPrestart:
+        options: [pvpOff, teleportIn, woolTeams]
+    onStart:
+        options: [pvpOn]
+    onComplete:
+        options: [teleportOut]
+    onSpawn:
+        options: [enchants, health=20, hunger=20, deEnchant,giveItems, woolTeams]
+        enchants:
+            - speed:1
+        items: # ignored if options doesnt have "giveItems"
+            - diamond_sword: sharpness:1 1
+            - bow: 1
+            - arrow: 32
+            - diamond_helm: 1
+            - diamond_chest: 1
+            - diamond_leggings: 1
+            - diamond_boot: 1
+    onDeath:
+        options: [clearInventory]
+    winner:
+        options: [enchants, money=1,experience=300, health=20, hunger=20]
+        enchants:
+            - speed:1:900
+            - resistance:1:900

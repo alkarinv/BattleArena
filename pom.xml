@@ -125,6 +125,8 @@
                 <includes>
                     <include>plugin.yml</include>
                     <include>default_files/*</include>
+                    <include>default_files/competitions</include>
+                    <include>default_files/competitions/*</include>
                 </includes>
             </resource>
             <!-- Exclude JUnit test directory -->

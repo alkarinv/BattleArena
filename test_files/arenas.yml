@@ -1,0 +1,19 @@
+arenas:
+  a:
+    teamSize: '1'
+    locations:
+      '0': world,-218.16147455235028,64.0,224.78336116445664,-82.35,12.449988
+    nTeams: 2+
+    type: arena
+  a1:
+    teamSize: 1+
+    locations:
+      '0': world,-218.16147455235028,64.0,224.78336116445664,-82.35,12.449988
+    nTeams: 2+
+    type: arena
+  a2:
+    teamSize: 1+
+    locations:
+      '0': world,-218.16147455235028,64.0,224.78336116445664,-82.35,12.449988
+    nTeams: 2+
+    type: arena

@@ -26,7 +26,7 @@ public class ArenaControllerSerializer {
 
 	public ArenaControllerSerializer(){
 		try {
-			f = new File(BattleArena.getSelf().getDataFolder()+"/arenaplayers.yml");
+			f = new File(BattleArena.getSelf().getDataFolder()+"/saves/arenaplayers.yml");
 			if (!f.exists())
 				f.createNewFile();
 		} catch (Exception e){e.printStackTrace();}

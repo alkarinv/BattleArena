@@ -1,0 +1,45 @@
+DeathMatch:
+    enabled: true
+    joinType: JoinPhase
+    victoryCondition: highestKills
+    database: dm
+    prefix: "&8[DeathMatch]&e"
+    nTeams: 2+
+    teamSize: 1
+    announcements: ### Override the match victory announcement as the event has one too
+        onVictory:  [ dontannounce ] 
+    preReqs:
+        options: [clearInventory]
+    onEnter:
+        options: [storeAll]
+    onLeave:
+        options: [restoreAll]
+    onJoin:
+        options: [teleportIn, woolTeams]
+    onOpen:
+        options: [pvpOff]
+    onStart:
+        options: [pvpOn]
+    onComplete:
+        options: [teleportOut]
+    onSpawn:
+        options: [enchants, giveItems, health=20, hunger=20, deEnchant]
+        items: # ignored if options doesnt have "giveItems"
+            - iron_sword: 1
+            - bow: 1
+            - tnt: 3
+            - arrow: 32
+            - leather_helm: 1
+            - leather_chest: 1
+            - leather_leggings: 1
+            - leather_boot: 1
+            - bread: 5
+        enchants:
+            - speed:1
+    onDeath:
+        options: [respawn,clearInventory]
+    winner:
+        options: [enchants, money=1,experience=300, health=20, hunger=20]
+        enchants:
+            - speed:2:900
+            - resistance:2:900

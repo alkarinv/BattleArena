@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.BlankCompetition;
 import mc.alk.arena.competition.Competition;
@@ -22,6 +21,7 @@ import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinStatus;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.messaging.MatchMessageImpl;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -137,7 +137,7 @@ public class ArenaMatchQueue {
 			idt = new IdTime();
 			idt.time = System.currentTimeMillis() + time;
 			if (time > 0){
-				idt.id = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+				idt.id = Scheduler.scheduleSynchrounousTask(new Runnable(){
 					@Override
 					public void run() {
 						QueueResult qr = findMatch(tq,true, true);
@@ -146,7 +146,7 @@ public class ArenaMatchQueue {
 						forceTimers.remove(tq);
 						addToReadyMatches(qr.match);
 					}
-				}, (time/1000)* 20);
+				}, (int) (time/1000)* 20);
 				forceTimers.put(tq, idt);
 			}
 		}

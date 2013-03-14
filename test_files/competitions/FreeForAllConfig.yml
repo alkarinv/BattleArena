@@ -1,0 +1,47 @@
+FreeForAll:
+    enabled: true
+    joinType: JoinPhase
+    database: ffa
+    prefix: "&c[FFA]&e"
+    victoryCondition: LastManStanding
+    nTeams: 2+
+    teamSize: 1
+    announcements: ### Override the match victory announcement as the event has one too
+        onVictory:  [ dontannounce ] 
+    preReqs:
+        options: [clearInventory]
+    onEnter:
+        options: [storeAll]
+    onLeave:
+        options: [restoreAll]
+    onJoin:
+        options: [teleportIn, woolTeams]
+    onOpen:
+        options: [pvpOff]
+    onPrestart:
+        options: [pvpOff, giveItems, deEnchant]
+        items: 
+            - iron_sword: 1
+            - bow: 1
+            - tnt: 3
+            - arrow: 32
+            - leather_helm: 1
+            - leather_chest: 1
+            - leather_leggings: 1
+            - leather_boot: 1
+            - bread: 5
+    onStart:
+        options: [pvpOn]
+    onComplete:
+        options: [teleportOut]
+    onDeath:
+        options: []
+    onSpawn:
+        options: [enchants, health=20, hunger=20, deEnchant]
+        enchants:
+            - speed:3
+    winner:
+        options: [enchants, money=1,experience=300, health=20, hunger=20]
+        enchants:
+            - speed:2:900
+            - resistance:2:900

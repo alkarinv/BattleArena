@@ -15,6 +15,7 @@ import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController;
+import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.HeroesController;
@@ -53,8 +54,6 @@ import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.ArenaSerializer;
-import mc.alk.arena.serializers.ConfigSerializer;
-import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
@@ -252,8 +251,12 @@ public class BAExecutor extends CustomCommandExecutor {
 			String neededPlayers = qpp.neededPlayers == CompetitionSize.MAX ? "inf" : qpp.neededPlayers+"";
 			String sysmsg = MessageHandler.getSystemMessage("joined_the_queue",
 					mp.toPrettyString(),qpp.pos, neededPlayers);
-
-			StringBuilder msg = new StringBuilder(sysmsg != null ? sysmsg : "&eYou joined the &6%s&e queue. Position: &6%s/%s");
+			StringBuilder msg = new StringBuilder(sysmsg != null ?
+					sysmsg : "&eYou joined the &6%s&e queue.");
+			if (qpp.neededPlayers != CompetitionSize.MAX){
+				String posmsg = MessageHandler.getSystemMessage("position_in_queue",qpp.pos, neededPlayers);
+				msg.append( posmsg != null ? posmsg : "");
+			}
 
 			switch(qpp.timeStatus){
 			case CANT_FORCESTART:
@@ -299,14 +302,14 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"leave","l"}, usage="leave", helpOrder=2)
 	public boolean leave(ArenaPlayer p) {
 		if (!canLeave(p)){
-			return true;
-		}
+			return true;}
 		boolean foundComp = false;
 		Competition comp = null;
 		while ((comp = p.getCompetition()) != null){
+			p.removeCompetition(comp);
 			foundComp=true;
-			if (comp.leave(p))
-				sendSystemMessage(p,"you_left_competition",comp.getName());
+			if (comp.leave(p)){
+				sendSystemMessage(p,"you_left_competition",comp.getName());}
 		}
 		if (foundComp)
 			return true;
@@ -534,20 +537,14 @@ public class BAExecutor extends CustomCommandExecutor {
 			sendMessage(sender, "&cYou can't reload the config while matches are running");
 			return sendMessage(sender, "&cYou can use &6/arena cancel all &6to cancel all matches");
 		}
-		if (plugin == BattleArena.getSelf()){
-			for (ArenaType type : ArenaType.getTypes(plugin)){
-				ac.removeAllArenas(type);
-			}
-			MessageSerializer.loadDefaults();
-			BattleArena.getSelf().reloadConfig();
-			ArenaSerializer.loadAllArenas(plugin);
-		} else {
-			ac.removeAllArenas(mp.getType());
-			ConfigSerializer.reloadConfig(plugin, mp.getType());
-			MessageSerializer.reloadConfig(mp.getName());
-			ArenaSerializer.loadAllArenas(plugin, mp.getType());
-			plugin.reloadConfig();
+		BattleArena.getSelf().reloadConfig();
+
+		for (ArenaType type : ArenaType.getTypes(plugin)){
+			ac.removeAllArenas(type);
 		}
+		CompetitionController.reloadCompetition(plugin, mp);
+		ArenaSerializer.loadAllArenas(plugin,mp.getType());
+
 		ac.resume();
 		return sendMessage(sender, "&6" + plugin.getName()+"&e configuration reloaded");
 	}
@@ -1006,13 +1003,13 @@ public class BAExecutor extends CustomCommandExecutor {
 	}
 
 	public boolean checkAndRemoveFee(MatchParams pi, Team t) {
-//		Team t = teamc.getSelfFormedTeam(p);
-//		if (t != null){
-//			players = t.getPlayers();
-//		} else {
-//			players = new HashSet<ArenaPlayer>();
-//			players.add(p);
-//		}
+		//		Team t = teamc.getSelfFormedTeam(p);
+		//		if (t != null){
+		//			players = t.getPlayers();
+		//		} else {
+		//			players = new HashSet<ArenaPlayer>();
+		//			players.add(p);
+		//		}
 		final MatchTransitions tops = pi.getTransitionOptions();
 		if (tops.hasEntranceFee()){
 			Double fee = tops.getEntranceFee();
@@ -1026,7 +1023,7 @@ public class BAExecutor extends CustomCommandExecutor {
 					sendMessage(player, "&eYou need &6"+fee+"&e to compete" );
 			}
 			if (!hasEnough){
-					t.sendMessage("&eYour team does not have enough money to compete");
+				t.sendMessage("&eYour team does not have enough money to compete");
 				return false;
 			}
 			for (ArenaPlayer player : t.getPlayers()){

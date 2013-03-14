@@ -35,7 +35,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.exceptions.ExtensionPluginException;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
 import mc.alk.arena.objects.victoryconditions.LastManStanding;
 import mc.alk.arena.objects.victoryconditions.NLives;
@@ -58,6 +57,7 @@ import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.plugin.updater.FileUpdater;
 import mc.alk.plugin.updater.PluginUpdater;
 
 import org.bukkit.Bukkit;
@@ -106,8 +106,10 @@ public class BattleArena extends JavaPlugin {
 
 		/// Create our plugin folder if its not there
 		File dir = getDataFolder();
-		if (!dir.exists()){
-			dir.mkdirs();}
+		FileUpdater.makeIfNotExists(dir);
+		FileUpdater.makeIfNotExists(new File(dir+"/competitions"));
+		FileUpdater.makeIfNotExists(new File(dir+"/messages"));
+		FileUpdater.makeIfNotExists(new File(dir+"/saves"));
 
 		/// For potential updates to default yml files
 		YamlFileUpdater yfu = new YamlFileUpdater(this);
@@ -163,19 +165,17 @@ public class BattleArena extends JavaPlugin {
 
 		/// persist our disabled arena types
 		StateFlagSerializer sfs = new StateFlagSerializer();
-		sfs.setConfig(dir.getPath() +"/state.yml");
+		sfs.setConfig(dir.getPath() +"/saves/state.yml");
 		commandExecutor.setDisabled(sfs.load());
 
 		ArenaSerializer.setBAC(arenaController);
-		ArenaSerializer as = new ArenaSerializer(this, dir.getPath()+"/arenas.yml");
-		as.loadArenas(this);
 
 		SpawnSerializer ss = new SpawnSerializer();
 		ss.setConfig(FileUtil.load(clazz,dir.getPath() +"/spawns.yml","/default_files/spawns.yml"));
 		arenaControllerSerializer.load();
 
 		/// Load up our signs
-		signSerializer.setConfig(dir.getPath()+"/signs.yml");
+		signSerializer.setConfig(dir.getPath()+"/saves/signs.yml");
 		signSerializer.loadAll(signController);
 		signController.updateAllSigns();
 
@@ -191,7 +191,7 @@ public class BattleArena extends JavaPlugin {
 		createEvents();
 
 		/// Reload our scheduled events
-		eventSchedulerSerializer.setConfig(dir.getPath() +"/scheduledEvents.yml");
+		eventSchedulerSerializer.setConfig(dir.getPath() +"/saves/scheduledEvents.yml");
 		eventSchedulerSerializer.addScheduler(es);
 
 		createMessageSerializers();
@@ -232,7 +232,7 @@ public class BattleArena extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		StateFlagSerializer sfs = new StateFlagSerializer();
-		sfs.setConfig(getDataFolder().getPath() +"/state.yml");
+		sfs.setConfig(getDataFolder().getPath() +"/saves/state.yml");
 		sfs.save(commandExecutor.getDisabled());
 
 		BattleArena.getSelf();
@@ -365,6 +365,7 @@ public class BattleArena extends JavaPlugin {
 		baConfigSerializer.loadDefaults();
 		classesSerializer.loadAll();
 		baConfigSerializer.loadCompetitions();
+		MessageSerializer.loadDefaults();
 	}
 
 	/**
@@ -475,17 +476,11 @@ public class BattleArena extends JavaPlugin {
 
 	@Deprecated
 	/**
-	 * Please start using BattleArena.getBAController()
-	 */
-	public static BattleArenaController getBAC(){return arenaController;}
-
-	@Deprecated
-	/**
 	 * Please start using BattleArena.registerCompetition(...)
 	 * These will be around till at least 2/01/13, but I will be phasing them out then.
 	 */
 	public static void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
-		new APIRegistrationController().registerMatchType(plugin, name, cmd, arenaClass);
+//		new APIRegistrationController().registerMatchType(plugin, name, cmd, arenaClass);
 	}
 	@Deprecated
 	/**
@@ -493,7 +488,7 @@ public class BattleArena extends JavaPlugin {
 	 * These will be around till at least 2/01/13, but I will be phasing them out then.
 	 */
 	public static void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, BAExecutor executor){
-		new APIRegistrationController().registerMatchType(plugin,name,cmd,arenaClass,executor);
+//		new APIRegistrationController().registerMatchType(plugin,name,cmd,arenaClass,executor);
 	}
 
 	@Deprecated
@@ -502,7 +497,7 @@ public class BattleArena extends JavaPlugin {
 	 * These will be around till at least 2/01/13, but I will be phasing them out then
 	 */
 	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
-		new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass);
+//		new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass);
 	}
 
 	@Deprecated
@@ -511,11 +506,11 @@ public class BattleArena extends JavaPlugin {
 	 * These will be around till at least 2/01/13, but I will be phasing them out then
 	 */
 	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor){
-		try {
-			new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass,executor);
-		} catch (ExtensionPluginException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass,executor);
+//		} catch (ExtensionPluginException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 }

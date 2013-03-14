@@ -119,4 +119,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public int getNConcurrentCompetitions(){
 		return numConcurrentCompetitions;
 	}
+
+	public JoinType getJoinType() {
+		return JoinType.QUEUE;
+	}
 }

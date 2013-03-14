@@ -1,0 +1,10 @@
+version: 1.1
+
+### You can add new classes here
+classes:
+    gladiator:
+        displayName: "&4Gladiator" ### Used for signs
+    archer:
+        displayName: "&2Archer" ### Used for signs
+    monk:
+        displayName: "&fMonk" ### Used for signs

@@ -23,7 +23,6 @@
 				<pathelement path="${lib}" />
 				<pathelement location="${lib}/BattleTracker.jar" />
 				<pathelement location="${lib}/bukkit.jar" /> 
-				<pathelement location="${lib}/commons-lang3-3.1.jar" />
 				<pathelement location="${lib}/DisguiseCraft.jar" />
 				<pathelement location="${lib}/Factions.jar" />
 				<pathelement location="${lib}/Herochat.jar" />
@@ -46,7 +45,6 @@
 		<jar jarfile="${bin}/BattleArena.jar" basedir="${bin}" encoding="Cp1252">
 			<zipfileset dir="." includes="*.yml" />
 			<zipfileset dir="." includes="**/default_files/**" />
-			<zipgroupfileset dir="${lib}" includes="commons-lang3-3.1.jar" />
 			<zipgroupfileset dir="${lib}" includes="PluginUpdater.jar" />
 		</jar>
 	</target>

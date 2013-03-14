@@ -64,7 +64,7 @@ public abstract class TeamJoinHandler implements TeamHandler {
 	protected void addToTeam(Team team, Set<ArenaPlayer> players) {
 		team.addPlayers(players);
 		if (competition != null){
-			competition.addedToTeam(team,team.getPlayers());
+			competition.addedToTeam(team,players);
 		}
 	}
 

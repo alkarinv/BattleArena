@@ -36,4 +36,9 @@ public class EventParams extends MatchParams{
 	public void setAnnouncementInterval(Integer announcementInterval) {
 		this.announcementInterval = announcementInterval;
 	}
+
+	@Override
+	public JoinType getJoinType() {
+		return JoinType.JOINPHASE;
+	}
 }

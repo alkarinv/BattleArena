@@ -17,6 +17,7 @@ import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.JoinType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
@@ -51,51 +52,20 @@ import org.bukkit.potion.PotionEffect;
  *
  */
 public class ConfigSerializer extends BaseConfig{
-	static HashMap<ArenaType, ConfigSerializer> configs = new HashMap<ArenaType, ConfigSerializer>();
 
-	public void setConfig(ArenaType at, String f){
-		setConfig(at, new File(f));
+	final String name;
+
+	public ConfigSerializer(File configFile, String name) {
+		this.setConfig(configFile);
+		this.name = name;
 	}
 
-	public void setConfig(ArenaType at, File f){
-		super.setConfig(f);
-		if (at != null){ /// Other plugins using BattleArena, the name is the matchType or eventType name
-			configs.put(at, this);}
-	}
 
-	public static ConfigSerializer getConfig(ArenaType arenaType){
-		return configs.get(arenaType);
-	}
+	public MatchParams loadType(Plugin plugin) throws ConfigException, InvalidOptionException {
+		ConfigurationSection cs = config.getConfigurationSection(name);
 
-	public static ConfigurationSection getOtherOptions(ArenaType arenaType){
-		ConfigSerializer cs = getConfig(arenaType);
-		return cs != null ? cs.getConfigurationSection(arenaType.getName()+".otherOptions") : null;
-	}
-
-	public static void reloadConfig(Plugin plugin, ArenaType arenaType) {
-		final String name = arenaType.getName();
-		ConfigSerializer cs = configs.get(arenaType);
 		if (cs == null){
-			Log.err("Couldnt find the serializer for " + name);
-			return;
-		}
-		try {
-			cs.reloadFile();
-			ConfigSerializer.setTypeConfig(plugin, name,cs.getConfigurationSection(name),
-					!(ParamController.getMatchParams(arenaType.getName()) instanceof EventParams));
-		} catch (ConfigException e) {
-			e.printStackTrace();
-			Log.err("Error reloading " + name);
-		} catch (InvalidOptionException e) {
-			e.printStackTrace();
-			Log.err("Error reloading " + name);
-		}
-	}
-
-	public static MatchParams setTypeConfig(Plugin plugin, final String name, ConfigurationSection cs, boolean match) throws ConfigException, InvalidOptionException {
-		if (cs == null){
-			Log.err(plugin.getName() + " configSerializer can't load " + name +" with a config section of " + cs);
-			return null;
+			throw new ConfigException("configSerializer can't load " + name +" with a config section of " + cs);
 		}
 		/// Set up match options.. specifying defaults where not specified
 		/// Set Arena Type
@@ -151,13 +121,15 @@ public class ConfigSerializer extends BaseConfig{
 			minTeams = mm.min;
 			maxTeams = mm.max;
 		}
-		MatchParams pi = match ? new MatchParams(at, rating,vt) : new EventParams(at,rating, vt);
+		JoinType jt = getJoinType(cs);
+		MatchParams pi = jt == JoinType.QUEUE ? new MatchParams(at, rating,vt) : new EventParams(at,rating, vt);
 
 		pi.setName(StringUtils.capitalize(name));
 
 		pi.setCommand(cs.getString("command",name));
-		if (cs.contains("cmd")) /// turns out I used cmd in a lot of old configs.. so use both :(
-			pi.setCommand(cs.getString("cmd"));
+		if (cs.contains("cmd")){ /// turns out I used cmd in a lot of old configs.. so use both :(
+			pi.setCommand(cs.getString("cmd"));}
+		ArenaType.addAliasForType(name, pi.getCommand());
 		pi.setPrefix( cs.getString("prefix","&6["+name+"]"));
 		pi.setMinTeams(minTeams);
 		pi.setMaxTeams(maxTeams);
@@ -194,7 +166,7 @@ public class ConfigSerializer extends BaseConfig{
 			pi.setAnnouncementOptions(an);
 		}
 		/// TeamJoinResult in tracking for this match type
-		String dbName = cs.getString("database", name);
+		String dbName = cs.getString("database");
 		if (dbName != null){
 			pi.setDBName(dbName);
 			if (!BTInterface.addBTI(pi))
@@ -244,7 +216,8 @@ public class ConfigSerializer extends BaseConfig{
 		}
 		ParamController.removeMatchType(pi);
 		ParamController.addMatchType(pi);
-		Log.info(plugin.getName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none")+",queue="+match);
+
+		Log.info(plugin.getName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none")+",join="+pi.getJoinType());
 		return pi;
 	}
 
@@ -541,6 +514,20 @@ public class ConfigSerializer extends BaseConfig{
 			e.printStackTrace();
 		}
 		return items;
+	}
+
+	public static JoinType getJoinType(ConfigurationSection cs) {
+		boolean isMatch = !cs.getBoolean("isEvent",true);
+		isMatch = cs.getBoolean("queue",isMatch);
+		if (cs.contains("joinType")){
+			String type = cs.getString("joinType");
+			try{
+				return JoinType.valueOf(type.toUpperCase());
+			} catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+		return isMatch ? JoinType.QUEUE : JoinType.JOINPHASE;
 	}
 
 
