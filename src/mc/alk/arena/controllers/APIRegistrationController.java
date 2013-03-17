@@ -88,10 +88,8 @@ public class APIRegistrationController {
 			e.printStackTrace();
 			return false;
 		} finally{
-			if (out != null)
-				try {out.close();} catch (IOException e) {}
-			if (inputStream!=null)
-				try {inputStream.close();} catch (IOException e) {}
+			if (out != null) try {out.close();} catch (IOException e) {}
+			if (inputStream!=null) try {inputStream.close();} catch (IOException e) {}
 		}
 
 		return true;
@@ -123,10 +121,12 @@ public class APIRegistrationController {
 				line = line.replaceAll("<name>", name).replaceAll("<cmd>", cmd);
 				fw.write(line+"\n");
 			}
-			fw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
+		} finally {
+			if (fw !=null) try {fw.close(); } catch (Exception e){}
+			if (br !=null) try {br.close(); } catch (Exception e){}
 		}
 		return true;
 	}
@@ -248,7 +248,7 @@ public class APIRegistrationController {
 		ConfigSerializer bs = new ConfigSerializer(configFile,name);
 
 		/// SetTypeConfig doesn't register ArenaType or commands
-		ArenaType at = ArenaType.register(name, Arena.class, plugin);
+		ArenaType at = ArenaType.register(name, arenaClass, plugin);
 		CustomCommandExecutor exe = null;
 		if (!delayedInits.contains(plugin.getName())){
 			delayedInits.add(plugin.getName());

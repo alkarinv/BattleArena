@@ -20,6 +20,7 @@ import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
 
@@ -73,11 +74,17 @@ public class BAConfigSerializer extends BaseConfig{
 		File compDir = new File(dir+"/competitions");
 		/// Load all default types
 		for (String comp : allTypes){
+			/// For some reason this next line is almost directly in APIRegistration and works
+			/// for extensions but not for BattleArena defaults.
+			/// ONLY doesnt work in Windows... odd...
+			FileUtil.load(BattleArena.getSelf().getClass(),dir.getPath()+"/competitions/"+comp+"Config.yml",
+					"/default_files/competitions/"+comp+"Config.yml");
+
 			String capComp = StringUtils.capitalize(comp);
 			api.registerCompetition(plugin, capComp, capComp, Arena.class, null,
 					new File(compDir+"/"+capComp+"Config.yml"),
 					new File(dir+"/"+comp+"Messages.yml"),
-					new File("default_files/competitions/"+capComp+"Config.yml"),
+					new File("/default_files/competitions/"+capComp+"Config.yml"),
 					new File(dir.getPath()+"/saves/arenas.yml"));
 			exclude.add(capComp+"Config.yml");
 		}

@@ -39,13 +39,7 @@ public abstract class BAEventListener implements Listener  {
 			public void execute(final Listener listener, final Event event) throws EventException {
 				if (event.getClass() != bukkitEvent && !bukkitEvent.isAssignableFrom(event.getClass())){
 					return;}
-//				long start = System.nanoTime();
 				doSpecificPlayerEvent(event);
-//				long t = System.nanoTime() - start;
-//				total += t;
-//				count++;
-//				if (count %10 == 0)
-//					System.out.println(count +"   " + t + "   : " + total);
 			}
 		};
 		if (Defaults.TESTSERVER) return;
@@ -60,14 +54,7 @@ public abstract class BAEventListener implements Listener  {
 			public void execute(final Listener listener, final Event event) throws EventException {
 				if (event.getClass() != bukkitEvent && !bukkitEvent.isAssignableFrom(event.getClass())){
 					return;}
-//				long start = System.nanoTime();
 				doMatchEvent(event);
-//				long t = System.nanoTime() - start;
-//				total += t;
-//				count++;
-//				if (count %10 == 0)
-//					System.out.println(count +"   " + t + "   : " + total);
-
 			}
 		};
 		Bukkit.getPluginManager().registerEvent(bukkitEvent, this, bukkitPriority, executor,BattleArena.getSelf());

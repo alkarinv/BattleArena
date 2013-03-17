@@ -28,6 +28,7 @@ public class FileUtil {
 		return inputStream;
 	}
 
+	@SuppressWarnings("resource")
 	public static InputStream getInputStream(Class<?> clazz, File defaultFile, File defaultPluginFile) {
 		InputStream inputStream = null;
 		if (defaultPluginFile.exists()){
@@ -37,13 +38,18 @@ public class FileUtil {
 				e.printStackTrace();
 			}
 		}
-		if (inputStream != null)
-			return inputStream;
-		/// Load from pluginJar
-		inputStream = clazz.getResourceAsStream(defaultPluginFile.getPath());
+
+		/// Try to load a default file from the given plugin
+		/// Load from ExtensionPlugin.Jar
+		if (inputStream == null)
+			inputStream = clazz.getResourceAsStream(defaultPluginFile.getPath());
 		if (inputStream == null) /// will this work to fix the problems in windows??
 			inputStream = clazz.getClassLoader().getResourceAsStream(defaultPluginFile.getPath());
-		if (inputStream == null) /// Load from BattleArena.jar
+		/// Load from the defaults
+		/// Load from BattleArena.jar
+		if (inputStream == null)
+			inputStream = BattleArena.getSelf().getClass().getResourceAsStream(defaultFile.getPath());
+		if (inputStream == null)
 			inputStream = BattleArena.getSelf().getClass().getClassLoader().getResourceAsStream(defaultFile.getPath());
 
 		return inputStream;
@@ -52,20 +58,23 @@ public class FileUtil {
 	public static File load(Class<?> clazz, String config_file, String default_file) {
 		File file = new File(config_file);
 		if (!file.exists()){ /// Create a new file from our default example
+			InputStream inputStream = null;
+			OutputStream out = null;
 			try{
-				InputStream inputStream = clazz.getResourceAsStream(default_file);
-				if (inputStream == null) /// will this work to fix the problems in windows??
-					inputStream = clazz.getClassLoader().getResourceAsStream(default_file);
+				inputStream = clazz.getResourceAsStream(default_file);
+				if (inputStream == null){ /// will this work to fix the problems in windows??
+					inputStream = clazz.getClassLoader().getResourceAsStream(default_file);}
 
-				OutputStream out=new FileOutputStream(config_file);
+				out=new FileOutputStream(config_file);
 				byte buf[]=new byte[1024];
 				int len;
 				while((len=inputStream.read(buf))>0){
 					out.write(buf,0,len);}
-				out.close();
-				inputStream.close();
 			} catch (Exception e){
 				e.printStackTrace();
+			} finally {
+				if (out != null) try {out.close();} catch (Exception e){}
+				if (inputStream != null) try {inputStream.close();} catch (Exception e){}
 			}
 		}
 		return file;

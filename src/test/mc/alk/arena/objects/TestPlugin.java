@@ -108,12 +108,12 @@ public class TestPlugin implements Plugin{
 
 	@Override
 	public void onDisable() {
-		Log.debug("onDisable");
+		Log.info("onDisable");
 	}
 
 	@Override
 	public void onLoad() {
-		Log.debug("onLoad");
+		Log.info("onLoad");
 	}
 
 

@@ -75,6 +75,8 @@ public class BaseConfig implements FileConfig{
 		}
 	}
 	public void save() {
+		if (config == null)
+			return;
 		try {
 			config.save(file);
 		} catch (IOException e) {
@@ -84,12 +86,11 @@ public class BaseConfig implements FileConfig{
 
 	@Override
 	public List<String> getStringList(String node) {
-		// TODO Auto-generated method stub
-		return null;
+		return config.getStringList(node);
 	}
 	@Override
 	public void load(File file) {
-		// TODO Auto-generated method stub
-
+		this.file = file;
+		reloadFile();
 	}
 }

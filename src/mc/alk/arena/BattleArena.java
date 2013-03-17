@@ -110,7 +110,6 @@ public class BattleArena extends JavaPlugin {
 		FileUpdater.makeIfNotExists(new File(dir+"/competitions"));
 		FileUpdater.makeIfNotExists(new File(dir+"/messages"));
 		FileUpdater.makeIfNotExists(new File(dir+"/saves"));
-
 		/// For potential updates to default yml files
 		YamlFileUpdater yfu = new YamlFileUpdater(this);
 
@@ -473,44 +472,4 @@ public class BattleArena extends JavaPlugin {
 	public static void registerCompetition(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, CustomCommandExecutor executor){
 		new APIRegistrationController().registerCompetition(plugin,name,cmd,arenaClass, executor);
 	}
-
-	@Deprecated
-	/**
-	 * Please start using BattleArena.registerCompetition(...)
-	 * These will be around till at least 2/01/13, but I will be phasing them out then.
-	 */
-	public static void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
-//		new APIRegistrationController().registerMatchType(plugin, name, cmd, arenaClass);
-	}
-	@Deprecated
-	/**
-	 * Please start using BattleArena.registerCompetition(...)
-	 * These will be around till at least 2/01/13, but I will be phasing them out then.
-	 */
-	public static void registerMatchType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, BAExecutor executor){
-//		new APIRegistrationController().registerMatchType(plugin,name,cmd,arenaClass,executor);
-	}
-
-	@Deprecated
-	/**
-	 * Please start using BattleArena.registerCompetition(...)
-	 * These will be around till at least 2/01/13, but I will be phasing them out then
-	 */
-	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass){
-//		new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass);
-	}
-
-	@Deprecated
-	/**
-	 * Please start using BattleArena.registerCompetition(...)
-	 * These will be around till at least 2/01/13, but I will be phasing them out then
-	 */
-	public static void registerEventType(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, EventExecutor executor){
-//		try {
-//			new APIRegistrationController().registerEventType(plugin,name,cmd,arenaClass,executor);
-//		} catch (ExtensionPluginException e) {
-//			e.printStackTrace();
-//		}
-	}
-
 }

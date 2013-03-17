@@ -119,10 +119,10 @@ public class ArenaType implements Comparable<ArenaType>{
 		return sb.toString();
 	}
 
-	public static ArenaType register(String arenaType, Class<? extends Arena> c, Plugin plugin) {
+	public static ArenaType register(String arenaType, Class<? extends Arena> arenaClass, Plugin plugin) {
 		final String uarenaType = arenaType.toUpperCase();
 		if (!classes.containsKey(uarenaType))
-			classes.put(uarenaType, c);
+			classes.put(uarenaType, arenaClass);
 		if (!types.containsKey(uarenaType)){
 			new ArenaType(arenaType,plugin);
 		}
@@ -159,6 +159,7 @@ public class ArenaType implements Comparable<ArenaType>{
 		Class<?> arenaClass = classes.get(arenaType.name);
 		if (arenaClass == null)
 			return null;
+
 		Class<?>[] args = {};
 		try {
 			Constructor<?> constructor = arenaClass.getConstructor(args);
@@ -188,6 +189,8 @@ public class ArenaType implements Comparable<ArenaType>{
 	}
 
 	public static void addAliasForType(String type, String alias) {
+		type = type.toUpperCase();
+		alias = alias.toUpperCase();
 		if (type.equals(alias))
 			return;
 		ArenaType at = fromString(type);
