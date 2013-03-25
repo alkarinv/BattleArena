@@ -8,6 +8,8 @@ FreeForAll:
     teamSize: 1
     announcements: ### Override the match victory announcement as the event has one too
         onVictory:  [ dontannounce ] 
+    defaults:
+        options: [woolTeams]
     preReqs:
         options: [clearInventory]
     onEnter:
@@ -15,7 +17,7 @@ FreeForAll:
     onLeave:
         options: [restoreAll]
     onJoin:
-        options: [teleportIn, woolTeams]
+        options: [teleportIn]
     onOpen:
         options: [pvpOff]
     onPrestart:

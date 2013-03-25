@@ -17,6 +17,8 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.competition.util.TeamJoinFactory;
+import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.listeners.MatchCreationCallback;
@@ -29,10 +31,10 @@ import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
-import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
@@ -63,6 +65,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		super(params);
 		oParms = params;
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
+
 	}
 
 	@Override
@@ -91,6 +94,10 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		EventParams copy = new EventParams(mp);
 		copy.setMaxTeams(CompetitionSize.MAX);
 		this.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(copy, this));
+		for (Team t: teams){
+			TeamController.removeTeamHandler(t, this);
+		}
+		joinHandler.removeImproperTeams();
 	}
 
 	@Override
@@ -105,11 +112,12 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 				oParms.getName() + " tournament is starting!"));
 
 		TreeMap<Double,Team> sortTeams = new TreeMap<Double,Team>(Collections.reverseOrder());
-		BTInterface bti = new BTInterface(eventParams);
+		StatController sc = new StatController(eventParams);
+
 		for (Team t: teams){
 			Double elo = Defaults.DEFAULT_ELO;
-			if (bti.isValid()){
-				elo = (double) bti.getElo(t);}
+			ArenaStat stat = sc.loadRecord(t);
+			elo = (double) stat.getRating();
 			while (sortTeams.containsKey(elo)){elo+= 0.0001;}
 			sortTeams.put(elo, t);
 		}
@@ -335,13 +343,15 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 				t.sendMessage("&4["+strround+"]&e You have a &5bye&e this round");
 			}
 		}
-		BTInterface bti = new BTInterface(eventParams);
+		StatController sc = new StatController(eventParams);
 		final String prefix = eventParams.getPrefix();
 		if (tr.getMatchups().size() <= 8){
 			for (Matchup m: tr.getMatchups()){
 				List<String> names = new ArrayList<String>();
 				for (Team t: m.getTeams()){
-					names.add("&8"+t.getDisplayName()+"&6["+bti.getElo(t)+"]");}
+					ArenaStat st = sc.loadRecord(t);
+					names.add("&8"+t.getDisplayName()+"&6["+st.getRating()+"]");
+				}
 				String msg = "&e"+ strround +": " + StringUtils.join(names, " vs ");
 				if (ChatPaginator.GUARANTEED_NO_WRAP_CHAT_PAGE_WIDTH > msg.length() + prefix.length()){
 					broadcastAlive(prefix+" "+msg);

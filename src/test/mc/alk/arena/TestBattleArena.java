@@ -79,8 +79,8 @@ public class TestBattleArena extends TestCase{
 //		ConfigurationSection cs = bc.getConfigurationSection(node);
 		MatchParams mp = null;
 		try {
-			ConfigSerializer config = new ConfigSerializer(bc.getFile(),node);
-			mp = config.loadType(plugin);
+			ConfigSerializer config = new ConfigSerializer(plugin, bc.getFile(),node);
+			mp = config.loadType();
 //			mp = ConfigSerializer.setTypeConfig(plugin, "arena", cs);
 		} catch (ConfigException e) {
 			e.printStackTrace();

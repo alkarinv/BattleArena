@@ -154,6 +154,11 @@ public class TransitionOptions {
 		if (MobArenaInterface.hasMobArena() && MobArenaInterface.insideMobArena(p)){
 			return false;
 		}
+		if (options.containsKey(TransitionOption.GAMEMODE)){
+			GameMode gm = getGameMode();
+			if (p.getPlayer().getGameMode() != gm){
+				return false;}
+		}
 
 		if (options.containsKey(TransitionOption.NOINVENTORY)){
 			if (InventoryUtil.hasAnyItem(p.getPlayer()))
@@ -194,7 +199,11 @@ public class TransitionOptions {
 			hasSomething = true;
 			sb.append("&5 - &6Clear Inventory");
 		}
-
+		if (options.containsKey(TransitionOption.GAMEMODE)){
+			hasSomething = true;
+			GameMode gm = getGameMode();
+			sb.append("&5 - &6GameMode="+gm.toString());
+		}
 		if (needsArmor()){
 			hasSomething = true;
 			sb.append("&5 - &6Armor");
@@ -220,6 +229,13 @@ public class TransitionOptions {
 					sb.append("&5 - &e"+needed +" " + is.getType() + "\n");
 					isReady = false;
 				}
+			}
+		}
+		if (options.containsKey(TransitionOption.GAMEMODE)){
+			GameMode gm = getGameMode();
+			if (p.getPlayer().getGameMode() != gm){
+				sb.append("&5 -&e a &6You need to be in &c"+gm+"&e mode \n");
+				isReady = false;
 			}
 		}
 		if (options.containsKey(TransitionOption.NOINVENTORY)){

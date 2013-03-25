@@ -114,6 +114,7 @@ public class InventoryUtil {
 		if (iname.contains("inf")) return Enchantment.ARROW_INFINITE;
 		if (iname.contains("unbreaking")) return Enchantment.DURABILITY;
 		if (iname.contains("dura")) return Enchantment.DURABILITY;
+		if (iname.contains("thorn")) return Enchantment.THORNS;
 		return null;
 	}
 
@@ -139,6 +140,7 @@ public class InventoryUtil {
 		else if (enc.getId() == Enchantment.ARROW_KNOCKBACK.getId()){return "Punch";}
 		else if (enc.getId() == Enchantment.ARROW_FIRE.getId()){return "Flame";}
 		else if (enc.getId() == Enchantment.ARROW_INFINITE.getId()){return "Infinity";}
+		else if (enc.getId() == Enchantment.THORNS.getId()){return "Thorns";}
 		else return enc.getName();
 	}
 

@@ -41,7 +41,7 @@ public class RegisteredCompetition {
 		configSerializer.reloadFile();
 		MessageSerializer.reloadConfig(competitionName);
 		try {
-			configSerializer.loadType(plugin);
+			configSerializer.loadType();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

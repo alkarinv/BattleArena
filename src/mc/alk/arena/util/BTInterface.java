@@ -8,8 +8,12 @@ import java.util.Set;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchResult.WinLossDraw;
+import mc.alk.arena.objects.stats.ArenaStat;
+import mc.alk.arena.objects.stats.TrackerArenaStat;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.tracker.Tracker;
 import mc.alk.tracker.TrackerInterface;
@@ -21,6 +25,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 
 public class BTInterface {
@@ -30,6 +35,7 @@ public class BTInterface {
 	static private HashMap<String, TrackerInterface> currentInterfaces = new HashMap<String, TrackerInterface>();
 	final TrackerInterface ti;
 	boolean valid = false;
+
 	public BTInterface(MatchParams mp){
 		ti = getInterface(mp);
 		valid = battleTracker != null && ti != null;
@@ -49,14 +55,27 @@ public class BTInterface {
 		final String db = sq.getDBName();
 		return db == null ? null : btis.get(db);
 	}
+	public static boolean hasInterface(MatchParams mp){
+		if (mp == null)
+			return false;
+		final String db = mp.getDBName();
+		return db == null ? false : btis.containsKey(db);
+	}
 
-	public static void addRecord(TrackerInterface bti, Set<Team> victors,Set<Team> losers, Set<Team> drawers, WLT win) {
+	public static void addRecord(TrackerInterface bti, Set<Team> victors,Set<Team> losers, Set<Team> drawers, WinLossDraw wld) {
 		if (victors != null){
 			Set<ArenaPlayer> winningPlayers = new HashSet<ArenaPlayer>();
 			for (Team w : victors){
 				winningPlayers.addAll(w.getPlayers());
 			}
-			addRecord(bti,winningPlayers, losers,win);
+			WLT wlt = null;
+			switch(wld){
+			case WIN: wlt = WLT.WIN; break;
+			case LOSS: wlt = WLT.LOSS; break;
+			case DRAW: wlt = WLT.TIE; break;
+			default: wlt = WLT.WIN; break;
+			}
+			addRecord(bti,winningPlayers, losers,wlt);
 		}
 	}
 	public static void addRecord(TrackerInterface bti, Set<ArenaPlayer> players, Collection<Team> losers, WLT win) {
@@ -127,9 +146,6 @@ public class BTInterface {
 		if (aBTI != null)
 			aBTI.stopTracking(players);
 	}
-	public static boolean hasInterface(MatchParams pi) {
-		return btis.containsKey(pi.getName());
-	}
 
 	@SuppressWarnings("deprecation")
 	public Integer getElo(Team t) {
@@ -147,6 +163,16 @@ public class BTInterface {
 		try{return ti.loadRecord(player);} catch(Exception e){e.printStackTrace();return null;}
 	}
 
+	public static ArenaStat loadRecord(String dbName, Team t) {
+		TrackerInterface ti = btis.get(dbName);
+		if (ti == null)
+			return StatController.BLANK_STAT;
+		Stat st = null;
+		try{st = ti.loadRecord(t.getBukkitPlayers());}catch(Exception e){e.printStackTrace();}
+		return st == null ? StatController.BLANK_STAT : new TrackerArenaStat(st);
+	}
+
+
 	@SuppressWarnings("deprecation")
 	public String getRankMessage(OfflinePlayer player) {
 		Stat stat = loadRecord(player);
@@ -158,14 +184,24 @@ public class BTInterface {
 		return "&eRank:&6"+rank+"&e (&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)&6["+stat.getRanking()+"]&e" +
 				". Highest &6["+ stat.getMaxRanking()+"]&e Longest Streak &b"+stat.getMaxStreak();
 	}
-	public boolean setRanking(OfflinePlayer player, Integer elo) {
-		return ti.setRanking(player, elo);
+	public boolean setRating(OfflinePlayer player, Integer elo) {
+		return ti.setRating(player, elo);
 	}
 	public void resetStats() {
 		ti.resetStats();
 	}
 	public void printTopX(CommandSender sender, int x, int minTeamSize, String headerMsg, String bodyMsg) {
 		ti.printTopX(sender, StatType.RANKING, x, minTeamSize,headerMsg,bodyMsg);
+	}
+	public static void setTrackerPlugin(Plugin plugin) {
+		battleTracker = (Tracker) plugin;
+	}
+	public static void addRecord(MatchParams mp, Set<Team> victors,
+			Set<Team> losers, Set<Team> drawers, WinLossDraw wld) {
+		TrackerInterface bti = BTInterface.getInterface(mp);
+		if (bti != null ){
+			try{BTInterface.addRecord(bti,victors,losers,drawers,wld);}catch(Exception e){e.printStackTrace();}
+		}
 	}
 
 }

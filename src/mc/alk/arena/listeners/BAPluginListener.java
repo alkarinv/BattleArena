@@ -7,13 +7,12 @@ import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PylamoController;
+import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TagAPIController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
-import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.Log;
-import mc.alk.tracker.Tracker;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 
@@ -56,8 +55,6 @@ public class BAPluginListener implements Listener {
 			loadMultiverseInventory();
 		else if (event.getPlugin().getName() == "PylamoRestorationSystem")
 			loadPylamoRestoration();
-		else if (event.getPlugin().getName() == "Register")
-			loadRegister();
 		else if (event.getPlugin().getName() == "TagAPI")
 			loadTagAPI();
 		else if (event.getPlugin().getName() == "WorldEdit")
@@ -79,7 +76,6 @@ public class BAPluginListener implements Listener {
 		loadMultiverseCore();
 		loadMultiverseInventory();
 		loadPylamoRestoration();
-		loadRegister();
 		loadTagAPI();
 		loadWorldEdit();
 		loadWorldGuard();
@@ -88,10 +84,10 @@ public class BAPluginListener implements Listener {
 
 
 	public void loadBattleTracker(){
-		if (BTInterface.battleTracker == null){
+		if (!StatController.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("BattleTracker");
 			if (plugin != null) {
-				BTInterface.battleTracker = (Tracker) plugin;
+				StatController.setPlugin(plugin);
 			} else {
 				Log.info("[BattleArena] BattleTracker not detected, not tracking wins");
 			}
@@ -187,16 +183,6 @@ public class BAPluginListener implements Listener {
 			if (plugin != null){
 				PylamoController.setPylamo(plugin);
 				Log.info(BattleArena.getPluginName() +" found PylamoRestorationSystem");
-			}
-		}
-	}
-
-	public void loadRegister(){
-		if (!MoneyController.hasEconomy()){
-			Plugin plugin = Bukkit.getPluginManager().getPlugin("Register");
-			if (plugin != null){
-				MoneyController.setRegisterEconomy();
-				Log.info(BattleArena.getPluginName() +" found economy plugin Register");
 			}
 		}
 	}

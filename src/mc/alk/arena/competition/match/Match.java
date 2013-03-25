@@ -20,6 +20,7 @@ import mc.alk.arena.controllers.FactionsController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.RewardController;
+import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TagAPIController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.WorldGuardController;
@@ -64,12 +65,9 @@ import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumLivesPerPlayer;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumTeams;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesTimeLimit;
-import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
-import mc.alk.tracker.TrackerInterface;
-import mc.alk.tracker.objects.WLT;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -393,15 +391,16 @@ public abstract class Match extends Competition implements Runnable {
 			final Set<Team> losers = matchResult.getLosers();
 			final Set<Team> drawers = matchResult.getDrawers();
 			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  " + losers+"  "+drawers +" " + matchResult);
+			if (params.isRated()){
+				StatController sc = new StatController(params);
+				sc.addRecord(victors,losers,drawers,matchResult.getResult());
+			}
 			if (matchResult.hasVictor()){ /// We have a true winner
-				TrackerInterface bti = BTInterface.getInterface(params);
-				if (bti != null && params.isRated()){
-					try{BTInterface.addRecord(bti,victors,losers,drawers,WLT.WIN);}catch(Exception e){e.printStackTrace();}
-				}
 				try{mc.sendOnVictoryMsg(victors, losers);}catch(Exception e){e.printStackTrace();}
 			} else { /// we have a draw
 				try{mc.sendOnDrawMessage(drawers,losers);} catch(Exception e){e.printStackTrace();}
 			}
+
 			updateBukkitEvents(MatchState.ONVICTORY);
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
 			currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
@@ -687,7 +686,7 @@ public abstract class Match extends Competition implements Runnable {
 	private void preEnter(ArenaPlayer p){
 		final String name = p.getName();
 		if (params.getOverrideBattleTracker())
-			BTInterface.stopTracking(p);
+			StatController.stopTracking(p);
 		/// Store the point at which they entered the arena
 		if (!oldlocs.containsKey(name) || oldlocs.get(name) == null) /// First teleportIn is the location we want
 			oldlocs.put(name, p.getLocation());
@@ -730,7 +729,7 @@ public abstract class Match extends Competition implements Runnable {
 		PerformTransition.transition(this, MatchState.ONLEAVE, p, t, false);
 		arenaInterface.onLeave(p,t);
 		if (params.getOverrideBattleTracker())
-			BTInterface.resumeTracking(p);
+			StatController.resumeTracking(p);
 
 		callEvent(new PlayerLeftEvent(p));
 		if (FactionsController.enabled()){

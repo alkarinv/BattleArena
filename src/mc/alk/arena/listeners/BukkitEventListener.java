@@ -269,6 +269,12 @@ public class BukkitEventListener extends BAEventListener{
 	}
 
 	private void doEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
+//		NotifierUtil.notify("pb", event.getEntityType() +" <-- -->  "
+//				+ event.getDamager().getType() +"     l1 = "+(event.getEntity() instanceof Player && listeners.containsKey(((Player)event.getEntity()).getName()) ) +""
+//				+  "  ------- l2=" + (event.getDamager() instanceof Player && listeners.containsKey(((Player)event.getDamager()).getName())) +
+//				"    " +
+//				(event.getDamager() instanceof Projectile ? ((Projectile) event.getDamager()).getShooter().getCustomName() : " null ")
+//				);
 		if (event.getEntity() instanceof Player && listeners.containsKey(((Player)event.getEntity()).getName()) ){
 			callListeners(event, (Player) event.getEntity());
 			return;
@@ -281,8 +287,10 @@ public class BukkitEventListener extends BAEventListener{
 		Player player = null;
 		if (event.getDamager() instanceof Projectile){ /// we have some sort of projectile, maybe shot by a player?
 			Projectile proj = (Projectile) event.getDamager();
+//			NotifierUtil.notify("pb",  " projectile "  + (proj.getShooter() instanceof Player) +"   ");
 			if (proj.getShooter() instanceof Player){ /// projectile was shot by a player
 				player= (Player) proj.getShooter();
+//				NotifierUtil.notify("pb",  " projectile "  + (proj.getShooter() instanceof Player) +"   " + player.getName());
 			}
 		}
 		if (player != null){

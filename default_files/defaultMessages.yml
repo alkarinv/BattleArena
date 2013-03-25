@@ -5,8 +5,8 @@ version: 1.2
 
 #common:
 #    team: '&7{name}&e'
-#    teamshort: '&7{name}&e[{ranking}]'
-#    teamlong: '&7{name}&e[{ranking}] &6({wins}:{losses})'
+#    teamshort: '&7{name}&e[{rating}]'
+#    teamlong: '&7{name}&e[{rating}] &6({wins}:{losses})'
 #    other_team_not_ready: '&eThe other &cteams&e were not ready and forfeited'
 #    your_team_not_ready: '&eYour team was not ready to join'
 #

@@ -23,6 +23,7 @@ import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.messaging.MessageHandler;
@@ -54,7 +55,6 @@ import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.ArenaSerializer;
-import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.ServerUtil;
@@ -299,7 +299,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return false;
 	}
 
-	@MCCommand(cmds={"leave","l"}, usage="leave", helpOrder=2)
+	@MCCommand(cmds={"leave","l"}, usage="leave", perm="arena.leave", helpOrder=2)
 	public boolean leave(ArenaPlayer p) {
 		if (!canLeave(p)){
 			return true;}
@@ -433,19 +433,19 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds={"resetElo"}, op=true, usage="resetElo")
 	public boolean resetElo(CommandSender sender, MatchParams mp){
-		BTInterface bti = new BTInterface(mp);
-		if (!bti.isValid()){
-			return sendMessage(sender,"&eThere is no tracking for " +mp);}
-		bti.resetStats();
+		if (!StatController.hasInterface(mp)){
+			return sendMessage(sender,"&eThere is no tracking for " +mp.toPrettyString());}
+		StatController sc = new StatController(mp);
+		sc.resetStats();
 		return sendMessage(sender,mp.getPrefix()+" &2Elo's and stats for &6"+mp.getName()+"&2 now reset");
 	}
 
 	@MCCommand(cmds={"setRating"}, admin=true, usage="setRating <player> <rating>")
 	public boolean setElo(CommandSender sender, MatchParams mp, OfflinePlayer player, int rating) {
-		BTInterface bti = new BTInterface(mp);
-		if (!bti.isValid()){
-			return sendMessage(sender,"&eThere is no tracking for " +mp);}
-		if (bti.setRanking(player, rating))
+		if (!StatController.hasInterface(mp)){
+			return sendMessage(sender,"&eThere is no tracking for " +mp.toPrettyString());}
+		StatController sc = new StatController(mp);
+		if (sc.setRating(player, rating))
 			return sendMessage(sender,"&6" + player.getName()+"&e now has &6" + rating +"&e rating");
 		else
 			return sendMessage(sender,"&6Error setting rating");
@@ -453,21 +453,19 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds={"rank"}, helpOrder=3)
 	public boolean rank(Player sender,MatchParams mp) {
-		BTInterface bti = new BTInterface(mp);
-		if (!bti.isValid()){
-			return sendMessage(sender,"&eThere is no tracking for a " + mp.toPrettyString());
-		}
-		String rankMsg = bti.getRankMessage(sender);
+		if (!StatController.hasInterface(mp)){
+			return sendMessage(sender,"&eThere is no tracking for " +mp.toPrettyString());}
+		StatController sc = new StatController(mp);
+		String rankMsg = sc.getRankMessage(sender);
 		return MessageUtil.sendMessage(sender, rankMsg);
 	}
 
 	@MCCommand(cmds={"rank"}, helpOrder=4)
 	public boolean rankOther(CommandSender sender,MatchParams mp, OfflinePlayer player) {
-		BTInterface bti = new BTInterface(mp);
-		if (bti.isValid()){
-			return sendMessage(sender,"&eThere is no tracking for a " + mp.toPrettyString());
-		}
-		String rankMsg = bti.getRankMessage(player);
+		if (!StatController.hasInterface(mp)){
+			return sendMessage(sender,"&eThere is no tracking for " +mp.toPrettyString());}
+		StatController sc = new StatController(mp);
+		String rankMsg = sc.getRankMessage(player);
 		return MessageUtil.sendMessage(sender, rankMsg);
 	}
 
@@ -489,10 +487,8 @@ public class BAExecutor extends CustomCommandExecutor {
 	public boolean getTop(CommandSender sender, int x, MatchParams mp) {
 		if (x < 1 || x > 100){
 			x = 5;}
-		BTInterface bti = new BTInterface(mp);
-		if (!bti.isValid()){
-			return sendMessage(sender,"&eThere is no tracking for a " + mp.toPrettyString());
-		}
+		if (!StatController.hasInterface(mp)){
+			return sendMessage(sender,"&eThere is no tracking for " +mp.toPrettyString());}
 
 		final String teamSizeStr = (mp.getMinTeamSize() > 1 ? "teamSize=&6" + mp.getMinTeamSize(): "");
 		final String arenaString = mp.getType().toPrettyString(mp.getMinTeamSize(), mp.getMaxTeamSize());
@@ -500,7 +496,8 @@ public class BAExecutor extends CustomCommandExecutor {
 		final String headerMsg = "&4Top {x} Gladiators in &6" +arenaString+ "&e " + teamSizeStr;
 		final String bodyMsg ="&e#{rank}&4 {name} - {wins}:{losses}&6[{ranking}]";
 
-		bti.printTopX(sender, x, mp.getMinTeamSize(), headerMsg, bodyMsg);
+		StatController sc = new StatController(mp);
+		sc.printTopX(sender, x, mp.getMinTeamSize(), headerMsg, bodyMsg);
 		return true;
 	}
 

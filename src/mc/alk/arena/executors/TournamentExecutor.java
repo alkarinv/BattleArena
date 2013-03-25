@@ -22,7 +22,7 @@ import org.bukkit.command.CommandSender;
 
 public class TournamentExecutor extends EventExecutor implements CommandExecutor {
 
-	public TournamentExecutor(TournamentEvent tourney) {
+	public TournamentExecutor() {
 		super();
 	}
 

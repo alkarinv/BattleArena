@@ -21,6 +21,7 @@ import mc.alk.arena.util.SerializerUtil;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
 
 public class Persistable {
@@ -44,6 +45,7 @@ public class Persistable {
 		yamlToObjects(object, object.getClass(),cs,onlyCheckClass);
 	}
 
+	@SuppressWarnings("unchecked")
 	private static void yamlToObjects(Object object, Class<?> objectClass, ConfigurationSection cs, Class<?> onlyCheckClass){
 		for(Field field : objectClass.getDeclaredFields()){
 			Class<?> type = field.getType();
@@ -117,7 +119,7 @@ public class Persistable {
 						Type genType = pt.getActualTypeArguments()[0];
 						List<Object> newList = new ArrayList<Object>();
 						for (Object o : list){
-							newList.add(yamlToObj((String)o,genType, cs));
+							newList.add(yamlToObj(o,genType, cs));
 						}
 						obj = newList;
 					} else if (Set.class.isAssignableFrom(type)){
@@ -128,7 +130,7 @@ public class Persistable {
 						Type genType = pt.getActualTypeArguments()[0];
 						Set<Object> newSet = new HashSet<Object>();
 						for (Object o : list){
-							newSet.add(yamlToObj((String)o,genType,cs));
+							newSet.add(yamlToObj(o,genType,cs));
 						}
 						obj = newSet;
 					} else if (Map.class.isAssignableFrom(type)){
@@ -142,15 +144,20 @@ public class Persistable {
 						Map<Object,Object> newMap = new HashMap<Object,Object>();
 						for (String key : keyset){
 							Object k = yamlToObj(key,keyType,cs);
-							Object v = yamlToObj(mapcs.get(key).toString(), mapType,cs);
+							Object v = yamlToObj(mapcs.get(key), mapType,cs);
 							if (k != null && v != null)
 								newMap.put(k,v);
 						}
 						obj = newMap;
 					} else if (ConfigurationSerializable.class.isAssignableFrom(type)){
-//						obj = cs.get // TODO
+						obj = ConfigurationSerialization.deserializeObject((Map<String,Object>)cs.get(name));
 					} else if (YamlSerializable.class.isAssignableFrom(type)){
-						obj = createYamlSerializable(type,cs.getConfigurationSection(name), cs.getString(name));
+						Object o = cs.get(name);
+						if (o != null && Map.class.isAssignableFrom(o.getClass())){
+							obj = createYamlSerializable(type,(Map<String,Object>)o, cs.getString(name));
+						} else {
+							obj = createYamlSerializable(type,null, cs.getString(name));
+						}
 					} else {
 						obj = yamlToObj(name,type,cs);
 					}
@@ -170,34 +177,41 @@ public class Persistable {
 	}
 
 
-	private static Object yamlToObj(String name, Type type,  ConfigurationSection cs) throws Exception {
+	@SuppressWarnings("unchecked")
+	private static Object yamlToObj(Object name, Type type,  ConfigurationSection cs) throws Exception {
 		if (type == Integer.class){
-			return new Integer(name);
+			return new Integer(name.toString());
 		} else if (type == Float.class){
-			return new Float(name);
+			return new Float(name.toString());
 		} else if (type == Double.class){
-			return new Double(name);
+			return new Double(name.toString());
 		} else if (type == Character.class){
-			return name.charAt(0);
+			return name.toString().charAt(0);
 		} else if (type == Byte.class){
-			return new Byte(name);
+			return new Byte(name.toString());
 		} else if (type == Short.class){
-			return new Short(name);
+			return new Short(name.toString());
 		} else if (type == Long.class){
-			return new Long(name);
+			return new Long(name.toString());
 		} else if (type == Boolean.class){
-			return new Boolean(name);
+			return new Boolean(name.toString());
 		} else if (type == String.class){
 			return name;
 		} else if (type == Location.class){
-			return SerializerUtil.getLocation(name);
+			return SerializerUtil.getLocation(name.toString());
 		} else if (type == ItemStack.class){
-			return InventoryUtil.parseItem(name);
+			return InventoryUtil.parseItem(name.toString());
+		} else if (YamlSerializable.class.isAssignableFrom((Class<?>) type)){
+			if (Map.class.isAssignableFrom(name.getClass())){
+				return createYamlSerializable((Class<?>)type, (Map<String,Object>)name, null);
+			} else {
+				return createYamlSerializable((Class<?>)type, null, (String)name);
+			}
 		}
 		throw new NotPersistableException("Type " + type +" is not persistable. Not loading values for "+name);
 	}
 
-	private static Object createYamlSerializable(Class<?> clazz, ConfigurationSection cs, String value) {
+	private static Object createYamlSerializable(Class<?> clazz, Map<String,Object> map, String value) {
 		if (clazz == null)
 			return null;
 		Class<?>[] args = {};
@@ -206,7 +220,7 @@ public class Persistable {
 			YamlSerializable ys = (YamlSerializable) constructor.newInstance((Object[])args);
 			if (ys == null)
 				return null;
-			ys = (YamlSerializable) ys.yamlToObject(cs, value);
+			ys = (YamlSerializable) ys.yamlToObject(map, value);
 			return ys;
 		} catch (NoSuchMethodException e){
 			System.err.println("If you have custom constructors for your YamlSerializable class you must also have a public default constructor");

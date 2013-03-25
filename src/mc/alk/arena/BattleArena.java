@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import mc.alk.arena.competition.events.TournamentEvent;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.BAEventController;
@@ -24,15 +23,12 @@ import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.BattleArenaDebugExecutor;
 import mc.alk.arena.executors.BattleArenaSchedulerExecutor;
 import mc.alk.arena.executors.CustomCommandExecutor;
-import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.TeamExecutor;
-import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.BAPluginListener;
 import mc.alk.arena.listeners.BASignListener;
 import mc.alk.arena.listeners.MatchListener;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
@@ -55,7 +51,6 @@ import mc.alk.arena.serializers.TeamHeadSerializer;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.FileUtil;
-import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.plugin.updater.FileUpdater;
 import mc.alk.plugin.updater.PluginUpdater;
@@ -186,9 +181,6 @@ public class BattleArena extends JavaPlugin {
 		final EventScheduler es = new EventScheduler();
 		getCommand("battleArenaScheduler").setExecutor(new BattleArenaSchedulerExecutor(es));
 
-		/// Create our events
-		createEvents();
-
 		/// Reload our scheduled events
 		eventSchedulerSerializer.setConfig(dir.getPath() +"/saves/scheduledEvents.yml");
 		eventSchedulerSerializer.addScheduler(es);
@@ -243,26 +235,6 @@ public class BattleArena extends JavaPlugin {
 		if (Defaults.AUTO_UPDATE)
 			PluginUpdater.updatePlugin(this);
 		FileLogger.saveAll();
-	}
-
-	private void createEvents() {
-		EventParams mp = null;
-
-		/// Tournament, multi round matches
-		mp = ParamController.getEventParamCopy("tourney");
-		if (mp != null){
-			TournamentEvent tourney = new TournamentEvent(mp);
-			EventController.addEvent(tourney);
-			try{
-				EventExecutor executor = new TournamentExecutor(tourney);
-				getCommand("tourney").setExecutor(executor);
-				EventController.addEventExecutor(tourney.getParams(), executor);
-			} catch (Exception e){
-				Log.err("command tourney not found");
-			}
-		} else {
-			Log.err("Tournament type not found");
-		}
 	}
 
 	/**

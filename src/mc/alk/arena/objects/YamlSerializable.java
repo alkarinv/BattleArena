@@ -1,9 +1,10 @@
 package mc.alk.arena.objects;
 
-import org.bukkit.configuration.ConfigurationSection;
+import java.util.Map;
+
 
 public interface YamlSerializable {
 
-	Object yamlToObject(ConfigurationSection cs, String value);
+	Object yamlToObject(Map<String,Object> map, String value);
 	Object objectToYaml();
 }

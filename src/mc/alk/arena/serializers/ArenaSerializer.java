@@ -138,13 +138,16 @@ public class ArenaSerializer {
 		Set<String> brokenArenas = new HashSet<String>();
 		Set<String> loadedArenas = new HashSet<String>();
 		for (String name : keys){
+
 			if (loadedArenas.contains(name) || brokenArenas.contains(name)) /// We already tried to load this arena
 				continue;
 			boolean broken = brokenKeys.contains(name);
 			String section = broken ? "brokenArenas" : "arenas";
 			if (arenaType != null){ /// Are we looking for 1 particular arena type to load
 				String path = section+"."+name;
-				if (!cs.getString(path+".type","").equalsIgnoreCase(arenaType.getName())){
+				String atype = cs.getString(path+".type",null);
+				if (atype == null || !ArenaType.isSame(atype,arenaType)){
+					/// Its not the same type.. so don't let it affect the sizes of the arena counts
 					if (brokenArenas.remove(name)){
 						oldBrokenSize--;
 					} else{

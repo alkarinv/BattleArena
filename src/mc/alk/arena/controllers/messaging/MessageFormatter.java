@@ -4,17 +4,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
+import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
+import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.serializers.MessageSerializer;
-import mc.alk.arena.util.BTInterface;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.tracker.objects.Stat;
-import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 
 
 /**
@@ -26,16 +25,16 @@ import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 public class MessageFormatter{
 	final String[] searchList;
 	final String[] replaceList;
-	final BTInterface bti;
+	final StatController sc;
+
 	final Set<MessageOption> ops;
 	final Message msg;
-	HashMap<Integer,Stat> stats = null;
+	HashMap<Integer,ArenaStat> stats = null;
 	final HashMap<Integer,TeamNames> tns;
 	final MatchParams mp;
 	final String typeName;
 	final MessageSerializer impl;
 	int commonIndex = 0, teamIndex = 0, curIndex = 0;
-	//	final String matchOrEvent;
 
 	public MessageFormatter(MessageSerializer impl, MatchParams mp, int size, int nTeams, Message message, Set<MessageOption> ops){
 		searchList = new String[size];
@@ -43,19 +42,17 @@ public class MessageFormatter{
 		this.msg = message;
 		this.ops = ops;
 		tns = new HashMap<Integer,TeamNames>(nTeams);
-		//		matchOrEvent = isMatch ? "match" : "event";
 		this.mp = mp;
 		typeName = mp.getType().getName();
-		bti = new BTInterface(mp);
-		if (bti.isValid()){
-			stats = new HashMap<Integer,Stat>();
-		}
+		sc = new StatController(mp);
+		stats = new HashMap<Integer,ArenaStat>();
 		this.impl = impl;
 	}
 
 	public void formatCommonOptions(Collection<Team> teams){
 		formatCommonOptions(teams,null);
 	}
+
 	public void formatCommonOptions(Collection<Team> teams, Integer seconds){
 		int i = 0;
 		Team t1 =null,t2 = null;
@@ -139,7 +136,6 @@ public class MessageFormatter{
 		commonIndex = i;
 	}
 
-	@SuppressWarnings("deprecation")
 	public void formatTeamOptions(Team team, boolean isWinner){
 
 		int i = commonIndex;
@@ -152,10 +148,10 @@ public class MessageFormatter{
 			case TEAM: replaceList[i] = tn.name;break;
 			case TEAMSHORT: replaceList[i] = tn.shortName;break;
 			case TEAMLONG: replaceList[i] = tn.longName;break;
-			case WINS: replaceList[i] = bti.isValid() ? getStat(bti,stats,team).getWins()+"" : "0"; break;
-			case LOSSES: replaceList[i] = bti.isValid() ? getStat(bti,stats,team).getLosses()+"" : "0"; break;
-			case RANKING: replaceList[i] = bti.isValid() ? getStat(bti,stats,team).getRanking()+"" : "0"; break;
-			case RATING: replaceList[i] = bti.isValid() ? getStat(bti,stats,team).getRanking()+"" : "0"; break;
+			case WINS: replaceList[i] = getStat(team).getWins()+""; break;
+			case LOSSES: replaceList[i] = getStat(team).getLosses()+""; break;
+			case RANKING: replaceList[i] = getStat(team).getRanking()+"" ; break;
+			case RATING: replaceList[i] = getStat(team).getRating()+"" ; break;
 			default:
 				continue;
 			}
@@ -168,7 +164,7 @@ public class MessageFormatter{
 
 	public void formatTwoTeamsOptions(Team t, Collection<Team> teams){
 		Team oteam = null;
-		Stat st1 = null;
+		ArenaStat st1 = null;
 		int i = teamIndex;
 		for (MessageOption mop : ops){
 			if (mop == null)
@@ -181,42 +177,32 @@ public class MessageFormatter{
 					repl = oteam.getDisplayName();
 				break;
 			case WINSAGAINST:
-				if (bti.isValid()){
-					try{
-						st1 = getStat(bti,stats,t);
-						oteam = getOtherTeam(t,teams);
-						if (oteam != null){
-							Stat st2 = getStat(bti,stats,oteam);
-							VersusRecord vr = st1.getRecordVersus(st2);
-							repl = vr.wins +"";
-						} else {
-							repl = "0";
-						}
-					} catch(Exception e){
-						e.printStackTrace();
+				try{
+					st1 = getStat(t);
+					oteam = getOtherTeam(t,teams);
+					if (oteam != null){
+						ArenaStat st2 = getStat(oteam);
+						repl = st1.getWinsVersus(st2)+"";
+					} else {
+						repl = "0";
 					}
-				} else{
-					repl = "0";
+				} catch(Exception e){
+					e.printStackTrace();
 				}
 
 				break;
 			case LOSSESAGAINST:
-				if (bti.isValid()){
-					try{
-						st1 = getStat(bti,stats,t);
-						oteam = getOtherTeam(t,teams);
-						if (oteam != null){
-							Stat st2 = getStat(bti,stats,oteam);
-							VersusRecord vr = st1.getRecordVersus(st2);
-							repl = vr.losses +"";
-						} else {
-							repl = "0";
-						}
-					} catch(Exception e){
-						e.printStackTrace();
+				try{
+					st1 = getStat(t);
+					oteam = getOtherTeam(t,teams);
+					if (oteam != null){
+						ArenaStat st2 = getStat(oteam);
+						repl = st1.getLossesVersus(st2) +"";
+					} else {
+						repl = "0";
 					}
-				} else{
-					repl = "0";
+				} catch(Exception e){
+					e.printStackTrace();
 				}
 				break;
 			default:
@@ -339,16 +325,15 @@ public class MessageFormatter{
 	}
 
 
-	private Stat getStat(BTInterface bti, HashMap<Integer, Stat> stats, Team t) {
+	private ArenaStat getStat(Team t) {
 		if (stats.containsKey(t.getName()))
 			return stats.get(t.getName());
-		Stat st = bti.loadRecord(t);
+		ArenaStat st = sc.loadRecord(t);
 		stats.put(t.getId(), st);
 		return st;
 	}
 
 
-	@SuppressWarnings("deprecation")
 	private String formatTeamName(Message message, Team t) {
 		if (t== null)
 			return null;
@@ -365,9 +350,10 @@ public class MessageFormatter{
 			String repl = null;
 			switch(mop){
 			case NAME: repl = t.getDisplayName(); break;
-			case WINS: repl = bti.isValid() ? getStat(bti,stats,t).getWins()+"" : "0"; break;
-			case LOSSES: repl = bti.isValid() ? getStat(bti,stats,t).getLosses()+"" : "0"; break;
-			case RANKING: repl = bti.isValid() ? getStat(bti,stats,t).getRanking()+"" : "0"; break;
+			case WINS: repl = getStat(t).getWins()+""; break;
+			case LOSSES: repl = getStat(t).getLosses()+"" ; break;
+			case RANKING: repl = getStat(t).getRanking()+""; break;
+			case RATING: repl = getStat(t).getRating()+""; break;
 			default:
 				continue;
 			}

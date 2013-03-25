@@ -22,6 +22,9 @@ public class ParamController {
 		types.put(matchParams.getCommand(), matchParams);
 	}
 
+	public static void addAlias(String alias, MatchParams matchParams) {
+		types.put(alias, matchParams);
+	}
 	public static void removeMatchType(MatchParams matchParams) {
 		types.remove(matchParams.getName());
 		types.remove(matchParams.getCommand());

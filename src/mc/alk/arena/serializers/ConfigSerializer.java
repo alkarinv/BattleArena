@@ -52,16 +52,22 @@ import org.bukkit.potion.PotionEffect;
  *
  */
 public class ConfigSerializer extends BaseConfig{
-
+	final Plugin plugin;
 	final String name;
 
-	public ConfigSerializer(File configFile, String name) {
+	public ConfigSerializer(Plugin plugin, File configFile, String name) {
 		this.setConfig(configFile);
 		this.name = name;
+		this.plugin = plugin;
 	}
 
 
-	public MatchParams loadType(Plugin plugin) throws ConfigException, InvalidOptionException {
+	public MatchParams loadType() throws ConfigException, InvalidOptionException {
+		return ConfigSerializer.loadType(plugin, this, name);
+	}
+
+	public static MatchParams loadType(Plugin plugin, BaseConfig config, String name)
+			throws ConfigException, InvalidOptionException {
 		ConfigurationSection cs = config.getConfigurationSection(name);
 
 		if (cs == null){
@@ -70,20 +76,7 @@ public class ConfigSerializer extends BaseConfig{
 		/// Set up match options.. specifying defaults where not specified
 		/// Set Arena Type
 		ArenaType at;
-		if (cs.contains("arenaType") || cs.contains("type")){
-			String type = cs.contains("type") ? cs.getString("type") : cs.getString("arenaType");
-			at = ArenaType.fromString(type);
-			if (at == null && type != null && !type.isEmpty()){ /// User is trying to make a custom type... let them
-				Class<? extends Arena> arenaClass = ArenaType.getArenaClass(cs.getString("arenaClass","Arena"));
-				at = ArenaType.register(type, arenaClass, plugin);
-			}
-			if (at == null)
-				throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
-		} else {
-			at = ArenaType.fromString(cs.getName()); /// Get it from the configuration section name
-		}
-		if (at == null)
-			at = ArenaType.fromString("Arena");
+		at = getArenaType(plugin, cs);
 		if (at == null && !name.equalsIgnoreCase("tourney"))
 			throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
 
@@ -219,6 +212,26 @@ public class ConfigSerializer extends BaseConfig{
 
 		Log.info(plugin.getName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none")+",join="+pi.getJoinType());
 		return pi;
+	}
+
+	public static ArenaType getArenaType(Plugin plugin, ConfigurationSection cs) throws ConfigException {
+		ArenaType at;
+		if (cs.contains("arenaType") || cs.contains("type")){
+			String type = cs.contains("type") ? cs.getString("type") : cs.getString("arenaType");
+			at = ArenaType.fromString(type);
+			if (at == null && type != null && !type.isEmpty()){ /// User is trying to make a custom type... let them
+				Class<? extends Arena> arenaClass = ArenaType.getArenaClass(cs.getString("arenaClass","Arena"));
+				at = ArenaType.register(type, arenaClass, plugin);
+			}
+			if (at == null)
+				throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
+		} else {
+			at = ArenaType.fromString(cs.getName()); /// Get it from the configuration section name
+		}
+		if (at == null){
+			at = ArenaType.register(cs.getName(), Arena.class, plugin);
+		}
+		return at;
 	}
 
 	public static TransitionOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, IllegalArgumentException {
@@ -517,7 +530,9 @@ public class ConfigSerializer extends BaseConfig{
 	}
 
 	public static JoinType getJoinType(ConfigurationSection cs) {
-		boolean isMatch = !cs.getBoolean("isEvent",true);
+		if (cs.getName().equalsIgnoreCase("Tourney"))
+			return JoinType.JOINPHASE;
+		boolean isMatch = !cs.getBoolean("isEvent",false);
 		isMatch = cs.getBoolean("queue",isMatch);
 		if (cs.contains("joinType")){
 			String type = cs.getString("joinType");
@@ -529,6 +544,5 @@ public class ConfigSerializer extends BaseConfig{
 		}
 		return isMatch ? JoinType.QUEUE : JoinType.JOINPHASE;
 	}
-
 
 }

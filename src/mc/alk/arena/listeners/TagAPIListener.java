@@ -46,6 +46,10 @@ public enum TagAPIListener implements Listener {
 		} catch (ClassCastException e){
 			/* For the plugin CommandSigns which use a "ProxyPlayer" which can't be cast to
 			 * a CraftPlayer, ignore the error */
+		} catch (NoClassDefFoundError e){
+			/* TagAPI has changed things around, Let them know of the problem
+			 * But lets not crash BattleArena b/c of it */
+			e.printStackTrace();
 		}
 	}
 

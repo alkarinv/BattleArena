@@ -7,7 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.CaseInsensitiveMap;
 
 import org.bukkit.plugin.Plugin;
@@ -198,6 +200,10 @@ public class ArenaType implements Comparable<ArenaType>{
 			return;
 		types.put(alias, at);
 		classes.put(alias, getArenaClass(at));
+		MatchParams mp = ParamController.getMatchParams(type);
+		if (mp == null)
+			return;
+		ParamController.addAlias(alias, mp);
 	}
 
 
@@ -225,5 +231,9 @@ public class ArenaType implements Comparable<ArenaType>{
 
 	public static boolean contains(String arenaType) {
 		return types.containsKey(arenaType);
+	}
+	public static boolean isSame(String checkType, ArenaType arenaType) {
+		ArenaType at = types.get(checkType);
+		return at == null ? false : at.equals(arenaType);
 	}
 }

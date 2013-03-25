@@ -8,11 +8,18 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.events.TournamentEvent;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.OptionSetController;
+import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.executors.EventExecutor;
+import mc.alk.arena.executors.TournamentExecutor;
+import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -53,12 +60,16 @@ public class BAConfigSerializer extends BaseConfig{
 				HeroesController.addDisabledCommands(disabled);
 			}
 		}
+//		/// Make sure the tourney is an event type
+//		MatchParams mp = ParamController.getMatchParams("Tourney");
+//		if (mp != null && !(mp instanceof EventParams)){
+//			ParamController.addMatchType(new EventParams(mp));}
 	}
 
 	public void loadCompetitions(){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
 		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"Arena","Skirmish","Colosseum","Battleground"}));
-		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"FreeForAll","DeathMatch","Tourney"}));
+		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"FreeForAll","DeathMatch"}));
 		Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {}));
 
 		Set<String> allTypes = new HashSet<String>(defaultMatchTypes);
@@ -66,12 +77,11 @@ public class BAConfigSerializer extends BaseConfig{
 		JavaPlugin plugin = BattleArena.getSelf();
 
 		APIRegistrationController api = new APIRegistrationController();
-
-		/// For legacy reasons
-		ArenaType.register("ffa", Arena.class, BattleArena.getSelf());
+		ArenaType.register("Tourney", Arena.class, plugin);
 
 		File dir = plugin.getDataFolder();
 		File compDir = new File(dir+"/competitions");
+
 		/// Load all default types
 		for (String comp : allTypes){
 			/// For some reason this next line is almost directly in APIRegistration and works
@@ -79,14 +89,46 @@ public class BAConfigSerializer extends BaseConfig{
 			/// ONLY doesnt work in Windows... odd...
 			FileUtil.load(BattleArena.getSelf().getClass(),dir.getPath()+"/competitions/"+comp+"Config.yml",
 					"/default_files/competitions/"+comp+"Config.yml");
-
 			String capComp = StringUtils.capitalize(comp);
+
 			api.registerCompetition(plugin, capComp, capComp, Arena.class, null,
 					new File(compDir+"/"+capComp+"Config.yml"),
-					new File(dir+"/"+comp+"Messages.yml"),
+					new File(compDir+"/"+capComp+"Messages.yml"),
 					new File("/default_files/competitions/"+capComp+"Config.yml"),
 					new File(dir.getPath()+"/saves/arenas.yml"));
 			exclude.add(capComp+"Config.yml");
+		}
+
+		/// These commands arent specified in the config, so manually add.
+		ArenaType.addAliasForType("FreeForAll","ffa");
+		ArenaType.addAliasForType("DeathMatch","dm");
+		ArenaType.addAliasForType("Colosseum","col");
+		ArenaType.addAliasForType("Colosseum","Colliseum");
+
+		/// And lastly.. add our tournament which is different than the rest
+		createTournament(plugin, dir);
+	}
+
+	private void createTournament(JavaPlugin plugin, File dir) {
+		File cf = FileUtil.load(BattleArena.getSelf().getClass(),dir.getPath()+"/competitions/TourneyConfig.yml",
+				"/default_files/competitions/TourneyConfig.yml");
+		ConfigSerializer cs = new ConfigSerializer(plugin,cf, "Tourney");
+		MatchParams mp;
+		try {
+			mp = cs.loadType();
+			EventParams ep = new EventParams(mp);
+			TournamentEvent tourney = new TournamentEvent(ep);
+			EventController.addEvent(tourney);
+			try{
+				EventExecutor executor = new TournamentExecutor();
+				BattleArena.getSelf().getCommand("tourney").setExecutor(executor);
+				EventController.addEventExecutor(tourney.getParams(), executor);
+				ParamController.addMatchType(ep);
+			} catch (Exception e){
+				Log.err("Tourney could not be added");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

@@ -1,8 +1,8 @@
 package mc.alk.arena.objects.regions;
 
-import mc.alk.arena.controllers.PylamoController;
+import java.util.Map;
 
-import org.bukkit.configuration.ConfigurationSection;
+import mc.alk.arena.controllers.PylamoController;
 
 public class PylamoRegion implements ArenaRegion{
 	String regionName;
@@ -14,7 +14,7 @@ public class PylamoRegion implements ArenaRegion{
 	}
 
 	@Override
-	public Object yamlToObject(ConfigurationSection cs, String value) {
+	public Object yamlToObject(Map<String,Object> map, String value) {
 		regionName = value;
 		return new PylamoRegion(regionName);
 	}

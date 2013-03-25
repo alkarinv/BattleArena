@@ -7,6 +7,8 @@ Skirmish:
     victoryCondition: LastManStanding
     nTeams: 2
     teamSize: 1
+    defaults:
+        options: [woolTeams]
     preReqs:
         options: []
     onEnter:
@@ -14,7 +16,7 @@ Skirmish:
     onLeave:
         options: [restoreGamemode]
     onStart:
-        options: [teleportIn, pvpOn, blockBreakOff, woolTeams]
+        options: [teleportIn, pvpOn, blockBreakOff]
     onSpawn:
         options: []
     onDeath:

@@ -1,10 +1,11 @@
 package mc.alk.arena.objects.regions;
 
+import java.util.Map;
+
 import mc.alk.arena.controllers.WorldGuardController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
 
 public class WorldGuardRegion implements ArenaRegion{
 	protected String regionName;
@@ -21,7 +22,7 @@ public class WorldGuardRegion implements ArenaRegion{
 	}
 
 	@Override
-	public Object yamlToObject(ConfigurationSection cs, String value) {
+	public Object yamlToObject(Map<String,Object> map, String value) {
 		if (value == null)
 			return null;
 		String split[] = value.split(",");

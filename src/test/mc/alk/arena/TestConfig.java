@@ -34,8 +34,8 @@ public class TestConfig extends TestCase{
 //		ConfigurationSection cs = bc.getConfigurationSection(node);
 		MatchParams mp = null;
 		try {
-			ConfigSerializer config = new ConfigSerializer(bc.getFile(),node);
-			mp = config.loadType(plugin);
+			ConfigSerializer config = new ConfigSerializer(plugin, bc.getFile(),node);
+			mp = config.loadType();
 //			mp = ConfigSerializer.setTypeConfig(plugin, "arena", cs);
 		} catch (ConfigException e) {
 			e.printStackTrace();
@@ -51,8 +51,8 @@ public class TestConfig extends TestCase{
 		String comp = "Arena";
 		MatchParams mp = loadParams(comp);
 		assertNotNull(mp);
-		ConfigSerializer cs = new ConfigSerializer(new File("test_files/competitions/"+comp+"Config.yml"),
-				comp);
+		ConfigSerializer cs = new ConfigSerializer(plugin,
+				new File("test_files/competitions/"+comp+"Config.yml"),comp);
 		RegisteredCompetition rc = new RegisteredCompetition(plugin, comp);
 		CompetitionController.addRegisteredCompetition(rc);
 //		rc.setSerializer(cs);
