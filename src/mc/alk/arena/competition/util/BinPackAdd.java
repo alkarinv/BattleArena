@@ -51,14 +51,20 @@ public class BinPackAdd extends TeamJoinHandler {
 				}
 			}
 		}
+
 		/// So we couldnt add them to an existing team
 		/// Can we add them to a new team
 		if (teams.size() < maxTeams){
 			Team ct = TeamFactory.createTeam(clazz);
 			ct.addPlayers(team.getPlayers());
-			pickupTeams.add(ct);
-			TeamJoinResult ar = new TeamJoinResult(TeamJoinStatus.WAITING_FOR_PLAYERS, minTeamSize - ct.size(),ct);
-			return ar;
+			if (ct.size() == maxTeamSize){
+				addTeam(ct);
+				return new TeamJoinResult(TeamJoinStatus.ADDED, minTeamSize - ct.size(),ct);
+			} else {
+				pickupTeams.add(ct);
+				TeamJoinResult ar = new TeamJoinResult(TeamJoinStatus.WAITING_FOR_PLAYERS, minTeamSize - ct.size(),ct);
+				return ar;
+			}
 		} else {
 			/// sorry peeps.. full up
 			return CANTFIT;

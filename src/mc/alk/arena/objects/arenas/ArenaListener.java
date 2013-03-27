@@ -1,5 +1,4 @@
-package mc.alk.arena.listeners;
-
+package mc.alk.arena.objects.arenas;
 
 public interface ArenaListener {
 

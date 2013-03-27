@@ -60,15 +60,12 @@ public class BAConfigSerializer extends BaseConfig{
 				HeroesController.addDisabledCommands(disabled);
 			}
 		}
-//		/// Make sure the tourney is an event type
-//		MatchParams mp = ParamController.getMatchParams("Tourney");
-//		if (mp != null && !(mp instanceof EventParams)){
-//			ParamController.addMatchType(new EventParams(mp));}
 	}
 
 	public void loadCompetitions(){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
-		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(new String[] {"Arena","Skirmish","Colosseum","Battleground"}));
+		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(
+				new String[] {"Arena","Skirmish","Colosseum","Battleground", "Duel"}));
 		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"FreeForAll","DeathMatch"}));
 		Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {}));
 
@@ -207,11 +204,11 @@ public class BAConfigSerializer extends BaseConfig{
 			tops.addOption(TransitionOption.STOREHEALTH);
 			tops.addOption(TransitionOption.STOREHUNGER);
 			tops.addOption(TransitionOption.STOREMAGIC);
-			//			tops.addOption(TransitionOption.CLEARINVENTORYONFIRSTENTER);
 			tops.addOption(TransitionOption.CLEARINVENTORY);
 			tops.addOption(TransitionOption.CLEAREXPERIENCE);
 			tops.addOption(TransitionOption.STOREITEMS);
 			tops.addOption(TransitionOption.DEENCHANT);
+			tops.addOption(TransitionOption.FLIGHTOFF);
 			OptionSetController.addOptionSet("storeAll", tops);
 
 			tops = new TransitionOptions();

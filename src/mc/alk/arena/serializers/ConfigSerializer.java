@@ -144,13 +144,8 @@ public class ConfigSerializer extends BaseConfig{
 		} else {
 			pi.setNLives(Integer.valueOf(nLives));
 		}
-
+		pi.setDuelOnly(cs.getBoolean("duelOnly", false));
 		pi.setNConcurrentCompetitions(cs.getInt("nConcurrentCompetitions",Integer.MAX_VALUE));
-
-//		APIRegistrationController api = new APIRegistrationController();
-//		if (cs.getBoolean("customMessages", false) || api.hasMessageFile(plugin, pi.getName(), plugin.getDataFolder())){
-//			api.createMessageSerializer(plugin, pi.getName(), plugin.getDataFolder());
-//		}
 
 		if (cs.contains("announcements")){
 			AnnouncementOptions an = new AnnouncementOptions();
@@ -290,6 +285,9 @@ public class ConfigSerializer extends BaseConfig{
 					break;
 				case INVULNERABLE:
 					options.put(to,Integer.valueOf(value)*20); // multiply by number of ticks per second
+					break;
+				case FLIGHTSPEED:
+					options.put(to,Float.valueOf(value));
 					break;
 				case GAMEMODE:
 					GameMode gm = null;

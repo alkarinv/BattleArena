@@ -105,6 +105,9 @@ public class InventoryUtil {
 		if (iname.contains("arth")) return Enchantment.DAMAGE_ARTHROPODS;
 		if (iname.contains("knockback")) return Enchantment.KNOCKBACK;
 		if (iname.contains("loot")) return Enchantment.LOOT_BONUS_MOBS;
+		if (iname.contains("lootmobs")) return Enchantment.LOOT_BONUS_MOBS;
+		if (iname.contains("fortune")) return Enchantment.LOOT_BONUS_BLOCKS;;
+		if (iname.contains("lootblocks")) return Enchantment.LOOT_BONUS_BLOCKS;
 		if (iname.contains("dig")) return Enchantment.DIG_SPEED;
 		if (iname.contains("eff")) return Enchantment.DIG_SPEED;
 		if (iname.contains("silk")) return Enchantment.SILK_TOUCH;
@@ -566,7 +569,8 @@ public class InventoryUtil {
 
 	@SuppressWarnings("deprecation")
 	public static void clearInventory(Player p) {
-		if(Defaults.DEBUG_STORAGE) Log.info("Clearing inventory of " + p.getName());
+		if(Defaults.DEBUG_STORAGE) Log.info("Clearing inventory of " + p.getName() +" o=" +
+				p.isOnline() +", d="+ p.isDead() +"   inv=" + p.getInventory());
 		try{
 			PlayerInventory inv = p.getInventory();
 			closeInventory(p);
@@ -784,7 +788,12 @@ public class InventoryUtil {
 			if (arg1 == null)
 				return -1;
 			Integer i = arg0.getTypeId();
-			int c = i.compareTo(arg1.getTypeId());
+			Integer i2 = arg1.getTypeId();
+			if (i== Material.AIR.getId() && i2 == Material.AIR.getId()) return 0;
+			if (i == Material.AIR.getId()) return 1;
+			if (i2 == Material.AIR.getId()) return -1;
+
+			int c = i.compareTo(i2);
 			if (c!= 0)
 				return c;
 			Short s= arg0.getDurability();
@@ -804,9 +813,9 @@ public class InventoryUtil {
 			for (Enchantment e: e1.keySet()){
 				if (!e2.containsKey(e))
 					return -1;
-				Integer i1 = e1.get(e);
-				Integer i2 = e2.get(e);
-				c = i1.compareTo(i2);
+				i = e1.get(e);
+				i2 = e2.get(e);
+				c = i.compareTo(i2);
 				if (c != 0)
 					return c;
 			}
@@ -859,7 +868,7 @@ public class InventoryUtil {
 				dura2 += is.getDurability()*is.getAmount();
 			}
 		}
-		//		System.out.println("nitems1  " + nitems1 +":" + nitems2+"      " + dura1 +"  : " + dura2);
+		//				System.out.println("nitems1  " + nitems1 +":" + nitems2+"      " + dura1 +"  : " + dura2);
 		if (nitems1 != nitems2 || dura1 != dura2)
 			return false;
 
@@ -891,7 +900,6 @@ public class InventoryUtil {
 			stacks.add(is);
 		}
 		items = stacks;
-
 		Collections.sort(items, new ItemComparator());
 		Collections.sort(pitems, new ItemComparator());
 		int idx = 0;
@@ -900,7 +908,7 @@ public class InventoryUtil {
 		while (idx< items.size() && idx<pitems.size()){
 			is1 = items.get(idx);
 			is2 = pitems.get(idx);
-			//			System.out.println(idx  +" : " + is1 +"  " + is2);
+			//						System.out.println(idx  +" : " + is1 +"  " + is2);
 			if ((is1==null || is1.getType() == Material.AIR) && (is2 == null || is2.getType() == Material.AIR))
 				return true;
 			if ((is1==null || is1.getType() == Material.AIR) || (is2 == null || is2.getType() == Material.AIR))

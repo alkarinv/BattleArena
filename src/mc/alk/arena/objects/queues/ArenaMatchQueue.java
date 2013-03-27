@@ -25,11 +25,13 @@ import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.messaging.MatchMessageImpl;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.JoinOptions.JoinOption;
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.pairs.QueueResult.TimeStatus;
@@ -274,7 +276,6 @@ public class ArenaMatchQueue {
 					try {
 						MatchParams playerMatchAndArenaParams = new MatchParams(newParams);
 						qr.neededPlayers = playerMatchAndArenaParams.getMaxPlayers();
-
 //						if (!forceStart) /// sorry team, you don't take precedence anymore due to forcestart
 //							playerMatchAndArenaParams.intersect(qomp);
 						findMatch(qr, playerMatchAndArenaParams,a,tq, forceStart);
@@ -396,7 +397,8 @@ public class ArenaMatchQueue {
 			}
 		}
 		final Match m = new ArenaMatch(a, params);
-		if (m.hasWaitroom() && !tjh.isFull()){
+		if (m.getParams().getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN) ||
+				m.hasWaitroom() && !tjh.isFull()){
 			try {
 				m.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(params, m));
 			} catch (NeverWouldJoinException e) {

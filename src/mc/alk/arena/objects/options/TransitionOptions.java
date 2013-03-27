@@ -117,6 +117,11 @@ public class TransitionOptions {
 		return o == null ? null : (Double) o;
 	}
 
+	public Float getFloat(TransitionOption option){
+		final Object o = options.get(option);
+		return o == null ? null : (Float) o;
+	}
+
 	public String getString(TransitionOption option){
 		final Object o = options.get(option);
 		return o == null ? null : (String) o;
@@ -132,6 +137,7 @@ public class TransitionOptions {
 		Double d = getDouble(TransitionOption.MONEY);
 		return d != null && d > 0;
 	}
+	public Float getFlightSpeed(){return getFloat(TransitionOption.FLIGHTSPEED);}
 	public Integer getInvulnerable(){return getInt(TransitionOption.INVULNERABLE);}
 	public Integer getExperience(){return getInt(TransitionOption.EXPERIENCE);}
 	public boolean hasExperience(){return options.containsKey(TransitionOption.EXPERIENCE);}
@@ -330,7 +336,8 @@ public class TransitionOptions {
 		return options.containsKey(TransitionOption.RESPAWN);
 	}
 	public boolean randomRespawn() {
-		return options.containsKey(TransitionOption.RANDOMRESPAWN);
+		return options.containsKey(TransitionOption.RANDOMRESPAWN) ||
+				options.containsKey(TransitionOption.RANDOMSPAWN);
 	}
 
 	public Boolean deEnchant() {

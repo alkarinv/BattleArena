@@ -1,6 +1,8 @@
 package mc.alk.arena.objects.victoryconditions;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.TreeMap;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.teams.Team;
@@ -24,8 +26,14 @@ public class HighestKills extends VictoryCondition implements DefinesLeaderRanki
 	}
 
 	@Override
-	public List<Team> getRankings() {
+	public TreeMap<Integer,Collection<Team>> getRanks() {
 		return VictoryUtil.getRankingByHighestKills(match.getTeams());
+	}
+
+	@Override
+	@Deprecated
+	public List<Team> getRankings() {
+		return VictoryUtil.getRanksByHighestKills(match.getTeams());
 	}
 
 	@Override

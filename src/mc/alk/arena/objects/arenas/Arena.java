@@ -12,7 +12,6 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.SpawnController;
 import mc.alk.arena.controllers.WorldGuardController;
-import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;

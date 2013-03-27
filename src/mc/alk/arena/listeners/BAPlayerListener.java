@@ -23,7 +23,6 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.Util;
-import mc.alk.virtualPlayer.VirtualPlayers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -184,11 +183,11 @@ public class BAPlayerListener implements Listener  {
 		}
 
 		/// Exp restore
-		if (expRestore.containsKey(p.getName())){
-			final int exp = expRestore.remove(p.getName());
+		if (expRestore.containsKey(name)){
+			final int exp = expRestore.remove(name);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
-					Player pl = Bukkit.getPlayerExact(name);
+					Player pl = ServerUtil.findPlayerExact(name);
 					if (pl != null){
 						pl.giveExp(exp);}
 				}
@@ -196,11 +195,11 @@ public class BAPlayerListener implements Listener  {
 		}
 
 		/// Health restore
-		if (healthRestore.containsKey(p.getName())){
-			final int val = healthRestore.remove(p.getName());
+		if (healthRestore.containsKey(name)){
+			final int val = healthRestore.remove(name);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
-					Player pl = Bukkit.getPlayerExact(name);
+					Player pl = ServerUtil.findPlayerExact(name);
 					if (pl != null){
 						BattleArena.toArenaPlayer(pl).setHealth(val);}
 				}
@@ -208,11 +207,11 @@ public class BAPlayerListener implements Listener  {
 		}
 
 		/// Hunger restore
-		if (hungerRestore.containsKey(p.getName())){
-			final int val = hungerRestore.remove(p.getName());
+		if (hungerRestore.containsKey(name)){
+			final int val = hungerRestore.remove(name);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
-					Player pl = Bukkit.getPlayerExact(name);
+					Player pl = ServerUtil.findPlayerExact(name);
 					if (pl != null){
 						BattleArena.toArenaPlayer(pl).setFoodLevel(val);}
 				}
@@ -220,11 +219,11 @@ public class BAPlayerListener implements Listener  {
 		}
 
 		/// Magic restore
-		if (magicRestore.containsKey(p.getName())){
-			final int val = magicRestore.remove(p.getName());
+		if (magicRestore.containsKey(name)){
+			final int val = magicRestore.remove(name);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
-					Player pl = Bukkit.getPlayerExact(name);
+					Player pl = ServerUtil.findPlayerExact(name);
 					if (pl != null){
 						HeroesController.setMagicLevel(pl, val);
 					}
@@ -233,15 +232,13 @@ public class BAPlayerListener implements Listener  {
 		}
 
 		/// Restore Items
-		if (itemRestore.containsKey(p.getName())){
+		if (itemRestore.containsKey(name)){
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
-					Player pl;
-					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);}
-					else {pl = Bukkit.getPlayer(name);}
-					//					System.out.println("### restoring items to " + name +"   pl = " + pl);
+					Player pl = ServerUtil.findPlayerExact(name);
+					if (Defaults.DEBUG_STORAGE) System.out.println("### restoring items to " + name +"   pl = " + pl);
 					if (pl != null){
-						PInv pinv = itemRestore.remove(pl.getName());
+						PInv pinv = itemRestore.remove(name);
 						ArenaPlayer ap = PlayerController.toArenaPlayer(pl);
 						PlayerStoreController.setInventory(ap, pinv);
 					}
@@ -250,14 +247,12 @@ public class BAPlayerListener implements Listener  {
 		}
 
 		/// Restore Match Items
-		if (matchItemRestore.containsKey(p.getName())){
+		if (matchItemRestore.containsKey(name)){
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
-					Player pl;
-					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);}
-					else {pl = Bukkit.getPlayer(name);}
+					Player pl = ServerUtil.findPlayerExact(name);
 					if (pl != null){
-						PInv pinv = matchItemRestore.remove(pl.getName());
+						PInv pinv = matchItemRestore.remove(name);
 						ArenaPlayer ap = PlayerController.toArenaPlayer(pl);
 						PlayerStoreController.setInventory(ap, pinv);
 					}
@@ -269,11 +264,9 @@ public class BAPlayerListener implements Listener  {
 		if (itemRemove.containsKey(p.getName())){
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
-					Player pl;
-					if (Defaults.DEBUG_VIRTUAL){ pl = VirtualPlayers.getPlayer(name);}
-					else {pl = Bukkit.getPlayer(name);}
+					Player pl = ServerUtil.findPlayerExact(name);
 					if (pl != null){
-						List<ItemStack> items = itemRemove.remove(pl.getName());
+						List<ItemStack> items = itemRemove.remove(name);
 						PlayerStoreController.removeItems(BattleArena.toArenaPlayer(pl), items);
 					}
 				}

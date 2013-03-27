@@ -172,7 +172,7 @@ public class ReservedArenaEvent extends Event {
 
 	@Override
 	public boolean canJoin() {
-		return super.canJoin() && isOpen();
+		return (super.canJoin() && isOpen()) || (arenaMatch != null && arenaMatch.canStillJoin());
 	}
 
 	@Override

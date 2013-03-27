@@ -154,8 +154,6 @@ public class ArenaMatch extends Match {
 				}
 			}, 15*20L);
 			deathTimer.put(target.getName(), timer);
-
-
 		}
 	}
 
@@ -248,11 +246,11 @@ public class ArenaMatch extends Match {
 					if (keepsInventory){
 						psc.restoreMatchItems(p);
 					}
-					try{
-						if (woolTeams){
+					if (woolTeams){
+						try{
 							TeamUtil.setTeamHead(teams.indexOf(t), p);
-						}
-					} catch(Exception e){}
+						} catch(Exception e){}
+					}
 				}
 			});
 		} else { /// This player is now out of the system now that we have given the ondeath effects

@@ -6,7 +6,7 @@ public interface TeamHandler {
 
 	/**
 	 * Can this person exit out of this object gracefully(can include death)
-	 * 
+	 *
 	 * @param p
 	 * @return
 	 */

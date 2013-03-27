@@ -77,8 +77,10 @@ public class PlayerUtil {
 	}
 
 	public static void setGameMode(Player p, GameMode gameMode) {
-		PermissionsUtil.givePlayerInventoryPerms(p);
-		p.setGameMode(gameMode);
+		if (p.getGameMode() != gameMode){
+			PermissionsUtil.givePlayerInventoryPerms(p);
+			p.setGameMode(gameMode);
+		}
 	}
 
 	public static void doCommands(Player p, List<CommandLineString> doCommands) {
@@ -94,6 +96,14 @@ public class PlayerUtil {
 			}
 
 		}
+	}
+
+	public static void setFlight(Player p, boolean shouldFly) {
+		p.setFlying(shouldFly);
+	}
+
+	public static void setFlightSpeed(Player p, Float flightSpeed) {
+		p.setFlySpeed(flightSpeed);
 	}
 
 }

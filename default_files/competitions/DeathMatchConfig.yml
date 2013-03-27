@@ -17,7 +17,7 @@ DeathMatch:
     onLeave:
         options: [restoreAll]
     onJoin:
-        options: [teleportIn]
+        options: [teleportIn, alwaysJoin]
     onOpen:
         options: [pvpOff]
     onStart:

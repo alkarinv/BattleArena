@@ -1,10 +1,12 @@
 package mc.alk.arena.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.TreeMap;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.teams.Team;
@@ -54,7 +56,7 @@ public class VictoryUtil {
 		return result;
 	}
 
-	public static List<Team> getRankingByHighestKills(List<Team> teams) {
+	public static List<Team> getRanksByHighestKills(List<Team> teams) {
 		ArrayList<Team> ts = new ArrayList<Team>(teams);
 		Collections.sort(ts, new Comparator<Team>(){
 			@Override
@@ -66,6 +68,19 @@ public class VictoryUtil {
 			}
 		});
 		return ts;
+	}
+
+	public static TreeMap<Integer, Collection<Team>> getRankingByHighestKills(List<Team> teams) {
+		TreeMap<Integer,Collection<Team>> map = new TreeMap<Integer,Collection<Team>>(Collections.reverseOrder());
+		for (Team t: teams){
+			Collection<Team> col = map.get(t.getNKills());
+			if (col == null){
+				col = new ArrayList<Team>();
+				map.put(t.getNKills(), col);
+			}
+			col.add(t);
+		}
+		return map;
 	}
 
 }

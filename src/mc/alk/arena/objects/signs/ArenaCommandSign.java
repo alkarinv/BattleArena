@@ -41,7 +41,7 @@ public class ArenaCommandSign {
 			executor.join(player, mp, args, true);
 			break;
 		case LEAVE:
-			executor.leave(player);
+			executor.leave(player,mp,true);
 			break;
 		case START:
 			break;
@@ -57,7 +57,7 @@ public class ArenaCommandSign {
 			executor.join(player, ep, args, true);
 			break;
 		case LEAVE:
-			executor.leave(player);
+			executor.leave(player,ep,true);
 			break;
 		case START:
 //			executor.start();

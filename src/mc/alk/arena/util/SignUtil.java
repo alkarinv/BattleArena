@@ -16,12 +16,12 @@ public class SignUtil {
 	public static ArenaCommandSign getArenaCommandSign(String[] lines) {
 		if (lines.length < 2)
 			return null;
-		String param = MessageUtil.decolorChat(lines[0]).replaceAll("\\"+Defaults.SIGN_PREFIX, "").trim();
+		String param = MessageUtil.decolorChat(lines[0]).replaceAll("\\"+Defaults.SIGN_PREFIX, "").trim().toLowerCase();
 		MatchParams mp = ParamController.getMatchParamCopy(param);
 		if (mp == null){
 			Collection<MatchParams> params = ParamController.getAllParams();
 			for (MatchParams p: params){
-				if (p.getName().startsWith(param)){
+				if (p.getName().toLowerCase().startsWith(param) || p.getCommand().toLowerCase().startsWith(param)){
 					mp = p;
 					break;
 				}
@@ -48,7 +48,7 @@ public class SignUtil {
 		return ac;
 	}
 
-	public static ArenaStatusSign ArenaStatusSign(String[] lines) {
+	public static ArenaStatusSign getArenaStatusSign(String[] lines) {
 		if (lines.length < 2)
 			return null;
 		String param = MessageUtil.decolorChat(lines[0]).replaceAll("\\"+Defaults.SIGN_PREFIX, "").trim();

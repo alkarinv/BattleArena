@@ -32,14 +32,14 @@ public class TeleportController implements Listener{
 	static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
 	private final int TELEPORT_FIX_DELAY = 15; // ticks
 
-	public static void teleportPlayer(final Player player, final Location location, final boolean wipe, boolean giveBypassPerms){
+	public static boolean teleportPlayer(final Player player, final Location location, final boolean wipe, boolean giveBypassPerms){
 		if (!player.isOnline() || player.isDead()){
 			BAPlayerListener.teleportOnReenter(player.getName(),location);
 			if (wipe){
 				InventoryUtil.clearInventory(player);}
-			return;
+			return false;
 		}
-		teleport(player,location,giveBypassPerms);
+		return teleport(player,location,giveBypassPerms);
 	}
 
 	public static boolean teleport(final Player player, final Location location){

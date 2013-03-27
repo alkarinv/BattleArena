@@ -129,7 +129,9 @@ public class PerformTransition {
 				/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
 				/// Since we cant really tell the eventual result.. do our best guess
 				am.enterWaitRoom(player);
-				final Location l = jitter(am.getWaitRoomSpawn(teamIndex,false),rand.nextInt(team.size()));
+				final Location l = jitter(
+						am.getWaitRoomSpawn(teamIndex,am.spawnsRandom),
+						rand.nextInt(team.size()));
 				TeleportController.teleportPlayer(p, l, false, true);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
 			} else {
@@ -151,9 +153,9 @@ public class PerformTransition {
 			}
 		}
 
+		final boolean storeAll = mo.hasOption(TransitionOption.STOREALL);
 		/// Only do if player is online options
 		if (playerReady && !dead){
-			final boolean storeAll = mo.hasOption(TransitionOption.STOREALL);
 			if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){ am.psc.storeGamemode(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREEXPERIENCE)){ am.psc.storeExperience(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREITEMS)) { am.psc.storeItems(player);}
@@ -170,6 +172,9 @@ public class PerformTransition {
 			if (hunger != null) { PlayerUtil.setHunger(p, hunger); }
 			if (mo.hasOption(TransitionOption.INVULNERABLE)) { PlayerUtil.setInvulnerable(p,mo.getInvulnerable()); }
 			if (mo.hasOption(TransitionOption.GAMEMODE)) { PlayerUtil.setGameMode(p,mo.getGameMode()); }
+			if (mo.hasOption(TransitionOption.FLIGHTOFF)) { PlayerUtil.setFlight(p,false); }
+			if (mo.hasOption(TransitionOption.FLIGHTON)) { PlayerUtil.setFlight(p,true); }
+			if (mo.hasOption(TransitionOption.FLIGHTSPEED)) { PlayerUtil.setFlightSpeed(p,mo.getFlightSpeed()); }
 			if (mo.hasOption(TransitionOption.DOCOMMANDS)) { PlayerUtil.doCommands(p,mo.getDoCommands()); }
 			if (mo.deEnchant() != null && mo.deEnchant()) { deEnchant(p);}
 			if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p);}

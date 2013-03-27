@@ -1,5 +1,6 @@
 package mc.alk.arena.listeners;
 
+import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.events.MatchEventMethod;
 

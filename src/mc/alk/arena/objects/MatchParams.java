@@ -18,6 +18,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	Integer nDeaths = 1;
 	boolean overrideDefaultBattleTracker = true;
 	int numConcurrentCompetitions = Integer.MAX_VALUE;
+	boolean duelOnly = false;
 
 	public MatchParams(ArenaType at, Rating rating, VictoryType vc) {
 		super(at);
@@ -34,6 +35,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.ao = q.ao;
 		this.nDeaths = q.nDeaths;
 		this.numConcurrentCompetitions = q.numConcurrentCompetitions;
+		this.duelOnly = q.duelOnly;
 	}
 
 	public VictoryType getVictoryType() {return vc;}
@@ -122,5 +124,13 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	public JoinType getJoinType() {
 		return JoinType.QUEUE;
+	}
+
+	public boolean isDuelOnly() {
+		return duelOnly;
+	}
+
+	public void setDuelOnly(boolean bool) {
+		this.duelOnly = bool;
 	}
 }

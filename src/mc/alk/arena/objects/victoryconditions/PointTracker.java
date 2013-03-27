@@ -1,11 +1,14 @@
 package mc.alk.arena.objects.victoryconditions;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
 import mc.alk.arena.util.ScoreMap;
@@ -28,15 +31,44 @@ public class PointTracker extends VictoryCondition implements DefinesLeaderRanki
 	}
 
 	@Override
-	public List<Team> getRankings() {
+	public TreeMap<Integer,Collection<Team>> getRanks() {
 		return teamPoints.getRankings();
+	}
+
+	public MatchResult getMatchResult(){
+		TreeMap<Integer,Collection<Team>> ranks = this.getRanks();
+		MatchResult result = new MatchResult();
+		if (ranks == null || ranks.isEmpty())
+			return null;
+		if (ranks.size() == 1){ /// everyone tied obviously
+			for (Collection<Team> col : ranks.values()){
+				result.setDrawers(col);}
+		} else {
+			boolean first = true;
+			for (Integer key : ranks.keySet()){
+				Collection<Team> col = ranks.get(key);
+				if (first){
+					result.setVictors(col);
+					first = false;
+				} else {
+					result.addLosers(col);
+				}
+			}
+		}
+		return result;
+	}
+
+	@Override
+	@Deprecated
+	public List<Team> getRankings() {
+		return teamPoints.getOldRankings();
 	}
 
 	public List<ArenaPlayer> getPlayerLeaders() {
 		return playerPoints.getLeaders();
 	}
 
-	public List<ArenaPlayer> getPlayerRankings() {
+	public TreeMap<Integer,Collection<ArenaPlayer>> getPlayerRankings() {
 		return playerPoints.getRankings();
 	}
 

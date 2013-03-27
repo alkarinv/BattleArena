@@ -14,6 +14,7 @@ import mc.alk.arena.util.CaseInsensitiveMap;
 
 import org.bukkit.plugin.Plugin;
 
+
 public class ArenaType implements Comparable<ArenaType>{
 	static public CaseInsensitiveMap<Class<? extends Arena>> classes = new CaseInsensitiveMap<Class<? extends Arena>>();
 	static public CaseInsensitiveMap<ArenaType> types = new CaseInsensitiveMap<ArenaType>();

@@ -32,6 +32,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
+import mc.alk.arena.objects.victoryconditions.InfiniteLives;
 import mc.alk.arena.objects.victoryconditions.LastManStanding;
 import mc.alk.arena.objects.victoryconditions.NLives;
 import mc.alk.arena.objects.victoryconditions.NoTeamsLeft;
@@ -61,7 +62,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
-
 
 public class BattleArena extends JavaPlugin {
 	static private String pluginname;
@@ -131,12 +131,13 @@ public class BattleArena extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(new TeleportController(), this);
 
 		/// Register our different Victory Types
-		VictoryType.register(HighestKills.class, this);
-		VictoryType.register(NLives.class, this);
 		VictoryType.register(LastManStanding.class, this);
+		VictoryType.register(NLives.class, this);
+		VictoryType.register(InfiniteLives.class, this);
 		VictoryType.register(TimeLimit.class, this);
 		VictoryType.register(OneTeamLeft.class, this);
 		VictoryType.register(NoTeamsLeft.class, this);
+		VictoryType.register(HighestKills.class, this);
 
 		/// Load our configs, then arenas
 		baConfigSerializer.setConfig(FileUtil.load(clazz,dir.getPath() +"/config.yml","/default_files/config.yml"));

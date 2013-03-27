@@ -150,8 +150,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		if (isDisabled(player, mp)){
 			return true;}
 		/// Check Perms
-		if (!adminJoin && !player.hasPermission("arena."+mp.getName().toLowerCase()+".join") &&
-				!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".join") ){
+		if (!adminJoin && !hasMPPerm(player,mp,"join")){
 			return sendSystemMessage(player,"no_join_perms", mp.getCommand());}
 
 		mp = new MatchParams(mp);
@@ -210,11 +209,12 @@ public class BAExecutor extends CustomCommandExecutor {
 		//		if (bti.isValid()){
 		//			bti.updateRanking(t);
 		//		}
-
+		/// Make sure we have Match Options
 		final MatchTransitions ops = mp.getTransitionOptions();
 		if (ops == null){
 			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
-		/// Check ready
+
+		/// Check if the team is ready
 		if(!ops.teamReady(t,null)){
 			t.sendMessage(ops.getRequiredString(MessageHandler.getSystemMessage("need_the_following")+"\n"));
 			return true;
@@ -223,6 +223,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		/// Check entrance fee
 		if (!checkAndRemoveFee(mp, t)){
 			return true;}
+
 		TeamQObject tqo = new TeamQObject(t,mp,jp);
 
 		/// Add them to the queue
@@ -286,6 +287,13 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
+	private boolean hasMPPerm(ArenaPlayer player , MatchParams mp, String perm) {
+		return player.hasPermission("arena."+mp.getName().toLowerCase()+"."+perm) ||
+				player.hasPermission("arena."+mp.getCommand().toLowerCase()+"."+perm) ||
+				player.hasPermission("arena."+perm+"."+mp.getName().toLowerCase()) ||
+				player.hasPermission("arena."+perm+"."+mp.getCommand().toLowerCase());
+	}
+
 	private boolean isDisabled(ArenaPlayer player, MatchParams mp) {
 		if (disabled.contains(mp.getName())){
 			sendSystemMessage(player, "match_disabled",mp.getName());
@@ -300,7 +308,15 @@ public class BAExecutor extends CustomCommandExecutor {
 	}
 
 	@MCCommand(cmds={"leave","l"}, usage="leave", perm="arena.leave", helpOrder=2)
-	public boolean leave(ArenaPlayer p) {
+	public boolean leave(ArenaPlayer p, MatchParams mp) {
+		return leave(p, mp, false);
+	}
+
+	public boolean leave(ArenaPlayer p, MatchParams mp, boolean adminLeave) {
+//		/// Check Perms
+//		if (!adminLeave && !hasMPPerm(p,mp,"join")){
+//			return sendSystemMessage(p,"no_join_perms", mp.getCommand());}
+
 		if (!canLeave(p)){
 			return true;}
 		boolean foundComp = false;
@@ -712,6 +728,14 @@ public class BAExecutor extends CustomCommandExecutor {
 			sendMessage(ap, "&4[Duel] &6"+player.getDisplayName()+"&2 has accepted the duel offer");
 		}
 		return sendMessage(player,"&cYou have accepted the duel!");
+	}
+
+	@MCCommand(cmds={"duel","d"})
+	public boolean duel(ArenaPlayer player, String args[]) {
+		MatchParams mp = ParamController.getMatchParamCopy("duel");
+		if (mp == null)
+			return true;
+		return duel(player,mp,args);
 	}
 
 	@MCCommand(cmds={"duel","d"},helpOrder=10)

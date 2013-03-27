@@ -92,7 +92,7 @@ public class BASignListener implements Listener{
 			return;
 		}
 		/// is the sign a command sign
-		ArenaStatusSign ass = SignUtil.ArenaStatusSign(lines);
+		ArenaStatusSign ass = SignUtil.getArenaStatusSign(lines);
 		if (ass != null){
 			if (!admin){
 				cancelSignPlace(event,block);

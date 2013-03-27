@@ -17,6 +17,7 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.CustomCommandExecutor;
+import mc.alk.arena.executors.DuelExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.objects.EventParams;
@@ -241,7 +242,11 @@ public class APIRegistrationController {
 			exe = new ReservedArenaEventExecutor();
 			EventController.addEventExecutor((EventParams) mp, (EventExecutor) exe);
 		} else {
-			exe = new BAExecutor();
+			if (mp.isDuelOnly()){
+				exe = new DuelExecutor();
+			} else {
+				exe = new BAExecutor();
+			}
 		}
 		if (executor != null){
 			exe.addMethods(executor, executor.getClass().getMethods());}

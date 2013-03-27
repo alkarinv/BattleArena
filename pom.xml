@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.7.9.9.9</version>
+    <version>3.8.2</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,6 +24,10 @@
             <id>vault-repo</id>
             <url>http://ci.herocraftonline.com/plugin/repository/everything</url>
         </repository>
+        <repository>
+            <id>kitteh-repo</id>
+            <url>http://repo.kitteh.org/content/repositories/public/</url>
+        </repository>
     </repositories>
     <!-- Dependencies -->
     <dependencies>
@@ -37,7 +41,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.4.7-R1.0</version>
+            <version>1.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -102,9 +106,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>unknown.plugins</groupId>
-            <artifactId>TagAPI</artifactId>
-            <version>2.0</version>
+            <groupId>org.kitteh</groupId>
+            <artifactId>tagapi</artifactId>
+            <version>[2.0,)</version>
             <scope>provided</scope>
         </dependency>
         <!-- test dependencies -->

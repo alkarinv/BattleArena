@@ -36,7 +36,6 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 			if (oldTeam != null)
 				return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING,minTeamSize - oldTeam.size(), oldTeam);
 		}
-
 		if ( maxTeamSize < team.size()){
 			return CANTFIT;}
 		/// Try to let them join their specified team if possible
@@ -58,7 +57,22 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 			if (tjr != CANTFIT)
 				return tjr;
 		}
-		return CANTFIT; /// we couldnt find a place for them
+		/// Since this is nearly the same as BinPack add... can we merge somehow easily?
+		if (teams.size() < maxTeams){
+			Team ct = TeamFactory.createTeam(clazz);
+			ct.addPlayers(team.getPlayers());
+			if (ct.size() == maxTeamSize){
+				addTeam(ct);
+				return new TeamJoinResult(TeamJoinStatus.ADDED, minTeamSize - ct.size(),ct);
+			} else {
+				pickupTeams.add(ct);
+				TeamJoinResult ar = new TeamJoinResult(TeamJoinStatus.WAITING_FOR_PLAYERS, minTeamSize - ct.size(),ct);
+				return ar;
+			}
+		} else {
+			/// sorry peeps.. full up
+			return CANTFIT;
+		}
 	}
 
 	private TeamJoinResult teamFits(Team baseTeam, Team team) {

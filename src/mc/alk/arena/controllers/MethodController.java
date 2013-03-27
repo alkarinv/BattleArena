@@ -13,11 +13,11 @@ import java.util.Map;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.events.BAEvent;
-import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.listeners.BukkitEventListener;
 import mc.alk.arena.listeners.RListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.events.MatchEventMethod;
 import mc.alk.arena.objects.teams.Team;

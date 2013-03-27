@@ -46,13 +46,4 @@ public class QueueResult {
 		this.neededPlayers = params.getMaxPlayers();
 	}
 
-//	public QPosTeamPair(MatchParams params, FindMatchResult fmr, Team team, int teamsInQueue){
-//		this.params = (fmr != null) ? fmr.params : params;
-//		this.pos = (fmr !=null) ? fmr.peopleWaitingForThisQueue: 1;
-//		this.team = team;
-//		this.playersInQueue = (fmr!=null) ? fmr.peopleWaitingForThisQueue : 1;
-//		this.teamsInQueue = teamsInQueue;
-//		this.neededPlayers = params.getMaxPlayers();
-//		this.time = (fmr != null ) ? fmr.timeRemaining : null;
-//	}
 }

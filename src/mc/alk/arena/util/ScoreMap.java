@@ -1,9 +1,11 @@
 package mc.alk.arena.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ScoreMap<K> extends ConcurrentHashMap<K,Integer> {
@@ -49,7 +51,21 @@ public class ScoreMap<K> extends ConcurrentHashMap<K,Integer> {
 		return victors;
 	}
 
-	public List<K> getRankings() {
+	public synchronized TreeMap<Integer,Collection<K>> getRankings() {
+		TreeMap<Integer,Collection<K>> map = new TreeMap<Integer,Collection<K>>(Collections.reverseOrder());
+		for (Entry<K,Integer> entry : this.entrySet()){
+			Collection<K> col = map.get(entry.getValue());
+			if (col == null){
+				col = new ArrayList<K>();
+				map.put(entry.getValue(), col);
+			}
+			col.add(entry.getKey());
+		}
+		return map;
+	}
+
+	@Deprecated
+	public synchronized List<K> getOldRankings() {
 		ArrayList<K> ts = new ArrayList<K>(keySet());
 		Collections.sort(ts, new Comparator<K>(){
 			@Override

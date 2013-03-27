@@ -1,0 +1,151 @@
+version: 1.5.5
+
+system:
+    type_enabled: "&2 type &6%s&2 Geactiveerd"
+    type_disabled: "&2 type &6%s&2 Uitgeschakeld"
+    time_format: "&6%s&e %s"
+    zero_time: "&60"
+    match_disabled: "&cDe &6%s&c is currently disabled"
+    all_disabled: "&cHet arena systeem en alle typed zijn op dit moment Uitgeschakeld"
+    currently_enabled: "&cGeactiveerd &6%s"
+    no_join_perms: "&cJe hebt geen permissions om &6%s&c te joinen"
+    teammate_cant_join: "&cÉén van je Teamgenoten kan &6%s&c Niet joinen"
+    valid_arena_not_built: "&cEr is geen correcte &6%s&c arena gebouwt"
+    need_the_following: "&eJe hebt het volgende nodig om te joinen"
+    you_added_to_team: "&eJe bent toegevoegd aan een Team."
+    queue_busy: "&cDe team wachtrij is druk. Probeer het later nog eens."
+    no_arena_for_size: "&cEr is nog geen arena gebouwt voor deze hoeveelheid Personen"
+    joined_the_queue: '&eJe hebt de &6%s&e wachtrij gejoint.'
+    position_in_queue: 'Plek in wachtrij: &6%s/%s'
+    match_starts_players_or_time: '&eDe match start wanneer er &6%s&e spelers gejoint zijn of over %s &ewith met tenminste &6%s&e spelers'
+    match_starts_when_time: '&eWedstrijd begint binnen %s'
+    you_start_when_free_pos: "&ePlek in Wachtrij: &6%s&e. Je match start wanneer er een arena vrij is"
+    you_start_when_free: "&eJe match begint wanneer er een Arena vrij is"
+    server_joined_the_queue: "%s &6%s&e Heeft de wachtrij gejoint &6%s/%s"
+    you_left_match: "&eJe hebt de Match verlaten."
+    you_left_event: "&eJe hebt het &6%s&e event verlaten"
+    you_left_competition: '&eJe hebt het &6%s&e event verlaten'
+    you_left: "&eJe bent Weggegaan"
+    you_not_in_queue: "&eJe bent op dit moment niet in een Wachtrij"
+    you_left_queue: "&eJe hebt de wachtrij voor &6%s&e Verlaten"
+    team_left_queue: "&6Het team heeft de &6%s&e wachtrij verlaten. &6%s&e heeft een command gebruikt"
+    you_cant_join_event: "&cHet event kan niet gejoint worden op dit moment"
+    no_event_open: "&cEr is geen open evenement op dit moment"
+    you_cant_join_event_while: "&eJe kan &6%s&e niet joinen wanneer het %s is"
+    you_will_join_when_matched: "&eJe hebt al gejoind en je word in een team geplaatst"
+    event_will_start_in: "&2Het evenement start in &6%s"
+    event_invalid_team_size: "&cDit evenement kan alleen maar &6%s&e spelers aan. Jou team heeft er &6%s"
+    you_joined_event: '&eJe hebt &6%s&e gejoint'
+
+common:
+    team: '&7{name}&e'
+    teamshort: '&7{name}&e[{ranking}]'  ## only used with BattleTracker
+    teamlong: '&7{name}&e[{ranking}] &6({wins}:{losses})'  ## only used with BattleTracker
+    other_team_not_ready: '&eHet andere Team &cteams&e was niet klaar en is weggevallen'
+    your_team_not_ready: '&eJe team is niet klaar om te Joinen'
+
+event:
+    countdownTillEvent: ''
+    team_cancelled: ''
+    server_cancelled: '&cEvenement is gestopt'
+    server_countdownTillEvent: "{eventprefix}Start binnen {time}, &6/{cmd} join&e, &6/{cmd} info"
+    oneTeam: ### 1 team events
+        server_open: |
+            {eventprefix}&e A {eventname} Evenement is geopend!
+            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &evoor meer info
+        server_open_teamSizeGreaterThanOne: |
+            {eventprefix}&e A {eventname} Evenement is nu open!
+            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &evoor meer info
+            {eventprefix}&e Je kan alleen joinen en word in een ander team gezet. Je kan ook een eigen team maken
+            {eventprefix}&e &6/team create <speler1> <speler2>...
+        start: "&6Deelnemers: {participants}"
+        server_start: "{eventprefix}&e {nteams} {playerorteam} doen mee aan het &6{eventname}&e Evenement!"
+        victory: ""
+        loss: ""
+        draw: ""
+        server_victory: "{eventprefix}&e &6{winnerlong}&e Heeft Gewonennen! Gefeliciteerd!"
+        server_draw: "{eventprefix}&e is gestopt met een gelijke stand!"
+    twoTeams: ## 1 team vs another team
+        server_open: |
+            {eventprefix}&e A {eventname} Evenement is geopend!
+            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &evoor meer info
+        server_open_teamSizeGreaterThanOne: |
+            {eventprefix}&e A {eventname} Evenement is open!
+            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &evoor meer info
+            {eventprefix}&e Je kan alleen joinen en word in een ander team gezet. Je kan ook een eigen team maken
+            {eventprefix}&e &6/team create <speler1> <speler2>...
+        start: "&6Deelnemers: {participants}"
+        server_start: "{eventprefix}&e {nteams} {playerorteam} doen mee aan het &6{eventname}&e Evenement!"
+        victory: ""
+        loss: ""
+        draw: ""
+        server_victory: "{eventprefix} {winnerlong}&e heeft van {loserlong} Gewonnen!"
+        server_draw: "{eventprefix}&e is gestopt met een gelijke stand!"
+    multipleTeams: ## many teams against each other
+        server_open: |
+            {eventprefix}&e A {eventname} Evenement is geopend!
+            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &evoor meer info
+        server_open_teamSizeGreaterThanOne: |
+            {eventprefix}&e A {eventname} Evenement is geopend!
+            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &evoor meer info
+            {eventprefix}&e Je kan alleen joinen en word in een ander team gezet. Je kan ook je eigen team maken
+            {eventprefix}&e &6/team create <speler1> <speler2>...
+        start: "&6Deelnemers: {participants}"
+        server_start: "{eventprefix}&e {nteams} {playerorteam} doen mee aan het &6{eventname}&e Evenement!"
+        victory: ""
+        loss: ""
+        draw: ""
+        server_victory: "{eventprefix}&e &6{winnerlong}&e Heeft Gewonnen!"
+        server_draw: "{eventprefix}&e is gestopt met een gelijke stand!"
+
+match:    
+    leading_header: "&6 O---[{==========> &fCurrent Leaders &6<==========}]---O"
+    leading_row: "&6{rank} : {name}({wins}{losses})" ## rank/wins/losses zijn allemaal per wedstrijd
+    oneTeam: ### 1 team matches
+        prestart: '&eYour {matchname}&e start binnen {time}.'
+        server_prestart: '&6{matchprefix} heeft {matchname} gejoint!'
+        start: '&4********** &eGood luck!!!! &4**********'
+        server_start: ""
+        victory: |
+            &eJe hebt {matchname} gewonnen!
+            &eTotaal Gewonnen/Verloren wedstrijden: &e({wins}:{losses})
+            &eJe hebt {time} voordat je terug gaat
+        loss: |
+            &eJe hebt {matchname} verloren
+            &eTotaal Gewonnen/Verloren: &e({wins}:{losses})
+        draw: "&eT{matchname}&e is gestopt met een gelijke stand!"
+        server_victory: '{matchprefix} {winnerlong}&e Heeft {matchname} gewonnen!'
+        server_draw: "{matchprefix} is gestopt met een Gelijke stand!"
+    twoTeams: ## 1 team vs another team
+        prestart: '&eJe {matchname}&e wedstrijd tegen {otherteam}&e starts binnen {time}.'
+        server_prestart: '&6{matchprefix} {teamshort1}&6 vs {teamshort2}&6!'
+        start: '&4 O---[{==========> &eFight &4<==========}]---O'
+        server_start: ""
+        victory: |
+            &eJe hebt {matchname} gewonnen van {otherteam}
+            &eTotaal Gewonnen/Verloren Wedstrijden: &e({wins}:{losses})
+            &eStats {otherteam}: &e({winsagainst}:{lossesagainst})
+            &eYou have {time} until the match ends
+        loss: |
+            &eJe hebt {matchname} verloren van {otherteam}
+            &eTotaal Gewonnen/Verloren Wedstrijden: &e({wins}:{losses})
+            &eStats{otherteam}: &e({winsagainst}:{lossesagainst})
+            &eLevens Over:{lifeleft}
+        draw: "&eDe {matchname}&e is gestopt met een gelijke stand"
+        server_victory: '{matchprefix} {winnerlong}&e versloeg {loserlong}!'
+        server_draw: '{teamlong1}&e heeft gelijk gespeeld met {teamlong2}!'
+    multipleTeams: ## many teams against each other
+        prestart: '{matchprefix}&6 {matchname} start binnen {time}.'
+        server_prestart: '&6{matchprefix} Deelnemers: {participants} &6'
+        start: '&4 O---[{==========> &eFight &4<==========}]---O'
+        server_start: ""
+        victory: |
+            &eJe hebt al je tegenstanders overwonnen!
+            &eJe hebt {time} over totdat de wedstrijd over is
+            &eJe nieuwe score &6[{ranking}] &e({wins}:{losses})
+        loss: |
+            &eJe bent verslagen door {winnershort}&e!
+            &eJe nieuwe score &6[{ranking}] &e({wins}:{losses})
+        draw: "&eThe {matchname}&e is gestopt met een gelijke stand"
+        server_victory: "{matchprefix} {winnerlong} Heeft gewonnen!"
+        server_draw: "{matchprefix} is gestopt met een Gelijke Stand!"

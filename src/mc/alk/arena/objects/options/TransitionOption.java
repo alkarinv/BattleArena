@@ -77,12 +77,21 @@ public enum TransitionOption{
 	REMOVEPERMS("removePerms", false),				/// NOT IMPLEMENTED
 	GAMEMODE("gameMode",true),						/// =<GameMode> : sets the given gamemode of the player
 	DOCOMMANDS("doCommands",false),					/// Run a list of commands as either the console or player
+	FLIGHTOFF("flightOff",false),					/// Disable flight
+	FLIGHTON("flightOn",false),						/// Enable flight
+	FLIGHTSPEED("flightSpeed",true),				/// =<float> Set flight speed
+
+	/// onSpawn and onDeath only Options
+	RANDOMSPAWN ("randomSpawn",false), 				/// Spawn player at a random spawn location
 
 	/// onDeath Only Options
 	RESPAWN ("respawn",false),						/// Allow player to respawn in Arena after they have died
 	RANDOMRESPAWN ("randomRespawn",false), 			/// Respawn player at a random spawn location after they have died
 	NOEXPERIENCELOSS("noExperienceLoss",false),		/// cancel exp loss on death
 	KEEPINVENTORY("keepInventory", false),			/// Allow the players to keep whatever inventory they currently have when they respawn
+
+	/// onJoin only options
+	ALWAYSJOIN("alwaysJoin",false),					/// Allow players to join at any time
 
 	/// onSpawn Only Options
 	RESPAWNWITHCLASS("respawnWithClass", false),	/// Respawn player with their previously selected class

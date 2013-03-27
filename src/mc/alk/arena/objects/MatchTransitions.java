@@ -55,6 +55,14 @@ public class MatchTransitions {
 		}
 		return false;
 	}
+	public MatchState getMatchState(TransitionOption option) {
+		for (MatchState state: ops.keySet()){
+			TransitionOptions tops = ops.get(state);
+			if (tops.hasOption(option))
+				return state;
+		}
+		return null;
+	}
 
 	public boolean hasAllOptions(TransitionOption... options) {
 		Set<TransitionOption> ops = new HashSet<TransitionOption>(Arrays.asList(options));
@@ -155,5 +163,6 @@ public class MatchTransitions {
 		}
 		return sb.toString();
 	}
+
 
 }

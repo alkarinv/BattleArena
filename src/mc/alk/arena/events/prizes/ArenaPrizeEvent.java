@@ -66,7 +66,7 @@ public class ArenaPrizeEvent extends BAEvent {
 	/**
 	 * Adds a new reward for the supplied teams.
 	 * @param reward The reward to give the teams involved in this event.
-	 * 
+	 *
 	 * Usage:
 	 * Reward r = new Reward(){
 	 *		@Override

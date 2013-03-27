@@ -20,12 +20,12 @@ import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.events.TeamJoinedQueueEvent;
 import mc.alk.arena.events.TeamLeftQueueEvent;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
-import mc.alk.arena.listeners.ArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
+import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.options.JoinOptions;
@@ -132,8 +132,8 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		/// now that a match is starting the players are no longer our responsibility
 		unhandle(match);
 		match.open();
-		TeamJoinHandler tjh = match.getTeamJoinHandler();
-		if (tjh != null && match.hasWaitroom() && !tjh.isFull()){
+//		Log.debug(" match can still join = " + match.canStillJoin());
+		if (match.canStillJoin()){
 			Set<Match> matches = unfilled_matches.get(match.getParams().getType());
 			if (matches == null){
 				matches = Collections.synchronizedSet(new HashSet<Match>());
@@ -291,6 +291,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	}
 
 	private boolean joinExistingMatch(TeamQObject tqo) {
+//		Log.debug("Unfilled  = " + unfilled_matches.size());
 		if (unfilled_matches.isEmpty()){
 			return false;}
 		MatchParams params = tqo.getMatchParams();
@@ -301,6 +302,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			Iterator<Match> iter = matches.iterator();
 			while (iter.hasNext()){
 				Match match = iter.next();
+//				Log.debug("Unfilled  = " + unfilled_matches.size() +"  match = " + match.canStillJoin());
 				/// We dont want people joining in a non waitroom state
 				if (!match.canStillJoin()){
 					iter.remove();
@@ -309,6 +311,8 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 				if (match.getParams().matches(params)){
 					TeamJoinHandler tjh = match.getTeamJoinHandler();
 					if (tjh == null)
+						continue;
+					if (!JoinOptions.matches(tqo.getJoinOptions(), match))
 						continue;
 					boolean result = false;
 					TeamJoinResult tjr = tjh.joiningTeam(tqo);

@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.PlayerInventory;
 
+
 public class ArenaPlayer {
 
 	/** Player name, needed if Player is not available or null */

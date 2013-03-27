@@ -1,5 +1,7 @@
 package mc.alk.arena.objects.regions;
 
+import mc.alk.util.SerializerUtil;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -43,4 +45,9 @@ public class BoundingBox
 	public Location getUpperCorner(){return upper;}
 
 	public World getWorld(){ return lower.getWorld();}
+
+	@Override
+	public String toString(){
+		return "[BB " + SerializerUtil.getLocString(lower) +":"+SerializerUtil.getLocString(upper)+"]";
+	}
 }
