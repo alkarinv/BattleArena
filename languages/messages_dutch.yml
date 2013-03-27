@@ -1,5 +1,5 @@
+## Translated by markzunnie
 version: 1.5.5
-
 system:
     type_enabled: "&2 type &6%s&2 Geactiveerd"
     type_disabled: "&2 type &6%s&2 Uitgeschakeld"
