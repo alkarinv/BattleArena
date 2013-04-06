@@ -11,6 +11,7 @@ public class HerochatChannel implements Channel {
 
 	@Override
 	public void broadcast(String msg) {
+		if (msg == null) return;
 		channel.announce(MessageUtil.colorChat(msg));
 	}
 }

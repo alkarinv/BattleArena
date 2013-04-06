@@ -78,7 +78,11 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 	private TeamJoinResult teamFits(Team baseTeam, Team team) {
 		if ( baseTeam.size() + team.size() <= maxTeamSize){
 			addToTeam(baseTeam, team.getPlayers());
-			return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING, minTeamSize - baseTeam.size(),baseTeam);
+			if (baseTeam.size() == 0){
+				return new TeamJoinResult(TeamJoinStatus.ADDED, minTeamSize - baseTeam.size(),baseTeam);
+			} else {
+				return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING, minTeamSize - baseTeam.size(),baseTeam);
+			}
 		}
 		return CANTFIT;
 	}

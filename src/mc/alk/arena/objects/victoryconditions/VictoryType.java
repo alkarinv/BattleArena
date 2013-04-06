@@ -66,7 +66,9 @@ public class VictoryType {
 			Constructor<?> constructor = vcClass.getConstructor(args);
 			VictoryCondition newVC = (VictoryCondition) constructor.newInstance(match);
 			if (newVC instanceof NLives){
-				((NLives)newVC).setMaxLives(match.getParams().getNLives());}
+				Integer nlives = match.getParams().getNLives();
+				((NLives)newVC).setMaxLives(nlives==null?1: nlives);
+			}
 			return newVC;
 		} catch (Exception e) {
 			e.printStackTrace();

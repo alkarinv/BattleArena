@@ -14,6 +14,7 @@ import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfTreeSet;
 
@@ -23,6 +24,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 
 
 /**
@@ -61,6 +63,7 @@ public class BukkitEventListener extends BAEventListener{
 	public boolean hasListeners(){
 		return (!listeners.isEmpty() || !mlisteners.isEmpty());
 	}
+
 	/**
 	 * Get the map of players to listeners
 	 * @return
@@ -211,9 +214,16 @@ public class BukkitEventListener extends BAEventListener{
 	 */
 	@Override
 	public void doSpecificPlayerEvent(Event event){
-		/// Need special handling of Methods that have 2 entities involved, as either entity may be in a match
-		if (event instanceof EntityDamageByEntityEvent){
+		/// Need special handling of Methods that have 2 entities involved,
+		/// as either entity may be in a match
+		/// These currently use getClass() for speed and the fact that there aren't bukkit
+		/// subclasses at this point.  These would need to change to instanceof if subclasses are
+		/// created
+		if (event.getClass() == EntityDamageByEntityEvent.class){
 			doEntityDamageByEntityEvent((EntityDamageByEntityEvent)event);
+			return;
+		} else if (event.getClass() == EntityDeathEvent.class){
+			doEntityDeathEvent((EntityDeathEvent)event);
 			return;
 		} else if (event instanceof EntityDamageEvent){
 			doEntityDamageEvent((EntityDamageEvent)event);
@@ -268,13 +278,20 @@ public class BukkitEventListener extends BAEventListener{
 		}
 	}
 
+	private void doEntityDeathEvent(EntityDeathEvent event) {
+		if (event.getEntity() instanceof Player && listeners.containsKey(((Player)event.getEntity()).getName()) ){
+			callListeners(event, (Player) event.getEntity());
+			return;
+		}
+		ArenaPlayer ap = DmgDeathUtil.getPlayerCause(event.getEntity().getLastDamageCause());
+		if (ap == null)
+			return;
+		if (listeners.containsKey(ap.getName())){
+			callListeners(event, ap.getPlayer());
+		}
+	}
+
 	private void doEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
-//		NotifierUtil.notify("pb", event.getEntityType() +" <-- -->  "
-//				+ event.getDamager().getType() +"     l1 = "+(event.getEntity() instanceof Player && listeners.containsKey(((Player)event.getEntity()).getName()) ) +""
-//				+  "  ------- l2=" + (event.getDamager() instanceof Player && listeners.containsKey(((Player)event.getDamager()).getName())) +
-//				"    " +
-//				(event.getDamager() instanceof Projectile ? ((Projectile) event.getDamager()).getShooter().getCustomName() : " null ")
-//				);
 		if (event.getEntity() instanceof Player && listeners.containsKey(((Player)event.getEntity()).getName()) ){
 			callListeners(event, (Player) event.getEntity());
 			return;
@@ -287,10 +304,8 @@ public class BukkitEventListener extends BAEventListener{
 		Player player = null;
 		if (event.getDamager() instanceof Projectile){ /// we have some sort of projectile, maybe shot by a player?
 			Projectile proj = (Projectile) event.getDamager();
-//			NotifierUtil.notify("pb",  " projectile "  + (proj.getShooter() instanceof Player) +"   ");
 			if (proj.getShooter() instanceof Player){ /// projectile was shot by a player
 				player= (Player) proj.getShooter();
-//				NotifierUtil.notify("pb",  " projectile "  + (proj.getShooter() instanceof Player) +"   " + player.getName());
 			}
 		}
 		if (player != null){
@@ -307,18 +322,9 @@ public class BukkitEventListener extends BAEventListener{
 		}
 
 		EntityDamageEvent lastDamage = event.getEntity().getLastDamageCause();
-		Player damager = null;
-		if (lastDamage != null){
-			Entity entity = lastDamage.getEntity();
-			if (entity instanceof Player){
-				damager = (Player) entity;
-			} else if (entity instanceof Projectile){
-				if (((Projectile)entity).getShooter() instanceof Player)
-					damager =(Player) ((Projectile)entity).getShooter();
-			}
-		}
+		ArenaPlayer damager = DmgDeathUtil.getPlayerCause(lastDamage);
 		if (damager != null){
-			callListeners(event, damager);
+			callListeners(event, damager.getPlayer());
 		}
 	}
 	public RListener[] getRegisteredListeners() {

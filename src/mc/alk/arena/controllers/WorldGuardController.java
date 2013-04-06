@@ -44,7 +44,7 @@ public class WorldGuardController {
 	}
 
 	public boolean addRegion(Player sender, String id) throws Exception {
-		return WorldGuardUtil.addRegion(sender, id);
+		return WorldGuardUtil.createProtectedRegion(sender, id)!=null;
 	}
 
 	public static boolean hasRegion(WorldGuardRegion region){

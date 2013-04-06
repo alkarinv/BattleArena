@@ -40,6 +40,7 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.schematic.SchematicFormat;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.domains.DefaultDomain;
+import com.sk89q.worldguard.protection.databases.ProtectionDatabaseException;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
@@ -61,6 +62,14 @@ public class WorldGuardUtil {
 		return WorldEditUtil.hasWorldEdit() && hasWorldGuard;
 	}
 
+	/**
+	 * Hold over from spleef, use createProtectedRegion instead
+	 * @param sender
+	 * @param id
+	 * @return
+	 * @throws Exception
+	 */
+	@Deprecated
 	public static boolean addRegion(Player sender, String id) throws Exception {
 		Selection sel = WorldEditUtil.getSelection(sender);
 		World w = sel.getWorld();
@@ -109,29 +118,22 @@ public class WorldGuardUtil {
 	}
 
 
-	public static void updateProtectedRegion(Player p, String id) throws Exception {
+	public static ProtectedRegion updateProtectedRegion(Player p, String id) throws Exception {
+		return createRegion(p, id);
+	}
+
+	public static ProtectedRegion createProtectedRegion(Player p, String id) throws Exception {
+		return createRegion(p,id);
+	}
+
+	private static ProtectedRegion createRegion(Player p, String id)
+			throws ProtectionDatabaseException {
 		Selection sel = WorldEditUtil.getSelection(p);
 		World w = sel.getWorld();
 		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
 		mgr.removeRegion(id);
 
-		ProtectedRegion region = mgr.getRegion(id);
-
-		region = new ProtectedCuboidRegion(id,
-				sel.getNativeMinimumPoint().toBlockVector(), sel.getNativeMaximumPoint().toBlockVector());
-		region.setPriority(11); /// some relatively high priority
-		region.setFlag(DefaultFlag.PVP,State.ALLOW);
-		wgp.getRegionManager(w).addRegion(region);
-		mgr.save();
-	}
-
-	public static ProtectedRegion createProtectedRegion(Player p, String id) throws Exception {
-		Selection sel = WorldEditUtil.getSelection(p);
-		World w = sel.getWorld();
-		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
-		ProtectedRegion region = mgr.getRegion(id);
-
-		region = new ProtectedCuboidRegion(id,
+		ProtectedRegion region = new ProtectedCuboidRegion(id,
 				sel.getNativeMinimumPoint().toBlockVector(), sel.getNativeMaximumPoint().toBlockVector());
 		region.setPriority(11); /// some relatively high priority
 		region.setFlag(DefaultFlag.PVP,State.ALLOW);
@@ -139,6 +141,7 @@ public class WorldGuardUtil {
 		mgr.save();
 		return region;
 	}
+
 
 	public static void clearRegion(WorldGuardRegion region) {
 		clearRegion(region.getRegionWorld(),region.getRegionID());

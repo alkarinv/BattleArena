@@ -3,6 +3,7 @@ DeathMatch:
     joinType: JoinPhase
     victoryCondition: highestKills
     database: dm
+    rated: true
     prefix: "&8[DeathMatch]&e"
     nTeams: 2+
     teamSize: 1

@@ -1,5 +1,6 @@
 package mc.alk.arena.executors;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -7,35 +8,34 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.PriorityQueue;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.serializers.MessageSerializer;
-import mc.alk.arena.util.Log;
-import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.ServerUtil;
-
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
 public abstract class BaseExecutor implements ArenaExecutor{
+	public static final String version = "2.0.1";
 	static final boolean DEBUG = false;
 
-	private HashMap<String,TreeMap<Integer,MethodWrapper>> methods = new HashMap<String,TreeMap<Integer,MethodWrapper>>();
+	private HashMap<String,TreeMap<Integer,MethodWrapper>> methods =
+			new HashMap<String,TreeMap<Integer,MethodWrapper>>();
 	private HashMap<String,Map<String,TreeMap<Integer,MethodWrapper>>> subCmdMethods =
 			new HashMap<String,Map<String,TreeMap<Integer,MethodWrapper>>>();
-	public static final int SELF = -2; /// Which index defines the sender
 
-	protected TreeMap<MCCommand, Set<String>> usage = new TreeMap<MCCommand, Set<String>>(new Comparator<MCCommand>(){
-		@Override
-		public int compare(MCCommand cmd1, MCCommand cmd2) {
+	protected PriorityQueue<MethodWrapper> usage = new PriorityQueue<MethodWrapper>(2, new Comparator<MethodWrapper>(){
+		public int compare(MethodWrapper mw1, MethodWrapper mw2) {
+			MCCommand cmd1 = mw1.getCommand();
+			MCCommand cmd2 = mw2.getCommand();
+
 			int c = new Float(cmd1.helpOrder()).compareTo(cmd2.helpOrder());
 			if (c!=0) return c;
 			c = new Integer(cmd1.order()).compareTo(cmd2.order());
@@ -55,8 +55,14 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		public MethodWrapper(Object obj, Method method){
 			this.obj = obj; this.method = method;
 		}
+
 		public Object obj; /// Object instance the method belongs to
 		public Method method; /// Method
+		public String usage;
+
+		public MCCommand getCommand(){
+			return this.method.getAnnotation(MCCommand.class);
+		}
 	}
 
 	/**
@@ -80,6 +86,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 	}
 
 	public void addMethods(Object obj, Method[] methodArray){
+
 		for (Method method : methodArray){
 			MCCommand mc = method.getAnnotation(MCCommand.class);
 			if (mc == null)
@@ -106,10 +113,11 @@ public abstract class BaseExecutor implements ArenaExecutor{
 			if (mthds == null){
 				mthds = new TreeMap<Integer,MethodWrapper>();
 			}
-			int order = (mc.order() != -1? mc.order()*100000 :Integer.MAX_VALUE) - ml*100-mthds.size();
-			mthds.put(order, new MethodWrapper(obj,method));
+			int order = (mc.order() != -1? mc.order()*100000 :Integer.MAX_VALUE) - ml*100 - mthds.size();
+			MethodWrapper mw = new MethodWrapper(obj,method);
+			mthds.put(order, mw);
 			methods.put(cmd, mthds);
-			addUsage(method, mc);
+			addUsage(mw, mc);
 		} else {
 			Map<String,TreeMap<Integer,MethodWrapper>> basemthds = subCmdMethods.get(cmd);
 			if (basemthds == null){
@@ -123,27 +131,20 @@ public abstract class BaseExecutor implements ArenaExecutor{
 					basemthds.put(subcmd, mthds);
 				}
 				int order = (mc.order() != -1? mc.order()*100000 :Integer.MAX_VALUE) - ml*100-mthds.size();
-				mthds.put(order, new MethodWrapper(obj,method));
-				addUsage(method, mc);
+				MethodWrapper mw = new MethodWrapper(obj,method);
+				mthds.put(order, mw);
+				addUsage(mw, mc);
 			}
 		}
 	}
-	private void addUsage(Method method, MCCommand mc) {
-		Set<String> usages = usage.get(mc);
-		if (usages == null){
-			usages = new HashSet<String>();
-			usage.put(mc, usages);
-		}
+	private void addUsage(MethodWrapper method, MCCommand mc) {
 		/// save the usages, for showing help messages
-		if (mc.cmds().length > 0 && MessageSerializer.hasMessage("usage", mc.cmds()[0])){
-			usages.add(MessageSerializer.getDefaultMessage("usage."+ mc.cmds()[0]).getMessage());
-		} else if (!mc.usageNode().isEmpty()){
-			usages.add(MessageSerializer.getDefaultMessage("usage."+mc.usageNode()).getMessage());
-		} else if (!mc.usage().isEmpty()){
-			usages.add(mc.usage());
+		if (!mc.usage().isEmpty()){
+			method.usage = mc.usage();
 		} else { /// Generate an automatic usage string
-			usages.add(createUsage(method));
+			method.usage = createUsage(method.method);
 		}
+		usage.add(method);
 	}
 
 	private String createUsage(Method method) {
@@ -160,13 +161,6 @@ public abstract class BaseExecutor implements ArenaExecutor{
 			sb.append(getUsageString(theclass));
 		}
 		return sb.toString();
-	}
-
-	private List<String> getUsage(Command c, MCCommand cmd) {
-		List<String> usages = new ArrayList<String>();
-		for (String str : usage.get(cmd)){
-			usages.add( "&6/"+c.getName()+" " + str);}
-		return usages;
 	}
 
 	protected String getUsageString(Class<?> clazz) {
@@ -194,126 +188,137 @@ public abstract class BaseExecutor implements ArenaExecutor{
 
 	public class CommandException{
 		final IllegalArgumentException err;
-		final MCCommand cmd;
-		public CommandException(IllegalArgumentException err, MCCommand cmd){
-			this.err = err; this.cmd = cmd;
+		final MethodWrapper mw;
+		public CommandException(IllegalArgumentException err, MethodWrapper mw){
+			this.err = err; this.mw = mw;
 		}
 	}
 
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		TreeMap<Integer,MethodWrapper> methodmap = methods.get(DEFAULT_CMD);
+		TreeMap<Integer,MethodWrapper> methodmap = null;
+
 		/// No method to handle, show some help
-		if (args.length == 0 && (methodmap == null || methodmap.isEmpty())
+		if ((args.length == 0 && !methods.containsKey(DEFAULT_CMD))
 				|| (args.length > 0 && (args[0].equals("?") || args[0].equals("help")))){
 			showHelp(sender, command,args);
 			return true;
 		}
-		int startIndex = 1;
 		final int length = args.length;
 		final String cmd = length > 0 ? args[0].toLowerCase() : null;
 		final String subcmd = length > 1 ? args[1].toLowerCase() : null;
-		methodmap = null;
+		int startIndex = 0;
+
 		/// check for subcommands
 		if (subcmd!=null && subCmdMethods.containsKey(cmd) && subCmdMethods.get(cmd).containsKey(subcmd)){
 			methodmap = subCmdMethods.get(cmd).get(subcmd);
 			startIndex = 2;
 		}
 		if (methodmap == null && cmd != null){ /// Find our method, and verify all the annotations
-			methodmap = methods.get(cmd);}
+			methodmap = methods.get(cmd);
+			if (methodmap != null)
+				startIndex =1;
+		}
+
+		if (methodmap == null){ /// our last attempt
+			methodmap = methods.get(DEFAULT_CMD);
+		}
 
 		if (methodmap == null || methodmap.isEmpty()){
-			return sendMessage(sender, "&cThat command does not exist!&6 /"+command.getLabel()+" &c for help");}
+			return sendMessage(sender, "&cThat command does not exist!&6 /"+command.getLabel()+" help &c for help");}
 
 		MCCommand mccmd = null;
 		List<CommandException> errs =null;
 		boolean success = false;
 		for (MethodWrapper mwrapper : methodmap.values()){
+
 			mccmd = mwrapper.method.getAnnotation(MCCommand.class);
-//			final boolean isOp = sender == null || sender.isOp() || sender instanceof ConsoleCommandSender;
-//
-//			if (mccmd.op() && !isOp || mccmd.admin() && !hasAdminPerms(sender)) /// no op, no pass
-//				continue;
+			final boolean isOp = sender == null || sender.isOp() || sender instanceof ConsoleCommandSender;
+
+			if (mccmd.op() && !isOp || mccmd.admin() && !hasAdminPerms(sender)) /// no op, no pass
+				continue;
 			Arguments newArgs = null;
 			try {
 				newArgs= verifyArgs(mwrapper,mccmd,sender,command, label, args, startIndex);
-				mwrapper.method.invoke(mwrapper.obj,newArgs.args);
-				success = true;
+				Object completed = mwrapper.method.invoke(mwrapper.obj,newArgs.args);
+				if (completed != null && completed instanceof Boolean){
+					success = (Boolean)completed;
+					if (!success){
+						String usage = mwrapper.usage;
+						if (usage != null && !usage.isEmpty()){
+							sendMessage(sender, usage);}
+					}
+				} else {
+					success = true;
+				}
 				break; /// success on one
 			} catch (IllegalArgumentException e){ /// One of the arguments wasn't correct, store the message
 				if (errs == null)
 					errs = new ArrayList<CommandException>();
-				errs.add(new CommandException(e,mccmd));
+				errs.add(new CommandException(e,mwrapper));
 			} catch (Exception e) { /// Just all around bad
 				logInvocationError(e, mwrapper,newArgs);
 			}
 		}
 		/// and handle all errors
 		if (!success && errs != null && !errs.isEmpty()){
-			if (errs.size() == 1){
-				MessageUtil.sendMessage(sender, errs.get(0).err.getMessage());
-				for (String usage: getUsage(command,mccmd)){
-					MessageUtil.sendMessage(sender, usage);}
-				return true;
-			}
-			HashSet<String> errstrings = new HashSet<String>();
 			HashSet<String> usages = new HashSet<String>();
 			for (CommandException e: errs){
-				errstrings.add(e.err.getMessage());
-				usages.addAll(getUsage(command,e.cmd));
+				usages.add(ChatColor.GOLD+command.getLabel() +" " +e.mw.usage+" &c:"+e.err.getMessage());
 			}
-			for (String msg : errstrings){
-				MessageUtil.sendMessage(sender, msg);}
 			for (String msg : usages){
-				MessageUtil.sendMessage(sender, msg);}
+				sendMessage(sender, msg);}
 		}
 		return true;
 	}
 
 	private void logInvocationError(Exception e, MethodWrapper mwrapper, Arguments newArgs) {
-		Log.err("[BA Error] "+BattleArena.getNameAndVersion()+":"+mwrapper.method +" : " + mwrapper.obj +"  : " + newArgs);
+		System.err.println("[CustomCommandExecutor Error] "+mwrapper.method +" : " + mwrapper.obj +"  : " + newArgs);
 		if (newArgs!=null && newArgs.args != null){
 			for (Object o: newArgs.args)
-				Log.err("[BA Error] object=" + (o!=null ? o.toString() : o));
+				System.err.println("[Error] object=" + (o!=null ? o.toString() : o));
 		}
-		Log.err("[BA Error] Cause=" + e.getCause());
+		System.err.println("[Error] Cause=" + e.getCause());
 		if (e.getCause() != null) e.getCause().printStackTrace();
-		Log.err("[BA Error] Trace Continued ");
+		System.err.println("[Error] Trace Continued ");
 		e.printStackTrace();
 	}
 
 	public static final String ONLY_INGAME =ChatColor.RED+"You need to be in game to use this command";
 	protected Arguments verifyArgs(MethodWrapper mwrapper, MCCommand cmd,
 			CommandSender sender, Command command, String label, String[] args, int startIndex) throws IllegalArgumentException{
-		if (DEBUG)System.out.println("verifyArgs " + cmd +" sender=" +sender+", label=" + label+" args="+args);
+		if (DEBUG){
+			System.out.println(" method="+mwrapper.method.getName() + " verifyArgs " + cmd +" sender=" +sender+", label=" + label+" args="+args);
+			for (String arg: args){
+				System.out.println(" -- arg=" +arg);}
+			for (Class<?> t: mwrapper.method.getParameterTypes()){
+				System.out.println(" -- type=" +t);}
+		}
 		final int paramLength = mwrapper.method.getParameterTypes().length;
+
+		/// Check our permissions
+		if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
+			throw new IllegalArgumentException("You don't have permission to use this command");
 
 		/// Verify min number of arguments
 		if (args.length < cmd.min()){
-			throw new IllegalArgumentException(ChatColor.RED+"You need at least "+cmd.min()+" arguments");
+			throw new IllegalArgumentException("You need at least "+cmd.min()+" arguments");
 		}
 		/// Verfiy max number of arguments
 		if (args.length > cmd.max()){
-			throw new IllegalArgumentException(ChatColor.RED+"You need less than "+cmd.max()+" arguments");
+			throw new IllegalArgumentException("You need less than "+cmd.max()+" arguments");
 		}
 		/// Verfiy max number of arguments
 		if (cmd.exact()!= -1 && args.length != cmd.exact()){
-			throw new IllegalArgumentException(ChatColor.RED+"You need exactly "+cmd.exact()+" arguments");
+			throw new IllegalArgumentException("You need exactly "+cmd.exact()+" arguments");
 		}
 		final boolean isPlayer = sender instanceof Player;
 		final boolean isOp = (isPlayer && sender.isOp()) || sender == null || sender instanceof ConsoleCommandSender;
-		final boolean isAdmin = isOp || hasAdminPerms(sender);
-		if (cmd.op() && !isOp)
-			throw new IllegalArgumentException(ChatColor.RED +"You need to be op to use this command");
-		if (!cmd.perm().isEmpty() || cmd.admin()){
-			boolean needsPerm = !cmd.perm().isEmpty();
-			boolean hasPerm = sender.hasPermission(cmd.perm());
-			/// Check our permissions
-			if (needsPerm && !hasPerm && !(cmd.admin() && isAdmin)){
-				throw new IllegalArgumentException(MessageSerializer.getDefaultMessage("main", "no_permission"));}
 
-			if (cmd.admin() && !isAdmin && !(needsPerm && hasPerm))
-				throw new IllegalArgumentException(ChatColor.RED +"You need to be an Admin to use this command");
-		}
+		if (cmd.op() && !isOp)
+			throw new IllegalArgumentException("You need to be op to use this command");
+
+		if (cmd.admin() && !isOp && (isPlayer && !hasAdminPerms(sender)))
+			throw new IllegalArgumentException("You need to be an Admin to use this command");
 
 		Class<?> types[] = mwrapper.method.getParameterTypes();
 
@@ -362,14 +367,16 @@ public abstract class BaseExecutor implements ArenaExecutor{
 				if (index >= args.length)
 					throw new IllegalArgumentException("String Index out of range. ");
 				if (!args[index].matches("[a-zA-Z0-9_]*")) {
-					throw new IllegalArgumentException("&eargument '"+args[index]+"' can only be alphanumeric with underscores");
+					throw new IllegalArgumentException("argument '"+args[index]+"' can only be alphanumeric with underscores");
 				}
 			}
 		}
 		return newArgs; /// Success
 	}
 
-	protected Object verifySender(CommandSender sender, Class<?> cla) {
+	protected Object verifySender(CommandSender sender, Class<?> clazz) {
+		if (!clazz.isAssignableFrom(sender.getClass())){
+			throw new IllegalArgumentException("sender must be a " + clazz.getSimpleName());}
 		return sender;
 	}
 
@@ -402,14 +409,14 @@ public abstract class BaseExecutor implements ArenaExecutor{
 	}
 
 	private OfflinePlayer verifyOfflinePlayer(String name) throws IllegalArgumentException {
-		OfflinePlayer p = ServerUtil.findOfflinePlayer(name);
+		OfflinePlayer p = findOfflinePlayer(name);
 		if (p == null)
 			throw new IllegalArgumentException("Player " + name+" can not be found");
 		return p;
 	}
 
 	private Player verifyPlayer(String name) throws IllegalArgumentException {
-		Player p = ServerUtil.findPlayer(name);
+		Player p = findPlayer(name);
 		if (p == null || !p.isOnline())
 			throw new IllegalArgumentException(name+" is not online ");
 		return p;
@@ -452,7 +459,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 			try{
 				page = Integer.valueOf(args[1]);
 			} catch (Exception e){
-				MessageUtil.sendMessage(sender, ChatColor.RED+" " + args[1] +" is not a number, showing help for page 1.");
+				sendMessage(sender, ChatColor.RED+" " + args[1] +" is not a number, showing help for page 1.");
 			}
 		}
 
@@ -460,59 +467,132 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		List<String> unavailable = new ArrayList<String>();
 		List<String> onlyop = new ArrayList<String>();
 
-		for (MCCommand cmd : usage.keySet()){
-			for (String str: usage.get(cmd)){
-				final String use = "&6/" + command.getName() +" " + str;
-				if (cmd.op() && !sender.isOp())
-					onlyop.add(use);
-				else if (cmd.admin() && !hasAdminPerms(sender))
-					onlyop.add(use);
-				else if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
-					unavailable.add(use);
-				else
-					available.add(use);
-			}
+		for (MethodWrapper mw : usage){
+			MCCommand cmd = mw.getCommand();
+			final String use = "&6/" + command.getName() +" " + mw.usage;
+			if (cmd.op() && !sender.isOp())
+				continue;
+			else if (cmd.admin() && !hasAdminPerms(sender))
+				continue;
+			else if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
+				unavailable.add(use);
+			else
+				available.add(use);
 		}
 		int npages = available.size()+unavailable.size();
 		if (sender.isOp())
 			npages += onlyop.size();
 		npages = (int) Math.ceil( (float)npages/LINES_PER_PAGE);
 		if (page > npages || page <= 0){
-			MessageUtil.sendMessage(sender, "&4That page doesnt exist, try 1-"+npages);
+			if (page <= 0){
+				sendMessage(sender, "&4There are no methods for this command");
+			} else {
+				sendMessage(sender, "&4That page doesnt exist, try 1-"+npages);
+			}
 			return;
 		}
-		if (command != null) {
+		if (command != null && command.getAliases() != null && !command.getAliases().isEmpty()) {
 			String aliases = StringUtils.join(command.getAliases(),", ");
-			MessageUtil.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 : /"+command.getName()+" help <page number>");
-			MessageUtil.sendMessage(sender, "&e    command &6"+command.getName()+"&e has aliases: &6" + aliases);
+			sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 : /"+command.getName()+" help <page number>");
+			sendMessage(sender, "&e    command &6"+command.getName()+"&e has aliases: &6" + aliases);
 		} else {
-			MessageUtil.sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 : /cmd help <page number>");
+			sendMessage(sender, "&eShowing page &6"+page +"/"+npages +"&6 : /cmd help <page number>");
 		}
 		int i=0;
 		for (String use : available){
 			i++;
 			if (i < (page-1) *LINES_PER_PAGE || i >= page*LINES_PER_PAGE)
 				continue;
-			MessageUtil.sendMessage(sender, use);
+			sendMessage(sender, use);
 		}
 		for (String use : unavailable){
 			i++;
 			if (i < (page-1) *LINES_PER_PAGE || i >= page *LINES_PER_PAGE)
 				continue;
-			MessageUtil.sendMessage(sender, ChatColor.RED+"[Insufficient Perms] " + use);
+			sendMessage(sender, ChatColor.RED+"[Insufficient Perms] " + use);
 		}
 		if (sender.isOp()){
 			for (String use : onlyop){
 				i++;
 				if (i < (page-1) *LINES_PER_PAGE || i >= page *LINES_PER_PAGE)
 					continue;
-				MessageUtil.sendMessage(sender, ChatColor.AQUA+"[OP only] &6"+use);
+				sendMessage(sender, ChatColor.AQUA+"[OP only] &6"+use);
 			}
 		}
 	}
 
-	public static boolean sendMessage(CommandSender sender, String msg){
-		return MessageUtil.sendMessage(sender, msg);
+	public static boolean sendMessage(CommandSender p, String message){
+		if (message ==null || message.isEmpty()) return true;
+		if (message.contains("\n"))
+			return sendMultilineMessage(p,message);
+		if (p instanceof Player){
+			if (((Player) p).isOnline())
+				p.sendMessage(colorChat(message));
+		} else {
+			p.sendMessage(colorChat(message));
+		}
+		return true;
+	}
+
+	public static boolean sendMultilineMessage(CommandSender p, String message){
+		if (message ==null || message.isEmpty()) return true;
+		String[] msgs = message.split("\n");
+		for (String msg: msgs){
+			if (p instanceof Player){
+				if (((Player) p).isOnline())
+					p.sendMessage(colorChat(msg));
+			} else {
+				p.sendMessage(colorChat(msg));
+			}
+		}
+		return true;
+	}
+
+	public static String colorChat(String msg) {return msg.replace('&', (char) 167);}
+
+
+	public static Player findPlayer(String name) {
+		if (name == null)
+			return null;
+		Player foundPlayer = Bukkit.getPlayer(name);
+		if (foundPlayer != null)
+			return foundPlayer;
+
+		Player[] online = Bukkit.getOnlinePlayers();
+
+		for (Player player : online) {
+			String playerName = player.getName();
+
+			if (playerName.equalsIgnoreCase(name)) {
+				foundPlayer = player;
+				break;
+			}
+
+			if (playerName.toLowerCase().indexOf(name.toLowerCase()) != -1) {
+				if (foundPlayer != null) {
+					return null;}
+
+				foundPlayer = player;
+			}
+		}
+
+		return foundPlayer;
+	}
+
+	public static OfflinePlayer findOfflinePlayer(String name) {
+		OfflinePlayer p = findPlayer(name);
+		if (p != null){
+			return p;
+		} else{
+			/// Iterate over the worlds to see if a player.dat file exists
+			for (World w : Bukkit.getWorlds()){
+				File f = new File(w.getName()+"/players/"+name+".dat");
+				if (f.exists()){
+					return Bukkit.getOfflinePlayer(name);
+				}
+			}
+			return null;
+		}
 	}
 }
 

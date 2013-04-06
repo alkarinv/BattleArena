@@ -3,6 +3,7 @@ package mc.alk.arena.util;
 import java.util.List;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.objects.CommandLineString;
 
@@ -98,12 +99,22 @@ public class PlayerUtil {
 		}
 	}
 
-	public static void setFlight(Player p, boolean shouldFly) {
-		p.setFlying(shouldFly);
+	public static void setFlight(Player player, boolean enable) {
+		if (player.getAllowFlight() != enable){
+			player.setAllowFlight(enable);}
+		if (player.isFlying() != enable){
+			player.setFlying(enable);}
+		/* Essentials (v2.10) fly just goes through bukkit, no need to call Essentials setFlight */
 	}
 
-	public static void setFlightSpeed(Player p, Float flightSpeed) {
-		p.setFlySpeed(flightSpeed);
+	public static void setFlightSpeed(Player player, Float flightSpeed) {
+		player.setFlySpeed(flightSpeed);
+		/* Essentials (v2.10) fly just goes through bukkit, no need to call Essentials setFlySpeed */
+	}
+
+	public static void setGod(Player player, boolean enable) {
+		if (EssentialsController.enabled()){
+			EssentialsController.setGod(player, enable);}
 	}
 
 }

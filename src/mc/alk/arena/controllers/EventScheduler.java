@@ -17,8 +17,8 @@ import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.pairs.EventPair;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.tracker.controllers.MessageController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -101,7 +101,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
 				Bukkit.getServer().broadcastMessage(
-						MessageController.colorChat(
+						MessageUtil.colorChat(
 						ChatColor.YELLOW+"Next event will start in "+
 						TimeUtil.convertSecondsToString(Defaults.TIME_BETWEEN_SCHEDULED_EVENTS)));}
 		} else {

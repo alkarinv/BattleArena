@@ -2,6 +2,7 @@ package mc.alk.arena.listeners;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.FactionsController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.MobArenaInterface;
@@ -13,6 +14,7 @@ import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.PermissionsUtil;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 
@@ -37,6 +39,8 @@ public class BAPluginListener implements Listener {
 	public void onPluginEnable(PluginEnableEvent event) {
 		if (event.getPlugin().getName() == "BattleTracker")
 			loadBattleTracker();
+		else if (event.getPlugin().getName() == "Essentials")
+			loadEssentials();
 		else if (event.getPlugin().getName() == "Factions")
 			loadFactions();
 		else if (event.getPlugin().getName() == "Herochat")
@@ -68,6 +72,7 @@ public class BAPluginListener implements Listener {
 	public void loadAll(){
 		loadBattleTracker();
 		loadDisguiseCraft();
+		loadEssentials();
 		loadFactions();
 		loadHeroChat();
 		loadHeroes();
@@ -100,6 +105,19 @@ public class BAPluginListener implements Listener {
 			if (plugin != null) {
 				DisguiseInterface.setDisguiseCraft(plugin);
 				Log.info("[BattleArena] DisguiseCraft detected, enabling disguises");
+			}
+		}
+	}
+
+	public void loadEssentials(){
+		if (!EssentialsController.enabled()){
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("Essentials");
+			if (plugin != null) {
+				if (EssentialsController.enableEssentials(plugin)){
+					Log.info("[BattleArena] Essentials detected. God mode handling activated");
+				} else {
+					Log.info("[BattleArena] Essentials detected but could not hook properly");
+				}
 			}
 		}
 	}
@@ -254,6 +272,8 @@ public class BAPluginListener implements Listener {
 					e.printStackTrace();
 				}
 			}
+			/// Load Vault Permissions
+			PermissionsUtil.setPermission(plugin);
 		}
 	}
 

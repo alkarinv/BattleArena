@@ -100,7 +100,7 @@ public class MessageFormatter{
 					replaceList[i] = formatTeamName(impl.getNodeMessage("common.teamlong"),t2);
 					break;
 				case NTEAMS: replaceList[i] = teams != null ? teams.size()+"" : "0"; break;
-				case PLAYERORTEAM: replaceList[i] = teams!=null? MessageUtil.getTeamsOrPlayers(teams.size()) : "teams"; break;
+				case PLAYERORTEAM: replaceList[i] = teams!=null? MessageUtil.getTeamsOrPlayers(mp.getMaxTeamSize()) : "teams"; break;
 				case PARTICIPANTS:{
 					StringBuilder sb = new StringBuilder();
 					boolean first = true;

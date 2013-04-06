@@ -7,9 +7,16 @@ import mc.alk.arena.objects.ArenaPlayer;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 public class PermissionsUtil {
 	static final int ticks = 2;
+	static boolean hasVaultPerms = false;
+
+	public static void setPermission(Plugin plugin){
+		hasVaultPerms = VaultPermUtil.setPermission(plugin);
+	}
+
 	public static void givePlayerInventoryPerms(ArenaPlayer p){
 		givePlayerInventoryPerms(p.getPlayer());
 	}
@@ -41,8 +48,10 @@ public class PermissionsUtil {
 		return sender.isOp() || sender.hasPermission(Permissions.ADMIN_NODE);
 	}
 
-	public static void givePlayerAdminPerms(Player player, Boolean enable) {
-
+	public static boolean giveAdminPerms(Player player, Boolean enable) {
+		if (!hasVaultPerms)
+			return false;
+		return VaultPermUtil.giveAdminPerms(player,enable);
 	}
 
 }

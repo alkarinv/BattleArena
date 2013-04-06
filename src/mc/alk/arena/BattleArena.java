@@ -21,6 +21,7 @@ import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.executors.ArenaEditorExecutor;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.BattleArenaDebugExecutor;
+import mc.alk.arena.executors.BattleArenaExecutor;
 import mc.alk.arena.executors.BattleArenaSchedulerExecutor;
 import mc.alk.arena.executors.CustomCommandExecutor;
 import mc.alk.arena.executors.TeamExecutor;
@@ -34,6 +35,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
 import mc.alk.arena.objects.victoryconditions.InfiniteLives;
 import mc.alk.arena.objects.victoryconditions.LastManStanding;
+import mc.alk.arena.objects.victoryconditions.MobKills;
 import mc.alk.arena.objects.victoryconditions.NLives;
 import mc.alk.arena.objects.victoryconditions.NoTeamsLeft;
 import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
@@ -138,6 +140,7 @@ public class BattleArena extends JavaPlugin {
 		VictoryType.register(OneTeamLeft.class, this);
 		VictoryType.register(NoTeamsLeft.class, this);
 		VictoryType.register(HighestKills.class, this);
+		VictoryType.register(MobKills.class, this);
 
 		/// Load our configs, then arenas
 		baConfigSerializer.setConfig(FileUtil.load(clazz,dir.getPath() +"/config.yml","/default_files/config.yml"));
@@ -178,6 +181,7 @@ public class BattleArena extends JavaPlugin {
 		getCommand("watch").setExecutor(commandExecutor);
 		getCommand("team").setExecutor(new TeamExecutor(commandExecutor));
 		getCommand("arenaAlter").setExecutor(new ArenaEditorExecutor());
+		getCommand("battleArena").setExecutor(new BattleArenaExecutor());
 		getCommand("battleArenaDebug").setExecutor(new BattleArenaDebugExecutor());
 		final EventScheduler es = new EventScheduler();
 		getCommand("battleArenaScheduler").setExecutor(new BattleArenaSchedulerExecutor(es));

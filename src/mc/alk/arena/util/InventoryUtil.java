@@ -347,6 +347,8 @@ public class InventoryUtil {
 
 	@SuppressWarnings("deprecation")
 	public static void addItemsToInventory(Player p, List<ItemStack> items, boolean ignoreCustomHelmet, Color color) {
+		if (items == null)
+			return;
 		for (ItemStack is : items){
 			InventoryUtil.addItemToInventory(p, is.clone(), is.getAmount(), false, ignoreCustomHelmet, color);
 		}

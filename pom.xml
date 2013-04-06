@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.8.2</version>
+    <version>3.8.3.4</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -67,12 +67,18 @@
             <artifactId>worldguard</artifactId>
             <version>[5.6.4,)</version>
             <scope>provided</scope>
-        </dependency>        
+        </dependency>
         <!-- unknown plugins that I had to add to the repo -->
         <dependency>
             <groupId>unknown.plugins</groupId>
             <artifactId>DisguiseCraft</artifactId>
             <version>4.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>unknown.plugins</groupId>
+            <artifactId>Essentials</artifactId>
+            <version>2.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -112,15 +118,20 @@
             <scope>provided</scope>
         </dependency>
         <!-- test dependencies -->
-        
     </dependencies>
     <!-- How we will compile the plugin -->
-    
     <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ftp</artifactId>
+                <version>2.4</version>
+            </extension>
+        </extensions>
         <defaultGoal>install</defaultGoal>
         <!-- Where our source directory is -->
         <sourceDirectory>${basedir}/src/mc</sourceDirectory>
-        <!-- Include all the resources we need -->            
+        <!-- Include all the resources we need -->
         <resources>
             <resource>
                 <targetPath>.</targetPath>
@@ -168,4 +179,10 @@
             </plugin>
         </plugins>
     </build>
+    <distributionManagement>
+        <repository>
+            <id>battleplugins-repo</id>
+            <url>ftp://ftp.battleplugins.com/public_html/battleplugins/maven/</url>
+        </repository>
+    </distributionManagement>
 </project>

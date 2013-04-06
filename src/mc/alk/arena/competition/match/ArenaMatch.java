@@ -31,6 +31,7 @@ import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.PermissionsUtil;
@@ -102,6 +103,7 @@ public class ArenaMatch extends Match {
 		if (t==null)
 			return;
 		Integer nDeaths = t.getNDeaths(target);
+//		Log.debug("   nDeaths ='" + nDeaths +"    " + nLivesPerPlayer);
 		boolean exiting = !respawns || (nDeaths != null && nDeaths >= nLivesPerPlayer);
 
 		/// If keepInventory is specified, but not restoreAll, then we have a case

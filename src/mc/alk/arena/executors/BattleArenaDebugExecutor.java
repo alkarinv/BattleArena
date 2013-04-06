@@ -362,7 +362,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 	@MCCommand(cmds={"giveAdminPerms"}, op=true)
 	public boolean giveAdminPerms(CommandSender sender, Player player, Boolean enable) {
-		PermissionsUtil.givePlayerAdminPerms(player,enable);
+		if (!PermissionsUtil.giveAdminPerms(player,enable)){
+			return sendMessage(sender,"&cCouldn't change the admin perms of &6"+player.getName());}
 		if (enable){
 			return sendMessage(sender,"&2 "+player.getName()+" &6now has&2 admin perms");
 		} else {

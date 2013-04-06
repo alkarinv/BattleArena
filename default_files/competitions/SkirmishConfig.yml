@@ -3,6 +3,7 @@ Skirmish:
     joinType: Queue
     database: arena
     rated: false
+    command: sk
     prefix: "&b[Skirmish]&e"
     victoryCondition: LastManStanding
     nTeams: 2

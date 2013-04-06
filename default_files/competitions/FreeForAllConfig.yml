@@ -2,6 +2,7 @@ FreeForAll:
     enabled: true
     joinType: JoinPhase
     database: ffa
+    rated: true
     prefix: "&c[FFA]&e"
     victoryCondition: LastManStanding
     nTeams: 2+

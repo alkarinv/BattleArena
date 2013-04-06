@@ -244,9 +244,9 @@ public class BAExecutor extends CustomCommandExecutor {
 		case ADDED_TO_QUEUE:
 			/// Annouce to the server if they have the option set
 			AnnouncementOptions ao = mp.getAnnouncementOptions();
-			Channel server = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
+			Channel channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
 				AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
-			server.broadcast(MessageHandler.getSystemMessage("server_joined_the_queue",
+			channel.broadcast(MessageHandler.getSystemMessage("server_joined_the_queue",
 					mp.getPrefix(),player.getDisplayName(),qpp.playersInQueue,qpp.neededPlayers));
 
 			String neededPlayers = qpp.neededPlayers == CompetitionSize.MAX ? "inf" : qpp.neededPlayers+"";
@@ -287,14 +287,14 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	private boolean hasMPPerm(ArenaPlayer player , MatchParams mp, String perm) {
+	protected boolean hasMPPerm(ArenaPlayer player , MatchParams mp, String perm) {
 		return player.hasPermission("arena."+mp.getName().toLowerCase()+"."+perm) ||
 				player.hasPermission("arena."+mp.getCommand().toLowerCase()+"."+perm) ||
 				player.hasPermission("arena."+perm+"."+mp.getName().toLowerCase()) ||
 				player.hasPermission("arena."+perm+"."+mp.getCommand().toLowerCase());
 	}
 
-	private boolean isDisabled(ArenaPlayer player, MatchParams mp) {
+	protected boolean isDisabled(ArenaPlayer player, MatchParams mp) {
 		if (disabled.contains(mp.getName())){
 			sendSystemMessage(player, "match_disabled",mp.getName());
 			final String enabled = ParamController.getAvaibleTypes(disabled);
@@ -546,17 +546,26 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"reload"}, admin=true, perm="arena.reload")
 	public boolean arenaReload(CommandSender sender, MatchParams mp) {
 		Plugin plugin = mp.getType().getPlugin();
-		if (ac.hasRunningMatches()){
-			sendMessage(sender, "&cYou can't reload the config while matches are running");
-			return sendMessage(sender, "&cYou can use &6/arena cancel all &6to cancel all matches");
+		if (ac.hasRunningMatches() || !ac.isQueueEmpty()){
+			sendMessage(sender, "&cYou can't reload the config while matches are running or people are waiting in the queue");
+			return sendMessage(sender, "&cYou can use &6/arena cancel all&c to cancel all matches and clear queues");
 		}
-		BattleArena.getSelf().reloadConfig();
+
+		ac.stop();
+		if (mp.getType().getName().equalsIgnoreCase("arena")){
+			BattleArena.getSelf().reloadConfig();
+		}
 
 		for (ArenaType type : ArenaType.getTypes(plugin)){
+//			Log.debug("#### removing " + type);
 			ac.removeAllArenas(type);
 		}
+		for (ArenaType type : ArenaType.getTypes(plugin)){
+//			Log.debug("#### laoding " + type);
+			ArenaSerializer.loadAllArenas(plugin,type);
+		}
+
 		CompetitionController.reloadCompetition(plugin, mp);
-		ArenaSerializer.loadAllArenas(plugin,mp.getType());
 
 		ac.resume();
 		return sendMessage(sender, "&6" + plugin.getName()+"&e configuration reloaded");
@@ -740,8 +749,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds={"duel","d"},helpOrder=10)
 	public boolean duel(ArenaPlayer player, MatchParams mp, String args[]) {
-		if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".duel") &&
-				!player.hasPermission("arena.duel."+mp.getCommand().toLowerCase()) ){
+		if (!hasMPPerm(player, mp, "duel")){
 			return sendMessage(player, "&cYou don't have permission to duel in a &6" + mp.getCommand());}
 		if (isDisabled(player, mp)){
 			return true;}
@@ -750,10 +758,10 @@ public class BAExecutor extends CustomCommandExecutor {
 			sendMessage(player,"&4[Duel] &cYou have already been challenged to a duel!");
 			return sendMessage(player,"&4[Duel] &6/"+mp.getCommand()+" reject&c to cancel the duel before starting your own");
 		}
+
 		/// Can the player join this match/event at this moment?
 		if (!canJoin(player)){
 			return true;}
-
 		if (EventController.isEventType(mp.getName())){
 			return sendMessage(player,"&4[Duel] &cYou can't duel someone in an Event type!");}
 
@@ -811,8 +819,9 @@ public class BAExecutor extends CustomCommandExecutor {
 					return sendMessage(player,"&4[Duel] Your teammate &6"+ap.getDisplayName()+"&c can't afford that wager!");}
 			}
 		}
-		mp.setMinTeams(2);
-		mp.setMaxTeams(2);
+
+		mp.setNTeams(new MinMax(2));
+
 		int size = duelOptions.getChallengedPlayers().size();
 		mp.setMinTeamSize(Math.min(t.size(), size));
 		mp.setMaxTeamSize(Math.max(t.size(), size));
@@ -824,6 +833,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		else if (duelOptions.hasOption(DuelOption.UNRATED))
 			mp.setRated(false);
 		JoinOptions jp = null;
+
 		/// Check to make sure at least one arena can be joined at some time
 		Arena arena = ac.getArenaByMatchParams(mp,jp);
 		if (arena == null){

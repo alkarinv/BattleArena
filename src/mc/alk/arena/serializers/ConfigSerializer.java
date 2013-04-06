@@ -138,11 +138,13 @@ public class ConfigSerializer extends BaseConfig{
 
 		pi.setOverrideBattleTracker(cs.getBoolean("overrideBattleTracker", true));
 		pi.setNLives(cs.getInt("nDeaths",1));
-		String nLives = cs.getString("nLives", "1");
-		if (nLives.equalsIgnoreCase("infinite")){
-			pi.setNLives(Integer.MAX_VALUE);
-		} else {
-			pi.setNLives(Integer.valueOf(nLives));
+		String nLives = cs.getString("nLives", null);
+		if (nLives != null){
+			if (nLives.equalsIgnoreCase("infinite")){
+				pi.setNLives(Integer.MAX_VALUE);
+			} else {
+				pi.setNLives(Integer.valueOf(nLives));
+			}
 		}
 		pi.setDuelOnly(cs.getBoolean("duelOnly", false));
 		pi.setNConcurrentCompetitions(cs.getInt("nConcurrentCompetitions",Integer.MAX_VALUE));

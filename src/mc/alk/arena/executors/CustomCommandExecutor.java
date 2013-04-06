@@ -56,8 +56,8 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
 
 	@Override
 	protected Arguments verifyArgs(MethodWrapper mwrapper, MCCommand cmd,
-			CommandSender sender, Command command, String label, String[] args, int startIndex
-			) throws IllegalArgumentException{
+			CommandSender sender, Command command, String label, String[] args, int startIndex)
+					throws IllegalArgumentException{
 
 		final boolean isPlayer = sender instanceof Player;
 		if (cmd.selection()){

@@ -252,7 +252,9 @@ public class APIRegistrationController {
 			exe.addMethods(executor, executor.getClass().getMethods());}
 
 		/// Set command to the executor
-		setCommandToExecutor(plugin, cmd, exe);
+		setCommandToExecutor(plugin, cmd.toLowerCase(), exe);
+		if (!mp.getCommand().equalsIgnoreCase(cmd))
+			setCommandToExecutor(plugin, mp.getCommand().toLowerCase(), exe);
 
 		/// Everything successful, register our competition
 		RegisteredCompetition rc = new RegisteredCompetition(plugin,name);

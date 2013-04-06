@@ -82,13 +82,16 @@ public class TransitionOptions {
 	public boolean clearInventory() {return options.containsKey(TransitionOption.CLEARINVENTORY);}
 	public boolean needsArmor() {return options.containsKey(TransitionOption.NEEDARMOR);}
 	public boolean needsItems() {return options.containsKey(TransitionOption.NEEDITEMS);}
-	public boolean hasItems() {return options.containsKey(TransitionOption.NEEDITEMS) || options.containsKey(TransitionOption.GIVEITEMS);}
+	public boolean hasItems() {
+		return options.containsKey(TransitionOption.NEEDITEMS) ||
+				options.containsKey(TransitionOption.GIVEITEMS);}
 	public boolean shouldTeleportWaitRoom() {return options.containsKey(TransitionOption.TELEPORTWAITROOM);}
 	public boolean shouldTeleportIn() {return options.containsKey(TransitionOption.TELEPORTIN);}
 	public boolean teleportsIn() {return shouldTeleportIn() || shouldTeleportWaitRoom();}
 
 	public boolean shouldTeleportOut() {
-		return options.containsKey(TransitionOption.TELEPORTOUT) || options.containsKey(TransitionOption.TELEPORTBACK) ||
+		return options.containsKey(TransitionOption.TELEPORTOUT) ||
+				options.containsKey(TransitionOption.TELEPORTBACK) ||
 				options.containsKey(TransitionOption.TELEPORTTO);
 	}
 

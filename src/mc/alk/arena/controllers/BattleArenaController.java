@@ -657,7 +657,9 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		Collection<Team> teams = amq.purgeQueue();
 		TeamController.removeTeams(teams, this);
 		for (Team t: teams){
-			methodController.callEvent(new TeamLeftQueueEvent(t));}
+			methodController.callEvent(new TeamLeftQueueEvent(t));
+			t.sendMessage("&cYou have been removed from the queue");
+		}
 		return teams;
 	}
 
@@ -689,5 +691,10 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	public String queuesToString() {
 		return amq.queuesToString();
+	}
+
+	public boolean isQueueEmpty() {
+		Collection<ArenaPlayer> col = getPlayersInAllQueues();
+		return col == null || col.isEmpty();
 	}
 }

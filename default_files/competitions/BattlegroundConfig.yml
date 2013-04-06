@@ -2,6 +2,7 @@ Battleground:
     enabled: true
     joinType: Queue
     database: bg
+    rated: true
     prefix: "&c[Battleground]&e"
     victoryCondition: highestKills
     matchTime: 60

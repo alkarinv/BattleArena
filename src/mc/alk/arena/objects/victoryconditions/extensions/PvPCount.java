@@ -47,6 +47,7 @@ public class PvPCount implements ArenaListener{
 
 	@MatchEventHandler(priority = EventPriority.LOW)
 	public void onFindCurrentLeader(MatchFindCurrentLeaderEvent event) {
+
 		Collection<Team> leaders = VictoryUtil.getLeaderByHighestKills(match);
 		if (leaders.size() > 1){
 			event.setCurrentDrawers(leaders);

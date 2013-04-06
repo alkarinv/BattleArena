@@ -45,6 +45,7 @@ public class RegisteredCompetition {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		plugin.reloadConfig();
 	}
 	public Plugin getPlugin(){
 		return plugin;

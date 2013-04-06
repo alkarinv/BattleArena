@@ -114,6 +114,9 @@ public class PerformTransition {
 			return true;}
 		final boolean teleportOut = mo.shouldTeleportOut();
 		final boolean wipeInventory = mo.clearInventory();
+		/// People that are quiting/leaving with wipeInventory should lose their inventory
+		/// even if they are "dead" or "offline"
+		final boolean forceClearInventory = wipeInventory && mo.shouldTeleportOut();
 
 		List<PotionEffect> effects = mo.getEffects()!=null ? new ArrayList<PotionEffect>(mo.getEffects()) : null;
 		final Integer health = mo.getHealth();
@@ -147,6 +150,7 @@ public class PerformTransition {
 				am.enterArena(player,team);
 				final Location l = jitter(am.getTeamSpawn(teamIndex,false),rand.nextInt(team.size()));
 				TeleportController.teleportPlayer(p, l, false, true);
+				PlayerUtil.setGod(p,false);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
 			} else {
 				playerReady = false;
@@ -213,6 +217,8 @@ public class PerformTransition {
 			if (teleportIn){
 				transition(am, MatchState.ONSPAWN, player, team, false);
 			}
+		} else if (forceClearInventory){
+			InventoryUtil.clearInventory(p);
 		}
 
 		/// Teleport out, need to do this at the end so that all the onCancel/onComplete options are completed first

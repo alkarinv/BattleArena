@@ -29,6 +29,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 
 
 public class MethodController {
@@ -228,12 +229,20 @@ public class MethodController {
 						}
 						getPlayerMethod = playerMethods.get(0);
 					} else if (!entityMethods.isEmpty()){
-						if (entityMethods.size() > 1 && !EntityDamageEvent.class.isAssignableFrom(bukkitEvent)){
+						if (bukkitEvent == EntityDeathEvent.class){
+							try {
+								getEntityMethod = EntityDeathEvent.class.getMethod("getEntity", new Class<?>[]{});
+							} catch (Exception e) {
+								e.printStackTrace();
+								continue;
+							}
+						} else if (entityMethods.size() > 1 && !EntityDamageEvent.class.isAssignableFrom(bukkitEvent)){
 							System.err.println(alClass+". Method "+method.getName() +" has multiple methods that return an entity");
 							System.err.println(alClass+". Use @MatchEventHandler(entityMethod=\"methodWhichYouWantToUse\")");
 							return;
+						} else {
+							getEntityMethod = entityMethods.get(0);
 						}
-						getEntityMethod = entityMethods.get(0);
 					}
 				}
 

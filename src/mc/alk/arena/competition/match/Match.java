@@ -54,8 +54,6 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.objects.victoryconditions.HighestKills;
-import mc.alk.arena.objects.victoryconditions.LastManStanding;
 import mc.alk.arena.objects.victoryconditions.NLives;
 import mc.alk.arena.objects.victoryconditions.NoTeamsLeft;
 import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
@@ -208,6 +206,7 @@ public abstract class Match extends Competition implements Runnable {
 		if (needsPotionEvents){
 			events.add(PotionSplashEvent.class);}
 		methodController.addSpecificEvents(this, events);
+
 	}
 
 	private void updateBukkitEvents(MatchState matchState){
@@ -860,24 +859,35 @@ public abstract class Match extends Competition implements Runnable {
 		VictoryCondition vt = VictoryType.createVictoryCondition(this);
 		/// Add a time limit unless one is provided by default
 		if (!(vt instanceof DefinesTimeLimit) && params.getMatchTime() > 0){
-			addVictoryCondition(new TimeLimit(this));}
+			addVictoryCondition(new TimeLimit(this));
+		}
+
+		/// set the number of lives
+		Integer nLives = params.getNLives();
+		if (nLives != null && nLives > 0 && !hasVictoryCondition(NLives.class)){
+			addVictoryCondition(new NLives(this,nLives));
+		}
+
 		/// Add a default number of teams unless the specified victory condition handles it
+		Integer nTeams = params.getMinTeams();
 		if (!(vt instanceof DefinesNumTeams)){
-			if (params.getMinTeams() == 1){
+			if (nTeams <= 0){
+				/* do nothing.  They want this event to be open even with no teams*/
+			} else if (nTeams == 1){
 				addVictoryCondition(new NoTeamsLeft(this));
 			} else {
 				addVictoryCondition(new OneTeamLeft(this));
 			}
 		}
-		/// Add a default number of lives unless specified... and unless HighestKills is specified...
-		if (!(vt instanceof HighestKills) && !(vt instanceof DefinesNumLivesPerPlayer)){
-			if (params.getNLives() <= 1){
-				addVictoryCondition(new LastManStanding(this));
-			} else {
-				addVictoryCondition(new NLives(this, params.getNLives()));
-			}
-		}
 		addVictoryCondition(vt);
+	}
+
+	private boolean hasVictoryCondition(Class<NLives> clazz) {
+		for (VictoryCondition vc: vcs){
+			if (vc.getClass() == clazz)
+				return true;
+		}
+		return false;
 	}
 
 	/**
