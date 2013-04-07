@@ -1,9 +1,17 @@
-version: 1.5.5
+version: 1.6.0
 
 system:
     type_enabled: "&2 type &6%s&2 enabled"
     type_disabled: "&2 type &6%s&2 disabled"
     time_format: "&6%s&e %s"
+    second: "second"
+    seconds: "seconds"
+    minute: "minute"
+    minutes: "minutes"
+    hour: "hour"
+    hours: "hours"
+    day: "day"
+    days: "days"
     zero_time: "&60"
     match_disabled: "&cThe &6%s&c is currently disabled"
     all_disabled: "&cThe arena system and all types are currently disabled"
@@ -103,7 +111,7 @@ match:
     leading_row: "&6{rank} : {name}({wins}{losses})" ## rank/wins/losses are all per match
     oneTeam: ### 1 team matches
         prestart: '&eYour {matchname}&e starts in {time}.'
-        server_prestart: '&6{matchprefix} is entering the {matchname}!'
+        server_prestart: '&6{matchprefix} {teamshort1} is entering the {matchname}!'
         start: '&4********** &eGood luck!!!! &4**********'
         server_start: ""
         victory: |
