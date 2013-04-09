@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.controllers.messaging.MessageFormatter;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.messaging.Message;
@@ -27,7 +28,10 @@ public class MessageSerializer extends BaseConfig {
 
 	private static HashMap<String,MessageSerializer> files = new HashMap<String,MessageSerializer>();
 
-	public MessageSerializer(String name){
+	protected MatchParams mp;
+
+	public MessageSerializer(String name, MatchParams params){
+		mp = params;
 		if (name == null)
 			return;
 		MessageSerializer ms = files.get(name);
@@ -180,6 +184,41 @@ public class MessageSerializer extends BaseConfig {
 		}
 
 		if (serverChannel != Channel.NullChannel && serverMessage != null){
+			msg = msgf.getFormattedMessage(serverMessage);
+			serverChannel.broadcast(msg);
+		}
+	}
+
+	public void sendAddedToTeam(Team team, ArenaPlayer player) {
+		Message message = getNodeMessage("common.added_to_team");
+		Set<MessageOption> ops = message.getOptions();
+		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), 1, message, ops);
+		msgf.formatTeamOptions(team, false);
+		msgf.formatPlayerOptions(player);
+		team.sendToOtherMembers(player,msgf.getFormattedMessage(message));
+	}
+
+	public void sendTeamJoinedEvent(Channel serverChannel, Team team) {
+		Message message = getNodeMessage("common.onjoin");
+		Message serverMessage = getNodeMessage("common.onjoin_server");
+		Set<MessageOption> ops = message.getOptions();
+		if (serverChannel != Channel.NullChannel){
+			ops.addAll(serverMessage.getOptions());
+		}
+
+		String msg = message.getMessage();
+		List<Team> teams = new ArrayList<Team>();
+		teams.add(team);
+		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), teams.size(), message, ops);
+		msgf.formatCommonOptions(teams);
+		for (Team t: teams){
+			msgf.formatTeamOptions(t,false);
+			msgf.formatTeams(teams);
+			String newmsg = msgf.getFormattedMessage(message);
+			t.sendMessage(newmsg);
+		}
+
+		if (serverChannel != Channel.NullChannel){
 			msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}

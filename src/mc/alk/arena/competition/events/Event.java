@@ -16,7 +16,6 @@ import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
-import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinStatus;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.messaging.EventMessageHandler;
@@ -257,22 +256,22 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
 
 	@Override
-	public void addTeam(Team team){
+	public boolean addTeam(Team team){
 		if (teams.contains(team)) /// adding a team twice is bad mmkay
-			return;
+			return true;
 		TeamController.addTeamHandler(team, this);
 		new TeamJoinedEvent(this,team).callEvent();
-		teams.add(team);
+		return teams.add(team);
 	}
 
-	public void addTeam(Player p){
-		ArenaPlayer ap = BattleArena.toArenaPlayer(p);
-		Team t = TeamController.getTeam(ap);
-		if (t == null){
-			t = TeamController.createTeam(ap);
-		}
-		addTeam(t);
-	}
+//	public void addTeam(Player p){
+//		ArenaPlayer ap = BattleArena.toArenaPlayer(p);
+//		Team t = TeamController.getTeam(ap);
+//		if (t == null){
+//			t = TeamController.createTeam(ap);
+//		}
+//		addTeam(t);
+//	}
 
 	/**
 	 * Called when a team wants to join
@@ -286,17 +285,17 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 			tjr = TeamJoinHandler.NOTOPEN;
 		else
 			tjr = joinHandler.joiningTeam(tqo);
-		if (tjr.status != TeamJoinStatus.CANT_FIT){
-//			mc.sendEventTeamJoiningMessage(tqo.getTeam()); /// TODO
-		}
 		switch(tjr.status){
 		case WAITING_FOR_PLAYERS:
 			mc.sendWaitingForMorePlayers(team, tjr.remaining);
-			/* drop down into ADDED, to add the players competition */
+			for (ArenaPlayer player: tqo.getTeam().getPlayers()){
+				player.addCompetition(this);}
+			break;
 		case ADDED_TO_EXISTING: /* drop down into added */
 		case ADDED:
 			for (ArenaPlayer player: tqo.getTeam().getPlayers()){
 				player.addCompetition(this);}
+			mc.sendTeamJoined(tqo.getTeam());
 			break;
 		case CANT_FIT:
 			mc.sendCantFitTeam(team);
@@ -492,7 +491,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	public void addedToTeam(Team team, Collection<ArenaPlayer> players) {/* do nothing */}
 
 	@Override
-	public void addedToTeam(Team team, ArenaPlayer player) {/* do nothing */}
+	public boolean addedToTeam(Team team, ArenaPlayer player) {return true;/* do nothing */}
 
 	@Override
 	public void removedFromTeam(Team team, Collection<ArenaPlayer> players) {/* do nothing */}

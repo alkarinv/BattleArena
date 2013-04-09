@@ -79,10 +79,11 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	public abstract MatchParams getParams();
 
 	/**
-	 * add a team to this competition
+	 * Add a team to this competition
 	 * @param team
+	 * @return true if the team was added, false if not
 	 */
-	public abstract void addTeam(Team team);
+	public abstract boolean addTeam(Team team);
 
 	/**
 	 * Remove the team from the competition
@@ -102,8 +103,9 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 * Signify that the set of players were added to the team
 	 * @param t
 	 * @param players
+	 * @return true if the player could be added to the team, false otherwise
 	 */
-	public abstract void addedToTeam(Team team, ArenaPlayer player);
+	public abstract boolean addedToTeam(Team team, ArenaPlayer player);
 
 	/**
 	 * Signify that the set of players were removed from the team

@@ -209,7 +209,7 @@ public class ArenaType implements Comparable<ArenaType>{
 
 
 	public static Collection<ArenaType> getTypes() {
-		return types.values();
+		return new HashSet<ArenaType>(types.values());
 	}
 
 	public static Collection<ArenaType> getTypes(Plugin plugin) {

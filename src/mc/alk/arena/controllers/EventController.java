@@ -53,5 +53,4 @@ public class EventController {
 	public static boolean isEventType(String name) {
 		return ParamController.getEventParamCopy(name) != null;
 	}
-
 }

@@ -4,9 +4,8 @@ Duel:
     victoryCondition: LastManStanding
     nTeams: 2+
     teamSize: 1+
-    duelOnly: true
     defaults:
-        options: [woolTeams]
+        options: [woolTeams, duelOnly]
     preReqs:
         options: []
     onEnter:

@@ -15,6 +15,7 @@ import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController;
+import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
@@ -54,7 +55,6 @@ import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.ServerUtil;
@@ -225,12 +225,24 @@ public class BAExecutor extends CustomCommandExecutor {
 			return true;}
 
 		TeamQObject tqo = new TeamQObject(t,mp,jp);
-
+		AnnouncementOptions ao = mp.getAnnouncementOptions();
+		Channel channel = null;
+		String sysmsg = null;
 		/// Add them to the queue
 		QueueResult qpp = ac.addToQue(tqo);
 		switch(qpp.status){
 		case ADDED_TO_EXISTING_MATCH:
-			t.sendMessage(MessageHandler.getSystemMessage("you_added_to_team"));
+			if (t.size() == 1){
+				t.sendMessage(MessageHandler.getSystemMessage("you_joined_event", mp.getName()));
+			} else {
+				t.sendMessage(MessageHandler.getSystemMessage("you_added_to_team"));
+			}
+			/// Annouce to the server if they have the option set
+			ao = mp.getAnnouncementOptions();
+			channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
+				AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
+			sysmsg = MessageHandler.getSystemMessage("match_starts_when_time",mp.getSecondsTillMatch());
+			t.sendMessage(sysmsg);
 			break;
 		case QUEUE_BUSY:
 			t.sendMessage(MessageHandler.getSystemMessage("queue_busy"));
@@ -243,14 +255,14 @@ public class BAExecutor extends CustomCommandExecutor {
 			break;
 		case ADDED_TO_QUEUE:
 			/// Annouce to the server if they have the option set
-			AnnouncementOptions ao = mp.getAnnouncementOptions();
-			Channel channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
+			ao = mp.getAnnouncementOptions();
+			channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
 				AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
-			channel.broadcast(MessageHandler.getSystemMessage("server_joined_the_queue",
-					mp.getPrefix(),player.getDisplayName(),qpp.playersInQueue,qpp.neededPlayers));
 
 			String neededPlayers = qpp.neededPlayers == CompetitionSize.MAX ? "inf" : qpp.neededPlayers+"";
-			String sysmsg = MessageHandler.getSystemMessage("joined_the_queue",
+			channel.broadcast(MessageHandler.getSystemMessage("server_joined_the_queue",
+					mp.getPrefix(),player.getDisplayName(),qpp.playersInQueue,neededPlayers));
+			sysmsg = MessageHandler.getSystemMessage("joined_the_queue",
 					mp.toPrettyString(),qpp.pos, neededPlayers);
 			StringBuilder msg = new StringBuilder(sysmsg != null ?
 					sysmsg : "&eYou joined the &6%s&e queue.");
@@ -546,7 +558,8 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"reload"}, admin=true, perm="arena.reload")
 	public boolean arenaReload(CommandSender sender, MatchParams mp) {
 		Plugin plugin = mp.getType().getPlugin();
-		if (ac.hasRunningMatches() || !ac.isQueueEmpty()){
+		BAEventController baec = BattleArena.getBAEventController();
+		if (ac.hasRunningMatches() || !ac.isQueueEmpty() || baec.hasOpenEvent()){
 			sendMessage(sender, "&cYou can't reload the config while matches are running or people are waiting in the queue");
 			return sendMessage(sender, "&cYou can use &6/arena cancel all&c to cancel all matches and clear queues");
 		}
@@ -555,16 +568,8 @@ public class BAExecutor extends CustomCommandExecutor {
 		if (mp.getType().getName().equalsIgnoreCase("arena")){
 			BattleArena.getSelf().reloadConfig();
 		}
-
-		for (ArenaType type : ArenaType.getTypes(plugin)){
-//			Log.debug("#### removing " + type);
-			ac.removeAllArenas(type);
-		}
-		for (ArenaType type : ArenaType.getTypes(plugin)){
-//			Log.debug("#### laoding " + type);
-			ArenaSerializer.loadAllArenas(plugin,type);
-		}
-
+		/// Get rid of any current players
+		PlayerController.clearArenaPlayers();
 		CompetitionController.reloadCompetition(plugin, mp);
 
 		ac.resume();
@@ -867,7 +872,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	public boolean arenaForceStart(CommandSender sender, MatchParams mp) {
 		int qsize = ac.getMatchingQueueSize(mp);
 		if (qsize <= 1){
-			return sendMessage(sender, "&c" + mp.getType()+" does not have enough teams queued");}
+			return sendMessage(sender, "&c"+mp.getType()+" does not have enough teams queued");}
 
 		if (ac.forceStart(mp,false)){
 			return sendMessage(sender, "&2" + mp.getType()+" has been started");

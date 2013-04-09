@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
@@ -50,6 +51,7 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
+import mc.alk.arena.objects.messaging.Channel.ServerChannel;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.queues.TeamQObject;
@@ -86,6 +88,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 
+/// TODO once I have GameLogic, split this into two matches, one for always open, one for normal
 public abstract class Match extends Competition implements Runnable {
 	public enum PlayerState{OUTOFMATCH,INMATCH};
 	static int count =0;
@@ -115,6 +118,9 @@ public abstract class Match extends Competition implements Runnable {
 	Long joinCutoffTime = null; /// at what point do we cut people off from joining
 	Integer currentTimer = null; /// Our current timer
 	Collection<Team> originalTeams = null;
+	final Set<Team> nonEndingTeams =
+			Collections.synchronizedSet(new HashSet<Team>());
+	final Map<Team,Integer> individualTeamTimers = Collections.synchronizedMap(new HashMap<Team,Integer>());
 
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
@@ -125,6 +131,8 @@ public abstract class Match extends Competition implements Runnable {
 	final boolean alwaysTeamNames;
 	final boolean respawnsWithClass;
 	final boolean cancelExpLoss;
+	final boolean individualWins;
+	final boolean alwaysOpen;
 
 	int neededTeams; /// How many teams do we need to properly start this match
 	final Plugin plugin;
@@ -134,9 +142,12 @@ public abstract class Match extends Competition implements Runnable {
 	MatchMessager mc; /// Our message instance
 	TeamJoinHandler joinHandler = null;
 
+
+
 	@SuppressWarnings("unchecked")
 	public Match(Arena arena, MatchParams params) {
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::" + params);
+		/// Assign variables
 		this.plugin = BattleArena.getSelf();
 		this.params = params;
 		this.arena = arena;
@@ -148,6 +159,7 @@ public abstract class Match extends Competition implements Runnable {
 		this.tops = params.getTransitionOptions();
 		arena.setMatch(this);
 		addVictoryConditions();
+		/// Assign variables from transitionoptions
 		noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
 		if (noEnter && arena.hasRegion())
 			WorldGuardController.setFlag(arena.getWorldGuardRegion(), WorldGuardFlag.ENTRY, !noEnter);
@@ -176,7 +188,9 @@ public abstract class Match extends Competition implements Runnable {
 		boolean stopsTeleports = tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE);
 		mo = tops.getOptions(MatchState.ONSPAWN);
 		this.respawnsWithClass = mo != null ? (mo.hasOption(TransitionOption.RESPAWNWITHCLASS)): false;
-
+		this.individualWins = tops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.INDIVIDUALWINS);
+		this.alwaysOpen = params.getAlwaysOpen();
+		/// Set waitroom variables
 		final Map<Integer,Location> wr = arena.getWaitRoomSpawnLocs();
 		if (wr != null && !wr.isEmpty()){
 			waitRoomStates = tops.getMatchStateRange(TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTIN);
@@ -206,7 +220,6 @@ public abstract class Match extends Competition implements Runnable {
 		if (needsPotionEvents){
 			events.add(PotionSplashEvent.class);}
 		methodController.addSpecificEvents(this, events);
-
 	}
 
 	private void updateBukkitEvents(MatchState matchState){
@@ -266,24 +279,32 @@ public abstract class Match extends Competition implements Runnable {
 	//			}
 	//		}, (long) (mp.getSecondsTillMatch() * 20L * Defaults.TICK_MULT));
 	//	}
+	private void preStartTeams(List<Team> teams, boolean matchPrestarting){
+		TransitionOptions ts = tops.getOptions(MatchState.ONPRESTART);
+		/// If we will teleport them into the arena for the first time, check to see they are ready first
+		if (ts != null && ts.teleportsIn()){
+			for (Team t: teams){
+				checkReady(t,tops.getOptions(MatchState.PREREQS));	}
+		}
+		PerformTransition.transition(this, MatchState.ONPRESTART, teams, true);
+		/// Send messages to teams and server, or just to the teams
+		if (matchPrestarting){
+			mc.sendOnPreStartMsg(teams);
+		} else {
+			mc.sendOnPreStartMsg(teams, ServerChannel.NullChannel);
+		}
+	}
 
 	private void preStartMatch() {
 		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::startMatch()");
 		transitionTo(MatchState.ONPRESTART);
-		/// If we will teleport them into the arena for the first time, check to see they are ready first
-		TransitionOptions ts = tops.getOptions(state);
-		if (ts != null && ts.teleportsIn()){
-			for (Team t: teams){
-				checkReady(t,tops.getOptions(MatchState.PREREQS));	}
-		}
 
 		updateBukkitEvents(MatchState.ONPRESTART);
 		callEvent(new MatchPrestartEvent(this,teams));
 
-		PerformTransition.transition(this, MatchState.ONPRESTART, teams, true);
+		preStartTeams(teams,true);
 		arenaInterface.onPrestart();
-		try{mc.sendOnPreStartMsg(teams);}catch(Exception e){e.printStackTrace();}
 		/// Schedule the start of the match
 		currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
@@ -294,6 +315,9 @@ public abstract class Match extends Competition implements Runnable {
 			joinCutoffTime = System.currentTimeMillis() + (params.getSecondsTillMatch()- Defaults.JOIN_CUTOFF_TIME)*1000;}
 	}
 
+	/**
+	 * If the match is already in the preStart phase, just start it
+	 */
 	public void start() {
 		if (state != MatchState.ONPRESTART)
 			return;
@@ -366,29 +390,58 @@ public abstract class Match extends Competition implements Runnable {
 		return alive;
 	}
 
+	private synchronized void matchWinLossOrDraw(MatchResult result) {
+		if (alwaysOpen){
+			this.nonEndingMatchWinLossOrDraw(result);
+		} else {
+			this.endingMatchWinLossOrDraw(result);
+		}
+	}
+
 	private synchronized void nonEndingMatchWinLossOrDraw(MatchResult result){
+		List<Team> remove = new ArrayList<Team>();
+		for (Team t: result.getLosers())
+			if (!nonEndingTeams.add(t) || t.size()==0)
+				remove.add(t); /// they are already being handled
+		result.removeLosers(remove);
+		remove.clear();
+		for (Team t: result.getDrawers())
+			if (!nonEndingTeams.add(t)|| t.size()==0)
+				remove.add(t); /// they are already being handled
+		result.removeDrawers(remove);
+		remove.clear();
+		for (Team t: result.getVictors())
+			if (!nonEndingTeams.add(t)|| t.size()==0)
+				remove.add(t); /// they are already being handled
+		result.removeVictors(remove);
+
+		if (result.getLosers().isEmpty() && result.getDrawers().isEmpty() && result.getVictors().isEmpty())
+			return;
+
 		MatchResultEvent event = new MatchResultEvent(this,result);
 		callEvent(event);
 		if (event.isCancelled()){
 			return;
 		}
-		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
+		int timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 				new NonEndingMatchVictory(this,result),2L);
+		for (Team t: teams)
+			individualTeamTimers.put(t, timerid);
 	}
 
-	private synchronized void matchWinLossOrDraw() {
+	private synchronized void endingMatchWinLossOrDraw(MatchResult result) {
 		/// this might be called multiple times as multiple players might meet the victory condition within a small
 		/// window of time.  But only let the first one through
 		if (state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL)
 			return;
-
-		MatchResultEvent event = new MatchResultEvent(this,matchResult);
+		this.matchResult = result;
+		MatchResultEvent event = new MatchResultEvent(this,result);
 		callEvent(event);
 		if (event.isCancelled()){
 			return;
 		}
 		transitionTo(MatchState.ONVICTORY);
-		arenaInterface.onVictory(matchResult);
+		arenaInterface.onVictory(result);
 		/// Call the rest after a 2 tick wait to ensure the calling transitionMethods complete before the
 		/// victory conditions start rolling in
 		currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new MatchVictory(this),2L);
@@ -419,9 +472,12 @@ public abstract class Match extends Competition implements Runnable {
 			}
 
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
-			currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
+			int timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 					new NonEndingMatchCompleted(am, result, teams),
 					(long) (params.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
+			for (Team t: teams)
+				individualTeamTimers.put(t, timerid);
+
 		}
 	}
 
@@ -469,7 +525,7 @@ public abstract class Match extends Competition implements Runnable {
 			PerformTransition.transition(am, MatchState.ONCOMPLETE, teams, true);
 			/// Once again, lets delay this final bit so that transitions have time to finish before
 			/// Other splisteners get a chance to handle
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable(){
+			int timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable(){
 				public void run() {
 					/// Losers and winners get handled after the match is complete
 					if (result.getLosers() != null){
@@ -493,8 +549,11 @@ public abstract class Match extends Competition implements Runnable {
 					nonEndingDeconstruct(teams);
 				}
 			});
+			for (Team t: teams)
+				individualTeamTimers.put(t, timerid);
 		}
 	}
+
 	class MatchCompleted implements Runnable{
 		final Match am;
 
@@ -544,9 +603,15 @@ public abstract class Match extends Competition implements Runnable {
 		state = MatchState.ONCANCEL;
 		arenaInterface.onCancel();
 		for (Team t : teams){
-			if (t == null) ///What is going on with teams!??? TODO
+			if (t == null)
 				continue;
 			PerformTransition.transition(this, MatchState.ONCANCEL,t,true);
+		}
+		/// For players that were in the process of joining when cancel happened
+		for (Entry<Team,Integer> entry : individualTeamTimers.entrySet()){
+			Bukkit.getScheduler().cancelTask(entry.getValue());
+			if (!teams.contains(entry.getKey()))
+				PerformTransition.transition(this, MatchState.ONCANCEL,entry.getKey(),true);
 		}
 		callEvent(new MatchCancelledEvent(this));
 		updateBukkitEvents(MatchState.ONCANCEL);
@@ -557,6 +622,7 @@ public abstract class Match extends Competition implements Runnable {
 		final Match match = this;
 		for (Team t: teams){
 			TeamController.removeTeamHandler(t, match);
+
 			PerformTransition.transition(this, MatchState.ONFINISH,t,true);
 			for (ArenaPlayer p: t.getPlayers()){
 				stopTracking(p);
@@ -566,7 +632,10 @@ public abstract class Match extends Competition implements Runnable {
 				if (joinHandler != null)
 					joinHandler.leave(p);
 			}
+			individualTeamTimers.remove(t);
 		}
+		nonEndingTeams.removeAll(teams);
+		this.teams.removeAll(teams);
 	}
 
 	private void deconstruct(){
@@ -582,6 +651,19 @@ public abstract class Match extends Competition implements Runnable {
 				p.removeCompetition(this);
 			}
 		}
+		/// For players that were in the process of joining when deconstruct happened
+		for (Entry<Team,Integer> entry : individualTeamTimers.entrySet()){
+			Bukkit.getScheduler().cancelTask(entry.getValue());
+			if (!teams.contains(entry.getKey())){
+				TeamController.removeTeamHandler(entry.getKey(), match);
+				PerformTransition.transition(this, MatchState.ONCANCEL,entry.getKey(),true);
+				for (ArenaPlayer p: entry.getKey().getPlayers()){
+					stopTracking(p);
+					p.removeCompetition(this);
+				}
+			}
+		}
+
 		arenaInterface.onFinish();
 		insideArena.clear();
 		insideWaitRoom.clear();
@@ -590,12 +672,12 @@ public abstract class Match extends Competition implements Runnable {
 		//		arenaListeners.clear();
 		if (joinHandler != null){
 			joinHandler.deconstruct();}
-		joinHandler = null;
 	}
 
 	@Override
-	public void addTeam(Team team){
-		if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addTeam("+team.getName()+":"+team.getId()+")");
+	public boolean addTeam(Team team){
+		if (this.isFinished())
+			if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addTeam("+team.getName()+":"+team.getId()+")");
 		teamIndexes.put(team, teams.size());
 		teams.add(team);
 		team.reset();/// reset scores, set alive
@@ -603,12 +685,13 @@ public abstract class Match extends Competition implements Runnable {
 		if ( alwaysTeamNames || (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND)){
 			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
 		for (ArenaPlayer p: team.getPlayers()){
-			privateAddPlayer(team,p);}
-		PerformTransition.transition(this, MatchState.ONJOIN, team, true);
+			privateAddedToTeam(team,p);}
+		joiningOngoing(team, null);
+		return true;
 	}
 
 	/** Called during both, addTeam and addedToTeam */
-	private void privateAddPlayer(Team team, ArenaPlayer player){
+	private void privateAddedToTeam(Team team, ArenaPlayer player){
 		leftPlayers.remove(player.getName()); /// remove players from the list as they are now joining again
 		insideArena.remove(player.getName());
 		team.setAlive(player);
@@ -635,14 +718,50 @@ public abstract class Match extends Competition implements Runnable {
 	 * @param t
 	 */
 	@Override
-	public void addedToTeam(Team team, ArenaPlayer player) {
+	public boolean addedToTeam(final Team team, final ArenaPlayer player) {
+		if (isEnding())
+			return false;
 		if (Defaults.DEBUG_MATCH_TEAMS)
 			Log.info(getID()+" addedToTeam("+team.getName()+":"+team.getId()+", " + player.getName()+") inside="+insideArena.contains(player.getName()));
 
 		if (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND){
 			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
-		privateAddPlayer(team,player);
-		PerformTransition.transition(this, MatchState.ONJOIN, player,team, true);
+		privateAddedToTeam(team,player);
+
+		mc.sendAddedToTeam(team,player);
+//		team.sendToOtherMembers(player, MessageController.);
+
+		joiningOngoing(team, player);
+		return true;
+	}
+
+	private static void doTransition(Match match, MatchState state, ArenaPlayer player, Team team, boolean onlyInMatch){
+		if (player != null){
+			PerformTransition.transition(match, state, player,team, onlyInMatch);
+		} else {
+			PerformTransition.transition(match, state, team, onlyInMatch);
+		}
+	}
+
+	private void joiningOngoing(final Team team, final ArenaPlayer player) {
+		final Match match = this;
+		/// onJoin Them
+		doTransition(match, MatchState.ONJOIN, player,team, true);
+		/// onPreStart Them
+		if (state.ordinal() >= MatchState.ONPRESTART.ordinal()){
+			doTransition(match, MatchState.ONPRESTART, player,team, true);
+
+			/// onStart Them
+			if (state.ordinal() >= MatchState.ONSTART.ordinal()){
+				int timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+					public void run() {
+						doTransition(match, MatchState.ONSTART, player,team, true);
+					}
+				}, (long) (params.getSecondsTillMatch() * 20L * Defaults.TICK_MULT));
+				for (Team t: teams)
+					individualTeamTimers.put(t, timerid);
+			}
+		}
 	}
 
 	/**
@@ -928,6 +1047,7 @@ public abstract class Match extends Competition implements Runnable {
 	 */
 	public Arena getArena() {return arena;}
 
+	public boolean isEnding() {return isWon() || isFinished();}
 	public boolean isFinished() {return state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isWon() {return state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isStarted() {return state == MatchState.ONSTART;}
@@ -987,7 +1107,7 @@ public abstract class Match extends Competition implements Runnable {
 
 	public void endMatchWithResult(MatchResult result){
 		this.matchResult = result;
-		matchWinLossOrDraw();
+		matchWinLossOrDraw(result);
 	}
 
 	public void setVictor(ArenaPlayer p){
@@ -1012,12 +1132,18 @@ public abstract class Match extends Competition implements Runnable {
 	}
 
 	public synchronized void setVictor(final Collection<Team> winningTeams){
-		matchResult.setVictors(winningTeams);
-		ArrayList<Team> losers= new ArrayList<Team>(teams);
-		losers.removeAll(winningTeams);
-		matchResult.addLosers(losers);
-		matchResult.setResult(WinLossDraw.WIN);
-		endMatchWithResult(matchResult);
+		if (individualWins){
+			MatchResult result = new MatchResult();
+			result.setVictors(winningTeams);
+			endMatchWithResult(result);
+		} else {
+			matchResult.setVictors(winningTeams);
+			ArrayList<Team> losers= new ArrayList<Team>(teams);
+			losers.removeAll(winningTeams);
+			matchResult.addLosers(losers);
+			matchResult.setResult(WinLossDraw.WIN);
+			endMatchWithResult(matchResult);
+		}
 	}
 
 	public synchronized void setDraw(){
@@ -1138,7 +1264,7 @@ public abstract class Match extends Competition implements Runnable {
 		if (result.isUnknown()){
 			result.setDrawers(teams);}
 		try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
-		endMatchWithResult(result);
+		this.endingMatchWinLossOrDraw(result);
 	}
 
 	public void intervalTick(int remaining) {
@@ -1159,11 +1285,18 @@ public abstract class Match extends Competition implements Runnable {
 	public boolean hasWaitroom() {
 		return waitRoomStates != null;
 	}
+
+	public boolean isJoinablePostCreate(){
+		return joinHandler != null && (alwaysOpen || tops.hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN) ||
+				 (hasWaitroom() && !joinHandler.isFull()));
+	}
+
 	public boolean canStillJoin() {
-		return joinHandler != null &&
-				(tops.hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN) ||
-				((hasWaitroom() && !joinHandler.isFull()) &&
-				(isInWaitRoomState() && (joinCutoffTime == null || System.currentTimeMillis() < joinCutoffTime)) ));
+		if (joinHandler == null)
+			return false;
+		return alwaysOpen || tops.hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN) ||
+				 ( hasWaitroom() && !joinHandler.isFull() &&
+						 (isInWaitRoomState() && (joinCutoffTime == null || System.currentTimeMillis() < joinCutoffTime)));
 	}
 
 	public void setReady(ArenaPlayer ap) {
@@ -1203,5 +1336,9 @@ public abstract class Match extends Competition implements Runnable {
 				return false;
 		}
 		return true;
+	}
+
+	public boolean alwaysOpen() {
+		return alwaysOpen;
 	}
 }

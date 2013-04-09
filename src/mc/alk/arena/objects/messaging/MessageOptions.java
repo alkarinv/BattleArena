@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 
 public class MessageOptions {
 	public static enum MessageOption{
+		PLAYERNAME("{playername}"), NPLAYERS("{nplayers}"),
 		TEAM("{team}"), TEAMSHORT("{teamshort}"), TEAMLONG("{teamlong}"),
 		TEAM1("{team1}"), TEAMSHORT1("{teamshort1}"), TEAMLONG1("{teamlong1}"),
 		TEAM2("{team2}"), TEAMSHORT2("{teamshort2}"), TEAMLONG2("{teamlong2}"),
@@ -16,6 +17,7 @@ public class MessageOptions {
 		WINSAGAINST("{winsagainst}"), LOSSESAGAINST("{lossesagainst}"),
 		WINNER("{winner}"), WINNERSHORT("{winnershort}"),WINNERLONG("{winnerlong}"),
 		LOSER("{loser}"), LOSERSHORT("{losershort}"),LOSERLONG("{loserlong}"),
+		COMPNAME("{compname}"), PREFIX("{prefix}"),
 		MATCHNAME("{matchname}"), MATCHPREFIX("{matchprefix}"),
 		EVENTNAME("{eventname}"), EVENTPREFIX("{eventprefix}"),
 		CMD("{cmd}"),

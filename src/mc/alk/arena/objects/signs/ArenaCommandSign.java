@@ -35,12 +35,14 @@ public class ArenaCommandSign {
 
 	private void performMatchAction(ArenaPlayer player) {
 		BAExecutor executor = BattleArena.getBAExecutor();
-		String args[] = {options1,options2};
+		String args[];
 		switch (command){
 		case JOIN:
+			args = new String[]{"join", options1,options2};
 			executor.join(player, mp, args, true);
 			break;
 		case LEAVE:
+			args = new String[]{"leave", options1,options2};
 			executor.leave(player,mp,true);
 			break;
 		case START:
@@ -51,12 +53,14 @@ public class ArenaCommandSign {
 	private void performEventAction(ArenaPlayer player) {
 		EventParams ep = (EventParams)mp;
 		EventExecutor executor = EventController.getEventExecutor(ep.getType().getName());
-		String args[] = {options1,options2};
+		String args[];
 		switch (command){
 		case JOIN:
+			args = new String[]{"join", options1,options2};
 			executor.join(player, ep, args, true);
 			break;
 		case LEAVE:
+			args = new String[]{"leave", options1,options2};
 			executor.leave(player,ep,true);
 			break;
 		case START:

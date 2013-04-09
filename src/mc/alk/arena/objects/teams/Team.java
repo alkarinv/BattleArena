@@ -118,5 +118,10 @@ public interface Team {
 
 	public void removePlayers(Collection<ArenaPlayer> players);
 
+	/**
+	 * Reset/clear all variables of this team
+	 */
+	public void clear();
+
 }
 

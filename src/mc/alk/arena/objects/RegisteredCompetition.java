@@ -1,5 +1,8 @@
 package mc.alk.arena.objects;
 
+import mc.alk.arena.BattleArena;
+import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
@@ -37,16 +40,43 @@ public class RegisteredCompetition {
 		this.arenaSerializer = arenaSerializer;
 	}
 
-	public void reloadConfigType() {
-		configSerializer.reloadFile();
+	public void reload(){
+		reloadConfigType();
+		reloadExecutors();
+		reloadArenas();
+		reloadMessages();
+	}
+
+	private void reloadMessages(){
+		/// Reload messages
 		MessageSerializer.reloadConfig(competitionName);
+	}
+
+	private void reloadExecutors(){
+		/* TODO allow them to switch from duel, to JoinPhase, Queue without a restart */
+	}
+
+	private void reloadArenas(){
+		BattleArenaController ac = BattleArena.getBAController();
+		for (ArenaType type : ArenaType.getTypes(plugin)){
+			ac.removeAllArenas(type);
+		}
+		for (ArenaType type : ArenaType.getTypes(plugin)){
+			ArenaSerializer.loadAllArenas(plugin,type);
+		}
+	}
+
+	private void reloadConfigType() {
+		configSerializer.reloadFile();
 		try {
-			configSerializer.loadType();
+			/// The config serializer will also deal with MatchParams registration and aliases
+			configSerializer.loadMatchParams();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		plugin.reloadConfig();
 	}
+
 	public Plugin getPlugin(){
 		return plugin;
 	}

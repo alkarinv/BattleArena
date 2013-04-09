@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.Team;
@@ -34,6 +35,16 @@ public class MatchTransitions {
 		Map<TransitionOption,Object> ops = tops.getOptions();
 		if (ops != null)
 			allops.addAll(ops.keySet());
+	}
+
+	public void addTransitionOption(MatchState state, TransitionOption option) throws InvalidOptionException {
+		allops.add(option);
+		TransitionOptions tops = ops.get(state);
+		if (tops == null){
+			tops = new TransitionOptions();
+			ops.put(state, tops);
+		}
+		tops.addOption(option);
 	}
 
 	public void removeTransitionOptions(MatchState ms) {
@@ -116,13 +127,13 @@ public class MatchTransitions {
 		}
 		return true;
 	}
-	public List<MatchState> getMatchStateRange(TransitionOption option, TransitionOption endOption) {
+	public List<MatchState> getMatchStateRange(TransitionOption startOption, TransitionOption endOption) {
 		boolean foundOption = false;
 		List<MatchState> list = new ArrayList<MatchState>();
 		for (MatchState ms : MatchState.values()){
 			TransitionOptions to = ops.get(ms);
 			if (to == null) continue;
-			if (to.hasOption(option)){
+			if (to.hasOption(startOption)){
 				foundOption = true;}
 			if (to.hasOption(endOption))
 				return list;

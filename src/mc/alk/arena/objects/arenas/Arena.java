@@ -578,11 +578,9 @@ public class Arena implements ArenaListener {
 	 * Start any spawns happening for this arena
 	 */
 	public void startSpawns(){
-		/// Start Spawning Items
-		if (timedSpawns != null && !timedSpawns.isEmpty()){
-			spawnController = new SpawnController(timedSpawns);
-			spawnController.start();
-		}
+		SpawnController sc = getSpawnController();
+		if (sc != null)
+			sc.start();
 	}
 
 	/**

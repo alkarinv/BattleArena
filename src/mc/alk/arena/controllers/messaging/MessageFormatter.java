@@ -75,10 +75,14 @@ public class MessageFormatter{
 			try{
 				switch(mop){
 				case CMD: replaceList[i] = mp.getCommand(); break;
-				case MATCHPREFIX: replaceList[i] = mp.getPrefix(); break;
-				case MATCHNAME: replaceList[i] = mp.getName(); break;
-				case EVENTPREFIX: replaceList[i] = mp.getPrefix(); break;
-				case EVENTNAME: replaceList[i] = mp.getName(); break;
+				case PREFIX:
+				case MATCHPREFIX:
+				case EVENTPREFIX: replaceList[i] = mp.getPrefix();
+					break;
+				case COMPNAME:
+				case EVENTNAME:
+				case MATCHNAME: replaceList[i] = mp.getName();
+					break;
 				case SECONDS: replaceList[i] = seconds != null ? seconds.toString(): null; break;
 				case TIME: replaceList[i] = seconds != null ? TimeUtil.convertSecondsToString(seconds): null; break;
 				case TEAM1:
@@ -134,6 +138,23 @@ public class MessageFormatter{
 			i++;
 		}
 		commonIndex = i;
+	}
+
+	public void formatPlayerOptions(ArenaPlayer player){
+		int i = commonIndex;
+		for (MessageOption mop : ops){
+			if (mop == null)
+				continue;
+			switch(mop){
+			case PLAYERNAME: replaceList[i] = player.getDisplayName(); break;
+			default:
+				continue;
+			}
+			searchList[i] = mop.getReplaceString();
+			i++;
+		}
+		teamIndex = i;
+		curIndex = i;
 	}
 
 	public void formatTeamOptions(Team team, boolean isWinner){

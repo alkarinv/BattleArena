@@ -21,7 +21,7 @@ public class EventMessager {
 		this.bos = event.getParams().getAnnouncementOptions();
 	}
 
-	private Channel getChannel(MatchState state) {
+	protected Channel getChannel(MatchState state) {
 		if (silent) return Channel.NullChannel;
 		return bos != null && bos.hasOption(false,state) ? bos.getChannel(false,state) :
 			AnnouncementOptions.getDefaultChannel(false,state);
@@ -79,6 +79,11 @@ public class EventMessager {
 	public void sendEventDraw(Collection<Team> drawers, Collection<Team> losers) {
 		try{impl.sendEventDraw(getChannel(MatchState.ONVICTORY), drawers, losers);}catch(Exception e){e.printStackTrace();}
 	}
+
+	public void sendTeamJoined(Team team) {
+		try{impl.sendTeamJoinedEvent(getChannel(MatchState.ONJOIN),team);}catch(Exception e){e.printStackTrace();}
+	}
+
 
 //	public void sendEventJoin(Team team, ArenaPlayer player) {
 //		try{impl.sendEventJoin(getChannel(MatchState.ONJOIN), drawers, losers);}catch(Exception e){e.printStackTrace();}

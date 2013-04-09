@@ -38,7 +38,6 @@ import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.arena.util.Util;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -173,7 +172,6 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		if (m==null){
 			eventCancelled();
 			Log.err("[BA Error] match completed but not found in tournament");
-			Util.printStackTrace();
 			return;
 		}
 		Team victor = null;
@@ -375,16 +373,22 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 	public void broadcastAlive(String msg){for (Team t : aliveTeams){t.sendMessage(msg);}}
 
 	@Override
-	public void addedToTeam(Team team, ArenaPlayer ap){
-		super.addedToTeam(team, ap);
-		if (team.size() == 1){ /// it's finally a valid team
-			announceTourneySize();}
+	public boolean addedToTeam(Team team, ArenaPlayer ap){
+		if (super.addedToTeam(team, ap)){
+			if (team.size() == 1){ /// it's finally a valid team
+				announceTourneySize();}
+			return true;
+		}
+		return false;
 	}
 
 	@Override
-	public void addTeam(Team team){
-		super.addTeam(team);
-		announceTourneySize();
+	public boolean addTeam(Team team){
+		if (super.addTeam(team)){
+			announceTourneySize();
+			return true;
+		}
+		return false;
 	}
 
 	private void announceTourneySize() {

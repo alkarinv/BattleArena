@@ -25,7 +25,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 	final Event event;
 
 	public EventMessageImpl(Event e ){
-		super(e.getParams().getName());
+		super(e.getParams().getName(), e.getParams());
 		this.mp = e.getParams();
 		this.event = e;
 	}
@@ -88,10 +88,6 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		MessageUtil.sendMessage(competingPlayers,mp.getPrefix()+"&e The Event has been cancelled b/c there weren't enough players");
 	}
 
-	@Override
-	public void sendTeamJoinedEvent(Channel serverChannel, Team t) {
-		t.sendMessage("&eYou have joined the &6" + mp.getName());
-	}
 
 	@Override
 	public void sendEventCancelled(Channel serverChannel, Collection<Team> teams) {

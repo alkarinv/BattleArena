@@ -39,7 +39,8 @@ public class CompetitionController {
 		RegisteredCompetition rc = getCompetition(plugin,mp.getName());
 		if (rc == null)
 			return false;
-		rc.reloadConfigType();
+
+		rc.reload();
 		return true;
 	}
 

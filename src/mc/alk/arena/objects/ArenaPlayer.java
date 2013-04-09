@@ -7,7 +7,6 @@ import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
-import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -155,9 +154,6 @@ public class ArenaPlayer {
 
 	public void addCompetition(Competition competition) {
 		competitions.push(competition);
-		if (competitions.size() > 2){ /// TODO remove once I'm confident about new system
-			Util.printStackTrace();
-		}
 	}
 
 	public boolean removeCompetition(Competition competition) {

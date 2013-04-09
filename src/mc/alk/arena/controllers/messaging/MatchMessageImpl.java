@@ -9,7 +9,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchMessageEvent;
 import mc.alk.arena.events.matches.messages.MatchIntervalMessageEvent;
 import mc.alk.arena.events.matches.messages.MatchTimeExpiredMessageEvent;
-import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.messaging.Message;
@@ -28,15 +28,15 @@ import mc.alk.arena.util.TimeUtil;
  *
  */
 public class MatchMessageImpl extends MessageSerializer implements MatchMessageHandler {
-	final MatchParams mp;
 	final Match match;
 	final String typeName;
+	final String typedot;
 
 	public MatchMessageImpl(Match m){
-		super(m.getParams().getName());
-		this.mp = m.getParams();
+		super(m.getParams().getName(), m.getParams());
 		this.match = m;
 		typeName = mp.getName();
+		typedot = "match.";
 	}
 
 	@Override
@@ -56,8 +56,8 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 
 	private void sendMessageToTeams(Channel serverChannel, Collection<Team> teams, String path, String serverpath, Integer seconds){
 		final String nTeamPath = getStringPathFromSize(teams.size());
-		Message message = getNodeMessage("match."+ nTeamPath+"."+path);
-		Message serverMessage = getNodeMessage("match."+ nTeamPath+"."+serverpath);
+		Message message = getNodeMessage(typedot+ nTeamPath+"."+path);
+		Message serverMessage = getNodeMessage(typedot+ nTeamPath+"."+serverpath);
 		Set<MessageOption> ops = message.getOptions();
 		if (serverChannel != Channel.NullChannel){
 			ops.addAll(serverMessage.getOptions());
@@ -87,7 +87,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		final String nTeamPath = getStringPathFromSize(size);
 		for (VictoryCondition vc: match.getVictoryConditions()){
 			if (vc instanceof DefinesLeaderRanking){
-				List<Team> leaders = ((DefinesLeaderRanking)vc).getRankings();
+				List<Team> leaders = ((DefinesLeaderRanking)vc).getLeaders();
 				if (leaders==null)
 					continue;
 				int max = Math.min(leaders.size(), 4);
@@ -108,16 +108,16 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 			}
 		}
 
-		sendVictory(serverChannel,victors,losers,mp,"match."+nTeamPath+".victory","match."+nTeamPath+".loss",
-				"match."+nTeamPath+".server_victory");
+		sendVictory(serverChannel,victors,losers,mp,typedot+nTeamPath+".victory",typedot+nTeamPath+".loss",
+				typedot+nTeamPath+".server_victory");
 	}
 
 	@Override
 	public void sendOnDrawMsg(Channel serverChannel, Collection<Team> drawers, Collection<Team> losers) {
 		int size = (drawers != null ? drawers.size() : 0) + (losers != null ? losers.size() : 0);
 		final String nTeamPath = getStringPathFromSize(size);
-		sendVictory(serverChannel,null,drawers,mp,"match."+nTeamPath+".draw","match."+nTeamPath+".draw",
-				"match."+nTeamPath+".server_draw");
+		sendVictory(serverChannel,null,drawers,mp,typedot+nTeamPath+".draw",typedot+nTeamPath+".draw",
+				typedot+nTeamPath+".server_draw");
 	}
 
 	public void sendYourTeamNotReadyMsg(Team t1) {
@@ -130,12 +130,22 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	public void sendOtherTeamNotReadyMsg(Team t1) {
-		Message message = getNodeMessage("match."+typeName+".other_team_not_ready");
+		Message message = getNodeMessage(typedot+typeName+".other_team_not_ready");
 		Set<MessageOption> ops = message.getOptions();
 
 		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), 1, message, ops);
 		msgf.formatTeamOptions(t1, false);
 		t1.sendMessage(msgf.getFormattedMessage(message));
+	}
+
+	@Override
+	public void sendAddedToTeam(Team team, ArenaPlayer player) {
+		Message message = getNodeMessage("common.added_to_team");
+		Set<MessageOption> ops = message.getOptions();
+		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), 1, message, ops);
+		msgf.formatTeamOptions(team, false);
+		msgf.formatPlayerOptions(player);
+		team.sendToOtherMembers(player,msgf.getFormattedMessage(message));
 	}
 
 	public void sendOnIntervalMsg(Channel serverChannel, Collection<Team> currentLeaders, int remaining) {
@@ -213,5 +223,6 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		}
 		return MessageFormatter.replaceEach(text, searchList, replaceList);
 	}
+
 
 }

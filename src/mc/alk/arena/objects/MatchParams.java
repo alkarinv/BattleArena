@@ -18,7 +18,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	Integer nDeaths = 1;
 	boolean overrideDefaultBattleTracker = true;
 	int numConcurrentCompetitions = Integer.MAX_VALUE;
-	boolean duelOnly = false;
 
 	public MatchParams(ArenaType at, Rating rating, VictoryType vc) {
 		super(at);
@@ -26,16 +25,15 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.vc = vc;
 	}
 
-	public MatchParams(MatchParams q) {
-		super(q);
-		this.prefix = q.prefix;
-		this.vc = q.vc;
-		this.matchTime = q.matchTime;
-		this.intervalTime = q.intervalTime;
-		this.ao = q.ao;
-		this.nDeaths = q.nDeaths;
-		this.numConcurrentCompetitions = q.numConcurrentCompetitions;
-		this.duelOnly = q.duelOnly;
+	public MatchParams(MatchParams mp) {
+		super(mp);
+		this.prefix = mp.prefix;
+		this.vc = mp.vc;
+		this.matchTime = mp.matchTime;
+		this.intervalTime = mp.intervalTime;
+		this.ao = mp.ao;
+		this.nDeaths = mp.nDeaths;
+		this.numConcurrentCompetitions = mp.numConcurrentCompetitions;
 	}
 
 	public VictoryType getVictoryType() {return vc;}
@@ -72,12 +70,15 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public void setIntervalTime(Integer intervalTime) {
 		this.intervalTime = intervalTime;
 	}
+
 	public void setNLives(Integer ndeaths){
 		this.nDeaths = ndeaths;
 	}
+
 	public Integer getNLives(){
 		return nDeaths;
 	}
+
 	@Override
 	public int hashCode() {
 		return ((arenaType.ordinal()) << 27) +(rating.ordinal() << 25) + (minTeams<<12)+(vc.ordinal() << 8) + minTeamSize;
@@ -124,13 +125,5 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	public JoinType getJoinType() {
 		return JoinType.QUEUE;
-	}
-
-	public boolean isDuelOnly() {
-		return duelOnly;
-	}
-
-	public void setDuelOnly(boolean bool) {
-		this.duelOnly = bool;
 	}
 }

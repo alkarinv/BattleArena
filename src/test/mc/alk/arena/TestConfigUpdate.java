@@ -9,8 +9,8 @@ import java.io.IOException;
 import junit.framework.TestCase;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.Log;
-import mc.alk.plugin.updater.FileUpdater;
-import mc.alk.plugin.updater.Version;
+import mc.alk.plugin.updater.v1r2.FileUpdater;
+import mc.alk.plugin.updater.v1r2.Version;
 
 import org.apache.commons.lang.StringUtils;
 

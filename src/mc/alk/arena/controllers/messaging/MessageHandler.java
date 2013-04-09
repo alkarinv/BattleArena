@@ -7,7 +7,7 @@ import mc.alk.arena.util.Log;
 public class MessageHandler extends MessageSerializer {
 
 	public MessageHandler() {
-		super(null);
+		super(null,null);
 	}
 
 	public static String getSystemMessage(String string, Object... varArgs) {

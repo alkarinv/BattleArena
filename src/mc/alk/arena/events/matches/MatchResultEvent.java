@@ -8,9 +8,12 @@ import org.bukkit.event.Cancellable;
 public class MatchResultEvent extends MatchEvent implements Cancellable{
 	MatchResult matchResult;
 	boolean cancelled;
+	final boolean matchEnding;
+
 	public MatchResultEvent(Match match, MatchResult matchResult) {
 		super(match);
 		this.matchResult = matchResult;
+		matchEnding = !match.alwaysOpen();
 	}
 
 	public MatchResult getMatchResult() {
@@ -26,5 +29,9 @@ public class MatchResultEvent extends MatchEvent implements Cancellable{
 
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
+	}
+
+	public boolean isMatchEnding(){
+		return matchEnding && !cancelled;
 	}
 }

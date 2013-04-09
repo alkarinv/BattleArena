@@ -26,7 +26,8 @@ public class TimeLimit extends VictoryCondition implements DefinesTimeLimit, Cou
 
 	@MatchEventHandler(priority=EventPriority.LOW)
 	public void onVictory(MatchResultEvent event){
-		cancelTimers();
+		if (event.isMatchEnding())
+			cancelTimers();
 	}
 
 	@MatchEventHandler(priority=EventPriority.LOW)

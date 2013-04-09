@@ -1,12 +1,15 @@
 package mc.alk.arena.competition.events;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.TreeMap;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.controllers.messaging.ReservedArenaEventMessager;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
@@ -22,12 +25,12 @@ import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
 import mc.alk.arena.util.Countdown;
-import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 
 public class ReservedArenaEvent extends Event {
 	public ReservedArenaEvent(EventParams params) {
 		super(params);
+		mc = new ReservedArenaEventMessager(this);
 	}
 
 	Match arenaMatch;
@@ -51,10 +54,25 @@ public class ReservedArenaEvent extends Event {
 		List<VictoryCondition> vcs = arenaMatch.getVictoryConditions();
 		for (VictoryCondition vc: vcs){
 			if (vc instanceof DefinesLeaderRanking){
-				List<Team> leaders = ((DefinesLeaderRanking)vc).getRankings();
+				TreeMap<?, Collection<Team>> leaders = ((DefinesLeaderRanking)vc).getRanks();
 				sb.append("\n");
-				for (int i = 0;i<leaders.size();i++){
-					sb.append("&6"+(i+1) +"&e : "+TeamUtil.formatName(leaders.get(i))+"\n");
+				int i = 0;
+				for (Collection<Team> lvl : leaders.values()){
+					i++;
+					if (lvl.isEmpty())
+						continue;
+					sb.append("&6"+i+"&e : ");
+					if (lvl.size() == 1){
+						sb.append(TeamUtil.formatName(lvl.iterator().next()) +"\n");
+					} else {
+						sb.append("\n");
+						for (Team t: lvl){
+							sb.append("&6 - &e: " + TeamUtil.formatName(t));
+						}
+						sb.append("\n");
+						i+=lvl.size()-1;
+					}
+
 				}
 				break;
 			}
@@ -113,10 +131,6 @@ public class ReservedArenaEvent extends Event {
 					/// dont call arenaMatch.onJoin(Team), as part of the team might already be in arena
 					arenaMatch.addedToTeam(tjr.team,p);
 				}
-			}
-			String str = MessageUtil.joinPlayers(t.getPlayers(), ", ");
-			for (ArenaPlayer p : t.getPlayers()){
-				tjr.team.sendToOtherMembers(p, str +" has joined the team!");
 			}
 			break;
 		default:

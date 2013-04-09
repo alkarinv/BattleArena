@@ -1,6 +1,11 @@
 package mc.alk.arena.objects.options;
 
 public enum TransitionOption{
+	/// Default only Options
+	DUELONLY ("duelOnly", false),					/// DEFAULTS only: this game type is duel only
+	ALWAYSOPEN("alwaysOpen", false),				/// DEFAULTS only: this game is always open to joins
+	INDIVIDUALWINS("individualWins", false),		/// DEFAULTS only: discrete wins and losses per team
+
 	/// preReq only Options
 	NEEDARMOR ("needArmor",false),					/// PREREQ only: player needs armor to join the match
 	NOINVENTORY("noInventory",false),				/// PREREQ only: player needs to have no inventory to join
@@ -32,6 +37,7 @@ public enum TransitionOption{
 	WOOLTEAMS("woolTeams",false),					/// Use team Heads when team sizes are greater than 1 (found in teamColors.yml)
 	ALWAYSWOOLTEAMS("alwaysWoolTeams", false),		/// Always use team Heads (found in teamColors.yml)
 	ALWAYSTEAMNAMES("alwaysTeamNames", false),		/// Always use team Names (found in teamColors.yml)
+
 
 	/// Teleport Options
 	TELEPORTWAITROOM("teleportWaitRoom",false), 	/// Teleport players to the waitroom

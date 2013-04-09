@@ -366,5 +366,16 @@ public abstract class AbstractTeam implements Team{
 		this.nameChanged = true;
 	}
 
+	@Override
+	public void clear(){
+		this.players.clear();
+		this.deadplayers.clear();
+		this.leftplayers.clear();
+		this.nameManuallySet = false;
+		this.nameChanged = false;
+		this.name = "Empty";
+		this.kills.clear();
+		this.deadplayers.clear();
+	}
 }
 

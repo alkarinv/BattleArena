@@ -36,7 +36,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 			MCCommand cmd1 = mw1.getCommand();
 			MCCommand cmd2 = mw2.getCommand();
 
-			int c = new Float(cmd1.helpOrder()).compareTo(cmd2.helpOrder());
+			int c = new Float(mw1.getHelpOrder()).compareTo(mw2.getHelpOrder());
 			if (c!=0) return c;
 			c = new Integer(cmd1.order()).compareTo(cmd2.order());
 			return c != 0 ? c : new Integer(cmd1.hashCode()).compareTo(cmd2.hashCode());
@@ -59,9 +59,13 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		public Object obj; /// Object instance the method belongs to
 		public Method method; /// Method
 		public String usage;
-
+		Float helpOrder = null;
 		public MCCommand getCommand(){
 			return this.method.getAnnotation(MCCommand.class);
+		}
+		public float getHelpOrder(){
+			return helpOrder != null ?
+					helpOrder : this.method.getAnnotation(MCCommand.class).helpOrder();
 		}
 	}
 
@@ -132,6 +136,10 @@ public abstract class BaseExecutor implements ArenaExecutor{
 				}
 				int order = (mc.order() != -1? mc.order()*100000 :Integer.MAX_VALUE) - ml*100-mthds.size();
 				MethodWrapper mw = new MethodWrapper(obj,method);
+				/// Set help order
+				if (mc.helpOrder() == Integer.MAX_VALUE){
+					mw.helpOrder = (float) (Integer.MAX_VALUE - usage.size());
+				}
 				mthds.put(order, mw);
 				addUsage(mw, mc);
 			}
@@ -296,7 +304,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		final int paramLength = mwrapper.method.getParameterTypes().length;
 
 		/// Check our permissions
-		if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))
+		if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()) && !(cmd.admin() && hasAdminPerms(sender)))
 			throw new IllegalArgumentException("You don't have permission to use this command");
 
 		/// Verify min number of arguments

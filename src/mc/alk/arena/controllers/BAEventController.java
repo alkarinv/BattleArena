@@ -73,6 +73,25 @@ public class BAEventController implements Listener{
 		return null;
 	}
 
+	public boolean hasOpenEvent() {
+		for (Map<EventState, List<Event>> map : allEvents.values()){
+			for (EventState es: map.keySet()){
+				switch (es){
+				case CLOSED:
+				case FINISHED:
+					continue;
+				case OPEN:
+				case RUNNING:
+				default:
+					if (!map.get(es).isEmpty())
+						return true;
+					break;
+				}
+			}
+		}
+		return false;
+	}
+
 	public boolean hasOpenEvent(EventParams eventParam) {
 		final String key = getKey(eventParam);
 		Map<EventState,List<Event>> events = allEvents.get(key);
@@ -183,4 +202,6 @@ public class BAEventController implements Listener{
 	public void onEventFinished(EventFinishedEvent event){
 		removeEvent(event.getEvent());
 	}
+
+
 }

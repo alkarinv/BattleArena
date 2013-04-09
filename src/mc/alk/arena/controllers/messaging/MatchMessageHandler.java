@@ -3,6 +3,7 @@ package mc.alk.arena.controllers.messaging;
 import java.util.Collection;
 import java.util.Map;
 
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.teams.Team;
 
@@ -21,4 +22,7 @@ public interface MatchMessageHandler {
 	public void sendMessage(String node);
 	public void sendMessage(String node, Map<String, String> params);
 	public String format(String text, Map<String, String> params);
+	public void sendAddedToTeam(Team team, ArenaPlayer player);
+	public void sendTeamJoinedEvent(Channel serverChannel, Team team);
+
 }

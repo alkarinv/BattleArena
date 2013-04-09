@@ -54,5 +54,11 @@ public class FormingTeam extends AbstractTeam{
 		return false;
 	}
 
+	@Override
+	public void clear() {
+		super.clear();
+		joined_players.clear();
+	}
+
 }
 

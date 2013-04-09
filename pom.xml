@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.8.3.4</version>
+    <version>3.8.4.4</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>PluginUpdater</artifactId>
-            <version>1.2</version>
+            <version>[1.2.4,)</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

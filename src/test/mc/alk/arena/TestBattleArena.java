@@ -52,7 +52,7 @@ public class TestBattleArena extends TestCase{
 		bac = new BattleArenaController();
 
 		/// Messages
-		MessageSerializer ms = new MessageSerializer("default");
+		MessageSerializer ms = new MessageSerializer("default",null);
 		ms.setConfig(new File("default_files/messages.yml"));
 		MessageSerializer.setDefaultConfig(ms);
 		AnnouncementOptions an = new AnnouncementOptions();
@@ -80,7 +80,7 @@ public class TestBattleArena extends TestCase{
 		MatchParams mp = null;
 		try {
 			ConfigSerializer config = new ConfigSerializer(plugin, bc.getFile(),node);
-			mp = config.loadType();
+			mp = config.loadMatchParams();
 //			mp = ConfigSerializer.setTypeConfig(plugin, "arena", cs);
 		} catch (ConfigException e) {
 			e.printStackTrace();

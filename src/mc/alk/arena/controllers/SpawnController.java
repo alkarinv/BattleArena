@@ -56,7 +56,7 @@ public class SpawnController {
 	}
 
 	public void start(){
-//		System.out.println("Arena::onStart " + timedSpawns);
+		System.out.println("Arena::onStart " + timedSpawns);
 		if (timedSpawns != null && !timedSpawns.isEmpty()){
 			Plugin plugin = BattleArena.getSelf();
 			/// Create our Q, with a descending Comparator

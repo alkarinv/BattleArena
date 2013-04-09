@@ -103,7 +103,8 @@ public class SpawnSerializer {
 		try {
 			SpawnInstance sg = SpawnController.getSpawnable(key);
 			if (sg != null){
-				int number = Integer.parseInt(value);
+				int number = 1;
+				try{number = Integer.parseInt(args.get(1));}catch (Exception e){}
 				for (int i=0;i< number;i++)
 					spawns.add(sg);
 				return spawns;
@@ -113,7 +114,7 @@ public class SpawnSerializer {
 //			System.out.println(InventoryUtil.isItem(key)+" is item " + InventoryUtil.isItem(key+":" + value) +"     key=" + key+" value=" + value);
 			ItemStack is = InventoryUtil.parseItem(value);
 			EntityType et = EntityUtil.parseEntity(key);
-			//			System.out.println("is = " + InventoryUtil.getItemString(is) +"   " + et);
+//						System.out.println("is = " + InventoryUtil.getItemString(is) +"   et=" + et);
 			if (is != null && et != null){
 				int keysize = key.length();
 				int isizedif = Math.abs(is.getType().name().length() - keysize);
@@ -130,6 +131,16 @@ public class SpawnSerializer {
 			}  else if (et != null){
 				spawns.add(new EntitySpawn(et,number));
 				return spawns;
+			} else {
+				String split[] = key.split(":");
+				sg = SpawnController.getSpawnable(split[0]);
+				number = 1;
+				try {number = Integer.valueOf(split[1]);} catch(Exception e){}
+				if (sg != null){
+					for (int i=0;i< number;i++)
+						spawns.add(sg);
+					return spawns;
+				}
 			}
 		} catch (Exception e){}
 		return null;

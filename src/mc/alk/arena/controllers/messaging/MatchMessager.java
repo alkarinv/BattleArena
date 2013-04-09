@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.Channel;
@@ -30,7 +31,11 @@ public class MatchMessager {
 	}
 
 	public void sendOnPreStartMsg(List<Team> teams) {
-		try{impl.sendOnPreStartMsg(getChannel(MatchState.ONPRESTART), teams);}catch(Exception e){e.printStackTrace();}
+		sendOnPreStartMsg(teams, getChannel(MatchState.ONPRESTART));
+	}
+
+	public void sendOnPreStartMsg(List<Team> teams, Channel serverChannel) {
+		try{impl.sendOnPreStartMsg(serverChannel, teams);}catch(Exception e){e.printStackTrace();}
 	}
 
 	public void sendOnStartMsg(List<Team> teams) {
@@ -70,6 +75,10 @@ public class MatchMessager {
 	}
 	public void setSilent(boolean silent){
 		this.silent = silent;
+	}
+
+	public void sendAddedToTeam(Team team, ArenaPlayer player) {
+		try{impl.sendAddedToTeam(team,player);}catch(Exception e){e.printStackTrace();}
 	}
 
 }

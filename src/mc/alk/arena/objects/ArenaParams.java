@@ -7,6 +7,7 @@ import java.util.List;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.options.TransitionOption;
 
 
 
@@ -48,6 +49,7 @@ public class ArenaParams extends ArenaSize{
 	public MatchTransitions getTransitionOptions(){
 		return allTops == null ? ParamController.getTransitionOptions(this) : allTops;
 	}
+
 	public void setTransitionOptions(MatchTransitions transitionOptions) {
 		this.allTops = new MatchTransitions(transitionOptions);
 	}
@@ -159,5 +161,13 @@ public class ArenaParams extends ArenaSize{
 		if (!getType().matches(params.getType()))
 			return false;
 		return super.intersect(params);
+	}
+
+	public boolean isDuelOnly() {
+		return getTransitionOptions().hasOptionAt(MatchState.DEFAULTS, TransitionOption.DUELONLY);
+	}
+
+	public boolean getAlwaysOpen(){
+		return getTransitionOptions().hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN);
 	}
 }

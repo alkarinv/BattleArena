@@ -73,6 +73,6 @@ public class BinPackAdd extends TeamJoinHandler {
 
 	@Override
 	public String toString(){
-		return "["+competition.getParams().getName() +":JH:BinPackAdd]";
+		return (competition == null ? " null" : "["+competition.getParams().getName()) +":JH:BinPackAdd]";
 	}
 }

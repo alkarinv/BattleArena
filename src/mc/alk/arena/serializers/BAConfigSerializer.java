@@ -112,7 +112,7 @@ public class BAConfigSerializer extends BaseConfig{
 		ConfigSerializer cs = new ConfigSerializer(plugin,cf, "Tourney");
 		MatchParams mp;
 		try {
-			mp = cs.loadType();
+			mp = cs.loadMatchParams();
 			EventParams ep = new EventParams(mp);
 			TournamentEvent tourney = new TournamentEvent(ep);
 			EventController.addEvent(tourney);

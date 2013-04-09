@@ -18,4 +18,5 @@ public interface EventMessageHandler {
 	public void sendCantFitTeam(Team team);
 	public void sendWaitingForMorePlayers(Team team, int remaining);
 	public void sendEventDraw(Channel serverChannel, Collection<Team> participants, Collection<Team> losers);
+	public void sendAddedToTeam(Team team, ArenaPlayer player);
 }

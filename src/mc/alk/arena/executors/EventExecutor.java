@@ -268,7 +268,7 @@ public class EventExecutor extends BAExecutor{
 
 		/// Finally actually join the event
 		event.joining(tqo);
-		sendSystemMessage(t, "you_joined_event", event.getDisplayName());
+//		sendSystemMessage(t, "you_joined_event", event.getDisplayName());
 		if (sq.getSecondsTillStart() != null){
 			Long time = event.getTimeTillStart();
 			if (time != null)

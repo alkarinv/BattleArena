@@ -2,6 +2,7 @@ package mc.alk.arena.objects;
 
 
 
+
 public class MatchResult extends CompetitionResult{
 	/**
 	 * and this is why maybe I shouldn't use nested enums
@@ -10,6 +11,5 @@ public class MatchResult extends CompetitionResult{
 	 */
 	public static enum WinLossDraw{
 		UNKNOWN, LOSS, DRAW, WIN
-	};
-
+	}
 }

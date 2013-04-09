@@ -239,9 +239,41 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return true;
 	}
 
-	@MCCommand(cmds={"verify"}, admin=true,usage="verify")
+	@MCCommand(cmds={"showClass"}, op=true)
+	public boolean showClass(CommandSender sender, String stringClass) {
+		final Class<?> clazz;
+		try {
+			clazz = Class.forName(stringClass);
+		} catch (ClassNotFoundException e) {
+			return sendMessage(sender, "&cClass " + stringClass +" not found");
+		}
+		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(clazz, ToStringStyle.MULTI_LINE_STYLE);
+		return sendMessage(sender, rtsb.toString());
+	}
+
+	@MCCommand(cmds={"showAMQ"}, op=true)
+	public boolean showAMQ(CommandSender sender) {
+		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(BattleArena.getBAController().getArenaMatchQueue(), ToStringStyle.MULTI_LINE_STYLE);
+		return sendMessage(sender, rtsb.toString());
+	}
+
+	@MCCommand(cmds={"showBAC"}, op=true)
+	public boolean showBAC(CommandSender sender) {
+		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(BattleArena.getBAController(), ToStringStyle.MULTI_LINE_STYLE);
+		return sendMessage(sender, rtsb.toString());
+	}
+
+	@MCCommand(cmds={"verify"}, admin=true)
 	public boolean arenaVerify(CommandSender sender) {
-		String[] lines = ac.toDetailedString().split("\n");
+		String[] lines = ac.toStringQueuesAndMatches().split("\n");
+		for (String line : lines){
+			sendMessage(sender,line);}
+		return true;
+	}
+
+	@MCCommand(cmds={"showAllArenas"}, admin=true)
+	public boolean arenaShowAllArenas(CommandSender sender) {
+		String[] lines = ac.toStringArenas().split("\n");
 		for (String line : lines){
 			sendMessage(sender,line);}
 		return true;

@@ -213,4 +213,9 @@ public class MatchingTeam implements Team{
 		return true;
 	}
 
+	@Override
+	public void clear() {
+		this.players.clear();
+	}
+
 }

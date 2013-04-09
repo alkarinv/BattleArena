@@ -33,7 +33,7 @@ public class BlankCompetition extends Competition{
 	public MatchParams getParams() {return this.params;}
 
 	@Override
-	public void addTeam(Team team) {this.teams.add(team);}
+	public boolean addTeam(Team team) {return this.teams.add(team);}
 
 	@Override
 	public boolean removeTeam(Team team) {return this.teams.remove(team);}
@@ -42,7 +42,7 @@ public class BlankCompetition extends Competition{
 	public void addedToTeam(Team team, Collection<ArenaPlayer> players) {/* do nothing */}
 
 	@Override
-	public void addedToTeam(Team team, ArenaPlayer player) {/* do nothing */}
+	public boolean addedToTeam(Team team, ArenaPlayer player) {/* do nothing */ return true;}
 
 	@Override
 	public void removedFromTeam(Team team, Collection<ArenaPlayer> players) {/* do nothing */}

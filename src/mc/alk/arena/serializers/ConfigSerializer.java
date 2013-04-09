@@ -62,11 +62,11 @@ public class ConfigSerializer extends BaseConfig{
 	}
 
 
-	public MatchParams loadType() throws ConfigException, InvalidOptionException {
-		return ConfigSerializer.loadType(plugin, this, name);
+	public MatchParams loadMatchParams() throws ConfigException, InvalidOptionException {
+		return ConfigSerializer.loadMatchParams(plugin, this, name);
 	}
 
-	public static MatchParams loadType(Plugin plugin, BaseConfig config, String name)
+	public static MatchParams loadMatchParams(Plugin plugin, BaseConfig config, String name)
 			throws ConfigException, InvalidOptionException {
 		ConfigurationSection cs = config.getConfigurationSection(name);
 
@@ -115,51 +115,59 @@ public class ConfigSerializer extends BaseConfig{
 			maxTeams = mm.max;
 		}
 		JoinType jt = getJoinType(cs);
-		MatchParams pi = jt == JoinType.QUEUE ? new MatchParams(at, rating,vt) : new EventParams(at,rating, vt);
+		MatchParams mp = jt == JoinType.QUEUE ? new MatchParams(at, rating,vt) : new EventParams(at,rating, vt);
 
-		pi.setName(StringUtils.capitalize(name));
+		/// Set our name
+		mp.setName(StringUtils.capitalize(name));
 
-		pi.setCommand(cs.getString("command",name));
+		mp.setCommand(cs.getString("command",name));
 		if (cs.contains("cmd")){ /// turns out I used cmd in a lot of old configs.. so use both :(
-			pi.setCommand(cs.getString("cmd"));}
-		ArenaType.addAliasForType(name, pi.getCommand());
-		pi.setPrefix( cs.getString("prefix","&6["+name+"]"));
-		pi.setMinTeams(minTeams);
-		pi.setMaxTeams(maxTeams);
-		pi.setMinTeamSize(minTeamSize);
-		pi.setMaxTeamSize(maxTeamSize);
+			mp.setCommand(cs.getString("cmd"));}
+		ArenaType.addAliasForType(name, mp.getCommand());
+		mp.setPrefix( cs.getString("prefix","&6["+name+"]"));
+		mp.setMinTeams(minTeams);
+		mp.setMaxTeams(maxTeams);
+		mp.setMinTeamSize(minTeamSize);
+		mp.setMaxTeamSize(maxTeamSize);
 
-		pi.setTimeBetweenRounds(cs.getInt("timeBetweenRounds",Defaults.TIME_BETWEEN_ROUNDS));
-		pi.setSecondsToLoot( cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT));
-		pi.setSecondsTillMatch( cs.getInt("secondsTillMatch",Defaults.SECONDS_TILL_MATCH));
+		mp.setTimeBetweenRounds(cs.getInt("timeBetweenRounds",Defaults.TIME_BETWEEN_ROUNDS));
+		mp.setSecondsToLoot( cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT));
+		mp.setSecondsTillMatch( cs.getInt("secondsTillMatch",Defaults.SECONDS_TILL_MATCH));
 
-		pi.setMatchTime(cs.getInt("matchTime",Defaults.MATCH_TIME));
-		pi.setIntervalTime(cs.getInt("matchUpdateInterval",Defaults.MATCH_UPDATE_INTERVAL));
+		mp.setMatchTime(cs.getInt("matchTime",Defaults.MATCH_TIME));
+		mp.setIntervalTime(cs.getInt("matchUpdateInterval",Defaults.MATCH_UPDATE_INTERVAL));
 
-		pi.setOverrideBattleTracker(cs.getBoolean("overrideBattleTracker", true));
-		pi.setNLives(cs.getInt("nDeaths",1));
+		mp.setOverrideBattleTracker(cs.getBoolean("overrideBattleTracker", true));
+		/// Number of lives
+		int lives = 1;
 		String nLives = cs.getString("nLives", null);
 		if (nLives != null){
 			if (nLives.equalsIgnoreCase("infinite")){
-				pi.setNLives(Integer.MAX_VALUE);
+				lives = Integer.MAX_VALUE;
 			} else {
-				pi.setNLives(Integer.valueOf(nLives));
+				lives = Integer.valueOf(nLives);
+				if (lives <= 0){
+					lives = Integer.MAX_VALUE;
+				}
 			}
 		}
-		pi.setDuelOnly(cs.getBoolean("duelOnly", false));
-		pi.setNConcurrentCompetitions(cs.getInt("nConcurrentCompetitions",Integer.MAX_VALUE));
+		mp.setNLives(lives);
+
+		/// number of concurrently running matches of this type
+		mp.setNConcurrentCompetitions(cs.getInt("nConcurrentCompetitions",Integer.MAX_VALUE));
 
 		if (cs.contains("announcements")){
 			AnnouncementOptions an = new AnnouncementOptions();
 			BAConfigSerializer.parseAnnouncementOptions(an,true,cs.getConfigurationSection("announcements"), false);
 			BAConfigSerializer.parseAnnouncementOptions(an,false,cs.getConfigurationSection("eventAnnouncements"),false);
-			pi.setAnnouncementOptions(an);
+			mp.setAnnouncementOptions(an);
 		}
+
 		/// TeamJoinResult in tracking for this match type
 		String dbName = cs.getString("database");
 		if (dbName != null){
-			pi.setDBName(dbName);
-			if (!BTInterface.addBTI(pi))
+			mp.setDBName(dbName);
+			if (!BTInterface.addBTI(mp))
 				dbName = null;
 		}
 
@@ -194,23 +202,39 @@ public class ConfigSerializer extends BaseConfig{
 					Log.warn("You should never use the option teleportOut inside of onLeave!");
 				}
 				break;
+			case DEFAULTS:
+				if (cs.getBoolean("duelOnly", false)){ /// for backwards compatibility
+					tops.addOption(TransitionOption.DUELONLY);}
 			default:
 				break;
 			}
 			allTops.addTransitionOptions(transition,tops);
 		}
-		ParamController.setTransitionOptions(pi, allTops);
-		/// By Default if they respawn in the arena.. people must want infinite lives
-		if (pi.getTransitionOptions().hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWN) && !cs.contains("nLives")){
-			pi.setNLives(Integer.MAX_VALUE);
-		}
-		ParamController.removeMatchType(pi);
-		ParamController.addMatchType(pi);
+		if (allTops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN))
+			allTops.addTransitionOption(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN);
 
-		Log.info(plugin.getName()+" registering " + pi.getName() +",bti=" + (dbName != null ? dbName : "none")+",join="+pi.getJoinType());
-		return pi;
+		ParamController.setTransitionOptions(mp, allTops);
+		/// By Default if they respawn in the arena.. people must want infinite lives
+		if (mp.getTransitionOptions().hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWN) && !cs.contains("nLives")){
+			mp.setNLives(Integer.MAX_VALUE);
+		}
+		/// start auto setting this option, as really thats what they want
+		if (mp.getNLives() > 1){
+			allTops.addTransitionOption(MatchState.ONDEATH, TransitionOption.RESPAWN);}
+		ParamController.removeMatchType(mp);
+		ParamController.addMatchType(mp);
+
+		Log.info(plugin.getName()+" registering " + mp.getName() +",bti=" + (dbName != null ? dbName : "none")+",join="+mp.getJoinType());
+		return mp;
 	}
 
+	/**
+	 * Get and create the ArenaType for this plugin given the Configuration section
+	 * @param plugin
+	 * @param cs
+	 * @return
+	 * @throws ConfigException
+	 */
 	public static ArenaType getArenaType(Plugin plugin, ConfigurationSection cs) throws ConfigException {
 		ArenaType at;
 		if (cs.contains("arenaType") || cs.contains("type")){

@@ -53,37 +53,42 @@ public class TeleportController implements Listener{
 			BAPlayerListener.teleportOnReenter(player.getName(),location);
 			return false;
 		}
-		player.setVelocity(new Vector(0,0,0));
-		Location loc = location.clone();
-		loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
-		teleporting(player,true);
-		/// Close their inventory so they arent taking things in/out
-		InventoryUtil.closeInventory(player);
-		player.setFireTicks(0);
-
-		/// Deal with vehicles
-		if (player.isInsideVehicle()){
-			try{ player.leaveVehicle(); } catch(Exception e){}
-		}
-
-		/// Load the chunk if its not already loaded
 		try {
-			if(!loc.getWorld().isChunkLoaded(loc.getBlock().getChunk())){
-				loc.getWorld().loadChunk(loc.getBlock().getChunk());}
-		} catch (Exception e){}
+			player.setVelocity(new Vector(0,0,0));
+			Location loc = location.clone();
+			loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
+			teleporting(player,true);
+			/// Close their inventory so they arent taking things in/out
+			InventoryUtil.closeInventory(player);
+			player.setFireTicks(0);
 
-		/// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
-		/// or game states ... lets not let this happen
-		PermissionsUtil.givePlayerInventoryPerms(player);
-		/// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
-		if (giveBypassPerms && BattleArena.getSelf().isEnabled())
-			player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);
+			/// Deal with vehicles
+			if (player.isInsideVehicle()){
+				try{ player.leaveVehicle(); } catch(Exception e){}
+			}
 
-		if (!player.teleport(loc)){
-			if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + loc);
-			return false;
+			/// Load the chunk if its not already loaded
+			try {
+				if(!loc.getWorld().isChunkLoaded(loc.getBlock().getChunk())){
+					loc.getWorld().loadChunk(loc.getBlock().getChunk());}
+			} catch (Exception e){}
+
+			/// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
+			/// or game states ... lets not let this happen
+			PermissionsUtil.givePlayerInventoryPerms(player);
+			/// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
+			if (giveBypassPerms && BattleArena.getSelf().isEnabled())
+				player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);
+
+			if (!player.teleport(loc)){
+				if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + loc);
+				return false;
+			}
+			if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());
+		} catch (Exception e){
+			Log.err("[BA Error] teleporting player=" + player.getName() +" to " + location +" " + giveBypassPerms);
+			e.printStackTrace();
 		}
-		if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());
 		return true;
 	}
 

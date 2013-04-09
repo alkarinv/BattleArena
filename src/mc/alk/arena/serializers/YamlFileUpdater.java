@@ -15,8 +15,8 @@ import java.util.HashSet;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.Log;
-import mc.alk.plugin.updater.FileUpdater;
-import mc.alk.plugin.updater.Version;
+import mc.alk.plugin.updater.v1r2.FileUpdater;
+import mc.alk.plugin.updater.v1r2.Version;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -77,6 +77,29 @@ public class YamlFileUpdater {
 			fu.replace(".*joined_the_queue:.*",
 					"    joined_the_queue: '&eYou joined the &6%s&e queue.'",
 					"    position_in_queue: 'Position: &6%s/%s'");
+			try {version = fu.update();} catch (IOException e) {e.printStackTrace();}
+		}
+		newVersion = new Version("1.6.0");
+		if (version.compareTo(newVersion) < 0){
+			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+			fu.replace("version:.*", "version: "+newVersion);
+			fu.addAfter(".*time_format:.*",
+					"    second: 'second'",
+					"    seconds: 'seconds'",
+					"    minute: 'minute'",
+					"    minutes: 'minutes'",
+					"    hour: 'hour'",
+					"    hours: 'hours'",
+					"    day: 'day'",
+					"    days: 'days'");
+			fu.addAfter(".*your_team_not_ready.*",
+					"    added_to_team: '&6{playername} &ehas joined the team'",
+					"    onjoin: '&eYou have joined the &6{compname}'",
+					"    onjoin_server: '{prefix} &e&6%s&e has &2joined&e. There are &6{nplayers}&e inside'");
+			fu.replaceAll("matchprefix","prefix");
+			fu.replaceAll("eventprefix","prefix");
+			fu.replace(".*match_starts_when_time.*",
+					"    match_starts_when_time: '&eMatch starts in %s'");
 			try {version = fu.update();} catch (IOException e) {e.printStackTrace();}
 		}
 

@@ -56,6 +56,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 public class BattleArenaController implements Runnable, TeamHandler, ArenaListener{
 
 	boolean stop = false;
+	boolean running = false;
 
 	static HashSet<String> disabledCommands = new HashSet<String>();
 	private final ArenaMatchQueue amq = new ArenaMatchQueue();
@@ -73,6 +74,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	/// Run is Thread Safe
 	public void run() {
+		running = true;
 		Match match = null;
 		while (!stop){
 			match = amq.getArenaMatch();
@@ -80,6 +82,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 				Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new OpenAndStartMatch(match));
 			}
 		}
+		running = false;
 	}
 
 	/**
@@ -132,8 +135,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		/// now that a match is starting the players are no longer our responsibility
 		unhandle(match);
 		match.open();
-//		Log.debug(" match can still join = " + match.canStillJoin());
-		if (match.canStillJoin()){
+		if (match.isJoinablePostCreate()){
 			Set<Match> matches = unfilled_matches.get(match.getParams().getType());
 			if (matches == null){
 				matches = Collections.synchronizedSet(new HashSet<Match>());
@@ -268,7 +270,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	@MatchEventHandler(begin=MatchState.PREREQS, end=MatchState.ONFINISH)
 	public void onPlayerInteract(PlayerInteractEvent event){
-		if (event.isCancelled())
+		if (event.isCancelled() || !Defaults.ENABLE_PLAYER_READY_BLOCK)
 			return;
 		final Block b = event.getClickedBlock();
 		if (b == null)
@@ -276,22 +278,21 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		/// Check to see if it's a sign
 		final Material m = b.getType();
 		if (m.equals(Defaults.READY_BLOCK)) {
-			final Action action = event.getAction();
-			if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the block
-				event.setCancelled(true);}
 			final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
 			if (ap.isReady()) /// they are already ready
 				return;
 			QueueResult qtp = amq.getQueuePos(ap);
 			if (qtp == null){
 				return;}
+			final Action action = event.getAction();
+			if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the block
+				event.setCancelled(true);}
 			MessageUtil.sendMessage(ap, "&2You ready yourself for the arena");
 			this.forceStart(qtp.params, true);
 		}
 	}
 
 	private boolean joinExistingMatch(TeamQObject tqo) {
-//		Log.debug("Unfilled  = " + unfilled_matches.size());
 		if (unfilled_matches.isEmpty()){
 			return false;}
 		MatchParams params = tqo.getMatchParams();
@@ -302,7 +303,6 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			Iterator<Match> iter = matches.iterator();
 			while (iter.hasNext()){
 				Match match = iter.next();
-//				Log.debug("Unfilled  = " + unfilled_matches.size() +"  match = " + match.canStillJoin());
 				/// We dont want people joining in a non waitroom state
 				if (!match.canStillJoin()){
 					iter.remove();
@@ -488,6 +488,14 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		}
 	}
 
+	public void resume() {
+		stop = false;
+		amq.resume();
+		if (!running){
+			new Thread(this).start();
+		}
+	}
+
 	/**
 	 * If they are in a queue, take them out
 	 */
@@ -585,20 +593,24 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		return "[BAC]";
 	}
 
-	public String toDetailedString(){
+	public String toStringQueuesAndMatches(){
 		StringBuilder sb = new StringBuilder();
-		sb.append(amq);
+		sb.append(amq.toStringReadyMatches());
+		sb.append("------ running  matches -------\n");
+		synchronized(running_matches){
+			for (Match am : running_matches)
+				sb.append(am + "\n");
+		}
+		return sb.toString();
+	}
+
+	public String toStringArenas(){
+		StringBuilder sb = new StringBuilder();
+		sb.append(amq.toStringArenas());
 		sb.append("------ arenas -------\n");
 		for (Arena a : allarenas.values()){
 			sb.append(a +"\n");
 		}
-		sb.append("------ running  matches -------\n");
-		synchronized(running_matches){
-			for (Match am : running_matches){
-				sb.append(am + "\n");
-			}
-		}
-
 		return sb.toString();
 	}
 
@@ -649,9 +661,6 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		amq.resume();
 	}
 
-	public void resume() {
-		amq.resume();
-	}
 
 	public Collection<Team> purgeQueue() {
 		Collection<Team> teams = amq.purgeQueue();
@@ -696,5 +705,9 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	public boolean isQueueEmpty() {
 		Collection<ArenaPlayer> col = getPlayersInAllQueues();
 		return col == null || col.isEmpty();
+	}
+
+	public ArenaMatchQueue getArenaMatchQueue() {
+		return amq;
 	}
 }

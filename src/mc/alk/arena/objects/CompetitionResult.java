@@ -67,6 +67,17 @@ public class CompetitionResult{
 		return losers;
 	}
 
+	public void removeLosers(Collection<Team> teams){
+		losers.removeAll(teams);
+	}
+
+	public void removeDrawers(Collection<Team> teams){
+		drawers.removeAll(teams);
+	}
+	public void removeVictors(Collection<Team> teams){
+		victors.removeAll(teams);
+	}
+
 	public Set<Team> getDrawers(){
 		return drawers;
 	}

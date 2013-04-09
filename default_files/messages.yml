@@ -26,7 +26,7 @@ system:
     joined_the_queue: '&eYou joined the &6%s&e queue.'
     position_in_queue: 'Position: &6%s/%s'
     match_starts_players_or_time: '&eMatch start when &6%s&e more players join or in %s &ewith at least &6%s&e players'
-    match_starts_when_time: '&eMatch start in %s'
+    match_starts_when_time: '&eMatch starts in %s'
     you_start_when_free_pos: "&ePosition: &6%s&e. your match will start when an arena is free"
     you_start_when_free: "&eYour match will start when an arena is free"
     server_joined_the_queue: "%s &6%s&e has joined the queue. &6%s/%s"
@@ -51,67 +51,70 @@ common:
     teamlong: '&7{name}&e[{ranking}] &6({wins}:{losses})'  ## only used with BattleTracker
     other_team_not_ready: '&eThe other &cteams&e were not ready and forfeited'
     your_team_not_ready: '&eYour team was not ready to join'
+    added_to_team: '&6{playername} &ehas joined the team'
+    onjoin: '&eYou have joined the &6{compname}'
+    onjoin_server: '{prefix} &e&6%s&e has &2joined&e. There are &6{nplayers}&e inside'
 
 event:
     countdownTillEvent: ''
     team_cancelled: ''
     server_cancelled: '&cEvent was cancelled'
-    server_countdownTillEvent: "{eventprefix}Starts in {time}, &6/{cmd} join&e, &6/{cmd} info"
+    server_countdownTillEvent: "{prefix}Starts in {time}, &6/{cmd} join&e, &6/{cmd} info"
     oneTeam: ### 1 team events
         server_open: |
-            {eventprefix}&e A {eventname} event is opening!
-            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
+            {prefix}&e A {eventname} event is opening!
+            {prefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
         server_open_teamSizeGreaterThanOne: |
-            {eventprefix}&e A {eventname} event is opening!
-            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
-            {eventprefix}&e You can join solo and you will be matched up, or you can create a team
-            {eventprefix}&e &6/team create <player1> <player2>...
+            {prefix}&e A {eventname} event is opening!
+            {prefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
+            {prefix}&e You can join solo and you will be matched up, or you can create a team
+            {prefix}&e &6/team create <player1> <player2>...
         start: "&6Participants: {participants}"
-        server_start: "{eventprefix}&e {nteams} {playerorteam} will compete in a &6{eventname}&e Event!"
+        server_start: "{prefix}&e {nteams} {playerorteam} will compete in a &6{eventname}&e Event!"
         victory: ""
         loss: ""
         draw: ""
-        server_victory: "{eventprefix}&e Congratulations to &6{winnerlong}&e for winning!!"
-        server_draw: "{eventprefix}&e ended in a draw!"
+        server_victory: "{prefix}&e Congratulations to &6{winnerlong}&e for winning!!"
+        server_draw: "{prefix}&e ended in a draw!"
     twoTeams: ## 1 team vs another team
         server_open: |
-            {eventprefix}&e A {eventname} event is opening!
-            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
+            {prefix}&e A {eventname} event is opening!
+            {prefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
         server_open_teamSizeGreaterThanOne: |
-            {eventprefix}&e A {eventname} event is opening!
-            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
-            {eventprefix}&e You can join solo and you will be matched up, or you can create a team
-            {eventprefix}&e &6/team create <player1> <player2>...
+            {prefix}&e A {eventname} event is opening!
+            {prefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
+            {prefix}&e You can join solo and you will be matched up, or you can create a team
+            {prefix}&e &6/team create <player1> <player2>...
         start: "&6Participants: {participants}"
-        server_start: "{eventprefix}&e {nteams} {playerorteam} will compete in a &6{eventname}&e Event!"
+        server_start: "{prefix}&e {nteams} {playerorteam} will compete in a &6{eventname}&e Event!"
         victory: ""
         loss: ""
         draw: ""
-        server_victory: "{eventprefix} {winnerlong}&e was victorious over {loserlong}"
-        server_draw: "{eventprefix}&e ended in a draw!"
+        server_victory: "{prefix} {winnerlong}&e was victorious over {loserlong}"
+        server_draw: "{prefix}&e ended in a draw!"
     multipleTeams: ## many teams against each other
         server_open: |
-            {eventprefix}&e A {eventname} event is opening!
-            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
+            {prefix}&e A {eventname} event is opening!
+            {prefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
         server_open_teamSizeGreaterThanOne: |
-            {eventprefix}&e A {eventname} event is opening!
-            {eventprefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
-            {eventprefix}&e You can join solo and you will be matched up, or you can create a team
-            {eventprefix}&e &6/team create <player1> <player2>...
+            {prefix}&e A {eventname} event is opening!
+            {prefix}&e Type &6/{cmd} join&e, or &6/{cmd} info &efor info
+            {prefix}&e You can join solo and you will be matched up, or you can create a team
+            {prefix}&e &6/team create <player1> <player2>...
         start: "&6Participants: {participants}"
-        server_start: "{eventprefix}&e {nteams} {playerorteam} will compete in a &6{eventname}&e Event!"
+        server_start: "{prefix}&e {nteams} {playerorteam} will compete in a &6{eventname}&e Event!"
         victory: ""
         loss: ""
         draw: ""
-        server_victory: "{eventprefix}&e Congratulations to &6{winnerlong}&e for winning!!"
-        server_draw: "{eventprefix}&e ended in a draw!"
-
+        server_victory: "{prefix}&e Congratulations to &6{winnerlong}&e for winning!!"
+        server_draw: "{prefix}&e ended in a draw!"
 match:    
     leading_header: "&6 O---[{==========> &fCurrent Leaders &6<==========}]---O"
     leading_row: "&6{rank} : {name}({wins}{losses})" ## rank/wins/losses are all per match
+    server_onjoin: '{prefix} &e&6%s&e has &2joined&e. There are &6{nplayers}&e inside'
     oneTeam: ### 1 team matches
         prestart: '&eYour {matchname}&e starts in {time}.'
-        server_prestart: '&6{matchprefix} {teamshort1} is entering the {matchname}!'
+        server_prestart: '&6{prefix} {teamshort1} is entering the {matchname}!'
         start: '&4********** &eGood luck!!!! &4**********'
         server_start: ""
         victory: |
@@ -122,11 +125,11 @@ match:
             &eYou have lost your {matchname}
             &eTotal Win/Loss: &e({wins}:{losses})
         draw: "&eThe {matchname}&e has ended in a draw"
-        server_victory: '{matchprefix} {winnerlong}&e was victorious in the {matchname}!'
-        server_draw: "{matchprefix} ended in a draw!"
+        server_victory: '{prefix} {winnerlong}&e was victorious in the {matchname}!'
+        server_draw: "{prefix} ended in a draw!"
     twoTeams: ## 1 team vs another team
         prestart: '&eYour {matchname}&e match against {otherteam}&e starts in {time}.'
-        server_prestart: '&6{matchprefix} {teamshort1}&6 vs {teamshort2}&6!'
+        server_prestart: '&6{prefix} {teamshort1}&6 vs {teamshort2}&6!'
         start: '&4 O---[{==========> &eFight &4<==========}]---O'
         server_start: ""
         victory: |
@@ -140,11 +143,11 @@ match:
             &eRecord against {otherteam}: &e({winsagainst}:{lossesagainst})
             &eLife left:{lifeleft}
         draw: "&eThe {matchname}&e has ended in a draw"
-        server_victory: '{matchprefix} {winnerlong}&e defeated {loserlong}!'
+        server_victory: '{prefix} {winnerlong}&e defeated {loserlong}!'
         server_draw: '{teamlong1}&e drew {teamlong2}!'
     multipleTeams: ## many teams against each other
-        prestart: '{matchprefix}&6 {matchname} starts in {time}.'
-        server_prestart: '&6{matchprefix} Participants: {participants} &6'
+        prestart: '{prefix}&6 {matchname} starts in {time}.'
+        server_prestart: '&6{prefix} Participants: {participants} &6'
         start: '&4 O---[{==========> &eFight &4<==========}]---O'
         server_start: ""
         victory: |
@@ -155,5 +158,5 @@ match:
             &eYou were defeated by {winnershort}&e!
             &eYour rating &6[{ranking}] &e({wins}:{losses})
         draw: "&eThe {matchname}&e has ended in a draw"
-        server_victory: "{matchprefix} {winnerlong} was victorious!"
-        server_draw: "{matchprefix} ended in a draw!"
+        server_victory: "{prefix} {winnerlong} was victorious!"
+        server_draw: "{prefix} ended in a draw!"

@@ -76,6 +76,7 @@ public class CompositeTeam extends AbstractTeam{
 		return false;
 	}
 
+	@Override
 	public void removePlayer(ArenaPlayer p) {
 		for (Team t: oldTeams){
 			if (t.hasMember(p)){
@@ -87,6 +88,14 @@ public class CompositeTeam extends AbstractTeam{
 	}
 	public Collection<Team> getOldTeams(){
 		return oldTeams;
+	}
+
+	@Override
+	public void clear() {
+		super.clear();
+		for (Team t: oldTeams){
+			t.clear();
+		}
 	}
 
 }

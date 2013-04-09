@@ -16,15 +16,28 @@ import mc.alk.arena.util.CaseInsensitiveMap;
 public class ParamController {
 	static final CaseInsensitiveMap<MatchParams> types = new CaseInsensitiveMap<MatchParams>();
 	static final Map<String, MatchTransitions> transitions = new ConcurrentHashMap<String, MatchTransitions>();
+	static final CaseInsensitiveMap<Set<String>> aliases = new CaseInsensitiveMap<Set<String>>();
 
 	public static void addMatchType(MatchParams matchParams) {
 		types.put(matchParams.getName(), matchParams);
-		types.put(matchParams.getCommand(), matchParams);
+		Set<String> a = aliases.get(matchParams.getName());
+		if (a != null){
+			for (String alias : a){
+				types.put(alias, matchParams);}
+		}
+		addAlias(matchParams.getCommand(), matchParams);
 	}
 
 	public static void addAlias(String alias, MatchParams matchParams) {
+		Set<String> set = aliases.get(matchParams.getName());
+		if (set == null){
+			set = new HashSet<String>();
+			aliases.put(matchParams.getName(), set);
+		}
 		types.put(alias, matchParams);
+		set.add(alias.toUpperCase());
 	}
+
 	public static void removeMatchType(MatchParams matchParams) {
 		types.remove(matchParams.getName());
 		types.remove(matchParams.getCommand());

@@ -374,7 +374,7 @@ public class ArenaMatchQueue {
 		qr.teamsInQueue = teamsInQueue;
 		qr.playersInQueue = playersInQueue;
 
-		/// Get rid of the TeamJoinHandler, remove the arena from the queue, start up our match
+		///remove the arena from the queue, start up our match
 		if (hasComp){
 			qr.status = QueueResult.QueueStatus.ADDED_TO_QUEUE;
 			qr.match = getMatchAndRemove(tq, tjh, comp.getTeams(), qteams, arena, params);
@@ -397,8 +397,9 @@ public class ArenaMatchQueue {
 			}
 		}
 		final Match m = new ArenaMatch(a, params);
-		if (m.getParams().getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN) ||
-				m.hasWaitroom() && !tjh.isFull()){
+		if (	m.getParams().getAlwaysOpen() ||
+				m.getParams().getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN) ||
+				(m.hasWaitroom() && !tjh.isFull()) ){
 			try {
 				m.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(params, m));
 			} catch (NeverWouldJoinException e) {
@@ -407,7 +408,8 @@ public class ArenaMatchQueue {
 		}
 		m.onJoin(teams);
 		m.setOriginalTeams(originalTeams);
-		tjh.deconstruct();
+
+		tjh.deconstruct(); /// now with alwaysJoin I believe this should go away
 		/// For forcestart we need to reset the next timer
 		if (Defaults.MATCH_FORCESTART_ENABLED){
 			forceTimers.remove(tq);
@@ -558,14 +560,26 @@ public class ArenaMatchQueue {
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append(queuesToString());
-		sb.append("------AMQ Arenas------- \n");
-		synchronized(arenaqueue){
-			for (Arena arena : arenaqueue){
-				sb.append(arena +"\n");}}
+		sb.append(toStringArenas());
+		sb.append(toStringReadyMatches());
+		return sb.toString();
+	}
+
+	public String toStringReadyMatches(){
+		StringBuilder sb = new StringBuilder();
 		sb.append("------ ready matches ------- \n");
 		synchronized(ready_matches){
 			for (Match am : ready_matches){
 				sb.append(am +"\n");}}
+		return sb.toString();
+	}
+
+	public String toStringArenas(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("------AMQ Arenas------- \n");
+		synchronized(arenaqueue){
+			for (Arena arena : arenaqueue){
+				sb.append(arena +"\n");}}
 		return sb.toString();
 	}
 

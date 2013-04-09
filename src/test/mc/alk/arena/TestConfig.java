@@ -35,7 +35,7 @@ public class TestConfig extends TestCase{
 		MatchParams mp = null;
 		try {
 			ConfigSerializer config = new ConfigSerializer(plugin, bc.getFile(),node);
-			mp = config.loadType();
+			mp = config.loadMatchParams();
 //			mp = ConfigSerializer.setTypeConfig(plugin, "arena", cs);
 		} catch (ConfigException e) {
 			e.printStackTrace();
