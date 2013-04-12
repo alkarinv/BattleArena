@@ -14,7 +14,7 @@ import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 import org.bukkit.configuration.MemorySection;
 
@@ -131,7 +131,7 @@ public class MessageSerializer extends BaseConfig {
 		}
 	}
 
-	protected void sendVictory(Channel serverChannel, Collection<Team> victors, Collection<Team> losers, MatchParams mp, String winnerpath,String loserpath, String serverPath){
+	protected void sendVictory(Channel serverChannel, Collection<ArenaTeam> victors, Collection<ArenaTeam> losers, MatchParams mp, String winnerpath,String loserpath, String serverPath){
 		int size = victors != null ? victors.size() : 0;
 		size += losers != null ? losers.size() : 0;
 		Message winnermessage = getNodeMessage(winnerpath);
@@ -148,14 +148,14 @@ public class MessageSerializer extends BaseConfig {
 
 		String msg = losermessage.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), size, losermessage, ops);
-		List<Team> teams = new ArrayList<Team>(losers);
+		List<ArenaTeam> teams = new ArrayList<ArenaTeam>(losers);
 		if (victors != null){
 			teams.addAll(victors);
 		}
 
 		msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
-		Team vic = (victors != null && !victors.isEmpty()) ? victors.iterator().next() : null;
-		for (Team t: losers){
+		ArenaTeam vic = (victors != null && !victors.isEmpty()) ? victors.iterator().next() : null;
+		for (ArenaTeam t: losers){
 			msgf.formatTeamOptions(t,false);
 			msgf.formatTwoTeamsOptions(t, teams);
 			msgf.formatTeams(teams);
@@ -168,7 +168,7 @@ public class MessageSerializer extends BaseConfig {
 		}
 
 		if (victors != null){
-			for (Team victor: victors){
+			for (ArenaTeam victor: victors){
 				msgf = new MessageFormatter(this, mp, ops.size(), size, winnermessage, ops);
 				msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
 				msgf.formatTeamOptions(victor,true);
@@ -189,7 +189,7 @@ public class MessageSerializer extends BaseConfig {
 		}
 	}
 
-	public void sendAddedToTeam(Team team, ArenaPlayer player) {
+	public void sendAddedToTeam(ArenaTeam team, ArenaPlayer player) {
 		Message message = getNodeMessage("common.added_to_team");
 		Set<MessageOption> ops = message.getOptions();
 		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), 1, message, ops);
@@ -198,7 +198,7 @@ public class MessageSerializer extends BaseConfig {
 		team.sendToOtherMembers(player,msgf.getFormattedMessage(message));
 	}
 
-	public void sendTeamJoinedEvent(Channel serverChannel, Team team) {
+	public void sendTeamJoinedEvent(Channel serverChannel, ArenaTeam team) {
 		Message message = getNodeMessage("common.onjoin");
 		Message serverMessage = getNodeMessage("common.onjoin_server");
 		Set<MessageOption> ops = message.getOptions();
@@ -207,11 +207,11 @@ public class MessageSerializer extends BaseConfig {
 		}
 
 		String msg = message.getMessage();
-		List<Team> teams = new ArrayList<Team>();
+		List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 		teams.add(team);
 		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), teams.size(), message, ops);
 		msgf.formatCommonOptions(teams);
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			msgf.formatTeamOptions(t,false);
 			msgf.formatTeams(teams);
 			String newmsg = msgf.getFormattedMessage(message);

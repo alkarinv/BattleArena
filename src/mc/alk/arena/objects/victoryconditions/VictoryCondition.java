@@ -22,4 +22,6 @@ public abstract class VictoryCondition extends ChangeStateCondition  {
 	public String getName() {
 		return "[VC "+vt.getName()+"]";
 	}
+
+
 }

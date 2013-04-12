@@ -21,7 +21,7 @@ import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.MessageUtil;
 
@@ -44,9 +44,9 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 				if (!checkWager(d))
 					return null;
 
-				Team t = d.getChallengerTeam();
-				Team t2 = d.makeChallengedTeam();
-				List<Team> teams = new ArrayList<Team>();
+				ArenaTeam t = d.getChallengerTeam();
+				ArenaTeam t2 = d.makeChallengedTeam();
+				List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 				teams.add(t);
 				teams.add(t2);
 				Matchup m = new Matchup(d.getMatchParams(),teams);
@@ -74,8 +74,8 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 			refundMoney(money, match.getTeams());}
 	}
 
-	private void refundMoney(Double money, Collection<Team> teams) {
-		for (Team t: teams){
+	private void refundMoney(Double money, Collection<ArenaTeam> teams) {
+		for (ArenaTeam t: teams){
 			for (ArenaPlayer ap: t.getPlayers()){
 				MessageUtil.sendMessage(ap,"&4[Duel] &6"+money+" "+Defaults.MONEY_STR+"&e has been refunded");
 				MoneyController.add(ap.getName(), money);
@@ -97,12 +97,12 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 		Double money = (Double) d.getDuelOptionValue(DuelOption.MONEY);
 		if (money != null){
 			if (mr.hasVictor()){
-				Collection<Team> winningTeams = mr.getVictors();
+				Collection<ArenaTeam> winningTeams = mr.getVictors();
 				int winningSize = 0;
-				for (Team winTeam : winningTeams){
+				for (ArenaTeam winTeam : winningTeams){
 					winningSize += winTeam.size();}
 				final double split = d.getTotalMoney() / winningSize;
-				for (Team winTeam : winningTeams){
+				for (ArenaTeam winTeam : winningTeams){
 					for (ArenaPlayer ap: winTeam.getPlayers()){
 						MessageUtil.sendMessage(ap,"&4[Duel] &eYou have won &6" + split +" "+Defaults.MONEY_STR+"&e for your victory!");
 						MoneyController.add(ap.getName(), split);
@@ -206,7 +206,7 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 		for (ArenaPlayer p: players){
 			MessageUtil.sendMessage(p, msg);
 		}
-		Team t = d.getChallengerTeam();
+		ArenaTeam t = d.getChallengerTeam();
 		t.sendMessage(msg);
 	}
 

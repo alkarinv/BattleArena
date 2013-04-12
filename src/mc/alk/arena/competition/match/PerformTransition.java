@@ -22,7 +22,7 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.ExpUtil;
@@ -53,21 +53,21 @@ public class PerformTransition {
 	 * @param teams: which teams to affect
 	 * @param onlyInMatch: only perform the actions on people still in the arena match
 	 */
-	public static void transition(Match am, MatchState transition, Collection<Team> teams, boolean onlyInMatch){
+	public static void transition(Match am, MatchState transition, Collection<ArenaTeam> teams, boolean onlyInMatch){
 		if (teams == null)
 			return;
 		boolean first = true;
-		for (Team team: teams){
+		for (ArenaTeam team: teams){
 			transition(am,transition,team,onlyInMatch,first);
 			first = false;
 		}
 	}
 
-	public static boolean transition(Match am, final MatchState transition, Team team, boolean onlyInMatch) {
+	public static boolean transition(Match am, final MatchState transition, ArenaTeam team, boolean onlyInMatch) {
 		return transition(am,transition,team,onlyInMatch,true);
 	}
 
-	static boolean transition(Match am, final MatchState transition, Team team, boolean onlyInMatch,
+	static boolean transition(Match am, final MatchState transition, ArenaTeam team, boolean onlyInMatch,
 			boolean performOncePerTransitionOptions) {
 		final TransitionOptions mo = am.tops.getOptions(transition);
 		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo );
@@ -97,7 +97,7 @@ public class PerformTransition {
 	}
 
 	static boolean transition(final Match am, final MatchState transition, final ArenaPlayer player,
-			final Team team, final boolean onlyInMatch) {
+			final ArenaTeam team, final boolean onlyInMatch) {
 		if (Defaults.DEBUG_TRANSITIONS) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +player.getName() +
 				" ops="+am.tops.getOptions(transition) +"  inArena="+am.insideArena(player) +"  left="+am.playerLeft(player));
 		if (am.playerLeft(player)) /// The player has purposefully left the match, we have nothing to do with them anymore

@@ -2,10 +2,10 @@ package mc.alk.arena.events;
 
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.pairs.QueueResult;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 public class TeamJoinedQueueEvent extends BAEvent{
-	final Team team;
+	final ArenaTeam team;
 	final int playersInQueue;
 	final int teamsInQueue;
 	final int pos;
@@ -22,7 +22,7 @@ public class TeamJoinedQueueEvent extends BAEvent{
 	}
 
 
-	public Team getTeam() {
+	public ArenaTeam getTeam() {
 		return team;
 	}
 

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 public interface DefinesLeaderRanking {
 
@@ -12,15 +12,13 @@ public interface DefinesLeaderRanking {
 	 * Returns the list of currently tied for the lead teams
 	 * @return
 	 */
-	public List<Team> getLeaders();
+	public List<ArenaTeam> getLeaders();
 
 	/**
 	 * Returns the list of teams sorted by their current ranking
 	 * Teams with the same score are at the same key
 	 * @return
 	 */
-	public TreeMap<?,Collection<Team>> getRanks();
+	public TreeMap<?,Collection<ArenaTeam>> getRanks();
 
-	@Deprecated
-	public List<Team> getRankings();
 }

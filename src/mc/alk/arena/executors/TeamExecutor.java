@@ -15,7 +15,7 @@ import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.FormingTeam;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.ServerUtil;
 
@@ -36,9 +36,9 @@ public class TeamExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"list"},admin=true,usage="list")
 	public boolean teamList(CommandSender sender) {
 		StringBuilder sb = new StringBuilder();
-		Map<Team,CopyOnWriteArrayList<TeamHandler>> teams = teamc.getTeams();
+		Map<ArenaTeam,CopyOnWriteArrayList<TeamHandler>> teams = teamc.getTeams();
 
-		for (Team t: teams.keySet()){
+		for (ArenaTeam t: teams.keySet()){
 			sb.append(t.getTeamInfo(null)+"\n");}
 		sb.append("&e# of players = &6" + teams.size());
 		return sendMessage(sender,sb.toString());
@@ -47,9 +47,9 @@ public class TeamExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"listDetailed"},admin=true,usage="listDetailed")
 	public boolean teamListDetails(CommandSender sender) {
 		StringBuilder sb = new StringBuilder();
-		Map<Team,CopyOnWriteArrayList<TeamHandler>> teams = teamc.getTeams();
+		Map<ArenaTeam,CopyOnWriteArrayList<TeamHandler>> teams = teamc.getTeams();
 
-		for (Team t: teams.keySet()){
+		for (ArenaTeam t: teams.keySet()){
 			sb.append(t.getTeamInfo(null) +" tid=" + t.getId());
 			sb.append(" &5Handlers:");
 			if (teams.get(t) == null){
@@ -67,7 +67,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"join"}, usage="join", perm="arena.team.join")
 	public boolean teamJoin(ArenaPlayer player) {
 
-		Team t = teamc.getSelfFormedTeam(player);
+		ArenaTeam t = teamc.getSelfFormedTeam(player);
 		if (t != null && t.size() >1){
 			return sendMessage(player, "&cYou are already part of a team with &6" + t.getOtherNames(player));
 		}
@@ -129,7 +129,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		Set<ArenaPlayer> foundArenaPlayers = PlayerController.toArenaPlayerSet(foundplayers);
 		for (ArenaPlayer p: foundArenaPlayers){
 			if (Defaults.DEBUG){System.out.println("player=" + player.getName());}
-			Team t = teamc.getSelfFormedTeam(p);
+			ArenaTeam t = teamc.getSelfFormedTeam(p);
 			if (t!= null || !bae.canJoin(p,false)){
 				sendMessage(player,"&6"+ p.getName() + "&e is already part of a team or is in an Event");
 				return sendMessage(player,"&eCreate team &4cancelled!");
@@ -162,7 +162,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds={"info"}, usage="info")
 	public boolean teamInfo(ArenaPlayer player) {
-		Map<TeamHandler,Team> teams = teamc.getTeamMap(player);
+		Map<TeamHandler,ArenaTeam> teams = teamc.getTeamMap(player);
 		if (teams == null || teams.isEmpty()){
 			return sendMessage(player,"&eYou are not in a team");}
 		final int size = teams.size();
@@ -178,7 +178,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds={"info"}, min=2, admin=true, usage="info <player>", order=1)
 	public boolean teamInfoOther(CommandSender sender,ArenaPlayer player) {
-		Map<TeamHandler,Team> teams = teamc.getTeamMap(player);
+		Map<TeamHandler,ArenaTeam> teams = teamc.getTeamMap(player);
 		if (teams == null || teams.isEmpty()){
 			return sendMessage(sender,"&ePlayer &6" + player.getName() +"&e is not in a team");}
 
@@ -201,7 +201,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 
 		/// If in a self made team, let them disband it regardless
 		/// This will cause the team to try and leave the event, queue, or whatever
-		Team t = teamc.getSelfFormedTeam(player);
+		ArenaTeam t = teamc.getSelfFormedTeam(player);
 		if (t== null){
 			return sendMessage(player,"&eYou aren't part of a team");}
 
@@ -232,7 +232,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds={"delete"}, usage="delete")
 	public boolean teamDelete(CommandSender sender, ArenaPlayer player) {
-		Team t = teamc.getSelfFormedTeam(player);
+		ArenaTeam t = teamc.getSelfFormedTeam(player);
 		if (t== null){
 			return sendMessage(sender,ChatColor.YELLOW + player.getName() + " is not part of a team");}
 		Event ae = EventController.insideEvent(player);

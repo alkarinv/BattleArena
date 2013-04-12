@@ -3,7 +3,7 @@ package mc.alk.arena.objects.pairs;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.MinMax;
 
 
@@ -20,7 +20,7 @@ public class WantedTeamSizePair {
 	 * @return
 	 * @throws InvalidOptionException
 	 */
-	public static WantedTeamSizePair getWantedTeamSize(ArenaPlayer player, Team t, MatchParams mp, String stringsize) throws InvalidOptionException {
+	public static WantedTeamSizePair getWantedTeamSize(ArenaPlayer player, ArenaTeam t, MatchParams mp, String stringsize) throws InvalidOptionException {
 		/// Check to see if the user has specified a wanted team size
 		MinMax mm = null;
 		try{mm = MinMax.valueOf(stringsize);} catch (Exception e){}

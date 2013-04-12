@@ -12,27 +12,27 @@ import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.JoinOptions.JoinOption;
 import mc.alk.arena.objects.queues.TeamQObject;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 
 public class AddToLeastFullTeam extends TeamJoinHandler {
 
-	public AddToLeastFullTeam(MatchParams params, Competition competition, Class<? extends Team> clazz) throws NeverWouldJoinException{
+	public AddToLeastFullTeam(MatchParams params, Competition competition, Class<? extends ArenaTeam> clazz) throws NeverWouldJoinException{
 		super(params,competition,clazz);
 		if (maxTeams == ArenaParams.MAX)
 			throw new NeverWouldJoinException("If you add players by adding them to the next team in the list, there must be a finite number of players");
 		/// Lets add in all our teams first
 		for (int i=0;i<minTeams;i++){
-			Team team = TeamFactory.createTeam(clazz);
+			ArenaTeam team = TeamFactory.createTeam(clazz);
 			addTeam(team);
 		}
 	}
 
 	@Override
 	public TeamJoinResult joiningTeam(TeamQObject tqo) {
-		Team team = tqo.getTeam();
+		ArenaTeam team = tqo.getTeam();
 		if (team.size()==1){
-			Team oldTeam = addToPreviouslyLeftTeam(team.getPlayers().iterator().next());
+			ArenaTeam oldTeam = addToPreviouslyLeftTeam(team.getPlayers().iterator().next());
 			if (oldTeam != null)
 				return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING,minTeamSize - oldTeam.size(), oldTeam);
 		}
@@ -43,23 +43,23 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 		if (jo != null && jo.hasOption(JoinOption.TEAM)){
 			Integer index = (Integer) jo.getOption(JoinOption.TEAM);
 			if (index < maxTeams){ /// they specified a team index within range
-				Team baseTeam= teams.get(index);
+				ArenaTeam baseTeam= teams.get(index);
 				TeamJoinResult tjr = teamFits(baseTeam, team);
 				if (tjr != CANTFIT)
 					return tjr;
 			}
 		}
 		/// Try to fit them with an existing team
-		List<Team> sortedBySize = new ArrayList<Team>(teams);
+		List<ArenaTeam> sortedBySize = new ArrayList<ArenaTeam>(teams);
 		Collections.sort(sortedBySize, new TeamSizeComparator());
-		for (Team baseTeam : sortedBySize){
+		for (ArenaTeam baseTeam : sortedBySize){
 			TeamJoinResult tjr = teamFits(baseTeam, team);
 			if (tjr != CANTFIT)
 				return tjr;
 		}
 		/// Since this is nearly the same as BinPack add... can we merge somehow easily?
 		if (teams.size() < maxTeams){
-			Team ct = TeamFactory.createTeam(clazz);
+			ArenaTeam ct = TeamFactory.createTeam(clazz);
 			ct.addPlayers(team.getPlayers());
 			if (ct.size() == maxTeamSize){
 				addTeam(ct);
@@ -75,7 +75,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 		}
 	}
 
-	private TeamJoinResult teamFits(Team baseTeam, Team team) {
+	private TeamJoinResult teamFits(ArenaTeam baseTeam, ArenaTeam team) {
 		if ( baseTeam.size() + team.size() <= maxTeamSize){
 			addToTeam(baseTeam, team.getPlayers());
 			if (baseTeam.size() == 0){

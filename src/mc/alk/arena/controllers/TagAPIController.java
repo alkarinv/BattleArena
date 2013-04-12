@@ -12,7 +12,7 @@ public class TagAPIController {
 		return hasTagAPI;
 	}
 
-	public static void enableTagAPI(boolean enable) {
+	public static void setEnable(boolean enable) {
 		hasTagAPI = enable;
 	}
 

@@ -70,7 +70,7 @@ defaultOptions:
     ## have joined.  Example: say 2 teams of 4 people each is needed, if after
     ## the forceStartTime is exceeded only 2 teams of 1 person is needed to start.
     matchEnableForceStart: true
-    matchForceStartTime: 180
+    matchForceStartTime: 60
 
     ## Enable ready block (a block players can click to signify they are ready)
     enablePlayerReadyBlock: false

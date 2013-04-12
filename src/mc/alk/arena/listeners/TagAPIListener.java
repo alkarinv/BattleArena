@@ -15,6 +15,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.kitteh.tag.PlayerReceiveNameTagEvent;
 import org.kitteh.tag.TagAPI;
+import org.kitteh.tag.api.TagAPIException;
 
 
 public enum TagAPIListener implements Listener {
@@ -76,6 +77,9 @@ public enum TagAPIListener implements Listener {
 		} catch (ClassCastException e){
 			/* For the plugin CommandSigns which use a "ProxyPlayer" which can't be cast to
 			 * a CraftPlayer, ignore the error */
+		} catch (TagAPIException e){
+			/* Do nothing.
+			 * Bukkit can sometimes have OfflinePlayers that are not caught by isOnline()*/
 		}
 		/// Unregister if we aren't listening for any players
 		if (INSTANCE.playerName.isEmpty()){

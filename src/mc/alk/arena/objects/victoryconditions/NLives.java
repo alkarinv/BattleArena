@@ -5,7 +5,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.events.MatchEventHandler;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumLivesPerPlayer;
 import mc.alk.arena.util.DmgDeathUtil;
 
@@ -24,6 +24,7 @@ public class NLives extends VictoryCondition implements DefinesNumLivesPerPlayer
 		super(match);
 		this.nLives = maxLives;
 	}
+
 	public void setMaxLives(Integer maxLives) {
 		this.nLives = maxLives;
 	}
@@ -35,14 +36,14 @@ public class NLives extends VictoryCondition implements DefinesNumLivesPerPlayer
 		final ArenaPlayer p = BattleArena.toArenaPlayer(event.getEntity());
 		if (p==null)
 			return;
-		final Team team = match.getTeam(p);
+		final ArenaTeam team = match.getTeam(p);
 		if (team == null)
 			return;
 		final ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
 		handleDeath(p,team, killer);
 	}
 
-	protected void handleDeath(ArenaPlayer p,Team team, ArenaPlayer killer) {
+	protected void handleDeath(ArenaPlayer p,ArenaTeam team, ArenaPlayer killer) {
 		int deaths = team.addDeath(p);
 		if (deaths >= nLives){
 			team.killMember(p);}

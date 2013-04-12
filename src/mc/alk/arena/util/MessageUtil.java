@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -84,18 +84,18 @@ public class MessageUtil {
 	public static ChatColor getFirstColor(String str) {
 		String lbl = str.replaceFirst("&", "§");
 		int index = lbl.indexOf("§");
-		if (index != -1 && lbl.length() > index+2){
-			ChatColor cc = ChatColor.getByChar(lbl.charAt(index+2));
+		if (index != -1 && lbl.length() > index+1){
+			ChatColor cc = ChatColor.getByChar(lbl.charAt(index+1));
 			if (cc != null)
 				return cc;
 		}
 		return ChatColor.WHITE;
 	}
 
-	public static String joinTeams(Collection<Team> teams, String joinStr){
+	public static String joinTeams(Collection<ArenaTeam> teams, String joinStr){
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			if (!first) sb.append(joinStr);
 			sb.append(t.getDisplayName());
 			first = false;

@@ -5,18 +5,18 @@ import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.messaging.Channel;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 public interface EventMessageHandler {
 	public void sendCountdownTillEvent(Channel serverChannel, int seconds);
-	public void sendEventStarting(Channel serverChannel, Collection<Team> teams);
-	public void sendEventVictory(Channel serverChannel, Collection<Team> victors, Collection<Team> losers);
+	public void sendEventStarting(Channel serverChannel, Collection<ArenaTeam> teams);
+	public void sendEventVictory(Channel serverChannel, Collection<ArenaTeam> victors, Collection<ArenaTeam> losers);
 	public void sendEventOpenMsg(Channel serverChannel);
 	public void sendEventCancelledDueToLackOfPlayers(Channel serverChannel, Set<ArenaPlayer> competingPlayers);
-	public void sendTeamJoinedEvent(Channel serverChannel, Team team);
-	public void sendEventCancelled(Channel serverChannel, Collection<Team> teams);
-	public void sendCantFitTeam(Team team);
-	public void sendWaitingForMorePlayers(Team team, int remaining);
-	public void sendEventDraw(Channel serverChannel, Collection<Team> participants, Collection<Team> losers);
-	public void sendAddedToTeam(Team team, ArenaPlayer player);
+	public void sendTeamJoinedEvent(Channel serverChannel, ArenaTeam team);
+	public void sendEventCancelled(Channel serverChannel, Collection<ArenaTeam> teams);
+	public void sendCantFitTeam(ArenaTeam team);
+	public void sendWaitingForMorePlayers(ArenaTeam team, int remaining);
+	public void sendEventDraw(Channel serverChannel, Collection<ArenaTeam> participants, Collection<ArenaTeam> losers);
+	public void sendAddedToTeam(ArenaTeam team, ArenaPlayer player);
 }

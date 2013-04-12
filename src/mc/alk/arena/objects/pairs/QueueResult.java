@@ -3,7 +3,7 @@ package mc.alk.arena.objects.pairs;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.queues.QueueObject;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 
 public class QueueResult {
@@ -17,7 +17,7 @@ public class QueueResult {
 	public Match match;
 	public MatchParams params;
 	public int pos;
-	public Team team;
+	public ArenaTeam team;
 	public int playersInQueue; ///
 	public int teamsInQueue; ///
 	public int neededPlayers;
@@ -26,7 +26,7 @@ public class QueueResult {
 	public TimeStatus timeStatus = TimeStatus.UNKNOWN;
 	public QueueResult(){}
 
-	public QueueResult(Match match, MatchParams params, int pos, int playersInQueue, Team t, int teamsInQueue){
+	public QueueResult(Match match, MatchParams params, int pos, int playersInQueue, ArenaTeam t, int teamsInQueue){
 		this.match = match;
 		this.params=params;
 		this.pos=pos;

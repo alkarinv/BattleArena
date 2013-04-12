@@ -5,7 +5,7 @@ import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.CompositeTeam;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 public class TeamJoinFactory {
 
@@ -14,7 +14,7 @@ public class TeamJoinFactory {
 	}
 
 	public static TeamJoinHandler createTeamJoinHandler(MatchParams params, Competition competition,
-			Class<? extends Team> clazz) throws NeverWouldJoinException {
+			Class<? extends ArenaTeam> clazz) throws NeverWouldJoinException {
 		/// do we have a finite set of players
 		if (params.getMaxTeams() != ArenaParams.MAX ){
 			return new AddToLeastFullTeam(params, competition,clazz);	/// lets try and add players to all players first

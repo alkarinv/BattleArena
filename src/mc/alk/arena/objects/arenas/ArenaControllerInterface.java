@@ -2,7 +2,7 @@ package mc.alk.arena.objects.arenas;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchResult;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 /**
  *
@@ -25,10 +25,10 @@ public class ArenaControllerInterface {
 	public void onComplete(){arena.privateOnComplete();}
 	public void onFinish(){arena.privateOnFinish();}
 	public void onCancel(){arena.privateOnCancel();}
-	public void onEnter(ArenaPlayer p, Team t) {arena.privateOnEnter(p,t);}
-	public void onEnterWaitRoom(ArenaPlayer p, Team t) {arena.privateOnEnterWaitRoom(p,t);}
-	public void onLeave(ArenaPlayer p, Team t) {arena.privateOnLeave(p,t);}
-	public void onJoin(ArenaPlayer p, Team t) {arena.privateOnJoin(p,t);}
+	public void onEnter(ArenaPlayer p, ArenaTeam t) {arena.privateOnEnter(p,t);}
+	public void onEnterWaitRoom(ArenaPlayer p, ArenaTeam t) {arena.privateOnEnterWaitRoom(p,t);}
+	public void onLeave(ArenaPlayer p, ArenaTeam t) {arena.privateOnLeave(p,t);}
+	public void onJoin(ArenaPlayer p, ArenaTeam t) {arena.privateOnJoin(p,t);}
 	public void create() {arena.privateCreate();}
 	public void init() {arena.privateInit();}
 	public void delete() {arena.privateDelete();}

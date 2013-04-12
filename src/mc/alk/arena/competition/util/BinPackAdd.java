@@ -5,7 +5,7 @@ import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.queues.TeamQObject;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 
 /**
@@ -16,14 +16,14 @@ import mc.alk.arena.objects.teams.TeamFactory;
 public class BinPackAdd extends TeamJoinHandler {
 	boolean full = false;
 
-	public BinPackAdd(MatchParams params, Competition competition, Class<? extends Team> clazz) throws NeverWouldJoinException{
+	public BinPackAdd(MatchParams params, Competition competition, Class<? extends ArenaTeam> clazz) throws NeverWouldJoinException{
 		super(params, competition,clazz);
 	}
 	@Override
 	public TeamJoinResult joiningTeam(TeamQObject tqo) {
-		Team team = tqo.getTeam();
+		ArenaTeam team = tqo.getTeam();
 		if (team.size()==1){
-			Team oldTeam = addToPreviouslyLeftTeam(team.getPlayers().iterator().next());
+			ArenaTeam oldTeam = addToPreviouslyLeftTeam(team.getPlayers().iterator().next());
 			if (oldTeam != null)
 				return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING,minTeamSize - oldTeam.size(), oldTeam);
 		}
@@ -32,12 +32,12 @@ public class BinPackAdd extends TeamJoinHandler {
 		final int teamSize = team.size();
 		/// just add the team to the current team list if we can
 		if (teamSize >= minTeamSize && teamSize <= maxTeamSize && teams.size() < maxTeams){
-			Team ct = TeamFactory.createTeam(clazz);
+			ArenaTeam ct = TeamFactory.createTeam(clazz);
 			ct.addPlayers(team.getPlayers());
 			addTeam(ct);
 			return new TeamJoinResult(TeamJoinStatus.ADDED, 0,ct);
 		}
-		for (Team t: pickupTeams){
+		for (ArenaTeam t: pickupTeams){
 			final int size = t.size()+team.size();
 			if (size <= maxTeamSize){
 				t.addPlayers(team.getPlayers());
@@ -55,7 +55,7 @@ public class BinPackAdd extends TeamJoinHandler {
 		/// So we couldnt add them to an existing team
 		/// Can we add them to a new team
 		if (teams.size() < maxTeams){
-			Team ct = TeamFactory.createTeam(clazz);
+			ArenaTeam ct = TeamFactory.createTeam(clazz);
 			ct.addPlayers(team.getPlayers());
 			if (ct.size() == maxTeamSize){
 				addTeam(ct);

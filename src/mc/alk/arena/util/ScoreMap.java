@@ -26,6 +26,14 @@ public class ScoreMap<K> extends ConcurrentHashMap<K,Integer> {
 		return addPoints(key,-points);
 	}
 
+	public int setPoints(K key, int points) {
+		Integer p = get(key);
+		if (p == null){
+			p = 0;}
+		put(key, points);
+		return p;
+	}
+
 	public int getPoints(K key){
 		Integer p = get(key);
 		return p == null ? 0 : p;
@@ -77,4 +85,6 @@ public class ScoreMap<K> extends ConcurrentHashMap<K,Integer> {
 		});
 		return ts;
 	}
+
+
 }

@@ -9,35 +9,32 @@ import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.events.MatchEventHandler;
-import mc.alk.arena.objects.teams.Team;
-import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
+import mc.alk.arena.objects.scoreboard.ArenaObjective;
+import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
+import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.objects.victoryconditions.interfaces.ScoreTracker;
 import mc.alk.arena.util.DmgDeathUtil;
-import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.event.entity.EntityDeathEvent;
 
-public class MobKills extends VictoryCondition implements DefinesLeaderRanking{
-	final PointTracker mkills;
+public class MobKills extends VictoryCondition implements ScoreTracker{
+	final ArenaObjective mkills;
 
 	public MobKills(Match match) {
 		super(match);
-		this.mkills = new PointTracker(match);
+		this.mkills = new ArenaObjective("mobkills","Kill Mobs");
+		this.mkills.setDisplayName(MessageUtil.colorChat("&4Mob Kills"));
 	}
 
 	@Override
-	public List<Team> getLeaders() {
-		return mkills.getLeaders();
+	public List<ArenaTeam> getLeaders() {
+		return mkills.getTeamLeaders();
 	}
 
 	@Override
-	public TreeMap<Integer,Collection<Team>> getRanks() {
-		return mkills.getRanks();
-	}
-
-	@Override
-	@Deprecated
-	public List<Team> getRankings() {
-		return mkills.getRankings();
+	public TreeMap<Integer,Collection<ArenaTeam>> getRanks() {
+		return mkills.getTeamRanks();
 	}
 
 	@MatchEventHandler(priority=EventPriority.LOW)
@@ -103,20 +100,27 @@ public class MobKills extends VictoryCondition implements DefinesLeaderRanking{
 		ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event.getEntity().getLastDamageCause());
 		if (killer == null){
 			return;}
-		Team t = match.getTeam(killer);
+		ArenaTeam t = match.getTeam(killer);
 		if (t == null)
 			return;
 		t.addKill(killer);
 		mkills.addPoints(t, 1);
+		mkills.addPoints(killer, 1);
 	}
 
 	@MatchEventHandler(priority = EventPriority.LOW)
 	public void onFindCurrentLeader(MatchFindCurrentLeaderEvent event) {
-		Collection<Team> leaders = mkills.getLeaders();
+		Collection<ArenaTeam> leaders = mkills.getTeamLeaders();
 		if (leaders.size() > 1){
 			event.setCurrentDrawers(leaders);
 		} else {
 			event.setCurrentLeaders(leaders);
 		}
+	}
+
+	@Override
+	public void setScoreBoard(ArenaScoreboard scoreboard) {
+		this.mkills.setScoreBoard(scoreboard);
+		scoreboard.addObjective(mkills);
 	}
 }

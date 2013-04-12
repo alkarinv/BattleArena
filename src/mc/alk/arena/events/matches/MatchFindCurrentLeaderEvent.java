@@ -7,41 +7,41 @@ import java.util.Set;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchResult.WinLossDraw;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 public class MatchFindCurrentLeaderEvent extends MatchEvent {
-	final List<Team> teams;
+	final List<ArenaTeam> teams;
 	MatchResult result = new MatchResult();
 
-	public MatchFindCurrentLeaderEvent(Match match, List<Team> teams) {
+	public MatchFindCurrentLeaderEvent(Match match, List<ArenaTeam> teams) {
 		super(match);
 		this.teams = teams;
 	}
 
-	public List<Team> getTeams() {
+	public List<ArenaTeam> getTeams() {
 		return teams;
 	}
 
-	public Set<Team> getCurrentLeaders() {
+	public Set<ArenaTeam> getCurrentLeaders() {
 		return result.getVictors();
 	}
 
-	public void setCurrentLeader(Team currentLeader) {
+	public void setCurrentLeader(ArenaTeam currentLeader) {
 		result.setVictor(currentLeader);
 		result.setResult(WinLossDraw.WIN);
 	}
 
-	public void setCurrentLeaders(Collection<Team> currentLeaders) {
+	public void setCurrentLeaders(Collection<ArenaTeam> currentLeaders) {
 		result.setVictors(currentLeaders);
 		result.setResult(WinLossDraw.WIN);
 	}
 
-	public void setCurrentDrawers(Collection<Team> currentLeaders) {
+	public void setCurrentDrawers(Collection<ArenaTeam> currentLeaders) {
 		result.setDrawers(currentLeaders);
 		result.setResult(WinLossDraw.DRAW);
 	}
 
-	public void setCurrentLosers(Collection<Team> currentLosers) {
+	public void setCurrentLosers(Collection<ArenaTeam> currentLosers) {
 		result.setLosers(currentLosers);
 	}
 

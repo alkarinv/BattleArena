@@ -55,6 +55,7 @@ public class TeleportController implements Listener{
 		}
 		try {
 			player.setVelocity(new Vector(0,0,0));
+			player.setFallDistance(0);
 			Location loc = location.clone();
 			loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
 			teleporting(player,true);
@@ -84,6 +85,7 @@ public class TeleportController implements Listener{
 				if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + loc);
 				return false;
 			}
+
 			if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());
 		} catch (Exception e){
 			Log.err("[BA Error] teleporting player=" + player.getName() +" to " + location +" " + giveBypassPerms);

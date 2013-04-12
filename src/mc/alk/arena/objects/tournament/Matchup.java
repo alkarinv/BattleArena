@@ -11,7 +11,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 
 public class Matchup {
@@ -19,7 +19,7 @@ public class Matchup {
 	final int id = count++; /// id
 
 	public MatchResult result = new MatchResult();
-	public List<Team> teams = new ArrayList<Team>();
+	public List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 	Arena arena = null;
 
 	public Arena getArena() {return arena;}
@@ -30,14 +30,14 @@ public class Matchup {
 	MatchCreationCallback creationListener;
 	Match match = null;
 
-	public Matchup(MatchParams params, Team team, Team team2) {
+	public Matchup(MatchParams params, ArenaTeam team, ArenaTeam team2) {
 		this.params = params;
 		teams.add(team);
 		teams.add(team2);
 	}
 
-	public Matchup(MatchParams params, Collection<Team> teams) {
-		this.teams = new ArrayList<Team>(teams);
+	public Matchup(MatchParams params, Collection<ArenaTeam> teams) {
+		this.teams = new ArrayList<ArenaTeam>(teams);
 		this.params = new MatchParams(params);
 	}
 
@@ -52,13 +52,13 @@ public class Matchup {
 	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			sb.append("t=" + t +",");
 		}
 		return sb.toString() + " result=" + result;
 	}
-	public List<Team> getTeams() {return teams;}
-	public Team getTeam(int i) {
+	public List<ArenaTeam> getTeams() {return teams;}
+	public ArenaTeam getTeam(int i) {
 		return teams.get(i);
 	}
 	public MatchResult getResult() {
@@ -68,8 +68,8 @@ public class Matchup {
 	@Override
 	public boolean equals(Object other) {
 		if (this == other) return true;
-		if (!(other instanceof Team)) return false;
-		return this.hashCode() == ((Team) other).hashCode();
+		if (!(other instanceof ArenaTeam)) return false;
+		return this.hashCode() == ((ArenaTeam) other).hashCode();
 	}
 
 	@Override
@@ -92,21 +92,21 @@ public class Matchup {
 	}
 	public Integer getPriority() {
 		Integer priority = Integer.MAX_VALUE;
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			if (t.getPriority() < priority){
 				priority = t.getPriority();}
 		}
 		return priority;
 	}
 	public boolean hasMember(ArenaPlayer p) {
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			if (t.hasMember(p))
 				return true;
 		}
 		return false;
 	}
-	public Team getTeam(ArenaPlayer p) {
-		for (Team t: teams){
+	public ArenaTeam getTeam(ArenaPlayer p) {
+		for (ArenaTeam t: teams){
 			if (t.hasMember(p))
 				return t;
 		}
@@ -114,7 +114,7 @@ public class Matchup {
 	}
 	public int size() {
 		int size = 0;
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			size += t.size();
 		}
 		return size;

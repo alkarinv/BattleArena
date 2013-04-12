@@ -9,7 +9,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
 
@@ -49,7 +49,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 	}
 
 	@Override
-	public void sendEventStarting(Channel serverChannel, Collection<Team> teams) {
+	public void sendEventStarting(Channel serverChannel, Collection<ArenaTeam> teams) {
 		final String nTeamPath = getStringPathFromSize(teams.size());
 		Message message = getNodeMessage("event."+ nTeamPath+".start");
 		Message serverMessage = getNodeMessage("event."+ nTeamPath+".server_start");
@@ -57,7 +57,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 	}
 
 	@Override
-	public void sendEventVictory(Channel serverChannel, Collection<Team> victors, Collection<Team> losers) {
+	public void sendEventVictory(Channel serverChannel, Collection<ArenaTeam> victors, Collection<ArenaTeam> losers) {
 		final String nTeamPath = getStringPathFromSize(losers.size()+1);
 		sendVictory(serverChannel,victors,losers,mp,"event."+nTeamPath+".victory", "event."+nTeamPath+".loss",
 				"event."+nTeamPath+".server_victory");
@@ -90,13 +90,13 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 
 
 	@Override
-	public void sendEventCancelled(Channel serverChannel, Collection<Team> teams) {
+	public void sendEventCancelled(Channel serverChannel, Collection<ArenaTeam> teams) {
 		Message message = getNodeMessage("event.team_cancelled");
 		Message serverMessage = getNodeMessage("event.server_cancelled");
 		formatAndSend(serverChannel, teams, message, serverMessage);
 	}
 
-	private void formatAndSend(Channel serverChannel, Collection<Team> teams, Message message, Message serverMessage) {
+	private void formatAndSend(Channel serverChannel, Collection<ArenaTeam> teams, Message message, Message serverMessage) {
 		Set<MessageOption> ops = message.getOptions();
 		if (serverChannel != Channel.NullChannel){
 			ops.addAll(serverMessage.getOptions());
@@ -105,7 +105,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		String msg = message.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), teams.size(), message, ops);
 		msgf.formatCommonOptions(teams);
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			msgf.formatTeamOptions(t,false);
 			msgf.formatTeams(teams);
 			String newmsg = msgf.getFormattedMessage(message);
@@ -119,19 +119,19 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 	}
 
 	@Override
-	public void sendCantFitTeam(Team t) {
+	public void sendCantFitTeam(ArenaTeam t) {
 		t.sendMessage("&cThe &6" + event.getDisplayName()+"&c is full");
 	}
 
 	@Override
-	public void sendWaitingForMorePlayers(Team team, int remaining) {
+	public void sendWaitingForMorePlayers(ArenaTeam team, int remaining) {
 		team.sendMessage("&eYou have joined the &6" + event.getDisplayName());
 		team.sendMessage("&eYou will enter the Event when &6" +remaining+"&e more "+MessageUtil.playerOrPlayers(remaining)+
 				"&e have joined to make your team");
 	}
 
 	@Override
-	public void sendEventDraw(Channel serverChannel, Collection<Team> participants, Collection<Team> losers) {
+	public void sendEventDraw(Channel serverChannel, Collection<ArenaTeam> participants, Collection<ArenaTeam> losers) {
 		final String nTeamPath = getStringPathFromSize(participants.size());
 		sendVictory(serverChannel,null,participants,mp,"event."+nTeamPath+".draw","event."+nTeamPath+".draw",
 				"event."+nTeamPath+".server_draw");

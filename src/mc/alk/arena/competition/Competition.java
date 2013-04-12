@@ -13,7 +13,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.ArenaListener;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 
 /**
@@ -24,7 +24,7 @@ import mc.alk.arena.objects.teams.TeamHandler;
 public abstract class Competition implements ArenaListener, TeamHandler {
 
 	/** Our teams */
-	protected List<Team> teams = Collections.synchronizedList(new ArrayList<Team>());
+	protected List<ArenaTeam> teams = Collections.synchronizedList(new ArrayList<ArenaTeam>());
 
 	/** Players that have left the match */
 	protected final Set<String> leftPlayers = Collections.synchronizedSet(new HashSet<String>());
@@ -83,21 +83,21 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 * @param team
 	 * @return true if the team was added, false if not
 	 */
-	public abstract boolean addTeam(Team team);
+	public abstract boolean addTeam(ArenaTeam team);
 
 	/**
 	 * Remove the team from the competition
 	 * @param team
 	 * @return whether or not the team was removed
 	 */
-	public abstract boolean removeTeam(Team team);
+	public abstract boolean removeTeam(ArenaTeam team);
 
 	/**
 	 * Signify that the set of players were added to the team
 	 * @param t
 	 * @param players
 	 */
-	public abstract void addedToTeam(Team team, Collection<ArenaPlayer> players);
+	public abstract void addedToTeam(ArenaTeam team, Collection<ArenaPlayer> players);
 
 	/**
 	 * Signify that the set of players were added to the team
@@ -105,27 +105,27 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 * @param players
 	 * @return true if the player could be added to the team, false otherwise
 	 */
-	public abstract boolean addedToTeam(Team team, ArenaPlayer player);
+	public abstract boolean addedToTeam(ArenaTeam team, ArenaPlayer player);
 
 	/**
 	 * Signify that the set of players were removed from the team
 	 * @param t
 	 * @param players
 	 */
-	public abstract void removedFromTeam(Team team, Collection<ArenaPlayer> players);
+	public abstract void removedFromTeam(ArenaTeam team, Collection<ArenaPlayer> players);
 
 	/**
 	 * Signify that the set of players were added to the team
 	 * @param t
 	 * @param players
 	 */
-	public abstract void removedFromTeam(Team team, ArenaPlayer player);
+	public abstract void removedFromTeam(ArenaTeam team, ArenaPlayer player);
 
 	/**
 	 * Set our teams
 	 * @param teams
 	 */
-	public void setTeams(List<Team> teams){
+	public void setTeams(List<ArenaTeam> teams){
 		this.teams = teams;
 	}
 
@@ -133,7 +133,7 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 * return the teams for this competition
 	 * @return
 	 */
-	public List<Team> getTeams() {
+	public List<ArenaTeam> getTeams() {
 		return teams;
 	}
 
@@ -176,8 +176,8 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 * @param player
 	 * @return ArenaPlayer, or null if no team contains this player
 	 */
-	public Team getTeam(ArenaPlayer player) {
-		for (Team t: teams) {
+	public ArenaTeam getTeam(ArenaPlayer player) {
+		for (ArenaTeam t: teams) {
 			if (t.hasMember(player)) return t;}
 		return null;
 	}
@@ -188,7 +188,7 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 * @return true or false
 	 */
 	public boolean hasPlayer(ArenaPlayer player) {
-		for (Team t: teams) {
+		for (ArenaTeam t: teams) {
 			if (t.hasMember(player)) return true;}
 		return false;
 	}
@@ -199,7 +199,7 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 * @return true or false
 	 */
 	public boolean hasAlivePlayer(ArenaPlayer p) {
-		for (Team t: teams) {
+		for (ArenaTeam t: teams) {
 			if (t.hasAliveMember(p)) return true;}
 		return false;
 	}
@@ -210,7 +210,7 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 */
 	public Set<ArenaPlayer> getPlayers() {
 		HashSet<ArenaPlayer> players = new HashSet<ArenaPlayer>();
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			players.addAll(t.getPlayers());}
 		return players;
 	}

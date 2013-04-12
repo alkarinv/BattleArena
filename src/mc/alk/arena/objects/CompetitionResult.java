@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.MatchResult.WinLossDraw;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 
 /**
@@ -13,9 +13,9 @@ import mc.alk.arena.objects.teams.Team;
  * Modifying this object will modify the outcome of the match.
  */
 public class CompetitionResult{
-	Set<Team> victors = new HashSet<Team>();
-	Set<Team> losers = new HashSet<Team>();
-	Set<Team> drawers = new HashSet<Team>();
+	Set<ArenaTeam> victors = new HashSet<ArenaTeam>();
+	Set<ArenaTeam> losers = new HashSet<ArenaTeam>();
+	Set<ArenaTeam> drawers = new HashSet<ArenaTeam>();
 	WinLossDraw wld = WinLossDraw.UNKNOWN;
 
 	/**
@@ -28,57 +28,57 @@ public class CompetitionResult{
 		this.wld = wld;
 	}
 
-	public void setVictor(Team vic) {
+	public void setVictor(ArenaTeam vic) {
 		this.victors.clear();
 		this.victors.add(vic);
 		wld = WinLossDraw.WIN;
 	}
 
-	public void setVictors(Collection<Team> victors) {
+	public void setVictors(Collection<ArenaTeam> victors) {
 		this.victors.clear();
 		this.victors.addAll(victors);
 		wld = WinLossDraw.WIN;
 	}
 
-	public void setDrawers(Collection<Team> drawers) {
+	public void setDrawers(Collection<ArenaTeam> drawers) {
 		this.drawers.clear();
 		this.drawers.addAll(drawers);
 		wld = WinLossDraw.DRAW;
 	}
 
-	public void setLosers(Collection<Team> losers) {
+	public void setLosers(Collection<ArenaTeam> losers) {
 		this.losers.clear();
 		this.losers.addAll(losers);
 	}
 
-	public void addLosers(Collection<Team> losers) {
+	public void addLosers(Collection<ArenaTeam> losers) {
 		this.losers.addAll(losers);
 	}
 
-	public void addLoser(Team loser) {
+	public void addLoser(ArenaTeam loser) {
 		losers.add(loser);
 	}
 
-	public Set<Team> getVictors() {
+	public Set<ArenaTeam> getVictors() {
 		return victors;
 	}
 
-	public Set<Team> getLosers() {
+	public Set<ArenaTeam> getLosers() {
 		return losers;
 	}
 
-	public void removeLosers(Collection<Team> teams){
+	public void removeLosers(Collection<ArenaTeam> teams){
 		losers.removeAll(teams);
 	}
 
-	public void removeDrawers(Collection<Team> teams){
+	public void removeDrawers(Collection<ArenaTeam> teams){
 		drawers.removeAll(teams);
 	}
-	public void removeVictors(Collection<Team> teams){
+	public void removeVictors(Collection<ArenaTeam> teams){
 		victors.removeAll(teams);
 	}
 
-	public Set<Team> getDrawers(){
+	public Set<ArenaTeam> getDrawers(){
 		return drawers;
 	}
 
@@ -92,10 +92,10 @@ public class CompetitionResult{
 		if (victors.isEmpty()){
 			return "&eThere are no victors yet";}
 		StringBuilder sb = new StringBuilder();
-		for (Team t: victors){
+		for (ArenaTeam t: victors){
 			sb.append(t.getTeamSummary()+" ");}
 		sb.append(" &ewins vs ");
-		for (Team t: losers){
+		for (ArenaTeam t: losers){
 			sb.append(t.getTeamSummary()+" ");}
 
 		return sb.toString();

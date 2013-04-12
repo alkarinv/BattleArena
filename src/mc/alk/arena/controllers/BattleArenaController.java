@@ -34,13 +34,12 @@ import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
 import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.queues.TeamQObject;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
-import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.PermissionsUtil;
 
 import org.bukkit.Bukkit;
@@ -146,27 +145,27 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	}
 
 	private void unhandle(Match match) {
-		Collection<Team> teams = match.getOriginalTeams();
+		Collection<ArenaTeam> teams = match.getOriginalTeams();
 		if (teams == null)
 			teams = match.getTeams();
 		if (teams == null)
 			return;
-		for (Team team : teams){
+		for (ArenaTeam team : teams){
 			unhandle(team);}
 	}
 
-	private void unhandle(final Team team) {
+	private void unhandle(final ArenaTeam team) {
 		if (TeamController.removeTeamHandler(team, this)){
 			methodController.callEvent(new TeamLeftQueueEvent(team));}
 		for (ArenaPlayer ap: team.getPlayers()){
 			methodController.updateEvents(MatchState.ONFINISH, ap);}
 		if (team instanceof CompositeTeam){
-			for (Team t: ((CompositeTeam)team).getOldTeams()){
+			for (ArenaTeam t: ((CompositeTeam)team).getOldTeams()){
 				TeamController.removeTeamHandler(t, this);
 			}
 		}
 	}
-	private void handle(final MatchParams params, final Team team){
+	private void handle(final MatchParams params, final ArenaTeam team){
 		TeamController.addTeamHandler(team,this);
 		methodController.updateEvents(MatchState.PREREQS, team.getPlayers());
 	}
@@ -210,7 +209,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	 * @return
 	 */
 	public QueueResult addToQue(TeamQObject tqo) {
-		Team team = tqo.getTeam();
+		ArenaTeam team = tqo.getTeam();
 
 		if (joinExistingMatch(tqo)){
 			QueueResult qr = new QueueResult();
@@ -235,12 +234,8 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	}
 
 	private boolean shouldStart(String type, MatchParams mp){
-		NotifierUtil.notify("nc", "  nConcurrent check " + type +"    mp="+mp);
-
 		if (type == null || mp == null)
 			return true;
-		NotifierUtil.notify("nc", "  nConcurrent check " + type +"    mp="+mp.getName() +"   openMatches=" +
-				getNumberOpenMatches(type) +"      nConc=" + mp.getNConcurrentCompetitions());
 		return getNumberOpenMatches(type) < mp.getNConcurrentCompetitions();
 	}
 
@@ -342,12 +337,12 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	 * @return The ParamTeamPair object if the player was found.  Otherwise returns null
 	 */
 	public ParamTeamPair removeFromQue(ArenaPlayer p) {
-		Team t = TeamController.getTeam(p);
+		ArenaTeam t = TeamController.getTeam(p);
 		if (t == null)
 			return null;
 		return removeFromQue(t);
 	}
-	public ParamTeamPair removeFromQue(Team t) {
+	public ParamTeamPair removeFromQue(ArenaTeam t) {
 		methodController.callEvent(new TeamLeftQueueEvent(t));
 		TeamController.removeTeamHandler(t, this);
 		return amq.removeFromQue(t);
@@ -529,7 +524,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		return true;
 	}
 
-	public boolean cancelMatch(Team team) {
+	public boolean cancelMatch(ArenaTeam team) {
 		Set<ArenaPlayer> ps = team.getPlayers();
 		for (ArenaPlayer p : ps){
 			return cancelMatch(p);
@@ -539,7 +534,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	public void cancelMatch(Match am){
 		am.cancelMatch();
-		for (Team t: am.getTeams()){
+		for (ArenaTeam t: am.getTeams()){
 			t.sendMessage("&4!!!&e This arena match has been cancelled");
 		}
 	}
@@ -662,10 +657,10 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	}
 
 
-	public Collection<Team> purgeQueue() {
-		Collection<Team> teams = amq.purgeQueue();
+	public Collection<ArenaTeam> purgeQueue() {
+		Collection<ArenaTeam> teams = amq.purgeQueue();
 		TeamController.removeTeams(teams, this);
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			methodController.callEvent(new TeamLeftQueueEvent(t));
 			t.sendMessage("&cYou have been removed from the queue");
 		}

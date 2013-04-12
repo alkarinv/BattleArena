@@ -24,7 +24,7 @@ import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.queues.TeamQObject;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TimeUtil;
@@ -233,7 +233,7 @@ public class EventExecutor extends BAExecutor{
 			return false;
 		}
 		/// Get the team
-		Team t = teamc.getSelfFormedTeam(p);
+		ArenaTeam t = teamc.getSelfFormedTeam(p);
 		if (t==null){
 			t = TeamController.createTeam(p); }
 		/// Get or Make a team for the Player
@@ -296,7 +296,7 @@ public class EventExecutor extends BAExecutor{
 
 	private boolean eventTeams(CommandSender sender, Event event) {
 		StringBuilder sb = new StringBuilder();
-		for (Team t: event.getTeams()){
+		for (ArenaTeam t: event.getTeams()){
 			sb.append("\n" + t.getTeamInfo(null)); }
 
 		return sendMessage(sender,sb.toString());
@@ -330,7 +330,7 @@ public class EventExecutor extends BAExecutor{
 				Match match = rae.getMatch();
 				inside = match.getInsidePlayers();
 			}
-			for (Team t: event.getTeams()){
+			for (ArenaTeam t: event.getTeams()){
 				sb.append("\n" + t.getTeamInfo(inside));
 			}
 		}

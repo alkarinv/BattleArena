@@ -7,7 +7,7 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.util.heroes.Heroes_1_5_2;
 import mc.alk.arena.util.heroes.Heroes_pre1_5_2;
@@ -26,7 +26,7 @@ import com.herocraftonline.heroes.characters.party.HeroParty;
 
 public abstract class HeroesUtil {
 	static Heroes heroes = null;
-	static Map<Team,HeroParty> parties = Collections.synchronizedMap(new HashMap<Team,HeroParty>());
+	static Map<ArenaTeam,HeroParty> parties = Collections.synchronizedMap(new HashMap<ArenaTeam,HeroParty>());
 	static HeroesUtil util = null;
 
 	public abstract void setHeroPlayerHealth(Player player, int health);
@@ -95,7 +95,7 @@ public abstract class HeroesUtil {
 			hero.removeEffect(effect);}
 	}
 
-	public static HeroParty createParty(Team team, Hero hero){
+	public static HeroParty createParty(ArenaTeam team, Hero hero){
 		HeroParty party = new HeroParty(hero, heroes);
 		heroes.getPartyManager().addParty(party);
 		parties.put(team, party);
@@ -110,13 +110,13 @@ public abstract class HeroesUtil {
 		hero.setParty(null);
 	}
 
-	public static void removeTeam(Team team){
+	public static void removeTeam(ArenaTeam team){
 		HeroParty party = parties.remove(team);
 		if (party != null){
 			heroes.getPartyManager().removeParty(party);}
 	}
 
-	public static HeroParty createTeam(Team team) {
+	public static HeroParty createTeam(ArenaTeam team) {
 		HeroParty party = null;
 		for (ArenaPlayer player: team.getPlayers()){
 			Hero hero = getHero(player.getPlayer());
@@ -135,7 +135,7 @@ public abstract class HeroesUtil {
 		return party;
 	}
 
-	public static void addedToTeam(Team team, Player player){
+	public static void addedToTeam(ArenaTeam team, Player player){
 		HeroParty party = parties.get(team);
 		if (party == null)
 			party = createTeam(team);
@@ -155,7 +155,7 @@ public abstract class HeroesUtil {
 		hero.setParty(party);
 	}
 
-	public static void removedFromTeam(Team team, Player player){
+	public static void removedFromTeam(ArenaTeam team, Player player){
 		HeroParty party = parties.get(team);
 		if (party == null) {
 			return;}
@@ -165,14 +165,14 @@ public abstract class HeroesUtil {
 		removeOldParty(hero,null);
 	}
 
-	public static Team getTeam(Player player) {
+	public static ArenaTeam getTeam(Player player) {
 		Hero hero = getHero(player);
 		if (hero == null)
 			return null;
 		HeroParty party = hero.getParty();
 		if (party == null)
 			return null;
-		Team t = TeamFactory.createCompositeTeam();
+		ArenaTeam t = TeamFactory.createCompositeTeam();
 		Hero leader = party.getLeader();
 		if (leader != null)
 			t.addPlayer(BattleArena.toArenaPlayer(leader.getPlayer()));

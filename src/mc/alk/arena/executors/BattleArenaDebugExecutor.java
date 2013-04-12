@@ -24,7 +24,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.queues.QueueObject;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
@@ -140,7 +140,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		if (am == null){
 			return sendMessage(sender,"&ePlayer " + pl.getName() +" is not in a match");}
 //		am.addKill(pl);
-		Team t = am.getTeam(pl);
+		ArenaTeam t = am.getTeam(pl);
 		if (t != null){
 			t.addKill(pl);
 		}
@@ -293,8 +293,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	@MCCommand(cmds={"purgeQueue"}, admin=true)
 	public boolean arenaPurgeQueue(CommandSender sender) {
 		try {
-			Collection<Team> teams = ac.purgeQueue();
-			for (Team t: teams){
+			Collection<ArenaTeam> teams = ac.purgeQueue();
+			for (ArenaTeam t: teams){
 				t.sendMessage("&eYou have been &cremoved&e from the queue by an administrator");
 			}
 		} catch (Exception e){

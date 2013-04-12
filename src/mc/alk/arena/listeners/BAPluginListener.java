@@ -231,7 +231,7 @@ public class BAPluginListener implements Listener {
 		if (!TagAPIController.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("TagAPI");
 			if (plugin != null) {
-				TagAPIController.enableTagAPI(true);
+				TagAPIController.setEnable(true);
 				Log.info("[BattleArena] TagAPI detected. Implementing Team colored player names");
 			}
 		}

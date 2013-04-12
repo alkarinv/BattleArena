@@ -7,7 +7,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult.WinLossDraw;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.stats.BlankArenaStat;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.BTInterface;
 
 import org.bukkit.OfflinePlayer;
@@ -48,15 +48,15 @@ public class StatController {
 			BTInterface.stopTracking(p);
 	}
 
-	public void addRecord(Set<Team> victors,Set<Team> losers,
-			Set<Team> drawers, WinLossDraw wld) {
+	public void addRecord(Set<ArenaTeam> victors,Set<ArenaTeam> losers,
+			Set<ArenaTeam> drawers, WinLossDraw wld) {
 		if (!enabled)
 			return;
 
 		BTInterface.addRecord(mp, victors, losers, drawers, wld);
 	}
 
-	public ArenaStat loadRecord(Team t) {
+	public ArenaStat loadRecord(ArenaTeam t) {
 		if (!enabled) return BLANK_STAT;
 		return BTInterface.loadRecord(mp.getDBName(),t);
 	}

@@ -12,7 +12,7 @@ import java.util.Set;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.InventoryUtil;
 
 import org.bukkit.World;
@@ -117,7 +117,7 @@ public class MatchTransitions {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).playerReady(p,w): true;
 	}
 
-	public boolean teamReady(Team t, World w) {
+	public boolean teamReady(ArenaTeam t, World w) {
 		TransitionOptions to = ops.get(MatchState.PREREQS);
 		if (to == null)
 			return true;

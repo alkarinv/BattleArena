@@ -3,7 +3,7 @@ package mc.alk.arena.controllers;
 import java.util.List;
 
 import mc.alk.arena.listeners.HeroesListener;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.HeroesUtil;
 
 import org.bukkit.entity.Player;
@@ -53,31 +53,31 @@ public class HeroesController {
 		try{HeroesUtil.deEnchant(p);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public static void createTeam(Team team) {
+	public static void createTeam(ArenaTeam team) {
 		if (!hasHeroes)
 			return;
 		try{HeroesUtil.createTeam(team);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public static void removeTeam(Team team) {
+	public static void removeTeam(ArenaTeam team) {
 		if (!hasHeroes)
 			return;
 		try{HeroesUtil.removeTeam(team);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public static void addedToTeam(Team team, Player player) {
+	public static void addedToTeam(ArenaTeam team, Player player) {
 		if (!hasHeroes)
 			return;
 		try{HeroesUtil.addedToTeam(team, player);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public static void removedFromTeam(Team team, Player player) {
+	public static void removedFromTeam(ArenaTeam team, Player player) {
 		if (!hasHeroes)
 			return;
 		try{HeroesUtil.removedFromTeam(team, player);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public static Team getTeam(Player player) {
+	public static ArenaTeam getTeam(Player player) {
 		if (!hasHeroes)
 			return null;
 		try{return HeroesUtil.getTeam(player);}catch(Exception e){e.printStackTrace();}

@@ -12,7 +12,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.pairs.WantedTeamSizePair;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.TeamUtil;
 
 import org.bukkit.Location;
@@ -111,7 +111,7 @@ public class JoinOptions extends ArenaSize{
 		return true;
 	}
 
-	public static JoinOptions parseOptions(MatchParams mp, Team t, ArenaPlayer player, String[] args)
+	public static JoinOptions parseOptions(MatchParams mp, ArenaTeam t, ArenaPlayer player, String[] args)
 			throws InvalidOptionException, NumberFormatException{
 		JoinOptions jos = new JoinOptions();
 		jos.setJoinTime(System.currentTimeMillis());

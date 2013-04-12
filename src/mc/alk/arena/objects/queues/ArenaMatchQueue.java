@@ -36,7 +36,7 @@ import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.pairs.QueueResult.TimeStatus;
 import mc.alk.arena.objects.queues.TeamQueue.TeamQueueComparator;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 
 import org.bukkit.Bukkit;
@@ -348,7 +348,7 @@ public class ArenaMatchQueue {
 				return;
 			} else {
 				TeamQObject to = (TeamQObject) qo;
-				Team t = to.getTeam();
+				ArenaTeam t = to.getTeam();
 				JoinOptions jp = qo.getJoinOptions();
 				if (jp != null && !(jp.matches(arena) && jp.matches(params) && arena.matches(params, jp))){
 					continue;}
@@ -385,13 +385,13 @@ public class ArenaMatchQueue {
 		return;
 	}
 
-	private Match getMatchAndRemove(TeamQueue tq, TeamJoinHandler tjh, List<Team> teams,
+	private Match getMatchAndRemove(TeamQueue tq, TeamJoinHandler tjh, List<ArenaTeam> teams,
 			Map<ArenaPlayer, QueueObject> oteams, Arena a, MatchParams params) {
-		Set<Team> originalTeams = new HashSet<Team>();
-		for (Team t: teams){
+		Set<ArenaTeam> originalTeams = new HashSet<ArenaTeam>();
+		for (ArenaTeam t: teams){
 			originalTeams.add(t);
 			for (ArenaPlayer ap :t.getPlayers()){
-				Team originalTeam = oteams.get(ap).getTeam(ap);
+				ArenaTeam originalTeam = oteams.get(ap).getTeam(ap);
 				originalTeams.add(originalTeam);
 				tq.remove(oteams.get(ap));
 			}
@@ -467,14 +467,14 @@ public class ArenaMatchQueue {
 	public synchronized ParamTeamPair removeFromQue(ArenaPlayer player) {
 		for (TeamQueue tq : tqs.values()){
 			if (tq != null && tq.contains(player)){
-				Team t = tq.remove(player);
+				ArenaTeam t = tq.remove(player);
 				return new ParamTeamPair(tq.getMatchParams(),t);
 			}
 		}
 		return null;
 	}
 
-	public synchronized ParamTeamPair removeFromQue(Team team) {
+	public synchronized ParamTeamPair removeFromQue(ArenaTeam team) {
 		for (TeamQueue tq : tqs.values()){
 			if (tq.remove(team) != null){
 				return new ParamTeamPair(tq.getMatchParams(),team);}
@@ -510,8 +510,8 @@ public class ArenaMatchQueue {
 		notifyAll();
 	}
 
-	public synchronized Collection<Team> purgeQueue(){
-		List<Team> teams = new ArrayList<Team>();
+	public synchronized Collection<ArenaTeam> purgeQueue(){
+		List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 		synchronized(ready_matches){
 			for (Match m: ready_matches){
 				teams.addAll(m.getTeams());

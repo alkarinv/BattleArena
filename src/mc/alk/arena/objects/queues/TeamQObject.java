@@ -6,19 +6,19 @@ import java.util.Collection;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.options.JoinOptions;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 public class TeamQObject extends QueueObject{
-	final Team team;
+	final ArenaTeam team;
 
-	public TeamQObject(Team team, MatchParams params, JoinOptions joinOptions) {
+	public TeamQObject(ArenaTeam team, MatchParams params, JoinOptions joinOptions) {
 		this.matchParams = params;
 		this.team = team;
 		priority = team.getPriority();
 		this.jp = joinOptions;
 	}
 
-	public Team getTeam() {
+	public ArenaTeam getTeam() {
 		return team;
 	}
 
@@ -31,7 +31,7 @@ public class TeamQObject extends QueueObject{
 		return team.hasMember(p);
 	}
 	@Override
-	public Team getTeam(ArenaPlayer p) {
+	public ArenaTeam getTeam(ArenaPlayer p) {
 		return team.hasMember(p) ? team : null;
 	}
 	@Override
@@ -44,14 +44,14 @@ public class TeamQObject extends QueueObject{
 	}
 
 	@Override
-	public Collection<Team> getTeams() {
-		ArrayList<Team> teams = new ArrayList<Team>(1);
+	public Collection<ArenaTeam> getTeams() {
+		ArrayList<ArenaTeam> teams = new ArrayList<ArenaTeam>(1);
 		teams.add(team);
 		return teams;
 	}
 
 	@Override
-	public boolean hasTeam(Team team) {
+	public boolean hasTeam(ArenaTeam team) {
 		return this.team.getId() == team.getId();
 	}
 }

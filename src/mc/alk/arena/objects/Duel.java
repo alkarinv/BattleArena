@@ -5,18 +5,18 @@ import java.util.HashMap;
 
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 
 public class Duel {
 	final MatchParams mp;
 
-	final Team challenger;
+	final ArenaTeam challenger;
 	final HashMap<ArenaPlayer,Boolean> challengedPlayers = new HashMap<ArenaPlayer, Boolean>();
 	final DuelOptions options;
 	Double totalMoney = null;
 
-	public Duel(MatchParams mp, Team challenger, DuelOptions options){
+	public Duel(MatchParams mp, ArenaTeam challenger, DuelOptions options){
 		this.mp = mp;
 		this.challenger = challenger;
 		this.options = options;
@@ -52,11 +52,11 @@ public class Duel {
 		return true;
 	}
 
-	public Team getChallengerTeam() {
+	public ArenaTeam getChallengerTeam() {
 		return challenger;
 	}
 
-	public Team makeChallengedTeam() {
+	public ArenaTeam makeChallengedTeam() {
 		return TeamFactory.createCompositeTeam(challengedPlayers.keySet());
 	}
 

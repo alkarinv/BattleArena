@@ -13,7 +13,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.EventPriority;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfTreeSet;
@@ -258,7 +258,7 @@ public class BukkitEventListener extends BAEventListener{
 					/// Assign the correct values for method parameters
 					if (Player.class.isAssignableFrom(t)){
 						os[i] = p;
-					} else if (Team.class.isAssignableFrom(t)){
+					} else if (ArenaTeam.class.isAssignableFrom(t)){
 						if (arenaPlayer == null){
 							arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;}
 						if (arenaPlayer != null)

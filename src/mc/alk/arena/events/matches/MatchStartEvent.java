@@ -3,17 +3,17 @@ package mc.alk.arena.events.matches;
 import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 public class MatchStartEvent extends MatchEvent {
-	final List<Team> teams;
+	final List<ArenaTeam> teams;
 
-	public MatchStartEvent(Match match, List<Team> teams) {
+	public MatchStartEvent(Match match, List<ArenaTeam> teams) {
 		super(match);
 		this.teams = teams;
 	}
 
-	public List<Team> getTeams() {
+	public List<ArenaTeam> getTeams() {
 		return teams;
 	}
 }

@@ -5,7 +5,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.scoreboard.ArenaObjective;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 /**
@@ -13,7 +15,7 @@ import org.bukkit.entity.Player;
  * @author alkarin
  *
  */
-public class MatchingTeam implements Team{
+public class MatchingTeam implements ArenaTeam{
 	static int count = 0;
 	static final int id = count++;
 	Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
@@ -164,7 +166,7 @@ public class MatchingTeam implements Team{
 	public void setDisplayName(String n) {}
 
 	@Override
-	public boolean hasTeam(Team team) {
+	public boolean hasTeam(ArenaTeam team) {
 		return false;
 	}
 
@@ -218,4 +220,31 @@ public class MatchingTeam implements Team{
 		this.players.clear();
 	}
 
+	@Override
+	public void setArenaObjective(ArenaObjective objective) {
+		/* do nothing */
+	}
+
+	@Override
+	public void setTeamChatColor(ChatColor color) {
+		/* do nothing */
+	}
+
+	@Override
+	public ChatColor getTeamChatColor() {
+		return null;
+	}
+	@Override
+	public String geIDString(){
+		return String.valueOf(id);
+	}
+
+	@Override
+	public void setScoreboardDisplayName(String name) {
+	}
+
+	@Override
+	public String getScoreboardDisplayName() {
+		return null;
+	}
 }

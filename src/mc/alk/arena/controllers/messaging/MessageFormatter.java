@@ -10,7 +10,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
 import mc.alk.arena.objects.stats.ArenaStat;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
@@ -49,16 +49,16 @@ public class MessageFormatter{
 		this.impl = impl;
 	}
 
-	public void formatCommonOptions(Collection<Team> teams){
+	public void formatCommonOptions(Collection<ArenaTeam> teams){
 		formatCommonOptions(teams,null);
 	}
 
-	public void formatCommonOptions(Collection<Team> teams, Integer seconds){
+	public void formatCommonOptions(Collection<ArenaTeam> teams, Integer seconds){
 		int i = 0;
-		Team t1 =null,t2 = null;
+		ArenaTeam t1 =null,t2 = null;
 		if (teams != null){
 			int j=0;
-			for (Team t: teams){
+			for (ArenaTeam t: teams){
 				if (j == 0)
 					t1 = t;
 				else if (j==1)
@@ -108,7 +108,7 @@ public class MessageFormatter{
 				case PARTICIPANTS:{
 					StringBuilder sb = new StringBuilder();
 					boolean first = true;
-					for (Team t: teams){
+					for (ArenaTeam t: teams){
 						if (!first) sb.append(", ");
 						TeamNames tn = getTeamNames(t);
 						if (tn == null){
@@ -157,7 +157,7 @@ public class MessageFormatter{
 		curIndex = i;
 	}
 
-	public void formatTeamOptions(Team team, boolean isWinner){
+	public void formatTeamOptions(ArenaTeam team, boolean isWinner){
 
 		int i = commonIndex;
 		TeamNames tn = getTeamNames(team);
@@ -183,8 +183,8 @@ public class MessageFormatter{
 		curIndex = i;
 	}
 
-	public void formatTwoTeamsOptions(Team t, Collection<Team> teams){
-		Team oteam = null;
+	public void formatTwoTeamsOptions(ArenaTeam t, Collection<ArenaTeam> teams){
+		ArenaTeam oteam = null;
 		ArenaStat st1 = null;
 		int i = teamIndex;
 		for (MessageOption mop : ops){
@@ -237,11 +237,11 @@ public class MessageFormatter{
 		curIndex = i;
 	}
 
-	public void formatTeams(Collection<Team> teams){
+	public void formatTeams(Collection<ArenaTeam> teams){
 		if (ops.contains(MessageOption.TEAMS)){
 			StringBuilder sb = new StringBuilder();
 			boolean first = true;
-			for (Team team: teams){
+			for (ArenaTeam team: teams){
 				if (!first) sb.append(", ");
 				else first = false;
 				sb.append(team.getDisplayName());
@@ -253,7 +253,7 @@ public class MessageFormatter{
 		}
 	}
 
-	public void formatWinnerOptions(Team team, boolean isWinner){
+	public void formatWinnerOptions(ArenaTeam team, boolean isWinner){
 		int i = curIndex;
 		TeamNames tn = getTeamNames(team);
 		for (MessageOption mop : ops){
@@ -325,7 +325,7 @@ public class MessageFormatter{
 	}
 
 
-	private TeamNames getTeamNames(Team t) {
+	private TeamNames getTeamNames(ArenaTeam t) {
 		if (tns.containsKey(t.getId()))
 			return tns.get(t.getId());
 		TeamNames tn = new TeamNames();
@@ -336,8 +336,8 @@ public class MessageFormatter{
 	}
 
 
-	private Team getOtherTeam(Team t, Collection<Team> teams) {
-		for (Team oteam: teams){
+	private ArenaTeam getOtherTeam(ArenaTeam t, Collection<ArenaTeam> teams) {
+		for (ArenaTeam oteam: teams){
 			if (oteam.getId() != t.getId()){
 				return oteam;
 			}
@@ -346,7 +346,7 @@ public class MessageFormatter{
 	}
 
 
-	private ArenaStat getStat(Team t) {
+	private ArenaStat getStat(ArenaTeam t) {
 		if (stats.containsKey(t.getName()))
 			return stats.get(t.getName());
 		ArenaStat st = sc.loadRecord(t);
@@ -355,7 +355,7 @@ public class MessageFormatter{
 	}
 
 
-	private String formatTeamName(Message message, Team t) {
+	private String formatTeamName(Message message, ArenaTeam t) {
 		if (t== null)
 			return null;
 		Set<MessageOption> ops = message.getOptions();
@@ -390,7 +390,7 @@ public class MessageFormatter{
 		return replaceEach(text, searchList, replacementList, false, 0);
 	}
 
-	public void formatTeamNames(Set<MessageOption> ops, Team team, TeamNames tn){
+	public void formatTeamNames(Set<MessageOption> ops, ArenaTeam team, TeamNames tn){
 		if (ops.contains(MessageOption.TEAM) || ops.contains(MessageOption.WINNER) || ops.contains(MessageOption.LOSER)){
 			tn.name = formatTeamName(impl.getNodeMessage("common.team"),team);
 		}

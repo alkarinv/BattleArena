@@ -15,7 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
 
@@ -31,10 +31,10 @@ public enum TeamController implements Listener, TeamHandler {
 	static final boolean DEBUG = false;
 
 	/** A map of teams to which classes are currently "handling" those teams */
-	final Map<Team,CopyOnWriteArrayList<TeamHandler>> handlers = new ConcurrentHashMap<Team,CopyOnWriteArrayList<TeamHandler>>();
+	final Map<ArenaTeam,CopyOnWriteArrayList<TeamHandler>> handlers = new ConcurrentHashMap<ArenaTeam,CopyOnWriteArrayList<TeamHandler>>();
 
 	/** Teams that are created through players wanting to be teams up, or an admin command */
-	final Set<Team> selfFormedTeams = Collections.synchronizedSet(new HashSet<Team>());
+	final Set<ArenaTeam> selfFormedTeams = Collections.synchronizedSet(new HashSet<ArenaTeam>());
 
 	/** Teams that are still being created, these aren't "real" teams yet */
 	final Set<FormingTeam> formingTeams = Collections.synchronizedSet(new HashSet<FormingTeam>());
@@ -44,21 +44,21 @@ public enum TeamController implements Listener, TeamHandler {
 	 * @param player
 	 * @return Team
 	 */
-	public static Team getTeam(ArenaPlayer player) {
+	public static ArenaTeam getTeam(ArenaPlayer player) {
 		return INSTANCE.handledTeams(player);
 	}
 
-	public static Team getTeamNotTeamController(ArenaPlayer player) {
+	public static ArenaTeam getTeamNotTeamController(ArenaPlayer player) {
 		return INSTANCE.handledTeamsNotTeamController(player);
 	}
 	public static void removeAllHandlers() {
 		INSTANCE.removeAllHandledTeams();
 	}
 
-	public static void removeTeamHandlers(Team t) {
+	public static void removeTeamHandlers(ArenaTeam t) {
 		INSTANCE.removeHandledTeam(t);
 	}
-	private void removeHandledTeam(Team t) {
+	private void removeHandledTeam(ArenaTeam t) {
 		synchronized(handlers){
 			List<TeamHandler> hs = handlers.remove(t);
 			if (hs != null){
@@ -76,9 +76,9 @@ public enum TeamController implements Listener, TeamHandler {
 			handlers.clear();
 		}
 	}
-	private Team handledTeams(ArenaPlayer p) {
+	private ArenaTeam handledTeams(ArenaPlayer p) {
 		synchronized(handlers){
-			for (Team t: handlers.keySet()){
+			for (ArenaTeam t: handlers.keySet()){
 				if (t.hasMember(p))
 					return t;
 			}
@@ -86,9 +86,9 @@ public enum TeamController implements Listener, TeamHandler {
 		return null;
 	}
 
-	private Team handledTeamsNotTeamController(ArenaPlayer p) {
+	private ArenaTeam handledTeamsNotTeamController(ArenaPlayer p) {
 		synchronized(handlers){
-			for (Team t: handlers.keySet()){
+			for (ArenaTeam t: handlers.keySet()){
 				if (t.hasMember(p)){
 					List<TeamHandler> list = handlers.get(t);
 					for (TeamHandler th: list){
@@ -102,8 +102,8 @@ public enum TeamController implements Listener, TeamHandler {
 	}
 
 
-	public Team getSelfFormedTeam(ArenaPlayer pl) {
-		for (Team t: selfFormedTeams){
+	public ArenaTeam getSelfFormedTeam(ArenaPlayer pl) {
+		for (ArenaTeam t: selfFormedTeams){
 			if (t.hasMember(pl))
 				return t;
 		}
@@ -112,7 +112,7 @@ public enum TeamController implements Listener, TeamHandler {
 		return null;
 	}
 
-	public boolean removeSelfFormedTeam(Team team) {
+	public boolean removeSelfFormedTeam(ArenaTeam team) {
 		if (selfFormedTeams.remove(team)){
 			removeHandler(team,this);
 			return true;
@@ -120,13 +120,13 @@ public enum TeamController implements Listener, TeamHandler {
 		return false;
 	}
 
-	public void addSelfFormedTeam(Team team) {
+	public void addSelfFormedTeam(ArenaTeam team) {
 		selfFormedTeams.add(team);
 		addHandler(team, this);
 	}
 
 	private void leaveSelfTeam(ArenaPlayer p) {
-		Team t = getFormingTeam(p);
+		ArenaTeam t = getFormingTeam(p);
 		if (t != null && formingTeams.remove(t)){
 			t.sendMessage("&cYou're team has been disbanded as &6" + p.getDisplayName()+"&c has left minecraft");
 			return;
@@ -139,7 +139,7 @@ public enum TeamController implements Listener, TeamHandler {
 	}
 
 	private void playerLeft(ArenaPlayer p) {
-		Team t = handledTeams(p);
+		ArenaTeam t = handledTeams(p);
 		if (t == null ){
 			return;}
 		List<TeamHandler> unused = new ArrayList<TeamHandler>();
@@ -182,7 +182,7 @@ public enum TeamController implements Listener, TeamHandler {
 		leaveSelfTeam(ap);
 	}
 
-	public Map<Team,CopyOnWriteArrayList<TeamHandler>> getTeams() {
+	public Map<ArenaTeam,CopyOnWriteArrayList<TeamHandler>> getTeams() {
 		return handlers;
 	}
 
@@ -210,10 +210,10 @@ public enum TeamController implements Listener, TeamHandler {
 		return formingTeams.remove(ft);
 	}
 
-	public Map<TeamHandler,Team> getTeamMap(ArenaPlayer p){
-		HashMap<TeamHandler,Team> map = new HashMap<TeamHandler,Team>();
+	public Map<TeamHandler,ArenaTeam> getTeamMap(ArenaPlayer p){
+		HashMap<TeamHandler,ArenaTeam> map = new HashMap<TeamHandler,ArenaTeam>();
 		synchronized(handlers){
-			for (Team t: handlers.keySet()){
+			for (ArenaTeam t: handlers.keySet()){
 				if (!t.hasMember(p)){
 					continue;}
 				List<TeamHandler> ths = handlers.get(t);
@@ -226,10 +226,10 @@ public enum TeamController implements Listener, TeamHandler {
 		return map;
 	}
 
-	public static void addTeamHandler(Team t, TeamHandler th) {
+	public static void addTeamHandler(ArenaTeam t, TeamHandler th) {
 		INSTANCE.addHandler(t, th);
 	}
-	private void addHandler(Team t, TeamHandler th){
+	private void addHandler(ArenaTeam t, TeamHandler th){
 		if (DEBUG) System.out.println("------- addTeamHandler " + t + ": " + th);
 		CopyOnWriteArrayList<TeamHandler> ths = handlers.get(t);
 		if (ths == null){
@@ -244,17 +244,17 @@ public enum TeamController implements Listener, TeamHandler {
 		}
 	}
 
-	public static Team createTeam(ArenaPlayer p) {
+	public static ArenaTeam createTeam(ArenaPlayer p) {
 		if (DEBUG) System.out.println("------- createTeam sans handler " + p.getName());
 		return TeamFactory.createTeam(p);
 	}
 
 
-	public static boolean removeTeamHandler(Team team, TeamHandler teamHandler) {
+	public static boolean removeTeamHandler(ArenaTeam team, TeamHandler teamHandler) {
 		return INSTANCE.removeHandler(team, teamHandler);
 	}
 
-	private boolean removeHandler(Team team, TeamHandler teamHandler){
+	private boolean removeHandler(ArenaTeam team, TeamHandler teamHandler){
 		if (DEBUG) System.out.println("------- removing team="+team+" and handler =" + teamHandler);
 		List<TeamHandler> ths = handlers.get(team);
 		if (ths != null){
@@ -268,13 +268,13 @@ public enum TeamController implements Listener, TeamHandler {
 		//		logHandlerList("removeTeam " + t +"   " + th);
 	}
 
-	public static void removeTeams(Collection<Team> teams, TeamHandler teamHandler) {
-		for (Team t: teams){
+	public static void removeTeams(Collection<ArenaTeam> teams, TeamHandler teamHandler) {
+		for (ArenaTeam t: teams){
 			removeTeamHandler(t,teamHandler);
 		}
 	}
 
-	public static CompositeTeam createCompositeTeam(Team t, TeamHandler th) {
+	public static CompositeTeam createCompositeTeam(ArenaTeam t, TeamHandler th) {
 		CompositeTeam ct = TeamFactory.createCompositeTeam(t);
 		addTeamHandler(ct,th);
 		if (DEBUG) System.out.println("------- createCompositeTeam " + ct);
@@ -289,7 +289,7 @@ public enum TeamController implements Listener, TeamHandler {
 	public List<TeamHandler> getHandlers(ArenaPlayer p) {
 		List<TeamHandler> hs = new ArrayList<TeamHandler>();
 		synchronized(handlers){
-			for (Team t: handlers.keySet()){
+			for (ArenaTeam t: handlers.keySet()){
 				if (t.hasMember(p)){
 					hs.addAll(handlers.get(t));
 				}
@@ -304,7 +304,7 @@ public enum TeamController implements Listener, TeamHandler {
 	 * @param t
 	 * @return
 	 */
-	public List<TeamHandler> getHandlers(Team t) {
+	public List<TeamHandler> getHandlers(ArenaTeam t) {
 		if (t == null) return null; /// null returns null
 		return handlers.get(t);
 	}

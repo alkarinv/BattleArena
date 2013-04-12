@@ -6,7 +6,7 @@ import java.util.List;
 
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.events.BAEvent;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -17,7 +17,7 @@ import org.bukkit.potion.PotionEffect;
  */
 public class ArenaPrizeEvent extends BAEvent {
 	final Competition competition;
-	final Collection<Team> teams;
+	final Collection<ArenaTeam> teams;
 
 	Integer exp;
 	Double money;
@@ -25,7 +25,7 @@ public class ArenaPrizeEvent extends BAEvent {
 	List<PotionEffect> effects;
 	List<Reward> rewards;
 
-	public ArenaPrizeEvent(Competition competition, Collection<Team> teams){
+	public ArenaPrizeEvent(Competition competition, Collection<ArenaTeam> teams){
 		this.competition = competition;
 		this.teams = teams;
 	}
@@ -81,7 +81,7 @@ public class ArenaPrizeEvent extends BAEvent {
 			this.rewards = new ArrayList<Reward>();}
 		this.rewards.add(reward);
 	}
-	public Collection<Team> getTeams() {
+	public Collection<ArenaTeam> getTeams() {
 		return teams;
 	}
 }

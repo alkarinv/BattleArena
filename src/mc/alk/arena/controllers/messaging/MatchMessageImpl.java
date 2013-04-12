@@ -14,7 +14,7 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
 import mc.alk.arena.serializers.MessageSerializer;
@@ -40,21 +40,21 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	@Override
-	public void sendOnBeginMsg(Channel serverChannel,Collection<Team> teams) {
+	public void sendOnBeginMsg(Channel serverChannel,Collection<ArenaTeam> teams) {
 		sendMessageToTeams(serverChannel,teams,"onbegin","server_onbegin", mp.getSecondsTillMatch());
 	}
 
 	@Override
-	public void sendOnPreStartMsg(Channel serverChannel,Collection<Team> teams) {
+	public void sendOnPreStartMsg(Channel serverChannel,Collection<ArenaTeam> teams) {
 		sendMessageToTeams(serverChannel,teams,"prestart","server_prestart", mp.getSecondsTillMatch());
 	}
 
 	@Override
-	public void sendOnStartMsg(Channel serverChannel, Collection<Team> teams) {
+	public void sendOnStartMsg(Channel serverChannel, Collection<ArenaTeam> teams) {
 		sendMessageToTeams(serverChannel,teams,"start","server_start",null);
 	}
 
-	private void sendMessageToTeams(Channel serverChannel, Collection<Team> teams, String path, String serverpath, Integer seconds){
+	private void sendMessageToTeams(Channel serverChannel, Collection<ArenaTeam> teams, String path, String serverpath, Integer seconds){
 		final String nTeamPath = getStringPathFromSize(teams.size());
 		Message message = getNodeMessage(typedot+ nTeamPath+"."+path);
 		Message serverMessage = getNodeMessage(typedot+ nTeamPath+"."+serverpath);
@@ -67,7 +67,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), teams.size(), message, ops);
 
 		msgf.formatCommonOptions(teams,seconds);
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			msgf.formatTeamOptions(t,false);
 			msgf.formatTwoTeamsOptions(t, teams);
 			msgf.formatTeams(teams);
@@ -82,12 +82,12 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	@Override
-	public void sendOnVictoryMsg(Channel serverChannel, Collection<Team> victors, Collection<Team> losers) {
+	public void sendOnVictoryMsg(Channel serverChannel, Collection<ArenaTeam> victors, Collection<ArenaTeam> losers) {
 		int size = (victors != null ? victors.size() : 0) + (losers != null ? losers.size() : 0);
 		final String nTeamPath = getStringPathFromSize(size);
 		for (VictoryCondition vc: match.getVictoryConditions()){
 			if (vc instanceof DefinesLeaderRanking){
-				List<Team> leaders = ((DefinesLeaderRanking)vc).getLeaders();
+				List<ArenaTeam> leaders = ((DefinesLeaderRanking)vc).getLeaders();
 				if (leaders==null)
 					continue;
 				int max = Math.min(leaders.size(), 4);
@@ -97,11 +97,11 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 				}
 				String leaderStr = sb.toString();
 				if (victors != null){
-					for (Team t: victors){
+					for (ArenaTeam t: victors){
 						t.sendMessage(leaderStr);}
 				}
 				if (losers != null){
-					for (Team t: losers){
+					for (ArenaTeam t: losers){
 						t.sendMessage(leaderStr);}
 				}
 				break;
@@ -113,14 +113,14 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	@Override
-	public void sendOnDrawMsg(Channel serverChannel, Collection<Team> drawers, Collection<Team> losers) {
+	public void sendOnDrawMsg(Channel serverChannel, Collection<ArenaTeam> drawers, Collection<ArenaTeam> losers) {
 		int size = (drawers != null ? drawers.size() : 0) + (losers != null ? losers.size() : 0);
 		final String nTeamPath = getStringPathFromSize(size);
 		sendVictory(serverChannel,null,drawers,mp,typedot+nTeamPath+".draw",typedot+nTeamPath+".draw",
 				typedot+nTeamPath+".server_draw");
 	}
 
-	public void sendYourTeamNotReadyMsg(Team t1) {
+	public void sendYourTeamNotReadyMsg(ArenaTeam t1) {
 		Message message = getNodeMessage("match"+typeName+".your_team_not_ready");
 		Set<MessageOption> ops = message.getOptions();
 
@@ -129,7 +129,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		t1.sendMessage(msgf.getFormattedMessage(message));
 	}
 
-	public void sendOtherTeamNotReadyMsg(Team t1) {
+	public void sendOtherTeamNotReadyMsg(ArenaTeam t1) {
 		Message message = getNodeMessage(typedot+typeName+".other_team_not_ready");
 		Set<MessageOption> ops = message.getOptions();
 
@@ -139,7 +139,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	}
 
 	@Override
-	public void sendAddedToTeam(Team team, ArenaPlayer player) {
+	public void sendAddedToTeam(ArenaTeam team, ArenaPlayer player) {
 		Message message = getNodeMessage("common.added_to_team");
 		Set<MessageOption> ops = message.getOptions();
 		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), 1, message, ops);
@@ -148,7 +148,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		team.sendToOtherMembers(player,msgf.getFormattedMessage(message));
 	}
 
-	public void sendOnIntervalMsg(Channel serverChannel, Collection<Team> currentLeaders, int remaining) {
+	public void sendOnIntervalMsg(Channel serverChannel, Collection<ArenaTeam> currentLeaders, int remaining) {
 		TimeUtil.testClock();
 		final String timeStr = TimeUtil.convertSecondsToString(remaining);
 		String msg;
@@ -156,7 +156,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 			msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr;
 		} else {
 			if (currentLeaders.size() == 1){
-				Team currentLeader = currentLeaders.iterator().next();
+				ArenaTeam currentLeader = currentLeaders.iterator().next();
 				msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr+". &6"+
 						currentLeader.getDisplayName()+"&e leads with &2" + currentLeader.getNKills() +
 						"&e kills &4"+currentLeader.getNDeaths()+"&e deaths";

@@ -19,7 +19,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.queues.TeamQObject;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
@@ -54,10 +54,10 @@ public class ReservedArenaEvent extends Event {
 		List<VictoryCondition> vcs = arenaMatch.getVictoryConditions();
 		for (VictoryCondition vc: vcs){
 			if (vc instanceof DefinesLeaderRanking){
-				TreeMap<?, Collection<Team>> leaders = ((DefinesLeaderRanking)vc).getRanks();
+				TreeMap<?, Collection<ArenaTeam>> leaders = ((DefinesLeaderRanking)vc).getRanks();
 				sb.append("\n");
 				int i = 0;
-				for (Collection<Team> lvl : leaders.values()){
+				for (Collection<ArenaTeam> lvl : leaders.values()){
 					i++;
 					if (lvl.isEmpty())
 						continue;
@@ -66,7 +66,7 @@ public class ReservedArenaEvent extends Event {
 						sb.append(TeamUtil.formatName(lvl.iterator().next()) +"\n");
 					} else {
 						sb.append("\n");
-						for (Team t: lvl){
+						for (ArenaTeam t: lvl){
 							sb.append("&6 - &e: " + TeamUtil.formatName(t));
 						}
 						sb.append("\n");
@@ -125,7 +125,7 @@ public class ReservedArenaEvent extends Event {
 			arenaMatch.onJoin(tjr.team);
 			break;
 		case ADDED_TO_EXISTING:
-			Team t = tqo.getTeam();
+			ArenaTeam t = tqo.getTeam();
 			if (arenaMatch.hasTeam(tjr.team)){
 				for (ArenaPlayer p : t.getPlayers()){/// subsequent times, just the new players
 					/// dont call arenaMatch.onJoin(Team), as part of the team might already be in arena
@@ -160,14 +160,14 @@ public class ReservedArenaEvent extends Event {
 		return true;
 	}
 
-	public Matchup getMatchup(Team t){
+	public Matchup getMatchup(ArenaTeam t){
 		if (rounds == null || rounds.isEmpty())
 			return null;
 		Round tr = rounds.get(0);
 		if (tr == null)
 			return null;
 		for (Matchup m : tr.getMatchups()){
-			for (Team team: m.getTeams()){
+			for (ArenaTeam team: m.getTeams()){
 				if (team.getName().equals(t.getName()))
 					return m;
 			}

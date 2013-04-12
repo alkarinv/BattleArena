@@ -6,7 +6,7 @@ import java.util.Set;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 
 public class ReservedArenaEventMessager extends EventMessager{
@@ -22,17 +22,17 @@ public class ReservedArenaEventMessager extends EventMessager{
 	}
 
 	@Override
-	public void sendEventCancelled(Collection<Team> teams) {
+	public void sendEventCancelled(Collection<ArenaTeam> teams) {
 		try{impl.sendEventCancelled(getChannel(MatchState.ONCANCEL), teams);}catch(Exception e){e.printStackTrace();}
 	}
 
-	public void sendTeamJoinedEvent(Team t) {
+	public void sendTeamJoinedEvent(ArenaTeam t) {
 
 	}
 
 
 	@Override
-	public void sendEventDraw(Collection<Team> drawers, Collection<Team> losers) {
+	public void sendEventDraw(Collection<ArenaTeam> drawers, Collection<ArenaTeam> losers) {
 
 	}
 

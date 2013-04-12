@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 
 public class MatchTeamQObject extends QueueObject{
@@ -27,7 +27,7 @@ public class MatchTeamQObject extends QueueObject{
 	}
 
 	@Override
-	public Team getTeam(ArenaPlayer p) {
+	public ArenaTeam getTeam(ArenaPlayer p) {
 		return matchup.getTeam(p);
 	}
 
@@ -42,7 +42,7 @@ public class MatchTeamQObject extends QueueObject{
 	}
 
 	@Override
-	public Collection<Team> getTeams() {
+	public Collection<ArenaTeam> getTeams() {
 		return matchup.getTeams();
 	}
 
@@ -51,8 +51,8 @@ public class MatchTeamQObject extends QueueObject{
 	}
 
 	@Override
-	public boolean hasTeam(Team team) {
-		List<Team> teams = matchup.getTeams();
+	public boolean hasTeam(ArenaTeam team) {
+		List<ArenaTeam> teams = matchup.getTeams();
 		return teams != null ? teams.contains(team) : false;
 	}
 

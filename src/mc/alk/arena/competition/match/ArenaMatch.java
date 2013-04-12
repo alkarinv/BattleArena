@@ -26,13 +26,12 @@ import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
 
@@ -49,7 +48,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -86,7 +84,7 @@ public class ArenaMatch extends Match {
 		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL ||
 				state == MatchState.ONOPEN || !insideArena.contains(player.getName())){
 			return;}
-		Team t = getTeam(player);
+		ArenaTeam t = getTeam(player);
 		if (t==null){
 			return;}
 		t.killMember(player);
@@ -102,7 +100,7 @@ public class ArenaMatch extends Match {
 		if (cancelExpLoss)
 			event.setKeepLevel(true);
 
-		final Team t = getTeam(target);
+		final ArenaTeam t = getTeam(target);
 		if (t==null)
 			return;
 		Integer nDeaths = t.getNDeaths(target);
@@ -161,8 +159,8 @@ public class ArenaMatch extends Match {
 		}
 	}
 
-	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGH)
-	public void onEntityDamage(EntityDamageEvent event) {
+	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.LOW)
+	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
 		if (!(event.getEntity() instanceof Player))
 			return;
 		final TransitionOptions to = tops.getOptions(state);
@@ -182,18 +180,17 @@ public class ArenaMatch extends Match {
 		if (!(event instanceof EntityDamageByEntityEvent)){
 			return;}
 
-		final Entity damagerEntity = ((EntityDamageByEntityEvent)event).getDamager();
-
+		final Entity damagerEntity = event.getDamager();
 		ArenaPlayer damager=null;
 		switch(pvp){
 		case ON:
-			Team targetTeam = getTeam(target);
+			ArenaTeam targetTeam = getTeam(target);
 			if (targetTeam == null || !targetTeam.hasAliveMember(target)) /// We dont care about dead players
 				return;
 			damager = DmgDeathUtil.getPlayerCause(damagerEntity);
 			if (damager == null){ /// damage from some source, its not pvp though. so we dont care
 				return;}
-			Team t = getTeam(damager);
+			ArenaTeam t = getTeam(damager);
 			if (t != null && t.hasMember(target)){ /// attacker is on the same team
 				event.setCancelled(true);
 			} else {/// different teams... lets make sure they can actually hit
@@ -232,7 +229,7 @@ public class ArenaMatch extends Match {
 			final Match am = this;
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 				public void run() {
-					Team t = getTeam(p);
+					ArenaTeam t = getTeam(p);
 					try{
 						PerformTransition.transition(am, MatchState.ONDEATH, p, t , false);
 						PerformTransition.transition(am, MatchState.ONSPAWN, p, t, false);
@@ -272,9 +269,6 @@ public class ArenaMatch extends Match {
 
 	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerBlockBreak(BlockBreakEvent event){
-		NotifierUtil.notify("blockbreak", event.getPlayer().getName() + "  stage= "+
-				state + "  breaking block.. cancelled " + event.isCancelled() +"    contains=" +
-				tops.hasOptionAt(state, TransitionOption.BLOCKBREAKOFF));
 		if (tops.hasOptionAt(state, TransitionOption.BLOCKBREAKOFF)){
 			event.setCancelled(true);}
 	}
@@ -497,7 +491,7 @@ public class ArenaMatch extends Match {
 		if (!Defaults.ENABLE_PLAYER_READY_BLOCK){
 			return;}
 		int tcount = 0;
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			if (!t.isReady())
 				return;
 			if (t.size() > 0)

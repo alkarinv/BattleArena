@@ -20,7 +20,7 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.events.MatchEventMethod;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.entity.Entity;
@@ -251,7 +251,7 @@ public class MethodController {
 			/// Go over the rest of the parameters to see if we should give a Team or Player
 			for (int i =1;i< classes.length;i++){
 				Class<?> c = classes[i];
-				needsTeamOrPlayer = Player.class.isAssignableFrom(c) || Team.class.isAssignableFrom(c);
+				needsTeamOrPlayer = Player.class.isAssignableFrom(c) || ArenaTeam.class.isAssignableFrom(c);
 				if (!needsTeamOrPlayer){
 					continue;
 				}

@@ -12,7 +12,7 @@ import java.util.Set;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.pairs.QueueResult;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
 
 public class TeamQueue extends PriorityQueue<QueueObject>{
@@ -24,7 +24,7 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		this.mp = mp;
 	}
 
-	public synchronized boolean contains(Team team){
+	public synchronized boolean contains(ArenaTeam team){
 		for (QueueObject qo: this){
 			if (qo.hasTeam(team))
 				return true;
@@ -40,7 +40,7 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		return false;
 	}
 
-	public synchronized Team remove(ArenaPlayer p){
+	public synchronized ArenaTeam remove(ArenaPlayer p){
 		Iterator<QueueObject> iter = this.iterator();
 		while (iter.hasNext()){
 			QueueObject qo = iter.next();
@@ -52,7 +52,7 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		return null;
 	}
 
-	public synchronized Team remove(Team team){
+	public synchronized ArenaTeam remove(ArenaTeam team){
 		Iterator<QueueObject> iter = this.iterator();
 		while (iter.hasNext()){
 			QueueObject qo = iter.next();
@@ -107,8 +107,8 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		}
 	}
 
-	public synchronized Collection<Team> getTeams() {
-		List<Team> teams = new ArrayList<Team>();
+	public synchronized Collection<ArenaTeam> getTeams() {
+		List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 		for (QueueObject team: this){
 			teams.addAll(team.getTeams());
 		}
@@ -118,7 +118,7 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 	public synchronized Collection<ArenaPlayer> getArenaPlayers() {
 		Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
 		for (QueueObject qo: this){
-			for (Team t: qo.getTeams()){
+			for (ArenaTeam t: qo.getTeams()){
 				players.addAll(t.getPlayers());
 			}
 		}

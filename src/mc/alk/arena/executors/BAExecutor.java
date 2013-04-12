@@ -53,8 +53,8 @@ import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.pairs.WantedTeamSizePair;
 import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.queues.TeamQObject;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
-import mc.alk.arena.objects.teams.Team;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.ServerUtil;
@@ -124,7 +124,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return sendMessage(sender, MessageHandler.getSystemMessage(node,args));
 	}
 
-	public static boolean sendSystemMessage(Team team, String node, Object... args) {
+	public static boolean sendSystemMessage(ArenaTeam team, String node, Object... args) {
 		team.sendMessage(MessageHandler.getSystemMessage(node,args));
 		return true;
 	}
@@ -159,7 +159,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			return true;}
 
 		/// Get or Make a team for the Player
-		Team t = teamc.getSelfFormedTeam(player);
+		ArenaTeam t = teamc.getSelfFormedTeam(player);
 		if (t==null) {
 			t = TeamController.createTeam(player);}
 
@@ -356,7 +356,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
 		/// Are they even in a queue?
 		if(!(ac.isInQue(p))){
-			Team t = TeamController.getTeam(p);
+			ArenaTeam t = TeamController.getTeam(p);
 			QueueObject qo = ac.getQueueObject(p);
 			if (t != null && qo != null){
 				TeamController.removeTeamHandlers(t);
@@ -366,7 +366,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			}
 		}
 		ParamTeamPair qtp = null;
-		Team t = teamc.getSelfFormedTeam(p); /// They are in the queue, they are part of a team
+		ArenaTeam t = teamc.getSelfFormedTeam(p); /// They are in the queue, they are part of a team
 		if (t != null)
 			qtp = ac.removeFromQue(t);
 		else
@@ -588,7 +588,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		Match match = ac.getMatch(arena);
 		if (match != null){
 			List<String> strs = new ArrayList<String>();
-			for (Team t: match.getTeams()){
+			for (ArenaTeam t: match.getTeams()){
 				strs.add("&5 -&e" + t.getDisplayName());}
 			sendMessage(sender, "Teams: " + StringUtils.join(strs,", "));
 		}
@@ -645,8 +645,6 @@ public class BAExecutor extends CustomCommandExecutor {
 			usage="create <arena name> [team size] [# teams]")
 	public boolean arenaCreate(CommandSender sender, MatchParams mp, String name, String[] args) {
 		if (Defaults.DEBUG) for (int i =0;i<args.length;i++){System.out.println("args=" + i + "   " + args[i]);}
-		final String strTeamSize = args.length>2 ? (String) args[2] : "1+";
-		final String strNTeams = args.length>3 ? (String) args[3] : "2+";
 
 		if (ac.getArena(name) != null){
 			return sendMessage(sender, "&cThere is already an arena named &6"+name);}
@@ -657,8 +655,10 @@ public class BAExecutor extends CustomCommandExecutor {
 
 		ArenaParams ap = new ArenaParams(mp.getType());
 		try{
-			ap.setTeamSizes(MinMax.valueOf(strTeamSize));
-			ap.setNTeams(MinMax.valueOf(strNTeams));
+			if (args.length > 2)
+				ap.setTeamSizes(MinMax.valueOf(args[2]));
+			if (args.length > 3)
+				ap.setNTeams(MinMax.valueOf(args[3]));
 		} catch(Exception e){
 			return sendMessage(sender,"That size not recognized.  Examples: 1 or 2 or 1-5 or 2+");
 		}
@@ -689,7 +689,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		if (!dc.hasChallenger(player)){
 			return sendMessage(player,"&cYou haven't challenged anyone!");}
 		Duel d = dc.rescind(player);
-		Team t = d.getChallengerTeam();
+		ArenaTeam t = d.getChallengerTeam();
 		t.sendMessage("&4[Duel] &6" + player.getDisplayName()+"&2 has cancelled the duel challenge!");
 		for (ArenaPlayer ap: d.getChallengedPlayers()){
 			sendMessage(ap, "&4[Duel] &6"+player.getDisplayName()+"&2 has cancelled the duel challenge!");
@@ -702,7 +702,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		if (!dc.isChallenged(player)){
 			return sendMessage(player,"&cYou haven't been invited to a duel!");}
 		Duel d = dc.reject(player);
-		Team t = d.getChallengerTeam();
+		ArenaTeam t = d.getChallengerTeam();
 		String timeRem = TimeUtil.convertSecondsToString(Defaults.DUEL_CHALLENGE_INTERVAL);
 		t.sendMessage("&4[Duel] &cThe duel was cancelled as &6" + player.getDisplayName()+"&c rejected your offer");
 		t.sendMessage("&4[Duel] &cYou can challenge them again in " + timeRem);
@@ -734,7 +734,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		if (dc.accept(player) == null){
 			return true;
 		}
-		Team t = d.getChallengerTeam();
+		ArenaTeam t = d.getChallengerTeam();
 		t.sendMessage("&4[Duel] &6" + player.getDisplayName()+"&2 has accepted your duel offer!");
 		for (ArenaPlayer ap: d.getChallengedPlayers()){
 			if (ap == player)
@@ -789,7 +789,7 @@ public class BAExecutor extends CustomCommandExecutor {
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c is in a match, event, or queue");}
 			final MatchTransitions ops = mp.getTransitionOptions();
 			if (ops != null){
-				Team t = TeamController.createTeam(ap);
+				ArenaTeam t = TeamController.createTeam(ap);
 				/// Check ready
 				if(!ops.teamReady(t,null)){
 					sendMessage(player, "&c"+t.getDisplayName()+"&c doesn't have the prerequisites for this duel");
@@ -799,8 +799,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
 			if (dc.isChallenged(ap)){
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c already has been challenged!");}
-			if (!player.hasPermission("arena."+mp.getName().toLowerCase()+".duel") &&
-					!player.hasPermission("arena."+mp.getCommand().toLowerCase()+".duel") ){
+			if (!hasMPPerm(ap, mp, "duel")){
 				return sendMessage(player, "&6"+ap.getDisplayName()+"&c doesn't have permission to duel in a &6" + mp.getCommand());}
 
 			Long grace = dc.getLastRejectTime(ap);
@@ -814,7 +813,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		}
 
 		/// Get our team1
-		Team t = TeamController.getTeam(player);
+		ArenaTeam t = TeamController.getTeam(player);
 		if (t == null){
 			t = TeamController.createTeam(player);
 		}
@@ -871,7 +870,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"forceStart"}, admin=true, perm="arena.forcestart")
 	public boolean arenaForceStart(CommandSender sender, MatchParams mp) {
 		int qsize = ac.getMatchingQueueSize(mp);
-		if (qsize <= 1){
+		if (qsize < 1){
 			return sendMessage(sender, "&c"+mp.getType()+" does not have enough teams queued");}
 
 		if (ac.forceStart(mp,false)){
@@ -896,20 +895,20 @@ public class BAExecutor extends CustomCommandExecutor {
 			as.add(arena);
 		}
 		if (arenasbytype.isEmpty()){
-			sendMessage(sender,"There are no arenas for type " + mp.getName());}
+			sendMessage(sender,"&cThere are no &6"+mp.getName()+"&c arenas");}
 		for (ArenaType at : arenasbytype.keySet()){
 			if (!all && !at.matches(mp.getType()))
 				continue;
 			Collection<Arena> as = arenasbytype.get(at);
 			if (!as.isEmpty()){
-				sendMessage(sender,"------ Arenas for Event type " + at.toString()+" ------");
+				sendMessage(sender,"&e------ Arenas for &6" + at.toString()+"&e ------");
 				for (Arena arena : as){
 					sendMessage(sender,arena.toSummaryString());
 				}
 			}
 		}
 		if (!all)
-			sendMessage(sender,"&6/arena list all: &e to see all arenas");
+			sendMessage(sender,"&6/arena list all&e: to see all arenas");
 		return sendMessage(sender,"&6/arena info <arenaname>&e: for details on an arena");
 	}
 
@@ -931,11 +930,11 @@ public class BAExecutor extends CustomCommandExecutor {
 		//		return true;
 	}
 
-	public boolean canJoin(Team t){
+	public boolean canJoin(ArenaTeam t){
 		return canJoin(t,true);
 	}
 
-	public boolean canJoin(Team t, boolean showMessages){
+	public boolean canJoin(ArenaTeam t, boolean showMessages){
 		for (ArenaPlayer ap: t.getPlayers()){
 			if (!canJoin(ap,showMessages,true))
 				return false;
@@ -984,7 +983,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		/// Inside a match?
 		Match am = ac.getMatch(player);
 		if (am != null){
-			Team t = am.getTeam(player);
+			ArenaTeam t = am.getTeam(player);
 			if (am.insideArena(player) || (!t.hasLeft(player) && t.hasAliveMember(player))){
 				if (showMessages) sendMessage(player,"&eYou are already in a match.");
 				return false;
@@ -1007,7 +1006,7 @@ public class BAExecutor extends CustomCommandExecutor {
 				return false;
 			}
 			/// Make a team for the new Player
-			Team t = teamc.getSelfFormedTeam(player);
+			ArenaTeam t = teamc.getSelfFormedTeam(player);
 			if (t!=null && !teammate) {
 				for (ArenaPlayer p: t.getPlayers()){
 					if (p == player){
@@ -1026,7 +1025,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			if (showMessages) sendMessage(player,"&cYou need to rescind your challenge first! &6/arena rescind");
 			return false;
 		}
-		Team t = TeamController.getTeamNotTeamController(player);
+		ArenaTeam t = TeamController.getTeamNotTeamController(player);
 		if (t != null){
 			if (showMessages) sendMessage(player,"&cYou need to leave first.  &6/arena leave");
 			return false;
@@ -1038,7 +1037,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return EventController.insideEvent(p);
 	}
 
-	public boolean checkAndRemoveFee(MatchParams pi, Team t) {
+	public boolean checkAndRemoveFee(MatchParams pi, ArenaTeam t) {
 		//		Team t = teamc.getSelfFormedTeam(p);
 		//		if (t != null){
 		//			players = t.getPlayers();
@@ -1070,7 +1069,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	public boolean refundFee(MatchParams pi, Team t) {
+	public boolean refundFee(MatchParams pi, ArenaTeam t) {
 		final MatchTransitions tops = pi.getTransitionOptions();
 		if (tops.hasEntranceFee()){
 			Double fee = tops.getEntranceFee();

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamAppearance;
 
 import org.bukkit.ChatColor;
@@ -28,7 +28,7 @@ public class TeamUtil {
 		}
 	}
 
-	public static void setTeamHead(final int color, Team team) {
+	public static void setTeamHead(final int color, ArenaTeam team) {
 		for (ArenaPlayer p: team.getPlayers()){
 			setTeamHead(color,p);
 		}
@@ -75,7 +75,7 @@ public class TeamUtil {
 		map.put(name.toUpperCase(), teamHeads.size()-1);
 	}
 
-	public static String formatName(Team t){
+	public static String formatName(ArenaTeam t){
 		StringBuilder sb = new StringBuilder("&e " + t.getDisplayName());
 
 		for (ArenaPlayer p: t.getPlayers()){

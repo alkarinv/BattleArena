@@ -4,7 +4,7 @@ import java.util.Stack;
 
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.HeroesController;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
 
@@ -165,7 +165,7 @@ public class ArenaPlayer {
 	 * This is NOT a self made team, only the team from the competition
 	 * @return Team, or null if they are not inside a competition
 	 */
-	public Team getTeam() {
+	public ArenaTeam getTeam() {
 		return competitions.isEmpty() ? null : competitions.peek().getTeam(this);
 	}
 

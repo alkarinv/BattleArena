@@ -12,7 +12,7 @@ import mc.alk.arena.objects.ArenaPlayer;
  *
  */
 public class CompositeTeam extends AbstractTeam{
-	final Set<Team> oldTeams = new HashSet<Team>();
+	final Set<ArenaTeam> oldTeams = new HashSet<ArenaTeam>();
 
 	public CompositeTeam() {
 		super();
@@ -29,7 +29,7 @@ public class CompositeTeam extends AbstractTeam{
 		isPickupTeam = true;
 	}
 
-	protected CompositeTeam(Team team) {
+	protected CompositeTeam(ArenaTeam team) {
 		this();
 		addTeam(team);
 	}
@@ -39,7 +39,7 @@ public class CompositeTeam extends AbstractTeam{
 		isPickupTeam=true;
 	}
 
-	public void addTeam(Team t) {
+	public void addTeam(ArenaTeam t) {
 		if (t instanceof CompositeTeam){
 			CompositeTeam ct = (CompositeTeam) t;
 			oldTeams.add(ct);
@@ -52,9 +52,9 @@ public class CompositeTeam extends AbstractTeam{
 		}
 	}
 
-	public boolean removeTeam(Team t) {
+	public boolean removeTeam(ArenaTeam t) {
 		if (t instanceof CompositeTeam){
-			for (Team tt : ((CompositeTeam)t).getOldTeams()){
+			for (ArenaTeam tt : ((CompositeTeam)t).getOldTeams()){
 				if (oldTeams.remove(tt)){
 					nameChanged = true;}
 			}
@@ -68,8 +68,8 @@ public class CompositeTeam extends AbstractTeam{
 	}
 
 	@Override
-	public boolean hasTeam(Team team){
-		for (Team t: oldTeams){
+	public boolean hasTeam(ArenaTeam team){
+		for (ArenaTeam t: oldTeams){
 			if (t.hasTeam(team))
 				return true;
 		}
@@ -78,7 +78,7 @@ public class CompositeTeam extends AbstractTeam{
 
 	@Override
 	public void removePlayer(ArenaPlayer p) {
-		for (Team t: oldTeams){
+		for (ArenaTeam t: oldTeams){
 			if (t.hasMember(p)){
 				oldTeams.remove(t);
 				nameChanged = true;
@@ -86,14 +86,14 @@ public class CompositeTeam extends AbstractTeam{
 			}
 		}
 	}
-	public Collection<Team> getOldTeams(){
+	public Collection<ArenaTeam> getOldTeams(){
 		return oldTeams;
 	}
 
 	@Override
 	public void clear() {
 		super.clear();
-		for (Team t: oldTeams){
+		for (ArenaTeam t: oldTeams){
 			t.clear();
 		}
 	}

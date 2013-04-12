@@ -24,7 +24,7 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.regions.PylamoRegion;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.objects.spawns.TimedSpawn;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.Persist;
 import mc.alk.arena.util.Util;
 
@@ -162,13 +162,13 @@ public class Arena implements ArenaListener {
 	/**
 	 * private Arena onEnter events, calls onEnter for subclasses to be able to override
 	 */
-	void privateOnEnter(ArenaPlayer player, Team team){
+	void privateOnEnter(ArenaPlayer player, ArenaTeam team){
 		try{onEnter(player,team);}catch(Exception e){e.printStackTrace();}
 	}
 	/**
 	 * private Arena onEnterWaitRoom events, calls onEnterWaitRoom for subclasses to be able to override
 	 */
-	void privateOnEnterWaitRoom(ArenaPlayer player, Team team){
+	void privateOnEnterWaitRoom(ArenaPlayer player, ArenaTeam team){
 		try{onEnterWaitRoom(player,team);}catch(Exception e){e.printStackTrace();}
 	}
 
@@ -176,7 +176,7 @@ public class Arena implements ArenaListener {
 	 * private Arena onJoin events, calls onJoin for subclasses to be able to override
 	 * Happens when a player joins a team
 	 */
-	void privateOnJoin(ArenaPlayer player, Team team){
+	void privateOnJoin(ArenaPlayer player, ArenaTeam team){
 		try{onJoin(player,team);}catch(Exception e){e.printStackTrace();}
 	}
 
@@ -184,7 +184,7 @@ public class Arena implements ArenaListener {
 	 * private Arena onLeave events, calls onLeave for subclasses to be able to override
 	 * Happens when a player leaves a team
 	 */
-	void privateOnLeave(ArenaPlayer player, Team team){
+	void privateOnLeave(ArenaPlayer player, ArenaTeam team){
 		try{onLeave(player,team);}catch(Exception e){e.printStackTrace();}
 	}
 
@@ -192,7 +192,7 @@ public class Arena implements ArenaListener {
 	/**
 	 * private Arena onFinish events, calls onFinish for subclasses to be able to override
 	 */
-	void privateOnFinish(ArenaPlayer player, Team team){
+	void privateOnFinish(ArenaPlayer player, ArenaTeam team){
 		try{onFinish();}catch(Exception e){e.printStackTrace();}
 	}
 
@@ -222,7 +222,7 @@ public class Arena implements ArenaListener {
 	 * @param p the player
 	 * @param t the team they are on
 	 */
-	protected void onJoin(ArenaPlayer p, Team t){}
+	protected void onJoin(ArenaPlayer p, ArenaTeam t){}
 
 	/**
 	 * Called when a player is leaving the match ( via typing a command usually) ,
@@ -230,7 +230,7 @@ public class Arena implements ArenaListener {
 	 * @param p the player
 	 * @param t the team they were on
 	 */
-	protected void onLeave(ArenaPlayer p, Team t) {}
+	protected void onLeave(ArenaPlayer p, ArenaTeam t) {}
 
 	/**
 	 * Called when the match is first called upon to begin starting
@@ -273,21 +273,21 @@ public class Arena implements ArenaListener {
 	 * @param Player p
 	 * @param team : the team they were in
 	 */
-	protected void onEnter(ArenaPlayer p, Team team) {}
+	protected void onEnter(ArenaPlayer p, ArenaTeam team) {}
 
 	/**
 	 * Called if a player is teleported into a waiting room before a match
 	 * @param Player p
 	 * @param team: the team they are in
 	 */
-	protected void onEnterWaitRoom(ArenaPlayer p, Team team) {}
+	protected void onEnterWaitRoom(ArenaPlayer p, ArenaTeam team) {}
 
 	/**
 	 * Called when a player is exiting the match (usually through a death)
 	 * @param p
 	 * @param team : the team they were in
 	 */
-	protected void onExit(ArenaPlayer p, Team team) {}
+	protected void onExit(ArenaPlayer p, ArenaTeam team) {}
 
 
 	/**
@@ -506,7 +506,7 @@ public class Arena implements ArenaListener {
 	 * set the winning team, this will also cause the match to be ended
 	 * @param team
 	 */
-	protected void setWinner(Team team) {
+	protected void setWinner(ArenaTeam team) {
 		match.setVictor(team);
 	}
 
@@ -530,7 +530,7 @@ public class Arena implements ArenaListener {
 	 * return a list of teams inside this match
 	 * @return
 	 */
-	public List<Team> getTeams(){
+	public List<ArenaTeam> getTeams(){
 		return match == null ? null : match.getTeams();
 	}
 
@@ -538,7 +538,7 @@ public class Arena implements ArenaListener {
 	 * Return a list of live teams inside this match
 	 * @return
 	 */
-	public List<Team> getAliveTeams(){
+	public List<ArenaTeam> getAliveTeams(){
 		return match == null ? null : match.getAliveTeams();
 	}
 
@@ -562,7 +562,7 @@ public class Arena implements ArenaListener {
 	 * Return the team of this player
 	 * @return
 	 */
-	public Team getTeam(ArenaPlayer p){
+	public ArenaTeam getTeam(ArenaPlayer p){
 		return match == null ? null : match.getTeam(p);
 	}
 
@@ -570,7 +570,7 @@ public class Arena implements ArenaListener {
 	 * Return the team of this player
 	 * @return
 	 */
-	public Team getTeam(Player p){
+	public ArenaTeam getTeam(Player p){
 		return match == null ? null : match.getTeam(BattleArena.toArenaPlayer(p));
 	}
 

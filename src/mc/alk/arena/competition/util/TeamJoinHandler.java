@@ -12,7 +12,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.CompositeTeam;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 
 public abstract class TeamJoinHandler implements TeamHandler {
@@ -27,26 +27,26 @@ public abstract class TeamJoinHandler implements TeamHandler {
 	public static class TeamJoinResult{
 		final public TeamJoinStatus status;
 		final public int remaining;
-		final public Team team;
+		final public ArenaTeam team;
 
-		public TeamJoinResult(TeamJoinStatus status, int remaining, Team team){
+		public TeamJoinResult(TeamJoinStatus status, int remaining, ArenaTeam team){
 			this.status = status; this.remaining = remaining; this.team = team;}
 		public TeamJoinStatus getEventType(){ return status;}
 		public int getRemaining(){return remaining;}
 	}
 
-	List<Team> teams = new ArrayList<Team>();
+	List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 
-	ArrayList<Team> pickupTeams = new ArrayList<Team>();
+	ArrayList<ArenaTeam> pickupTeams = new ArrayList<ArenaTeam>();
 	Competition competition;
 	int minTeamSize,maxTeamSize;
 	int minTeams,maxTeams;
-	Class<? extends Team> clazz;
+	Class<? extends ArenaTeam> clazz;
 
 	public TeamJoinHandler(MatchParams params, Competition competition){
 		this(params,competition,CompositeTeam.class);
 	}
-	public TeamJoinHandler(MatchParams params, Competition competition, Class<? extends Team> clazz) {
+	public TeamJoinHandler(MatchParams params, Competition competition, Class<? extends ArenaTeam> clazz) {
 		setParams(params);
 		this.clazz = clazz;
 		setCompetition(competition);
@@ -61,14 +61,14 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		this.minTeams = mp.getMinTeams(); this.maxTeams = mp.getMaxTeams();
 	}
 
-	protected void addToTeam(Team team, Set<ArenaPlayer> players) {
+	protected void addToTeam(ArenaTeam team, Set<ArenaPlayer> players) {
 		team.addPlayers(players);
 		if (competition != null){
 			competition.addedToTeam(team,players);
 		}
 	}
 
-	protected void addTeam(Team team) {
+	protected void addTeam(ArenaTeam team) {
 		if (competition != null){
 			competition.addTeam(team);
 		} else {
@@ -77,7 +77,7 @@ public abstract class TeamJoinHandler implements TeamHandler {
 	}
 
 	public void deconstruct() {
-		for (Team t: pickupTeams){
+		for (ArenaTeam t: pickupTeams){
 			TeamController.removeTeamHandler(t, this);
 		}
 		pickupTeams.clear();
@@ -90,7 +90,7 @@ public abstract class TeamJoinHandler implements TeamHandler {
 	}
 
 	public boolean leave(ArenaPlayer p) {
-		for (Team t: pickupTeams){
+		for (ArenaTeam t: pickupTeams){
 			if (t.hasMember(p)){
 				pickupTeams.remove(t);
 				return true;
@@ -101,17 +101,17 @@ public abstract class TeamJoinHandler implements TeamHandler {
 
 	public Set<ArenaPlayer> getExcludedPlayers() {
 		Set<ArenaPlayer> tplayers = new HashSet<ArenaPlayer>();
-		for (Team t: pickupTeams){
+		for (ArenaTeam t: pickupTeams){
 			tplayers.addAll(t.getPlayers());}
 		return tplayers;
 	}
 
 
-	public List<Team> removeImproperTeams(){
-		List<Team> improper = new ArrayList<Team>();
-		Iterator<Team> iter = teams.iterator();
+	public List<ArenaTeam> removeImproperTeams(){
+		List<ArenaTeam> improper = new ArrayList<ArenaTeam>();
+		Iterator<ArenaTeam> iter = teams.iterator();
 		while(iter.hasNext()){
-			Team t = iter.next();
+			ArenaTeam t = iter.next();
 			if (t.size() < minTeamSize || t.size() > maxTeamSize){
 				iter.remove();
 				TeamController.removeTeamHandler(t, this);
@@ -130,7 +130,7 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		int min = Integer.MAX_VALUE;
 		int max = Integer.MIN_VALUE;
 		int valid = 0;
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			final int tsize = t.size();
 			if (tsize < minTeamSize || tsize > maxTeamSize)
 				continue;
@@ -150,19 +150,19 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		if ( maxTeams > teams.size()){
 			return false;}
 		/// Check to see if there is any space left on the team
-		for (Team t: teams){
+		for (ArenaTeam t: teams){
 			if (t.size() < maxTeamSize){
 				return false;}
 		}
 		/// we can't add a team.. and all teams are full
 		return true;
 	}
-	public List<Team> getTeams() {
+	public List<ArenaTeam> getTeams() {
 		return teams;
 	}
 
-	protected Team addToPreviouslyLeftTeam(ArenaPlayer player) {
-		for (Team t: teams){
+	protected ArenaTeam addToPreviouslyLeftTeam(ArenaPlayer player) {
+		for (ArenaTeam t: teams){
 			if (t.hasLeft(player)){
 				t.addPlayer(player);
 				return t;

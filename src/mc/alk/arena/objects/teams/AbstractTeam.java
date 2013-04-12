@@ -8,11 +8,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.util.MessageUtil;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-public abstract class AbstractTeam implements Team{
+public abstract class AbstractTeam implements ArenaTeam{
 	static int count = 0;
 	final int id = count++; /// id
 
@@ -24,6 +26,7 @@ public abstract class AbstractTeam implements Team{
 	protected boolean nameChanged = true;
 	protected String name =null; /// Internal name of this team
 	protected String displayName =null; /// Display name
+	protected String scoreboardDisplayName =null; /// Scoreboard name
 
 	HashMap<ArenaPlayer, Integer> kills = new HashMap<ArenaPlayer,Integer>();
 	HashMap<ArenaPlayer, Integer> deaths = new HashMap<ArenaPlayer,Integer>();
@@ -31,22 +34,30 @@ public abstract class AbstractTeam implements Team{
 	/// Pickup teams are transient in nature, once the match end they disband
 	protected boolean isPickupTeam = false;
 
+	ArenaObjective objective;
+	protected ChatColor color = null;
+
 	/**
 	 * Default Constructor
 	 */
-	public AbstractTeam(){}
+	public AbstractTeam(){
+		init();
+	}
 
 	protected AbstractTeam(ArenaPlayer p) {
+		init();
 		players.add(p);
 		nameChanged = true;
 	}
 
 	protected AbstractTeam(Collection<ArenaPlayer> teammates) {
+		init();
 		this.players.addAll(teammates);
 		nameChanged = true;
 	}
 
 	protected AbstractTeam(ArenaPlayer p, Collection<ArenaPlayer> teammates) {
+		init();
 		players.add(p);
 		players.addAll(teammates);
 		nameChanged = true;
@@ -184,6 +195,10 @@ public abstract class AbstractTeam implements Team{
 		if (d == null){
 			d = 0;}
 		kills.put(teamMemberWhoKilled, ++d);
+		if (objective != null){
+			objective.addPoints(teamMemberWhoKilled, d);
+			objective.addPoints(this, d);
+		}
 		return d;
 	}
 
@@ -264,9 +279,9 @@ public abstract class AbstractTeam implements Team{
 	@Override
 	public String toString(){return "["+getDisplayName()+"]";}
 
-	public boolean hasTeam(Team team){
+	public boolean hasTeam(ArenaTeam team){
 		if (team instanceof CompositeTeam){
-			for (Team t: ((CompositeTeam)team).getOldTeams()){
+			for (ArenaTeam t: ((CompositeTeam)team).getOldTeams()){
 				if (this.hasTeam(t))
 					return true;
 			}
@@ -376,6 +391,42 @@ public abstract class AbstractTeam implements Team{
 		this.name = "Empty";
 		this.kills.clear();
 		this.deadplayers.clear();
+	}
+
+	public void setArenaObjective(ArenaObjective objective){
+		this.objective = objective;
+		int tk = 0;
+		for (ArenaPlayer player: this.getPlayers()){
+			Integer kills = getNKills(player);
+			if (kills == null) kills = 0;
+			objective.setPoints(player, kills);
+			tk += kills;
+		}
+		objective.setPoints(this, tk);
+	}
+
+	@Override
+	public void setTeamChatColor(ChatColor color) {
+		this.color = color;
+	}
+	@Override
+	public ChatColor getTeamChatColor() {
+		return color;
+	}
+
+	@Override
+	public String geIDString(){
+		return String.valueOf(id);
+	}
+
+	@Override
+	public void setScoreboardDisplayName(String name){
+		this.scoreboardDisplayName = name;
+	}
+
+	@Override
+	public String getScoreboardDisplayName(){
+		return scoreboardDisplayName;
 	}
 }
 

@@ -233,21 +233,23 @@ public class BAConfigSerializer extends BaseConfig{
 			return null;
 		}
 		Set<String> keys = cs.getKeys(false);
-		for (String key: keys){
-			MatchState ms = MatchState.fromName(key);
-			if (ms == null){
-				Log.err("Couldnt recognize matchstate " + key +" in the announcement options");
-				continue;
-			}
-			List<String> list = cs.getStringList(key);
-			for (String s: list){
-				KeyValue<String,String> kv = KeyValue.split(s,"=");
-				AnnouncementOption bo = AnnouncementOption.fromName(kv.key);
-				if (bo == null){
-					Log.err("Couldnt recognize AnnouncementOption " + s);
+		if (keys != null){
+			for (String key: keys){
+				MatchState ms = MatchState.fromName(key);
+				if (ms == null){
+					Log.err("Couldnt recognize matchstate " + key +" in the announcement options");
 					continue;
 				}
-				an.setBroadcastOption(match, ms, bo,kv.value);
+				List<String> list = cs.getStringList(key);
+				for (String s: list){
+					KeyValue<String,String> kv = KeyValue.split(s,"=");
+					AnnouncementOption bo = AnnouncementOption.fromName(kv.key);
+					if (bo == null){
+						Log.err("Couldnt recognize AnnouncementOption " + s);
+						continue;
+					}
+					an.setBroadcastOption(match, ms, bo,kv.value);
+				}
 			}
 		}
 		return an;

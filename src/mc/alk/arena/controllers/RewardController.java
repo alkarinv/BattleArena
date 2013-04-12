@@ -3,7 +3,7 @@ package mc.alk.arena.controllers;
 import mc.alk.arena.events.prizes.ArenaPrizeEvent;
 import mc.alk.arena.events.prizes.Reward;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.teams.Team;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
@@ -23,7 +23,7 @@ public class RewardController {
 
 
 	public void giveRewards() {
-		for (Team t: event.getTeams()){
+		for (ArenaTeam t: event.getTeams()){
 			for (ArenaPlayer player: t.getPlayers()){
 				Player p = player.getPlayer();
 				if (event.getMoney() != null && MoneyController.hasEconomy()){
