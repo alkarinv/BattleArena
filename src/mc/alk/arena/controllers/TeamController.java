@@ -13,9 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
-import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
 
@@ -171,14 +171,14 @@ public enum TeamController implements Listener, TeamHandler {
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		ArenaPlayer ap = PlayerController.toArenaPlayer(event.getPlayer());
-		playerLeft(ap);
+//		playerLeft(ap);
 		leaveSelfTeam(ap);
 	}
 
 	@EventHandler
 	public void onPlayerKick(PlayerKickEvent event) {
 		ArenaPlayer ap = PlayerController.toArenaPlayer(event.getPlayer());
-		playerLeft(ap);
+//		playerLeft(ap);
 		leaveSelfTeam(ap);
 	}
 

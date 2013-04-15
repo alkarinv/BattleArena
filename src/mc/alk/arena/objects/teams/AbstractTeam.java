@@ -103,6 +103,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 	public Set<ArenaPlayer> getPlayers() {
 		return players;
 	}
+
 	public Set<Player> getBukkitPlayers() {
 		Set<Player> ps = new HashSet<Player>();
 		for (ArenaPlayer ap: players){
@@ -110,6 +111,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 		}
 		return ps;
 	}
+
 	public Set<ArenaPlayer> getDeadPlayers() {return deadplayers;}
 	public Set<ArenaPlayer> getLivingPlayers() {
 		Set<ArenaPlayer> living = new HashSet<ArenaPlayer>();

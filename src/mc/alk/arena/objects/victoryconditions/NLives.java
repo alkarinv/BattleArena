@@ -1,18 +1,13 @@
 package mc.alk.arena.objects.victoryconditions;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumLivesPerPlayer;
-import mc.alk.arena.util.DmgDeathUtil;
-
-import org.bukkit.event.entity.PlayerDeathEvent;
 
 public class NLives extends VictoryCondition implements DefinesNumLivesPerPlayer{
-
 	int nLives; /// number of lives before a player is eliminated from a team
 
 	public NLives(Match match) {
@@ -30,23 +25,13 @@ public class NLives extends VictoryCondition implements DefinesNumLivesPerPlayer
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true, priority=EventPriority.LOW)
-	public void playerDeathEvent(PlayerDeathEvent event) {
-		if (match.isWon()){
-			return;}
-		final ArenaPlayer p = BattleArena.toArenaPlayer(event.getEntity());
-		if (p==null)
-			return;
-		final ArenaTeam team = match.getTeam(p);
-		if (team == null)
-			return;
-		final ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
-		handleDeath(p,team, killer);
-	}
-
-	protected void handleDeath(ArenaPlayer p,ArenaTeam team, ArenaPlayer killer) {
-		int deaths = team.addDeath(p);
+	public void playerDeathEvent(ArenaPlayerDeathEvent event) {
+		ArenaTeam team = event.getArenaTeam();
+		Integer deaths = team.getNDeaths(event.getPlayer());
+		if (deaths == null)
+			deaths = 1;
 		if (deaths >= nLives){
-			team.killMember(p);}
+			team.killMember(event.getPlayer());}
 	}
 
 	@Override

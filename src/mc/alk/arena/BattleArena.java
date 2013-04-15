@@ -215,6 +215,7 @@ public class BattleArena extends JavaPlugin {
 		});
 		if (Defaults.AUTO_UPDATE)
 			PluginUpdater.downloadPluginUpdates(this);
+
 		MessageUtil.sendMessage(sender,"&4["+pluginname+"] &6v"+version+"&f enabled!");
 	}
 

@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.events.PlayerLeftEvent;
-import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.events.teams.TeamDeathEvent;
 import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumTeams;
@@ -23,33 +22,16 @@ public class NTeamsNeeded extends VictoryCondition implements DefinesNumTeams{
 	}
 
 	@MatchEventHandler
-	public void onPlayerLeft(PlayerLeftEvent event) {
-		ArenaPlayer p = event.getPlayer();
-		if (match.isWon() || !match.isStarted()){
-			return;}
-
-		ArenaTeam team = match.getTeam(p);
-		if (team == null)
-			return;
-		if (team.killMember(p)){
-			handleDeath(team);}
-	}
-
-	protected void handleDeath(ArenaTeam team) {
-		if (!team.isDead()){ /// team isnt dead
-			return;}
-
+	public void onTeamDeathEvent(TeamDeathEvent event) {
 		/// Killing this player killed the team
 		List<ArenaTeam> leftAlive = new ArrayList<ArenaTeam>(neededTeams.min+1);
 		/// Iterate over the players to see if we have one team left standing
-
 		for (ArenaTeam t: match.getTeams()){
 			if (t.isDead())
 				continue;
 			leftAlive.add(t);
-			if (leftAlive.size() >= neededTeams.min){ /// obviously more than one team is still in the match
-				return;
-			}
+			if (leftAlive.size() >= neededTeams.min){ ///more than enough teams still in the match
+				return;}
 		}
 		if (leftAlive.isEmpty()){
 			match.setLosers();

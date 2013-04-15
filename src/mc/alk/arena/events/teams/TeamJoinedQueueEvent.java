@@ -1,5 +1,6 @@
-package mc.alk.arena.events;
+package mc.alk.arena.events.teams;
 
+import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.teams.ArenaTeam;

@@ -191,6 +191,7 @@ public class PerformTransition {
 				final ArenaClass ac = getArenaClass(mo,teamIndex);
 				if (ac != null){ /// Give class items and effects
 					if (am.woolTeams) TeamUtil.setTeamHead(teamIndex, player); // give wool heads first
+
 					if (am.armorTeams){
 						ArenaClassController.giveClass(p, ac, TeamUtil.getTeamColor(teamIndex));
 					} else{

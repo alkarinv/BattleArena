@@ -9,6 +9,7 @@ import java.util.Set;
 
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.events.BAEvent;
+import mc.alk.arena.events.CompetitionEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
@@ -144,6 +145,9 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	public void callEvent(BAEvent event) {
 		event.callEvent(); /// Call anyone using generic bukkit listeners
 		methodController.callEvent(event); /// Call our listeners listening to only this competition
+		if (event instanceof CompetitionEvent && ((CompetitionEvent)event).getCompetition()==null){
+			((CompetitionEvent)event).setCompetition(this);
+		}
 	}
 
 	/**

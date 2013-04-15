@@ -12,12 +12,12 @@ import mc.alk.arena.objects.victoryconditions.interfaces.ScoreTracker;
 import mc.alk.arena.util.VictoryUtil;
 
 public class HighestKills extends VictoryCondition implements DefinesNumLivesPerPlayer, ScoreTracker{
-	PlayerKills pvpcount;
+	PlayerKills pkills;
 
 	public HighestKills(Match match) {
 		super(match);
-		pvpcount = new PlayerKills(match);
-		match.addArenaListener(pvpcount);
+		pkills = new PlayerKills(match);
+		match.addArenaListener(pkills);
 	}
 
 	@Override
@@ -37,6 +37,6 @@ public class HighestKills extends VictoryCondition implements DefinesNumLivesPer
 
 	@Override
 	public void setScoreBoard(ArenaScoreboard scoreboard) {
-		this.pvpcount.setScoreBoard(scoreboard);
+		this.pkills.setScoreBoard(scoreboard);
 	}
 }

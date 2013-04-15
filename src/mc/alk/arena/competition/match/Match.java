@@ -28,7 +28,6 @@ import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
 import mc.alk.arena.controllers.messaging.MatchMessager;
-import mc.alk.arena.events.PlayerLeftEvent;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
@@ -38,6 +37,7 @@ import mc.alk.arena.events.matches.MatchPrestartEvent;
 import mc.alk.arena.events.matches.MatchResultEvent;
 import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.matches.MatchTimerIntervalEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeftEvent;
 import mc.alk.arena.events.prizes.ArenaDrawersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaLosersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaPrizeEvent;
@@ -970,6 +970,7 @@ public abstract class Match extends Competition implements Runnable {
 		insideWaitRoom.remove(p.getName());
 		stopTracking(p);
 		ArenaTeam t = getTeam(p);
+		t.killMember(p);
 		scoreboard.setDead(t,p);
 
 		PerformTransition.transition(this, MatchState.ONLEAVE, p, t, false);
@@ -977,7 +978,7 @@ public abstract class Match extends Competition implements Runnable {
 		if (params.getOverrideBattleTracker())
 			StatController.resumeTracking(p);
 
-		callEvent(new PlayerLeftEvent(p));
+		callEvent(new ArenaPlayerLeftEvent(p,t));
 		if (FactionsController.enabled()){
 			FactionsController.removePlayer(p.getPlayer());}
 
@@ -986,13 +987,13 @@ public abstract class Match extends Competition implements Runnable {
 			if (index != -1)
 				PlayerStoreController.removeItem(p, TeamUtil.getTeamHead(index));
 		}
+
 		if (TagAPIController.enabled()){
 			psc.removeNameColor(p);}
 		if (cancelExpLoss){
 			psc.cancelExpLoss(p,false);}
 		if (HeroesController.enabled()){
 			HeroesController.leaveArena(p.getPlayer());}
-
 	}
 
 	public void setMessageHandler(MatchMessageHandler mc){this.mc.setMessageHandler(mc);}
@@ -1007,7 +1008,7 @@ public abstract class Match extends Competition implements Runnable {
 
 		/// set the number of lives
 		Integer nLives = params.getNLives();
-		if (nLives != null && nLives > 0 && !hasVictoryCondition(NLives.class)){
+		if (nLives != null && nLives > 0 && !(vt instanceof DefinesNumLivesPerPlayer)){
 			addVictoryCondition(new NLives(this,nLives));
 		}
 
@@ -1023,14 +1024,6 @@ public abstract class Match extends Competition implements Runnable {
 			}
 		}
 		addVictoryCondition(vt);
-	}
-
-	private boolean hasVictoryCondition(Class<NLives> clazz) {
-		for (VictoryCondition vc: vcs){
-			if (vc.getClass() == clazz)
-				return true;
-		}
-		return false;
 	}
 
 	/**

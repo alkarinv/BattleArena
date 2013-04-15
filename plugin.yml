@@ -1,5 +1,5 @@
-name: BattleArena
-version: 3.8.6
+name: ${project.name}
+version: ${project.version}
 description: Arena system for BattleCraft
 
 main: mc.alk.arena.BattleArena

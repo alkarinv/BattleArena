@@ -1,13 +1,12 @@
 package mc.alk.arena.events.matches;
 
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.events.BAEvent;
+import mc.alk.arena.events.CompetitionEvent;
 
-public class MatchEvent extends BAEvent {
-	final Match match;
-
+public class MatchEvent extends CompetitionEvent {
 	public MatchEvent(Match match) {
-		this.match = match;
+		super();
+		setCompetition(match);
 	}
 
 	/**
@@ -15,6 +14,6 @@ public class MatchEvent extends BAEvent {
 	 * @return Match
 	 */
 	public Match getMatch() {
-		return match;
+		return (Match) getCompetition();
 	}
 }
