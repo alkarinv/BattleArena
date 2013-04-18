@@ -85,13 +85,13 @@ public class TransitionOptions {
 	public boolean hasItems() {
 		return options.containsKey(TransitionOption.NEEDITEMS) ||
 				options.containsKey(TransitionOption.GIVEITEMS);}
+	public boolean shouldTeleportLobby() {return options.containsKey(TransitionOption.TELEPORTLOBBY);}
 	public boolean shouldTeleportWaitRoom() {return options.containsKey(TransitionOption.TELEPORTWAITROOM);}
 	public boolean shouldTeleportIn() {return options.containsKey(TransitionOption.TELEPORTIN);}
 	public boolean teleportsIn() {return shouldTeleportIn() || shouldTeleportWaitRoom();}
 
 	public boolean shouldTeleportOut() {
 		return options.containsKey(TransitionOption.TELEPORTOUT) ||
-				options.containsKey(TransitionOption.TELEPORTBACK) ||
 				options.containsKey(TransitionOption.TELEPORTTO);
 	}
 
@@ -450,9 +450,6 @@ public class TransitionOptions {
 	}
 
 	public Location getTeleportToLoc() {return returnLoc(TransitionOption.TELEPORTTO);}
-	public Location getTeleportWinnerLoc() {return returnLoc(TransitionOption.TELEPORTWINNER);}
-	public Location getTeleportLoserLoc() {return returnLoc(TransitionOption.TELEPORTLOSER);}
-	public Location getTeleportOnArenaExit() {return returnLoc(TransitionOption.TELEPORTONARENAEXIT);}
 
 	private Location returnLoc(TransitionOption to){
 		final Object o = options.get(to);

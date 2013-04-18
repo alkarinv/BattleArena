@@ -13,8 +13,8 @@ import java.util.Map;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.events.BAEvent;
-import mc.alk.arena.listeners.BukkitEventListener;
-import mc.alk.arena.listeners.RListener;
+import mc.alk.arena.listeners.custom.BukkitEventHandler;
+import mc.alk.arena.listeners.custom.RListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
@@ -35,8 +35,8 @@ import org.bukkit.event.entity.EntityDeathEvent;
 public class MethodController {
 
 	/** Our Dynamic listeners, listening for bukkit events*/
-	static EnumMap<EventPriority, HashMap<Type, BukkitEventListener>> bukkitListeners =
-			new EnumMap<EventPriority,HashMap<Type, BukkitEventListener>>(EventPriority.class);
+	static EnumMap<EventPriority, HashMap<Type, BukkitEventHandler>> bukkitListeners =
+			new EnumMap<EventPriority,HashMap<Type, BukkitEventHandler>>(EventPriority.class);
 //	static HashMap<Type, BukkitEventListener> bukkitListeners = new HashMap<Type, BukkitEventListener>();
 
 	/** Our registered bukkit events and the methods to call when they happen*/
@@ -53,7 +53,7 @@ public class MethodController {
 
 	public MethodController(){}
 
-	public static EnumMap<EventPriority, HashMap<Type, BukkitEventListener>> getEventListeners() {
+	public static EnumMap<EventPriority, HashMap<Type, BukkitEventHandler>> getEventListeners() {
 		return bukkitListeners;
 	}
 
@@ -101,21 +101,21 @@ public class MethodController {
 	}
 
 	private void updateEvent(MatchState matchState, Collection<String> players, final Class<? extends Event> event) {
-		final List<RListener> at = bukkitMethods.get(event);
-		if (at == null || at.isEmpty()){
+		final List<RListener> rls = bukkitMethods.get(event);
+		if (rls == null || rls.isEmpty()){
 			return;}
 		if (Defaults.DEBUG_EVENTS) System.out.println("updateEventListener "+  event.getSimpleName() +"    " + matchState);
 
-		for (RListener rl : at){
+		for (RListener rl : rls){
 			MatchEventMethod mem = rl.getMethod();
 			if (Defaults.DEBUG_EVENTS) System.out.println("  updateEventListener "+  event.getSimpleName() +"    " + matchState +":" +
 					rl +",   " + players);
 			if (mem.getBeginState() == matchState){
-				BukkitEventListener bel = getCreate(event,mem);
+				BukkitEventHandler bel = getCreate(event,mem);
 				bel.addListener(rl,players);
 			} else if (mem.getEndState() == matchState || mem.getCancelState() == matchState) {
-				for (HashMap<Type,BukkitEventListener> ls : bukkitListeners.values()){
-					BukkitEventListener bel = ls.get(event);
+				for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
+					BukkitEventHandler bel = ls.get(event);
 					if (bel != null){
 						bel.removeListener(rl, players);
 						if (!bel.hasListeners()){
@@ -127,18 +127,18 @@ public class MethodController {
 		}
 	}
 
-	private static BukkitEventListener getCreate(Class<? extends Event> event, MatchEventMethod mem){
-		HashMap<Type,BukkitEventListener> gels = bukkitListeners.get(mem.getBukkitPriority());
+	private static BukkitEventHandler getCreate(Class<? extends Event> event, MatchEventMethod mem){
+		HashMap<Type,BukkitEventHandler> gels = bukkitListeners.get(mem.getBukkitPriority());
 		if (gels == null){
-			gels = new HashMap<Type,BukkitEventListener>();
+			gels = new HashMap<Type,BukkitEventHandler>();
 			bukkitListeners.put(mem.getBukkitPriority(), gels);
 		}
-		BukkitEventListener gel = gels.get(event);
+		BukkitEventHandler gel = gels.get(event);
 		if (Defaults.DEBUG_EVENTS) System.out.println("***************************** checking for " + event);
 
 		if (gel == null){
 			if (Defaults.DEBUG_EVENTS) System.out.println("***************************** making new gel for type " + event);
-			gel = new BukkitEventListener(event,mem.getBukkitPriority(), mem.getPlayerMethod());
+			gel = new BukkitEventHandler(event,mem.getBukkitPriority(), mem.getPlayerMethod());
 			gels.put(event, gel);
 		}
 		return gel;
@@ -307,8 +307,8 @@ public class MethodController {
 					RListener rl = iter.next();
 					if (rl.getListener() == listener){
 						iter.remove();
-						for (HashMap<Type,BukkitEventListener> ls : bukkitListeners.values()){
-							BukkitEventListener bel = ls.get(rl.getMethod().getBukkitEvent());
+						for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
+							BukkitEventHandler bel = ls.get(rl.getMethod().getBukkitEvent());
 							if (bel != null){
 								bel.removeAllListener(rl);
 								if (!bel.hasListeners()){

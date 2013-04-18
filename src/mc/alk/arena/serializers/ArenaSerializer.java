@@ -41,12 +41,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
-public class ArenaSerializer {
+public class ArenaSerializer extends BaseConfig{
 	static BattleArenaController arenaController;
 	static HashMap<Plugin, Set<ArenaSerializer>> configs = new HashMap<Plugin, Set<ArenaSerializer>>();
 
-	YamlConfiguration config;
-	File f = null;
 	/// Which plugin does this ArenaSerializer belong to
 	Plugin plugin;
 
@@ -55,15 +53,8 @@ public class ArenaSerializer {
 	}
 
 	public ArenaSerializer(Plugin plugin, File file){
+		setConfig(file);
 		this.plugin = plugin;
-		this.f = file;
-		if (!f.exists()){
-			try {
-				f.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 
 		config = new YamlConfiguration();
 		Set<ArenaSerializer> paths = configs.get(plugin);
@@ -72,7 +63,7 @@ public class ArenaSerializer {
 			configs.put(plugin, paths);
 		} else { /// check to see if we have this path already
 			for (ArenaSerializer as : paths){
-				if (as.f.getPath().equals(this.f.getPath())){
+				if (as.file.getPath().equals(this.file.getPath())){
 					return;}
 			}
 		}
@@ -104,14 +95,14 @@ public class ArenaSerializer {
 	}
 
 	public void loadArenas(Plugin plugin){
-		try {config.load(f);} catch (Exception e){e.printStackTrace();}
-		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getPath()+" using config "+ config.getName());
+		try {config.load(file);} catch (Exception e){e.printStackTrace();}
+//		Log.info("["+plugin.getName()+ "] Loading arenas from " + file.getPath()+" using config "+ config.getName());
 		loadArenas(plugin, BattleArena.getBAController(), config,null);
 	}
 
 	public void loadArenas(Plugin plugin, ArenaType arenaType){
-		try {config.load(f);} catch (Exception e){e.printStackTrace();}
-		Log.info("["+plugin.getName()+ "] Loading arenas from " + f.getPath() +" using config "+ config.getName() +" at=" + arenaType);
+		try {config.load(file);} catch (Exception e){e.printStackTrace();}
+//		Log.info("["+plugin.getName()+ "] Loading arenas from " + file.getPath() +" using config "+ config.getName() +" at=" + arenaType);
 		loadArenas(plugin, BattleArena.getBAController(), config, arenaType);
 	}
 
@@ -175,18 +166,18 @@ public class ArenaSerializer {
 					transfer(cs,"arenas."+name, "brokenArenas."+name);}
 			}
 		}
-
+//		Util.printStackTrace();
 		if (!loadedArenas.isEmpty()) {
-			Log.info("Successfully loaded arenas: " + StringUtils.join(loadedArenas,", "));
+			Log.info(pname+"Loaded "+arenaType+" arenas: " + StringUtils.join(loadedArenas,", "));
 		} else {
-			Log.info(pname + "No arenas found for " + cs.getCurrentPath() +"  arenatype="+arenaType);
+			Log.info(pname+"No arenas found for " + cs.getCurrentPath() +"  arenatype="+arenaType +"  cs="+cs.getName());
 		}
 		if (!brokenArenas.isEmpty()){
-			Log.info("Failed loading arenas: " + StringUtils.join(brokenArenas, ", "));
+			Log.info(pname+"Failed loading arenas: " + StringUtils.join(brokenArenas, ", ") + " arenatype="+arenaType +" cs="+cs.getName());
 		}
 		if (oldGoodSize != loadedArenas.size() || oldBrokenSize != brokenArenas.size()){
 			try {
-				config.save(f);
+				config.save(file);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -312,9 +303,9 @@ public class ArenaSerializer {
 	}
 
 	private void saveArenas(boolean log) {
-		ArenaSerializer.saveArenas(BattleArena.getBAController().getArenas().values(), f, config, plugin,log);
+		ArenaSerializer.saveArenas(BattleArena.getBAController().getArenas().values(), file, config, plugin,log);
 		try {
-			config.save(f);
+			config.save(file);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -389,6 +380,7 @@ public class ArenaSerializer {
 	protected void saveArenas() {
 		saveArenas(false);
 	}
+	@Override
 	public void save() {
 		this.saveArenas(true);
 	}

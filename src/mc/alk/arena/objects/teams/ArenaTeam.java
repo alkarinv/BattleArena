@@ -8,6 +8,7 @@ import mc.alk.arena.objects.scoreboard.ArenaObjective;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public interface ArenaTeam {
 
@@ -133,6 +134,7 @@ public interface ArenaTeam {
 	public void setArenaObjective(ArenaObjective objective);
 
 	public void setTeamChatColor(ChatColor color);
+
 	public ChatColor getTeamChatColor();
 
 	public String geIDString();
@@ -140,5 +142,9 @@ public interface ArenaTeam {
 	public void setScoreboardDisplayName(String name);
 
 	String getScoreboardDisplayName();
+
+	public ItemStack getHeadItem();
+
+	public void setHeadItem(ItemStack item);
 }
 

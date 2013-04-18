@@ -1,27 +1,33 @@
-package mc.alk.arena.listeners;
+package mc.alk.arena.listeners.competition;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.events.players.ArenaPlayerEnterEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.kitteh.tag.PlayerReceiveNameTagEvent;
 import org.kitteh.tag.TagAPI;
 import org.kitteh.tag.api.TagAPIException;
 
 
+
 public enum TagAPIListener implements Listener {
 	INSTANCE;
 
 	final Map<String, ChatColor> playerName = new ConcurrentHashMap<String,ChatColor>();
+
+	public static void enable(boolean enable) {
+		Bukkit.getPluginManager().registerEvents(INSTANCE, BattleArena.getSelf());
+	}
 
 	/**
 	 * Need to be highest to override the standard renames
@@ -35,12 +41,19 @@ public enum TagAPIListener implements Listener {
 		}
 	}
 
+	@EventHandler
+	public void onArenaPlayerEnterEvent(ArenaPlayerEnterEvent event){
+		setNameColor(event.getPlayer().getPlayer(), event.getTeam().getTeamChatColor());
+	}
+
+	@EventHandler
+	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
+		removeName(event.getPlayer().getPlayer());
+	}
+
 	public static void setNameColor(Player player, ChatColor teamColor) {
 		if (!player.isOnline())
 			return;
-		/// Register ourself if we are starting to need to listen
-		if (INSTANCE.playerName.isEmpty()){
-			Bukkit.getPluginManager().registerEvents(INSTANCE, BattleArena.getSelf());}
 		INSTANCE.playerName.put(player.getName(), teamColor);
 		try{
 			TagAPI.refreshPlayer(player);
@@ -81,8 +94,7 @@ public enum TagAPIListener implements Listener {
 			/* Do nothing.
 			 * Bukkit can sometimes have OfflinePlayers that are not caught by isOnline()*/
 		}
-		/// Unregister if we aren't listening for any players
-		if (INSTANCE.playerName.isEmpty()){
-			HandlerList.unregisterAll(INSTANCE);}
 	}
+
+
 }

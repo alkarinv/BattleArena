@@ -74,7 +74,8 @@ public class RegisteredCompetition {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		plugin.reloadConfig();
+		if (plugin != BattleArena.getSelf())
+			plugin.reloadConfig();
 	}
 
 	public Plugin getPlugin(){

@@ -9,6 +9,7 @@ import mc.alk.arena.objects.scoreboard.ArenaObjective;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * A lightweight team that is only used for finding correct matches
@@ -221,30 +222,26 @@ public class MatchingTeam implements ArenaTeam{
 	}
 
 	@Override
-	public void setArenaObjective(ArenaObjective objective) {
-		/* do nothing */
-	}
+	public String geIDString(){ return String.valueOf(id);}
 
 	@Override
-	public void setTeamChatColor(ChatColor color) {
-		/* do nothing */
-	}
+	public void setArenaObjective(ArenaObjective objective) {/* do nothing */}
 
 	@Override
-	public ChatColor getTeamChatColor() {
-		return null;
-	}
-	@Override
-	public String geIDString(){
-		return String.valueOf(id);
-	}
+	public void setTeamChatColor(ChatColor color) { /* do nothing */}
 
 	@Override
-	public void setScoreboardDisplayName(String name) {
-	}
+	public ChatColor getTeamChatColor() { return null;}
 
 	@Override
-	public String getScoreboardDisplayName() {
-		return null;
-	}
+	public void setScoreboardDisplayName(String name) {/* do nothing */}
+
+	@Override
+	public String getScoreboardDisplayName() { return null;}
+
+	@Override
+	public ItemStack getHeadItem() {return null;}
+
+	@Override
+	public void setHeadItem(ItemStack item) { /* do nothing */}
 }

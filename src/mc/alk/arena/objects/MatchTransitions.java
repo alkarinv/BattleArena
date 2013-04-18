@@ -30,6 +30,10 @@ public class MatchTransitions {
 		calculateAllOptions();
 	}
 
+	public Map<MatchState,TransitionOptions> getAllOptions(){
+		return ops;
+	}
+
 	public void addTransitionOptions(MatchState ms, TransitionOptions tops) {
 		ops.put(ms, tops);
 		Map<TransitionOption,Object> ops = tops.getOptions();

@@ -1,6 +1,5 @@
 package mc.alk.arena.events.players;
 
-import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
@@ -10,7 +9,7 @@ public class ArenaPlayerDeathEvent extends ArenaPlayerEvent{
 	final ArenaTeam team;
 	PlayerDeathEvent event;
 
-	public ArenaPlayerDeathEvent(Match match, ArenaPlayer arenaPlayer, ArenaTeam team) {
+	public ArenaPlayerDeathEvent(ArenaPlayer arenaPlayer, ArenaTeam team) {
 		super(arenaPlayer);
 		this.team = team;
 	}
@@ -24,5 +23,9 @@ public class ArenaPlayerDeathEvent extends ArenaPlayerEvent{
 	}
 	public PlayerDeathEvent getPlayerDeathEvent() {
 		return event;
+	}
+
+	public boolean isTrueDeath() {
+		return event != null;
 	}
 }

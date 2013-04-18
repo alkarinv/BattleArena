@@ -1,9 +1,7 @@
 package mc.alk.arena.controllers;
 
-import mc.alk.arena.listeners.TagAPIListener;
+import mc.alk.arena.listeners.competition.TagAPIListener;
 
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 
 public class TagAPIController {
 	static boolean hasTagAPI = false;
@@ -14,14 +12,6 @@ public class TagAPIController {
 
 	public static void setEnable(boolean enable) {
 		hasTagAPI = enable;
+		TagAPIListener.enable(enable);
 	}
-
-	public static void setNameColor(Player player, ChatColor teamColor) {
-		try{TagAPIListener.setNameColor(player,teamColor);}catch(Exception e){e.printStackTrace();}
-	}
-
-	public static void removeNameColor(Player player) {
-		try{TagAPIListener.removeNameColor(player);}catch(Exception e){e.printStackTrace();}
-	}
-
 }

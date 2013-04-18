@@ -11,8 +11,8 @@ import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.queues.TeamQObject;
-import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 
 public abstract class TeamJoinHandler implements TeamHandler {
@@ -59,6 +59,18 @@ public abstract class TeamJoinHandler implements TeamHandler {
 	public void setParams(MatchParams mp){
 		this.minTeamSize = mp.getMinTeamSize(); this.maxTeamSize = mp.getMaxTeamSize();
 		this.minTeams = mp.getMinTeams(); this.maxTeams = mp.getMaxTeams();
+	}
+
+	protected ArenaTeam addToPreviouslyLeftTeam(ArenaPlayer player) {
+		for (ArenaTeam t: teams){
+			if (t.hasLeft(player)){
+				t.addPlayer(player);
+				if (competition != null){
+					competition.addedToTeam(t,player);}
+				return t;
+			}
+		}
+		return null;
 	}
 
 	protected void addToTeam(ArenaTeam team, Set<ArenaPlayer> players) {
@@ -161,14 +173,5 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		return teams;
 	}
 
-	protected ArenaTeam addToPreviouslyLeftTeam(ArenaPlayer player) {
-		for (ArenaTeam t: teams){
-			if (t.hasLeft(player)){
-				t.addPlayer(player);
-				return t;
-			}
-		}
-		return null;
-	}
 
 }

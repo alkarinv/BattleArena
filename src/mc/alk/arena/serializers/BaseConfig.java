@@ -45,6 +45,7 @@ public class BaseConfig implements FileConfig{
 	public boolean setConfig(String file){
 		return setConfig(new File(file));
 	}
+
 	public boolean setConfig(File file){
 		this.file = file;
 		if (!file.exists()){
@@ -88,6 +89,7 @@ public class BaseConfig implements FileConfig{
 	public List<String> getStringList(String node) {
 		return config.getStringList(node);
 	}
+
 	@Override
 	public void load(File file) {
 		this.file = file;

@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.listeners.MatchCreationCallback;
+import mc.alk.arena.listeners.custom.MatchCreationCallback;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;

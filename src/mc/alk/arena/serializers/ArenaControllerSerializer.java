@@ -1,6 +1,5 @@
 package mc.alk.arena.serializers;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,25 +15,18 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
 
-public class ArenaControllerSerializer {
-	public static YamlConfiguration config = new YamlConfiguration();
-	static File f;
+public class ArenaControllerSerializer extends BaseConfig{
 
 	public ArenaControllerSerializer(){
-		try {
-			f = new File(BattleArena.getSelf().getDataFolder()+"/saves/arenaplayers.yml");
-			if (!f.exists())
-				f.createNewFile();
-		} catch (Exception e){e.printStackTrace();}
+		this.setConfig(BattleArena.getSelf().getDataFolder()+"/saves/arenaplayers.yml");
 	}
 
 	public void load(){
 		try {
-			config.load(f);
+			config.load(file);
 		} catch (Exception e){e.printStackTrace();}
 
 		ConfigurationSection cs = config.getConfigurationSection("tpOnReenter");
@@ -128,8 +120,8 @@ public class ArenaControllerSerializer {
 
 
 
+	@Override
 	public void save(){
-
 		Map<String,Location> playerLocs = BAPlayerListener.tp;
 
 		ConfigurationSection cs = config.createSection("tpOnReenter");
@@ -176,7 +168,7 @@ public class ArenaControllerSerializer {
 		}
 
 		try {
-			config.save(f);
+			config.save(file);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

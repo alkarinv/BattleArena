@@ -250,8 +250,10 @@ public class ArenaMatchQueue {
 					continue;}
 
 				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
-						"   tq=" + tq +" --- ap="+a.getParameters() +"    baseP="+baseParams +" newP="+newParams +"  " + newParams.getMaxPlayers());
+						"   tq=" + tq +" --- ap="+a.getParameters() +"    baseP="+baseParams +" newP="+newParams +"  " + newParams.getMaxPlayers() +
+						" tqparams="+tq.mp);
 				for (QueueObject qo : tq){
+//					Log.debug("   qo params = " + qo.getMatchParams());
 					/// Check if we should only use 1 arena (skipNonMatched == true).  But for certain elements in the queue
 					/// We need to ignore.
 					/// Allow MatchedUp Matches to proceed like normal (this happens for tournaments and duels)
@@ -263,6 +265,7 @@ public class ArenaMatchQueue {
 					}
 					MatchParams qomp = qo.getMatchParams();
 					/// Check to see if the team matches these params
+//					Log.debug("   qo params = " + qo.getMatchParams() +"  matches new = " + qomp.matches(newParams));
 					if (!qomp.matches(newParams)){
 						if (!forceStart){ /// continue to next queue object
 							continue;
@@ -276,8 +279,6 @@ public class ArenaMatchQueue {
 					try {
 						MatchParams playerMatchAndArenaParams = new MatchParams(newParams);
 						qr.neededPlayers = playerMatchAndArenaParams.getMaxPlayers();
-//						if (!forceStart) /// sorry team, you don't take precedence anymore due to forcestart
-//							playerMatchAndArenaParams.intersect(qomp);
 						findMatch(qr, playerMatchAndArenaParams,a,tq, forceStart);
 					} catch (NeverWouldJoinException e) {
 						e.printStackTrace();
@@ -311,8 +312,10 @@ public class ArenaMatchQueue {
 		List<QueueObject> newList = new LinkedList<QueueObject>();
 		List<QueueObject> delayed = new LinkedList<QueueObject>();
 		int teamsInQueue = 0, playersInQueue = 0;
-
+		boolean hasPrematched = false;
 		for (QueueObject qo : tq){
+			if (qo instanceof MatchTeamQObject)
+				hasPrematched = true;
 			MatchParams mp = qo.getMatchParams();
 			if (!mp.matches(params))
 				continue;
@@ -327,8 +330,10 @@ public class ArenaMatchQueue {
 		qr.teamsInQueue = teamsInQueue;
 		qr.playersInQueue = playersInQueue;
 
-		if (playersInQueue < params.getMinPlayers() || (!forceStart && playersInQueue < params.getMaxPlayers())) /// we don't have enough players to match these params
+		if (!hasPrematched &&
+				(playersInQueue < params.getMinPlayers() || (!forceStart && playersInQueue < params.getMaxPlayers()))) /// we don't have enough players to match these params
 			return;
+
 		newList.addAll(delayed);
 
 		Map<ArenaPlayer, QueueObject> qteams = new HashMap<ArenaPlayer, QueueObject>();
@@ -341,10 +346,13 @@ public class ArenaMatchQueue {
 		boolean hasComp = false;
 		/// Now that we have a semi sorted list, get the largest number of teams that fit in this arena
 		for (QueueObject qo : newList){
+//			Log.debug("###################   " +   qo);
 			if (qo instanceof MatchTeamQObject){ /// we have our teams already
+//				Log.debug("      222 ###################   " +   qo);
 				tjh.deconstruct();
 				qr.status = QueueResult.QueueStatus.ADDED_TO_QUEUE;
 				qr.match = getPreMadeMatch(tq, arena, qo);
+//				Log.debug("      333 ###################   " +   qr.match);
 				return;
 			} else {
 				TeamQObject to = (TeamQObject) qo;
@@ -659,9 +667,16 @@ public class ArenaMatchQueue {
 		TeamQueue tq = getTeamQ(mp);
 		if (tq == null)
 			return false;
-		QueueResult qr = findMatch(tq, true, force);
+		QueueResult qr = null;
+		/// try to find it without forcing first
+		if (force){
+			qr = findMatch(tq, true, false);}
+		/// Try to find it with force option
+		if (qr == null)
+			qr = findMatch(tq, true, force);
 		if (qr.match == null)
 			return false;
+
 		addToReadyMatches(qr.match);
 		return true;
 	}

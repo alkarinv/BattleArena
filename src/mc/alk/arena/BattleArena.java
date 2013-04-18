@@ -28,7 +28,8 @@ import mc.alk.arena.executors.TeamExecutor;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.BAPluginListener;
 import mc.alk.arena.listeners.BASignListener;
-import mc.alk.arena.listeners.MatchListener;
+import mc.alk.arena.listeners.competition.InArenaListener;
+import mc.alk.arena.listeners.competition.MatchListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
@@ -109,6 +110,7 @@ public class BattleArena extends JavaPlugin {
 		FileUpdater.makeIfNotExists(new File(dir+"/competitions"));
 		FileUpdater.makeIfNotExists(new File(dir+"/messages"));
 		FileUpdater.makeIfNotExists(new File(dir+"/saves"));
+		FileUpdater.makeIfNotExists(new File(dir+"/modules"));
 		/// For potential updates to default yml files
 		YamlFileUpdater yfu = new YamlFileUpdater(this);
 
@@ -303,6 +305,8 @@ public class BattleArena extends JavaPlugin {
 	 * Player is in a queue, in a competition, being challenged, inside MobArena,
 	 * being challenged to a duel, being invited to a team
 	 *
+	 * If a player is in an Arena or in a Competition this is always true
+	 *
 	 * @param player: the player you want to check
 	 * @param showReasons: if player is in system, show the player a message about how to exit
 	 * @return true or false: whether they are in the system
@@ -326,17 +330,7 @@ public class BattleArena extends JavaPlugin {
 	 * @return true or false: whether they are in inside an arena
 	 */
 	public static boolean inArena(Player player){
-		return getBAController().insideArena(BattleArena.toArenaPlayer(player));
-	}
-
-	/**
-	 * Use the newer inArena
-	 * @param player
-	 * @return
-	 */
-	@Deprecated
-	public static boolean insideArena(Player player){
-		return getBAController().insideArena(BattleArena.toArenaPlayer(player));
+		return InArenaListener.inArena(player.getName());
 	}
 
 	@Override
@@ -455,5 +449,9 @@ public class BattleArena extends JavaPlugin {
 	 */
 	public static void registerCompetition(JavaPlugin plugin, String name, String cmd, Class<? extends Arena> arenaClass, CustomCommandExecutor executor){
 		new APIRegistrationController().registerCompetition(plugin,name,cmd,arenaClass, executor);
+	}
+
+	public File getModuleDirectory() {
+		return new File(this.getDataFolder()+"/modules");
 	}
 }

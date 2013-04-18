@@ -3,7 +3,7 @@ package mc.alk.arena.objects;
 import mc.alk.arena.util.MinMax;
 
 public interface CompetitionSize {
-	public static final int MAX = Integer.MAX_VALUE-2;
+	public static final int MAX = Integer.MAX_VALUE;
 
 	public void setTeamSize(int size);
 	public void setTeamSizes(MinMax mm);

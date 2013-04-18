@@ -11,8 +11,10 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.util.MessageUtil;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public abstract class AbstractTeam implements ArenaTeam{
 	static int count = 0;
@@ -36,6 +38,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 
 	ArenaObjective objective;
 	protected ChatColor color = null;
+	protected ItemStack headItem = null;
 
 	/**
 	 * Default Constructor
@@ -106,8 +109,11 @@ public abstract class AbstractTeam implements ArenaTeam{
 
 	public Set<Player> getBukkitPlayers() {
 		Set<Player> ps = new HashSet<Player>();
+
 		for (ArenaPlayer ap: players){
-			ps.add(ap.getPlayer());
+			Player p = Bukkit.getPlayerExact(ap.getName());
+			if (p != null)
+				ps.add(p);
 		}
 		return ps;
 	}
@@ -429,6 +435,14 @@ public abstract class AbstractTeam implements ArenaTeam{
 	@Override
 	public String getScoreboardDisplayName(){
 		return scoreboardDisplayName;
+	}
+
+	public ItemStack getHeadItem(){
+		return this.headItem;
+	}
+
+	public void setHeadItem(ItemStack item){
+		this.headItem = item;
 	}
 }
 

@@ -315,11 +315,6 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 					case ADDED_TO_EXISTING: case ADDED: result = true;
 					default: break;
 					}
-					/// if we are now full, remove from unfilled
-					if (tjh.isFull()){
-						iter.remove();
-						match.start();
-					}
 					return result;
 				}
 			}

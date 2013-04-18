@@ -17,12 +17,10 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.util.TeamJoinHandler;
-import mc.alk.arena.controllers.FactionsController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.RewardController;
 import mc.alk.arena.controllers.StatController;
-import mc.alk.arena.controllers.TagAPIController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
@@ -37,11 +35,14 @@ import mc.alk.arena.events.matches.MatchPrestartEvent;
 import mc.alk.arena.events.matches.MatchResultEvent;
 import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.matches.MatchTimerIntervalEvent;
-import mc.alk.arena.events.players.ArenaPlayerLeftEvent;
+import mc.alk.arena.events.players.ArenaPlayerEnterEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.events.prizes.ArenaDrawersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaLosersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaWinnersPrizeEvent;
+import mc.alk.arena.events.teams.TeamDeathEvent;
+import mc.alk.arena.listeners.competition.TeamHeadListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
@@ -52,6 +53,7 @@ import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.messaging.Channel.ServerChannel;
+import mc.alk.arena.objects.modules.ArenaModule;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.queues.TeamQObject;
@@ -81,9 +83,9 @@ import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -115,6 +117,9 @@ public abstract class Match extends Competition implements Runnable {
 	Map<String, Location> oldlocs = null; /// Locations where the players came from before entering arena
 	final Set<String> insideArena = new HashSet<String>(); /// who is still inside arena area
 	final Set<String> insideWaitRoom = new HashSet<String>(); /// who is still inside the wait room
+	final Set<String> insideLobby = new HashSet<String>(); /// who is still inside the wait room
+	final Set<String> insideCourtyard = new HashSet<String>(); /// who is still inside the wait room
+
 	MatchTransitions tops = null; /// Our match options for this arena match
 	final PlayerStoreController psc = new PlayerStoreController(); /// Store items and exp for players if specified
 
@@ -164,6 +169,11 @@ public abstract class Match extends Competition implements Runnable {
 		this.tops = params.getTransitionOptions();
 		arena.setMatch(this);
 		addVictoryConditions();
+		Collection<ArenaModule> modules = params.getModules();
+		if (modules != null){
+			for (ArenaModule am: modules){
+				addArenaListener(am);}
+		}
 		/// Assign variables from transitionoptions
 		noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
 		if (noEnter && arena.hasRegion())
@@ -221,9 +231,10 @@ public abstract class Match extends Competition implements Runnable {
 		if (stopsTeleports || noEnter){
 			events.add(PlayerTeleportEvent.class);}
 		if (woolTeams){
-			events.add(InventoryClickEvent.class);}
+			addArenaListener(new TeamHeadListener());}
 		if (needsPotionEvents){
 			events.add(PotionSplashEvent.class);}
+		events.add(EntityDamageEvent.class); /// Log.debug
 		methodController.addSpecificEvents(this, events);
 		/// add a default objective
 		defaultObjective = new ArenaObjective("default","Player Kills");
@@ -608,7 +619,9 @@ public abstract class Match extends Competition implements Runnable {
 		}
 	}
 
-	public void cancelMatch(){
+	public synchronized void cancelMatch(){
+		if (state == MatchState.ONCANCEL)
+			return;
 		state = MatchState.ONCANCEL;
 		arenaInterface.onCancel();
 		for (ArenaTeam t : teams){
@@ -638,6 +651,8 @@ public abstract class Match extends Competition implements Runnable {
 				p.removeCompetition(this);
 				insideArena.remove(p.getName());
 				insideWaitRoom.remove(p.getName());
+				insideLobby.remove(p.getName());
+				insideCourtyard.remove(p.getName());
 				if (joinHandler != null)
 					joinHandler.leave(p);
 			}
@@ -678,6 +693,8 @@ public abstract class Match extends Competition implements Runnable {
 		arenaInterface.onFinish();
 		insideArena.clear();
 		insideWaitRoom.clear();
+		insideLobby.clear();
+		insideCourtyard.clear();
 		teams.clear();
 		methodController.deconstruct();
 		//		arenaListeners.clear();
@@ -688,7 +705,8 @@ public abstract class Match extends Competition implements Runnable {
 	@Override
 	public boolean addTeam(ArenaTeam team){
 		if (this.isFinished())
-			if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addTeam("+team.getName()+":"+team.getId()+")");
+			return false;
+		if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addTeam("+team.getName()+":"+team.getId()+")");
 		teamIndexes.put(team, teams.size());
 		teams.add(team);
 		team.reset();/// reset scores, set alive
@@ -738,6 +756,7 @@ public abstract class Match extends Competition implements Runnable {
 	 */
 	@Override
 	public boolean addedToTeam(final ArenaTeam team, final ArenaPlayer player) {
+		Log.info(getID()+" addedToTeam("+team.getName()+":"+team.getId()+", " + player.getName()+") inside="+insideArena.contains(player.getName()));
 		if (isEnding())
 			return false;
 		if (Defaults.DEBUG_MATCH_TEAMS)
@@ -851,7 +870,6 @@ public abstract class Match extends Competition implements Runnable {
 	public boolean onLeave(ArenaPlayer p) {
 		/// remove them from the match, they don't want to be here
 		ArenaTeam t = getTeam(p);
-		scoreboard.leaving(t,p);
 		if (t==null) /// really? trying to make a player leave who isnt in the match
 			return false;
 		privateOnLeave(p,t);
@@ -863,9 +881,16 @@ public abstract class Match extends Competition implements Runnable {
 			/// The onCancel should teleport them out, and call leaveArena(ap)
 			PerformTransition.transition(this, MatchState.ONCANCEL, ap, team, false);
 		}
+		scoreboard.leaving(team,ap);
 		team.playerLeft(ap);
 		leftPlayers.add(ap.getName());
 		ap.removeCompetition(this);
+		checkAndHandleIfTeamDead(team);
+	}
+
+	protected void checkAndHandleIfTeamDead(ArenaTeam team){
+		if (team.isDead()){
+			callEvent(new TeamDeathEvent(team));}
 	}
 
 	private void privateRemovedFromTeam(ArenaTeam team,ArenaPlayer ap){
@@ -904,6 +929,19 @@ public abstract class Match extends Competition implements Runnable {
 	 * Player is entering arena area. Usually called from a teleportIn
 	 * @param p
 	 */
+	protected void enterLobby(ArenaPlayer p){
+		preEnter(p);
+		ArenaTeam t = getTeam(p);
+		PerformTransition.transition(this, MatchState.ONENTER, p, t, false);
+		insideLobby.add(p.getName());
+		postEnter(p,t);
+		arenaInterface.onEnterWaitRoom(p,t);
+	}
+
+	/**
+	 * Player is entering arena area. Usually called from a teleportIn
+	 * @param p
+	 */
 	protected void enterWaitRoom(ArenaPlayer p){
 		preEnter(p);
 		ArenaTeam t = getTeam(p);
@@ -921,7 +959,10 @@ public abstract class Match extends Competition implements Runnable {
 		preEnter(p);
 		/// If they werent in the wait room then they are entering for the first time
 		/// so call the ONENTER, otherwise we have already done all the options
-		if (!insideWaitRoom.remove(p.getName())){
+		boolean inwr = insideWaitRoom.remove(p.getName());
+		boolean inlobby = insideLobby.remove(p.getName());
+		boolean incy = insideCourtyard.remove(p.getName());
+		if (!inwr && !inlobby && !incy){
 			PerformTransition.transition(this, MatchState.ONENTER, p, team, false);}
 		postEnter(p,team);
 		arenaInterface.onEnter(p,team);
@@ -938,25 +979,11 @@ public abstract class Match extends Competition implements Runnable {
 
 	private void postEnter(ArenaPlayer p, ArenaTeam t){
 		insideArena.add(p.getName());
-		if (FactionsController.enabled()){
-			FactionsController.addPlayer(p.getPlayer());}
 
-		Integer index = null;
-		if (woolTeams){
-			index = teams.indexOf(t);
-			if (index != -1){ /// TODO Really I would like to know how this is -1.  Should I remove the team now?
-				TeamUtil.setTeamHead(index, p);}
-		}
-		if (TagAPIController.enabled()){
-			if (index == null) index = teams.indexOf(t);
-			if (index != -1) /// Same, how did this get -1
-				psc.setNameColor(p,TeamUtil.getTeamChatColor(index));
-		}
+		callEvent(new ArenaPlayerEnterEvent(p,t));
+
 		if (cancelExpLoss){
 			psc.cancelExpLoss(p,true);}
-		HeroesController.addedToTeam(t, p.getPlayer());
-		if (HeroesController.enabled()){
-			HeroesController.enterArena(p.getPlayer());}
 	}
 
 	/**
@@ -968,6 +995,8 @@ public abstract class Match extends Competition implements Runnable {
 	protected void leaveArena(ArenaPlayer p){
 		insideArena.remove(p.getName());
 		insideWaitRoom.remove(p.getName());
+		insideLobby.remove(p.getName());
+		insideCourtyard.remove(p.getName());
 		stopTracking(p);
 		ArenaTeam t = getTeam(p);
 		t.killMember(p);
@@ -978,22 +1007,10 @@ public abstract class Match extends Competition implements Runnable {
 		if (params.getOverrideBattleTracker())
 			StatController.resumeTracking(p);
 
-		callEvent(new ArenaPlayerLeftEvent(p,t));
-		if (FactionsController.enabled()){
-			FactionsController.removePlayer(p.getPlayer());}
+		callEvent(new ArenaPlayerLeaveEvent(p,t));
 
-		if (woolTeams){
-			int index = getTeamIndex(t);
-			if (index != -1)
-				PlayerStoreController.removeItem(p, TeamUtil.getTeamHead(index));
-		}
-
-		if (TagAPIController.enabled()){
-			psc.removeNameColor(p);}
 		if (cancelExpLoss){
 			psc.cancelExpLoss(p,false);}
-		if (HeroesController.enabled()){
-			HeroesController.leaveArena(p.getPlayer());}
 	}
 
 	public void setMessageHandler(MatchMessageHandler mc){this.mc.setMessageHandler(mc);}
@@ -1002,7 +1019,8 @@ public abstract class Match extends Competition implements Runnable {
 	private void addVictoryConditions(){
 		VictoryCondition vt = VictoryType.createVictoryCondition(this);
 		/// Add a time limit unless one is provided by default
-		if (!(vt instanceof DefinesTimeLimit) && params.getMatchTime() > 0){
+		if (!(vt instanceof DefinesTimeLimit) &&
+				(params.getMatchTime() > 0 && params.getMatchTime() != Integer.MAX_VALUE)){
 			addVictoryCondition(new TimeLimit(this));
 		}
 
@@ -1119,6 +1137,10 @@ public abstract class Match extends Competition implements Runnable {
 		return random ? arena.getRandomSpawnLoc(): arena.getSpawnLoc(index);
 	}
 	public Location getWaitRoomSpawn(int index, boolean random){
+		return random ? arena.getRandomWaitRoomSpawnLoc(): arena.getWaitRoomSpawnLoc(index);
+	}
+	public Location getLobbySpawn(int index, boolean random){
+//		MatchParams.
 		return random ? arena.getRandomWaitRoomSpawnLoc(): arena.getWaitRoomSpawnLoc(index);
 	}
 	public void setMatchResult(MatchResult result){
@@ -1249,6 +1271,8 @@ public abstract class Match extends Competition implements Runnable {
 		List<ArenaTeam> deadTeams = new ArrayList<ArenaTeam>();
 		List<ArenaTeam> aliveTeams = new ArrayList<ArenaTeam>();
 		for (ArenaTeam t: teams){
+			if (t.size() == 0)
+				continue;
 			if (t.isDead())
 				deadTeams.add(t);
 			else

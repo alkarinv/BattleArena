@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -18,7 +20,6 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.KeyValue;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -99,7 +100,8 @@ public class InventorySerializer {
 	public static void saveInventory(final String name, final PInv pinv) {
 		if (Defaults.NUM_INV_SAVES <= 0){
 			return;}
-		Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+		Timer t = new Timer();
+		t.schedule(new TimerTask(){
 			@Override
 			public void run() {
 				BaseConfig serializer = getSerializer(name);
@@ -126,7 +128,8 @@ public class InventorySerializer {
 				pcs.set("contents", stritems);
 				serializer.save();
 			}
-		});
+
+		}, 0);
 	}
 
 	private static BaseConfig getSerializer(String name) {

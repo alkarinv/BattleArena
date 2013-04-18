@@ -1,7 +1,5 @@
 package mc.alk.arena.objects;
 
-
-
 /**
  * @author alkarin
  *
@@ -9,13 +7,15 @@ package mc.alk.arena.objects;
  */
 public enum MatchState implements CompetitionState{
 	NONE("None"), DEFAULTS("defaults"),
+	ONENTER("onEnter"), ONLEAVE("onLeave"), //ONENTERWAITROOM("onEnterWaitRoom"),
+	INQUEUE("inQueue"),
+	INCOURTYARD("inCourtyard"), INLOBBY("inLobby"), INWAITROOM("inWaitroom"),INARENA("inArena"),
 	PREREQS ("preReqs"), ONJOIN ("onJoin"), ONOPEN("onOpen"),
 	ONBEGIN("onBegin"), ONPRESTART ("onPrestart"), ONSTART ("onStart"), ONVICTORY ("onVictory"),
 	ONCOMPLETE ("onComplete"), ONCANCEL ("onCancel"), ONFINISH("onFinish"),
 	ONSPAWN ("onSpawn"), ONDEATH ("onDeath"),
 	WINNER ("winner"),LOSERS ("losers"),
 	FIRSTPLACE ("firstPlace"), PARTICIPANTS("participants"),
-	ONENTER("onEnter"), ONLEAVE("onLeave"), //ONENTERWAITROOM("onEnterWaitRoom"),
 	ONMATCHINTERVAL("onMatchInterval"), ONMATCHTIMEEXPIRED("onMatchTimeExpired"),
 	ONCOUNTDOWNTOEVENT("onCountdownToEvent"),
 	ONENTERQUEUE("onEnterQueue")

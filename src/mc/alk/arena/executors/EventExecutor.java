@@ -144,16 +144,16 @@ public class EventExecutor extends BAExecutor{
 		return sendMessage(sender,sb.toString());
 	}
 
-	@MCCommand(cmds={"leave"}, usage="leave", order=2)
-	public boolean eventLeave(ArenaPlayer p) {
-		Event event = controller.getEvent(p);
-		if (event == null){
-			return sendMessage(p,"&eYou aren't inside an event!");}
-		if (!event.waitingToJoin(p) && !event.hasPlayer(p)){
-			return sendMessage(p,"&eYou aren't inside the &6" + event.getName());}
-		event.leave(p);
-		return sendMessage(p,"&eYou have left the &6" + event.getName());
-	}
+//	@MCCommand(cmds={"leave"}, usage="leave", order=2)
+//	public boolean eventLeave(ArenaPlayer p) {
+//		Event event = controller.getEvent(p);
+//		if (event == null){
+//			return sendMessage(p,"&eYou aren't inside an event!");}
+//		if (!event.waitingToJoin(p) && !event.hasPlayer(p)){
+//			return sendMessage(p,"&eYou aren't inside the &6" + event.getName());}
+//		event.leave(p);
+//		return sendMessage(p,"&eYou have left the &6" + event.getName());
+//	}
 
 	@MCCommand(cmds={"check"},usage="check", order=2)
 	public boolean eventCheck(CommandSender sender, EventParams eventParams) {

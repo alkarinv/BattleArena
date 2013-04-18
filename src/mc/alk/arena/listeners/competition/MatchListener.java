@@ -1,4 +1,4 @@
-package mc.alk.arena.listeners;
+package mc.alk.arena.listeners.competition;
 
 import java.util.Collection;
 

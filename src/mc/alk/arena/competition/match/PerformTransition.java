@@ -108,9 +108,11 @@ public class PerformTransition {
 			return true;}
 		final boolean teleportIn = mo.shouldTeleportIn();
 		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
+		final boolean teleportLobby = mo.shouldTeleportLobby();
 		final boolean insideArena = am.insideArena(player);
 		/// If the flag onlyInMatch is set, we should leave if the player isnt inside.  disregard if we are teleporting people in
-		if (onlyInMatch && !insideArena && !(teleportIn || teleportWaitRoom)){
+		if (onlyInMatch && !insideArena &&
+				!(teleportIn || teleportWaitRoom || teleportLobby)){
 			return true;}
 		final boolean teleportOut = mo.shouldTeleportOut();
 		final boolean wipeInventory = mo.clearInventory();
@@ -127,7 +129,28 @@ public class PerformTransition {
 		boolean playerReady = player.isOnline();
 		final boolean dead = !player.isOnline() || player.isDead();
 		final Player p = player.getPlayer();
-		if (teleportWaitRoom){ /// Teleport waiting room
+		if (teleportWaitRoom || teleportLobby){ /// Teleport waiting room
+			if ( (insideArena || am.checkReady(player, team, mo, true)) && !dead){
+				/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
+				/// Since we cant really tell the eventual result.. do our best guess
+				Location l;
+				if (teleportWaitRoom){
+					am.enterWaitRoom(player);
+					l = jitter(
+							am.getWaitRoomSpawn(teamIndex,am.spawnsRandom),
+							rand.nextInt(team.size()));
+				} else {
+					am.enterLobby(player);
+					l = jitter(
+							am.getLobbySpawn(teamIndex,am.spawnsRandom),
+							rand.nextInt(team.size()));
+				}
+				TeleportController.teleportPlayer(p, l, false, true);
+				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
+			} else {
+				playerReady = false;
+			}
+		} else if (teleportLobby){ /// Teleport lobby
 			if ( (insideArena || am.checkReady(player, team, mo, true)) && !dead){
 				/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
 				/// Since we cant really tell the eventual result.. do our best guess
@@ -141,6 +164,7 @@ public class PerformTransition {
 				playerReady = false;
 			}
 		}
+
 
 		/// Teleport In
 		if (teleportIn && transition != MatchState.ONSPAWN){ /// only tpin, respawn tps happen elsewhere
@@ -227,13 +251,10 @@ public class PerformTransition {
 			Location loc = null;
 			if (mo.hasOption(TransitionOption.TELEPORTTO))
 				loc = mo.getTeleportToLoc();
-			else if (mo.hasOption(TransitionOption.TELEPORTONARENAEXIT))
-				loc = mo.getTeleportToLoc();
 			else
 				loc = am.oldlocs.get(player.getName());
 			if (loc == null){
-				Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO)+
-						", teleportOnArenaExit="+mo.hasOption(TransitionOption.TELEPORTONARENAEXIT));
+				Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
 			} else if (insideArena || !onlyInMatch){
 				TeleportController.teleportPlayer(p, loc, wipeInventory, true);
 				am.leaveArena(player);
@@ -323,7 +344,7 @@ public class PerformTransition {
 	}
 
 
-	private static Location jitter(final Location teamSpawn, int index) {
+	static Location jitter(final Location teamSpawn, int index) {
 		if (index == 0)
 			return teamSpawn;
 		index = index % 6;

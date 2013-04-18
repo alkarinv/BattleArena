@@ -60,6 +60,8 @@ public class BAConfigSerializer extends BaseConfig{
 				HeroesController.addDisabledCommands(disabled);
 			}
 		}
+		ModuleLoader ml = new ModuleLoader();
+		ml.loadModules(BattleArena.getSelf().getModuleDirectory());
 	}
 
 	public void loadCompetitions(){

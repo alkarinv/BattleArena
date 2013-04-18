@@ -87,7 +87,8 @@ public class BukkitScoreboard extends ArenaScoreboard{
 			for (Player p: team.getBukkitPlayers()){
 				t.addPlayer(p);
 				t.setPrefix(team.getTeamChatColor()+"");
-				p.setScoreboard(board);
+				if (p.isOnline())
+					p.setScoreboard(board);
 
 				Objective o = getMainObjective();
 				Score sc = o.getScore(p);

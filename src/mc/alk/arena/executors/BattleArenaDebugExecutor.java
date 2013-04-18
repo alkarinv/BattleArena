@@ -14,8 +14,8 @@ import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeleportController;
-import mc.alk.arena.listeners.BukkitEventListener;
-import mc.alk.arena.listeners.RListener;
+import mc.alk.arena.listeners.custom.BukkitEventHandler;
+import mc.alk.arena.listeners.custom.RListener;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -48,11 +48,11 @@ import org.bukkit.inventory.ItemStack;
 
 public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
-	@MCCommand( cmds = {"enableDebugging"}, admin=true,min=3, usage="enableDebugging <code section> <true | false>")
+	@MCCommand( cmds = {"enableDebugging","ed"}, admin=true,usage="enableDebugging <code section> <true | false>")
 	public void enableDebugging(CommandSender sender, String section, Boolean on){
 		if (section.equalsIgnoreCase("transitions")){
 			Defaults.DEBUG_TRANSITIONS = on;
-		} else if(section.equalsIgnoreCase("virtualplayer")){
+		} else if(section.equalsIgnoreCase("virtualplayer") || section.equalsIgnoreCase("vp")){
 			Defaults.DEBUG_VIRTUAL = on;
 		} else if(section.equalsIgnoreCase("tracking")){
 			Defaults.DEBUG_TRACKING = on;
@@ -106,15 +106,15 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public boolean showListeners(CommandSender sender, String args[]) {
 		String limitToPlayer = args.length > 1 ? args[1] : null;
 
-		EnumMap<org.bukkit.event.EventPriority, HashMap<Type, BukkitEventListener>> gels = MethodController.getEventListeners();
+		EnumMap<org.bukkit.event.EventPriority, HashMap<Type, BukkitEventHandler>> gels = MethodController.getEventListeners();
 		for (org.bukkit.event.EventPriority bp: gels.keySet()){
 			sendMessage(sender, "&4#### &f----!! Bukkit Priority=&5"+bp+"&f !!---- &4####");
-			HashMap<Type, BukkitEventListener> types = gels.get(bp);
-			for (BukkitEventListener bel: types.values()){
-				MapOfTreeSet<String,RListener> lists2 = bel.getListeners();
-				String str = MessageUtil.joinBukkitPlayers(bel.getPlayers(),", ");
+			HashMap<Type, BukkitEventHandler> types = gels.get(bp);
+			for (BukkitEventHandler bel: types.values()){
+				MapOfTreeSet<String,RListener> lists2 = bel.getSpecificPlayerListener().getListeners();
+				String str = MessageUtil.joinBukkitPlayers(bel.getSpecificPlayerListener().getPlayers(),", ");
 				String has = bel.hasListeners() ? "&2true" : "&cfalse";
-				sendMessage(sender, "---- Event &e" + bel.getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
+				sendMessage(sender, "---- Event &e" + bel.getSpecificPlayerListener().getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
 				for (String p : lists2.keySet()){
 					if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
 						continue;
@@ -123,7 +123,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 						sendMessage(sender, "!!! "+rl.getPriority() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
 					}
 				}
-				EnumMap<EventPriority, List<RListener>> lists = bel.getMatchListeners();
+				EnumMap<EventPriority, List<RListener>> lists = bel.getMatchListener().getListeners();
 				for (EventPriority ep: lists.keySet()){
 					for (RListener rl : lists.get(ep)){
 						sendMessage(sender, "!!! " + ep  + "  -  " + rl);

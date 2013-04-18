@@ -21,7 +21,7 @@ import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
-import mc.alk.arena.listeners.MatchCreationCallback;
+import mc.alk.arena.listeners.custom.MatchCreationCallback;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.CompetitionSize;
@@ -145,6 +145,9 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 	@MatchEventHandler
 	public void matchCancelled(MatchCancelledEvent event){
 		eventCancelled();
+		for (Match matchup: matchups.keySet()){
+			matchup.cancelMatch();
+		}
 	}
 
 	@Override

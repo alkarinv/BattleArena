@@ -1,18 +1,14 @@
-package mc.alk.arena.listeners;
+package mc.alk.arena.listeners.custom;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.TreeSet;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
@@ -32,14 +28,9 @@ import org.bukkit.event.entity.EntityDeathEvent;
  * @author alkarin
  *
  */
-public class BukkitEventListener extends BAEventListener{
+public class SpecificPlayerEventListener extends BukkitEventListener{
 	/** map of player to listeners listening for that player */
 	final public MapOfTreeSet<String,RListener> listeners = new MapOfTreeSet<String,RListener>();
-
-	/** Set of arena listeners */
-	final public EnumMap<EventPriority, List<RListener>> mlisteners = new EnumMap<EventPriority, List<RListener>>(EventPriority.class);
-
-	private volatile RListener[] handlers = null;
 
 	/** The method which will return a Player if invoked */
 	final Method getPlayerMethod;
@@ -49,7 +40,7 @@ public class BukkitEventListener extends BAEventListener{
 	 * @param bukkitEvent : which event we will listen for
 	 * @param getPlayerMethod : a method which when not null and invoked will return a Player
 	 */
-	public BukkitEventListener(final Class<? extends Event> bukkitEvent,
+	public SpecificPlayerEventListener(final Class<? extends Event> bukkitEvent,
 			org.bukkit.event.EventPriority bukkitPriority, Method getPlayerMethod) {
 		super(bukkitEvent, bukkitPriority);
 		if (Defaults.DEBUG_EVENTS) Log.info("Registering GenericPlayerEventListener for type " + bukkitEvent +" pm="+getPlayerMethod);
@@ -60,8 +51,9 @@ public class BukkitEventListener extends BAEventListener{
 	 * Does this event even have any listeners
 	 * @return
 	 */
+	@Override
 	public boolean hasListeners(){
-		return (!listeners.isEmpty() || !mlisteners.isEmpty());
+		return !listeners.isEmpty() ;
 	}
 
 	/**
@@ -70,13 +62,6 @@ public class BukkitEventListener extends BAEventListener{
 	 */
 	public MapOfTreeSet<String,RListener> getListeners(){
 		return listeners;
-	}
-	/**
-	 * Get the set of arena listeners
-	 * @return
-	 */
-	public EnumMap<EventPriority, List<RListener>> getMatchListeners(){
-		return mlisteners;
 	}
 
 	/**
@@ -97,12 +82,10 @@ public class BukkitEventListener extends BAEventListener{
 	public void addListener(RListener rl, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) Log.info("--adding listener   players="+players+" listener="+rl + "  " +
 				((players != null && rl.isSpecificPlayerMethod()) ? " MatchListener" : " SpecificPlayerListener" ));
-		if (players != null && rl.isSpecificPlayerMethod()){
-			for (String player: players){
-				addSPListener(player, rl);}
-		} else {
-			addMatchListener(rl);
-		}
+		//		if (players != null && rl.isSpecificPlayerMethod()){
+		for (String player: players){
+			addSPListener(player, rl);}
+
 	}
 
 	/**
@@ -115,74 +98,22 @@ public class BukkitEventListener extends BAEventListener{
 	public synchronized void removeListener(RListener rl, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("    removing listener  player="+players+"   listener="+rl);
 
-		if (players != null && rl.isSpecificPlayerMethod()){
-			for (String player: players){
-				removeSPListener(player, rl);}
-		} else {
-			removeMatchListener(rl);
-		}
+		//		if (players != null && rl.isSpecificPlayerMethod()){
+		for (String player: players){
+			removeSPListener(player, rl);}
+		//		}
 	}
 
-	public synchronized void removeAllListener(RListener rl) {
+	@Override
+	public synchronized void removeAllListeners(RListener rl) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("    removing all listeners  listener="+rl);
 		synchronized(listeners){
 			for (String name : listeners.keySet()){
 				listeners.remove(name, rl);
 			}
 		}
-		removeMatchListener(rl);
-
 	}
 
-	/**
-	 * add an arena listener to this bukkit event
-	 * @param spl
-	 * @return
-	 */
-	public synchronized void addMatchListener(RListener spl) {
-		if (!hasListeners()){
-			startMatchListening();}
-		List<RListener> l = mlisteners.get(spl.getPriority());
-		if (l == null){
-			l = new ArrayList<RListener>();
-			mlisteners.put(spl.getPriority(), l);
-		}
-		l.add(spl);
-		handlers = null;
-		bake();
-	}
-
-	/**
-	 * remove an arena listener to this bukkit event
-	 * @param spl
-	 * @return
-	 */
-	public boolean removeMatchListener(RListener listener) {
-		final List<RListener> list = mlisteners.get(listener.getPriority());
-		if (list==null)
-			return false;
-		boolean changed = false;
-		Iterator<RListener> iter = list.iterator();
-		while (iter.hasNext()){
-			RListener rl = iter.next();
-			if (rl.equals(listener)){
-				iter.remove();
-				changed = true;
-			}
-		}
-		if (!hasListeners()){
-			stopListening();}
-		if (changed) bake();
-		return changed;
-	}
-
-	private synchronized void bake() {
-		if (handlers != null) return;
-		List<RListener> entries = new ArrayList<RListener>();
-		for (Entry<EventPriority,List<RListener>> entry : mlisteners.entrySet()){
-			entries.addAll(entry.getValue());}
-		handlers = entries.toArray(new RListener[entries.size()]);
-	}
 	/**
 	 * Add a listener for a specific player
 	 * @param player
@@ -190,7 +121,7 @@ public class BukkitEventListener extends BAEventListener{
 	 */
 	public void addSPListener(String p, RListener spl) {
 		if (!hasListeners()){
-			startSpecificPlayerListening();}
+			startListening();}
 		listeners.add(p,spl);
 	}
 
@@ -213,7 +144,7 @@ public class BukkitEventListener extends BAEventListener{
 	 * @param event
 	 */
 	@Override
-	public void doSpecificPlayerEvent(Event event){
+	public void invokeEvent(Event event){
 		/// Need special handling of Methods that have 2 entities involved,
 		/// as either entity may be in a match
 		/// These currently use getClass() for speed and the fact that there aren't bukkit
@@ -253,6 +184,7 @@ public class BukkitEventListener extends BAEventListener{
 			os[0] = event;
 
 			try {
+				/// assign variables that we can determine
 				for (int i=1;i< types.length;i++){
 					final Class<?> t = types[i];
 					/// Assign the correct values for method parameters
@@ -325,24 +257,6 @@ public class BukkitEventListener extends BAEventListener{
 		ArenaPlayer damager = DmgDeathUtil.getPlayerCause(lastDamage);
 		if (damager != null){
 			callListeners(event, damager.getPlayer());
-		}
-	}
-	public RListener[] getRegisteredListeners() {
-		RListener[] handlers;
-		while ((handlers = this.handlers) == null) bake(); // This prevents fringe cases of returning null
-		return handlers;
-	}
-
-	@Override
-	public void doMatchEvent(final Event event){
-		/// For each ArenaListener class that is listening
-		final RListener[] rls = getRegisteredListeners();
-		for (RListener rl: rls){
-			try {
-				rl.getMethod().getMethod().invoke(rl.getListener(), event); /// Invoke the listening arenalisteners method
-			} catch (Exception e){
-				e.printStackTrace();
-			}
 		}
 	}
 

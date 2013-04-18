@@ -14,7 +14,6 @@ import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
 
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -270,17 +269,17 @@ public class PlayerStoreController {
 		HeroesController.setHeroClass(p.getPlayer(), heroClass);
 	}
 
-	public void setNameColor(ArenaPlayer p, ChatColor teamColor) {
-		if (!TagAPIController.enabled())
-			return;
-		TagAPIController.setNameColor(p.getPlayer(), teamColor);
-	}
-
-	public void removeNameColor(ArenaPlayer p) {
-		if (!TagAPIController.enabled() || !p.isOnline())
-			return;
-		TagAPIController.removeNameColor(p.getPlayer());
-	}
+//	public void setNameColor(ArenaPlayer p, ChatColor teamColor) {
+//		if (!TagAPIController.enabled())
+//			return;
+//		TagAPIController.setNameColor(p.getPlayer(), teamColor);
+//	}
+//
+//	public void removeNameColor(ArenaPlayer p) {
+//		if (!TagAPIController.enabled() || !p.isOnline())
+//			return;
+//		TagAPIController.removeNameColor(p.getPlayer());
+//	}
 
 	public void cancelExpLoss(ArenaPlayer p, boolean cancel) {
 		if (!HeroesController.enabled())

@@ -51,7 +51,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -87,9 +86,8 @@ public class ArenaMatch extends Match {
 		if (t==null){
 			return;}
 
-		PerformTransition.transition(this, MatchState.ONCOMPLETE, player, t, true);
-		if (t.isDead()){
-			callEvent(new TeamDeathEvent(t));}
+		PerformTransition.transition(this, MatchState.ONCANCEL, player, t, true);
+		checkAndHandleIfTeamDead(t);
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGH)
@@ -102,7 +100,7 @@ public class ArenaMatch extends Match {
 		if (t==null)
 			return;
 
-		ArenaPlayerDeathEvent apde = new ArenaPlayerDeathEvent(this,target,t);
+		ArenaPlayerDeathEvent apde = new ArenaPlayerDeathEvent(target,t);
 		apde.setPlayerDeathEvent(event);
 		callEvent(apde);
 		ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
@@ -183,8 +181,7 @@ public class ArenaMatch extends Match {
 
 		if (exiting){
 			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);
-			if (t.isDead()){
-				callEvent(new TeamDeathEvent(t));}
+			checkAndHandleIfTeamDead(t);
 		}
 	}
 
@@ -237,6 +234,55 @@ public class ArenaMatch extends Match {
 			break;
 		}
 	}
+
+//	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGHER)
+//	public void onCheckEmulateDeath(EntityDamageEvent event) {
+//		//		Log.debug("############## checking emulate   " + event.getEntity() +"    " + event.isCancelled() +"    " + event.getDamage());
+//		if (event.isCancelled() || event.getDamage() <= 0 || !(event.getEntity() instanceof Player))
+//			return;
+//		Player target = ((Player) event.getEntity());
+//		//		Log.debug("############## checking health   " + event.getDamage() +"    " + target.getHealth());
+//		if (event.getDamage() < target.getHealth()){
+//			return;}
+//
+//		PlayerInventory pinv = target.getInventory();
+//		ArenaPlayer ap = BattleArena.toArenaPlayer(target);
+//		ArenaTeam targetTeam = getTeam(ap);
+//		if (clearsInventoryOnDeath){
+//			pinv.clear();
+//			if (woolTeams){
+//				if (targetTeam != null && targetTeam.getHeadItem() != null){
+//					TeamUtil.setTeamHead(targetTeam.getHeadItem(), target);
+//				}
+//			}
+//		}
+//
+//		Integer nDeaths = targetTeam.getNDeaths(ap);
+//		boolean exiting = !respawns || (nDeaths != null && nDeaths +1 >= nLivesPerPlayer);
+//
+//		ArenaPlayerDeathEvent apde = new ArenaPlayerDeathEvent(ap,targetTeam);
+//		callEvent(apde);
+//		ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
+//		if (killer != null){
+//			ArenaTeam killT = getTeam(killer);
+//			if (killT != null){ /// they must be in the same match for this to count
+//				killT.addKill(killer);
+//				callEvent(new ArenaPlayerKillEvent(killer,killT,ap));
+//			}
+//		}
+//		PerformTransition.transition(this, MatchState.ONDEATH, ap, targetTeam , false);
+//		PerformTransition.transition(this, MatchState.ONDEATH, ap, targetTeam , false);
+//
+//		EffectUtil.deEnchantAll(target);
+//		target.closeInventory();
+//		target.setFireTicks(0);
+//		target.setHealth(target.getMaxHealth());
+//		if (!exiting){
+//			final int teamIndex = indexOf(targetTeam);
+//			final Location l = PerformTransition.jitter(getTeamSpawn(teamIndex,false),rand.nextInt(targetTeam.size()));
+//			TeleportController.teleportPlayer(target, l, false, true);
+//		}
+//	}
 
 	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerRespawn(PlayerRespawnEvent event, final ArenaPlayer p){
@@ -312,12 +358,6 @@ public class ArenaMatch extends Match {
 	public void onPlayerDropItem(PlayerDropItemEvent event){
 		if (tops.hasOptionAt(state, TransitionOption.ITEMDROPOFF)){
 			event.setCancelled(true);}
-	}
-
-	@MatchEventHandler(priority=EventPriority.HIGH)
-	public void onPlayerInventoryClick(InventoryClickEvent event, ArenaPlayer p) {
-		if (woolTeams && event.getSlot() == 39/*Helm Slot*/)
-			event.setCancelled(true);
 	}
 
 	@MatchEventHandler(priority=EventPriority.HIGH)

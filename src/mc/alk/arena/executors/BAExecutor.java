@@ -565,12 +565,14 @@ public class BAExecutor extends CustomCommandExecutor {
 		}
 
 		ac.stop();
-		if (mp.getType().getName().equalsIgnoreCase("arena")){
-			BattleArena.getSelf().reloadConfig();
-		}
 		/// Get rid of any current players
 		PlayerController.clearArenaPlayers();
-		CompetitionController.reloadCompetition(plugin, mp);
+
+		if (mp.getType().getName().equalsIgnoreCase("arena")){
+			BattleArena.getSelf().reloadConfig();
+		} else {
+			CompetitionController.reloadCompetition(plugin, mp);
+		}
 
 		ac.resume();
 		return sendMessage(sender, "&6" + plugin.getName()+"&e configuration reloaded");

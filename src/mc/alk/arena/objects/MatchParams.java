@@ -1,7 +1,12 @@
 package mc.alk.arena.objects;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
+import mc.alk.arena.objects.modules.ArenaModule;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.MessageUtil;
 
@@ -18,6 +23,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	Integer nDeaths = 1;
 	boolean overrideDefaultBattleTracker = true;
 	int numConcurrentCompetitions = Integer.MAX_VALUE;
+	Set<ArenaModule> modules = new HashSet<ArenaModule>();
 
 	public MatchParams(ArenaType at, Rating rating, VictoryType vc) {
 		super(at);
@@ -34,6 +40,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.ao = mp.ao;
 		this.nDeaths = mp.nDeaths;
 		this.numConcurrentCompetitions = mp.numConcurrentCompetitions;
+		this.modules = new HashSet<ArenaModule>(mp.modules);
 	}
 
 	public VictoryType getVictoryType() {return vc;}
@@ -125,5 +132,12 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	public JoinType getJoinType() {
 		return JoinType.QUEUE;
+	}
+
+	public void addModule(ArenaModule am) {
+		modules.add(am);
+	}
+	public Collection<ArenaModule> getModules(){
+		return modules;
 	}
 }

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
+import mc.alk.arena.controllers.ModuleController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaClass;
@@ -27,6 +28,7 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.ConfigException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
+import mc.alk.arena.objects.modules.ArenaModule;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
@@ -118,7 +120,7 @@ public class ConfigSerializer extends BaseConfig{
 		MatchParams mp = jt == JoinType.QUEUE ? new MatchParams(at, rating,vt) : new EventParams(at,rating, vt);
 
 		/// Set our name
-		mp.setName(StringUtils.capitalize(name));
+		mp.setName(name);
 
 		mp.setCommand(cs.getString("command",name));
 		if (cs.contains("cmd")){ /// turns out I used cmd in a lot of old configs.. so use both :(
@@ -134,23 +136,12 @@ public class ConfigSerializer extends BaseConfig{
 		mp.setSecondsToLoot( cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT));
 		mp.setSecondsTillMatch( cs.getInt("secondsTillMatch",Defaults.SECONDS_TILL_MATCH));
 
-		mp.setMatchTime(cs.getInt("matchTime",Defaults.MATCH_TIME));
+		int time = parseSize(cs.getString("matchTime"),Defaults.MATCH_TIME);
+		mp.setMatchTime(time);
 		mp.setIntervalTime(cs.getInt("matchUpdateInterval",Defaults.MATCH_UPDATE_INTERVAL));
-
 		mp.setOverrideBattleTracker(cs.getBoolean("overrideBattleTracker", true));
 		/// Number of lives
-		int lives = 1;
-		String nLives = cs.getString("nLives", null);
-		if (nLives != null){
-			if (nLives.equalsIgnoreCase("infinite")){
-				lives = Integer.MAX_VALUE;
-			} else {
-				lives = Integer.valueOf(nLives);
-				if (lives <= 0){
-					lives = Integer.MAX_VALUE;
-				}
-			}
-		}
+		int lives = parseSize(cs.getString("nLives"),1);
 		mp.setNLives(lives);
 
 		/// number of concurrently running matches of this type
@@ -169,6 +160,22 @@ public class ConfigSerializer extends BaseConfig{
 			mp.setDBName(dbName);
 			if (!BTInterface.addBTI(mp))
 				dbName = null;
+		}
+		List<String> modules = new ArrayList<String>();
+
+		if (cs.contains("modules")){
+			List<?> keys = cs.getList("modules");
+			if (keys != null){
+				for (Object key: keys){
+					ArenaModule am = ModuleController.getModule(key.toString());
+					if (am == null){
+						Log.err("Module " + key +" not found!");
+					} else {
+						mp.addModule(am);
+						modules.add(am.getName());
+					}
+				}
+			}
 		}
 
 		MatchTransitions allTops = new MatchTransitions();
@@ -212,7 +219,6 @@ public class ConfigSerializer extends BaseConfig{
 		}
 		if (allTops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN))
 			allTops.addTransitionOption(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN);
-
 		ParamController.setTransitionOptions(mp, allTops);
 		/// By Default if they respawn in the arena.. people must want infinite lives
 		if (mp.getTransitionOptions().hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWN) && !cs.contains("nLives")){
@@ -223,9 +229,23 @@ public class ConfigSerializer extends BaseConfig{
 			allTops.addTransitionOption(MatchState.ONDEATH, TransitionOption.RESPAWN);}
 		ParamController.removeMatchType(mp);
 		ParamController.addMatchType(mp);
-
-		Log.info(plugin.getName()+" registering " + mp.getName() +",bti=" + (dbName != null ? dbName : "none")+",join="+mp.getJoinType());
+		String mods = modules.isEmpty() ? "" : " mods=" + StringUtils.join(modules,", ");
+		Log.info("["+plugin.getName()+"] Loaded "+mp.getName()+" params" +mods);
 		return mp;
+	}
+
+
+
+
+	private static int parseSize(String value, int defValue) {
+		if (value == null)
+			return defValue;
+		if (value.equalsIgnoreCase("infinite")){
+			return Integer.MAX_VALUE;
+		} else {
+			int lives = Integer.valueOf(value);
+			return lives <= 0 ? Integer.MAX_VALUE : lives;
+		}
 	}
 
 	/**
@@ -339,29 +359,6 @@ public class ConfigSerializer extends BaseConfig{
 				tops.addOption(TransitionOption.TELEPORTTO, SerializerUtil.getLocation(cs.getString("teleportTo")));}
 		} catch (Exception e){
 			Log.err("Error setting the value of teleportTo ");
-			e.printStackTrace();
-		}
-
-		try{
-			if (cs.contains("teleportWinner")){
-				tops.addOption(TransitionOption.TELEPORTWINNER, SerializerUtil.getLocation(cs.getString("teleportWinner")));}
-		} catch (Exception e){
-			Log.err("Error setting the value of teleportWinner ");
-			e.printStackTrace();
-		}
-		try{
-			if (cs.contains("teleportLoser")){
-				tops.addOption(TransitionOption.TELEPORTLOSER, SerializerUtil.getLocation(cs.getString("teleportLoser")));}
-		} catch (Exception e){
-			Log.err("Error setting the value of teleportLoser ");
-			e.printStackTrace();
-		}
-
-		try{
-			if (cs.contains("teleportOnArenaExit")){
-				tops.addOption(TransitionOption.TELEPORTONARENAEXIT, SerializerUtil.getLocation(cs.getString("teleportOnArenaExit")));}
-		} catch (Exception e){
-			Log.err("Error setting the value of teleportOnArenaExit ");
 			e.printStackTrace();
 		}
 		try{

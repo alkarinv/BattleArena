@@ -41,13 +41,11 @@ public enum TransitionOption{
 
 	/// Teleport Options
 	TELEPORTWAITROOM("teleportWaitRoom",false), 	/// Teleport players to the waitroom
+	TELEPORTLOBBY("teleportLobby",false), 			/// Teleport players to the lobby
+	TELEPORTCOURTYARD("teleportCourtyard",false), 	/// Teleport players to the courtyard
 	TELEPORTIN ("teleportIn",false),  				/// Teleport players into the arena
 	TELEPORTOUT("teleportOut",false),				/// Teleport players out of the arena, back to their old location
 	TELEPORTTO("teleportTo", true), 				/// =<location> : Teleport players to the given
-	TELEPORTONARENAEXIT("teleportOnArenaExit",true),/// deprecated
-	TELEPORTWINNER("teleportWinner",true),			/// deprecated
-	TELEPORTLOSER("teleportLoser", true),			/// deprecated
-	TELEPORTBACK("teleportBack",false),				/// depcrecated
 	NOTELEPORT("noTeleport", false), 				/// Prevent players from teleporting
 	NOWORLDCHANGE("noWorldChange",false),			/// Prevent players from changing world
 

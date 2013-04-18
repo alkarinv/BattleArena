@@ -1,4 +1,4 @@
-package mc.alk.arena.listeners;
+package mc.alk.arena.listeners.custom;
 
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.EventPriority;
