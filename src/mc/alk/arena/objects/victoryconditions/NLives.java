@@ -26,7 +26,7 @@ public class NLives extends VictoryCondition implements DefinesNumLivesPerPlayer
 
 	@MatchEventHandler(suppressCastWarnings=true, priority=EventPriority.LOW)
 	public void playerDeathEvent(ArenaPlayerDeathEvent event) {
-		ArenaTeam team = event.getArenaTeam();
+		ArenaTeam team = event.getTeam();
 		Integer deaths = team.getNDeaths(event.getPlayer());
 		if (deaths == null)
 			deaths = 1;

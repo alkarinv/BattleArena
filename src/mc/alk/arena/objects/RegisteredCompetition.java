@@ -2,6 +2,7 @@ package mc.alk.arena.objects;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.executors.CustomCommandExecutor;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
@@ -14,6 +15,7 @@ public class RegisteredCompetition {
 	final String competitionName;
 	ConfigSerializer configSerializer;
 	ArenaSerializer arenaSerializer;
+	CustomCommandExecutor customExecutor;
 
 	public RegisteredCompetition(Plugin plugin, String competitionName){
 		this.plugin = plugin;
@@ -52,6 +54,10 @@ public class RegisteredCompetition {
 		MessageSerializer.reloadConfig(competitionName);
 	}
 
+	public MessageSerializer getMessageSerializer(){
+		return MessageSerializer.getMessageSerializer(competitionName);
+	}
+
 	private void reloadExecutors(){
 		/* TODO allow them to switch from duel, to JoinPhase, Queue without a restart */
 	}
@@ -80,5 +86,12 @@ public class RegisteredCompetition {
 
 	public Plugin getPlugin(){
 		return plugin;
+	}
+
+	public CustomCommandExecutor getCustomExecutor() {
+		return customExecutor;
+	}
+	public void setCustomExeuctor(CustomCommandExecutor customExecutor){
+		this.customExecutor = customExecutor;
 	}
 }

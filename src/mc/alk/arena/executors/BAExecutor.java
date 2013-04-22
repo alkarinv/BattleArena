@@ -55,6 +55,7 @@ import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.ServerUtil;
@@ -180,7 +181,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		} catch (InvalidOptionException e) {
 			return sendMessage(player, e.getMessage());
 		} catch (Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			jp = null;
 		}
 		/// Check to make sure at least one arena can be joined at some time

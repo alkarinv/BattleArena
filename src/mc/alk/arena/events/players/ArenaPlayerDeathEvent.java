@@ -14,7 +14,7 @@ public class ArenaPlayerDeathEvent extends ArenaPlayerEvent{
 		this.team = team;
 	}
 
-	public ArenaTeam getArenaTeam() {
+	public ArenaTeam getTeam() {
 		return team;
 	}
 

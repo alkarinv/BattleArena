@@ -32,6 +32,7 @@ import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
@@ -49,6 +50,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -119,7 +121,7 @@ public class ArenaMatch extends Match {
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE ||
 				!insideArena.contains(target.getName())){
 			return;}
-		final ArenaTeam t = event.getArenaTeam();
+		final ArenaTeam t = event.getTeam();
 
 		Integer nDeaths = t.addDeath(target);
 		boolean exiting = !respawns || (nDeaths != null && nDeaths >= nLivesPerPlayer);
@@ -186,7 +188,7 @@ public class ArenaMatch extends Match {
 	}
 
 	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.LOW)
-	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+	public void onEntityDamageByEntity(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player))
 			return;
 		final TransitionOptions to = tops.getOptions(state);
@@ -206,7 +208,7 @@ public class ArenaMatch extends Match {
 		if (!(event instanceof EntityDamageByEntityEvent)){
 			return;}
 
-		final Entity damagerEntity = event.getDamager();
+		final Entity damagerEntity = ((EntityDamageByEntityEvent)event).getDamager();
 		ArenaPlayer damager=null;
 		switch(pvp){
 		case ON:
@@ -437,7 +439,7 @@ public class ArenaMatch extends Match {
 		MessageUtil.sendMessage(ap, "&2You ready yourself for the arena");
 		int size = getAlivePlayers().size();
 		if (size == readyPlayers.size()){
-			new MatchPlayersReadyEvent(this).callEvent();
+			callEvent(new MatchPlayersReadyEvent(this));
 		}
 	}
 
@@ -507,9 +509,9 @@ public class ArenaMatch extends Match {
 		/// Regive class/items
 		ArenaClassController.giveClass(p, ac);
 		if (mo != null && mo.hasItems()){
-			try{ InventoryUtil.addItemsToInventory(p, mo.getGiveItems(), true,color);} catch(Exception e){e.printStackTrace();}}
+			try{ InventoryUtil.addItemsToInventory(p, mo.getGiveItems(), true,color);} catch(Exception e){Log.printStackTrace(e);}}
 		if (ro != null && ro.hasItems()){
-			try{ InventoryUtil.addItemsToInventory(p, ro.getGiveItems(), true,color);} catch(Exception e){e.printStackTrace();}}
+			try{ InventoryUtil.addItemsToInventory(p, ro.getGiveItems(), true,color);} catch(Exception e){Log.printStackTrace(e);}}
 
 		/// Deal with effects/buffs
 		if (mo != null && mo.getEffects()!=null){

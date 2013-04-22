@@ -224,6 +224,11 @@ public class PerformTransition {
 					player.setChosenClass(ac);
 				}
 			}
+			if (mo.hasOption(TransitionOption.CLASSENCHANTS)){
+				ArenaClass ac = player.getChosenClass();
+				if (ac != null){
+					ArenaClassController.giveClassEnchants(p, ac);}
+			}
 			if (mo.hasOption(TransitionOption.GIVEDISGUISE) && DisguiseInterface.enabled()){
 				final String disguise = getDisguise(mo,teamIndex);
 				if (disguise != null){ /// Give class items and effects
@@ -257,8 +262,8 @@ public class PerformTransition {
 				Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
 			} else if (insideArena || !onlyInMatch){
 				TeleportController.teleportPlayer(p, loc, wipeInventory, true);
-				am.leaveArena(player);
 			}
+			am.leaveArena(player);
 			/// If players are outside of the match, but need requirements, warn them
 		} else if (transition == MatchState.ONPRESTART && !insideArena){
 			World w = am.getArena().getSpawnLoc(0).getWorld();

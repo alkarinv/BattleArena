@@ -17,7 +17,7 @@ public class ArenaPlayerTeleportEvent extends ArenaPlayerEvent{
 		this.dest = dest;
 	}
 
-	public ArenaTeam getArenaTeam() {
+	public ArenaTeam getTeam() {
 		return team;
 	}
 

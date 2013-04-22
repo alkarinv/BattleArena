@@ -375,7 +375,7 @@ public abstract class Match extends Competition implements Runnable {
 			callEvent(event);
 			PerformTransition.transition(this, state,competingTeams, true);
 			arenaInterface.onStart();
-			try{mc.sendOnStartMsg(teams);}catch(Exception e){e.printStackTrace();}
+			try{mc.sendOnStartMsg(teams);}catch(Exception e){Log.printStackTrace(e);}
 			/// At this point every team and player should be inside.. if they aren't mark them dead
 			nCompetingTeams = checkInside(teams);
 		}
@@ -390,7 +390,7 @@ public abstract class Match extends Competition implements Runnable {
 			victor.sendMessage("&4WIN!!!&eThe other team was offline or didnt meet the entry requirements.");
 			setVictor(victor);
 		} else { /// Seriously, no one showed up?? Well, one of them won regardless, but scold them
-			if (teams.isEmpty()){
+			if (competingTeams.isEmpty()){
 				this.cancelMatch();
 			} else {
 				setDraw();
@@ -487,9 +487,9 @@ public abstract class Match extends Competition implements Runnable {
 				sc.addRecord(victors,losers,drawers,result.getResult());
 			}
 			if (result.hasVictor()){ /// We have a true winner
-				try{mc.sendOnVictoryMsg(victors, losers);}catch(Exception e){e.printStackTrace();}
+				try{mc.sendOnVictoryMsg(victors, losers);}catch(Exception e){Log.printStackTrace(e);}
 			} else { /// we have a draw
-				try{mc.sendOnDrawMessage(drawers,losers);} catch(Exception e){e.printStackTrace();}
+				try{mc.sendOnDrawMessage(drawers,losers);} catch(Exception e){Log.printStackTrace(e);}
 			}
 
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
@@ -515,9 +515,9 @@ public abstract class Match extends Competition implements Runnable {
 				sc.addRecord(victors,losers,drawers,matchResult.getResult());
 			}
 			if (matchResult.hasVictor()){ /// We have a true winner
-				try{mc.sendOnVictoryMsg(victors, losers);}catch(Exception e){e.printStackTrace();}
+				try{mc.sendOnVictoryMsg(victors, losers);}catch(Exception e){Log.printStackTrace(e);}
 			} else { /// we have a draw
-				try{mc.sendOnDrawMessage(drawers,losers);} catch(Exception e){e.printStackTrace();}
+				try{mc.sendOnDrawMessage(drawers,losers);} catch(Exception e){Log.printStackTrace(e);}
 			}
 
 			updateBukkitEvents(MatchState.ONVICTORY);
@@ -1001,12 +1001,11 @@ public abstract class Match extends Competition implements Runnable {
 		ArenaTeam t = getTeam(p);
 		t.killMember(p);
 		scoreboard.setDead(t,p);
-
-		PerformTransition.transition(this, MatchState.ONLEAVE, p, t, false);
-		arenaInterface.onLeave(p,t);
 		if (params.getOverrideBattleTracker())
 			StatController.resumeTracking(p);
 
+		PerformTransition.transition(this, MatchState.ONLEAVE, p, t, false);
+		arenaInterface.onLeave(p,t);
 		callEvent(new ArenaPlayerLeaveEvent(p,t));
 
 		if (cancelExpLoss){
@@ -1307,7 +1306,7 @@ public abstract class Match extends Competition implements Runnable {
 		/// No one has an opinion of how this match ends... so declare it a draw
 		if (result.isUnknown()){
 			result.setDrawers(teams);}
-		try{mc.sendTimeExpired();}catch(Exception e){e.printStackTrace();}
+		try{mc.sendTimeExpired();}catch(Exception e){Log.printStackTrace(e);}
 		this.endingMatchWinLossOrDraw(result);
 	}
 
@@ -1315,7 +1314,7 @@ public abstract class Match extends Competition implements Runnable {
 		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
 		callEvent(event);
 		callEvent(new MatchTimerIntervalEvent(this, remaining));
-		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeaders());}catch(Exception e){e.printStackTrace();}
+		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeaders());}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	public TeamJoinHandler getTeamJoinHandler() {

@@ -77,6 +77,7 @@ public enum TransitionOption{
 	UNDISGUISE("undisguise",false),					/// Undisguise all players in the arena (needs DisguiseCraft)
 	ENCHANTS("enchants",false),						/// Give the Enchants found in enchants:
 	DEENCHANT("deEnchant",false),					/// DeEnchant all positive and negative effects from the player
+	CLASSENCHANTS("classEnchants",false),			/// regive the enchants from the class they have chosen
 	ADDPERMS("addPerms", false),					/// NOT IMPLEMENTED
 	REMOVEPERMS("removePerms", false),				/// NOT IMPLEMENTED
 	GAMEMODE("gameMode",true),						/// =<GameMode> : sets the given gamemode of the player

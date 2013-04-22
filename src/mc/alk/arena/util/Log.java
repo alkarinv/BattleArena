@@ -27,12 +27,19 @@ public class Log {
 			log.severe(colorChat(msg));
 		else
 			System.err.println(colorChat(msg));
+		NotifierUtil.notify("errors", msg);
 	}
 
-    public static String colorChat(String msg) {
-        return msg.replace('&', (char) 167);
-    }
-    public static void debug(String msg){
-    	System.out.println(msg);
-    }
+	public static String colorChat(String msg) {
+		return msg.replace('&', (char) 167);
+	}
+
+	public static void debug(String msg){
+		System.out.println(msg);
+	}
+
+	public static void printStackTrace(Throwable e) {
+		e.printStackTrace();
+		NotifierUtil.notify("errors", e);
+	}
 }

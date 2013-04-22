@@ -205,7 +205,7 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 				method.invoke(lmethod.getListener(), os); /// Invoke the listening arenalisteners method
 			} catch (Exception e){
 				Log.err("[BA:Error] method=" + method + ",  types.length=" +types.length +",  p=" + p +",  listener="+lmethod);
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 	}
@@ -267,7 +267,7 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 				return (Entity) o;
 			return null;
 		}catch(Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return null;
 		}
 	}

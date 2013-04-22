@@ -29,6 +29,7 @@ import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfTreeSet;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.NotifierUtil;
@@ -298,7 +299,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 				t.sendMessage("&eYou have been &cremoved&e from the queue by an administrator");
 			}
 		} catch (Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			sendMessage(sender,"&4error purging queue");
 			return true;
 		}

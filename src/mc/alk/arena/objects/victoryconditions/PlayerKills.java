@@ -26,7 +26,7 @@ public class PlayerKills extends VictoryCondition implements ScoreTracker{
 	@MatchEventHandler(priority=EventPriority.LOW)
 	public void playerKillEvent(ArenaPlayerKillEvent event) {
 		kills.addPoints(event.getPlayer(), event.getPoints());
-		kills.addPoints(event.getArenaTeam(), event.getPoints());
+		kills.addPoints(event.getTeam(), event.getPoints());
 	}
 
 	@MatchEventHandler(priority = EventPriority.LOW)

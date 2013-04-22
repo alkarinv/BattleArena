@@ -33,7 +33,7 @@ public class ArenaClassController {
 		if (HeroesController.enabled())
 			ac = giveHeroClass(player,ac);
 		try{if (ac.getItems() != null) InventoryUtil.addItemsToInventory(player, ac.getItems(),true, color);} catch (Exception e){}
-		try{if (ac.getEffects() != null) EffectUtil.enchantPlayer(player, ac.getEffects());} catch (Exception e){}
+		giveClassEnchants(player,ac);
 		if (ac.getDisguiseName()!=null && DisguiseInterface.enabled())
 			DisguiseInterface.disguisePlayer(player, ac.getDisguiseName());
 	}
@@ -51,5 +51,9 @@ public class ArenaClassController {
 			HeroesController.setHeroClass(player, ac.getName());
 		}
 		return ac;
+	}
+
+	public static void giveClassEnchants(Player player, ArenaClass ac) {
+		try{if (ac.getEffects() != null) EffectUtil.enchantPlayer(player, ac.getEffects());} catch (Exception e){}
 	}
 }

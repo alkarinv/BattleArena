@@ -18,7 +18,7 @@ Arena:
     onStart:
         options: [teleportIn, blockBreakOff, pvpOn]
     onSpawn:
-        options: [deEnchant, hunger=20, health=20]
+        options: [hunger=20, health=20]
         giveClass:
             default: gladiator
     onDeath:

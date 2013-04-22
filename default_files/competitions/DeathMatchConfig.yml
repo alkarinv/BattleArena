@@ -26,7 +26,7 @@ DeathMatch:
     onComplete:
         options: [teleportOut]
     onSpawn:
-        options: [enchants, giveItems, health=20, hunger=20, deEnchant]
+        options: [enchants, giveItems, health=20, hunger=20]
         items: # ignored if options doesnt have "giveItems"
             - iron_sword: 1
             - bow: 1

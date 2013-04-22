@@ -144,10 +144,11 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 
 	@MatchEventHandler
 	public void matchCancelled(MatchCancelledEvent event){
-		eventCancelled();
-		for (Match matchup: matchups.keySet()){
-			matchup.cancelMatch();
-		}
+		Match am = event.getMatch();
+		if (am.getState() == MatchState.ONCANCEL){
+			endEvent();
+			return;}
+		matchEnded(am, am.getResult());
 	}
 
 	@Override
@@ -170,7 +171,10 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 			endEvent();
 			return;}
 
-		MatchResult r = am.getResult();
+		matchEnded(am, am.getResult());
+	}
+
+	private void matchEnded(Match am, MatchResult r) {
 		Matchup m = matchups.get(am);
 		if (m==null){
 			eventCancelled();

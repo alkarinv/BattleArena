@@ -57,6 +57,7 @@ import mc.alk.arena.serializers.TeamHeadSerializer;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.FileUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.plugin.updater.v1r2.FileUpdater;
 import mc.alk.plugin.updater.v1r2.PluginUpdater;
@@ -153,7 +154,7 @@ public class BattleArena extends JavaPlugin {
 		try{
 			YamlFileUpdater.updateBaseConfig(this,baConfigSerializer); /// Update our config if necessary
 		} catch (Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 
 		baConfigSerializer.loadDefaults(); /// Load our defaults for BattleArena, has to happen before classes are loaded

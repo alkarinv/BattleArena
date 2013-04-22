@@ -46,6 +46,10 @@ public class MessageSerializer extends BaseConfig {
 		files.put(name, ms);
 	}
 
+	public static MessageSerializer getMessageSerializer(String name){
+		return files.get(name);
+	}
+
 	public void loadAll(){
 		initMessageOptions();
 	}

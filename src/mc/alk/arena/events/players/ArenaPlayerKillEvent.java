@@ -16,7 +16,7 @@ public class ArenaPlayerKillEvent extends ArenaPlayerEvent{
 		this.target = target;
 	}
 
-	public ArenaTeam getArenaTeam() {
+	public ArenaTeam getTeam() {
 		return team;
 	}
 

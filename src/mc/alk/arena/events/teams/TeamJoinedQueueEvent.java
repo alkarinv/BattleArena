@@ -13,8 +13,8 @@ public class TeamJoinedQueueEvent extends BAEvent{
 	final Long timeToStart;
 	final ArenaParams params;
 
-	public TeamJoinedQueueEvent(QueueResult qpp) {
-		this.team = qpp.team;
+	public TeamJoinedQueueEvent(ArenaTeam team, QueueResult qpp) {
+		this.team = team;
 		this.playersInQueue = qpp.playersInQueue;
 		this.pos = qpp.pos;
 		this.timeToStart = qpp.time;
@@ -43,9 +43,7 @@ public class TeamJoinedQueueEvent extends BAEvent{
 		return params;
 	}
 
-
 	public int getTeamsInQueue() {
 		return teamsInQueue;
 	}
-
 }

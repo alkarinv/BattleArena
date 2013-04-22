@@ -25,6 +25,7 @@ import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.queues.TeamQObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TimeUtil;
@@ -118,7 +119,7 @@ public class EventExecutor extends BAExecutor{
 			return sendMessage(sender,"&2You have started the &6" + name);
 		} catch (Exception e) {
 			sendMessage(sender,"&cError Starting the &6" + name);
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return sendMessage(sender,"&c" +e.getMessage());
 		}
 	}
@@ -250,7 +251,7 @@ public class EventExecutor extends BAExecutor{
 		} catch (InvalidOptionException e) {
 			return sendMessage(p, e.getMessage());
 		} catch (Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			jp = null;
 		}
 		if (sq.getMaxTeamSize() < t.size()){

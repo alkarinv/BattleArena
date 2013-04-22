@@ -17,9 +17,13 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
+import mc.alk.arena.events.players.ArenaPlayerEnterQueueEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeaveQueueEvent;
 import mc.alk.arena.events.teams.TeamJoinedQueueEvent;
 import mc.alk.arena.events.teams.TeamLeftQueueEvent;
+import mc.alk.arena.listeners.competition.InArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -39,6 +43,7 @@ import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.CommandUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 
@@ -46,6 +51,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -156,18 +162,38 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	private void unhandle(final ArenaTeam team) {
 		if (TeamController.removeTeamHandler(team, this)){
-			methodController.callEvent(new TeamLeftQueueEvent(team));}
+			callEvent(new TeamLeftQueueEvent(team));}
 		for (ArenaPlayer ap: team.getPlayers()){
-			methodController.updateEvents(MatchState.ONFINISH, ap);}
+			unhandle(ap,team);
+		}
 		if (team instanceof CompositeTeam){
 			for (ArenaTeam t: ((CompositeTeam)team).getOldTeams()){
 				TeamController.removeTeamHandler(t, this);
 			}
 		}
 	}
+
+	private void unhandle(final ArenaPlayer player, final ArenaTeam team) {
+		methodController.updateEvents(MatchState.ONFINISH, player);
+		leftQueue(player,team);
+	}
+
 	private void handle(final MatchParams params, final ArenaTeam team){
 		TeamController.addTeamHandler(team,this);
 		methodController.updateEvents(MatchState.PREREQS, team.getPlayers());
+	}
+
+
+	private void enteredQueue(ArenaPlayer player, ArenaTeam team, QueueResult qpp){
+		if (!InArenaListener.inQueue(player.getName())){
+			callEvent(new ArenaPlayerEnterQueueEvent(player,team,qpp));
+		}
+	}
+
+	private void leftQueue(ArenaPlayer player, final ArenaTeam team){
+		if (InArenaListener.inQueue(player.getName())){
+			callEvent(new ArenaPlayerLeaveQueueEvent(player,team));
+		}
 	}
 
 	public void startMatch(Match arenaMatch) {
@@ -209,7 +235,6 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	 * @return
 	 */
 	public QueueResult addToQue(TeamQObject tqo) {
-		ArenaTeam team = tqo.getTeam();
 
 		if (joinExistingMatch(tqo)){
 			QueueResult qr = new QueueResult();
@@ -218,10 +243,19 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		}
 		QueueResult qpp = amq.add(tqo, shouldStart(tqo.getMatchParams()));
 		if (qpp != null){
-			new TeamJoinedQueueEvent(qpp).callEvent();}
-		if (qpp != null && qpp.pos >=0){
-			handle(tqo.getMatchParams(), team);}
+			for (ArenaTeam at: tqo.getTeams()){
+				callEvent(new TeamJoinedQueueEvent(at,qpp));
+				for (ArenaPlayer ap: at.getPlayers()){
+					enteredQueue(ap,at,qpp);}
+				handle(tqo.getMatchParams(), at);
+			}
+		}
 		return qpp;
+	}
+
+	private void callEvent(BAEvent event){
+		methodController.callEvent(event);
+		event.callEvent();
 	}
 
 	private boolean shouldStart(MatchParams matchParams) {
@@ -239,9 +273,10 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		return getNumberOpenMatches(type) < mp.getNConcurrentCompetitions();
 	}
 
-	@MatchEventHandler(begin=MatchState.PREREQS, end=MatchState.ONFINISH)
+	@EventHandler
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
-		if (CommandUtil.shouldCancel(event, disabledCommands)){
+		if (!event.isCancelled() && InArenaListener.inQueue(event.getPlayer().getName()) &&
+				CommandUtil.shouldCancel(event, disabledCommands)){
 			event.setCancelled(true);
 			event.getPlayer().sendMessage(ChatColor.RED+"You cannot use that command when you are in the queue");
 			if (PermissionsUtil.isAdmin(event.getPlayer())){
@@ -259,6 +294,8 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			if (ptp != null){
 				unhandle(ptp.team);
 				ptp.team.sendMessage("&cYou have been removed from the queue for changing worlds");
+			} else {
+				unhandle(ap,null);
 			}
 		}
 	}
@@ -333,15 +370,19 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	 */
 	public ParamTeamPair removeFromQue(ArenaPlayer p) {
 		ArenaTeam t = TeamController.getTeam(p);
-		if (t == null)
+		if (t == null){
+			unhandle(p,null);
 			return null;
+		}
 		return removeFromQue(t);
 	}
+
 	public ParamTeamPair removeFromQue(ArenaTeam t) {
-		methodController.callEvent(new TeamLeftQueueEvent(t));
+		unhandle(t);
 		TeamController.removeTeamHandler(t, this);
 		return amq.removeFromQue(t);
 	}
+
 	public void addMatchup(Matchup m) {amq.addMatchup(m, shouldStart(m.getMatchParams()));}
 	public Arena reserveArena(Arena arena) {return amq.reserveArena(arena);}
 	public Arena getArena(String arenaName) {return allarenas.get(arenaName);}
@@ -364,7 +405,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			if (removeArena(arena) != null){
 				addArena(arena);}
 		} catch (Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -492,7 +533,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	public boolean leave(ArenaPlayer p) {
 		ParamTeamPair ptp = removeFromQue(p);
 		if (ptp != null){
-			methodController.callEvent(new TeamLeftQueueEvent(ptp.team));
+			unhandle(p,ptp.team);
 			ptp.team.sendMessage("&cYour team has left the queue b/c &6"+p.getDisplayName()+"c has left");
 			return true;
 		}
@@ -656,7 +697,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		Collection<ArenaTeam> teams = amq.purgeQueue();
 		TeamController.removeTeams(teams, this);
 		for (ArenaTeam t: teams){
-			methodController.callEvent(new TeamLeftQueueEvent(t));
+			unhandle(t);
 			t.sendMessage("&cYou have been removed from the queue");
 		}
 		return teams;

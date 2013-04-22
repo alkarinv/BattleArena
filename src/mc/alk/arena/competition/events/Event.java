@@ -89,7 +89,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		try {
 			openEvent(eventParams);
 		} catch (NeverWouldJoinException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -260,7 +260,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		if (teams.contains(team)) /// adding a team twice is bad mmkay
 			return true;
 		TeamController.addTeamHandler(team, this);
-		new TeamJoinedEvent(this,team).callEvent();
+		callEvent(new TeamJoinedEvent(this,team));
 		return teams.add(team);
 	}
 

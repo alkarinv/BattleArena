@@ -225,22 +225,41 @@ public class APIRegistrationController {
 		} else {
 			at = ArenaType.register(name, arenaClass, plugin);
 		}
+
 		/// Load our Match Params for this type
 		MatchParams mp = config.loadMatchParams();
 
+		ArenaType gameType = ConfigSerializer.getArenaGameType(plugin,config.getConfigurationSection(name));
+		MessageSerializer ms = null;
 		/// load messages
 		if (loadFile(plugin, messageFile, name+"Messages.yml",name,cmd)){
-			MessageSerializer ms = new MessageSerializer(name,mp);
+			ms = new MessageSerializer(name,mp);
+		} else if (gameType != null){
+			RegisteredCompetition rc = CompetitionController.getCompetition(plugin, gameType.getName());
+			if (rc != null){
+				ms = MessageSerializer.getMessageSerializer(gameType.getName());}
+		}
+
+		if (ms != null){
 			ms.setConfig(messageFile);
 			ms.loadAll();
 			MessageSerializer.addMessageSerializer(name,ms);
 		}
 
+		/// Everything nearly successful, register our competition
+		RegisteredCompetition rc = new RegisteredCompetition(plugin,name);
+
+		if (executor == null && gameType != null){
+			RegisteredCompetition comp = CompetitionController.getCompetition(plugin, gameType.getName());
+			if (comp != null){
+				executor = comp.getCustomExecutor();}
+		} else {
+			rc.setCustomExeuctor(executor);
+		}
+
 		/// Create our Executor
 		createExecutor(plugin, cmd, executor, mp);
 
-		/// Everything successful, register our competition
-		RegisteredCompetition rc = new RegisteredCompetition(plugin,name);
 		rc.setConfigSerializer(config);
 		CompetitionController.addRegisteredCompetition(rc);
 

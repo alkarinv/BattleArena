@@ -22,7 +22,7 @@ FreeForAll:
     onOpen:
         options: [pvpOff]
     onPrestart:
-        options: [pvpOff, giveItems, deEnchant]
+        options: [pvpOff, giveItems]
         items: 
             - iron_sword: 1
             - bow: 1
@@ -40,7 +40,7 @@ FreeForAll:
     onDeath:
         options: []
     onSpawn:
-        options: [enchants, health=20, hunger=20, deEnchant]
+        options: [enchants, health=20, hunger=20]
         enchants:
             - speed:3
     winner:

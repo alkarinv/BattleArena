@@ -23,6 +23,23 @@ public class NotifierUtil {
 		}
 	}
 
+	public static void notify(String type, Throwable exception) {
+		Set<String> players = listeners.get(type);
+		if (players == null)
+			return;
+		StringBuilder sb = new StringBuilder();
+		for (StackTraceElement e: exception.getStackTrace()){
+			sb.append(e.toString());
+		}
+		String msg = sb.toString();
+		for (String name: players){
+			Player p = Bukkit.getPlayerExact(name);
+			if (p== null || !p.isOnline())
+				continue;
+			MessageUtil.sendMessage(p, msg);
+		}
+	}
+
 	public static void addListener(Player player, String type) {
 		Set<String> players = listeners.get(type);
 		if (players == null){
@@ -40,5 +57,10 @@ public class NotifierUtil {
 		if (players.isEmpty())
 			listeners.remove(type);
 	}
+
+	public static boolean hasListener(String type) {
+		return listeners.containsKey(type);
+	}
+
 
 }

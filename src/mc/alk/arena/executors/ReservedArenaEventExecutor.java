@@ -13,6 +13,7 @@ import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.TimeUtil;
 
 import org.bukkit.command.CommandSender;
@@ -50,7 +51,7 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 			sendMessage(sender, e.getMessage());
 		} catch (Exception e){
 			sendMessage(sender, e.getMessage());
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return true;
 	}

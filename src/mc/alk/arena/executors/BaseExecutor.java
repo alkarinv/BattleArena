@@ -12,6 +12,8 @@ import java.util.PriorityQueue;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import mc.alk.arena.util.Log;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -286,9 +288,12 @@ public abstract class BaseExecutor implements ArenaExecutor{
 				System.err.println("[Error] object=" + (o!=null ? o.toString() : o));
 		}
 		System.err.println("[Error] Cause=" + e.getCause());
-		if (e.getCause() != null) e.getCause().printStackTrace();
+		if (e.getCause() != null){
+			e.getCause().printStackTrace();
+			Log.printStackTrace(e.getCause());
+		}
 		System.err.println("[Error] Trace Continued ");
-		e.printStackTrace();
+		Log.printStackTrace(e);
 	}
 
 	public static final String ONLY_INGAME =ChatColor.RED+"You need to be in game to use this command";

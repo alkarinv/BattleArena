@@ -1,7 +1,7 @@
 configVersion: 2.2
 
 # For help the wiki is a good source of information
-# Wiki: # https://github.com/alkarinv/BattleArena/wiki
+# Wiki: # http://battleplugins.com/w/index.php/BattleArena
 
 # Updates will be retrieved from the latest plugin on the bukkit site
 autoUpdate: true
@@ -20,7 +20,7 @@ teleportYOffset: 0.0
 numberSavedInventories: 5
 
 # which player commands should be disabled when they enter an arena
-disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]
+disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma, f, factions]
 
 # What commands should be disabled when the player is inside of a queue, but not in a match
 disabledQueueCommands: []

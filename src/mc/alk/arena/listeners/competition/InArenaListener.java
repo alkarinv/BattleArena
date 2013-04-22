@@ -8,7 +8,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.events.players.ArenaPlayerEnterEvent;
+import mc.alk.arena.events.players.ArenaPlayerEnterQueueEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeaveQueueEvent;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -19,6 +21,7 @@ public enum InArenaListener implements Listener {
 	INSTANCE;
 
 	final Set<String> players = Collections.synchronizedSet(new HashSet<String>());
+	final Set<String> qplayers = Collections.synchronizedSet(new HashSet<String>());
 	final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 	boolean registered = false;
 
@@ -27,8 +30,29 @@ public enum InArenaListener implements Listener {
 	}
 
 	@EventHandler
+	public void onArenaPlayerEnterQueueEvent(ArenaPlayerEnterQueueEvent event){
+		if (qplayers.isEmpty() && players.isEmpty()){
+			registered = true;
+			for (Listener l: listeners){
+				Bukkit.getPluginManager().registerEvents(l, BattleArena.getSelf());
+			}
+		}
+		qplayers.add(event.getPlayer().getName());
+	}
+
+	@EventHandler
+	public void onArenaPlayerLeaveQueueEvent(ArenaPlayerLeaveQueueEvent event){
+		if (qplayers.remove(event.getPlayer().getName()) && qplayers.isEmpty() && players.isEmpty()){
+			registered = false;
+			for (Listener l: listeners){
+				HandlerList.unregisterAll(l);
+			}
+		}
+	}
+
+	@EventHandler
 	public void onArenaPlayerEnterEvent(ArenaPlayerEnterEvent event){
-		if (players.isEmpty()){
+		if (players.isEmpty() && qplayers.isEmpty()){
 			registered = true;
 			for (Listener l: listeners){
 				Bukkit.getPluginManager().registerEvents(l, BattleArena.getSelf());
@@ -47,7 +71,11 @@ public enum InArenaListener implements Listener {
 		}
 	}
 
-	public boolean contains(String name) {
+	public boolean isPlayerInQueue(String name) {
+		return qplayers.contains(name);
+	}
+
+	public boolean isPlayerInArena(String name) {
 		return players.contains(name);
 	}
 
@@ -55,10 +83,12 @@ public enum InArenaListener implements Listener {
 		return INSTANCE.players.contains(name);
 	}
 
+	public static boolean inQueue(String name) {
+		return INSTANCE.qplayers.contains(name);
+	}
+
 	public static void addListener(Listener listener){
 		INSTANCE.listeners.add(listener);
 	}
-
-
 
 }

@@ -17,6 +17,7 @@ import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.EventOpenOptions;
+import mc.alk.arena.util.Log;
 
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -36,7 +37,7 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 			sendMessage(sender,e.getMessage());
 		} catch (Exception e){
 			sendMessage(sender,e.getMessage());
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return true;
 	}
@@ -74,6 +75,10 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 				sendMessage(sender, "&c/tourney auto <type> nTeams=2");
 				return null;
 			}
+			if (ep.getMaxTeams()== ArenaSize.MAX || ep.getMinTeams() != ep.getMaxTeams()){
+				sendMessage(sender, "&cNumber of tournament teams must not be a range. Setting to &6teamSize="+ep.getMinTeams());
+				ep.setMaxTeams(ep.getMinTeams());
+			}
 			if (ep.getMaxTeamSize() == ArenaSize.MAX || ep.getMaxTeamSize() != ep.getMinTeamSize()){
 				sendMessage(sender, "&cTournament teams must have a finite size. &eSetting to &6teamSize="+ep.getMinTeamSize());
 				ep.setMaxTeamSize(ep.getMinTeamSize());
@@ -91,7 +96,7 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 			sendMessage(sender, e.getMessage());
 			return null;
 		} catch (Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return null;
 		}
 		final int max = ep.getMaxPlayers();

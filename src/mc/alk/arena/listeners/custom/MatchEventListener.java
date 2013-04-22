@@ -151,7 +151,7 @@ public class MatchEventListener extends BukkitEventListener{
 			try {
 				rl.getMethod().getMethod().invoke(rl.getListener(), event); /// Invoke the listening arenalisteners method
 			} catch (Exception e){
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 	}

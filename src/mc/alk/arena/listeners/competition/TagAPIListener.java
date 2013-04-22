@@ -4,9 +4,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.events.players.ArenaPlayerEnterEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.Log;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -43,18 +44,11 @@ public enum TagAPIListener implements Listener {
 
 	@EventHandler
 	public void onArenaPlayerEnterEvent(ArenaPlayerEnterEvent event){
-		setNameColor(event.getPlayer().getPlayer(), event.getTeam().getTeamChatColor());
-	}
-
-	@EventHandler
-	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
-		removeName(event.getPlayer().getPlayer());
-	}
-
-	public static void setNameColor(Player player, ChatColor teamColor) {
-		if (!player.isOnline())
+		Player player = event.getPlayer().getPlayer();
+		if (!player.isOnline() || !BattleArena.getSelf().isEnabled())
 			return;
-		INSTANCE.playerName.put(player.getName(), teamColor);
+		ArenaTeam team = event.getPlayer().getTeam();
+		playerName.put(player.getName(), team.getTeamChatColor());
 		try{
 			TagAPI.refreshPlayer(player);
 		} catch (ClassCastException e){
@@ -63,28 +57,16 @@ public enum TagAPIListener implements Listener {
 		} catch (NoClassDefFoundError e){
 			/* TagAPI has changed things around, Let them know of the problem
 			 * But lets not crash BattleArena b/c of it */
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
-	public static void removeNameColor(final Player player) {
+	@EventHandler
+	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
+		Player player = event.getPlayer().getPlayer();
 		if (!player.isOnline() || !BattleArena.getSelf().isEnabled())
 			return;
-		if (INSTANCE.playerName.remove(player.getName()) != null){
-			if (HeroesController.enabled()){
-				Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
-					@Override
-					public void run() {
-						INSTANCE.removeName(player);
-					}
-				});
-			} else {
-				INSTANCE.removeName(player);
-			}
-		}
-	}
-
-	private void removeName(Player player){
+		playerName.remove(player.getName());
 		try{
 			TagAPI.refreshPlayer(player);
 		} catch (ClassCastException e){
@@ -95,6 +77,5 @@ public enum TagAPIListener implements Listener {
 			 * Bukkit can sometimes have OfflinePlayers that are not caught by isOnline()*/
 		}
 	}
-
 
 }

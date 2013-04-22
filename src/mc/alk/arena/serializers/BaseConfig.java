@@ -62,6 +62,7 @@ public class BaseConfig implements FileConfig{
 		try {
 			config.load(file);
 		} catch (Exception e) {
+			Log.err("Couldn't load the config file=" + file);
 			e.printStackTrace();
 			return false;
 		}

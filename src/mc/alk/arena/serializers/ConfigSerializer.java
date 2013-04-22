@@ -275,6 +275,17 @@ public class ConfigSerializer extends BaseConfig{
 		return at;
 	}
 
+	public static ArenaType getArenaGameType(Plugin plugin, ConfigurationSection cs) throws ConfigException {
+		ArenaType at = null;
+		if (cs.contains("gameType")){
+			String s = cs.getString("gameType");
+			at = ArenaType.fromString(s);
+			if (at == null){
+				at = getArenaType(plugin,cs);}
+		}
+		return at;
+	}
+
 	public static TransitionOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, IllegalArgumentException {
 		if (cs == null)
 			return null;

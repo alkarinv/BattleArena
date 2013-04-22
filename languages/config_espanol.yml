@@ -1,0 +1,124 @@
+configVersion: 2.2
+
+# Si necesitas ayuda visita la wiki
+# Wiki: # https://github.com/alkarinv/BattleArena/wiki
+# Traducido por geor196
+
+# Las actualizaciones seran tomadas automaticamente del sitio Bukkit
+autoUpdate: true
+
+## Como se llama el dinero en el server, si usas Vault el nombre vendra de aqui
+moneyName: Oro
+
+### Opciones misceláneo
+# Algunos server quieren teletransortar al suelo, modifica la variable Y
+# Para que sean teletransportados mas alto,el default es 1.0 = 1 bloque
+teleportYOffset: 0.0
+
+# Cuando un jugador entra a la arena y su invetario es guardado
+# cuantos inventarios antiguos deberian de guardarse
+# escribe 0 si no quieres esta opcion
+numberSavedInventories: 5
+
+# Que comandos deberian ser deshabilitados cuando un juagor se une a la Arena
+disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma]
+
+# Que comandos deberian de ser deshabilitados cuando un jugador esta en la fila de espera
+# pero no el la partida
+disabledQueueCommands: []
+
+# Que habilidades del plugin 'Heroes' deberian de ser deshabilitadas
+disabledHeroesSkills: []
+
+# Si en 'true' los objetos no stackeables podran ser stackeados
+# Ejemplos: 64 sopas de hongos, o 64 bolas de nieve, en lugar de 1 o 16
+ignoreMaxStackSize: false
+
+# Si en 'true' los objetos podran ser encantados sin limite seguro
+# Ejemplo, las espadas estan limitadas a filo 5.  si esta unsafeItemEnchants: true
+# el 5 podria ser cualquier numero y no existe un limite al encantar
+unsafeItemEnchants: false
+
+# Si en 'true' cuando un jugador se une a una partida con 2 arenas. 1v1 y 1v1v1v1. La de 1v1 ocurre primero
+# luego la de 1v1v1v1 esta garantizada en ser la siguiente arena.
+# si en 'false'. Despues de usar la de 1v1, esta podria volver a ser usada en lugar de 1v1v1v1
+useArenasOnlyInOrder: false
+
+# Bukkit o minecraft tiene un bug que al ser teletransportados los jugadores son invicibles
+# Si en tu servidor ocurre, deja esta opcion en 'true'
+# Esta opcion sera removida una vez que el bug este arreglado
+enableInvisibleTeleportFix: true
+
+### Option sets te permiten crear un grupo de objetos a recuperar
+# puedes añadir cuantas gustes
+# storeAll: las opciones [storeExperience, storeGamemode, storeHealth, storeHunger, storeItems, storeHeroclass, storeMagic, clearExperience, clearInventory, deEnchant]
+# restoreAll: las opciones [restoreExperience, restoreGamemode, restoreHealth, restoreHunger, restoreItems, restoreHeroclass, restoreMagic, clearInventory, deEnchant]
+optionSets:
+  storeAll1:
+      options: [storeExperience, storeGamemode, storeHealth, storeHunger, storeItems, storeHeroclass, storeMagic, clearExperience, clearInventory, deEnchant]
+  restoreAll1: 
+      options: [restoreExperience, restoreGamemode, restoreHealth, restoreHunger, restoreItems, restoreHeroclass, restoreMagic, clearInventory, deEnchant]
+
+## Opciones por defecto (estas pueden ser sobrepasadas por las especificas de cada evento)
+defaultOptions:
+    #### Opciones de 'Match' o 'Partida' ####
+    secondsTillBegin: 6 
+    secondsTillMatch: 6 ## El tiempo entre preStart y onStart {ver wiki}
+    matchTime: 120 ## Cuanto tiempo dura una Partida, (en segundos)
+    secondsToLoot: 5 ## Tiempo para recoger los objetos despues de que la partida acaba 
+    matchUpdateInterval: 30 ## Para partidas con tiempo, cada cuanto se le envia una actualizacion de la partida al jugador
+
+    ## si en 'true' al empezar un evento se intentara
+    ## empezar despues del forceStartTime amenos que la minima cantidad de gente
+    ## se halla unido.  Ejemplo: digamos que 2 equipos de 4 se necesitan, si despues
+    ## del forceStartTime solo se han unido 2 equipos de 1 la partida empezara.
+    matchEnableForceStart: true
+    matchForceStartTime: 180
+
+    ## Activar bloque de listo {Click derecho significara que el jugador esta listo}
+    enablePlayerReadyBlock: false
+    readyBlockType: 42  ## cual sera el bloque? Default es bloque de hierro
+
+    ## Cuanto tiempo para que el jugador 'vuelva' a elegir una clase
+    timeBetweenClassChange: 3
+
+    #### Opciones de Evento ####
+    eventCountdownTime: 180 ## CUanto tiempo para anunciar un evento automatico y su inicio
+    eventCountdownInterval: 60 ## Cada cuanto recordara que el evento esta abierto y te puedes unir
+    ## Si en 'true' el jugador creara y se unira a un evento si este no se a creado
+    allowPlayerCreation: false
+    ## Si el evento se creo con allowPlayerCreation, que argumentos se deberian de usar
+    playerOpenOptions: [silent, time=180]
+  
+    #### Opciones de duelo ####
+    allowRatedDuels: false
+    # si un usuario cancela un duelo, despues de cuanto podra volver ser retado
+    challengeInterval: 1800 # (seconds) 1800 = 30minutes
+    # permitir que los usuarios duelen a los OP
+    allowChallengeOps: false
+
+    #### Eventos programados ####
+    ## Opciones validas [startContinuous, startNext]
+    onServerStart: []
+    timeBetweenScheduledEvents: 30 ## tiempo entre el fin y el inicio de un evento
+    announceTimeTillNextEvent: false
+  
+    #### Anuncios de Partida/Evento ####
+    ## Esto solo afecta los mensajes en el servidor mas no los que recibe cada lichador
+    ## announce : anuncia estos mensajes
+    ## dontannounce : no anunsie este mensaje
+    ## server : use herochat con el canal especificado
+    ## herochat=<channel> : use herochat con el canal especificado
+    announcements:
+        onPreStart: [ announce, server ]  ## evento apunto de ocurrir ejemplo, 'P1[p1Elo] vs P2[p2elo]'
+        onStart: [ dontannounce ]  ## partida empezando
+        onVictory:  [ announce, server ] ## se ha ganado el evento, ejemplo 'P1[p1elo] ha derrotado a P2[p2elo]'
+        onEnterQueue:  [ dontannounce, server ] ## el jugador a entrado al evento <nombre del evento>
+
+    #### Anuncios de evento comun ####
+    eventAnnouncements:
+        onCountDownToEvent: [ announce, server ]  ## el evento se ha abierto
+        onOpen: [ announce, server ]  ## el evento esta abierto
+        onStart: [ announce, server ]  ## el evento esta empezando
+        onVictory:  [ announce, server ] ## se ha ganado el evento
+        onCancel:  [ announce, server ] ## se ha cancelado el evento
