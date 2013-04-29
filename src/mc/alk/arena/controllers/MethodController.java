@@ -37,7 +37,6 @@ public class MethodController {
 	/** Our Dynamic listeners, listening for bukkit events*/
 	static EnumMap<EventPriority, HashMap<Type, BukkitEventHandler>> bukkitListeners =
 			new EnumMap<EventPriority,HashMap<Type, BukkitEventHandler>>(EventPriority.class);
-//	static HashMap<Type, BukkitEventListener> bukkitListeners = new HashMap<Type, BukkitEventListener>();
 
 	/** Our registered bukkit events and the methods to call when they happen*/
 	static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<MatchEventMethod>>> bukkitEventMethods =

@@ -125,12 +125,14 @@ public abstract class Match extends Competition implements Runnable {
 
 	Set<ArenaPlayer> readyPlayers = null; /// Do we have ready Players
 	List<MatchState> waitRoomStates = null; /// which states are inside a waitRoom
+	final MatchState tinState; /// which matchstat teleports players in (first one is chosen)
 	Long joinCutoffTime = null; /// at what point do we cut people off from joining
 	Integer currentTimer = null; /// Our current timer
 	Collection<ArenaTeam> originalTeams = null;
 	final Set<ArenaTeam> nonEndingTeams =
 			Collections.synchronizedSet(new HashSet<ArenaTeam>());
 	final Map<ArenaTeam,Integer> individualTeamTimers = Collections.synchronizedMap(new HashMap<ArenaTeam,Integer>());
+	boolean addedVictoryConditions = false;
 
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
@@ -168,13 +170,13 @@ public abstract class Match extends Competition implements Runnable {
 		this.oldlocs = new HashMap<String,Location>();
 		this.tops = params.getTransitionOptions();
 		arena.setMatch(this);
-		addVictoryConditions();
+
 		Collection<ArenaModule> modules = params.getModules();
 		if (modules != null){
 			for (ArenaModule am: modules){
 				addArenaListener(am);}
 		}
-		/// Assign variables from transitionoptions
+		/// placed anywhere options
 		noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
 		if (noEnter && arena.hasRegion())
 			WorldGuardController.setFlag(arena.getWorldGuardRegion(), WorldGuardFlag.ENTRY, !noEnter);
@@ -186,24 +188,26 @@ public abstract class Match extends Competition implements Runnable {
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
 		boolean needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
 
-		MatchState tinState = tops.getMatchState(TransitionOption.TELEPORTIN);
+		tinState = tops.getMatchState(TransitionOption.TELEPORTIN);
 		this.spawnsRandom = tinState != null && tops.hasOptionAt(tinState, TransitionOption.RANDOMSPAWN);
 		this.alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
 		this.cancelExpLoss = tops.hasAnyOption(TransitionOption.NOEXPERIENCELOSS);
 		this.matchResult = new MatchResult();
-		TransitionOptions mo = tops.getOptions(MatchState.PREREQS);
-		this.needsClearInventory = mo != null ? mo.clearInventory() : false;
-		mo = tops.getOptions(MatchState.ONCOMPLETE);
-		this.clearsInventory = mo != null ? mo.clearInventory(): false;
-		mo = tops.getOptions(MatchState.ONDEATH);
-		this.keepsInventory = mo != null ? mo.hasOption(TransitionOption.KEEPINVENTORY) : false;
-		this.clearsInventoryOnDeath = mo != null ? mo.clearInventory(): false;
-		this.respawns = mo != null ? (mo.respawn() || mo.randomRespawn()): false;
-
-		mo = tops.getOptions(MatchState.ONSPAWN);
-		this.respawnsWithClass = mo != null ? (mo.hasOption(TransitionOption.RESPAWNWITHCLASS)): false;
+		/// default Options
 		this.individualWins = tops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.INDIVIDUALWINS);
+		/// preReq Options
+		this.needsClearInventory = tops.hasOptionAt(MatchState.PREREQS, TransitionOption.CLEARINVENTORY);
+		/// onComplete Options
+		this.clearsInventory = tops.hasOptionAt(MatchState.ONCOMPLETE, TransitionOption.CLEARINVENTORY);
+		/// onDeath options
+		this.keepsInventory = tops.hasOptionAt(MatchState.ONDEATH, TransitionOption.KEEPINVENTORY);
+		this.clearsInventoryOnDeath = tops.hasOptionAt(MatchState.ONDEATH, TransitionOption.CLEARINVENTORY);
+		this.respawns = tops.hasOptionAt(MatchState.ONDEATH, TransitionOption.RESPAWN) ||
+				tops.hasOptionAt(MatchState.ONDEATH, TransitionOption.RANDOMRESPAWN);
+		/// onSpawn options
+		this.respawnsWithClass = tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWNWITHCLASS);
 		this.alwaysOpen = params.getAlwaysOpen();
+
 		/// Set waitroom variables
 		final Map<Integer,Location> wr = arena.getWaitRoomSpawnLocs();
 		if (wr != null && !wr.isEmpty()){
@@ -233,9 +237,9 @@ public abstract class Match extends Competition implements Runnable {
 			addArenaListener(new TeamHeadListener());}
 		if (tops.hasAnyOption(TransitionOption.POTIONDAMAGEON)){
 			addArenaListener(new PotionListener(this));}
-		if (!tops.hasAnyOption(TransitionOption.NOTEAMNAMECOLOR)){
+		if (!tops.hasAnyOption(TransitionOption.NOTEAMNAMECOLOR) && TagAPIController.enabled()){
 			addArenaListener(TagAPIController.getNewListener());}
-//		events.add(EntityDamageEvent.class); /// for /// Log.debug
+
 		methodController.addSpecificEvents(this, events);
 		/// add a default objective
 		defaultObjective = new ArenaObjective("default","Player Kills");
@@ -355,6 +359,9 @@ public abstract class Match extends Competition implements Runnable {
 	private void startMatch(){
 		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
 		transitionTo(MatchState.ONSTART);
+		if (!addedVictoryConditions){
+			addVictoryConditions();
+		}
 		List<ArenaTeam> competingTeams = new ArrayList<ArenaTeam>();
 		/// If we will teleport them into the arena for the first time, check to see they are ready first
 		TransitionOptions ts = tops.getOptions(state);
@@ -1017,6 +1024,7 @@ public abstract class Match extends Competition implements Runnable {
 	public MatchMessageHandler getMessageHandler(){return mc.getMessageHandler();}
 
 	private void addVictoryConditions(){
+		addedVictoryConditions = true;
 		VictoryCondition vt = VictoryType.createVictoryCondition(this);
 		/// Add a time limit unless one is provided by default
 		if (!(vt instanceof DefinesTimeLimit) &&
@@ -1097,6 +1105,8 @@ public abstract class Match extends Competition implements Runnable {
 	@Override
 	protected void transitionTo(CompetitionState state){
 		this.state = (MatchState) state;
+		if (state == tinState){
+			addVictoryConditions();}
 		times.put(this.state, System.currentTimeMillis());
 	}
 

@@ -63,6 +63,13 @@ public class MatchParamsSerializer extends BaseConfig{
 			ops = new TreeMap<TransitionOption,Object>(ops); /// try to maintain some ordering
 			for (TransitionOption to: ops.keySet()){
 				String s;
+				switch(to){
+				case GIVECLASS:
+//					ops.
+					break;
+				default:
+					break;
+				}
 				Object value = ops.get(to);
 				if (value == null){
 					s = to.toString();
