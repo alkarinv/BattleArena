@@ -15,7 +15,7 @@ public class Defaults {
 
     /// How long can we keep appending player names together
     /// before reverting to team 1, team 2, etc
-    public static final int MAX_TEAM_NAME_APPEND = 4;
+    public static final int MAX_TEAM_NAME_APPEND = 32;
 
 	/// ARENA QUEUING OPTIONS
 	public static boolean USE_ARENAS_ONLY_IN_ORDER = false;

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
@@ -36,16 +37,16 @@ public class MatchParamsSerializer extends BaseConfig{
 		main.set("nTeams", params.getNTeamRange());
 		main.set("nLives", params.getNLives());
 
-		main.set("matchTime", params.getMatchTime());
-		main.set("timeBetweenRounds", params.getTimeBetweenRounds());
-		main.set("secondsToLoot", params.getSecondsToLoot());
 		main.set("secondsTillMatch", params.getSecondsTillMatch());
+		main.set("matchTime", params.getMatchTime());
+		main.set("secondsToLoot", params.getSecondsToLoot());
 
+		main.set("timeBetweenRounds", params.getTimeBetweenRounds());
 		main.set("matchUpdateInterval", params.getIntervalTime());
 
 		main.set("overrideBattleTracker", params.getOverrideBattleTracker());
 
-		main.set("nConcurrentCompetitions", params.getNConcurrentCompetitions());
+		main.set("nConcurrentCompetitions", ArenaSize.toString(params.getNConcurrentCompetitions()));
 
 		Map<String,Object> map = new LinkedHashMap<String,Object>();
 		MatchTransitions alltops = params.getTransitionOptions();

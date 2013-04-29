@@ -82,7 +82,6 @@ import org.bukkit.World;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
@@ -219,7 +218,7 @@ public abstract class Match extends Competition implements Runnable {
 				PlayerCommandPreprocessEvent.class, PlayerDeathEvent.class, PlayerInteractEvent.class));
 
 		if (needsDamageEvents){
-			events.add(EntityDamageByEntityEvent.class);}
+			events.add(EntityDamageEvent.class);}
 		if (noLeave){
 			events.add(PlayerMoveEvent.class);}
 		if (needsBlockEvents){
@@ -234,7 +233,7 @@ public abstract class Match extends Competition implements Runnable {
 			addArenaListener(new TeamHeadListener());}
 		if (needsPotionEvents){
 			events.add(PotionSplashEvent.class);}
-		events.add(EntityDamageEvent.class); /// Log.debug
+//		events.add(EntityDamageEvent.class); /// for /// Log.debug
 		methodController.addSpecificEvents(this, events);
 		/// add a default objective
 		defaultObjective = new ArenaObjective("default","Player Kills");
@@ -718,7 +717,7 @@ public abstract class Match extends Competition implements Runnable {
 		team.setArenaObjective(defaultObjective);
 		scoreboard.addTeam(team);
 
-		if ( alwaysTeamNames || (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND)){
+		if ( alwaysTeamNames || (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
 			team.setDisplayName(name);}
 		for (ArenaPlayer p: team.getPlayers()){
 			privateAddedToTeam(team,p);}
@@ -762,7 +761,7 @@ public abstract class Match extends Competition implements Runnable {
 		if (Defaults.DEBUG_MATCH_TEAMS)
 			Log.info(getID()+" addedToTeam("+team.getName()+":"+team.getId()+", " + player.getName()+") inside="+insideArena.contains(player.getName()));
 
-		if (!team.hasSetName() && team.getPlayers().size() > Defaults.MAX_TEAM_NAME_APPEND){
+		if (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND){
 			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
 		privateAddedToTeam(team,player);
 		scoreboard.addedToTeam(team, player);

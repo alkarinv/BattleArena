@@ -16,6 +16,7 @@ import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.JoinType;
@@ -145,7 +146,7 @@ public class ConfigSerializer extends BaseConfig{
 		mp.setNLives(lives);
 
 		/// number of concurrently running matches of this type
-		mp.setNConcurrentCompetitions(cs.getInt("nConcurrentCompetitions",Integer.MAX_VALUE));
+		mp.setNConcurrentCompetitions(ArenaSize.toInt(cs.getString("nConcurrentCompetitions","infinite")));
 
 		if (cs.contains("announcements")){
 			AnnouncementOptions an = new AnnouncementOptions();

@@ -31,7 +31,7 @@ public enum InArenaListener implements Listener {
 
 	@EventHandler
 	public void onArenaPlayerEnterQueueEvent(ArenaPlayerEnterQueueEvent event){
-		if (qplayers.isEmpty() && players.isEmpty()){
+		if (!registered){
 			registered = true;
 			for (Listener l: listeners){
 				Bukkit.getPluginManager().registerEvents(l, BattleArena.getSelf());
@@ -52,7 +52,7 @@ public enum InArenaListener implements Listener {
 
 	@EventHandler
 	public void onArenaPlayerEnterEvent(ArenaPlayerEnterEvent event){
-		if (players.isEmpty() && qplayers.isEmpty()){
+		if (!registered){
 			registered = true;
 			for (Listener l: listeners){
 				Bukkit.getPluginManager().registerEvents(l, BattleArena.getSelf());

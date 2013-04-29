@@ -7,11 +7,16 @@ import org.bukkit.plugin.Plugin;
 
 public class MobArenaInterface {
 	static MobArenaInterface mai = null;
-
 	MobArenaUtil ma = null;
+
 	public static void init(Plugin plugin){
-		mai = new MobArenaInterface();
-		mai.ma = new MobArenaUtil(plugin);
+		try {
+			mai = new MobArenaInterface();
+			mai.ma = new MobArenaUtil(plugin);
+		} catch (Error e){
+			mai = null;
+			e.printStackTrace();
+		}
 	}
 	public static boolean hasMobArena() {
 		return mai != null;

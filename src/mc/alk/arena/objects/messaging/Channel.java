@@ -16,11 +16,15 @@ public interface Channel {
 		public void broadcast(String msg) {
 			/** Literally do nothing */
 		}
+		@Override
+		public String toString(){
+			return "[NullChannel]";
+		}
 	}
 
 	public class ServerChannel implements Channel {
 		private ServerChannel(){}
-		
+
 		@Override
 		public void broadcast(String msg) {
 			if (msg == null || msg.trim().isEmpty())

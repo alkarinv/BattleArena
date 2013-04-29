@@ -58,6 +58,7 @@ import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
+import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
 
@@ -229,19 +230,38 @@ public class BAExecutor extends CustomCommandExecutor {
 		AnnouncementOptions ao = mp.getAnnouncementOptions();
 		Channel channel = null;
 		String sysmsg = null;
+		{
+			ao = mp.getAnnouncementOptions();
+			channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
+				AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
+			sysmsg = MessageHandler.getSystemMessage("match_starts_when_time",mp.getSecondsTillMatch());
+			NotifierUtil.notify("msgs", "  ao = " + ao +"   sysmsg=" + sysmsg +"   channel="+ channel +"   team size= " + t.size());
+			if (ao != null){
+				NotifierUtil.notify("msgs", "  channel = " + ao.getChannel(true, MatchState.ONENTERQUEUE));
+			} else {
+				NotifierUtil.notify("msgs", "  channel = " +
+						AnnouncementOptions.getDefaultChannel(true, MatchState.ONENTERQUEUE));
+			}
+		}
 		/// Add them to the queue
 		QueueResult qpp = ac.addToQue(tqo);
+
+		/// Annouce to the server if they have the option set
+		ao = mp.getAnnouncementOptions();
+		channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
+			AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
+		String neededPlayers = qpp.neededPlayers == CompetitionSize.MAX ? "inf" : qpp.neededPlayers+"";
+		channel.broadcast(MessageHandler.getSystemMessage("server_joined_the_queue",
+				mp.getPrefix(),player.getDisplayName(),qpp.playersInQueue,neededPlayers));
+
 		switch(qpp.status){
+
 		case ADDED_TO_EXISTING_MATCH:
 			if (t.size() == 1){
 				t.sendMessage(MessageHandler.getSystemMessage("you_joined_event", mp.getName()));
 			} else {
 				t.sendMessage(MessageHandler.getSystemMessage("you_added_to_team"));
 			}
-			/// Annouce to the server if they have the option set
-			ao = mp.getAnnouncementOptions();
-			channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
-				AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
 			sysmsg = MessageHandler.getSystemMessage("match_starts_when_time",mp.getSecondsTillMatch());
 			t.sendMessage(sysmsg);
 			break;
@@ -255,16 +275,9 @@ public class BAExecutor extends CustomCommandExecutor {
 			t.sendMessage(MessageHandler.getSystemMessage("you_start_when_free"));
 			break;
 		case ADDED_TO_QUEUE:
-			/// Annouce to the server if they have the option set
-			ao = mp.getAnnouncementOptions();
-			channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
-				AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
-
-			String neededPlayers = qpp.neededPlayers == CompetitionSize.MAX ? "inf" : qpp.neededPlayers+"";
-			channel.broadcast(MessageHandler.getSystemMessage("server_joined_the_queue",
-					mp.getPrefix(),player.getDisplayName(),qpp.playersInQueue,neededPlayers));
 			sysmsg = MessageHandler.getSystemMessage("joined_the_queue",
 					mp.toPrettyString(),qpp.pos, neededPlayers);
+
 			StringBuilder msg = new StringBuilder(sysmsg != null ?
 					sysmsg : "&eYou joined the &6%s&e queue.");
 			if (qpp.neededPlayers != CompetitionSize.MAX){
@@ -326,9 +339,9 @@ public class BAExecutor extends CustomCommandExecutor {
 	}
 
 	public boolean leave(ArenaPlayer p, MatchParams mp, boolean adminLeave) {
-//		/// Check Perms
-//		if (!adminLeave && !hasMPPerm(p,mp,"join")){
-//			return sendSystemMessage(p,"no_join_perms", mp.getCommand());}
+		//		/// Check Perms
+		//		if (!adminLeave && !hasMPPerm(p,mp,"join")){
+		//			return sendSystemMessage(p,"no_join_perms", mp.getCommand());}
 
 		if (!canLeave(p)){
 			return true;}

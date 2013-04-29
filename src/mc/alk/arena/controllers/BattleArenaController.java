@@ -52,13 +52,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 
-public class BattleArenaController implements Runnable, TeamHandler, ArenaListener{
+public class BattleArenaController implements Runnable, TeamHandler, ArenaListener, Listener{
 
 	boolean stop = false;
 	boolean running = false;
@@ -75,6 +76,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	public BattleArenaController(){
 		methodController = new MethodController();
 		methodController.addAllEvents(this);
+		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
 	}
 
 	/// Run is Thread Safe

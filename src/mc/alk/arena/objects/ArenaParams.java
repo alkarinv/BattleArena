@@ -104,9 +104,11 @@ public class ArenaParams extends ArenaSize{
 	public boolean isRated(){
 		return rating == Rating.RATED;
 	}
+
 	public void setRated(boolean rated) {
 		this.rating = rated ? Rating.RATED : Rating.UNRATED;
 	}
+
 	public void setRating(Rating rating) {
 		this.rating = rating;
 	}
@@ -114,6 +116,7 @@ public class ArenaParams extends ArenaSize{
 	public void setSecondsToLoot(int i) {
 		secondsToLoot=i;
 	}
+
 	public int getSecondsToLoot() {
 		return secondsToLoot;
 	}

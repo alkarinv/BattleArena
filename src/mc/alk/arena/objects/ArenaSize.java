@@ -107,4 +107,12 @@ public class ArenaSize implements CompetitionSize{
 		maxTeamSize = size;
 		return true;
 	}
+
+	public static String toString(int size){
+		return size == ArenaSize.MAX ? "infinite" : String.valueOf(size);
+	}
+
+	public static int toInt(String size) {
+		return size.equalsIgnoreCase("infinite") ? MAX : Integer.valueOf(size);
+	}
 }

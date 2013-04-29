@@ -113,4 +113,9 @@ public abstract class ArenaModule implements Listener, ArenaListener{
 		}
 		return config;
 	}
+
+	@Override
+	public String toString(){
+		return "["+this.getName()+"_"+this.getVersion()+"]";
+	}
 }
