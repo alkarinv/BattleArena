@@ -77,7 +77,7 @@ public class ArenaMatch extends Match {
 	public void onPlayerQuit(PlayerQuitEvent event){
 		/// If they are just in the arena waiting for match to start, or they havent joined yet
 		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL ||
-				!insideArena.contains(event.getPlayer().getName()) || isInWaitRoomState()){
+				!insideArena.contains(event.getPlayer().getName()) ){
 			return;}
 		ArenaPlayer player = BattleArena.toArenaPlayer(event.getPlayer());
 		ArenaTeam t = getTeam(player);

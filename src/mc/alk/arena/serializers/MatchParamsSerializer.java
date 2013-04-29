@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -65,8 +66,8 @@ public class MatchParamsSerializer extends BaseConfig{
 				String s;
 				switch(to){
 				case GIVECLASS:
-//					ops.
-					break;
+					map.put(to.toString(), getArenaClasses(tops.getClasses()));
+					continue;
 				default:
 					break;
 				}
@@ -82,5 +83,10 @@ public class MatchParamsSerializer extends BaseConfig{
 		}
 		main.set("options", map);
 		super.save();
+	}
+
+	private Object getArenaClasses(Map<Integer, ArenaClass> classes) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
