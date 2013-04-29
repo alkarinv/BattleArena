@@ -190,9 +190,6 @@ public class MethodController {
 
 			Class<? extends Event> bukkitEvent = (Class<? extends Event>)classes[0];
 			boolean baEvent = BAEvent.class.isAssignableFrom(bukkitEvent);
-			HashMap<Class<? extends Event>,List<MatchEventMethod>> typeMap =
-					(HashMap<Class<? extends Event>, List<MatchEventMethod>>) (baEvent? matchTypeMap : bukkitTypeMap);
-
 			MatchState beginState = meh.begin(),endState = meh.end(), cancelState=MatchState.NONE;
 			boolean needsTeamOrPlayer = false;
 			Method getPlayerMethod = null;
@@ -273,11 +270,15 @@ public class MethodController {
 			if (getPlayerMethod == null) getPlayerMethod = getLivingMethod; /// if playermethod is null maybe we have a living
 			if (getPlayerMethod == null) getPlayerMethod = getEntityMethod;/// ok.. maybe at least an entity?
 
-			List<MatchEventMethod> mths = typeMap.get(bukkitEvent);
+			List<MatchEventMethod> mths = baEvent ? matchTypeMap.get(bukkitEvent) : bukkitTypeMap.get(bukkitEvent);
 			if (mths == null){
 				//				System.out.println("bukkitEvent !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " + bukkitEvent + "  " + getPlayerMethod);
 				mths = new ArrayList<MatchEventMethod>();
-				typeMap.put(bukkitEvent, mths);
+				if (baEvent){
+					matchTypeMap.put((Class<? extends BAEvent>) bukkitEvent, mths);
+				} else {
+					bukkitTypeMap.put(bukkitEvent, mths);
+				}
 			}
 
 			if (getPlayerMethod != null){
