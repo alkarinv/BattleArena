@@ -2,6 +2,7 @@ package mc.alk.arena.objects.scoreboard;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
 import org.bukkit.Bukkit;
@@ -21,6 +22,7 @@ public class BukkitScoreboard extends ArenaScoreboard{
 
 	Objective main;
 	Objective secondary;
+	final boolean colorPlayerNames;
 
 	public BukkitScoreboard(MatchParams params) {
 		super(params);
@@ -29,6 +31,7 @@ public class BukkitScoreboard extends ArenaScoreboard{
 		if (solo){
 
 		}
+		colorPlayerNames = !params.getTransitionOptions().hasAnyOption(TransitionOption.NOTEAMNAMECOLOR);
 	}
 
 	@Override
@@ -86,7 +89,8 @@ public class BukkitScoreboard extends ArenaScoreboard{
 			t.setDisplayName(team.getDisplayName());
 			for (Player p: team.getBukkitPlayers()){
 				t.addPlayer(p);
-				t.setPrefix(team.getTeamChatColor()+"");
+				if (colorPlayerNames)
+					t.setPrefix(team.getTeamChatColor()+"");
 				if (p.isOnline())
 					p.setScoreboard(board);
 
@@ -105,7 +109,8 @@ public class BukkitScoreboard extends ArenaScoreboard{
 		Team t = board.getTeam(team.geIDString());
 		if (t!=null){
 			t.addPlayer(player.getPlayer());
-			t.setPrefix(team.getTeamChatColor()+""); /// need to set after every team????!!
+			if (colorPlayerNames)
+				t.setPrefix(team.getTeamChatColor()+""); /// need to set after every player added to team????!!
 			player.getPlayer().setScoreboard(board);
 		}
 	}

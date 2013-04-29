@@ -1,6 +1,7 @@
 package mc.alk.arena.objects.regions;
 
-import mc.alk.v1r5.util.SerializerUtil;
+
+import mc.alk.arena.util.SerializerUtil;
 
 import org.bukkit.Location;
 import org.bukkit.World;

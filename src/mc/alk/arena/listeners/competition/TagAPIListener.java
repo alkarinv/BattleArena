@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.events.players.ArenaPlayerEnterEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.objects.arenas.ArenaListener;
+import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 
@@ -21,7 +23,7 @@ import org.kitteh.tag.api.TagAPIException;
 
 
 
-public enum TagAPIListener implements Listener {
+public enum TagAPIListener implements Listener, ArenaListener {
 	INSTANCE;
 
 	final Map<String, ChatColor> playerName = new ConcurrentHashMap<String,ChatColor>();
@@ -42,7 +44,7 @@ public enum TagAPIListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@MatchEventHandler
 	public void onArenaPlayerEnterEvent(ArenaPlayerEnterEvent event){
 		Player player = event.getPlayer().getPlayer();
 		if (!player.isOnline() || !BattleArena.getSelf().isEnabled())
@@ -61,7 +63,7 @@ public enum TagAPIListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@MatchEventHandler
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
 		Player player = event.getPlayer().getPlayer();
 		if (!player.isOnline() || !BattleArena.getSelf().isEnabled())

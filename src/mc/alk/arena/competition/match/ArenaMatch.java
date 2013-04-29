@@ -8,7 +8,6 @@ import java.util.List;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.events.matches.MatchClassSelectedEvent;
@@ -52,20 +51,17 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 
 
 /**
- * TODO once I add in GameLogic, transfer all of this into a module
- *
+ * TODO transfer most of this into their own listeners
+ * like ItemDropListener
  */
 public class ArenaMatch extends Match {
 	static HashSet<String> disabledCommands = new HashSet<String>();
@@ -357,12 +353,6 @@ public class ArenaMatch extends Match {
 	}
 
 	@MatchEventHandler(priority=EventPriority.HIGH)
-	public void onPlayerDropItem(PlayerDropItemEvent event){
-		if (tops.hasOptionAt(state, TransitionOption.ITEMDROPOFF)){
-			event.setCancelled(true);}
-	}
-
-	@MatchEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerMove(PlayerMoveEvent event){
 		TransitionOptions to = tops.getOptions(state);
 		if (to==null)
@@ -523,39 +513,7 @@ public class ArenaMatch extends Match {
 		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
 	}
 
-	@MatchEventHandler(priority=EventPriority.HIGH)
-	public void onPlayerTeleport(PlayerTeleportEvent event){
-		if (event.isCancelled() || event.getPlayer().hasPermission(Permissions.TELEPORT_BYPASS_PERM))
-			return;
-		TransitionOptions ops = tops.getOptions(state);
-		if (ops==null)
-			return;
-		if (ops.hasOption(TransitionOption.NOTELEPORT)){
-			MessageUtil.sendMessage(event.getPlayer(), "&cTeleports are disabled in this arena");
-			event.setCancelled(true);
-			return;
-		}
-		if (ops.hasOption(TransitionOption.NOWORLDCHANGE)){
-			if (event.getFrom().getWorld().getUID() != event.getTo().getWorld().getUID()){
-				MessageUtil.sendMessage(event.getPlayer(), "&cWorldChanges are disabled in this arena");
-				event.setCancelled(true);
-			}
-		}
-	}
 
-	@MatchEventHandler(needsPlayer=false)
-	public void onPotionSplash(PotionSplashEvent event) {
-		if (!event.isCancelled())
-			return;
-		if (event.getEntity().getShooter() instanceof Player){
-			Player p = (Player) event.getEntity().getShooter();
-			ArenaPlayer ap = BattleArena.toArenaPlayer(p);
-			if (insideArena(ap) &&
-					getParams().getTransitionOptions().hasOptionAt(getState(), TransitionOption.POTIONDAMAGEON)){
-				event.setCancelled(false);
-			}
-		}
-	}
 
 	@MatchEventHandler
 	public void onPlayerReady(ArenaPlayerReadyEvent event){

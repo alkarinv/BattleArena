@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers;
 
 import mc.alk.arena.listeners.competition.TagAPIListener;
+import mc.alk.arena.objects.arenas.ArenaListener;
 
 
 public class TagAPIController {
@@ -13,5 +14,9 @@ public class TagAPIController {
 	public static void setEnable(boolean enable) {
 		hasTagAPI = enable;
 		TagAPIListener.enable(enable);
+	}
+
+	public static ArenaListener getNewListener() {
+		return TagAPIListener.INSTANCE;
 	}
 }

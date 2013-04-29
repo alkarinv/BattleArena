@@ -37,6 +37,7 @@ public enum TransitionOption{
 	WOOLTEAMS("woolTeams",false),					/// Use team Heads when team sizes are greater than 1 (found in teamColors.yml)
 	ALWAYSWOOLTEAMS("alwaysWoolTeams", false),		/// Always use team Heads (found in teamColors.yml)
 	ALWAYSTEAMNAMES("alwaysTeamNames", false),		/// Always use team Names (found in teamColors.yml)
+	NOTEAMNAMECOLOR("noTeamNameColor", false),		/// Dont use team name color
 
 
 	/// Teleport Options

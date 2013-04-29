@@ -21,6 +21,7 @@ import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.RewardController;
 import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.TagAPIController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
@@ -42,6 +43,9 @@ import mc.alk.arena.events.prizes.ArenaLosersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaWinnersPrizeEvent;
 import mc.alk.arena.events.teams.TeamDeathEvent;
+import mc.alk.arena.listeners.competition.ItemDropListener;
+import mc.alk.arena.listeners.competition.PlayerTeleportListener;
+import mc.alk.arena.listeners.competition.PotionListener;
 import mc.alk.arena.listeners.competition.TeamHeadListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
@@ -84,14 +88,11 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 
 /// TODO once I have GameLogic, split this into two matches, one for always open, one for normal
@@ -184,8 +185,7 @@ public abstract class Match extends Competition implements Runnable {
 		boolean needsBlockEvents = tops.hasAnyOption(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF,
 				TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF);
 		boolean needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
-		boolean needsItemDropEvents = tops.hasAnyOption(TransitionOption.ITEMDROPOFF);
-		boolean needsPotionEvents = tops.hasAnyOption(TransitionOption.POTIONDAMAGEON);
+
 		MatchState tinState = tops.getMatchState(TransitionOption.TELEPORTIN);
 		this.spawnsRandom = tinState != null && tops.hasOptionAt(tinState, TransitionOption.RANDOMSPAWN);
 		this.alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
@@ -199,7 +199,7 @@ public abstract class Match extends Competition implements Runnable {
 		this.keepsInventory = mo != null ? mo.hasOption(TransitionOption.KEEPINVENTORY) : false;
 		this.clearsInventoryOnDeath = mo != null ? mo.clearInventory(): false;
 		this.respawns = mo != null ? (mo.respawn() || mo.randomRespawn()): false;
-		boolean stopsTeleports = tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE);
+
 		mo = tops.getOptions(MatchState.ONSPAWN);
 		this.respawnsWithClass = mo != null ? (mo.hasOption(TransitionOption.RESPAWNWITHCLASS)): false;
 		this.individualWins = tops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.INDIVIDUALWINS);
@@ -225,14 +225,16 @@ public abstract class Match extends Competition implements Runnable {
 			events.add(BlockBreakEvent.class);
 			events.add(BlockPlaceEvent.class);
 		}
-		if (needsItemDropEvents){
-			events.add(PlayerDropItemEvent.class);}
-		if (stopsTeleports || noEnter){
-			events.add(PlayerTeleportEvent.class);}
+		if (tops.hasAnyOption(TransitionOption.ITEMDROPOFF)){
+			addArenaListener(new ItemDropListener(this));}
+		if (tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE) || noEnter){
+			addArenaListener(new PlayerTeleportListener(this));}
 		if (woolTeams){
 			addArenaListener(new TeamHeadListener());}
-		if (needsPotionEvents){
-			events.add(PotionSplashEvent.class);}
+		if (tops.hasAnyOption(TransitionOption.POTIONDAMAGEON)){
+			addArenaListener(new PotionListener(this));}
+		if (!tops.hasAnyOption(TransitionOption.NOTEAMNAMECOLOR)){
+			addArenaListener(TagAPIController.getNewListener());}
 //		events.add(EntityDamageEvent.class); /// for /// Log.debug
 		methodController.addSpecificEvents(this, events);
 		/// add a default objective
