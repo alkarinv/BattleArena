@@ -19,7 +19,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.ArenaListener;
-import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -60,7 +60,7 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 		return d;
 	}
 
-	@MatchEventHandler
+	@ArenaEventHandler
 	public void matchCancelled(MatchCancelledEvent event){
 		Match match = event.getMatch();
 		Matchup matchup = matchups.remove(match);
@@ -83,7 +83,7 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 		}
 	}
 
-	@MatchEventHandler
+	@ArenaEventHandler
 	public void matchComplete(MatchCompletedEvent event){
 		Match match = event.getMatch();
 		Matchup matchup = matchups.remove(match);

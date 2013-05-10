@@ -13,6 +13,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
 
 import org.apache.commons.lang.StringUtils;
@@ -63,11 +64,16 @@ public class EventOpenOptions {
 		Map<EventOpenOption,Object> ops = eoo.options;
 		int i =0;
 		for (String op: args){
-			if ( ignoreArgs != null && ignoreArgs.contains(i++))
+			if ( ignoreArgs != null && ignoreArgs.contains(i++) || op == null || op.isEmpty())
 				continue;
 			Object obj = null;
 			String[] split = op.split("=");
 			split[0] = split[0].trim().toUpperCase();
+			Arena arena = BattleArena.getBAController().getArena(op);
+			if (arena != null){
+				ops.put(EventOpenOption.ARENA, arena);
+				continue;
+			}
 			EventOpenOption to = null;
 			try{
 				to = EventOpenOption.valueOf(split[0]);
@@ -156,6 +162,7 @@ public class EventOpenOptions {
 
 		Arena arena;
 		boolean autoFindArena = false;
+//		Log.debug("#L@K#JRKDJFKJ  " + hasOption(EventOpenOption.ARENA));
 		if (hasOption(EventOpenOption.ARENA)){
 			arena = (Arena) getOption(EventOpenOption.ARENA);
 		} else {

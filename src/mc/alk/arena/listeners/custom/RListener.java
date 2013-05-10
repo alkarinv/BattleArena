@@ -2,20 +2,20 @@ package mc.alk.arena.listeners.custom;
 
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.EventPriority;
-import mc.alk.arena.objects.events.MatchEventMethod;
+import mc.alk.arena.objects.events.ArenaEventMethod;
 
 public class RListener implements Comparable<RListener> {
 	ArenaListener al;
-	MatchEventMethod mem;
+	ArenaEventMethod mem;
 
-	public RListener(ArenaListener spl, MatchEventMethod mem) {
+	public RListener(ArenaListener spl, ArenaEventMethod mem) {
 		this.al = spl;
 		this.mem = mem;
 	}
 	public boolean isSpecificPlayerMethod(){
 		return mem.isSpecificPlayerMethod();
 	}
-	public MatchEventMethod getMethod() {
+	public ArenaEventMethod getMethod() {
 		return mem;
 	}
 

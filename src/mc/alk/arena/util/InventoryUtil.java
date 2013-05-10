@@ -9,7 +9,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.util.compat.IInventoryHelper;
@@ -29,6 +28,7 @@ public class InventoryUtil {
 	static IInventoryHelper handler = null;
 
 	static {
+		Class<?>[] args = {};
 		try {
 			final String pkg = Bukkit.getServer().getClass().getPackage().getName();
 			String version = pkg.substring(pkg.lastIndexOf('.') + 1);
@@ -38,9 +38,15 @@ public class InventoryUtil {
 			} else{
 				clazz = Class.forName("mc.alk.arena.util.compat.post.InventoryHelper");
 			}
-			Class<?>[] args = {};
+
 			handler = (IInventoryHelper) clazz.getConstructor(args).newInstance((Object[])args);
 		} catch (Exception e) {
+			try{
+				final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.pre.InventoryHelper");
+				handler = (IInventoryHelper) clazz.getConstructor(args).newInstance((Object[])args);
+			} catch (Exception e2){
+				e2.printStackTrace();
+			}
 			e.printStackTrace();
 		}
 	}
@@ -638,20 +644,32 @@ public class InventoryUtil {
 			is = InventoryUtil.getItemStack(split[0].trim());
 			if (is == null)
 				return null;
-			final int amt = split.length > 1 ? Integer.valueOf(split[split.length -1]) : 1;
+			int amt;
+			if (split.length > 1){
+				try {
+					amt = Integer.valueOf(split[split.length-1]);
+				} catch (Exception e){
+					amt = 1;
+				}
+			} else {
+				amt = 1;
+			}
 			is.setAmount(amt);
 			for (int i = 1; i < split.length-1;i++){
 				EnchantmentWithLevel ewl = getEnchantment(split[i].trim());
+				if (ewl == null){
+					throw new IllegalArgumentException(" enchantment " + split[i].trim() +" does not exist");
+				}
 				try {
 					is.addUnsafeEnchantment(ewl.e, ewl.lvl);
 				} catch (IllegalArgumentException iae){
-					Logger.getLogger("minecraft").warning(ewl+" can not be applied to the item " + str);
+					Log.warn(ewl+" can not be applied to the item " + str);
 				}
 			}
 		} catch(Exception e){
 			e.printStackTrace();
-			Logger.getLogger("minecraft").severe("Couldnt parse item=" + str);
-			throw new Exception("parse item was bad");
+			Log.err(e.getMessage());
+			throw new Exception("[BA error] Coudln't parse item="+str);
 		}
 		return is;
 	}
@@ -723,7 +741,12 @@ public class InventoryUtil {
 	 */
 	public static String getItemString(ItemStack is) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(is.getType().toString() +":"+is.getDurability()+" ");
+		if (is.getDurability() > 0){
+			sb.append(is.getType().toString() +":"+is.getDurability()+" ");
+		} else {
+			sb.append(is.getType().toString() +" ");
+		}
+
 		Map<Enchantment,Integer> encs = is.getEnchantments();
 		for (Enchantment enc : encs.keySet()){
 			sb.append(enc.getName() + ":" + encs.get(enc)+" ");

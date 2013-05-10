@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.events.players.ArenaPlayerEnterEvent;
+import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
 import mc.alk.arena.util.HeroesUtil;
 import mc.alk.arena.util.MessageUtil;
 
@@ -31,7 +31,7 @@ public enum HeroesListener implements Listener {
 	}
 
 	@EventHandler
-	public void onArenaPlayerEnterEvent(ArenaPlayerEnterEvent event){
+	public void onArenaPlayerEnterEvent(ArenaPlayerEnterMatchEvent event){
 		HeroesUtil.addedToTeam(event.getTeam(), event.getPlayer().getPlayer());
 	}
 

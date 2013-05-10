@@ -28,6 +28,13 @@ public class ArenaClass {
 	/** Name of a disguise for this class */
 	String disguiseName;
 
+	boolean valid = false;
+
+	public ArenaClass(String name){
+		this(name,name,new ArrayList<ItemStack>(),new ArrayList<PotionEffect>());
+		valid = false;
+	}
+
 	public ArenaClass(String name, String displayName, List<ItemStack> items, List<PotionEffect> effects){
 		this.name = name;
 		CopyOnWriteArrayList<ItemStack> listitems = new CopyOnWriteArrayList<ItemStack>();
@@ -45,6 +52,7 @@ public class ArenaClass {
 		this.items.addAll(armoritems);
 		this.effects = effects;
 		this.displayName = displayName;
+		valid = true;
 	}
 
 	/**
@@ -98,6 +106,10 @@ public class ArenaClass {
 	@Override
 	public String toString(){
 		return "[ArenaClass "+name+" items="+items +" enchants=" + effects+"]";
+	}
+
+	public boolean valid() {
+		return valid;
 	}
 
 }

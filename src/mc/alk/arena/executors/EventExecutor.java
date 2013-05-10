@@ -1,6 +1,8 @@
 package mc.alk.arena.executors;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
@@ -145,16 +147,16 @@ public class EventExecutor extends BAExecutor{
 		return sendMessage(sender,sb.toString());
 	}
 
-//	@MCCommand(cmds={"leave"}, usage="leave", order=2)
-//	public boolean eventLeave(ArenaPlayer p) {
-//		Event event = controller.getEvent(p);
-//		if (event == null){
-//			return sendMessage(p,"&eYou aren't inside an event!");}
-//		if (!event.waitingToJoin(p) && !event.hasPlayer(p)){
-//			return sendMessage(p,"&eYou aren't inside the &6" + event.getName());}
-//		event.leave(p);
-//		return sendMessage(p,"&eYou have left the &6" + event.getName());
-//	}
+	//	@MCCommand(cmds={"leave"}, usage="leave", order=2)
+	//	public boolean eventLeave(ArenaPlayer p) {
+	//		Event event = controller.getEvent(p);
+	//		if (event == null){
+	//			return sendMessage(p,"&eYou aren't inside an event!");}
+	//		if (!event.waitingToJoin(p) && !event.hasPlayer(p)){
+	//			return sendMessage(p,"&eYou aren't inside the &6" + event.getName());}
+	//		event.leave(p);
+	//		return sendMessage(p,"&eYou have left the &6" + event.getName());
+	//	}
 
 	@MCCommand(cmds={"check"},usage="check", order=2)
 	public boolean eventCheck(CommandSender sender, EventParams eventParams) {
@@ -199,8 +201,33 @@ public class EventExecutor extends BAExecutor{
 			if (ee instanceof ReservedArenaEventExecutor){
 				ReservedArenaEventExecutor exe = (ReservedArenaEventExecutor) ee;
 				try {
-					event = exe.openIt(eventParams, new String[]{"auto","silent"});
-				} catch (Exception e) {
+					List<String> openops = eventParams.getPlayerOpenOptions();
+					LinkedList<String> lops;
+					if (openops == null){
+						lops = new LinkedList<String>();
+						if (args != null)
+							lops.addAll(Arrays.asList(args));
+						lops.add("silent");
+					} else {
+						lops = new LinkedList<String>(openops);
+						if (args != null)
+							lops.addAll(Arrays.asList(args));
+					}
+					lops.remove("join");
+					if (!lops.getFirst().equalsIgnoreCase("auto") && !lops.getFirst().equalsIgnoreCase("open"))
+						lops.addFirst("auto");
+					String ops[] = lops.toArray(new String[lops.size()]);
+					event = exe.openIt(eventParams, ops);
+				} catch (InvalidEventException e ) {
+					MessageUtil.sendMessage(p, e.getMessage());
+					sendSystemMessage(p, "you_cant_join_event");
+					return false;
+				} catch (InvalidOptionException e){
+					MessageUtil.sendMessage(p, e.getMessage());
+					sendSystemMessage(p, "you_cant_join_event");
+					return false;
+				}catch (Exception e) {
+					e.printStackTrace();
 					sendSystemMessage(p, "you_cant_join_event");
 					return false;
 				}
@@ -269,7 +296,7 @@ public class EventExecutor extends BAExecutor{
 
 		/// Finally actually join the event
 		event.joining(tqo);
-//		sendSystemMessage(t, "you_joined_event", event.getDisplayName());
+		//		sendSystemMessage(t, "you_joined_event", event.getDisplayName());
 		if (sq.getSecondsTillStart() != null){
 			Long time = event.getTimeTillStart();
 			if (time != null)

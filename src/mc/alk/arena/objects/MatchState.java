@@ -29,9 +29,14 @@ public enum MatchState implements CompetitionState{
 	public String toString(){
 		return name;
 	}
-	public static MatchState fromName(String str){
+
+	public static MatchState fromString(String str){
 		str = str.toUpperCase();
-		return MatchState.valueOf(str);
+		try{
+			return MatchState.valueOf(str);
+		} catch (Exception e){
+			return null;
+		}
 	}
 
 	public boolean isRunning() {

@@ -42,7 +42,7 @@ import mc.alk.arena.objects.tournament.Matchup;
 import org.bukkit.Bukkit;
 
 
-public class ArenaMatchQueue {
+public class ArenaMatchQueue{
 	static final boolean DEBUG = false;
 
 	final Map<ArenaType, TeamQueue> tqs = new HashMap<ArenaType, TeamQueue>();
@@ -104,21 +104,21 @@ public class ArenaMatchQueue {
 			notifyAll();
 		final MatchParams tomp = to.getMatchParams();
 		TeamQueue tq = getTeamQ(tomp);
-		/// If forceStart we need to track the first Team who joins, we will base how long till the force start off them
-		/// we should also report to the user that the match will start in x seconds, despite the queue size
-		Long time = null;
-		if (Defaults.MATCH_FORCESTART_ENABLED && to instanceof TeamQObject){
-			IdTime idt = updateTimer(tq,to);
-			if (idt != null)
-				time = idt.time;
-		}
 		tq.add(to);
 		/// return if we aren't going to check for a start (aka we already have too many matches running)
 		QueueResult qr = new QueueResult();
 		if (!suspend && checkStart)
 			qr = notifyIfNeeded(tq);
+		if (to instanceof TeamQObject){
+			/// If forceStart we need to track the first Team who joins, we will base how long till the force start off them
+			/// we should also report to the user that the match will start in x seconds, despite the queue size
+			if (Defaults.MATCH_FORCESTART_START_ONJOIN || qr != null && qr.params.getMinPlayers() <= qr.playersInQueue){
+				IdTime idt = updateTimer(tq,to);
+				if (idt != null)
+					qr.time = idt.time;
+			}
+		}
 
-		qr.time = time;
 		return qr;
 	}
 
@@ -215,13 +215,13 @@ public class ArenaMatchQueue {
 		/// With a force start we are trying to be as permissive as possible,
 		/// this means changing the minimum teamsize and teams.  It also means later on we will do the same
 		/// with the arena params
-//		if (Defaults.MATCH_FORCESTART_ENABLED){
-			IdTime idt = forceTimers.get(tq);
-			if (idt != null && idt.time <= System.currentTimeMillis()){
-				qr.time = idt.time;
-				forceStart = true;
-			}
-//		}
+		//		if (Defaults.MATCH_FORCESTART_ENABLED){
+		IdTime idt = forceTimers.get(tq);
+		if (idt != null && idt.time <= System.currentTimeMillis()){
+			qr.time = idt.time;
+			forceStart = true;
+		}
+		//		}
 		if (idt == null || idt.time == null){
 			qr.timeStatus = TimeStatus.CANT_FORCESTART;
 		}
@@ -253,7 +253,7 @@ public class ArenaMatchQueue {
 						"   tq=" + tq +" --- ap="+a.getParameters() +"    baseP="+baseParams +" newP="+newParams +"  " + newParams.getMaxPlayers() +
 						" tqparams="+tq.mp);
 				for (QueueObject qo : tq){
-//					Log.debug("   qo params = " + qo.getMatchParams());
+					//					Log.debug("   qo params = " + qo.getMatchParams());
 					/// Check if we should only use 1 arena (skipNonMatched == true).  But for certain elements in the queue
 					/// We need to ignore.
 					/// Allow MatchedUp Matches to proceed like normal (this happens for tournaments and duels)
@@ -265,7 +265,7 @@ public class ArenaMatchQueue {
 					}
 					MatchParams qomp = qo.getMatchParams();
 					/// Check to see if the team matches these params
-//					Log.debug("   qo params = " + qo.getMatchParams() +"  matches new = " + qomp.matches(newParams));
+					//					Log.debug("   qo params = " + qo.getMatchParams() +"  matches new = " + qomp.matches(newParams));
 					if (!qomp.matches(newParams)){
 						if (!forceStart){ /// continue to next queue object
 							continue;
@@ -346,13 +346,13 @@ public class ArenaMatchQueue {
 		boolean hasComp = false;
 		/// Now that we have a semi sorted list, get the largest number of teams that fit in this arena
 		for (QueueObject qo : newList){
-//			Log.debug("###################   " +   qo);
+			//			Log.debug("###################   " +   qo);
 			if (qo instanceof MatchTeamQObject){ /// we have our teams already
-//				Log.debug("      222 ###################   " +   qo);
+				//				Log.debug("      222 ###################   " +   qo);
 				tjh.deconstruct();
 				qr.status = QueueResult.QueueStatus.ADDED_TO_QUEUE;
 				qr.match = getPreMadeMatch(tq, arena, qo);
-//				Log.debug("      333 ###################   " +   qr.match);
+				//				Log.debug("      333 ###################   " +   qr.match);
 				return;
 			} else {
 				TeamQObject to = (TeamQObject) qo;

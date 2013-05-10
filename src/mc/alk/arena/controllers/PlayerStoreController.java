@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerStoreController {
+	static final PlayerStoreController INSTANCE = new PlayerStoreController();
 	/// TODO since the number of things I am storing is so large now, this might be a good time to refactor these
 	/// into something a bit cleaner
 	final HashMap <String, Integer> expmap = new HashMap<String,Integer>();
@@ -285,6 +286,10 @@ public class PlayerStoreController {
 		if (!HeroesController.enabled())
 			return;
 		HeroesController.cancelExpLoss(p.getPlayer(),cancel);
+	}
+
+	public static PlayerStoreController getPlayerStoreController() {
+		return INSTANCE;
 	}
 
 }

@@ -15,7 +15,7 @@ import org.bukkit.event.Event;
  *
  */
 public class BukkitEventHandler {
-	MatchEventListener ml;
+	ArenaEventListener ml;
 	SpecificPlayerEventListener spl;
 
 	/**
@@ -25,7 +25,7 @@ public class BukkitEventHandler {
 	 */
 	public BukkitEventHandler(final Class<? extends Event> bukkitEvent,
 			org.bukkit.event.EventPriority bukkitPriority, Method getPlayerMethod) {
-		ml = new MatchEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
+		ml = new ArenaEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
 		spl = new SpecificPlayerEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
 		if (Defaults.DEBUG_EVENTS) Log.info("Registering BukkitEventListener for type " + bukkitEvent +" pm="+getPlayerMethod);
 	}
@@ -77,7 +77,7 @@ public class BukkitEventHandler {
 		ml.removeAllListeners(rl);
 	}
 
-	public MatchEventListener getMatchListener(){
+	public ArenaEventListener getMatchListener(){
 		return ml;
 	}
 

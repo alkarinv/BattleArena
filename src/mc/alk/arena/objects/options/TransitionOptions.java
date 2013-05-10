@@ -142,6 +142,7 @@ public class TransitionOptions {
 	}
 	public Float getFlightSpeed(){return getFloat(TransitionOption.FLIGHTSPEED);}
 	public Integer getInvulnerable(){return getInt(TransitionOption.INVULNERABLE);}
+	public Integer getRespawnTime(){return getInt(TransitionOption.RESPAWNTIME);}
 	public Integer getExperience(){return getInt(TransitionOption.EXPERIENCE);}
 	public boolean hasExperience(){return options.containsKey(TransitionOption.EXPERIENCE);}
 

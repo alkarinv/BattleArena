@@ -4,8 +4,13 @@ import java.util.Collection;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
+
+import org.bukkit.Location;
 
 public class BlankCompetition extends Competition{
 	MatchParams params;
@@ -55,5 +60,46 @@ public class BlankCompetition extends Competition{
 
 	@Override
 	public boolean leave(ArenaPlayer p) {return true;}
+
+	@Override
+	public MatchState getMatchState() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean inside(ArenaPlayer player) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int indexOf(ArenaTeam team) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b) {
+		return false;
+	}
+
+	@Override
+	public boolean teleporting(ArenaPlayer player) {
+		return false;
+	}
+
+	@Override
+	public Location getSpawn(int index, LocationType type, boolean random) {
+		return null;
+	}
+
+	@Override
+	public Location getSpawn(ArenaPlayer player, LocationType type, boolean random) {
+		return null;
+	}
+
+	@Override
+	public LocationType getLocationType() {return null;}
 
 }

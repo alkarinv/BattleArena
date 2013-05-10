@@ -5,11 +5,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.CompetitionEvent;
+import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
@@ -22,16 +25,23 @@ import mc.alk.arena.objects.teams.TeamHandler;
  * @author alkarin
  *
  */
-public abstract class Competition implements ArenaListener, TeamHandler {
+public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/** Our teams */
-	protected List<ArenaTeam> teams = Collections.synchronizedList(new ArrayList<ArenaTeam>());
+	protected final List<ArenaTeam> teams = Collections.synchronizedList(new ArrayList<ArenaTeam>());
 
 	/** Players that have left the match */
 	protected final Set<String> leftPlayers = Collections.synchronizedSet(new HashSet<String>());
 
 	/** Our Method Controller that will handle anyone listening to this competition*/
 	protected final MethodController methodController = new MethodController();
+
+	/** a list of team indexes.  Teams can come and go, so the List of teams isnt always reflective
+	 * of the real index.*/
+	protected final Map<ArenaTeam,Integer> teamIndexes = new ConcurrentHashMap<ArenaTeam,Integer>();
+
+	/** Which team indexes are currently used */
+	protected final Set<Integer> usedIndexes = new HashSet<Integer>();
 
 	/**
 	 * Get the time of when the competition did the given state
@@ -127,7 +137,14 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 * @param teams
 	 */
 	public void setTeams(List<ArenaTeam> teams){
-		this.teams = teams;
+		this.teams.clear();
+		this.teams.addAll(teams);
+		this.teamIndexes.clear();
+		this.usedIndexes.clear();
+		for (int i=0;i<teams.size();i++){
+			teamIndexes.put(teams.get(i), i);
+			usedIndexes.add(i);
+		}
 	}
 
 	/**
@@ -143,11 +160,10 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 * @param BAevent event
 	 */
 	public void callEvent(BAEvent event) {
+		if (event instanceof CompetitionEvent && ((CompetitionEvent)event).getCompetition()==null){
+			((CompetitionEvent)event).setCompetition(this);}
 		event.callEvent(); /// Call anyone using generic bukkit listeners
 		methodController.callEvent(event); /// Call our listeners listening to only this competition
-		if (event instanceof CompetitionEvent && ((CompetitionEvent)event).getCompetition()==null){
-			((CompetitionEvent)event).setCompetition(this);
-		}
 	}
 
 	/**
@@ -161,15 +177,15 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 
 	/**
 	 * Add an arena listener for this competition
-	 * @param al
+	 * @param arenaListener
 	 */
-	public void addArenaListener(ArenaListener al){
-		methodController.addListener(al);
+	public void addArenaListener(ArenaListener arenaListener){
+		methodController.addListener(arenaListener);
 	}
 
 	/**
 	 * Remove an arena listener for this competition
-	 * @param al
+	 * @param arenaListener
 	 */
 	public boolean removeArenaListener(ArenaListener arenaListener){
 		return methodController.removeListener(arenaListener);
@@ -202,9 +218,9 @@ public abstract class Competition implements ArenaListener, TeamHandler {
 	 * @param player to check for
 	 * @return true or false
 	 */
-	public boolean hasAlivePlayer(ArenaPlayer p) {
+	public boolean hasAlivePlayer(ArenaPlayer player) {
 		for (ArenaTeam t: teams) {
-			if (t.hasAliveMember(p)) return true;}
+			if (t.hasAliveMember(player)) return true;}
 		return false;
 	}
 

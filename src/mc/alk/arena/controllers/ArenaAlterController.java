@@ -12,6 +12,7 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.regions.PylamoRegion;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
+import mc.alk.arena.serializers.PlayerContainerSerializer;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.TeamUtil;
@@ -29,9 +30,15 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class ArenaAlterController {
 	public enum ChangeType{
-		NTEAMS(true,true), TEAMSIZE(true,false), WAITROOM(true,false),
-		SPAWNLOC(true,false), VLOC(true,true), TYPE(true,false),
-		ADDREGION(false,true), ADDPYLAMOREGION(false,true);
+		NTEAMS(true,true),
+		TEAMSIZE(true,false),
+		WAITROOM(true,false),
+		LOBBY(true,false),
+		SPAWNLOC(true,false),
+		VLOC(true,true),
+		TYPE(true,false),
+		ADDREGION(false,true),
+		ADDPYLAMOREGION(false,true);
 
 		final boolean needsValue; /// whether the transition needs a value
 
@@ -48,16 +55,18 @@ public class ArenaAlterController {
 			str = str.toUpperCase();
 			ChangeType ct = null;
 			try {ct = ChangeType.valueOf(str);} catch (Exception e){}
+//			Log.debug("########## str  " + str +"   ct = " +ct);
 			if (ct != null)
 				return ct;
+			if (str.equalsIgnoreCase("wr")) return WAITROOM;
+			if (str.equalsIgnoreCase("l")) return LOBBY;
+			if (str.equalsIgnoreCase("v")) return VLOC;
 			try{
 				if (Integer.valueOf(str) != null)
 					return SPAWNLOC;
 			} catch (Exception e){}
 			if (TeamUtil.getTeamIndex(str) != null){
 				return SPAWNLOC;}
-			if (str.equalsIgnoreCase("wr")) return WAITROOM;
-			if (str.equalsIgnoreCase("v")) return VLOC;
 			return null;
 		}
 
@@ -72,20 +81,33 @@ public class ArenaAlterController {
 		}
 	}
 
-	public static boolean alterArena(CommandSender sender, Arena arena, String[] args) {
-		if (args.length < 3){
+	public static boolean alterLobby(CommandSender sender, MatchParams params, String[] args) {
+		if (args.length < 2){
 			showAlterHelp(sender);
-			//			sendMessage(sender,ChatColor.YELLOW+ "      or /arena alter MainArena spawnitem <itemname>:<matchEndTime between spawn> ");
 			return false;
 		}
 		BattleArenaController ac = BattleArena.getBAController();
-		String arenaName = arena.getName();
+		String[] otherOptions = args.length > 3 ? Arrays.copyOfRange(args, 3, args.length) : null;
+		String changetype = args[1];
+		String value = "1";
+		if (args.length > 2)
+			value = args[2];
+		changeLobbySpawn(sender,params,ac,changetype,value,otherOptions);
+		return true;
+	}
+	public static boolean alterArena(CommandSender sender, MatchParams params, Arena arena, String[] args) {
+		if (args.length < 3){
+			showAlterHelp(sender);
+			return false;
+		}
+		BattleArenaController ac = BattleArena.getBAController();
+
 		String changetype = args[2];
 		String value = "1";
 		if (args.length > 3)
 			value = args[3];
 		String[] otherOptions = args.length > 4 ? Arrays.copyOfRange(args, 4, args.length) : null;
-		if (Defaults.DEBUG) System.out.println("alterArena " + arenaName +":" + changetype + ":" + value);
+		if (Defaults.DEBUG) System.out.println("alterArena arena=" + arena +":" + changetype + ":" + value);
 
 		boolean success = false;
 		ChangeType ct = ChangeType.fromName(changetype);
@@ -110,6 +132,7 @@ public class ArenaAlterController {
 		case SPAWNLOC: success = changeSpawn(sender, arena, ac, changetype, value, otherOptions); break;
 		case VLOC: success = changeVisitorSpawn(sender,arena,ac,changetype,value,otherOptions); break;
 		case WAITROOM: success = changeWaitroomSpawn(sender,arena,ac,changetype,value,otherOptions); break;
+		case LOBBY: success = changeLobbySpawn(sender,params,ac,changetype,value,otherOptions); break;
 		case ADDREGION: success = addWorldGuardRegion(player,arena,ac,value); break;
 		case ADDPYLAMOREGION: success = addPylamoRegion(player,arena,ac,value); break;
 		default:
@@ -209,6 +232,26 @@ public class ArenaAlterController {
 			return -1;
 		}
 		return locindex;
+	}
+
+	private static boolean changeLobbySpawn(CommandSender sender, MatchParams params, BattleArenaController ac,
+			String changetype, String value, String[] otherOptions) {
+		if (!BAExecutor.checkPlayer(sender))
+			return false;
+		int locindex = verifySpawnLocation(sender,value);
+		if (locindex == -1)
+			return false;
+
+		Player p = (Player) sender;
+		Location loc = null;
+		loc = parseLocation(p,value);
+		if (loc == null){
+			loc = p.getLocation();}
+		LobbyController.addLobby(params.getType(), 0, loc);
+		PlayerContainerSerializer pcs = new PlayerContainerSerializer();
+		pcs.setConfig(BattleArena.getSelf().getDataFolder().getPath()+"/saves/containers.yml");
+		pcs.save();
+		return sendMessage(sender,"&2Lobby &6"+locindex +"&2 for&6 "+ params.getName() +" &2 set to location=&6" + Util.getLocString(loc));
 	}
 
 	private static boolean changeWaitroomSpawn(CommandSender sender, Arena arena, BattleArenaController ac,

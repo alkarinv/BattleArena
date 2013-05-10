@@ -113,6 +113,7 @@ public class BattleArena extends JavaPlugin {
 		FileUpdater.makeIfNotExists(new File(dir+"/messages"));
 		FileUpdater.makeIfNotExists(new File(dir+"/saves"));
 		FileUpdater.makeIfNotExists(new File(dir+"/modules"));
+
 		/// For potential updates to default yml files
 		YamlFileUpdater yfu = new YamlFileUpdater(this);
 
@@ -248,6 +249,7 @@ public class BattleArena extends JavaPlugin {
 		arenaControllerSerializer.save();
 		eventSchedulerSerializer.saveScheduledEvents();
 		signSerializer.saveAll(signController);
+
 		if (Defaults.AUTO_UPDATE)
 			PluginUpdater.updatePlugin(this);
 		FileLogger.saveAll();

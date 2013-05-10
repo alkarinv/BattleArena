@@ -20,7 +20,7 @@ import org.bukkit.event.Event;
  * @author alkarin
  *
  */
-public class MatchEventListener extends BukkitEventListener{
+public class ArenaEventListener extends BukkitEventListener{
 	/** Set of arena listeners */
 	final public EnumMap<EventPriority, List<RListener>> listeners = new EnumMap<EventPriority, List<RListener>>(EventPriority.class);
 
@@ -31,7 +31,7 @@ public class MatchEventListener extends BukkitEventListener{
 	 * @param bukkitEvent : which event we will listen for
 	 * @param getPlayerMethod : a method which when not null and invoked will return a Player
 	 */
-	public MatchEventListener(final Class<? extends Event> bukkitEvent,
+	public ArenaEventListener(final Class<? extends Event> bukkitEvent,
 			org.bukkit.event.EventPriority bukkitPriority, Method getPlayerMethod) {
 		super(bukkitEvent, bukkitPriority);
 		if (Defaults.DEBUG_EVENTS) Log.info("Registering GenericPlayerEventListener for type " + bukkitEvent +" pm="+getPlayerMethod);

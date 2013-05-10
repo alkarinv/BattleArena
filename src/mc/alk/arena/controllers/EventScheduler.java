@@ -12,7 +12,7 @@ import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.arenas.ArenaListener;
-import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.pairs.EventPair;
@@ -90,7 +90,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 		}
 	}
 
-	@MatchEventHandler
+	@ArenaEventHandler
 	public void onEventFinished(EventFinishedEvent event){
 		Event e = event.getEvent();
 		e.removeArenaListener(this);

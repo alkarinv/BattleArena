@@ -17,6 +17,7 @@ import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.messaging.EventMessageHandler;
 import mc.alk.arena.controllers.messaging.EventMessageImpl;
@@ -34,6 +35,7 @@ import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.MatchResult;
+import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.TransitionOptions;
@@ -149,11 +151,13 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		callEvent(new EventStartEvent(this,teams));
 	}
 
-	protected void setEventResult(CompetitionResult result) {
-		if (result.hasVictor()){
-			mc.sendEventVictory(result.getVictors(), result.getLosers());
-		} else {
-			mc.sendEventDraw(result.getDrawers(), result.getLosers());
+	protected void setEventResult(CompetitionResult result, boolean announce) {
+		if (announce){
+			if (result.hasVictor()){
+				mc.sendEventVictory(result.getVictors(), result.getLosers());
+			} else {
+				mc.sendEventDraw(result.getDrawers(), result.getLosers());
+			}
 		}
 		callEvent(new EventResultEvent(this,result));
 	}
@@ -226,6 +230,9 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	public boolean leave(ArenaPlayer p) {
 		ArenaTeam t = getTeam(p);
 		p.removeCompetition(this);
+		if (eventParams.hasLobby()){
+			LobbyController.leaveLobby(eventParams, p);
+		}
 		if (t==null) /// they arent in this Event
 			return false;
 		t.playerLeft(p);
@@ -503,4 +510,31 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	public int getID(){
 		return id;
 	}
+
+
+	@Override
+	public MatchState getMatchState() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean inside(ArenaPlayer player) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int indexOf(ArenaTeam team) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean checkReady(ArenaPlayer player, ArenaTeam team,
+			TransitionOptions mo, boolean b) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

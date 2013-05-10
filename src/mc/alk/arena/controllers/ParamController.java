@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
@@ -102,5 +103,9 @@ public class ParamController {
 
 	public static MatchTransitions getTransitionOptions(ArenaParams arenaParams) {
 		return transitions.get(arenaParams.getName());
+	}
+
+	public static EventParams getDefaultConfig() {
+		return (EventParams) types.get(Defaults.DEFAULT_CONFIG_NAME);
 	}
 }

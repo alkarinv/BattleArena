@@ -11,9 +11,11 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaClassController;
+import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.listeners.custom.BukkitEventHandler;
 import mc.alk.arena.listeners.custom.RListener;
 import mc.alk.arena.objects.ArenaClass;
@@ -196,6 +198,21 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		if (m == null){
 			return sendMessage(sender, "&cMatch not currently running in arena " + arena.getName());}
 		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(m, ToStringStyle.MULTI_LINE_STYLE);
+		return sendMessage(sender, rtsb.toString());
+	}
+
+	@MCCommand(cmds={"showLobbyVars"}, admin=true)
+	public boolean showLobbyVars(CommandSender sender, String arenatype) {
+		ArenaType type = ArenaType.fromString(arenatype);
+		if (type == null){
+			return sendMessage(sender, "&cArenaType not found &6" + arenatype);}
+
+		LobbyContainer lobby = LobbyController.getLobby(type);
+		if (lobby == null){
+			return sendMessage(sender, "&cThere is no lobby for &6" + type.getName());}
+		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(lobby, ToStringStyle.MULTI_LINE_STYLE);
+		sendMessage(sender, rtsb.toString());
+		rtsb = new ReflectionToStringBuilder(lobby.getParams().getTransitionOptions(), ToStringStyle.MULTI_LINE_STYLE);
 		return sendMessage(sender, rtsb.toString());
 	}
 

@@ -50,6 +50,15 @@ public class MatchTransitions {
 		}
 		tops.addOption(option);
 	}
+	public void addTransitionOption(MatchState state, TransitionOption option, Object value) throws InvalidOptionException {
+		allops.add(option);
+		TransitionOptions tops = ops.get(state);
+		if (tops == null){
+			tops = new TransitionOptions();
+			ops.put(state, tops);
+		}
+		tops.addOption(option,value);
+	}
 
 	public void removeTransitionOptions(MatchState ms) {
 		ops.remove(ms);
@@ -82,6 +91,11 @@ public class MatchTransitions {
 	public boolean hasAllOptions(TransitionOption... options) {
 		Set<TransitionOption> ops = new HashSet<TransitionOption>(Arrays.asList(options));
 		return allops.containsAll(ops);
+	}
+
+	public boolean hasInArenaOrOptionAt(MatchState state, TransitionOption option) {
+		TransitionOptions tops = ops.get(state);
+		return tops == null ? hasOptionAt(MatchState.INARENA,option) : tops.hasOption(option);
 	}
 
 	public boolean hasOptionAt(MatchState state, TransitionOption option) {

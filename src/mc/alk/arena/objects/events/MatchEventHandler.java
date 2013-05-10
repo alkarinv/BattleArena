@@ -5,7 +5,12 @@ import java.lang.annotation.RetentionPolicy;
 
 import mc.alk.arena.objects.MatchState;
 
-
+/**
+ * Deprecated.  Please use @ArenaEventHandler
+ * This class will be removed in July.
+ *
+ */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MatchEventHandler {
 	MatchState begin() default MatchState.NONE;

@@ -84,6 +84,10 @@ public class RegisteredCompetition {
 			plugin.reloadConfig();
 	}
 
+	public void saveParams(MatchParams params){
+		configSerializer.save(params);
+	}
+
 	public Plugin getPlugin(){
 		return plugin;
 	}

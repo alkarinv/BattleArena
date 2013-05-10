@@ -35,6 +35,18 @@ public class CompetitionController {
 		return comps.get(name.toUpperCase());
 	}
 
+	public static RegisteredCompetition getCompetition(String name) {
+		name = name.toUpperCase();
+		for (String plugin : registeredCompetitions.keySet()){
+			Map<String, RegisteredCompetition> comps = registeredCompetitions.get(plugin);
+			if (comps == null || comps.isEmpty())
+				continue;
+			if (comps.containsKey(name))
+				return comps.get(name);
+		}
+		return null;
+	}
+
 	public static boolean reloadCompetition(Plugin plugin, MatchParams mp) {
 		RegisteredCompetition rc = getCompetition(plugin,mp.getName());
 		if (rc == null)

@@ -27,9 +27,10 @@ import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -42,6 +43,7 @@ import mc.alk.arena.util.TimeUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -64,7 +66,6 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		super(params);
 		oParms = params;
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
-
 	}
 
 	@Override
@@ -142,7 +143,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 	}
 
 
-	@MatchEventHandler
+	@ArenaEventHandler
 	public void matchCancelled(MatchCancelledEvent event){
 		Match am = event.getMatch();
 		if (am.getState() == MatchState.ONCANCEL){
@@ -163,7 +164,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		}
 	}
 
-	@MatchEventHandler
+	@ArenaEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
 		Match am = event.getMatch();
 
@@ -206,7 +207,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 				Set<ArenaTeam> victors = new HashSet<ArenaTeam>(Arrays.asList(victor));
 				CompetitionResult result = new CompetitionResult();
 				result.setVictors(victors);
-				setEventResult(result);
+				setEventResult(result,true);
 				PerformTransition.transition(am, MatchState.FIRSTPLACE, t,false);
 				PerformTransition.transition(am, MatchState.PARTICIPANTS, losers,false);
 				eventCompleted();
@@ -437,5 +438,39 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		return sb.toString();
 	}
 
+	@Override
+	public MatchState getMatchState() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean inside(ArenaPlayer player) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean teleporting(ArenaPlayer player) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Location getSpawn(int index, LocationType type, boolean random) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Location getSpawn(ArenaPlayer player, LocationType type, boolean random) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public LocationType getLocationType() {
+		return LocationType.ARENA;
+	}
 
 }

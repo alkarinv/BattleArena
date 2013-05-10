@@ -16,6 +16,7 @@ import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.TimeUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 
 public class ReservedArenaEventExecutor extends EventExecutor{
@@ -61,10 +62,12 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		if (openevent != null){
 			throw new InvalidEventException("&cThere is already an event open!");
 		}
+		if (!eventParams.valid()){
+			throw new InvalidEventException("&cThe "+eventParams.getName()+" could not be opened due to the following reasons\n"+StringUtils.join(eventParams.getInvalidReasons(), ", "));}
 		EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null);
 		Arena arena = eoo.getArena(eventParams,null);
 		eventParams.intersect(arena.getParameters());
-		//System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
+
 		arena.setParameters(eventParams);
 
 		ReservedArenaEvent event = new ReservedArenaEvent(eventParams);

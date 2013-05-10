@@ -111,7 +111,11 @@ public class BukkitScoreboard extends ArenaScoreboard{
 			t.addPlayer(player.getPlayer());
 			if (colorPlayerNames)
 				t.setPrefix(team.getTeamChatColor()+""); /// need to set after every player added to team????!!
-			player.getPlayer().setScoreboard(board);
+			/// Joining through commandSigns will throw an error here as the Player from the event is
+			/// not an abstract player.  So reget the player from bukkit
+			Player p = Bukkit.getPlayerExact(player.getName());
+			if (p != null && p.isOnline())
+				p.setScoreboard(board);
 		}
 	}
 

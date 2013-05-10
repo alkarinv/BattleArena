@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -18,12 +17,14 @@ public class ArenaParams extends ArenaSize{
 	String name;
 	String cmd;
 
-	int timeBetweenRounds = Defaults.TIME_BETWEEN_ROUNDS;
-	int secondsTillMatch = Defaults.SECONDS_TILL_MATCH;
-	int secondsToLoot = Defaults.SECONDS_TO_LOOT;
+	Integer timeBetweenRounds;
+	Integer secondsTillMatch;
+	Integer secondsToLoot;
 
 	MatchTransitions allTops;
 	String dbName;
+
+	ArenaParams parent;
 
 	public ArenaParams(ArenaType at) {
 		super();
@@ -42,6 +43,7 @@ public class ArenaParams extends ArenaSize{
 		this.secondsTillMatch = ap.secondsTillMatch;
 		this.secondsToLoot = ap.secondsToLoot;
 		this.dbName = ap.dbName;
+		this.parent = ap.parent;
 		if (ap.allTops != null)
 			this.allTops = new MatchTransitions(ap.allTops);
 	}
@@ -117,22 +119,26 @@ public class ArenaParams extends ArenaSize{
 		secondsToLoot=i;
 	}
 
-	public int getSecondsToLoot() {
-		return secondsToLoot;
+	public Integer getSecondsToLoot() {
+		return secondsToLoot != null ? secondsToLoot :
+			(parent != null ? parent.getSecondsToLoot() : null);
 	}
 
 	public void setSecondsTillMatch(int i) {
 		secondsTillMatch=i;
 	}
-	public int getSecondsTillMatch() {
-		return secondsTillMatch;
+
+	public Integer getSecondsTillMatch() {
+		return secondsTillMatch != null ? secondsTillMatch :
+			(parent != null ? parent.getSecondsTillMatch() : null);
 	}
 
 	public void setTimeBetweenRounds(int i) {
 		timeBetweenRounds=i;
 	}
-	public int getTimeBetweenRounds() {
-		return timeBetweenRounds;
+	public Integer getTimeBetweenRounds() {
+		return timeBetweenRounds != null ? timeBetweenRounds :
+			(parent != null ? parent.getTimeBetweenRounds() : null);
 	}
 
 	public void setDBName(String dbName) {
@@ -172,5 +178,12 @@ public class ArenaParams extends ArenaSize{
 
 	public boolean getAlwaysOpen(){
 		return getTransitionOptions().hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN);
+	}
+
+	public void setParent(ArenaParams parent) {
+		this.parent=parent;
+	}
+	public ArenaParams getParent() {
+		return parent;
 	}
 }

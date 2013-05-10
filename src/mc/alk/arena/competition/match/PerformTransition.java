@@ -10,15 +10,23 @@ import java.util.Random;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
+import mc.alk.arena.controllers.ArenaController;
 import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.PylamoController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.WorldGuardController;
+import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
+import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaClass;
+import mc.alk.arena.objects.ArenaLocation;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.TeleportDirection;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
@@ -34,7 +42,6 @@ import mc.alk.arena.util.TeamUtil;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
@@ -63,27 +70,29 @@ public class PerformTransition {
 		}
 	}
 
-	public static boolean transition(Match am, final MatchState transition, ArenaTeam team, boolean onlyInMatch) {
+	public static boolean transition(PlayerHolder am, final MatchState transition, ArenaTeam team, boolean onlyInMatch) {
 		return transition(am,transition,team,onlyInMatch,true);
 	}
 
-	static boolean transition(Match am, final MatchState transition, ArenaTeam team, boolean onlyInMatch,
+	static boolean transition(PlayerHolder am, final MatchState transition, ArenaTeam team, boolean onlyInMatch,
 			boolean performOncePerTransitionOptions) {
-		final TransitionOptions mo = am.tops.getOptions(transition);
+//		final TransitionOptions mo = am.tops.getOptions(transition);
+		final TransitionOptions mo = am.getParams().getTransitionOptions().getOptions(transition);
 		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo );
 		if (mo == null)
 			return true;
-		if (performOncePerTransitionOptions){
+		if (performOncePerTransitionOptions && (am instanceof ArenaController)){
+			ArenaController ac = (ArenaController) am;
 			/// Options that don't affect players first
-			if (WorldGuardController.hasWorldGuard() && am.getArena().hasRegion()){
-				WorldGuardRegion region = am.getArena().getWorldGuardRegion();
+			if (WorldGuardController.hasWorldGuard() && ac.getArena() != null && ac.getArena().hasRegion()){
+				WorldGuardRegion region = ac.getArena().getWorldGuardRegion();
 				/// Clear the area
 				if (mo.shouldClearRegion()){
 					WorldGuardController.clearRegion(region);}
 
 				if (mo.hasOption(TransitionOption.WGRESETREGION)){
-					if (PylamoController.enabled() && am.getArena().getPylamoRegion() != null){
-						PylamoController.resetRegion(am.getArena().getPylamoRegion());
+					if (PylamoController.enabled() && ac.getArena().getPylamoRegion() != null){
+						PylamoController.resetRegion(ac.getArena().getPylamoRegion());
 					} else {
 						WorldGuardController.pasteSchematic(region);
 					}
@@ -96,26 +105,33 @@ public class PerformTransition {
 		return true;
 	}
 
-	static boolean transition(final Match am, final MatchState transition, final ArenaPlayer player,
-			final ArenaTeam team, final boolean onlyInMatch) {
-		if (Defaults.DEBUG_TRANSITIONS) System.out.println("transition "+am.arena.getName()+"  " + transition + " p= " +player.getName() +
-				" ops="+am.tops.getOptions(transition) +"  inArena="+am.insideArena(player) +"  left="+am.playerLeft(player));
-		if (am.playerLeft(player)) /// The player has purposefully left the match, we have nothing to do with them anymore
-			return true;
+//	static boolean transition(final Match am, final MatchState transition, final ArenaPlayer player,
+//			final ArenaTeam team, final boolean onlyInMatch) {
+//		if (am.playerLeft(player)) /// The player has purposefully left the match, we have nothing to do with them anymore
+//			return true;
+//		return transition(am,transition,player,team, onlyInMatch);
+//	}
 
-		final TransitionOptions mo = am.tops.getOptions(transition);
+	public static boolean transition(final PlayerHolder am, final MatchState transition,
+			final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch) {
+		if (Defaults.DEBUG_TRANSITIONS) Log.debug("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
+				" ops="+am.getParams().getTransitionOptions().getOptions(transition)
+				+"  inArena="+am.inside(player) + "   clearInv=" +
+				am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
+
+		final boolean insideArena = am.inside(player);
+		final TransitionOptions mo = am.getParams().getTransitionOptions().getOptions(transition);
 		if (mo == null){ /// no options
 			return true;}
 		final boolean teleportIn = mo.shouldTeleportIn();
 		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
 		final boolean teleportLobby = mo.shouldTeleportLobby();
-		final boolean insideArena = am.insideArena(player);
 		/// If the flag onlyInMatch is set, we should leave if the player isnt inside.  disregard if we are teleporting people in
-		if (onlyInMatch && !insideArena &&
-				!(teleportIn || teleportWaitRoom || teleportLobby)){
+		if (onlyInMatch && !insideArena && !(teleportIn || teleportWaitRoom || teleportLobby)){
 			return true;}
 		final boolean teleportOut = mo.shouldTeleportOut();
 		final boolean wipeInventory = mo.clearInventory();
+
 		/// People that are quiting/leaving with wipeInventory should lose their inventory
 		/// even if they are "dead" or "offline"
 		final boolean forceClearInventory = wipeInventory && mo.shouldTeleportOut();
@@ -125,54 +141,64 @@ public class PerformTransition {
 		final Integer hunger = mo.getHunger();
 		final String disguiseAllAs = mo.getDisguiseAllAs();
 		final Boolean undisguise = mo.undisguise();
-		final int teamIndex = am.indexOf(team);
+
+		final int teamIndex = team == null ? -1 : am.indexOf(team);
 		boolean playerReady = player.isOnline();
 		final boolean dead = !player.isOnline() || player.isDead();
 		final Player p = player.getPlayer();
+		final boolean randomRespawn = mo.hasOption(TransitionOption.RANDOMRESPAWN);
+		final MatchTransitions tops = am.getParams().getTransitionOptions();
+
 		if (teleportWaitRoom || teleportLobby){ /// Teleport waiting room
 			if ( (insideArena || am.checkReady(player, team, mo, true)) && !dead){
 				/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
 				/// Since we cant really tell the eventual result.. do our best guess
 				Location l;
+				final LocationType type;
 				if (teleportWaitRoom){
-					am.enterWaitRoom(player);
+					type = LocationType.WAITROOM;
 					l = jitter(
-							am.getWaitRoomSpawn(teamIndex,am.spawnsRandom),
+							am.getSpawn(teamIndex, type, randomRespawn),
 							rand.nextInt(team.size()));
 				} else {
-					am.enterLobby(player);
+					type = LocationType.LOBBY;
 					l = jitter(
-							am.getLobbySpawn(teamIndex,am.spawnsRandom),
+							LobbyController.getLobbySpawn(am.indexOf(team), am.getParams().getType(),randomRespawn),
 							rand.nextInt(team.size()));
 				}
-				TeleportController.teleportPlayer(p, l, false, true);
-				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
-			} else {
-				playerReady = false;
-			}
-		} else if (teleportLobby){ /// Teleport lobby
-			if ( (insideArena || am.checkReady(player, team, mo, true)) && !dead){
-				/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
-				/// Since we cant really tell the eventual result.. do our best guess
-				am.enterWaitRoom(player);
-				final Location l = jitter(
-						am.getWaitRoomSpawn(teamIndex,am.spawnsRandom),
-						rand.nextInt(team.size()));
-				TeleportController.teleportPlayer(p, l, false, true);
-				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
+				/// Feels like a kludge, but I don't want to reteleport them in onJoin
+				if (!(type == LocationType.LOBBY && player.getCurLocation() == LocationType.LOBBY)){
+					ArenaLocation src = new ArenaLocation(p.getLocation(),player.getCurLocation());
+					ArenaLocation dest = new ArenaLocation(l,type);
+					ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
+							player,team,src,dest,TeleportDirection.IN);
+
+					am.callEvent(apte);
+					player.markOldLocation();
+//					am.entering(player);
+					TeleportController.teleportPlayer(p, l, false, true);
+					PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
+				}
 			} else {
 				playerReady = false;
 			}
 		}
-
 
 		/// Teleport In
 		if (teleportIn && transition != MatchState.ONSPAWN){ /// only tpin, respawn tps happen elsewhere
 			if ((insideArena || am.checkReady(player, team, mo, true)) && !dead){
 				/// enterArena is supposed to happen before the teleport in Event, but it depends on the result of a teleport
 				/// Since we cant really tell the eventual result.. do our best guess
-				am.enterArena(player,team);
-				final Location l = jitter(am.getTeamSpawn(teamIndex,false),rand.nextInt(team.size()));
+				final LocationType type = LocationType.ARENA;
+				player.markOldLocation();
+				final Location l = am.getSpawn(teamIndex, type, randomRespawn);
+				ArenaLocation src = new ArenaLocation(p.getLocation(),player.getCurLocation());
+				ArenaLocation dest = new ArenaLocation(l,type);
+				ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
+						player,team,src,dest,TeleportDirection.IN);
+				am.callEvent(apte);
+//				am.entering(player);
+//				final Location l = jitter(am.getTeamSpawn(teamIndex,false),rand.nextInt(team.size()));
 				TeleportController.teleportPlayer(p, l, false, true);
 				PlayerUtil.setGod(p,false);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
@@ -182,15 +208,19 @@ public class PerformTransition {
 		}
 
 		final boolean storeAll = mo.hasOption(TransitionOption.STOREALL);
+		PlayerStoreController psc = PlayerStoreController.getPlayerStoreController();
+		final boolean armorTeams = tops.hasAnyOption(TransitionOption.ARMORTEAMS);
+		final boolean woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS);
+
 		/// Only do if player is online options
 		if (playerReady && !dead){
-			if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){ am.psc.storeGamemode(player);}
-			if (storeAll || mo.hasOption(TransitionOption.STOREEXPERIENCE)){ am.psc.storeExperience(player);}
-			if (storeAll || mo.hasOption(TransitionOption.STOREITEMS)) { am.psc.storeItems(player);}
-			if (storeAll || mo.hasOption(TransitionOption.STOREHEALTH)){ am.psc.storeHealth(player);}
-			if (storeAll || mo.hasOption(TransitionOption.STOREHUNGER)){ am.psc.storeHunger(player);}
-			if (storeAll || mo.hasOption(TransitionOption.STOREMAGIC)){ am.psc.storeMagic(player);}
-			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){am.psc.storeArenaClass(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){ psc.storeGamemode(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREEXPERIENCE)){ psc.storeExperience(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREITEMS)) { psc.storeItems(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREHEALTH)){ psc.storeHealth(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREHUNGER)){ psc.storeHunger(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREMAGIC)){ psc.storeMagic(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){psc.storeArenaClass(player);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p); }
 			if (mo.hasOption(TransitionOption.CLEAREXPERIENCE)){ ExpUtil.clearExperience(p);}
 			if (mo.hasOption(TransitionOption.HEALTH)) { PlayerUtil.setHealth(p, health);}
@@ -213,10 +243,9 @@ public class PerformTransition {
 			if (mo.hasOption(TransitionOption.ADDPERMS)){ addPerms(player, mo.getAddPerms(), 0);}
 			if (mo.hasOption(TransitionOption.GIVECLASS)){
 				final ArenaClass ac = getArenaClass(mo,teamIndex);
-				if (ac != null){ /// Give class items and effects
-					if (am.woolTeams) TeamUtil.setTeamHead(teamIndex, player); // give wool heads first
-
-					if (am.armorTeams){
+				if (ac != null && ac.valid()){ /// Give class items and effects
+					if (mo.woolTeams()) TeamUtil.setTeamHead(teamIndex, player); // give wool heads first
+					if (armorTeams){
 						ArenaClassController.giveClass(p, ac, TeamUtil.getTeamColor(teamIndex));
 					} else{
 						ArenaClassController.giveClass(p, ac);
@@ -234,9 +263,11 @@ public class PerformTransition {
 				if (disguise != null){ /// Give class items and effects
 					DisguiseInterface.disguisePlayer(p, disguise);}
 			}
+			Log.debug("mo has GiveItems = " + mo.hasOption(TransitionOption.GIVEITEMS));
 			if (mo.hasOption(TransitionOption.GIVEITEMS)){
-				Color color = am.armorTeams ? TeamUtil.getTeamColor(teamIndex) : null;
-				giveItems(transition, player, mo.getGiveItems(),teamIndex, am.woolTeams, insideArena,color);}
+				Color color = armorTeams ? TeamUtil.getTeamColor(teamIndex) : null;
+				giveItems(transition, player, mo.getGiveItems(),teamIndex, woolTeams, insideArena,color);
+			}
 
 			try{if (effects != null)
 				EffectUtil.enchantPlayer(p, effects);} catch (Exception e){}
@@ -245,7 +276,7 @@ public class PerformTransition {
 			if (prizeMsg != null)
 				MessageUtil.sendMessage(player,"&eYou have been given \n"+prizeMsg);
 			if (teleportIn){
-				transition(am, MatchState.ONSPAWN, player, team, false);
+//				transition(am, MatchState.ONSPAWN, player, team, false); /// Log.debug TODO
 			}
 		} else if (forceClearInventory){
 			InventoryUtil.clearInventory(p);
@@ -254,39 +285,54 @@ public class PerformTransition {
 		/// Teleport out, need to do this at the end so that all the onCancel/onComplete options are completed first
 		if (teleportOut ){ /// Lets not teleport people out who are already out(like dead ppl)
 			Location loc = null;
-			if (mo.hasOption(TransitionOption.TELEPORTTO))
+			final LocationType type;
+			if (mo.hasOption(TransitionOption.TELEPORTTO)){
 				loc = mo.getTeleportToLoc();
-			else
-				loc = am.oldlocs.get(player.getName());
+				type = LocationType.CUSTOM;
+			} else {
+//				loc = am.oldlocs().get(player.getName());
+				type = LocationType.HOME;
+//				loc = am.getSpawn(player, type, randomRespawn);
+				loc = player.getOldLocation();
+			}
+			player.clearOldLocation();
 			if (loc == null){
 				Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
 			} else if (insideArena || !onlyInMatch){
 				TeleportController.teleportPlayer(p, loc, wipeInventory, true);
 			}
-			am.leaveArena(player);
+//			LocationType type = LocationType.ARENA;
+			ArenaLocation src = new ArenaLocation(p.getLocation(),player.getCurLocation());
+			ArenaLocation dest = new ArenaLocation(loc,type);
+			ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
+					player,team,src,dest,TeleportDirection.OUT);
+//			ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(player,team,null,type,false);
+			am.callEvent(apte);
+
 			/// If players are outside of the match, but need requirements, warn them
-		} else if (transition == MatchState.ONPRESTART && !insideArena){
-			World w = am.getArena().getSpawnLoc(0).getWorld();
-			/// Warn players about requirements
-			if (!am.tops.playerReady(player, w)){
-				MessageUtil.sendMessage(player, am.tops.getRequiredString(player,w,"&eRemember you still need the following"));}
 		}
+//		else if (transition == MatchState.ONPRESTART && !insideArena){
+//			World w = am.getArena().getSpawnLoc(0).getWorld();
+//			/// Warn players about requirements
+//			if (!am.tops.playerReady(player, w)){
+//				MessageUtil.sendMessage(player, am.tops.getRequiredString(player,w,"&eRemember you still need the following"));}
+//		}
 		/// Restore their exp and items.. Has to happen AFTER teleport
 		boolean restoreAll = mo.hasOption(TransitionOption.RESTOREALL);
-		if (restoreAll || mo.hasOption(TransitionOption.RESTOREGAMEMODE)){ am.psc.restoreGamemode(player);}
-		if (restoreAll || mo.hasOption(TransitionOption.RESTOREEXPERIENCE)) { am.psc.restoreExperience(player);}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREGAMEMODE)){ psc.restoreGamemode(player);}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREEXPERIENCE)) { psc.restoreExperience(player);}
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREITEMS)){
-			if (am.woolTeams && teamIndex != -1){
+			if (woolTeams && teamIndex != -1){
 				/// Teams that have left can have a -1 teamIndex
 				TeamUtil.removeTeamHead(teamIndex, p);
 			}
 			if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+transition+" transition restoring items "+insideArena);
-			am.psc.restoreItems(player);
+			psc.restoreItems(player);
 		}
-		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEALTH)){ am.psc.restoreHealth(player);}
-		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHUNGER)){ am.psc.restoreHunger(player);}
-		if (restoreAll || mo.hasOption(TransitionOption.RESTOREMAGIC)) { am.psc.restoreMagic(player);}
-		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEROCLASS)){am.psc.restoreHeroClass(player);}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEALTH)){ psc.restoreHealth(player);}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHUNGER)){ psc.restoreHunger(player);}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREMAGIC)) { psc.restoreMagic(player);}
+		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEROCLASS)){psc.restoreHeroClass(player);}
 		return true;
 	}
 

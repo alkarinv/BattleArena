@@ -4,10 +4,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.events.players.ArenaPlayerEnterEvent;
-import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeaveMatchEvent;
 import mc.alk.arena.objects.arenas.ArenaListener;
-import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 
@@ -44,8 +44,8 @@ public enum TagAPIListener implements Listener, ArenaListener {
 		}
 	}
 
-	@MatchEventHandler
-	public void onArenaPlayerEnterEvent(ArenaPlayerEnterEvent event){
+	@ArenaEventHandler
+	public void onArenaPlayerEnterEvent(ArenaPlayerEnterMatchEvent event){
 		Player player = event.getPlayer().getPlayer();
 		if (!player.isOnline() || !BattleArena.getSelf().isEnabled())
 			return;
@@ -63,21 +63,23 @@ public enum TagAPIListener implements Listener, ArenaListener {
 		}
 	}
 
-	@MatchEventHandler
-	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
+	@ArenaEventHandler
+	public void onArenaPlayerLeaveMatchEvent(ArenaPlayerLeaveMatchEvent event){
 		Player player = event.getPlayer().getPlayer();
 		if (!player.isOnline() || !BattleArena.getSelf().isEnabled())
 			return;
-		playerName.remove(player.getName());
-		try{
-			TagAPI.refreshPlayer(player);
-		} catch (ClassCastException e){
-			/* For the plugin CommandSigns which use a "ProxyPlayer" which can't be cast to
-			 * a CraftPlayer, ignore the error */
-		} catch (TagAPIException e){
-			/* Do nothing.
-			 * Bukkit can sometimes have OfflinePlayers that are not caught by isOnline()*/
+		if (playerName.remove(player.getName()) != null){
+			try{
+				TagAPI.refreshPlayer(player);
+			} catch (ClassCastException e){
+				/* For the plugin CommandSigns which use a "ProxyPlayer" which can't be cast to
+				 * a CraftPlayer, ignore the error */
+			} catch (TagAPIException e){
+				/* Do nothing.
+				 * Bukkit can sometimes have OfflinePlayers that are not caught by isOnline()*/
+			}
 		}
+
 	}
 
 }

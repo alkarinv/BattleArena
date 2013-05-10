@@ -6,6 +6,7 @@ import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.JoinType;
 import mc.alk.arena.objects.MatchParams;
 
 public class ArenaCommandSign {
@@ -26,7 +27,7 @@ public class ArenaCommandSign {
 	}
 
 	public void performAction(ArenaPlayer player) {
-		if (mp instanceof EventParams){
+		if (mp.getJoinType() == JoinType.JOINPHASE){
 			performEventAction(player);
 		} else {
 			performMatchAction(player);
@@ -57,7 +58,7 @@ public class ArenaCommandSign {
 		switch (command){
 		case JOIN:
 			args = new String[]{"join", options1,options2};
-			executor.join(player, ep, args, true);
+			executor.eventJoin(player, ep, args, true);
 			break;
 		case LEAVE:
 			args = new String[]{"leave", options1,options2};

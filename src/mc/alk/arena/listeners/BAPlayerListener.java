@@ -20,6 +20,7 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.Util;
@@ -130,6 +131,7 @@ public class BAPlayerListener implements Listener  {
 		/// Teleport players, or set respawn point
 		if (tp.containsKey(name)){
 			final Location loc = tp.get(name);
+			NotifierUtil.notify("tp", name+"  respawning to loc=" + loc +"   curloc="+p.getLocation());
 			if (loc != null){
 				if (event == null){
 					Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){

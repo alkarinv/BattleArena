@@ -26,11 +26,17 @@ public class ArenaPlayer {
 	 * Which competitions is the player inside
 	 * This can be up to 2, in cases of a tournament or a reserved arena event
 	 * where they have the event, and the match
+	 * The stack order is the order in which they joined, the top being the most recent
 	 */
 	Stack<Competition> competitions = new Stack<Competition>();
 
 	/** Which class did the player pick during the competition */
 	ArenaClass chosenClass;
+
+	/** The players old location, from where they were first teleported*/
+	Location oldLocation;
+//	Set<LocationType> locations = new HashSet<LocationType>();
+	LocationType curLocation = LocationType.HOME;
 
 	/** Has the player specified they are "ready" by clicking a block or sign */
 	boolean isReady;
@@ -169,4 +175,29 @@ public class ArenaPlayer {
 		return competitions.isEmpty() ? null : competitions.peek().getTeam(this);
 	}
 
+	public void markOldLocation(){
+		if (oldLocation == null){
+			oldLocation = getLocation();}
+	}
+	public void clearOldLocation(){
+		oldLocation = null;
+	}
+	public Location getOldLocation(){
+		return oldLocation;
+	}
+//	public boolean addLocationType(LocationType type){
+//		return locations.add(type);
+//	}
+//	public boolean removeLocationType(LocationType type){
+//		return locations.remove(type);
+//	}
+//	public boolean inLocation(LocationType type){
+//		return locations.contains(type);
+//	}
+	public void setCurLocation(LocationType type){
+		this.curLocation = type;
+	}
+	public LocationType getCurLocation(){
+		return this.curLocation;
+	}
 }

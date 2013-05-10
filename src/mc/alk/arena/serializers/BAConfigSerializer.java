@@ -18,6 +18,7 @@ import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -27,9 +28,12 @@ import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.victoryconditions.Custom;
+import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MinMax;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
@@ -40,8 +44,15 @@ public class BAConfigSerializer extends BaseConfig{
 
 	public void loadDefaults(){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
+		EventParams defaults = new EventParams(ArenaType.register(Defaults.DEFAULT_CONFIG_NAME, Arena.class, BattleArena.getSelf()));
+		VictoryType.register(Custom.class, BattleArena.getSelf());
+		defaults.setVictoryType(VictoryType.getType(Custom.class));
+		defaults.setName(Defaults.DEFAULT_CONFIG_NAME);
+		defaults.setCommand(Defaults.DEFAULT_CONFIG_NAME);
 
-		parseDefaultOptions(config.getConfigurationSection("defaultOptions"));
+		ParamController.addMatchType(defaults);
+
+		parseDefaultOptions(config.getConfigurationSection("defaultOptions"),defaults);
 		if (!Defaults.MONEY_SET)
 			Defaults.MONEY_STR = config.getString("moneyName",Defaults.MONEY_STR);
 		Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", Defaults.AUTO_UPDATE);
@@ -131,37 +142,60 @@ public class BAConfigSerializer extends BaseConfig{
 		}
 	}
 
-	protected static void parseDefaultOptions(ConfigurationSection cs) {
+	protected static void parseDefaultOptions(ConfigurationSection cs, EventParams defaults) {
 		if (cs == null){
 			Log.err("[BA Error] defaultConfig section not found!!! Using default settings" );
 			return;
 		}
-		Defaults.SECONDS_TILL_MATCH = cs.getInt("secondsTillMatch", Defaults.SECONDS_TILL_MATCH);
-		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT);
-		Defaults.MATCH_TIME = cs.getInt("matchTime", Defaults.MATCH_TIME);
-		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", Defaults.MATCH_UPDATE_INTERVAL);
-		//		Defaults.MATCH_FORCESTART_ENABLED = cs.getBoolean("matchEnableForceStart", Defaults.MATCH_FORCESTART_ENABLED);
-		Defaults.MATCH_FORCESTART_TIME = cs.getLong("matchForceStartTime", Defaults.MATCH_FORCESTART_TIME);
-		Defaults.TIME_BETWEEN_CLASS_CHANGE = cs.getInt("timeBetweenClassChange", Defaults.TIME_BETWEEN_CLASS_CHANGE);
 
-		Defaults.DUEL_ALLOW_RATED = cs.getBoolean("allowRatedDuels", Defaults.DUEL_ALLOW_RATED);
-		Defaults.DUEL_CHALLENGE_INTERVAL = cs.getInt("challengeInterval", Defaults.DUEL_CHALLENGE_INTERVAL);
+		Defaults.SECONDS_TILL_MATCH = cs.getInt("secondsTillMatch", Defaults.SECONDS_TILL_MATCH);
+		defaults.setSecondsTillMatch(Defaults.SECONDS_TILL_MATCH);
+
+		Defaults.SECONDS_TO_LOOT = cs.getInt("secondsToLoot", Defaults.SECONDS_TO_LOOT);
+		defaults.setSecondsToLoot(Defaults.SECONDS_TO_LOOT);
+
+		Defaults.MATCH_TIME = cs.getInt("matchTime", Defaults.MATCH_TIME);
+		defaults.setMatchTime(Defaults.MATCH_TIME);
+
+		Defaults.MATCH_UPDATE_INTERVAL = cs.getInt("matchUpdateInterval", Defaults.MATCH_UPDATE_INTERVAL);
+		defaults.setIntervalTime(Defaults.MATCH_UPDATE_INTERVAL);
 
 		Defaults.AUTO_EVENT_COUNTDOWN_TIME = cs.getInt("eventCountdownTime",Defaults.AUTO_EVENT_COUNTDOWN_TIME);
-		Defaults.ANNOUNCE_EVENT_INTERVAL = cs.getInt("eventCountdownInterval", Defaults.ANNOUNCE_EVENT_INTERVAL);
-		Defaults.ALLOW_PLAYER_EVENT_CREATION = cs.getBoolean("allowPlayerCreation", Defaults.ALLOW_PLAYER_EVENT_CREATION);
-		Defaults.TIME_BETWEEN_SCHEDULED_EVENTS = cs.getInt("timeBetweenScheduledEvents", Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
-		Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT = cs.getBoolean("announceTimeTillNextEvent", Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT);
+		defaults.setSecondsTillStart(Defaults.AUTO_EVENT_COUNTDOWN_TIME);
 
-		Defaults.ENABLE_PLAYER_READY_BLOCK = cs.getBoolean("enablePlayerReadyBlock", Defaults.ENABLE_PLAYER_READY_BLOCK);
-		int value = cs.getInt("readyBlockType", Defaults.READY_BLOCK.getId());
-		Defaults.READY_BLOCK = value > 0 && value < Material.values().length ? Material.values()[value] : Defaults.READY_BLOCK;
+		Defaults.ANNOUNCE_EVENT_INTERVAL = cs.getInt("eventCountdownInterval", Defaults.ANNOUNCE_EVENT_INTERVAL);
+		defaults.setAnnouncementInterval(Defaults.ANNOUNCE_EVENT_INTERVAL);
+		if (cs.contains("playerOpenOptions")){
+			defaults.setPlayerOpenOptions(cs.getStringList("playerOpenOptions"));}
 
 		parseOnServerStartOptions(cs);
 		AnnouncementOptions an = new AnnouncementOptions();
 		parseAnnouncementOptions(an,true,cs.getConfigurationSection("announcements"), true);
 		parseAnnouncementOptions(an,false,cs.getConfigurationSection("eventAnnouncements"),true);
 		AnnouncementOptions.setDefaultOptions(an);
+		defaults.setAnnouncementOptions(an);
+
+		Defaults.MATCH_FORCESTART_TIME = cs.getLong("matchForceStartTime", Defaults.MATCH_FORCESTART_TIME);
+		defaults.setForceStartTime(Defaults.MATCH_FORCESTART_TIME);
+
+		Defaults.TIME_BETWEEN_CLASS_CHANGE = cs.getInt("timeBetweenClassChange", Defaults.TIME_BETWEEN_CLASS_CHANGE);
+
+		Defaults.DUEL_ALLOW_RATED = cs.getBoolean("allowRatedDuels", Defaults.DUEL_ALLOW_RATED);
+		Defaults.DUEL_CHALLENGE_INTERVAL = cs.getInt("challengeInterval", Defaults.DUEL_CHALLENGE_INTERVAL);
+
+		Defaults.TIME_BETWEEN_SCHEDULED_EVENTS = cs.getInt("timeBetweenScheduledEvents", Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
+		Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT = cs.getBoolean("announceTimeTillNextEvent", Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT);
+
+		Defaults.ALLOW_PLAYER_EVENT_CREATION = cs.getBoolean("allowPlayerCreation", Defaults.ALLOW_PLAYER_EVENT_CREATION);
+
+		Defaults.ENABLE_PLAYER_READY_BLOCK = cs.getBoolean("enablePlayerReadyBlock", Defaults.ENABLE_PLAYER_READY_BLOCK);
+		int value = cs.getInt("readyBlockType", Defaults.READY_BLOCK.getId());
+		Defaults.READY_BLOCK = value > 0 && value < Material.values().length ? Material.values()[value] : Defaults.READY_BLOCK;
+
+		defaults.setRated(true);
+		defaults.setOverrideBattleTracker(false);
+		defaults.setTeamSizes(new MinMax(1,ArenaSize.MAX));
+		defaults.setNTeams(new MinMax(2,ArenaSize.MAX));
 	}
 
 	private static void parseOnServerStartOptions( ConfigurationSection cs) {
@@ -237,7 +271,7 @@ public class BAConfigSerializer extends BaseConfig{
 		Set<String> keys = cs.getKeys(false);
 		if (keys != null){
 			for (String key: keys){
-				MatchState ms = MatchState.fromName(key);
+				MatchState ms = MatchState.fromString(key);
 				if (ms == null){
 					Log.err("Couldnt recognize matchstate " + key +" in the announcement options");
 					continue;

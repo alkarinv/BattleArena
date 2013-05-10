@@ -1,5 +1,7 @@
 package mc.alk.arena;
 
+import java.io.File;
+
 import org.bukkit.Material;
 
 public class Defaults {
@@ -30,6 +32,7 @@ public class Defaults {
 	public static int JOIN_CUTOFF_TIME = 15;
 
 	public static boolean MATCH_FORCESTART_ENABLED = true;
+	public static boolean MATCH_FORCESTART_START_ONJOIN = false;
 	public static long MATCH_FORCESTART_TIME = 180;
 
 
@@ -83,6 +86,7 @@ public class Defaults {
 	public static final boolean DEBUG_DAMAGE = false;
 	public static final boolean DEBUG_SCHEDULER = false;
 	public static final boolean TESTSERVER = false;
+	public static final String DEFAULT_CONFIG_NAME = "Default";
 
 	public static boolean DEBUG_COMMANDS = false;
 
@@ -97,5 +101,8 @@ public class Defaults {
 	public static boolean ALLOW_ADMIN_CMDS_IN_Q_OR_MATCH = false;
 	public static boolean ENABLE_TELEPORT_FIX = false;
 	public static boolean ENABLE_PLAYER_READY_BLOCK = true;
+
+	public static File DIR_SAVES;
+	public static File DIR_COMPETITIONS;
 
 }

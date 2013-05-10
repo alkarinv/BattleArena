@@ -81,8 +81,7 @@ public class VictoryType {
 		if (!classes.containsKey(vcName))
 			classes.put(vcName, vc);
 		if (!types.containsKey(vcName)){
-			new VictoryType(vcName,plugin);
-		}
+			new VictoryType(vcName,plugin);}
 	}
 
 	public static boolean registered(VictoryCondition vc){

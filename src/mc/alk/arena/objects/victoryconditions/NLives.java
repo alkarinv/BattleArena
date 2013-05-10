@@ -3,7 +3,7 @@ package mc.alk.arena.objects.victoryconditions;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
 import mc.alk.arena.objects.events.EventPriority;
-import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumLivesPerPlayer;
 
@@ -24,7 +24,7 @@ public class NLives extends VictoryCondition implements DefinesNumLivesPerPlayer
 		this.nLives = maxLives;
 	}
 
-	@MatchEventHandler(suppressCastWarnings=true, priority=EventPriority.LOW)
+	@ArenaEventHandler(suppressCastWarnings=true, priority=EventPriority.LOW)
 	public void playerDeathEvent(ArenaPlayerDeathEvent event) {
 		ArenaTeam team = event.getTeam();
 		Integer deaths = team.getNDeaths(event.getPlayer());

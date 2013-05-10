@@ -64,6 +64,7 @@ public final class PlayerController {
 			players.add(ap.getPlayer());
 		return players;
 	}
+
 	public static void clearArenaPlayers(){
 		players.clear();
 	}

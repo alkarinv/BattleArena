@@ -24,8 +24,8 @@ public class Countdown implements Runnable{
 	Integer timerId;
 	Plugin plugin;
 
-	public Countdown(final Plugin plugin, int seconds, int interval, CountdownCallback callback){
-		this.interval = interval;
+	public Countdown(final Plugin plugin, Integer seconds, Integer interval, CountdownCallback callback){
+		this.interval = interval == null || interval <= 0 ? seconds : interval;
 		this.callback = callback;
 		this.plugin = plugin;
 		final int rem = seconds % interval;

@@ -5,7 +5,7 @@ import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.teams.TeamDeathEvent;
-import mc.alk.arena.objects.events.MatchEventHandler;
+import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumTeams;
 import mc.alk.arena.util.MinMax;
@@ -21,7 +21,7 @@ public class NTeamsNeeded extends VictoryCondition implements DefinesNumTeams{
 		return neededTeams;
 	}
 
-	@MatchEventHandler
+	@ArenaEventHandler
 	public void onTeamDeathEvent(TeamDeathEvent event) {
 		/// Killing this player killed the team
 		List<ArenaTeam> leftAlive = new ArrayList<ArenaTeam>(neededTeams.min+1);

@@ -11,6 +11,7 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.CaseInsensitiveMap;
+import mc.alk.arena.util.Log;
 
 import org.bukkit.plugin.Plugin;
 
@@ -160,8 +161,10 @@ public class ArenaType implements Comparable<ArenaType>{
 
 	private static Arena createArena(ArenaType arenaType, String arenaName, ArenaParams arenaParams, boolean init){
 		Class<?> arenaClass = classes.get(arenaType.name);
-		if (arenaClass == null)
+		if (arenaClass == null){
+			Log.err("[BA Error] arenaClass " + arenaType.name +" is not found");
 			return null;
+		}
 
 		Class<?>[] args = {};
 		try {
@@ -173,9 +176,9 @@ public class ArenaType implements Comparable<ArenaType>{
 				arena.privateInit();
 			return arena;
 		} catch (NoSuchMethodException e){
-			System.err.println("If you have custom constructors for your class you must also have a public default constructor");
-			System.err.println("Add the following line to your Arena Class '" + arenaClass.getSimpleName()+".java'");
-			System.err.println("public " + arenaClass.getSimpleName()+"(){}");
+			Log.err("If you have custom constructors for your class you must also have a public default constructor");
+			Log.err("Add the following line to your Arena Class '" + arenaClass.getSimpleName()+".java'");
+			Log.err("public " + arenaClass.getSimpleName()+"(){}");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
