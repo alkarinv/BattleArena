@@ -2,6 +2,7 @@ package mc.alk.arena.util;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,6 +21,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.ChatColor;
 //import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 public class InventoryUtil {
@@ -634,9 +637,20 @@ public class InventoryUtil {
 		}
 	}
 
+	//Netherfoam start
+	private static final Pattern LORE_PATTERN = Pattern.compile("lore: ?\".*\""); //The pattern for matching lore
+	//Netherfoam end
 	public static ItemStack parseItem(String str) throws Exception{
 		str = str.replaceAll("[}{]", "");
 		str = str.replaceAll("=", " ");
+		
+		//Netherfoam Start
+		List<String> lore = parseLore(str);
+		if(lore != null){ //We have lore, so strip it.
+			str = LORE_PATTERN.matcher(str).replaceFirst("");
+		}
+		//Netherfoam end
+		
 		if (DEBUG) System.out.println("item=" + str);
 		ItemStack is =null;
 		try{
@@ -655,6 +669,15 @@ public class InventoryUtil {
 				amt = 1;
 			}
 			is.setAmount(amt);
+			
+			//Netherfoam start
+			ItemMeta meta = is.getItemMeta();
+			if(meta != null){
+				meta.setLore(lore);
+				is.setItemMeta(meta);
+			}
+			//Netherfoam end
+			
 			for (int i = 1; i < split.length-1;i++){
 				EnchantmentWithLevel ewl = getEnchantment(split[i].trim());
 				if (ewl == null){
@@ -673,6 +696,38 @@ public class InventoryUtil {
 		}
 		return is;
 	}
+	//Netherfoam start
+	public static LinkedList<String> parseLore(String str){
+		try{
+			Matcher matcher = LORE_PATTERN.matcher(str);
+			if(matcher.find()){
+				int start = matcher.start(); //This only takes the first match
+				int end = matcher.end(); 
+					
+				//Remove the "Lore: " part
+				//Remove the quotes
+				//Possible issue: If you want quotes in your lore...?
+				String part = str.substring(start, end).replaceFirst("lore: ?", "").replaceAll("\"", ""); //Strip Lore: and quotes.
+				//Replace color codes
+				part = ChatColor.translateAlternateColorCodes('&', part);
+				//Now we can split it.
+				String[] lines = part.split(";");
+				//DEBUG
+				if(DEBUG) System.out.println(Arrays.toString(lines));
+				//Create a new list
+				LinkedList<String> lore = new LinkedList<String>();
+				//Add all the sections to the list
+				for(String s : lines) lore.add(s);
+				//Success!
+				return lore;
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace(); //Damn.
+		}
+		return null;
+	}
+	//Netherfoam end
 
 	public static EnchantmentWithLevel getEnchantment(String str) {
 		if (str.equalsIgnoreCase("all")){
