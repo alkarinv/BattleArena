@@ -7,6 +7,7 @@ import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.signs.ArenaCommandSign;
 import mc.alk.arena.objects.signs.ArenaStatusSign;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.SignUtil;
@@ -117,7 +118,7 @@ public class BASignListener implements Listener{
 			MessageUtil.sendMessage(event.getPlayer(), "&2Arena class sign created");
 		} catch (Exception e){
 			MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Class Sign");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			cancelSignPlace(event,block);
 			return;
 		}
@@ -143,7 +144,7 @@ public class BASignListener implements Listener{
 			MessageUtil.sendMessage(event.getPlayer(), "&2Arena command sign created");
 		} catch (Exception e){
 			MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Command Sign");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			cancelSignPlace(event,block);
 			return;
 		}
@@ -170,7 +171,7 @@ public class BASignListener implements Listener{
 			MessageUtil.sendMessage(event.getPlayer(), "&2Arena status sign created");
 		} catch (Exception e){
 			MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Status Sign");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			cancelSignPlace(event,block);
 			return;
 		}

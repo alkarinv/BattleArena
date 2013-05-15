@@ -104,7 +104,7 @@ public class BattleArena extends JavaPlugin {
 		MessageUtil.sendMessage(sender,"&4["+pluginname+"] &6v"+version+"&f enabling!");
 
 		BukkitInterface.setServer(Bukkit.getServer()); /// Set the server
-		arenaController = new BattleArenaController();
+		arenaController = new BattleArenaController(signController);
 
 		/// Create our plugin folder if its not there
 		File dir = getDataFolder();

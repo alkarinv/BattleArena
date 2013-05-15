@@ -347,8 +347,8 @@ public class MessageFormatter{
 
 
 	private ArenaStat getStat(ArenaTeam t) {
-		if (stats.containsKey(t.getName()))
-			return stats.get(t.getName());
+		if (stats.containsKey(t.getId()))
+			return stats.get(t.getId());
 		ArenaStat st = sc.loadRecord(t);
 		stats.put(t.getId(), st);
 		return st;

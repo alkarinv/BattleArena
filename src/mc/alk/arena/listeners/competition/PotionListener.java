@@ -27,7 +27,7 @@ public class PotionListener implements ArenaListener{
 		if (event.getEntity().getShooter() instanceof Player){
 			Player p = (Player) event.getEntity().getShooter();
 			ArenaPlayer ap = BattleArena.toArenaPlayer(p);
-			if (match.inside(ap) &&
+			if (match.isHandled(ap) &&
 					transitionOptions.hasOptionAt(match.getMatchState(), TransitionOption.POTIONDAMAGEON)){
 				event.setCancelled(false);
 			}

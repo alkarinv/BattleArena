@@ -13,16 +13,19 @@ import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.WorldGuardController;
-import mc.alk.arena.events.matches.MatchClassSelectedEvent;
 import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
+import mc.alk.arena.events.players.ArenaPlayerClassSelectedEvent;
 import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
 import mc.alk.arena.events.players.ArenaPlayerKillEvent;
 import mc.alk.arena.events.players.ArenaPlayerReadyEvent;
 import mc.alk.arena.events.teams.TeamDeathEvent;
+import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.PVPState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.ArenaEventHandler;
@@ -95,7 +98,6 @@ public class ArenaMatch extends Match {
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE ||
 				!insideArena.contains(target.getName())){
 			return;}
-//		Log.debug("********  "+ event.getEntity().getName() +"  **** is now " + event.getEntity().isDead());
 		final ArenaTeam t = getTeam(target);
 		if (t==null)
 			return;
@@ -338,7 +340,7 @@ public class ArenaMatch extends Match {
 						try{
 							if (p.getChosenClass() != null){
 								ArenaClass ac = p.getChosenClass();
-								ArenaClassController.giveClass(p.getPlayer(), ac);
+								ArenaClassController.giveClass(p, ac);
 							}
 						} catch(Exception e){}
 					} else {
@@ -412,6 +414,9 @@ public class ArenaMatch extends Match {
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerInteract(PlayerInteractEvent event){
+		playerInteract(event);
+	}
+	public void playerInteract(PlayerInteractEvent event){
 		if (event.isCancelled())
 			return;
 		final Block b = event.getClickedBlock();
@@ -420,43 +425,26 @@ public class ArenaMatch extends Match {
 		/// Check to see if it's a sign
 		final Material m = b.getType();
 		if (m.equals(Material.SIGN) || m.equals(Material.SIGN_POST)||m.equals(Material.WALL_SIGN)){ /// Only checking for signs
-			signClick(event);
+			signClick(event,this,userTime);
 		} else if (m.equals(Defaults.READY_BLOCK)) {
 			if (respawnTimer.containsKey(event.getPlayer().getName())){
-				respawnClick(event);
+				respawnClick(event,this,respawnTimer);
 			} else {
 				readyClick(event);
 			}
-
 		}
 	}
 
-	private void respawnClick(PlayerInteractEvent event) {
+	public static void respawnClick(PlayerInteractEvent event, PlayerHolder am, Map<String,Integer> respawnTimer) {
 		ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
 		Integer id = respawnTimer.remove(ap.getName());
+		MatchTransitions tops = am.getParams().getTransitionOptions();
 		Bukkit.getScheduler().cancelTask(id);
-		Location loc = getTeamSpawn(getTeam(ap), tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
+		Location loc = am.getSpawn(am.indexOf(am.getTeam(ap)),LocationType.ANY, tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
 		TeleportController.teleport(ap.getPlayer(), loc);
 	}
 
-	private void readyClick(PlayerInteractEvent event) {
-		if (!Defaults.ENABLE_PLAYER_READY_BLOCK)
-			return;
-		if (!isInWaitRoomState()){
-			return;}
-		final Action action = event.getAction();
-		if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the block
-			event.setCancelled(true);}
-		final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
-		if (readyPlayers != null && readyPlayers.contains(ap)) /// they are already ready
-			return;
-		setReady(ap);
-		MessageUtil.sendMessage(ap, "&2You ready yourself for the arena");
-//		int size = getAlivePlayers().size();
-		callEvent(new MatchPlayersReadyEvent(this));
-	}
-
-	private void signClick(PlayerInteractEvent event) {
+	public static void signClick(PlayerInteractEvent event, PlayerHolder am,Map<String,Long> userTime) {
 		/// Get our sign
 		final Sign sign = (Sign) event.getClickedBlock().getState();
 		/// Check to see if sign has correct format (is more efficient than doing string manipulation )
@@ -492,13 +480,14 @@ public class ArenaMatch extends Match {
 				return;
 			}
 		}
-
+		MatchTransitions tops = am.getParams().getTransitionOptions();
 		userTime.put(playerName, System.currentTimeMillis());
 
-		final TransitionOptions mo = tops.getOptions(state);
+		final TransitionOptions mo = tops.getOptions(am.getMatchState());
 		final TransitionOptions ro = tops.getOptions(MatchState.ONSPAWN);
 		if (mo == null && ro == null)
 			return;
+		boolean woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS);
 		/// Have They have already selected a class this match, have they changed their inventory since then?
 		/// If so, make sure they can't just select a class, drop the items, then choose another
 		if (chosen != null){
@@ -512,15 +501,17 @@ public class ArenaMatch extends Match {
 				return;
 			}
 		}
-		callEvent(new MatchClassSelectedEvent(this,ac));
+		am.callEvent(new ArenaPlayerClassSelectedEvent(ac));
 
 		/// Clear their inventory first, then give them the class and whatever items were due to them from the config
 		InventoryUtil.clearInventory(p, woolTeams);
 		/// Also debuff them
 		EffectUtil.deEnchantAll(p);
-		Color color = this.armorTeams ? TeamUtil.getTeamColor(getTeamIndex(getTeam(ap))) : null;
+		boolean armorTeams = tops.hasAnyOption(TransitionOption.ARMORTEAMS);
+		Color color = armorTeams ? TeamUtil.getTeamColor(am.indexOf(am.getTeam(ap))) : null;
+		ap.despawnMobs();
 		/// Regive class/items
-		ArenaClassController.giveClass(p, ac);
+		ArenaClassController.giveClass(ap, ac);
 		if (mo != null && mo.hasItems()){
 			try{ InventoryUtil.addItemsToInventory(p, mo.getGiveItems(), true,color);} catch(Exception e){Log.printStackTrace(e);}}
 		if (ro != null && ro.hasItems()){
@@ -537,21 +528,38 @@ public class ArenaMatch extends Match {
 	}
 
 
+	private void readyClick(PlayerInteractEvent event) {
+		if (!Defaults.ENABLE_PLAYER_READY_BLOCK)
+			return;
+		final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
+		if (!isInWaitRoomState()){
+			return;}
+		final Action action = event.getAction();
+		if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the block
+			event.setCancelled(true);}
+
+		if (ap.isReady())
+			return;
+		ap.setReady(true);
+		MessageUtil.sendMessage(ap, "&2You ready yourself for the arena");
+		callEvent(new ArenaPlayerReadyEvent(ap,true));
+	}
 
 	@ArenaEventHandler
 	public void onPlayerReady(ArenaPlayerReadyEvent event){
 		if (!Defaults.ENABLE_PLAYER_READY_BLOCK){
 			return;}
 		int tcount = 0;
+		int pcount = 0;
 		for (ArenaTeam t: teams){
-			if (!t.isReady())
+			if (!t.isReady() && t.size() > 0)
 				return;
-			if (t.size() > 0)
-				tcount++;
+			tcount++;
+			pcount+= t.size();
 		}
-		if (tcount < neededTeams)
+		if (tcount < params.getMinTeams() || pcount < params.getMinPlayers())
 			return;
-		this.start();
+		callEvent(new MatchPlayersReadyEvent(this));
 	}
 
 	public static void setDisabledCommands(List<String> commands) {

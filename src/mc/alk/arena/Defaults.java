@@ -18,6 +18,7 @@ public class Defaults {
     /// How long can we keep appending player names together
     /// before reverting to team 1, team 2, etc
     public static final int MAX_TEAM_NAME_APPEND = 32;
+	public static final int MAX_SCOREBOARD_NAME_SIZE = 16;
 
 	/// ARENA QUEUING OPTIONS
 	public static boolean USE_ARENAS_ONLY_IN_ORDER = false;
@@ -35,6 +36,8 @@ public class Defaults {
 	public static boolean MATCH_FORCESTART_START_ONJOIN = false;
 	public static long MATCH_FORCESTART_TIME = 180;
 
+	public static boolean USE_SCOREBOARD = true;
+	public static boolean USE_COLORNAMES = true;
 
 	/// EVENT OPTIONS
 	public static int AUTO_EVENT_COUNTDOWN_TIME = 180;

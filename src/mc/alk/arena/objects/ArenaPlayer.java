@@ -1,9 +1,11 @@
 package mc.alk.arena.objects;
 
+import java.util.List;
 import java.util.Stack;
 
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
@@ -35,8 +37,11 @@ public class ArenaPlayer {
 
 	/** The players old location, from where they were first teleported*/
 	Location oldLocation;
-//	Set<LocationType> locations = new HashSet<LocationType>();
+
+	/** The current location of the player (in arena, lobby, etc)*/
 	LocationType curLocation = LocationType.HOME;
+
+	List<SpawnInstance> mobs;
 
 	/** Has the player specified they are "ready" by clicking a block or sign */
 	boolean isReady;
@@ -54,6 +59,7 @@ public class ArenaPlayer {
 	public void reset() {
 		this.isReady = false;
 		this.chosenClass = null;
+		this.despawnMobs();
 	}
 
 	@Override
@@ -185,19 +191,29 @@ public class ArenaPlayer {
 	public Location getOldLocation(){
 		return oldLocation;
 	}
-//	public boolean addLocationType(LocationType type){
-//		return locations.add(type);
-//	}
-//	public boolean removeLocationType(LocationType type){
-//		return locations.remove(type);
-//	}
-//	public boolean inLocation(LocationType type){
-//		return locations.contains(type);
-//	}
 	public void setCurLocation(LocationType type){
 		this.curLocation = type;
 	}
 	public LocationType getCurLocation(){
 		return this.curLocation;
+	}
+	public void despawnMobs(){
+		if (mobs != null){
+			for (SpawnInstance es: mobs){
+				es.despawn();}
+			mobs.clear();
+		}
+	}
+	public void setMobs(List<SpawnInstance> mobs){
+		this.mobs = mobs;
+	}
+	public void spawnMobs(){
+		if (mobs != null){
+			for (SpawnInstance es: mobs){
+				es.despawn();
+				es.setLocation(this.getLocation());
+				es.spawn();
+			}
+		}
 	}
 }

@@ -17,7 +17,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 
 public class TeamQueue extends PriorityQueue<QueueObject>{
 	private static final long serialVersionUID = 1L;
-	MatchParams mp;
+	final MatchParams mp;
 
 	public TeamQueue(MatchParams mp, TeamQueueComparator teamQueueComparator) {
 		super(10,teamQueueComparator);

@@ -69,6 +69,9 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	public void playerLeaving(ArenaPlayer player){
 		methodController.updateEvents(MatchState.ONLEAVE, player);
 	}
+	protected void updateBukkitEvents(MatchState matchState,ArenaPlayer player){
+		methodController.updateEvents(matchState, player);
+	}
 
 	protected void teamLeaving(ArenaTeam team){
 		if (TeamController.removeTeamHandler(team, this)){
@@ -84,7 +87,6 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 
 	protected boolean teamJoining(ArenaTeam team){
 		teams.add(team);
-//		Log.debug("#### DJFKDJFKDJFDF  ADDING TEAM  " + team.getId());
 		teamIndexes.put(team, teams.size());
 		players.addAll(team.getPlayers());
 		return true;
@@ -144,7 +146,7 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	}
 
 	@Override
-	public boolean inside(ArenaPlayer player) {
+	public boolean isHandled(ArenaPlayer player) {
 		return players.contains(player);
 	}
 
@@ -161,12 +163,6 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	@Override
 	public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b) {
 		return params.getTransitionOptions().playerReady(player, null);
-	}
-
-	@Override
-	public boolean teleporting(ArenaPlayer player) {
-//		Log.debug(")))   PlayerContainer teleporting  " + player);
-		return false;
 	}
 
 	@Override

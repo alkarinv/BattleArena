@@ -43,11 +43,9 @@ public class Scheduler {
 
 	public static int scheduleAsynchrounousTask(Runnable task, int ticks) {
 		int tid = count++;
-		synchronized(timers){
-			Timer t = new Timer();
-			t.schedule(new CompletedTask(task,tid), ticks*20*1000);
-			timers.put(tid, t);
-		}
+		Timer t = new Timer();
+		t.schedule(new CompletedTask(task,tid), ticks*20*1000);
+		timers.put(tid, t);
 		return tid;
 	}
 

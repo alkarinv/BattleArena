@@ -1,5 +1,6 @@
 package mc.alk.arena.objects.options;
 
+import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.util.MinMax;
 
@@ -47,6 +48,8 @@ public enum GameOption{
 		case PREFIX:
 		case COMMAND:
 			return value;
+		case VICTORYCONDITION:
+			return VictoryType.fromString(value);
 		default:
 			break;
 		}

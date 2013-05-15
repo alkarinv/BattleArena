@@ -27,7 +27,7 @@ public interface PlayerHolder extends Listener, ArenaListener{
 
 	public MatchState getMatchState();
 
-	public boolean inside(ArenaPlayer player);
+	public boolean isHandled(ArenaPlayer player);
 
 	public int indexOf(ArenaTeam team);
 
@@ -35,11 +35,11 @@ public interface PlayerHolder extends Listener, ArenaListener{
 
 	public void callEvent(BAEvent event);
 
-	public boolean teleporting(ArenaPlayer player);
-
 	public Location getSpawn(int index, LocationType type, boolean random);
 
 	public Location getSpawn(ArenaPlayer player, LocationType type, boolean random);
 
 	public LocationType getLocationType();
+
+	public ArenaTeam getTeam(ArenaPlayer player);
 }

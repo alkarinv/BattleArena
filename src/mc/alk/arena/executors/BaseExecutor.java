@@ -285,7 +285,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		System.err.println("[CustomCommandExecutor Error] "+mwrapper.method +" : " + mwrapper.obj +"  : " + newArgs);
 		if (newArgs!=null && newArgs.args != null){
 			for (Object o: newArgs.args)
-				System.err.println("[Error] object=" + (o!=null ? o.toString() : o));
+				System.err.println("[Error] object=" + o);
 		}
 		System.err.println("[Error] Cause=" + e.getCause());
 		if (e.getCause() != null){

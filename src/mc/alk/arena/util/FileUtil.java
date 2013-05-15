@@ -56,13 +56,16 @@ public class FileUtil {
 	}
 
 	public static boolean hasResource(Class<?> clazz, String default_file) {
+		InputStream inputStream = null;
 		try{
-			InputStream inputStream = clazz.getResourceAsStream(default_file);
+			inputStream = clazz.getResourceAsStream(default_file);
 			if (inputStream == null){ /// will this work to fix the problems in windows??
 				inputStream = clazz.getClassLoader().getResourceAsStream(default_file);}
 			return inputStream != null;
 		} catch (Exception e){
 			return false;
+		} finally{
+			if (inputStream!=null)try{inputStream.close();}catch(Exception e){}
 		}
 	}
 

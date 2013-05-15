@@ -49,7 +49,7 @@ public class TestBattleArena extends TestCase{
 		classesSerializer.setConfig(new File("test_files/classes.yml"));
 		classesSerializer.loadAll();
 		/// Controller
-		bac = new BattleArenaController();
+		bac = new BattleArenaController(null);
 
 		/// Messages
 		MessageSerializer ms = new MessageSerializer("default",null);

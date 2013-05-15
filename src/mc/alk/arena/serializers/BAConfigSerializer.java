@@ -24,8 +24,10 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
+import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.victoryconditions.Custom;
@@ -148,6 +150,9 @@ public class BAConfigSerializer extends BaseConfig{
 			return;
 		}
 
+		Defaults.USE_SCOREBOARD = cs.getBoolean("useScoreboard", Defaults.USE_SCOREBOARD);
+		Defaults.USE_COLORNAMES = cs.getBoolean("useColoredNames", Defaults.USE_COLORNAMES);
+
 		Defaults.SECONDS_TILL_MATCH = cs.getInt("secondsTillMatch", Defaults.SECONDS_TILL_MATCH);
 		defaults.setSecondsTillMatch(Defaults.SECONDS_TILL_MATCH);
 
@@ -196,6 +201,16 @@ public class BAConfigSerializer extends BaseConfig{
 		defaults.setOverrideBattleTracker(false);
 		defaults.setTeamSizes(new MinMax(1,ArenaSize.MAX));
 		defaults.setNTeams(new MinMax(2,ArenaSize.MAX));
+
+		List<String> list = cs.getStringList("defaultDuelOptions");
+		if (list != null && !list.isEmpty()){
+			try {
+				DuelOptions dop = DuelOptions.parseOptions(list.toArray(new String[list.size()]));
+				DuelOptions.setDefaults(dop);
+			} catch (InvalidOptionException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private static void parseOnServerStartOptions( ConfigurationSection cs) {

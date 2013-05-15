@@ -445,13 +445,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 	}
 
 	@Override
-	public boolean inside(ArenaPlayer player) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean teleporting(ArenaPlayer player) {
+	public boolean isHandled(ArenaPlayer player) {
 		// TODO Auto-generated method stub
 		return false;
 	}

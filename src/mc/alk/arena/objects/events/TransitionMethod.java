@@ -6,7 +6,7 @@ import mc.alk.arena.events.BAEvent;
 
 import org.bukkit.event.Event;
 
-public class TransitionMethod implements Comparable<TransitionMethod>{
+public class TransitionMethod {
 	final Method callMethod;
 	final Class<? extends BAEvent> transitionEvent;
 	final EventPriority priority;
@@ -23,12 +23,8 @@ public class TransitionMethod implements Comparable<TransitionMethod>{
 	public Class<? extends Event> getBukkitEvent(){
 		return transitionEvent;
 	}
-	
+
 	@Override
-	public int compareTo(TransitionMethod arg0) {
-		return this.priority.compareTo(arg0.priority);
-	}
-	
 	public String toString(){
 		return "[MTM "+callMethod.getName()+", " + transitionEvent+ "]";
 	}

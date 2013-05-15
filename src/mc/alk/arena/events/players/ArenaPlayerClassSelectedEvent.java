@@ -1,17 +1,16 @@
-package mc.alk.arena.events.matches;
+package mc.alk.arena.events.players;
 
 import java.util.List;
 
-import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.events.CompetitionEvent;
 import mc.alk.arena.objects.ArenaClass;
 
 import org.bukkit.inventory.ItemStack;
 
-public class MatchClassSelectedEvent extends MatchEvent {
+public class ArenaPlayerClassSelectedEvent extends CompetitionEvent{
 	ArenaClass arenaClass;
 	List<ItemStack> items = null;
-	public MatchClassSelectedEvent(Match match, ArenaClass arenaClass) {
-		super(match);
+	public ArenaPlayerClassSelectedEvent(ArenaClass arenaClass) {
 		this.arenaClass = arenaClass;
 	}
 	public ArenaClass getArenaClass() {

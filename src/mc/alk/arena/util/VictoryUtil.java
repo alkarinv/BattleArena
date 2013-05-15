@@ -63,8 +63,8 @@ public class VictoryUtil {
 			public int compare(ArenaTeam arg0, ArenaTeam arg1) {
 				Integer k1 = arg0.getNKills();
 				Integer k2 = arg1.getNKills();
-				int c = -k1.compareTo(k2);
-				return c != 0? c : new Integer(arg0.getNDeaths()).compareTo(arg1.getNDeaths());
+				int c = k1.compareTo(k2);
+				return c != 0? -c : new Integer(arg0.getNDeaths()).compareTo(arg1.getNDeaths());
 			}
 		});
 		return ts;

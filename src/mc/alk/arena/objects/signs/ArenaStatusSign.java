@@ -8,6 +8,9 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.SerializerUtil;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 public class ArenaStatusSign implements ConfigurationSerializable{
@@ -67,5 +70,20 @@ public class ArenaStatusSign implements ConfigurationSerializable{
 
 	public MatchParams getMatchParams() {
 		return params;
+	}
+
+	public void setQ(int i, int j) {
+		Sign s = getSign();
+		if (s == null)
+			return;
+		s.setLine(3, i +"/" +j);
+	}
+
+	private Sign getSign() {
+		Block b = location.getBlock();
+		if (b == null)
+			return null;
+		Material m = b.getType();
+		return  m == Material.SIGN || m==Material.WALL_SIGN ? (Sign)b : null;
 	}
 }

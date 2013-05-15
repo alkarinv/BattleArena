@@ -43,7 +43,6 @@ public enum TransitionOption{
 	ALWAYSTEAMNAMES("alwaysTeamNames", false),		/// Always use team Names (found in teamColors.yml)
 	NOTEAMNAMECOLOR("noTeamNameColor", false),		/// Dont use team name color
 
-
 	/// Teleport Options
 	TELEPORTWAITROOM("teleportWaitRoom",false), 	/// Teleport players to the waitroom
 	TELEPORTLOBBY("teleportLobby",false), 			/// Teleport players to the lobby
@@ -79,6 +78,7 @@ public enum TransitionOption{
 	BLOCKPLACEOFF("blockPlaceOff",false),			/// Disallow block place
 	BLOCKPLACEON("blockPlaceOn",false),				/// Allow player to place blocks
 	ITEMDROPOFF("itemDropOff",false),				/// Stop the player from throwing/dropping items
+	ITEMPICKUPOFF("itemPickupOff",false),			/// Stop the player from pickkingup items
 	DISGUISEALLAS("disguiseAllAs",true),			/// =<String> : Disguise the players as the given mob/player (needs DisguiseCraft)
 	UNDISGUISE("undisguise",false),					/// Undisguise all players in the arena (needs DisguiseCraft)
 	ENCHANTS("enchants",false),						/// Give the Enchants found in enchants:

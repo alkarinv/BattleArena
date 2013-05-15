@@ -5,6 +5,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,6 +16,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.listeners.custom.BukkitEventHandler;
 import mc.alk.arena.listeners.custom.RListener;
+import mc.alk.arena.listeners.custom.RListener.RListenerPriorityComparator;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
@@ -119,9 +121,6 @@ public class MethodController {
 					BukkitEventHandler bel = ls.get(event);
 					if (bel != null){
 						bel.removeListener(rl, players);
-						if (!bel.hasListeners()){
-							bukkitListeners.remove(event);
-						}
 					}
 				}
 			}
@@ -323,7 +322,12 @@ public class MethodController {
 				mths.add(new ArenaEventMethod(method, bukkitEvent,beginState,
 						endState,cancelState, priority, bukkitPriority));
 			}
-			Collections.sort(mths);
+			Collections.sort(mths, new Comparator<ArenaEventMethod>(){
+				@Override
+				public int compare(ArenaEventMethod o1, ArenaEventMethod o2) {
+					return o1.getPriority().compareTo(o2.getPriority());
+				}
+			});
 		}
 		bukkitEventMethods.put(alClass, bukkitTypeMap);
 		matchEventMethods.put(alClass, matchTypeMap);
@@ -341,9 +345,6 @@ public class MethodController {
 							BukkitEventHandler bel = ls.get(rl.getMethod().getBukkitEvent());
 							if (bel != null){
 								bel.removeAllListener(rl);
-								if (!bel.hasListeners()){
-									bukkitListeners.remove(rl.getMethod().getBukkitEvent());
-								}
 							}
 						}
 					}
@@ -420,7 +421,7 @@ public class MethodController {
 		for (ArenaEventMethod mem: list){
 			rls.add(new RListener(listener, mem));
 		}
-		Collections.sort(rls);
+		Collections.sort(rls, new RListenerPriorityComparator());
 	}
 
 	private void addBAEventMethod(ArenaListener listener, Map<Class<? extends BAEvent>, List<ArenaEventMethod>> map,
@@ -437,7 +438,7 @@ public class MethodController {
 		for (ArenaEventMethod mem: list){
 			rls.add(new RListener(listener, mem));
 		}
-		Collections.sort(rls);
+		Collections.sort(rls, new RListenerPriorityComparator());
 	}
 
 	public void deconstruct() {
@@ -465,4 +466,5 @@ public class MethodController {
 			callEvent((Class<? extends BAEvent>) superClass,event);
 		}
 	}
+
 }

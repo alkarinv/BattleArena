@@ -57,7 +57,7 @@ public class APIRegistrationController {
 			if (!plugin.isEnabled()) /// lets not try to register plugins that aren't loaded
 				return;
 			FileFilter fileFilter = new FileFilter() {
-				public boolean accept(File file) {return file.toString().contains("Config.yml");}
+				public boolean accept(File file) {return file.toString().matches(".*Config.yml$");}
 			};
 			if (!compDir.exists())
 				return;

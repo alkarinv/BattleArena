@@ -113,7 +113,7 @@ public class SpawnSerializer {
 			try{number = Integer.parseInt(value);} catch(Exception e){}
 //			System.out.println(InventoryUtil.isItem(key)+" is item " + InventoryUtil.isItem(key+":" + value) +"     key=" + key+" value=" + value);
 			ItemStack is = InventoryUtil.parseItem(value);
-			EntityType et = EntityUtil.parseEntity(key);
+			EntityType et = EntityUtil.parseEntityType(key);
 //						System.out.println("is = " + InventoryUtil.getItemString(is) +"   et=" + et);
 			if (is != null && et != null){
 				int keysize = key.length();

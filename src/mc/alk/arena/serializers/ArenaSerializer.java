@@ -318,7 +318,7 @@ public class ArenaSerializer extends BaseConfig{
 			try{
 				arenaname = arena.getName();
 				ArenaType at = arena.getArenaType();
-				if (at.getPlugin().getName() != plugin.getName())
+				if (!at.getPlugin().getName().equals(plugin.getName()))
 					continue;
 
 				HashMap<String, Object> amap = new HashMap<String, Object>();

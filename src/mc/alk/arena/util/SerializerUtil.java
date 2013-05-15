@@ -52,7 +52,7 @@ public class SerializerUtil {
 		if (w != null){
 			world = BukkitInterface.getWorld(w);}
 		if (world ==null){
-			throw new IllegalArgumentException("Error parsing location, World was null");}
+			throw new IllegalArgumentException("Error parsing location, World '"+locstr+"' does not exist");}
 		return new Location(world,x,y,z,yaw,pitch);
 	}
 

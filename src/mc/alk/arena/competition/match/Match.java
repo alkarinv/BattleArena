@@ -48,6 +48,7 @@ import mc.alk.arena.events.prizes.ArenaLosersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaWinnersPrizeEvent;
 import mc.alk.arena.events.teams.TeamDeathEvent;
+import mc.alk.arena.listeners.competition.ItemPickupListener;
 import mc.alk.arena.listeners.competition.PlayerTeleportListener;
 import mc.alk.arena.listeners.competition.TeamHeadListener;
 import mc.alk.arena.objects.ArenaLocation;
@@ -128,8 +129,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	MatchTransitions tops = null; /// Our match options for this arena match
 	final PlayerStoreController psc = new PlayerStoreController(); /// Store items and exp for players if specified
 
-	Set<ArenaPlayer> readyPlayers = null; /// Do we have ready Players
-	List<MatchState> waitRoomStates = null; /// which states are inside a waitRoom
+//	Set<ArenaPlayer> readyPlayers = null; /// Do we have ready Players
+	Set<MatchState> waitRoomStates = null; /// which states are inside a waitRoom
 	final MatchState tinState; /// which matchstat teleports players in (first one is chosen)
 	Long joinCutoffTime = null; /// at what point do we cut people off from joining
 	Integer currentTimer = null; /// Our current timer
@@ -170,7 +171,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		this.arena = arena;
 		this.arenaInterface =new ArenaControllerInterface(arena);
 		addArenaListener(arena);
-		scoreboard = ScoreboardFactory.createScoreboard(params);
+		scoreboard = ScoreboardFactory.createScoreboard(this,params);
 
 		this.mc = new MatchMessager(this);
 		this.oldlocs = new HashMap<String,Location>();
@@ -215,9 +216,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		this.alwaysOpen = params.getAlwaysOpen();
 
 		/// Set waitroom variables
-		final Map<Integer,Location> wr = arena.getWaitRoomSpawnLocs();
-		if (wr != null && !wr.isEmpty()){
-			waitRoomStates = tops.getMatchStateRange(TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTIN);
+
+		if (tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTLOBBY, TransitionOption.TELEPORTCOURTYARD)){
+			waitRoomStates = new HashSet<MatchState>(tops.getMatchStateRange(TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTIN));
+			waitRoomStates.addAll(tops.getMatchStateRange(TransitionOption.TELEPORTLOBBY, TransitionOption.TELEPORTIN));
+			waitRoomStates.addAll(tops.getMatchStateRange(TransitionOption.TELEPORTCOURTYARD, TransitionOption.TELEPORTIN));
 			if (waitRoomStates.isEmpty()){
 				waitRoomStates = null;}
 		}
@@ -234,16 +237,19 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		ListenerAdder.addListeners(this, tops);
 		if (tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE) || noEnter){
 			this.addArenaListener(new PlayerTeleportListener(this));}
+		if (tops.hasAnyOption(TransitionOption.ITEMPICKUPOFF)){
+			this.addArenaListener(new ItemPickupListener(this));}
 		if (woolTeams){
 			this.addArenaListener(new TeamHeadListener());}
 
-
 		methodController.addSpecificEvents(this, events);
 		/// add a default objective
-		defaultObjective = new ArenaObjective("default","Player Kills");
+		defaultObjective = new ArenaObjective("default","Player Kills",0);
+
 		defaultObjective.setDisplayName(ChatColor.GOLD+"Still Alive");
 		scoreboard.addObjective(defaultObjective);
 		defaultObjective.setScoreBoard(scoreboard);
+
 		LobbyContainer lc = LobbyController.getLobby(params.getType());
 		if (lc != null){
 			insideArena.addAll(lc.getInsidePlayers());
@@ -496,6 +502,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 				StatController sc = new StatController(params);
 				sc.addRecord(victors,losers,drawers,result.getResult());
 			}
+
 			if (result.hasVictor()){ /// We have a true winner
 				try{mc.sendOnVictoryMsg(victors, losers);}catch(Exception e){Log.printStackTrace(e);}
 			} else { /// we have a draw
@@ -519,10 +526,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			final Set<ArenaTeam> victors = matchResult.getVictors();
 			final Set<ArenaTeam> losers = matchResult.getLosers();
 			final Set<ArenaTeam> drawers = matchResult.getDrawers();
-			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  " + losers+"  "+drawers +" " + matchResult);
 			if (params.isRated()){
 				StatController sc = new StatController(params);
-				sc.addRecord(victors,losers,drawers,matchResult.getResult());
+				sc.addRecord(victors,losers,drawers,am.getResult().getResult());
 			}
 			if (matchResult.hasVictor()){ /// We have a true winner
 				try{mc.sendOnVictoryMsg(victors, losers);}catch(Exception e){Log.printStackTrace(e);}
@@ -717,9 +723,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (this.isFinished())
 			return false;
 		if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addTeam("+team.getName()+":"+team.getId()+")");
-//		for (int i=0;i<Integer.MAX_VALUE;i++){
-//			if (team.g)
-//		}
 
 		teamIndexes.put(team, teams.size());
 		teams.add(team);
@@ -728,12 +731,14 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		int index = indexOf(team);
 		team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
 		String name = TeamUtil.createTeamName(index);
-		team.setScoreboardDisplayName(MessageUtil.colorChat(name));
+		if ( alwaysTeamNames || (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
+			team.setDisplayName(name);
+		}
+		team.setScoreboardDisplayName(name.length() > Defaults.MAX_SCOREBOARD_NAME_SIZE ?
+				name.substring(0,Defaults.MAX_SCOREBOARD_NAME_SIZE) : name);
 		team.setArenaObjective(defaultObjective);
 		scoreboard.addTeam(team);
 
-		if ( alwaysTeamNames || (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
-			team.setDisplayName(name);}
 		for (ArenaPlayer p: team.getPlayers()){
 			privateAddedToTeam(team,p);}
 		joiningOngoing(team, null);
@@ -747,7 +752,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		team.setAlive(player);
 		player.reset();
 		player.addCompetition(this);
-		startTracking(player);
 		arenaInterface.onJoin(player,team);
 	}
 
@@ -871,12 +875,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		return onLeave(p);
 	}
 
-	@Override
-	public boolean teleporting(ArenaPlayer player) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 	/**
 	 *
 	 * @param team
@@ -955,7 +953,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		/// so call the ONENTER, otherwise we have already done all the options
 		boolean inwr = insideWaitRoom.remove(p.getName());
 		boolean inlobby = src.getType() == LocationType.LOBBY || insideLobby.contains(p.getName());
-		Log.debug("###))))))))))))))))))))))))))))))))))))) inlobby = " + inlobby);
 //		boolean inlobby = insideLobby.remove(p.getName());
 		boolean incy = insideCourtyard.remove(p.getName());
 		if (!inwr && !inlobby && !incy){
@@ -971,10 +968,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		preEnter(p);
 		/// If they werent in the wait room then they are entering for the first time
 		/// so call the ONENTER, otherwise we have already done all the options
-		insideArena.add(p.getName());
 		insideWaitRoom.add(p.getName());
 		boolean inlobby = src.getType() == LocationType.LOBBY;
-		Log.debug("###))))))))))))))))))))))))))))))))))))) inlobby = " + inlobby);
 		if (!inlobby){
 			PerformTransition.transition(this, MatchState.ONENTER, p, team, false);}
 		postEnter(p,team);
@@ -995,6 +990,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 	private void preEnter(ArenaPlayer p){
 		final String name = p.getName();
+		insideArena.add(p.getName());
+		startTracking(p);
 		if (params.getOverrideBattleTracker())
 			StatController.stopTracking(p);
 		/// Store the point at which they entered the arena
@@ -1004,6 +1001,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 	private void postEnter(ArenaPlayer p, ArenaTeam t){
 		insideArena.add(p.getName());
+
 		p.setCurLocation(LocationType.ARENA);
 		callEvent(new ArenaPlayerEnterMatchEvent(p,t));
 
@@ -1085,6 +1083,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (vc instanceof ScoreTracker){
 			((ScoreTracker)vc).setScoreBoard(scoreboard);
 		}
+		updateBukkitEvents(MatchState.ONOPEN); /// register all match events
+		if (!insideArena.isEmpty()){
+			updateBukkitEvents(MatchState.ONENTER); /// register all current inside players with the vc
+		}
 	}
 
 	/**
@@ -1115,7 +1117,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public boolean isFinished() {return state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isWon() {return state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
 	public boolean isStarted() {return state == MatchState.ONSTART;}
-	public boolean isInWaitRoomState() {return waitRoomStates != null && waitRoomStates.contains(state);}
+	public boolean isInWaitRoomState() {return state.ordinal() < MatchState.ONSTART.ordinal();}
 
 	@Override
 	public MatchState getState() {return state;}
@@ -1249,12 +1251,13 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public Map<String,Location> getOldLocations() {return oldlocs;}
 	public int indexOf(ArenaTeam t){return teams.indexOf(t);}
 
-	public boolean inside(ArenaPlayer player){
+	public boolean isHandled(ArenaPlayer player){
 		return insideArena.contains(player.getName());
 	}
+
 	@Deprecated
 	public boolean insideArena(ArenaPlayer p){
-		return inside(p);
+		return isHandled(p);
 	}
 
 	protected Set<ArenaPlayer> checkReady(final ArenaTeam t, TransitionOptions mo) {
@@ -1382,12 +1385,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 						(isInWaitRoomState() && (joinCutoffTime == null || System.currentTimeMillis() < joinCutoffTime)));
 	}
 
-	public void setReady(ArenaPlayer ap) {
-		if (readyPlayers == null)
-			readyPlayers = new HashSet<ArenaPlayer>();
-		readyPlayers.add(ap);
-		ap.setReady(true);
-	}
+//	public void setReady(ArenaPlayer ap) {
+//		if (readyPlayers == null)
+//			readyPlayers = new HashSet<ArenaPlayer>();
+//		readyPlayers.add(ap);
+//		ap.setReady(true);
+//	}
 
 	@Override
 	public int getID(){
@@ -1434,9 +1437,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public void onArenaPlayerTeleportEvent(ArenaPlayerTeleportEvent event){
 		LocationType loc = event.getDestType();
 		TeleportDirection in = event.getDirection();
-		Log.debug("#####  onArenaPlayerTeleportEvent " + event +"   type="+loc +"  in=" + in +
-				"   curLocation=" + event.getSrcType() + "  from="
-				+ event.getSrcLocation() +"   totype=" + event.getDestType());
+		if (Defaults.DEBUG_TRANSITIONS)Log.debug(" -- onArenaPlayerTeleportEvent " + getID() +", dest="+loc +"  in=" + in +
+				 "  from="+ event.getSrcLocation());
 		if (in == null)
 			return;
 		ArenaPlayer p = event.getPlayer();
@@ -1447,7 +1449,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			return;
 		}
 		if (in == TeleportDirection.IN){
-			//			this.entering(event.getPlayer(), type);
 			switch(loc){
 			case COURTYARD:
 				enterCourtyard(event.getSrcLocation(), p,team);
@@ -1460,7 +1461,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 				break;
 			case ARENA:
 			case CUSTOM:
-//				p.addLocationType(LocationType.ARENA);
 				enterArena(event.getSrcLocation(), p,team);
 				break;
 			default:
@@ -1469,9 +1469,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			switch(loc){
 			case HOME:
 			case CUSTOM:
-//				p.removeLocationType(LocationType.ARENA);
 				leaveArena(p,team);
-
 				break;
 			default:
 			}
@@ -1485,8 +1483,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		case ARENA: return this.getTeamSpawn(index, random);
 		case WAITROOM: return this.getWaitRoomSpawn(index, random);
 		case LOBBY: return LobbyController.getLobbySpawn(index, params.getType(), random);
-//		case COURTYARD: return this.getLobbySpawn(team, random);
-//		case HOME: return this.getOldLocation(team,random);
 		default:
 			break;
 		}
@@ -1498,7 +1494,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		case HOME: return oldlocs.get(player.getName());
 		default:
 			break;
-
 		}
 		return null;
 	}

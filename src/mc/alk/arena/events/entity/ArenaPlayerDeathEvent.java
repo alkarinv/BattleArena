@@ -4,9 +4,9 @@ import mc.alk.arena.events.ExtendedBukkitEvent;
 
 import org.bukkit.event.entity.PlayerDeathEvent;
 
-public class ArenaPlayerKilledEvent extends ExtendedBukkitEvent{
+public class ArenaPlayerDeathEvent extends ExtendedBukkitEvent{
 
-	public ArenaPlayerKilledEvent(PlayerDeathEvent event){
+	public ArenaPlayerDeathEvent(PlayerDeathEvent event){
 		this.event = event;
 	}
 

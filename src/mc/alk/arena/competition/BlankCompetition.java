@@ -63,29 +63,21 @@ public class BlankCompetition extends Competition{
 
 	@Override
 	public MatchState getMatchState() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean inside(ArenaPlayer player) {
-		// TODO Auto-generated method stub
+	public boolean isHandled(ArenaPlayer player) {
 		return false;
 	}
 
 	@Override
 	public int indexOf(ArenaTeam team) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b) {
-		return false;
-	}
-
-	@Override
-	public boolean teleporting(ArenaPlayer player) {
 		return false;
 	}
 

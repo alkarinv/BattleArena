@@ -6,6 +6,9 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.objects.ArenaClass;
+import mc.alk.arena.objects.CommandLineString;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -50,12 +53,26 @@ public class BAClassesSerializer extends BaseConfig{
 	public ArenaClass parseArenaClass(ConfigurationSection cs) {
 		List<ItemStack> items = null;
 		List<PotionEffect> effects = null;
+		List<SpawnInstance> mobs = null;
+		List<CommandLineString> commands = null;
+
 		if (cs.contains("items")){ items = ConfigSerializer.getItemList(cs,"items");}
 		if (cs.contains("enchants")){ effects = ConfigSerializer.getEffectList(cs,"enchants");}
+		if (cs.contains("mobs")){ mobs = SpawnSerializer.getSpawnList(cs.getConfigurationSection("mobs"));}
+		if (cs.contains("doCommands")){
+			try {
+				commands = ConfigSerializer.getDoCommands(cs.getStringList("doCommands"));
+			} catch (InvalidOptionException e) {
+				e.printStackTrace();
+			}
+		}
 		String displayName = cs.getString("displayName", null);
-		if (displayName==null) cs.getString("prettyName", null);
 		ArenaClass ac = new ArenaClass(cs.getName(),displayName, items,effects);
+		if (mobs != null && !mobs.isEmpty())
+			ac.setMobs(mobs);
 		if (cs.contains("disguise")){ ac.setDisguiseName(cs.getString("disguise"));}
+		if (commands != null && !commands.isEmpty())
+			ac.setDoCommands(commands);
 		return ac;
 	}
 

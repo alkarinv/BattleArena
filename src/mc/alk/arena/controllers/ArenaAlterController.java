@@ -55,7 +55,6 @@ public class ArenaAlterController {
 			str = str.toUpperCase();
 			ChangeType ct = null;
 			try {ct = ChangeType.valueOf(str);} catch (Exception e){}
-//			Log.debug("########## str  " + str +"   ct = " +ct);
 			if (ct != null)
 				return ct;
 			if (str.equalsIgnoreCase("wr")) return WAITROOM;

@@ -38,6 +38,7 @@ import mc.alk.arena.objects.pairs.QueueResult.TimeStatus;
 import mc.alk.arena.objects.queues.TeamQueue.TeamQueueComparator;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
+import mc.alk.arena.util.Log;
 
 import org.bukkit.Bukkit;
 
@@ -253,7 +254,6 @@ public class ArenaMatchQueue{
 						"   tq=" + tq +" --- ap="+a.getParameters() +"    baseP="+baseParams +" newP="+newParams +"  " + newParams.getMaxPlayers() +
 						" tqparams="+tq.mp);
 				for (QueueObject qo : tq){
-					//					Log.debug("   qo params = " + qo.getMatchParams());
 					/// Check if we should only use 1 arena (skipNonMatched == true).  But for certain elements in the queue
 					/// We need to ignore.
 					/// Allow MatchedUp Matches to proceed like normal (this happens for tournaments and duels)
@@ -265,7 +265,6 @@ public class ArenaMatchQueue{
 					}
 					MatchParams qomp = qo.getMatchParams();
 					/// Check to see if the team matches these params
-					//					Log.debug("   qo params = " + qo.getMatchParams() +"  matches new = " + qomp.matches(newParams));
 					if (!qomp.matches(newParams)){
 						if (!forceStart){ /// continue to next queue object
 							continue;
@@ -281,7 +280,7 @@ public class ArenaMatchQueue{
 						qr.neededPlayers = playerMatchAndArenaParams.getMaxPlayers();
 						findMatch(qr, playerMatchAndArenaParams,a,tq, forceStart);
 					} catch (NeverWouldJoinException e) {
-						e.printStackTrace();
+						Log.printStackTrace(e);
 						continue;
 					}
 					if (qr.match != null){
@@ -346,13 +345,10 @@ public class ArenaMatchQueue{
 		boolean hasComp = false;
 		/// Now that we have a semi sorted list, get the largest number of teams that fit in this arena
 		for (QueueObject qo : newList){
-			//			Log.debug("###################   " +   qo);
 			if (qo instanceof MatchTeamQObject){ /// we have our teams already
-				//				Log.debug("      222 ###################   " +   qo);
 				tjh.deconstruct();
 				qr.status = QueueResult.QueueStatus.ADDED_TO_QUEUE;
 				qr.match = getPreMadeMatch(tq, arena, qo);
-				//				Log.debug("      333 ###################   " +   qr.match);
 				return;
 			} else {
 				TeamQObject to = (TeamQObject) qo;
@@ -411,7 +407,7 @@ public class ArenaMatchQueue{
 			try {
 				m.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(params, m));
 			} catch (NeverWouldJoinException e) {
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 		m.onJoin(teams);

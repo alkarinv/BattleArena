@@ -182,7 +182,7 @@ public class BTInterface {
 		if (rank == null)
 			rank = -1;
 		return "&eRank:&6"+rank+"&e (&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)&6["+stat.getRanking()+"]&e" +
-				". Highest &6["+ stat.getMaxRanking()+"]&e Longest Streak &b"+stat.getMaxStreak();
+				". Highest &6["+ stat.getMaxRating()+"]&e Longest Streak &b"+stat.getMaxStreak();
 	}
 	public boolean setRating(OfflinePlayer player, Integer elo) {
 		return ti.setRating(player, elo);

@@ -46,4 +46,9 @@ public class TrackerArenaStat implements ArenaStat{
 	public Stat getStat(){
 		return stat;
 	}
+
+	@Override
+	public String toString(){
+		return stat.toString();
+	}
 }

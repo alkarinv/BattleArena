@@ -400,7 +400,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		ArenaClass ac = ArenaClassController.getClass(className);
 		if (ac == null)
 			return sendMessage(sender, "&cArena class " + className +" doesn't exist");
-		ArenaClassController.giveClass(player, ac);
+		ArenaClassController.giveClass(BattleArena.toArenaPlayer(player), ac);
 		return sendMessage(sender, "&2Arena class " + ac.getDisplayName() +"&2 given to &6" + player.getName());
 	}
 

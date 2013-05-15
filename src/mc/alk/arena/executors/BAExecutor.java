@@ -292,27 +292,29 @@ public class BAExecutor extends CustomCommandExecutor {
 				String posmsg = MessageHandler.getSystemMessage("position_in_queue",qpp.pos, neededPlayers);
 				msg.append( posmsg != null ? posmsg : "");
 			}
-
-			switch(qpp.timeStatus){
-			case CANT_FORCESTART:
-				break;
-			case TIME_ONGOING:
-				Long time = qpp.time - System.currentTimeMillis();
-				if (qpp.neededPlayers != CompetitionSize.MAX){
-					msg.append("\n"+MessageHandler.getSystemMessage("match_starts_players_or_time",
-							qpp.neededPlayers-qpp.pos, TimeUtil.convertMillisToString(time),
-							qpp.params.getMinPlayers()));
-				} else {
-					msg.append("\n"+MessageHandler.getSystemMessage("match_starts_when_time",
-							TimeUtil.convertMillisToString(time)));
+			if (qpp.time != null){
+				switch(qpp.timeStatus){
+				case CANT_FORCESTART:
+					break;
+				case TIME_ONGOING:
+					Long time = qpp.time - System.currentTimeMillis();
+					if (qpp.neededPlayers != CompetitionSize.MAX){
+						msg.append("\n"+MessageHandler.getSystemMessage("match_starts_players_or_time",
+								qpp.neededPlayers-qpp.pos, TimeUtil.convertMillisToString(time),
+								qpp.params.getMinPlayers()));
+					} else {
+						msg.append("\n"+MessageHandler.getSystemMessage("match_starts_when_time",
+								TimeUtil.convertMillisToString(time)));
+					}
+					break;
+				case TIME_EXPIRED:
+					msg.append("\n"+MessageHandler.getSystemMessage("you_start_when_free_pos", qpp.pos));
+					break;
+				default:
+					break;
 				}
-				break;
-			case TIME_EXPIRED:
-				msg.append("\n"+MessageHandler.getSystemMessage("you_start_when_free_pos", qpp.pos));
-				break;
-			default:
-				break;
 			}
+
 			t.sendMessage(msg.toString());
 			break;
 		default:
@@ -409,8 +411,6 @@ public class BAExecutor extends CustomCommandExecutor {
 			}
 			refundFee(qtp.q, qtp.team);
 		} finally {
-//			Log.debug("#################### finally = " + inSystem);
-//			if (inSystem)
 			new ArenaPlayerLeaveEvent(p,p.getTeam()).callEvent();
 		}
 		return true;
@@ -519,7 +519,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"rank"}, helpOrder=3)
 	public boolean rank(Player sender,MatchParams mp) {
 		if (!StatController.hasInterface(mp)){
-			return sendMessage(sender,"&eThere is no tracking for " +mp.toPrettyString());}
+			return sendMessage(sender,"&cThere is no tracking for &6" +mp.toPrettyString());}
 		StatController sc = new StatController(mp);
 		String rankMsg = sc.getRankMessage(sender);
 		return MessageUtil.sendMessage(sender, rankMsg);
@@ -528,7 +528,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"rank"}, helpOrder=4)
 	public boolean rankOther(CommandSender sender,MatchParams mp, OfflinePlayer player) {
 		if (!StatController.hasInterface(mp)){
-			return sendMessage(sender,"&eThere is no tracking for " +mp.toPrettyString());}
+			return sendMessage(sender,"&cThere is no tracking for " +mp.toPrettyString());}
 		StatController sc = new StatController(mp);
 		String rankMsg = sc.getRankMessage(player);
 		return MessageUtil.sendMessage(sender, rankMsg);

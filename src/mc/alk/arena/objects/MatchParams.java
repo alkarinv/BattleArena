@@ -71,7 +71,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 
 	public Integer getMatchTime() {
-		return matchTime;
+		return matchTime == null && mparent!=null ? mparent.getMatchTime() : matchTime;
 	}
 
 	public void setMatchTime(Integer matchTime) {
@@ -79,7 +79,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	}
 
 	public Integer getIntervalTime() {
-		return intervalTime;
+		return intervalTime ==null && mparent!=null ? mparent.getIntervalTime() : intervalTime;
 	}
 
 	public void setIntervalTime(Integer intervalTime) {
@@ -91,7 +91,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	}
 
 	public Integer getNLives(){
-		return nLives;
+		return nLives==null&&mparent!=null ? mparent.getNLives() : nLives;
 	}
 
 	@Override

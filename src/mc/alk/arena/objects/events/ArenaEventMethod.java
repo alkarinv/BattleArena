@@ -6,7 +6,7 @@ import mc.alk.arena.objects.MatchState;
 
 import org.bukkit.event.Event;
 
-public class ArenaEventMethod implements Comparable<ArenaEventMethod>{
+public class ArenaEventMethod {
 	final Method callMethod;
 	final Class<? extends Event> bukkitEvent;
 	final Method getPlayerMethod;
@@ -70,11 +70,6 @@ public class ArenaEventMethod implements Comparable<ArenaEventMethod>{
 	public String toString(){
 		return "[MEM "+callMethod.getName()+", " + (bukkitEvent != null ? bukkitEvent.getSimpleName():"null")+
 				" p="+bukkitPriority+" "  + beginState+":"+endState+"   playerMethod=" + getPlayerMethod+"]";
-	}
-
-	@Override
-	public int compareTo(ArenaEventMethod arg0) {
-		return this.priority.compareTo(arg0.priority);
 	}
 
 	public org.bukkit.event.EventPriority getBukkitPriority() {

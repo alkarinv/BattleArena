@@ -91,12 +91,10 @@ public class BAPlayerListener implements Listener  {
 			for (ItemStack is: p.getInventory().getContents()){
 				if (is == null || is.getType()==Material.AIR)
 					continue;
-				//				FileLogger.log("d  itemstack="+ InventoryUtil.getItemString(is));
 			}
 			for (ItemStack is: p.getInventory().getArmorContents()){
 				if (is == null || is.getType()==Material.AIR)
 					continue;
-				//				FileLogger.log("d aitemstack="+ InventoryUtil.getItemString(is));
 			}
 			InventoryUtil.clearInventory(p);
 		}

@@ -116,10 +116,10 @@ public class PerformTransition {
 			final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch) {
 		if (Defaults.DEBUG_TRANSITIONS) Log.debug("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
 				" ops="+am.getParams().getTransitionOptions().getOptions(transition)
-				+"  inArena="+am.inside(player) + "   clearInv=" +
+				+"  inArena="+am.isHandled(player) + "   clearInv=" +
 				am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
 
-		final boolean insideArena = am.inside(player);
+		final boolean insideArena = am.isHandled(player);
 		final TransitionOptions mo = am.getParams().getTransitionOptions().getOptions(transition);
 		if (mo == null){ /// no options
 			return true;}
@@ -197,8 +197,6 @@ public class PerformTransition {
 				ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
 						player,team,src,dest,TeleportDirection.IN);
 				am.callEvent(apte);
-//				am.entering(player);
-//				final Location l = jitter(am.getTeamSpawn(teamIndex,false),rand.nextInt(team.size()));
 				TeleportController.teleportPlayer(p, l, false, true);
 				PlayerUtil.setGod(p,false);
 				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
@@ -241,14 +239,14 @@ public class PerformTransition {
 			if (mo.getExperience() != null) {ExpUtil.giveExperience(p, mo.getExperience());}
 			if (mo.hasOption(TransitionOption.REMOVEPERMS)){ removePerms(player, mo.getRemovePerms());}
 			if (mo.hasOption(TransitionOption.ADDPERMS)){ addPerms(player, mo.getAddPerms(), 0);}
-			if (mo.hasOption(TransitionOption.GIVECLASS)){
+			if (mo.hasOption(TransitionOption.GIVECLASS) && player.getChosenClass() == null){
 				final ArenaClass ac = getArenaClass(mo,teamIndex);
 				if (ac != null && ac.valid()){ /// Give class items and effects
 					if (mo.woolTeams()) TeamUtil.setTeamHead(teamIndex, player); // give wool heads first
 					if (armorTeams){
-						ArenaClassController.giveClass(p, ac, TeamUtil.getTeamColor(teamIndex));
+						ArenaClassController.giveClass(player, ac, TeamUtil.getTeamColor(teamIndex));
 					} else{
-						ArenaClassController.giveClass(p, ac);
+						ArenaClassController.giveClass(player, ac);
 					}
 					player.setChosenClass(ac);
 				}
@@ -263,7 +261,6 @@ public class PerformTransition {
 				if (disguise != null){ /// Give class items and effects
 					DisguiseInterface.disguisePlayer(p, disguise);}
 			}
-			Log.debug("mo has GiveItems = " + mo.hasOption(TransitionOption.GIVEITEMS));
 			if (mo.hasOption(TransitionOption.GIVEITEMS)){
 				Color color = armorTeams ? TeamUtil.getTeamColor(teamIndex) : null;
 				giveItems(transition, player, mo.getGiveItems(),teamIndex, woolTeams, insideArena,color);
@@ -276,7 +273,7 @@ public class PerformTransition {
 			if (prizeMsg != null)
 				MessageUtil.sendMessage(player,"&eYou have been given \n"+prizeMsg);
 			if (teleportIn){
-//				transition(am, MatchState.ONSPAWN, player, team, false); /// Log.debug TODO
+				transition(am, MatchState.ONSPAWN, player, team, false);
 			}
 		} else if (forceClearInventory){
 			InventoryUtil.clearInventory(p);
@@ -290,9 +287,7 @@ public class PerformTransition {
 				loc = mo.getTeleportToLoc();
 				type = LocationType.CUSTOM;
 			} else {
-//				loc = am.oldlocs().get(player.getName());
 				type = LocationType.HOME;
-//				loc = am.getSpawn(player, type, randomRespawn);
 				loc = player.getOldLocation();
 			}
 			player.clearOldLocation();
@@ -308,7 +303,7 @@ public class PerformTransition {
 					player,team,src,dest,TeleportDirection.OUT);
 //			ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(player,team,null,type,false);
 			am.callEvent(apte);
-
+			player.setReady(false);
 			/// If players are outside of the match, but need requirements, warn them
 		}
 //		else if (transition == MatchState.ONPRESTART && !insideArena){

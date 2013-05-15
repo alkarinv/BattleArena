@@ -69,7 +69,7 @@ public class ArenaParams extends ArenaSize{
 	public void setType(ArenaType type) {this.arenaType = type;}
 
 	public boolean matches(final ArenaParams ap) {
-		return ( !(arenaType == null && ap.arenaType == null) && arenaType.matches(ap.arenaType) &&
+		return (arenaType != null && ap.arenaType != null && arenaType.matches(ap.arenaType) &&
 				matchesTeamSize(ap) &&
 				matchesNTeams(ap));
 	}
@@ -78,7 +78,7 @@ public class ArenaParams extends ArenaSize{
 		List<String> reasons = new ArrayList<String>();
 		if (arenaType == null) reasons.add("ArenaType is null");
 		if (ap.arenaType == null) reasons.add("Passed params have an arenaType of null");
-		reasons.addAll(arenaType.getInvalidMatchReasons(ap.getType()));
+		else reasons.addAll(arenaType.getInvalidMatchReasons(ap.getType()));
 		if (!matchesNTeams(ap)) reasons.add("Arena accepts nteams="+getNTeamRange()+
 				". you requested "+ap.getNTeamRange());
 		if (!matchesTeamSize(ap)) reasons.add("Arena accepts teamSize="+getTeamSizeRange()+

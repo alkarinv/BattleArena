@@ -13,7 +13,6 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
-import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
 
 import org.apache.commons.lang.StringUtils;
@@ -162,7 +161,6 @@ public class EventOpenOptions {
 
 		Arena arena;
 		boolean autoFindArena = false;
-//		Log.debug("#L@K#JRKDJFKJ  " + hasOption(EventOpenOption.ARENA));
 		if (hasOption(EventOpenOption.ARENA)){
 			arena = (Arena) getOption(EventOpenOption.ARENA);
 		} else {

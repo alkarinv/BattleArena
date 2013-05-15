@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.listeners.custom.RListener.RListenerPriorityComparator;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.DmgDeathUtil;
@@ -30,7 +31,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
  */
 public class SpecificPlayerEventListener extends BukkitEventListener{
 	/** map of player to listeners listening for that player */
-	final public MapOfTreeSet<String,RListener> listeners = new MapOfTreeSet<String,RListener>();
+	final public MapOfTreeSet<String,RListener> listeners = new MapOfTreeSet<String,RListener>(new RListenerPriorityComparator());
 
 	/** The method which will return a Player if invoked */
 	final Method getPlayerMethod;

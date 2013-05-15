@@ -3,6 +3,7 @@ package mc.alk.arena.objects.scoreboard;
 import java.util.HashMap;
 import java.util.Map;
 
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -11,9 +12,11 @@ public class ArenaScoreboard {
 	final boolean solo;
 
 	Map<String, ArenaObjective> objectives = new HashMap<String,ArenaObjective>();
+	Match match;
 
-	public ArenaScoreboard(MatchParams params) {
+	public ArenaScoreboard(Match match, MatchParams params) {
 		solo = params.getMaxTeamSize() == 1;
+		this.match = match;
 	}
 
 	public void clear(){

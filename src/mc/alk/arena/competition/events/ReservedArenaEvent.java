@@ -38,17 +38,17 @@ public class ReservedArenaEvent extends Event {
 
 	Match arenaMatch;
 
-	public void openEvent(EventParams mp, Arena arena) throws NeverWouldJoinException {
-		arenaMatch = new ArenaMatch(arena, mp);
-		arenaMatch.setTeamJoinHandler(null); /// we are taking care of this
-		openEvent(mp);
-	}
-
 	public void autoEvent(EventParams mp, Arena arena) throws NeverWouldJoinException {
 		openEvent(mp,arena);
 		mc.sendCountdownTillEvent(mp.getSecondsTillStart());
 		/// Set a countdown to announce updates every minute
 		timer = new Countdown(BattleArena.getSelf(),mp.getSecondsTillStart(), mp.getAnnouncementInterval(), this);
+	}
+
+	public void openEvent(EventParams mp, Arena arena) throws NeverWouldJoinException {
+		arenaMatch = new ArenaMatch(arena, mp);
+		arenaMatch.setTeamJoinHandler(null); /// we are taking care of this
+		openEvent(mp);
 	}
 
 	@Override
@@ -200,12 +200,6 @@ public class ReservedArenaEvent extends Event {
 	}
 	public Match getMatch(){
 		return arenaMatch;
-	}
-
-	@Override
-	public boolean teleporting(ArenaPlayer player) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override

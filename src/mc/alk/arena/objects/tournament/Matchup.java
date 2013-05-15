@@ -68,8 +68,8 @@ public class Matchup {
 	@Override
 	public boolean equals(Object other) {
 		if (this == other) return true;
-		if (!(other instanceof ArenaTeam)) return false;
-		return this.hashCode() == ((ArenaTeam) other).hashCode();
+		if (!(other instanceof Matchup)) return false;
+		return this.hashCode() == ((Matchup) other).hashCode();
 	}
 
 	@Override

@@ -5,10 +5,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import mc.alk.arena.events.players.ArenaPlayerEnterQueueEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeaveQueueEvent;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.signs.ArenaStatusSign;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.SerializerUtil;
 
 import org.bukkit.Location;
+import org.bukkit.event.EventHandler;
 
 public class SignController{
 	Map<String, Map<String,ArenaStatusSign>> statusSigns = new HashMap<String, Map<String,ArenaStatusSign>>();
@@ -54,4 +59,29 @@ public class SignController{
 		return signs == null ? null : signs.values();
 	}
 
+	@EventHandler
+	public void onArenaPlayerEnterQueueEvent(ArenaPlayerEnterQueueEvent event){
+		MatchParams mp = event.getQueueResult().params;
+		if (mp == null)
+			return;
+	}
+
+	@EventHandler
+	public void onArenaPlayerLeaveQueueEvent(ArenaPlayerLeaveQueueEvent event){
+		MatchParams mp = event.getParams();
+		if (mp == null)
+			return;
+	}
+
+	public void clearQueues() {
+		Log.debug("---- clear queues");
+		synchronized(statusSigns){
+			for (String type: statusSigns.keySet()){
+				for (ArenaStatusSign ass : statusSigns.get(type).values()){
+					ass.setQ(0,0);
+				}
+			}
+		}
+
+	}
 }

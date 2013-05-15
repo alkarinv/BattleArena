@@ -23,16 +23,24 @@ public class ArenaObjective implements ScoreTracker{
 	final String name;
 	String criteria;
 	String displayName;
-
 	ArenaDisplaySlot slot = ArenaDisplaySlot.SIDEBAR;
 	boolean displayPlayers = true;
 	boolean displayTeams = true;
 
+	int priority = 10;
+
 	public ArenaObjective(String name, String criteria) {
-		this.name = name;
-		this.criteria = criteria;
+		this(name,criteria,10);
 	}
 
+	public ArenaObjective(String name, String criteria, int priority) {
+		this.name = name;
+		this.criteria = criteria;
+		this.priority = priority;
+	}
+	public int getPriority(){
+		return priority;
+	}
 	public String getName(){
 		return name;
 	}

@@ -37,35 +37,35 @@ public class BAPluginListener implements Listener {
 
 	@EventHandler
 	public void onPluginEnable(PluginEnableEvent event) {
-		if (event.getPlugin().getName() == "BattleTracker")
+		if (event.getPlugin().getName().equalsIgnoreCase("BattleTracker"))
 			loadBattleTracker();
-		else if (event.getPlugin().getName() == "Essentials")
+		else if (event.getPlugin().getName().equalsIgnoreCase("Essentials"))
 			loadEssentials();
-		else if (event.getPlugin().getName() == "Factions")
+		else if (event.getPlugin().getName().equalsIgnoreCase("Factions"))
 			loadFactions();
-		else if (event.getPlugin().getName() == "Herochat")
+		else if (event.getPlugin().getName().equalsIgnoreCase("Herochat"))
 			loadHeroChat();
-		else if (event.getPlugin().getName() == "Heroes")
+		else if (event.getPlugin().getName().equalsIgnoreCase("Heroes"))
 			loadHeroes();
-		else if (event.getPlugin().getName() == "DisguiseCraft")
+		else if (event.getPlugin().getName().equalsIgnoreCase("DisguiseCraft"))
 			loadDisguiseCraft();
-		else if (event.getPlugin().getName() == "MobArena")
+		else if (event.getPlugin().getName().equalsIgnoreCase("MobArena"))
 			loadMobArena();
-		else if (event.getPlugin().getName() == "MultiInv")
+		else if (event.getPlugin().getName().equalsIgnoreCase("MultiInv"))
 			loadMultiInv();
-		else if (event.getPlugin().getName() == "Multiverse-Core")
+		else if (event.getPlugin().getName().equalsIgnoreCase("Multiverse-Core"))
 			loadMultiverseCore();
-		else if (event.getPlugin().getName() == "Multiverse-Inventories")
+		else if (event.getPlugin().getName().equalsIgnoreCase("Multiverse-Inventories"))
 			loadMultiverseInventory();
-		else if (event.getPlugin().getName() == "PylamoRestorationSystem")
+		else if (event.getPlugin().getName().equalsIgnoreCase("PylamoRestorationSystem"))
 			loadPylamoRestoration();
-		else if (event.getPlugin().getName() == "TagAPI")
+		else if (event.getPlugin().getName().equalsIgnoreCase("TagAPI"))
 			loadTagAPI();
-		else if (event.getPlugin().getName() == "WorldEdit")
+		else if (event.getPlugin().getName().equalsIgnoreCase("WorldEdit"))
 			loadWorldEdit();
-		else if (event.getPlugin().getName() == "WorldGuard")
+		else if (event.getPlugin().getName().equalsIgnoreCase("WorldGuard"))
 			loadWorldGuard();
-		else if (event.getPlugin().getName() == "Vault")
+		else if (event.getPlugin().getName().equalsIgnoreCase("Vault"))
 			loadVault();
 	}
 

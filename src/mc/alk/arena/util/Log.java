@@ -36,10 +36,13 @@ public class Log {
 
 	public static void debug(String msg){
 		System.out.println(msg);
+		if (NotifierUtil.hasListener("debug")){
+			NotifierUtil.notify("debug", msg);}
 	}
 
 	public static void printStackTrace(Throwable e) {
 		e.printStackTrace();
-		NotifierUtil.notify("errors", e);
+		if (NotifierUtil.hasListener("errors")){
+			NotifierUtil.notify("errors", e);}
 	}
 }

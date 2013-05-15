@@ -15,7 +15,6 @@ import java.util.TreeMap;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
-import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.ModuleController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
@@ -106,7 +105,6 @@ public class ConfigSerializer extends BaseConfig{
 		mp.setNLives(parseSize(cs.getString("nLives"),1)); /// Number of lives
 		loadBTOptions(cs, mp); /// Load battle tracker options
 
-
 		/// number of concurrently running matches of this type
 		mp.setNConcurrentCompetitions(ArenaSize.toInt(cs.getString("nConcurrentCompetitions","infinite")));
 
@@ -124,7 +122,6 @@ public class ConfigSerializer extends BaseConfig{
 		PlayerContainerSerializer pcs = new PlayerContainerSerializer();
 		pcs.setConfig(BattleArena.getSelf().getDataFolder()+"/saves/containers.yml");
 		pcs.load(mp);
-		Log.debug("###############  dlfkjsdfj lobby "+ LobbyController.getLobbies().size());
 
 		String mods = modules.isEmpty() ? "" : " mods=" + StringUtils.join(modules,", ");
 		Log.info("["+plugin.getName()+"] Loaded "+mp.getName()+" params" +mods);
@@ -132,7 +129,7 @@ public class ConfigSerializer extends BaseConfig{
 	}
 
 
-	private static VictoryType loadVictoryType(ConfigurationSection cs) throws ConfigException {
+	public static VictoryType loadVictoryType(ConfigurationSection cs) throws ConfigException {
 		VictoryType vt;
 		if (cs.contains("victoryCondition")){
 			vt = VictoryType.fromString(cs.getString("victoryCondition"));
@@ -241,8 +238,8 @@ public class ConfigSerializer extends BaseConfig{
 		String dbName = (cs.contains("database")) ? cs.getString("database",null) : cs.getString("db",null);
 		if (dbName != null){
 			mp.setDBName(dbName);
-			if (!BTInterface.addBTI(mp))
-				dbName = null;
+			if (!BTInterface.addBTI(mp)){
+				mp.setDBName(null);}
 		}
 		if (cs.contains("overrideBattleTracker")){
 			mp.setOverrideBattleTracker(cs.getBoolean("overrideBattleTracker", true));
@@ -250,10 +247,10 @@ public class ConfigSerializer extends BaseConfig{
 			mp.setOverrideBattleTracker(cs.getBoolean("overrideBTMessages", true));
 		}
 		/// What is the default rating for this match type
-		Rating rating = cs.contains("rated") ? Rating.fromBoolean(cs.getBoolean("rated")) : Rating.RATED;
-
+		Rating rating = cs.contains("rated") ? Rating.fromBoolean(cs.getBoolean("rated")) : Rating.ANY;
 		if (rating == null || rating == Rating.UNKNOWN)
 			throw new ConfigException("Could not parse rating: valid types. " + Rating.getValidList());
+		mp.setRating(rating);
 	}
 
 
@@ -462,7 +459,7 @@ public class ConfigSerializer extends BaseConfig{
 		return tops;
 	}
 
-	private static List<CommandLineString> getDoCommands(List<String> list) throws InvalidOptionException {
+	public static List<CommandLineString> getDoCommands(List<String> list) throws InvalidOptionException {
 		List<CommandLineString> commands = new ArrayList<CommandLineString>();
 		for (String line: list){
 			CommandLineString cls = CommandLineString.parse(line);

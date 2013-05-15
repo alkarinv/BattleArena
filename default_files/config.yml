@@ -1,4 +1,4 @@
-configVersion: 2.2
+configVersion: 2.2.6
 
 # For help the wiki is a good source of information
 # Wiki: # http://battleplugins.com/w/index.php/BattleArena
@@ -58,6 +58,9 @@ optionSets:
 
 ## default Options (these can be overridden by each match/event type)
 defaultOptions:
+    useScoreboard: true ### Use the scoreboard
+    useColoredNames: true  ## color team names (needs TagAPI or Scoreboard)
+    
     #### Match Options ####
     secondsTillBegin: 6 
     secondsTillMatch: 6 ## how long between onPrestart and onStart
@@ -89,7 +92,10 @@ defaultOptions:
     playerOpenOptions: [silent, time=180]
   
     #### Duel Options ####
-    allowRatedDuels: false
+    allowRatedDuels: false # By default dueling can not be rated
+    # default duel options to pass in. Example [rated,money=100]
+    defaultDuelOptions: [] 
+    
     # after a player rejects a duel, how long before they can be challenged again
     challengeInterval: 1800 # (seconds) 1800 = 30minutes
     # allow players to challenge ops

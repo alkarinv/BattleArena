@@ -7,8 +7,8 @@ import java.util.TreeMap;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
 import mc.alk.arena.events.players.ArenaPlayerKillEvent;
-import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.events.ArenaEventHandler;
+import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -21,7 +21,7 @@ public class AllKills extends VictoryCondition implements ScoreTracker {
 
 	public AllKills(Match match) {
 		super(match);
-		kills = new ArenaObjective("allkills","All Kills");
+		kills = new ArenaObjective("allkills","All Kills",5);
 		kills.setDisplayName(MessageUtil.colorChat("&4All Kills"));
 	}
 

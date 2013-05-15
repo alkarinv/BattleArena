@@ -227,7 +227,7 @@ public class EventExecutor extends BAExecutor{
 					sendSystemMessage(p, "you_cant_join_event");
 					return false;
 				}catch (Exception e) {
-					e.printStackTrace();
+					Log.printStackTrace(e);
 					sendSystemMessage(p, "you_cant_join_event");
 					return false;
 				}

@@ -376,10 +376,10 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
 	public String getStatus() {
 		StringBuilder sb = new StringBuilder();
-		boolean rated = eventParams.isRated();
-		sb.append((rated? "&4Rated" : "&aUnrated") +"&e "+name+". " );
-		sb.append("&e(&6" + state+"&e)");
 		if (eventParams != null){
+			boolean rated = eventParams.isRated();
+			sb.append((rated? "&4Rated" : "&aUnrated") +"&e "+name+". " );
+			sb.append("&e(&6" + state+"&e)");
 			sb.append("&eTeam size=" + eventParams.getTeamSizeRange() );
 			sb.append("&e Teams=&6 " + teams.size());
 		}
@@ -519,7 +519,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	}
 
 	@Override
-	public boolean inside(ArenaPlayer player) {
+	public boolean isHandled(ArenaPlayer player) {
 		// TODO Auto-generated method stub
 		return false;
 	}

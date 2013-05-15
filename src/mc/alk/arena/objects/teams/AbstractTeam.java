@@ -7,11 +7,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.ServerUtil;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -111,7 +112,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 		Set<Player> ps = new HashSet<Player>();
 
 		for (ArenaPlayer ap: players){
-			Player p = Bukkit.getPlayerExact(ap.getName());
+			Player p = ServerUtil.findPlayerExact(ap.getName());
 			if (p != null)
 				ps.add(p);
 		}
@@ -434,7 +435,10 @@ public abstract class AbstractTeam implements ArenaTeam{
 
 	@Override
 	public String getScoreboardDisplayName(){
-		return scoreboardDisplayName;
+		if (scoreboardDisplayName != null)
+			return scoreboardDisplayName;
+		String name = getDisplayName();
+		return name.length() > Defaults.MAX_SCOREBOARD_NAME_SIZE ? name.substring(0,Defaults.MAX_SCOREBOARD_NAME_SIZE) : name;
 	}
 
 	public ItemStack getHeadItem(){

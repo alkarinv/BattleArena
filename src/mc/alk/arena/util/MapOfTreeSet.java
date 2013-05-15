@@ -1,5 +1,6 @@
 package mc.alk.arena.util;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
@@ -13,6 +14,15 @@ import java.util.TreeSet;
  */
 public class MapOfTreeSet<K,V> extends HashMap<K,TreeSet<V>>{
 	private static final long serialVersionUID = 1L;
+	Comparator<V> comparator = null;
+
+	public MapOfTreeSet() {
+		super();
+	}
+
+	public MapOfTreeSet(Comparator<V> comparator) {
+		this.comparator = comparator;
+	}
 
 	public boolean add(K k, V v) {
 		TreeSet<V> set = getOrMake(k);
@@ -35,7 +45,10 @@ public class MapOfTreeSet<K,V> extends HashMap<K,TreeSet<V>>{
 	private TreeSet<V> getOrMake(K k) {
 		TreeSet<V> set = get(k);
 		if (set == null){
-			set = new TreeSet<V>();
+			if (comparator != null)
+				set = new TreeSet<V>(comparator);
+			else
+				set = new TreeSet<V>();
 			synchronized(this){
 				put(k, set);
 			}
