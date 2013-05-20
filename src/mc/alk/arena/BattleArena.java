@@ -95,10 +95,10 @@ public class BattleArena extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		plugin = this;
+		BattleArena.plugin = this;
 		PluginDescriptionFile pdfFile = this.getDescription();
-		pluginname = pdfFile.getName();
-		version = pdfFile.getVersion();
+		BattleArena.pluginname = pdfFile.getName();
+		BattleArena.version = pdfFile.getVersion();
 		Class<?> clazz = this.getClass();
 		ConsoleCommandSender sender = Bukkit.getConsoleSender();
 		MessageUtil.sendMessage(sender,"&4["+pluginname+"] &6v"+version+"&f enabling!");
@@ -221,7 +221,7 @@ public class BattleArena extends JavaPlugin {
 		if (Defaults.AUTO_UPDATE)
 			PluginUpdater.downloadPluginUpdates(this);
 
-		MessageUtil.sendMessage(sender,"&4["+pluginname+"] &6v"+version+"&f enabled!");
+		MessageUtil.sendMessage(sender,"&4["+pluginname+"] &6v"+BattleArena.version+"&f enabled!");
 	}
 
 	private void createMessageSerializers() {
@@ -354,7 +354,7 @@ public class BattleArena extends JavaPlugin {
 	 * @return
 	 */
 	public static String getNameAndVersion() {
-		return "[" + pluginname + " v" + version +"]";
+		return "[" + BattleArena.pluginname + " v" + BattleArena.version +"]";
 	}
 
 	/**
@@ -362,7 +362,7 @@ public class BattleArena extends JavaPlugin {
 	 * @return
 	 */
 	public static String getPluginName() {
-		return "[" + pluginname+"]";
+		return "[" + BattleArena.pluginname+"]";
 	}
 
 	/**

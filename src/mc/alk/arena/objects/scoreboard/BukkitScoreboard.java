@@ -11,6 +11,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
 
 import org.bukkit.Bukkit;
@@ -178,7 +179,11 @@ public class BukkitScoreboard extends ArenaScoreboard{
 		}
 	}
 	public String getTeamName(ArenaTeam team){
-		return solo ? team.getName() : team.getScoreboardDisplayName();
+		String name = team.size() > 1 || team.size()==0 ? team.getName() : team.getScoreboardDisplayName();
+		if (name.length() > 16)
+			name = name.substring(0, 16);
+		name = MessageUtil.colorChat(name);
+		return name;
 	}
 
 	@Override

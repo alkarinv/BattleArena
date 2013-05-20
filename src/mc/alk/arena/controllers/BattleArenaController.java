@@ -646,12 +646,11 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 		amq.stop();
 		amq.removeAllArenas(arenaType);
-		synchronized(allarenas){
-			for (String aName: allarenas.keySet()){
-				Arena a = allarenas.get(aName);
-				if (a.getArenaType() == arenaType)
-					allarenas.remove(aName);
-			}
+		Iterator<Arena> iter = allarenas.values().iterator();
+		while (iter.hasNext()){
+			Arena a = iter.next();
+			if (a != null && a.getArenaType() == arenaType){
+				iter.remove();}
 		}
 		amq.resume();
 	}
