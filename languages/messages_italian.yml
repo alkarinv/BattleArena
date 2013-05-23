@@ -1,0 +1,162 @@
+version: 1.6.0
+
+system:
+    type_enabled: "&2 tipo &6%s&2 abilitato"
+    type_disabled: "&2 tipo &6%s&2 disabilitato"
+    time_format: "&6%s&e %s"
+    second: "secondo"
+    seconds: "secondi"
+    minute: "minuto"
+    minutes: "minuti"
+    hour: "ora"
+    hours: "ore"
+    day: "giorno"
+    days: "giorni"
+    zero_time: "&60"
+    match_disabled: "&cLa &6%s&c è al momento disabilitata"
+    all_disabled: "&cLa tipologia di quell'arena e tutti i tipi sono disabilitati"
+    currently_enabled: "&cAbilitato &6%s"
+    no_join_perms: "&cNon hai i permessi per entrare nel &6%s"
+    teammate_cant_join: "&cUno del tuo team non può entrare nel &6%s"
+    valid_arena_not_built: "&cUna arena &6%s&c valida non è stata costruita"
+    need_the_following: "&eHai bisogno dei seguenti requisiti"
+    you_added_to_team: "&eSei stato aggiunto in un team"
+    queue_busy: "&cLa coda è al momento occupata. Riprova più tardi."
+    no_arena_for_size: "&cL'Arena non è stata costurita per il team di quelle dimensioni"
+    joined_the_queue: '&eSei entrato nella &6%s&e coda.'
+    position_in_queue: 'Posizione: &6%s/%s'
+    match_starts_players_or_time: '&eIl match inzierà quando &6%s&e altri giocatori entreranno o con un minimo di %s&e giocatori'
+    match_starts_when_time: '&eIl match inizierà tra %s'
+    you_start_when_free_pos: "&ePosizione: &6%s&e. Il tuo match inizierà appena una arena sarà libera"
+    you_start_when_free: "&eIl tuo match inizierà appena una arena sarà libera"
+    server_joined_the_queue: "%s &6%s&e è entrato nella coda. &6%s/%s"
+    you_left_match: "&eHai abbandonato il match"
+    you_left_event: "&eHai abbandonato l'evento &6%s&e"
+    you_left_competition: "&eHai abbandonato l'evento &6%s&"
+    you_left: "&eHai lasciato"
+    you_not_in_queue: "&eNon sei in coda"
+    you_left_queue: "&eHai lasciato la coda per &6%s"
+    team_left_queue: "&6Il team ha lasciato la coda per &6%s&e. &6%s&e ha inserito il commando"
+    you_cant_join_event: "&cThe event can not be joined at this time"
+    no_event_open: "&cThere is no event currently open"
+    you_cant_join_event_while: "&eNon puoi entrare nel &6%s&e mentre è %s"
+    you_will_join_when_matched: "&eSei già entrato nel 6%s&e e quando inziierà sarai inserito in un team"
+    event_will_start_in: "&2L'Evento inzia tra &6%s"
+    event_invalid_team_size: "&cQuesto Evento supporta fino a &6%s&e il tuo team ha &6%s"
+    you_joined_event: '&eSei entrato nel &6%s'
+
+common:
+    team: '&7{name}&e'
+    teamshort: '&7{name}&e[{ranking}]'  ## only used with BattleTracker
+    teamlong: '&7{name}&e[{ranking}] &6({wins}:{losses})'  ## only used with BattleTracker
+    other_team_not_ready: '&eGli altri &cteams&e non sono ancora pronti!'
+    your_team_not_ready: '&eIl tuo team non è pronto per entrare'
+    added_to_team: '&6{playername} &eè entrato nel team'
+    onjoin: '&eSei entrato nel &6{compname}'
+    onjoin_server: '{prefix} &e&6%s&e è &2entrato&e. Ci sono &6{nplayers}&e dentro'
+
+event:
+    countdownTillEvent: ''
+    team_cancelled: ''
+    server_cancelled: "&cL'evento è stato cancellato"
+    server_countdownTillEvent: "{prefix}inizia tra {time}, &6/{cmd} join&e, &6/{cmd} info"
+    oneTeam: ### 1 team events
+        server_open: |
+            {prefix}&e Un evento {eventname} sta iniziando!
+            {prefix}&e Scrivi &6/{cmd} join&e, o &6/{cmd} info &eper informazioni
+        server_open_teamSizeGreaterThanOne: |
+            {prefix}&e Un evento {eventname} sta iniziando!
+            {prefix}&e Scrivi &6/{cmd} join&e, o &6/{cmd} info &eper informazioni
+            {prefix}&e Puoi entrare da solo e sarai selezionato in un team, oppure puoi creare un gruppo con
+            {prefix}&e &6/team create <giocatore1> <giocatore2>...
+        start: "&6Participants: {participants}"
+        server_start: "{prefix}&e {nteams} {playerorteam} stanno per competere in un evento &6{eventname}&e!"
+        victory: ""
+        loss: ""
+        draw: ""
+        server_victory: "{prefix}&e Complimenti al vincitore &6{winnerlong}&e!!"
+        server_draw: "{prefix}&e si è concluso in un pareggio!"
+    twoTeams: ## 1 team vs another team
+        server_open: |
+            {prefix}&e Un evento {eventname} sta iniziando!
+            {prefix}&e Scrivi &6/{cmd} join&e, o &6/{cmd} info &eper informazioni
+        server_open_teamSizeGreaterThanOne: |
+            {prefix}&e Un evento {eventname} sta iniziando!
+            {prefix}&e Scrivi &6/{cmd} join&e, o &6/{cmd} info &eper informazioni
+            {prefix}&e Puoi entrare da solo e sarai selezionato in un team, oppure puoi creare un gruppo con
+            {prefix}&e &6/team create <giocatore1> <giocatore2>..
+        start: "&6Partecipanti: {participants}"
+        server_start: "{prefix}&e {nteams} {playerorteam} stanno per competere in un evento &6{eventname}&e!"
+        victory: ""
+        loss: ""
+        draw: ""
+        server_victory: "{prefix} {winnerlong}&e ha vinto contro {loserlong}"
+        server_draw: "{prefix}&e si è concluso in un pareggio!"
+    multipleTeams: ## many teams against each other
+        server_open: |
+            {prefix}&e Un evento {eventname} sta iniziando!
+            {prefix}&e Scrivi &6/{cmd} join&e, o &6/{cmd} info &eper informazioni
+        server_open_teamSizeGreaterThanOne: |
+            {prefix}&e Un evento {eventname} sta iniziando!
+            {prefix}&e Scrivi &6/{cmd} join&e, o &6/{cmd} info &eper informazioni
+            {prefix}&e Puoi entrare da solo e sarai selezionato in un team, oppure puoi creare un gruppo con
+            {prefix}&e &6/team create <giocatore1> <giocatore2>..
+        start: "&6Partecipanti: {participants}"
+        server_start: "{prefix}&e {nteams} {playerorteam} stanno per competere in un evento &6{eventname}&e!"
+        victory: ""
+        loss: ""
+        draw: ""
+        server_victory: "{prefix}&e Complimenti al vincitore &6{winnerlong}&e!!"
+        server_draw: "{prefix}&e si è conluso in un pareggio!"
+match:    
+    leading_header: "&6 O---[{==========> &fLeaders &6<==========}]---O"
+    leading_row: "&6{rank} : {name}({wins}{losses})" ## rank/wins/losses are all per match
+    server_onjoin: '{prefix} &e&6%s&e has &2joined&e. There are &6{nplayers}&e inside'
+    oneTeam: ### 1 team matches
+        prestart: '&eYour {matchname}&e starts in {time}.'
+        server_prestart: '&6{prefix} {teamshort1} is entering the {matchname}!'
+        start: '&4********** &eBuona fortuna!!!! &4**********'
+        server_start: ""
+        victory: |
+            &eHai vinto {matchname}
+            &eTotale Vittorie/Sconfitte: &e({wins}:{losses})
+            &eHai ancora {time} prima del tuo ritorno
+        loss: |
+            &eHai perso {matchname}
+            &eTotale Vittorie/Sconfitte: &e({wins}:{losses})
+        draw: "{matchname}&e si è conluso in un pareggio!"  
+        server_victory: '{prefix} {winnerlong}&e ha vinto {matchname}!'
+        server_draw: "{prefix}&e si è conluso in un pareggio!"
+    twoTeams: ## 1 team vs another team
+        prestart: "&e{matchname}&e contro il team {otherteam}&e inizierà in {time}."
+        server_prestart: '&6{prefix} {teamshort1}&6 contro {teamshort2}&6!'
+        start: '&4 O---[{==========> &eCombattete! &4<==========}]---O'
+        server_start: ""
+        victory: |
+            &eHai vinto {matchname} contro {otherteam}
+            &eTotale Vittorie/Sconfitte: &e({wins}:{losses})
+            &eRecord contro {otherteam}: &e({winsagainst}:{lossesagainst})
+            &eHai ancora {time} prima che il match finisca
+        loss: |
+            &eHai perso {matchname} contro {otherteam}
+            &eTotale Vittorie/Sconfitte: &e({wins}:{losses})
+            &eRecord contro {otherteam}: &e({winsagainst}:{lossesagainst})
+            &eVita rimasta:{lifeleft}
+        draw: "&eIl {matchname}&e si è conluso in un pareggio!"
+        server_victory: '{prefix} {winnerlong}&e ha sconfitto {loserlong}!'
+        server_draw: '{teamlong1}&e ha pareggiato con {teamlong2}!'
+    multipleTeams: ## many teams against each other
+        prestart: '{prefix}&6 {matchname} inizia tra {time}.'
+        server_prestart: '&6{prefix} Participanti: {participants} &6'
+        start: '&4 O---[{==========> &eCombattete! &4<==========}]---O'
+        server_start: ""
+        victory: |
+            &eHai sconfitto tutti i nemici!
+            &eHai ancora {time} prima che il match finisca
+            &eIL tuo nuovo punteggio &6[{ranking}] &e({wins}:{losses})
+        loss: |
+            &eSei stato sconfitto da {winnershort}&e!
+            &eIl tuo punteggio &6[{ranking}] &e({wins}:{losses})
+        draw: "&eIl {matchname}&e si è concluso in un pareggio"
+        server_victory: "{prefix} {winnerlong} è uscito vittorioso!"
+        server_draw: "{prefix} si è concluso in un pareggio!"
