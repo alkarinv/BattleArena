@@ -78,9 +78,13 @@ public class CompositeTeam extends AbstractTeam{
 
 	@Override
 	public void removePlayer(ArenaPlayer p) {
+		super.removePlayer(p);
 		for (ArenaTeam t: oldTeams){
 			if (t.hasMember(p)){
-				oldTeams.remove(t);
+				t.removePlayer(p);
+				if (t.size() == 0){
+					oldTeams.remove(t);
+				}
 				nameChanged = true;
 				break;
 			}

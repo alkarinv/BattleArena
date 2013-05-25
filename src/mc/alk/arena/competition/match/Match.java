@@ -992,7 +992,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		final String name = p.getName();
 		insideArena.add(p.getName());
 		startTracking(p);
-		if (params.getOverrideBattleTracker())
+		if (!params.getUseTrackerPvP())
 			StatController.stopTracking(p);
 		/// Store the point at which they entered the arena
 		if (!oldlocs.containsKey(name) || oldlocs.get(name) == null) /// First teleportIn is the location we want
@@ -1024,7 +1024,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		stopTracking(p);
 		t.killMember(p);
 		scoreboard.setDead(t,p);
-		if (params.getOverrideBattleTracker())
+		if (!params.getUseTrackerPvP())
 			StatController.resumeTracking(p);
 
 		arenaInterface.onLeave(p,t);

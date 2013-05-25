@@ -162,7 +162,7 @@ public class BukkitScoreboard extends ArenaScoreboard{
 					continue;
 				t.addPlayer(p);
 				if (colorPlayerNames)
-					t.setPrefix(team.getTeamChatColor()+"");
+					t.setPrefix(MessageUtil.colorChat(team.getTeamChatColor()+""));
 				if (p.isOnline())
 					p.setScoreboard(board);
 				synchronized(slots){
@@ -195,7 +195,7 @@ public class BukkitScoreboard extends ArenaScoreboard{
 			t.setDisplayName(getTeamName(team));
 			t.addPlayer(player.getPlayer());
 			if (colorPlayerNames)
-				t.setPrefix(team.getTeamChatColor()+""); /// need to set after every player added to team????!!
+				t.setPrefix(MessageUtil.colorChat(team.getTeamChatColor()+"")); /// need to set after every player added to team????!!
 			/// Joining through commandSigns will throw an error here as the Player from the event is
 			/// not an abstract player.  So reget the player from bukkit
 			Player p = ServerUtil.findPlayerExact(player.getName());
@@ -271,7 +271,7 @@ public class BukkitScoreboard extends ArenaScoreboard{
 			Objective o = board.getObjective(objective.getName());
 			if (o == null)
 				return;
-			Score sc = o.getScore(Bukkit.getOfflinePlayer(team.getScoreboardDisplayName()));
+			Score sc = o.getScore(Bukkit.getOfflinePlayer(MessageUtil.colorChat(team.getScoreboardDisplayName())));
 			sc.setScore(points);
 		}
 	}

@@ -33,7 +33,10 @@ public class ArenaPlayer {
 	Stack<Competition> competitions = new Stack<Competition>();
 
 	/** Which class did the player pick during the competition */
-	ArenaClass chosenClass;
+	ArenaClass preferredClass;
+
+	/** Which class is the player currently */
+	ArenaClass currentClass;
 
 	/** The players old location, from where they were first teleported*/
 	Location oldLocation;
@@ -58,7 +61,7 @@ public class ArenaPlayer {
 
 	public void reset() {
 		this.isReady = false;
-		this.chosenClass = null;
+		this.currentClass = null;
 		this.despawnMobs();
 	}
 
@@ -144,12 +147,20 @@ public class ArenaPlayer {
 		return player.hasPermission(perm);
 	}
 
-	public ArenaClass getChosenClass() {
-		return chosenClass;
+	public ArenaClass getCurrentClass() {
+		return currentClass;
 	}
 
-	public void setChosenClass(ArenaClass chosenClass) {
-		this.chosenClass = chosenClass;
+	public void setCurrentClass(ArenaClass arenaClass) {
+		this.currentClass = arenaClass;
+	}
+
+	public ArenaClass getPreferredClass() {
+		return preferredClass;
+	}
+
+	public void setPreferredClass(ArenaClass arenaClass) {
+		this.preferredClass = arenaClass;
 	}
 
 	public int getPriority() {

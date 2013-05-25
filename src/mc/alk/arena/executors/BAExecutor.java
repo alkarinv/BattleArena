@@ -18,6 +18,7 @@ import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
+import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.LobbyController;
@@ -170,7 +171,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			t = TeamController.createTeam(player);}
 
 		if (!canJoin(t,true)){
-			sendSystemMessage(player, "teammate_cant_join");
+			sendSystemMessage(player, "teammate_cant_join",mp.getName());
 			return sendMessage(player,"&6/team leave: &cto leave the team");
 		}
 
@@ -1073,7 +1074,6 @@ public class BAExecutor extends CustomCommandExecutor {
 			}
 		}
 
-
 		if (dc.hasChallenger(player)){
 			if (showMessages) sendMessage(player,"&cYou need to rescind your challenge first! &6/arena rescind");
 			return false;
@@ -1083,7 +1083,10 @@ public class BAExecutor extends CustomCommandExecutor {
 			if (showMessages) sendMessage(player,"&cYou need to leave first.  &6/arena leave");
 			return false;
 		}
-
+		if (EssentialsController.enabled() && EssentialsController.inJail(player)){
+			if (showMessages) sendMessage(player,"&cYou are still in jail!");
+			return false;
+		}
 		return true;
 	}
 	public Event insideEvent(ArenaPlayer p) {

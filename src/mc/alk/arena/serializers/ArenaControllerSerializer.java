@@ -2,10 +2,13 @@ package mc.alk.arena.serializers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.controllers.PlayerRestoreController;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
@@ -43,17 +46,18 @@ public class ArenaControllerSerializer extends BaseConfig{
 					System.err.println("Couldnt load the player " + name +" when reading tpOnReenter inside arenaplayers.yml");
 					continue;
 				}
-				BAPlayerListener.tp.put(name, loc);
+				BAPlayerListener.teleportOnReenter(name, loc,null);
 			}
 		}
 
 		cs = config.getConfigurationSection("dieOnReenter");
 		if (cs != null){
-			BAPlayerListener.die.addAll(cs.getKeys(false));
+			BAPlayerListener.killAllOnReenter(cs.getKeys(false));
 		}
 		cs = config.getConfigurationSection("clearInventoryOnReenter");
 		if (cs != null){
-			BAPlayerListener.clearInventory.addAll(cs.getKeys(false));
+			//			BAPlayerListener.clearInventory.addAll(cs.getKeys(false));
+			BAPlayerListener.clearInventoryOnReenter(cs.getKeys(false));
 		}
 
 		cs = config.getConfigurationSection("restoreGameModeOnReenter");
@@ -65,11 +69,18 @@ public class ArenaControllerSerializer extends BaseConfig{
 					System.err.println("Couldnt load the player " + name +" when reading restoreGameModeOnReenter inside arenaplayers.yml");
 					continue;
 				}
-				GameMode gm = GameMode.valueOf(strgm);
-				if (gm == null){
+				GameMode gm = null;
+				try{
+					gm = GameMode.valueOf(strgm);
+					if (gm == null){
+						System.err.println("Couldnt load the player " + name +" when reading restoreGameModeOnReenter inside arenaplayers.yml");
+						continue;
+					}
+				} catch (Exception e){
 					System.err.println("Couldnt load the player " + name +" when reading restoreGameModeOnReenter inside arenaplayers.yml");
 					continue;
 				}
+
 				BAPlayerListener.restoreGameModeOnEnter(name, gm);
 			}
 		}
@@ -84,37 +95,37 @@ public class ArenaControllerSerializer extends BaseConfig{
 	}
 
 	public static PInv getInventory(ConfigurationSection cs){
-			PInv pinv = new PInv();
-			List<ItemStack> items = new ArrayList<ItemStack>();
-			List<String> stritems = cs.getStringList("armor");
-			for (String stritem : stritems){
-				ItemStack is;
-				try {
-					is = InventoryUtil.parseItem(stritem);
-				} catch (Exception e) {
-					System.err.println("Couldnt reparse "+stritem +" for player " + cs.getName());
-					e.printStackTrace();
-					continue;
-				}
-				items.add(is);
+		PInv pinv = new PInv();
+		List<ItemStack> items = new ArrayList<ItemStack>();
+		List<String> stritems = cs.getStringList("armor");
+		for (String stritem : stritems){
+			ItemStack is;
+			try {
+				is = InventoryUtil.parseItem(stritem);
+			} catch (Exception e) {
+				System.err.println("Couldnt reparse "+stritem +" for player " + cs.getName());
+				e.printStackTrace();
+				continue;
 			}
-			pinv.armor = items.toArray(new ItemStack[items.size()]);
+			items.add(is);
+		}
+		pinv.armor = items.toArray(new ItemStack[items.size()]);
 
-			items = new ArrayList<ItemStack>();
-			stritems = cs.getStringList("contents");
-			for (String stritem : stritems){
-				ItemStack is;
-				try {
-					is = InventoryUtil.parseItem(stritem);
-				} catch (Exception e) {
-					System.err.println("Couldnt reparse "+stritem +" for player " + cs.getName());
-					e.printStackTrace();
-					continue;
-				}
-				items.add(is);
+		items = new ArrayList<ItemStack>();
+		stritems = cs.getStringList("contents");
+		for (String stritem : stritems){
+			ItemStack is;
+			try {
+				is = InventoryUtil.parseItem(stritem);
+			} catch (Exception e) {
+				System.err.println("Couldnt reparse "+stritem +" for player " + cs.getName());
+				e.printStackTrace();
+				continue;
 			}
-			pinv.contents = items.toArray(new ItemStack[items.size()]);
-			return pinv;
+			items.add(is);
+		}
+		pinv.contents = items.toArray(new ItemStack[items.size()]);
+		return pinv;
 	}
 
 
@@ -122,7 +133,28 @@ public class ArenaControllerSerializer extends BaseConfig{
 
 	@Override
 	public void save(){
-		Map<String,Location> playerLocs = BAPlayerListener.tp;
+		Map<String, PlayerRestoreController> prcs =
+				new HashMap<String,PlayerRestoreController>(BAPlayerListener.getPlayerRestores());
+
+		Map<String,Location> playerLocs = new HashMap<String,Location>();
+		List<String> dieOnReenter = new ArrayList<String>();
+		List<String> clearInventoryReenter = new ArrayList<String>();
+		Map<String,GameMode> gameModes = new HashMap<String,GameMode>();
+		Map<String, PInv> items = new HashMap<String,PInv>();
+
+		for (PlayerRestoreController prc: prcs.values()){
+			final String name = prc.getName();
+			if (prc.getTeleportLocation() != null)
+				playerLocs.put(name, prc.getTeleportLocation());
+			if (prc.getKill())
+				dieOnReenter.add(name);
+			if (prc.getClearInventory())
+				clearInventoryReenter.add(name);
+			if (prc.getGamemode()!=null)
+				gameModes.put(name, prc.getGamemode());
+			if (prc.getItem() != null){
+				items.put(name, prc.getItem());}
+		}
 
 		ConfigurationSection cs = config.createSection("tpOnReenter");
 		for (String player : playerLocs.keySet()){
@@ -132,23 +164,20 @@ public class ArenaControllerSerializer extends BaseConfig{
 		}
 
 		cs = config.createSection("dieOnReenter");
-		List<String> dieOnReenter = new ArrayList<String>(BAPlayerListener.die);
 		for (String player : dieOnReenter){
 			cs.createSection(player);}
 
-		cs = config.createSection("dieOnReenter");
-		List<String> clearInventoryReenter = new ArrayList<String>(BAPlayerListener.clearInventory);
+		cs = config.createSection("clearInventoryOnReenter");
 		for (String player : clearInventoryReenter){
 			cs.createSection(player);}
 
 		cs = config.createSection("restoreGameModeOnReenter");
-		for (String player : BAPlayerListener.gamemodeRestore.keySet()){
-			ConfigurationSection pc = cs.createSection(player);
-			pc.set("gamemode", BAPlayerListener.gamemodeRestore.get(player).toString());
+		for (Entry<String,GameMode> entry: gameModes.entrySet()){
+			ConfigurationSection pc = cs.createSection(entry.getKey());
+			pc.set("gamemode", entry.getValue().toString());
 		}
 
 		cs = config.createSection("restoreInv");
-		Map<String, PInv> items = BAPlayerListener.itemRestore;
 		for (String name: items.keySet()){
 			ConfigurationSection pcs = cs.createSection(name);
 			PInv inv = items.get(name);

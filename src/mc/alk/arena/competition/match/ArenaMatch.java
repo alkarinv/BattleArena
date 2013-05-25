@@ -47,7 +47,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -288,6 +287,7 @@ public class ArenaMatch extends Match {
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerRespawn(PlayerRespawnEvent event, final ArenaPlayer p){
+		p.setCurrentClass(null);
 		if (isWon()){
 			return;}
 		final TransitionOptions mo = tops.getOptions(MatchState.ONDEATH);
@@ -338,13 +338,11 @@ public class ArenaMatch extends Match {
 					} catch(Exception e){}
 					if (respawnsWithClass){
 						try{
-							if (p.getChosenClass() != null){
-								ArenaClass ac = p.getChosenClass();
+							if (p.getPreferredClass() != null){
+								ArenaClass ac = p.getPreferredClass();
 								ArenaClassController.giveClass(p, ac);
 							}
 						} catch(Exception e){}
-					} else {
-						p.setChosenClass(null);
 					}
 					if (keepsInventory){
 						psc.restoreMatchItems(p);
@@ -417,16 +415,21 @@ public class ArenaMatch extends Match {
 		playerInteract(event);
 	}
 	public void playerInteract(PlayerInteractEvent event){
-		if (event.isCancelled())
+		if (event.isCancelled() || event.getClickedBlock() == null)
 			return;
-		final Block b = event.getClickedBlock();
-		if (b == null) /// It's happened.. minecraft is a strange beast
+
+		if (!(event.getClickedBlock().getType().equals(Material.SIGN) ||
+				event.getClickedBlock().getType().equals(Material.WALL_SIGN) ||
+				event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)
+				)) {
 			return;
+		}
+
 		/// Check to see if it's a sign
-		final Material m = b.getType();
-		if (m.equals(Material.SIGN) || m.equals(Material.SIGN_POST)||m.equals(Material.WALL_SIGN)){ /// Only checking for signs
+		if (event.getClickedBlock().getType().equals(Material.SIGN) ||
+				event.getClickedBlock().getType().equals(Material.WALL_SIGN)){ /// Only checking for signs
 			signClick(event,this,userTime);
-		} else if (m.equals(Defaults.READY_BLOCK)) {
+		} else { /// its a ready block
 			if (respawnTimer.containsKey(event.getPlayer().getName())){
 				respawnClick(event,this,respawnTimer);
 			} else {
@@ -468,7 +471,7 @@ public class ArenaMatch extends Match {
 		}
 
 		final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
-		ArenaClass chosen = ap.getChosenClass();
+		ArenaClass chosen = ap.getCurrentClass();
 		if (chosen != null && chosen.getName().equals(ac.getName())){
 			MessageUtil.sendMessage(p, "&cYou already are a &6" + ac.getName());
 			return;
@@ -523,7 +526,7 @@ public class ArenaMatch extends Match {
 		if (ro != null && ro.getEffects()!=null){
 			EffectUtil.enchantPlayer(p, ro.getEffects());}
 
-		ap.setChosenClass(ac);
+		ap.setPreferredClass(ac);
 		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
 	}
 

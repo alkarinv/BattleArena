@@ -1,5 +1,6 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.EssentialsUtil;
 
 import org.bukkit.entity.Player;
@@ -30,6 +31,11 @@ public class EssentialsController {
 	public static void setFlightSpeed(Player player, Float flightSpeed) {
 		if (!hasEssentials) return;
 		EssentialsUtil.setFlightSpeed(player.getName(),flightSpeed);
+	}
+
+	public static boolean inJail(ArenaPlayer player) {
+		if (!hasEssentials) return false;
+		return EssentialsUtil.inJail(player.getName());
 	}
 
 }

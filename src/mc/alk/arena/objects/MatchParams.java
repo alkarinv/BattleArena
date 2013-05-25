@@ -27,7 +27,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	Integer nLives = 1;
 	int numConcurrentCompetitions = Integer.MAX_VALUE;
 	Set<ArenaModule> modules = new HashSet<ArenaModule>();
-	Boolean overrideDefaultBattleTracker;
+	Boolean useBTPvP;
+	Boolean useBTMessages;
 	MatchParams mparent=null;
 
 	public MatchParams(ArenaType at) {
@@ -150,15 +151,22 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		return ms;
 	}
 
-	public void setOverrideBattleTracker(boolean enable) {
-		overrideDefaultBattleTracker = enable;
+	public void setUseTrackerPvP(Boolean enable) {
+		useBTPvP = enable;
 	}
 
-	public Boolean getOverrideBattleTracker() {
-		return overrideDefaultBattleTracker != null ? overrideDefaultBattleTracker :
-			(mparent!= null ? mparent.getOverrideBattleTracker() : null);
+	public Boolean getUseTrackerPvP() {
+		return useBTPvP != null ? useBTPvP : (mparent!= null ? mparent.getUseTrackerPvP() : null);
 	}
 
+
+	public Boolean getUseTrackerMessages() {
+		return useBTMessages != null ? useBTMessages : (mparent!= null ? mparent.getUseTrackerMessages() : null);
+	}
+
+	public void setUseTrackerMessages(Boolean enable) {
+		useBTMessages = enable;
+	}
 	public void setForceStartTime(long forceStartTime) {
 
 	}

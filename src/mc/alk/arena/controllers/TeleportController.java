@@ -35,7 +35,7 @@ public class TeleportController implements Listener{
 
 	public static boolean teleportPlayer(final Player player, final Location location, final boolean wipe, boolean giveBypassPerms){
 		if (!player.isOnline() || player.isDead()){
-			BAPlayerListener.teleportOnReenter(player.getName(),location);
+			BAPlayerListener.teleportOnReenter(player.getName(),location, player.getLocation());
 			if (wipe){
 				InventoryUtil.clearInventory(player);}
 			return false;
@@ -53,7 +53,7 @@ public class TeleportController implements Listener{
 
 		if (!player.isOnline() || player.isDead()){
 			if (Defaults.DEBUG)Log.warn(BattleArena.getPluginName()+" Offline teleporting Player=" + player.getName() + " loc=" + location);
-			BAPlayerListener.teleportOnReenter(player.getName(),location);
+			BAPlayerListener.teleportOnReenter(player.getName(),location,player.getLocation());
 			return false;
 		}
 		try {

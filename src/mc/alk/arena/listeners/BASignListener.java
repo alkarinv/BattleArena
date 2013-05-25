@@ -31,32 +31,22 @@ public class BASignListener implements Listener{
 
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
-//		if (event.isCancelled()) return;
-		final Block clickedBlock = event.getClickedBlock();
-		if (clickedBlock == null) return; /// This has happenned, minecraft is a strange beast
-		final Material clickedMat = clickedBlock.getType();
-
 		/// If this is an uninteresting block get out of here as quickly as we can
-		if (!(clickedMat.equals(Material.SIGN) || clickedMat.equals(Material.SIGN_POST)
-				|| 	clickedMat.equals(Material.WALL_SIGN))) {
+		if (event.getClickedBlock() == null ||
+				!(event.getClickedBlock().getType().equals(Material.SIGN_POST) ||
+				  event.getClickedBlock().getType().equals(Material.WALL_SIGN))) {
 			return;
 		}
-		Sign sign = null;
-		try{
-			sign = (Sign) clickedBlock.getState(); /// so yes, this has also sometimes not been a sign, despite checking above
-		} catch (NullPointerException e){
-			return;
+		if (event.getClickedBlock().getState() instanceof Sign){
+			String[] lines = ((Sign)event.getClickedBlock().getState()).getLines();
+			if (!lines[0].matches("^.[0-9a-fA-F]\\*.*$")){
+				return;}
+			ArenaCommandSign acs = SignUtil.getArenaCommandSign(lines);
+			if (acs == null){
+				return;}
+			ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
+			acs.performAction(ap);
 		}
-		String[] lines = sign.getLines();
-		if (!lines[0].matches("^.[0-9a-fA-F]\\*.*$")){
-			return;
-		}
-
-		ArenaCommandSign acs = SignUtil.getArenaCommandSign(lines);
-		if (acs == null){
-			return;}
-		ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
-		acs.performAction(ap);
 	}
 
 	@EventHandler

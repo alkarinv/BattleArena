@@ -198,7 +198,7 @@ public class BAConfigSerializer extends BaseConfig{
 		Defaults.READY_BLOCK = value > 0 && value < Material.values().length ? Material.values()[value] : Defaults.READY_BLOCK;
 
 		defaults.setRated(true);
-		defaults.setOverrideBattleTracker(false);
+		defaults.setUseTrackerPvP(false);
 		defaults.setTeamSizes(new MinMax(1,ArenaSize.MAX));
 		defaults.setNTeams(new MinMax(2,ArenaSize.MAX));
 

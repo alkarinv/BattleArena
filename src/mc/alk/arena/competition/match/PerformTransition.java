@@ -239,7 +239,7 @@ public class PerformTransition {
 			if (mo.getExperience() != null) {ExpUtil.giveExperience(p, mo.getExperience());}
 			if (mo.hasOption(TransitionOption.REMOVEPERMS)){ removePerms(player, mo.getRemovePerms());}
 			if (mo.hasOption(TransitionOption.ADDPERMS)){ addPerms(player, mo.getAddPerms(), 0);}
-			if (mo.hasOption(TransitionOption.GIVECLASS) && player.getChosenClass() == null){
+			if (mo.hasOption(TransitionOption.GIVECLASS) && player.getCurrentClass() == null){
 				final ArenaClass ac = getArenaClass(mo,teamIndex);
 				if (ac != null && ac.valid()){ /// Give class items and effects
 					if (mo.woolTeams()) TeamUtil.setTeamHead(teamIndex, player); // give wool heads first
@@ -248,11 +248,10 @@ public class PerformTransition {
 					} else{
 						ArenaClassController.giveClass(player, ac);
 					}
-					player.setChosenClass(ac);
 				}
 			}
 			if (mo.hasOption(TransitionOption.CLASSENCHANTS)){
-				ArenaClass ac = player.getChosenClass();
+				ArenaClass ac = player.getCurrentClass();
 				if (ac != null){
 					ArenaClassController.giveClassEnchants(p, ac);}
 			}

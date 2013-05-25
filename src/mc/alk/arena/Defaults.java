@@ -33,7 +33,7 @@ public class Defaults {
 	public static int JOIN_CUTOFF_TIME = 15;
 
 	public static boolean MATCH_FORCESTART_ENABLED = true;
-	public static boolean MATCH_FORCESTART_START_ONJOIN = false;
+	public static boolean MATCH_FORCESTART_START_ONJOIN = true;
 	public static long MATCH_FORCESTART_TIME = 180;
 
 	public static boolean USE_SCOREBOARD = true;

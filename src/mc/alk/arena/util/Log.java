@@ -3,7 +3,7 @@ package mc.alk.arena.util;
 import java.util.logging.Logger;
 
 public class Log {
-	public static final boolean debug = true;
+	public static boolean debug = false;
 
 	private static Logger log = Logger.getLogger("Arena");
 
@@ -35,7 +35,8 @@ public class Log {
 	}
 
 	public static void debug(String msg){
-		System.out.println(msg);
+		if (debug)
+			System.out.println(msg);
 		if (NotifierUtil.hasListener("debug")){
 			NotifierUtil.notify("debug", msg);}
 	}
@@ -44,5 +45,8 @@ public class Log {
 		e.printStackTrace();
 		if (NotifierUtil.hasListener("errors")){
 			NotifierUtil.notify("errors", e);}
+	}
+	public static void setDebug(Boolean on) {
+		debug = on;
 	}
 }

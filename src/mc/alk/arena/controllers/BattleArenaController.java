@@ -49,8 +49,6 @@ import mc.alk.arena.util.PermissionsUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -209,8 +207,14 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
 		ParamTeamPair ptp = amq.removeFromQue(ap);
 		if (ptp != null){
-			leftQueue(ap,ptp.team,ptp.q);
+			ptp.team.removePlayer(ap);
+			if (ptp.team.size() == 0){
+				TeamController.removeTeamHandler(ptp.team, this);}
+			this.unhandle(ap, ptp.team, ptp.q);
+		} else {
+			this.unhandle(ap, null, null);
 		}
+
 		ap.reset();
 	}
 
@@ -341,13 +345,17 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	 */
 	public ParamTeamPair removeFromQue(ArenaPlayer p) {
 		ArenaTeam t = TeamController.getTeam(p);
-		ParamTeamPair ptp = removeFromQue(t);
+		if (t ==null){
+			t = p.getTeam();}
 		if (t == null){
-			unhandle(p,null, ptp != null ? ptp.q : null);
+			unhandle(p,null, null);
 			return null;
 		}
+		ParamTeamPair ptp = removeFromQue(t);
+		unhandle(p,null, ptp != null ? ptp.q : null);
 		return ptp;
 	}
+
 
 	public ParamTeamPair removeFromQue(ArenaTeam t) {
 		TeamController.removeTeamHandler(t, this);
@@ -748,12 +756,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	public void onPlayerInteract(PlayerInteractEvent event){
 		if (event.isCancelled() || !Defaults.ENABLE_PLAYER_READY_BLOCK)
 			return;
-		final Block b = event.getClickedBlock();
-		if (b == null)
-			return;
-		/// Check to see if it's a sign
-		final Material m = b.getType();
-		if (m.equals(Defaults.READY_BLOCK)) {
+		if (event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)) {
 			final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
 			if (ap.isReady()) /// they are already ready
 				return;
