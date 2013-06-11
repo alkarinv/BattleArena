@@ -138,6 +138,15 @@ public class BTInterface {
 		if (aBTI != null)
 			aBTI.stopTracking(p.getName());
 	}
+	public static void resumeTrackingMessages(ArenaPlayer p) {
+		if (aBTI != null)
+			aBTI.resumeMessages(p.getName());
+	}
+
+	public static void stopTrackingMessages(ArenaPlayer p) {
+		if (aBTI != null)
+			aBTI.stopMessages(p.getName());
+	}
 	public static void resumeTracking(Set<Player> players) {
 		if (aBTI != null)
 			aBTI.resumeTracking(players);

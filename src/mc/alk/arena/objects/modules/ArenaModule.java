@@ -23,12 +23,16 @@ public abstract class ArenaModule implements Listener, ArenaListener{
 	/**
 	 * Called when the module is first created
 	 */
-	public void onEnable(){}
+	public void onEnable(){
+		this.enabled = true;
+	}
 
 	/**
 	 * Called when the module is being disabled
 	 */
-	public void onDisable(){}
+	public void onDisable(){
+		this.enabled = false;
+	}
 
 	/**
 	 * Return the Name of this module

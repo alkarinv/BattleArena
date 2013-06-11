@@ -103,12 +103,12 @@ public class EventOpenOptions {
 			}
 			break;
 			case TIME:
-				try {obj = Integer.valueOf(val) *60;}
+				try {obj = Integer.valueOf(val);}
 				catch (Exception e){throw new InvalidOptionException("&cTime wasnt an integer: &6" +val);}
 				eoo.secTillStart = (Integer) obj;
 				break;
 			case INTERVAL:
-				try {obj = Integer.valueOf(val) *60;}
+				try {obj = Integer.valueOf(val);}
 				catch (Exception e){throw new InvalidOptionException("&cTime interval wasnt an integer: &6" +val);}
 				eoo.announceInterval = (Integer) obj;
 				break;

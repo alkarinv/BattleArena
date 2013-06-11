@@ -38,8 +38,14 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 
 	@MCCommand(cmds={"open","auto"}, admin=true, order=1)
 	public boolean open(CommandSender sender, EventParams eventParams, String[] args) {
+		if (args.length < 1){
+			return sendMessage(sender,"&6/"+eventParams.getCommand()+" <open|auto|server> [options]\n"+
+					"&eExample &6/ "+eventParams.getCommand()+" auto\n" +
+					"&eExample &6/ "+eventParams.getCommand()+" auto rated teamSize=1 nTeams=2+ arena=<arenaName>");
+		}
 		try {
-			ReservedArenaEvent event = openIt(eventParams, args);
+			EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null);
+			ReservedArenaEvent event = openIt(eventParams, eoo);
 			Arena arena = event.getArena();
 			final int max = arena.getParameters().getMaxPlayers();
 			final String maxPlayers = max == ArenaParams.MAX ? "&6any&2 number of players" : max+"&2 players";
@@ -57,14 +63,14 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 		return true;
 	}
 
-	public ReservedArenaEvent openIt(EventParams eventParams, String[] args) throws InvalidEventException, InvalidOptionException{
+	public ReservedArenaEvent openIt(EventParams eventParams, EventOpenOptions eoo) throws InvalidEventException, InvalidOptionException{
 		Event openevent = controller.getOpenEvent(eventParams);
 		if (openevent != null){
 			throw new InvalidEventException("&cThere is already an event open!");
 		}
 		if (!eventParams.valid()){
 			throw new InvalidEventException("&cThe "+eventParams.getName()+" could not be opened due to the following reasons\n"+StringUtils.join(eventParams.getInvalidReasons(), ", "));}
-		EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null);
+
 		Arena arena = eoo.getArena(eventParams,null);
 		eventParams.intersect(arena.getParameters());
 
@@ -72,7 +78,7 @@ public class ReservedArenaEventExecutor extends EventExecutor{
 
 		ReservedArenaEvent event = new ReservedArenaEvent(eventParams);
 
-		checkOpenOptions(event, eventParams, args);
+		checkOpenOptions(event, eventParams, eoo);
 		openEvent(event, eventParams, eoo,arena);
 
 		controller.addOpenEvent(event);

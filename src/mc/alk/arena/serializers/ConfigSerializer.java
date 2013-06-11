@@ -242,10 +242,13 @@ public class ConfigSerializer extends BaseConfig{
 				mp.setDBName(null);}
 		}
 		if (cs.contains("overrideBattleTracker")){
-			mp.setOverrideBattleTracker(cs.getBoolean("overrideBattleTracker", true));
+			mp.setUseTrackerPvP(cs.getBoolean("overrideBattleTracker", true));
 		} else {
-			mp.setOverrideBattleTracker(cs.getBoolean("overrideBTMessages", true));
+			mp.setUseTrackerPvP(cs.getBoolean("useTrackerPvP", false));
 		}
+		mp.setUseTrackerMessages(cs.getBoolean("useTrackerMessages", false));
+//		mp.set
+//		mp.setOverrideBTMessages(cs.getBoolean(path))
 		/// What is the default rating for this match type
 		Rating rating = cs.contains("rated") ? Rating.fromBoolean(cs.getBoolean("rated")) : Rating.ANY;
 		if (rating == null || rating == Rating.UNKNOWN)
@@ -634,7 +637,8 @@ public class ConfigSerializer extends BaseConfig{
 		cs = main.createSection("tracking");
 		cs.set("db", params.getDBName());
 		cs.set("rated", params.isRated());
-		cs.set("overrideBTMessages", params.getOverrideBattleTracker());
+		if (params.getUseTrackerMessages() != null)
+			cs.set("useTrackerMessages", params.getUseTrackerMessages());
 
 		main.set("arenaType", params.getType().getName());
 		try{

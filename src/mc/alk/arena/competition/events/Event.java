@@ -100,7 +100,6 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		teams.clear();
 		joinHandler = TeamJoinFactory.createTeamJoinHandler(params, this);
 		EventOpenEvent event = new EventOpenEvent(this);
-
 		callEvent(event);
 		if (event.isCancelled())
 			return;

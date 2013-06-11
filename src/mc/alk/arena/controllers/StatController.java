@@ -37,7 +37,6 @@ public class StatController {
 		return BTInterface.hasInterface(mp);
 	}
 
-
 	public static void resumeTracking(ArenaPlayer p) {
 		if (enabled)
 			BTInterface.resumeTracking(p);
@@ -46,6 +45,15 @@ public class StatController {
 	public static void stopTracking(ArenaPlayer p) {
 		if (enabled)
 			BTInterface.stopTracking(p);
+	}
+
+	public static void stopTrackingMessages(ArenaPlayer p) {
+		if (enabled)
+			BTInterface.stopTrackingMessages(p);
+	}
+	public static void resumeTrackingMessages(ArenaPlayer p) {
+		if (enabled)
+			BTInterface.resumeTrackingMessages(p);
 	}
 
 	public void addRecord(Set<ArenaTeam> victors,Set<ArenaTeam> losers,

@@ -52,7 +52,14 @@ public class TeamJoinObject extends QueueObject{
 
 	@Override
 	public boolean hasTeam(ArenaTeam team) {
-		return this.team.getId() == team.getId();
+		if (this.team.getId() == team.getId())
+			return true;
+		for (ArenaPlayer ap : this.team.getPlayers()){
+			if (team.hasMember(ap)){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public boolean hasStartPerms() {

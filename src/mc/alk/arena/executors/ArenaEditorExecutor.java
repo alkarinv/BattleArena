@@ -96,7 +96,7 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 				} catch (Exception e){}
 				if (as[0].equalsIgnoreCase("fs")){
 					fs = time;
-				} else if (as[0].equalsIgnoreCase("rs")){
+				} else if (as[0].equalsIgnoreCase("rs") || as[0].equalsIgnoreCase("rt")){
 					rs = time;
 				} else if (as[0].equalsIgnoreCase("ds")){
 					ds = time;

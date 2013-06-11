@@ -27,7 +27,6 @@ import mc.alk.arena.util.Log;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -163,16 +162,13 @@ public class LobbyWRContainer extends PlayerContainer{
 
 	@ArenaEventHandler
 	public void onPlayerInteract(PlayerInteractEvent event){
-		if (event.isCancelled())
-			return;
-		final Block b = event.getClickedBlock();
-		if (b == null) /// It's happened.. minecraft is a strange beast
+		if (event.isCancelled() || event.getClickedBlock() == null)
 			return;
 		/// Check to see if it's a sign
-		final Material m = b.getType();
-		if (m.equals(Material.SIGN) || m.equals(Material.SIGN_POST)||m.equals(Material.WALL_SIGN)){ /// Only checking for signs
+		if (event.getClickedBlock().getType().equals(Material.SIGN_POST)||
+				event.getClickedBlock().getType().equals(Material.WALL_SIGN)){ /// Only checking for signs
 			ArenaMatch.signClick(event,this,userTime);
-		} else if (m.equals(Defaults.READY_BLOCK)) {
+		} else if (event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)) {
 			if (respawnTimer.containsKey(event.getPlayer().getName())){
 				ArenaMatch.respawnClick(event,this, respawnTimer);
 			} else {

@@ -13,6 +13,7 @@ import org.bukkit.potion.PotionEffect;
 public class ArenaClass {
 	public static final Integer DEFAULT = Integer.MAX_VALUE;
 	public static final ArenaClass CHOSEN_CLASS = new ArenaClass("CHOSENCLASS","chosenClass", null, null);
+	public static final ArenaClass SELF_CLASS = new ArenaClass("SELFCLASS","selfClass", null, null);
 
 	/** Name of the Class*/
 	final String name;

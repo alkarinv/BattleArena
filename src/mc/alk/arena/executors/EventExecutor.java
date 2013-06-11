@@ -217,7 +217,8 @@ public class EventExecutor extends BAExecutor{
 					if (!lops.getFirst().equalsIgnoreCase("auto") && !lops.getFirst().equalsIgnoreCase("open"))
 						lops.addFirst("auto");
 					String ops[] = lops.toArray(new String[lops.size()]);
-					event = exe.openIt(eventParams, ops);
+					EventOpenOptions eoo = EventOpenOptions.parseOptions(ops, null);
+					event = exe.openIt(eventParams, eoo);
 				} catch (InvalidEventException e ) {
 					MessageUtil.sendMessage(p, e.getMessage());
 					sendSystemMessage(p, "you_cant_join_event");
@@ -378,18 +379,13 @@ public class EventExecutor extends BAExecutor{
 		return sendMessage(sender,"&eResults for the &6" + event.getDisplayName() + "&e\n" + sb.toString());
 	}
 
-	public static boolean checkOpenOptions(Event event, MatchParams mp, String[] args) throws InvalidEventException {
+	public static boolean checkOpenOptions(Event event, MatchParams mp, EventOpenOptions eoo) throws InvalidEventException {
 		if (mp == null){
 			throw new InvalidEventException("&cMatch params were null");
 		}
 		final String cmd = mp.getCommand();
 		if (event.isRunning() || event.isOpen()){
 			throw new InvalidEventException("&cA "+cmd+" is already &6" + event.getState());
-		}
-		if (args.length < 1){
-			throw new InvalidEventException("&6/"+cmd+" <open|auto|server> [options]\n"+
-					"&eExample &6/ "+cmd+" auto\n" +
-					"&eExample &6/ "+cmd+" auto rated teamSize=1 nTeams=2+ arena=<arenaName>");
 		}
 		return true;
 	}

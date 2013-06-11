@@ -44,4 +44,9 @@ public class EssentialsUtil {
 			user.setFlySpeed(flightSpeed);}
 	}
 
+	public static boolean inJail(String playerName) {
+		User user = getUser(playerName);
+		return user.getJailTimeout() > System.currentTimeMillis();
+	}
+
 }

@@ -41,8 +41,6 @@ import mc.alk.arena.util.PermissionsUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -145,50 +143,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		}
 	}
 
-//	private void unhandle(Match match) {
-//		Collection<ArenaTeam> teams = match.getOriginalTeams();
-//		if (teams == null)
-//			teams = match.getTeams();
-//		if (teams == null)
-//			return;
-//		for (ArenaTeam team : teams){
-//			unhandle(team,match.getParams());}
-//	}
-//
-//	private void unhandle(final ArenaTeam team) {
-//		unhandle(team,null);
-//	}
-//
-//	private void unhandle(final ArenaTeam team, MatchParams mp) {
-//		if (TeamController.removeTeamHandler(team, this)){
-//			callEvent(new TeamLeftQueueEvent(team,mp));}
-//		for (ArenaPlayer ap: team.getPlayers()){
-//			unhandle(ap,team,mp);
-//		}
-//		if (team instanceof CompositeTeam){
-//			for (ArenaTeam t: ((CompositeTeam)team).getOldTeams()){
-//				TeamController.removeTeamHandler(t, this);
-//			}
-//		}
-//	}
-//
-//
-//	private void unhandle(final ArenaPlayer player, final ArenaTeam team, MatchParams params) {
-//		methodController.updateEvents(MatchState.ONLEAVE, player);
-//		leftQueue(player,team, params);
-//	}
-//
-//	private void enteredQueue(final MatchParams params, final ArenaTeam team, JoinResult qresult){
-//		callEvent(new TeamJoinedQueueEvent(team,qresult));
-//		TeamController.addTeamHandler(team,this);
-//		methodController.updateEvents(MatchState.ONENTER, team.getPlayers());
-//		for (ArenaPlayer ap: team.getPlayers()){
-//			if (!InArenaListener.inQueue(ap.getName())){
-//				callEvent(new ArenaPlayerEnterQueueEvent(ap,team,qresult));
-//			}
-//		}
-//	}
-//
+
 
 	public void startMatch(Match arenaMatch) {
 		/// arenaMatch run calls.... broadcastMessage ( which unfortunately is not thread safe)
@@ -685,12 +640,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	public void onPlayerInteract(PlayerInteractEvent event){
 		if (event.isCancelled() || !Defaults.ENABLE_PLAYER_READY_BLOCK)
 			return;
-		final Block b = event.getClickedBlock();
-		if (b == null)
-			return;
-		/// Check to see if it's a sign
-		final Material m = b.getType();
-		if (m.equals(Defaults.READY_BLOCK)) {
+		if (event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)) {
 			final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
 			if (ap.isReady()) /// they are already ready
 				return;

@@ -33,7 +33,7 @@ public class Defaults {
 	public static int JOIN_CUTOFF_TIME = 15;
 
 	public static boolean MATCH_FORCESTART_ENABLED = true;
-	public static boolean MATCH_FORCESTART_START_ONJOIN = false;
+	public static boolean MATCH_FORCESTART_START_ONJOIN = true;
 	public static long MATCH_FORCESTART_TIME = 180;
 
 	public static boolean USE_SCOREBOARD = true;
@@ -83,7 +83,6 @@ public class Defaults {
 
     /// DEBUG OPTIONS
 	public static final boolean DEBUG = true;
-	public static boolean DEBUG_MSGS = false;
 	public static final boolean DEBUG_TRACE = false;
 	public static final boolean DEBUG_EVENTS = false;
 	public static final boolean DEBUG_TEVENTS = false;
@@ -91,7 +90,7 @@ public class Defaults {
 	public static final boolean DEBUG_SCHEDULER = false;
 	public static final boolean TESTSERVER = false;
 	public static final String DEFAULT_CONFIG_NAME = "Default";
-
+	public static boolean DEBUG_MSGS = false;
 	public static boolean DEBUG_COMMANDS = false;
 
 	public static int TIME_BETWEEN_CLASS_CHANGE = 3;

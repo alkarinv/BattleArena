@@ -374,6 +374,16 @@ public class TransitionOptions {
 		return options != null && options.containsKey(op);
 	}
 
+	public boolean hasAnyOption(TransitionOption... ops) {
+		if (options == null)
+			return false;
+		for (TransitionOption op: ops){
+			if (options.containsKey(op))
+				return true;
+		}
+		return false;
+	}
+
 	public Object removeOption(TransitionOption op) {
 		return options != null ? options.remove(op) : null;
 	}

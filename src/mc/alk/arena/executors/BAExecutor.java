@@ -18,6 +18,7 @@ import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
+import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.LobbyController;
@@ -32,6 +33,7 @@ import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.arenas.ArenaCreateEvent;
 import mc.alk.arena.events.arenas.ArenaDeleteEvent;
+import mc.alk.arena.events.players.ArenaPlayerJoinEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -159,8 +161,17 @@ public class BAExecutor extends CustomCommandExecutor {
 			return sendSystemMessage(player,"no_join_perms", mp.getCommand());}
 
 		/// Can the player join this match/event at this moment?
+
 		if (!canJoin(player)){
 			return true;}
+		/// Call the joining event
+		ArenaPlayerJoinEvent event = new ArenaPlayerJoinEvent(player);
+		event.callEvent();
+		if (event.isCancelled()){
+			if (event.getMessage()!= null && !event.getMessage().isEmpty()){
+				return sendMessage(player, event.getMessage());}
+			return true;
+		}
 
 		/// Get or Make a team for the Player
 		ArenaTeam t = teamc.getSelfFormedTeam(player);
@@ -168,7 +179,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			t = TeamController.createTeam(player);}
 
 		if (!canJoin(t,true)){
-			sendSystemMessage(player, "teammate_cant_join");
+			sendSystemMessage(player, "teammate_cant_join",mp.getName());
 			return sendMessage(player,"&6/team leave: &cto leave the team");
 		}
 
@@ -921,7 +932,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	public boolean canJoin(ArenaTeam t, boolean showMessages){
 		for (ArenaPlayer ap: t.getPlayers()){
-			if (!canJoin(ap,showMessages,true))
+			if (!_canJoin(ap,showMessages,true))
 				return false;
 		}
 		return true;
@@ -932,10 +943,10 @@ public class BAExecutor extends CustomCommandExecutor {
 	}
 
 	public boolean canJoin(ArenaPlayer player, boolean showMessages) {
-		return canJoin(player, showMessages,false);
+		return _canJoin(player, showMessages,false);
 	}
 
-	private boolean canJoin(ArenaPlayer player, boolean showMessages, boolean teammate) {
+	private boolean _canJoin(ArenaPlayer player, boolean showMessages, boolean teammate) {
 		/// Check for any competition
 		if (player.getCompetition() != null){
 			if (showMessages) sendMessage(player, "&cYou are already in a competition. &6/arena leave");
@@ -996,7 +1007,7 @@ public class BAExecutor extends CustomCommandExecutor {
 				for (ArenaPlayer p: t.getPlayers()){
 					if (p == player){
 						continue;}
-					if (!canJoin(p,true,true)){
+					if (!_canJoin(p,true,true)){
 						sendSystemMessage(player, "teammate_cant_join");
 						sendMessage(player,"&6/team leave: &cto leave the team");
 						return false;
@@ -1004,7 +1015,6 @@ public class BAExecutor extends CustomCommandExecutor {
 				}
 			}
 		}
-
 
 		if (dc.hasChallenger(player)){
 			if (showMessages) sendMessage(player,"&cYou need to rescind your challenge first! &6/arena rescind");
@@ -1015,7 +1025,10 @@ public class BAExecutor extends CustomCommandExecutor {
 			if (showMessages) sendMessage(player,"&cYou need to leave first.  &6/arena leave");
 			return false;
 		}
-
+		if (EssentialsController.enabled() && EssentialsController.inJail(player)){
+			if (showMessages) sendMessage(player,"&cYou are still in jail!");
+			return false;
+		}
 		return true;
 	}
 	public Event insideEvent(ArenaPlayer p) {

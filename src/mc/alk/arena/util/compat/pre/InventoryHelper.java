@@ -13,4 +13,10 @@ public class InventoryHelper implements IInventoryHelper{
 
 	@Override
 	public void setLore(ItemStack itemStack, List<String> lore) {/* do nothing */}
+
+	@Override
+	public void setDisplayName(ItemStack itemStack, String displayName) {/* do nothing */}
+
+	@Override
+	public void setOwnerName(ItemStack itemStack, String ownerName) {/* do nothing */}
 }

@@ -55,6 +55,9 @@ public class ArenaClassController {
 		if (ac.getDoCommands() != null){
 			PlayerUtil.doCommands(player.getPlayer(),ac.getDoCommands());
 		}
+		if (player.getPreferredClass() == null){
+			player.setPreferredClass(ac);}
+		player.setCurrentClass(ac);
 	}
 	private static ArenaClass giveHeroClass(ArenaPlayer player, ArenaClass ac){
 		if (ac == ArenaClass.CHOSEN_CLASS){

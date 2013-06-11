@@ -26,7 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 public class InventoryUtil {
-	static final String version = "BA InventoryUtil 2.1.6";
+	static final String version = "BA InventoryUtil 2.1.7";
 	static final boolean DEBUG = false;
 	static IInventoryHelper handler = null;
 
@@ -91,7 +91,7 @@ public class InventoryUtil {
 		}
 	}
 
-	public enum ArmorLevel{WOOL,LEATHER,IRON,GOLD,CHAINMAIL,DIAMOND};
+	public enum ArmorLevel{DISGUISE, WOOL,LEATHER,IRON,GOLD,CHAINMAIL,DIAMOND};
 	public enum ArmorType{BOOTS,LEGGINGS,CHEST,HELM};
 
 	public static Enchantment getEnchantmentByCommonName(String iname){
@@ -159,6 +159,7 @@ public class InventoryUtil {
 	static final Map<Material,Armor> armor;
 	static {
 		armor = new EnumMap<Material,Armor>(Material.class);
+		try{armor.put(Material.SKULL_ITEM,new Armor(ArmorType.HELM, ArmorLevel.DISGUISE));} catch(Throwable e){}
 		armor.put(Material.WOOL,new Armor(ArmorType.HELM, ArmorLevel.WOOL));
 		armor.put(Material.LEATHER_HELMET,new Armor(ArmorType.HELM, ArmorLevel.LEATHER));
 		armor.put(Material.IRON_HELMET,new Armor(ArmorType.HELM, ArmorLevel.IRON));
@@ -195,6 +196,9 @@ public class InventoryUtil {
 
 	public static boolean isArmor(ItemStack is) {
 		return armor.get(is.getType()) != null;
+	}
+	public static boolean isRealArmor(ItemStack is) {
+		return armor.get(is.getType()) != null && is.getType()!= Material.WOOL;
 	}
 
 	public static boolean hasArmor(Player p) {
@@ -606,6 +610,7 @@ public class InventoryUtil {
 			closeInventory(p);
 			if (inv != null){
 				inv.clear();
+				if (inv.getHelmet()!=null && isRealArmor(inv.getHelmet())) inv.setHelmet(null);
 				inv.setBoots(null);
 				inv.setChestplate(null);
 				inv.setLeggings(null);
@@ -635,9 +640,14 @@ public class InventoryUtil {
 		}
 	}
 
-	//Netherfoam start
-	private static final Pattern LORE_PATTERN = Pattern.compile("lore= ?\"(.*)\""); //The pattern for matching lore
-	private static final Pattern COLOR_PATTERN = Pattern.compile("color= ?([0-9]+),([0-9]+),([0-9]+)"); //The pattern for matching lore
+	private static final Pattern PATTERN_LORE =
+			Pattern.compile("lore= ?\"([^\"]*)\"",Pattern.CASE_INSENSITIVE); //The pattern for matching lore
+	private static final Pattern PATTERN_OWNER =
+			Pattern.compile("owner= ?\"([^\"]*)\"",Pattern.CASE_INSENSITIVE); //The pattern for matching lore
+	private static final Pattern PATTERN_DISPLAY_NAME =
+			Pattern.compile("displayName= ?\"([^\"]*)\"",Pattern.CASE_INSENSITIVE); //The pattern for Display name
+	private static final Pattern PATTERN_COLOR =
+			Pattern.compile("color= ?([0-9]+),([0-9]+),([0-9]+)",Pattern.CASE_INSENSITIVE); //The pattern for matching lore
 
 	public static ItemStack parseItem(String str) throws Exception{
 		/// items in yaml get stored like this {leather_chest=fireprot:5 1}
@@ -651,14 +661,19 @@ public class InventoryUtil {
 		/// Parse Lore (thanks to Netherfoam)
 		List<String> lore = parseLore(str);
 		if(lore != null){ //We have lore, so strip it.
-			str = LORE_PATTERN.matcher(str).replaceFirst("");}
+			str = PATTERN_LORE.matcher(str).replaceFirst("");}
+		String ownerName = parseOwner(str);
+		if(ownerName != null){ //We have lore, so strip it.
+			str = PATTERN_OWNER.matcher(str).replaceFirst("");}
+		String displayName = parseDisplayName(str);
+		if(displayName != null){ //We have lore, so strip it.
+			str = PATTERN_DISPLAY_NAME.matcher(str).replaceFirst("");}
 		Color c = parseColor(str);
 		if (c != null){ /// we have color, so strip it
-			str = COLOR_PATTERN.matcher(str).replaceFirst("");}
-
+			str = PATTERN_COLOR.matcher(str).replaceFirst("");}
 		ItemStack is =null;
 		try{
-			String split[] = str.split(" ");
+			String split[] = str.split(" +");
 			is = InventoryUtil.getItemStack(split[0].trim());
 			if (is == null)
 				return null;
@@ -677,6 +692,10 @@ public class InventoryUtil {
 				handler.setLore(is,lore);
 			if (c!=null)
 				handler.setItemColor(is, c);
+			if (displayName != null)
+				handler.setDisplayName(is,displayName);
+			if (ownerName != null)
+				handler.setOwnerName(is,ownerName);
 
 			for (int i = 1; i < split.length-1;i++){
 				EnchantmentWithLevel ewl = getEnchantment(split[i].trim());
@@ -698,16 +717,29 @@ public class InventoryUtil {
 	}
 
 	public static Color parseColor(String str){
-		Matcher m = COLOR_PATTERN.matcher(str);
+		Matcher m = PATTERN_COLOR.matcher(str);
 		if (!m.find())
 			return null;
 		return new Color(Integer.valueOf(m.group(1)),Integer.valueOf(m.group(2)),Integer.valueOf(m.group(3)));
 	}
 
-	//Netherfoam start
+	public static String parseOwner(String str){
+		Matcher matcher = PATTERN_OWNER.matcher(str);
+		if(!matcher.find()){
+			return null;}
+		return matcher.group(1);
+	}
+
+	public static String parseDisplayName(String str){
+		Matcher matcher = PATTERN_DISPLAY_NAME.matcher(str);
+		if(!matcher.find()){
+			return null;}
+		return matcher.group(1);
+	}
+
 	public static LinkedList<String> parseLore(String str){
 		try{
-			Matcher matcher = LORE_PATTERN.matcher(str);
+			Matcher matcher = PATTERN_LORE.matcher(str);
 			if(matcher.find()){
 				int start = matcher.start(); //This only takes the first match
 				int end = matcher.end();
@@ -715,7 +747,7 @@ public class InventoryUtil {
 				//Remove the "Lore: " part
 				//Remove the quotes
 				//Possible issue: If you want quotes in your lore...?
-				String part = str.substring(start, end).replaceFirst("lore[:=] ?", "").replaceAll("\"", ""); //Strip Lore: and quotes.
+				String part = str.substring(start, end).replaceFirst("(?i)lore[:=] ?", "").replaceAll("\"", ""); //Strip Lore: and quotes.
 				//Replace color codes
 				part = ChatColor.translateAlternateColorCodes('&', matcher.group(1));
 				//Now we can split it.
@@ -735,7 +767,6 @@ public class InventoryUtil {
 		}
 		return null;
 	}
-	//Netherfoam end
 
 	public static EnchantmentWithLevel getEnchantment(String str) {
 		if (str.equalsIgnoreCase("all")){
@@ -940,7 +971,13 @@ public class InventoryUtil {
 				dura2 += is.getDurability()*is.getAmount();
 			}
 		} else {
-			ItemStack is = inv.getBoots();
+			ItemStack is = inv.getHelmet();
+			Log.debug("is == " + is  +"  isarmor = " + InventoryUtil.isRealArmor(is));
+			if (is != null && is.getType() != Material.AIR && InventoryUtil.isRealArmor(is)){
+				nitems2 += is.getAmount();
+				dura2 += is.getDurability()*is.getAmount();
+			}
+			is = inv.getBoots();
 			if (is != null && is.getType() != Material.AIR){
 				nitems2 += is.getAmount();
 				dura2 += is.getDurability()*is.getAmount();
@@ -956,7 +993,7 @@ public class InventoryUtil {
 				dura2 += is.getDurability()*is.getAmount();
 			}
 		}
-		//				System.out.println("nitems1  " + nitems1 +":" + nitems2+"      " + dura1 +"  : " + dura2);
+		if (DEBUG) System.out.println("nitems1  " + nitems1 +":" + nitems2+"      " + dura1 +"  : " + dura2);
 		if (nitems1 != nitems2 || dura1 != dura2)
 			return false;
 
@@ -964,7 +1001,9 @@ public class InventoryUtil {
 		//// I could check size right now if it werent for "air" and null blocks in inventories
 		List<ItemStack> pitems = new ArrayList<ItemStack>();
 		pitems.addAll(Arrays.asList(contents));
-		if (woolTeams){ /// ignore helmet
+		if (woolTeams){ /// ignore helmet maybe
+			if (inv.getHelmet() != null && InventoryUtil.isRealArmor(inv.getHelmet())) pitems.add(inv.getHelmet());
+
 			if (inv.getBoots() != null) pitems.add(inv.getBoots());
 			if (inv.getLeggings() != null) pitems.add(inv.getLeggings());
 			if (inv.getChestplate() != null) pitems.add(inv.getChestplate());
@@ -975,7 +1014,7 @@ public class InventoryUtil {
 		for (ItemStack is: items){
 			if (is == null || is.getType() == Material.AIR)
 				continue;
-			//			System.out.println(" iss   " + is.getAmount() +"   " + is.getMaxStackSize() +"    " + is);
+			if (DEBUG)System.out.println(" iss   " + is.getAmount() +"   " + is.getMaxStackSize() +"    " + is);
 			if (is.getAmount() > is.getMaxStackSize()){
 				is = is.clone();
 				while (is.getAmount() > is.getMaxStackSize()){
@@ -996,7 +1035,7 @@ public class InventoryUtil {
 		while (idx< items.size() && idx<pitems.size()){
 			is1 = items.get(idx);
 			is2 = pitems.get(idx);
-			//						System.out.println(idx  +" : " + is1 +"  " + is2);
+			if (DEBUG) System.out.println(idx  +" : " + is1 +"  " + is2);
 			if ((is1==null || is1.getType() == Material.AIR) && (is2 == null || is2.getType() == Material.AIR))
 				return true;
 			if ((is1==null || is1.getType() == Material.AIR) || (is2 == null || is2.getType() == Material.AIR))

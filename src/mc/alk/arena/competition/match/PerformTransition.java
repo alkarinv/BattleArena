@@ -150,10 +150,6 @@ public class PerformTransition {
 		final boolean dead = !player.isOnline() || player.isDead();
 		final Player p = player.getPlayer();
 
-//		teleport(PlayerHolder am, MatchParams mp, ArenaTeam team,
-//				ArenaPlayer player, TransitionOptions mo, int teamIndex, Arena arena) {
-
-//		final MatchTransitions tops = am.getParams().getTransitionOptions();
 		if (teleportWaitRoom || teleportLobby){ /// Teleport waiting room
 			if ( (insideArena || am.checkReady(player, team, mo, true)) && !dead){
 				TeleportLocationController.teleport(am, team, player,mo, teamIndex);
@@ -184,7 +180,7 @@ public class PerformTransition {
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEALTH)){ psc.storeHealth(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREHUNGER)){ psc.storeHunger(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREMAGIC)){ psc.storeMagic(player);}
-			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){psc.storeArenaClass(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){psc.storeHeroClass(player);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p); }
 			if (mo.hasOption(TransitionOption.CLEAREXPERIENCE)){ ExpUtil.clearExperience(p);}
 			if (mo.hasOption(TransitionOption.HEALTH)) { PlayerUtil.setHealth(p, health);}
@@ -205,7 +201,7 @@ public class PerformTransition {
 			if (mo.getExperience() != null) {ExpUtil.giveExperience(p, mo.getExperience());}
 			if (mo.hasOption(TransitionOption.REMOVEPERMS)){ removePerms(player, mo.getRemovePerms());}
 			if (mo.hasOption(TransitionOption.ADDPERMS)){ addPerms(player, mo.getAddPerms(), 0);}
-			if (mo.hasOption(TransitionOption.GIVECLASS) && player.getChosenClass() == null){
+			if (mo.hasOption(TransitionOption.GIVECLASS) && player.getCurrentClass() == null){
 				final ArenaClass ac = getArenaClass(mo,teamIndex);
 				if (ac != null && ac.valid()){ /// Give class items and effects
 					if (mo.woolTeams()) TeamUtil.setTeamHead(teamIndex, player); // give wool heads first
@@ -214,11 +210,10 @@ public class PerformTransition {
 					} else{
 						ArenaClassController.giveClass(player, ac);
 					}
-					player.setChosenClass(ac);
 				}
 			}
 			if (mo.hasOption(TransitionOption.CLASSENCHANTS)){
-				ArenaClass ac = player.getChosenClass();
+				ArenaClass ac = player.getCurrentClass();
 				if (ac != null){
 					ArenaClassController.giveClassEnchants(p, ac);}
 			}
