@@ -1,7 +1,9 @@
 package mc.alk.arena.objects.victoryconditions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.teams.TeamDeathEvent;
@@ -41,6 +43,9 @@ public class NTeamsNeeded extends VictoryCondition implements DefinesNumTeams{
 		if (leftAlive.size() < neededTeams.min){
 			MatchResult mr = new MatchResult();
 			mr.setVictors(leftAlive);
+			Set<ArenaTeam> losers = new HashSet<ArenaTeam>(match.getTeams());
+			losers.removeAll(leftAlive);
+			mr.setLosers(losers);
 			match.endMatchWithResult(mr);
 		}
 	}

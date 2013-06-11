@@ -490,7 +490,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			teams.addAll(victors);
 			teams.addAll(losers);
 			teams.addAll(drawers);
-			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  " + losers+"  "+drawers +" " + matchResult);
+			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  losers=" + losers+"  drawers="+drawers +" " + matchResult);
 			if (params.isRated()){
 				StatController sc = new StatController(params);
 				sc.addRecord(victors,losers,drawers,result.getResult());
@@ -519,6 +519,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			final Set<ArenaTeam> victors = matchResult.getVictors();
 			final Set<ArenaTeam> losers = matchResult.getLosers();
 			final Set<ArenaTeam> drawers = matchResult.getDrawers();
+			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  losers=" + losers+"  drawers="+drawers +" " + matchResult);
 			if (params.isRated()){
 				StatController sc = new StatController(params);
 				sc.addRecord(victors,losers,drawers,am.getResult().getResult());
@@ -590,8 +591,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		public void run() {
 			transitionTo(MatchState.ONCOMPLETE);
 			final Collection<ArenaTeam> victors = am.getVictors();
-
-			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + victors);
+			Log.debug("Match::MatchCompleted(): " + am.getResult());
+			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + victors +"  d=" + am.getDrawers() +"   l=" + am.getLosers());
 			/// ONCOMPLETE can teleport people out of the arena,
 			/// So the order of events is usually
 			/// ONCOMPLETE(half of effects) -> ONLEAVE( and all effects) -> ONCOMPLETE( rest of effects)
@@ -603,6 +604,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 					callEvent(new MatchCompletedEvent(am));
 					arenaInterface.onComplete();
 					/// Losers and winners get handled after the match is complete
+
 					if (am.getLosers() != null){
 						PerformTransition.transition(am, MatchState.LOSERS, am.getLosers(), false);
 						ArenaPrizeEvent event = new ArenaLosersPrizeEvent(am, am.getLosers());
