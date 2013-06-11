@@ -5,6 +5,7 @@ import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.teams.TeamDeathEvent;
+import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumTeams;
@@ -37,11 +38,10 @@ public class NTeamsNeeded extends VictoryCondition implements DefinesNumTeams{
 			match.setLosers();
 			return;
 		}
-		switch(neededTeams.min){
-		case 2:
-			if (leftAlive.size() ==1){
-				match.setVictor(leftAlive.get(0));
-			}
+		if (leftAlive.size() < neededTeams.min){
+			MatchResult mr = new MatchResult();
+			mr.setVictors(leftAlive);
+			match.endMatchWithResult(mr);
 		}
 	}
 }

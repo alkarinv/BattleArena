@@ -49,7 +49,6 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.arena.util.Util;
 
 import org.bukkit.entity.Player;
 
@@ -101,7 +100,6 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		teams.clear();
 		joinHandler = TeamJoinFactory.createTeamJoinHandler(params, this);
 		EventOpenEvent event = new EventOpenEvent(this);
-		Util.printStackTrace();
 		callEvent(event);
 		if (event.isCancelled())
 			return;

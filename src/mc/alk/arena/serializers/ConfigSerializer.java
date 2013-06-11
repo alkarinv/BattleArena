@@ -637,7 +637,8 @@ public class ConfigSerializer extends BaseConfig{
 		cs = main.createSection("tracking");
 		cs.set("db", params.getDBName());
 		cs.set("rated", params.isRated());
-		cs.set("overrideBTMessages", params.getUseTrackerPvP());
+		if (params.getUseTrackerMessages() != null)
+			cs.set("useTrackerMessages", params.getUseTrackerMessages());
 
 		main.set("arenaType", params.getType().getName());
 		try{

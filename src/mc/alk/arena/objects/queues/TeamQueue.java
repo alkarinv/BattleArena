@@ -13,6 +13,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.Log;
 
 
 public class TeamQueue extends PriorityQueue<QueueObject>{

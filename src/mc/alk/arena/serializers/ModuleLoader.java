@@ -28,12 +28,18 @@ public class ModuleLoader {
 				return period != -1 && sname.equals("class") || sname.equals("jar");
 			}}))
 		{
+			ArenaModule am = null;
 			try {
-				ArenaModule am = loadModule(f);
+				am = loadModule(f);
 				loadedModules.add(am.getName() +"_"+am.getVersion());
+				am.setEnabled(true);
+				am.onEnable();
 				ModuleController.addModule(am);
 			} catch (Exception e){
 				Log.err("[BA Error] Error loading the module " + f.getName());
+				if (am != null){
+					am.setEnabled(false);
+				}
 				e.printStackTrace();
 			}
 		}

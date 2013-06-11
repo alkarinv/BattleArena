@@ -48,6 +48,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.numConcurrentCompetitions = mp.numConcurrentCompetitions;
 		this.modules = new HashSet<ArenaModule>(mp.modules);
 		this.mparent = mp.mparent;
+		this.useBTMessages = mp.useBTMessages;
+		this.useBTPvP = mp.useBTPvP;
 	}
 
 	public void setVictoryType(VictoryType type){this.vc = type;}
@@ -69,7 +71,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public void setVictoryCondition(VictoryType victoryCondition) {
 		this.vc = victoryCondition;
 	}
-
 
 	public Integer getMatchTime() {
 		return matchTime == null && mparent!=null ? mparent.getMatchTime() : matchTime;
@@ -167,6 +168,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public void setUseTrackerMessages(Boolean enable) {
 		useBTMessages = enable;
 	}
+
 	public void setForceStartTime(long forceStartTime) {
 
 	}

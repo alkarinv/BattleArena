@@ -11,4 +11,8 @@ public interface IInventoryHelper {
 
 	void setLore(ItemStack itemStack, List<String> lore);
 
+	void setDisplayName(ItemStack itemStack, String displayName);
+
+	void setOwnerName(ItemStack itemStack, String ownerName);
+
 }

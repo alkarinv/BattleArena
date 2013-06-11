@@ -68,7 +68,6 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		if (serverChannel == Channel.NullChannel){
 			return;
 		}
-
 		final String nTeamPath = getStringPathFromSize(mp.getMinTeams());
 		Message serverMessage;
 		if (mp.getMinTeamSize() > 1)

@@ -248,13 +248,12 @@ public class PlayerStoreController {
 		WorldGuardController.removeMember(p.getName(), region);
 	}
 
-	public void storeArenaClass(ArenaPlayer player) {
+	public void storeHeroClass(ArenaPlayer player) {
 		if (!HeroesController.enabled())
 			return;
 		final String name = player.getName();
 		if (arenaclass.containsKey(name))
 			return;
-
 		String heroClass = HeroesController.getHeroClassName(player.getPlayer());
 		if (heroClass == null)
 			return;
@@ -264,7 +263,7 @@ public class PlayerStoreController {
 	public void restoreHeroClass(ArenaPlayer p) {
 		if (!HeroesController.enabled())
 			return;
-		String heroClass = arenaclass.get(p.getName());
+		String heroClass = arenaclass.remove(p.getName());
 		if (heroClass == null)
 			return;
 		HeroesController.setHeroClass(p.getPlayer(), heroClass);

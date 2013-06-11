@@ -210,7 +210,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			ptp.team.removePlayer(ap);
 			if (ptp.team.size() == 0){
 				TeamController.removeTeamHandler(ptp.team, this);}
-			this.unhandle(ap, ptp.team, ptp.q);
+			this.unhandle(ptp.team, ptp.q);
 		} else {
 			this.unhandle(ap, null, null);
 		}
@@ -359,6 +359,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	public ParamTeamPair removeFromQue(ArenaTeam t) {
 		TeamController.removeTeamHandler(t, this);
+
 		ParamTeamPair ptp = amq.removeFromQue(t);
 		MatchParams mp = null;
 		if (ptp != null){

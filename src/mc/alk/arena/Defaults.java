@@ -90,7 +90,7 @@ public class Defaults {
 	public static final boolean DEBUG_SCHEDULER = false;
 	public static final boolean TESTSERVER = false;
 	public static final String DEFAULT_CONFIG_NAME = "Default";
-
+	public static boolean DEBUG_MSGS = false;
 	public static boolean DEBUG_COMMANDS = false;
 
 	public static int TIME_BETWEEN_CLASS_CHANGE = 3;

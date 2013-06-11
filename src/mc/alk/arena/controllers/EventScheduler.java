@@ -15,6 +15,7 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.pairs.EventPair;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
@@ -68,7 +69,8 @@ public class EventScheduler implements Runnable, ArenaListener{
 			try {
 				if (ee instanceof ReservedArenaEventExecutor){
 					ReservedArenaEventExecutor exe = (ReservedArenaEventExecutor) ee;
-					event = exe.openIt(eventParams, args);
+					EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null);
+					event = exe.openIt(eventParams, eoo);
 				} else if (ee instanceof TournamentExecutor){
 					TournamentExecutor exe = (TournamentExecutor) ee;
 					event = exe.openIt(sender, eventParams, args);
@@ -139,7 +141,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 
 
 	public boolean scheduleEvent(EventParams eventParams, String[] args) {
-		events.add(new EventPair(eventParams,args)); /// TODO verify these arguments here instead of waiting until running them
+		events.add(new EventPair(eventParams,args));
 		return true;
 	}
 

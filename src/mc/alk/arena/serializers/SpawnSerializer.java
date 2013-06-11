@@ -75,8 +75,8 @@ public class SpawnSerializer {
 				}
 			}
 		} catch (Exception e){
-			e.printStackTrace();
 			Log.warn(cs.getCurrentPath() +" could not be parsed in config.yml");
+			e.printStackTrace();
 		}
 		return spawns;
 	}

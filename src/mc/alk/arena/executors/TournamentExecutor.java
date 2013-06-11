@@ -60,16 +60,14 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 			sendMessage(sender,"&cCommand: &6/tourney <open|auto> <matchType> [options...]");
 			return null;
 		}
-
+		EventOpenOptions eoo=null;
 		EventParams ep = new EventParams(mp);
-		event = new TournamentEvent(eventParams);
-		checkOpenOptions(event,ep , args);
-
-		EventOpenOptions eoo = null;
-
 		try {
 			HashSet<Integer> ignoreArgs = new HashSet<Integer>(Arrays.asList(1)); /// ignore the matchType argument
 			eoo = EventOpenOptions.parseOptions(args,ignoreArgs);
+			event = new TournamentEvent(eventParams);
+			checkOpenOptions(event,ep , eoo);
+
 			if (!isPowerOfTwo(ep.getMinTeams())){
 				sendMessage(sender, "&cTournament nteams has to be a power of 2! like 2,4,8,16,etc");
 				sendMessage(sender, "&c/tourney auto <type> nTeams=2");

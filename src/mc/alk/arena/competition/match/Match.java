@@ -48,8 +48,6 @@ import mc.alk.arena.events.prizes.ArenaLosersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaWinnersPrizeEvent;
 import mc.alk.arena.events.teams.TeamDeathEvent;
-import mc.alk.arena.listeners.competition.ItemPickupListener;
-import mc.alk.arena.listeners.competition.PlayerTeleportListener;
 import mc.alk.arena.listeners.competition.TeamHeadListener;
 import mc.alk.arena.objects.ArenaLocation;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -129,7 +127,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	MatchTransitions tops = null; /// Our match options for this arena match
 	final PlayerStoreController psc = new PlayerStoreController(); /// Store items and exp for players if specified
 
-//	Set<ArenaPlayer> readyPlayers = null; /// Do we have ready Players
 	Set<MatchState> waitRoomStates = null; /// which states are inside a waitRoom
 	final MatchState tinState; /// which matchstat teleports players in (first one is chosen)
 	Long joinCutoffTime = null; /// at what point do we cut people off from joining
@@ -210,7 +207,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		this.keepsInventory = tops.hasOptionAt(MatchState.ONDEATH, TransitionOption.KEEPINVENTORY);
 		this.clearsInventoryOnDeath = tops.hasOptionAt(MatchState.ONDEATH, TransitionOption.CLEARINVENTORY);
 		this.respawns = tops.hasOptionAt(MatchState.ONDEATH, TransitionOption.RESPAWN) ||
-				tops.hasOptionAt(MatchState.ONDEATH, TransitionOption.RANDOMRESPAWN);
+				tops.hasOptionAt(MatchState.ONDEATH, TransitionOption.RANDOMSPAWN);
 		/// onSpawn options
 		this.respawnsWithClass = tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWNWITHCLASS);
 		this.alwaysOpen = params.getAlwaysOpen();
@@ -235,10 +232,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (noLeave){
 			events.add(PlayerMoveEvent.class);}
 		ListenerAdder.addListeners(this, tops);
-		if (tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE) || noEnter){
-			this.addArenaListener(new PlayerTeleportListener(this));}
-		if (tops.hasAnyOption(TransitionOption.ITEMPICKUPOFF)){
-			this.addArenaListener(new ItemPickupListener(this));}
 		if (woolTeams){
 			this.addArenaListener(new TeamHeadListener());}
 
@@ -571,7 +564,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 						new RewardController(event,psc).giveRewards();
 					}
 					if (result.getDrawers() != null){
-						PerformTransition.transition(am, MatchState.LOSERS, result.getDrawers(), false);
+						PerformTransition.transition(am, MatchState.DRAWERS, result.getDrawers(), false);
 						ArenaPrizeEvent event = new ArenaDrawersPrizeEvent(am, result.getDrawers());
 						callEvent(event);
 						new RewardController(event,psc).giveRewards();
@@ -617,7 +610,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 						new RewardController(event,psc).giveRewards();
 					}
 					if (am.getDrawers() != null){
-						PerformTransition.transition(am, MatchState.LOSERS, am.getDrawers(), false);
+						PerformTransition.transition(am, MatchState.DRAWERS, am.getDrawers(), false);
 						ArenaPrizeEvent event = new ArenaDrawersPrizeEvent(am, am.getDrawers());
 						callEvent(event);
 						new RewardController(event,psc).giveRewards();
@@ -730,6 +723,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		TeamController.addTeamHandler(team, this);
 		int index = indexOf(team);
 		team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
+		if (woolTeams)
+			team.setHeadItem(TeamUtil.getTeamHead(index));
 		String name = TeamUtil.createTeamName(index);
 		if ( alwaysTeamNames || (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
 			team.setDisplayName(name);
@@ -750,7 +745,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		leftPlayers.remove(player.getName()); /// remove players from the list as they are now joining again
 		insideArena.remove(player.getName());
 		team.setAlive(player);
-		player.reset();
 		player.addCompetition(this);
 		arenaInterface.onJoin(player,team);
 	}
@@ -894,7 +888,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		return true;
 	}
 
-	private void privateOnLeave(ArenaPlayer ap, ArenaTeam team){
+	protected void privateOnLeave(ArenaPlayer ap, ArenaTeam team){
 		if (insideArena(ap)){ /// Only leave if they haven't already left.
 			/// The onCancel should teleport them out, and call leaveArena(ap)
 			PerformTransition.transition(this, MatchState.ONCANCEL, ap, team, false);
@@ -932,7 +926,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		updateBukkitEvents(ms,p);
 		if (WorldGuardController.hasWorldGuard() && arena.hasRegion()){
 			psc.addMember(p, arena.getWorldGuardRegion());}
-		p.reset();
 	}
 
 	protected void stopTracking(final ArenaPlayer p){
@@ -992,8 +985,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		final String name = p.getName();
 		insideArena.add(p.getName());
 		startTracking(p);
-		if (!params.getUseTrackerPvP())
+		if (!params.getUseTrackerPvP()){
 			StatController.stopTracking(p);
+			StatController.stopTrackingMessages(p);
+		}
 		/// Store the point at which they entered the arena
 		if (!oldlocs.containsKey(name) || oldlocs.get(name) == null) /// First teleportIn is the location we want
 			oldlocs.put(name, p.getLocation());
@@ -1024,8 +1019,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		stopTracking(p);
 		t.killMember(p);
 		scoreboard.setDead(t,p);
-		if (!params.getUseTrackerPvP())
+		if (!params.getUseTrackerPvP()){
 			StatController.resumeTracking(p);
+			StatController.resumeTrackingMessages(p);
+		}
 
 		arenaInterface.onLeave(p,t);
 		callEvent(new ArenaPlayerLeaveMatchEvent(p,t));

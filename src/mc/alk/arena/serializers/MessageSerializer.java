@@ -34,7 +34,7 @@ public class MessageSerializer extends BaseConfig {
 		mp = params;
 		if (name == null)
 			return;
-		MessageSerializer ms = files.get(name);
+		MessageSerializer ms = files.get(name.toUpperCase());
 		if (ms != null){
 			this.config = ms.config;
 			this.file = ms.file;
@@ -43,11 +43,11 @@ public class MessageSerializer extends BaseConfig {
 	}
 
 	public static void addMessageSerializer(String name, MessageSerializer ms){
-		files.put(name, ms);
+		files.put(name.toUpperCase(), ms);
 	}
 
 	public static MessageSerializer getMessageSerializer(String name){
-		return files.get(name);
+		return files.get(name.toUpperCase());
 	}
 
 	public void loadAll(){
@@ -55,7 +55,7 @@ public class MessageSerializer extends BaseConfig {
 	}
 
 	public static void reloadConfig(String params) {
-		MessageSerializer ms = files.get(params);
+		MessageSerializer ms = files.get(params.toUpperCase());
 		if (ms != null){
 			ms.reloadFile();
 			ms.initMessageOptions();
@@ -81,6 +81,9 @@ public class MessageSerializer extends BaseConfig {
 	}
 
 	public Message getNodeMessage(String path) {
+		if (config != null && !this.getFile().getPath().equals("plugins/BattleArena/messages.yml")){
+			Set<String> keys = config.getKeys(true);
+		}
 		if (config != null && config.contains(path)){
 			return new Message(config.getString(path), msgOptions.get(path));
 		}

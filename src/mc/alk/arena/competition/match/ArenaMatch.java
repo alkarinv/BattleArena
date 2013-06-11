@@ -84,12 +84,7 @@ public class ArenaMatch extends Match {
 				!insideArena.contains(event.getPlayer().getName()) ){
 			return;}
 		ArenaPlayer player = BattleArena.toArenaPlayer(event.getPlayer());
-		ArenaTeam t = getTeam(player);
-		if (t==null){
-			return;}
-
-		PerformTransition.transition(this, MatchState.ONCANCEL, player, t, true);
-		checkAndHandleIfTeamDead(t);
+		onLeave(player);
 	}
 
 	@ArenaEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGH)
@@ -291,10 +286,12 @@ public class ArenaMatch extends Match {
 		if (isWon()){
 			return;}
 		final TransitionOptions mo = tops.getOptions(MatchState.ONDEATH);
+
 		if (mo == null)
 			return;
 
 		if (respawns){
+			final boolean randomRespawn = mo.randomRespawn();
 			/// Lets cancel our death respawn timer
 			Integer timer = deathTimer.get(p.getName());
 			if (timer != null){
@@ -304,9 +301,9 @@ public class ArenaMatch extends Match {
 			if (mo.hasOption(TransitionOption.TELEPORTLOBBY) || mo.hasOption(TransitionOption.TELEPORTWAITROOM)){
 				final int index = this.getTeamIndex(t);
 				if (mo.hasOption(TransitionOption.TELEPORTLOBBY)){
-					loc = LobbyController.getLobbySpawn(index, getParams().getType(), mo.randomRespawn());
+					loc = LobbyController.getLobbySpawn(index, getParams().getType(), randomRespawn);
 				} else {
-					loc = this.getWaitRoomSpawn(index, mo.randomRespawn());
+					loc = this.getWaitRoomSpawn(index, randomRespawn);
 				}
 				/// Should we respawn the player to the team spawn after a certain amount of time
 				if (mo.hasOption(TransitionOption.RESPAWNTIME)){
@@ -322,7 +319,7 @@ public class ArenaMatch extends Match {
 					respawnTimer.put(p.getName(), id);
 				}
 			} else {
-				loc = getTeamSpawn(getTeam(p), mo.randomRespawn());
+				loc = getTeamSpawn(getTeam(p), randomRespawn);
 			}
 
 			event.setRespawnLocation(loc);
@@ -415,7 +412,7 @@ public class ArenaMatch extends Match {
 		playerInteract(event);
 	}
 	public void playerInteract(PlayerInteractEvent event){
-		if (event.isCancelled() || event.getClickedBlock() == null)
+		if (event.getClickedBlock() == null)
 			return;
 
 		if (!(event.getClickedBlock().getType().equals(Material.SIGN) ||
@@ -498,7 +495,8 @@ public class ArenaMatch extends Match {
 			if (chosen.getItems()!=null)
 				items.addAll(chosen.getItems());
 			if (ro != null && ro.hasItems()){
-				items.addAll(ro.getGiveItems());}
+				items.addAll(ro.getGiveItems());
+			}
 			if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
 				MessageUtil.sendMessage(p,"&cYou can't switch classes after changing items!");
 				return;
@@ -515,6 +513,7 @@ public class ArenaMatch extends Match {
 		ap.despawnMobs();
 		/// Regive class/items
 		ArenaClassController.giveClass(ap, ac);
+		ap.setPreferredClass(ac);
 		if (mo != null && mo.hasItems()){
 			try{ InventoryUtil.addItemsToInventory(p, mo.getGiveItems(), true,color);} catch(Exception e){Log.printStackTrace(e);}}
 		if (ro != null && ro.hasItems()){
@@ -526,7 +525,6 @@ public class ArenaMatch extends Match {
 		if (ro != null && ro.getEffects()!=null){
 			EffectUtil.enchantPlayer(p, ro.getEffects());}
 
-		ap.setPreferredClass(ac);
 		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
 	}
 

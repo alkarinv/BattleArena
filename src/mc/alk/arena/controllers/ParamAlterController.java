@@ -8,9 +8,9 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.GameOption;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
-import mc.alk.v1r5.util.Log;
 
 import org.bukkit.command.CommandSender;
 

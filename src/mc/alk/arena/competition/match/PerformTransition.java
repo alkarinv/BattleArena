@@ -146,7 +146,7 @@ public class PerformTransition {
 		boolean playerReady = player.isOnline();
 		final boolean dead = !player.isOnline() || player.isDead();
 		final Player p = player.getPlayer();
-		final boolean randomRespawn = mo.hasOption(TransitionOption.RANDOMRESPAWN);
+		final boolean randomRespawn = mo.hasAnyOption(TransitionOption.RANDOMRESPAWN,TransitionOption.RANDOMSPAWN);
 		final MatchTransitions tops = am.getParams().getTransitionOptions();
 
 		if (teleportWaitRoom || teleportLobby){ /// Teleport waiting room
@@ -172,6 +172,7 @@ public class PerformTransition {
 					ArenaLocation dest = new ArenaLocation(l,type);
 					ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
 							player,team,src,dest,TeleportDirection.IN);
+					player.reset();
 
 					am.callEvent(apte);
 					player.markOldLocation();
@@ -218,7 +219,7 @@ public class PerformTransition {
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEALTH)){ psc.storeHealth(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREHUNGER)){ psc.storeHunger(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREMAGIC)){ psc.storeMagic(player);}
-			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){psc.storeArenaClass(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){psc.storeHeroClass(player);}
 			if (wipeInventory){ InventoryUtil.clearInventory(p); }
 			if (mo.hasOption(TransitionOption.CLEAREXPERIENCE)){ ExpUtil.clearExperience(p);}
 			if (mo.hasOption(TransitionOption.HEALTH)) { PlayerUtil.setHealth(p, health);}

@@ -9,6 +9,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
@@ -28,12 +29,15 @@ public class BukkitScoreboard extends ArenaScoreboard{
 
 	final boolean colorPlayerNames;
 	HashMap<DisplaySlot,ArenaObjective> slots = new HashMap<DisplaySlot,ArenaObjective>();
+	HashMap<String,Scoreboard> oldBoards = new HashMap<String,Scoreboard>();
+
 	final boolean solo;
 	public BukkitScoreboard(Match match, MatchParams params) {
 		super(match, params);
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
 		board = manager.getNewScoreboard();
-		this.colorPlayerNames = Defaults.USE_COLORNAMES;
+		this.colorPlayerNames = Defaults.USE_COLORNAMES &&
+				!params.getTransitionOptions().hasAnyOption(TransitionOption.NOTEAMNAMECOLOR);
 		this.solo = params.getMaxTeamSize() == 1;
 	}
 
@@ -76,8 +80,6 @@ public class BukkitScoreboard extends ArenaScoreboard{
 	public void addObjective(ArenaObjective objective) {
 		super.addObjective(objective);
 		DisplaySlot oldSlot = convertDisplaySlot(objective.getDisplaySlot());
-//		Log.debug("-----  adding objective " + objective.getName() +
-//				"    slot =  " + objective.getDisplaySlot() +"   --"+objective.getPriority()+"-- " + slots.size());
 
 		Collection<ArenaPlayer> players = match.getPlayers();
 		Collection<Player> ps = new ArrayList<Player>(players.size());
@@ -104,7 +106,6 @@ public class BukkitScoreboard extends ArenaScoreboard{
 				movingObjective = objective;
 			}
 			DisplaySlot moveToDS = convertDisplaySlot(movingObjective.getDisplaySlot().swap());
-//			Log.debug("  ### MovingObjective = " + movingObjective.getName() +"   " + movingObjective.getPriority());
 			if (moveToDS != null){
 				ArenaObjective inPlaceObjective = slots.get(moveToDS);
 				if (inPlaceObjective == null || inPlaceObjective.getPriority() < movingObjective.getPriority()){
@@ -113,9 +114,6 @@ public class BukkitScoreboard extends ArenaScoreboard{
 						objective.setDisplaySlot(movingObjective.getDisplaySlot().swap());
 						makeBukkitObjective(movingObjective);
 						slots.put(moveToDS, movingObjective);
-//						Log.debug(" 2@@@@ movingObjective has " + oldSlot+"  - "  +movingObjective.getPriority()+" " + movingObjective.getName());
-//						if (inPlaceObjective != null)
-//							Log.debug(" 2@@@@ already in has " + moveToDS +"  - " + inPlaceObjective.getPriority()+" " + inPlaceObjective.getName());
 					}
 				}
 			}
@@ -155,7 +153,7 @@ public class BukkitScoreboard extends ArenaScoreboard{
 	public void addTeam(ArenaTeam team) {
 		try{
 			Team t = board.registerNewTeam(team.geIDString());
-//			Log.debug(" addTeam " + team.getName() +"   " + t.getDisplayName());
+			t.setCanSeeFriendlyInvisibles(true);
 			t.setDisplayName(getTeamName(team));
 			for (Player p: team.getBukkitPlayers()){
 				if (!p.isOnline())
@@ -163,8 +161,10 @@ public class BukkitScoreboard extends ArenaScoreboard{
 				t.addPlayer(p);
 				if (colorPlayerNames)
 					t.setPrefix(MessageUtil.colorChat(team.getTeamChatColor()+""));
-				if (p.isOnline())
+				if (p.isOnline()){
+					oldBoards.put(p.getName(), p.getScoreboard());
 					p.setScoreboard(board);
+				}
 				synchronized(slots){
 					for (Entry<DisplaySlot,ArenaObjective> entry: slots.entrySet()){
 						Objective o = board.getObjective(entry.getKey());
@@ -189,7 +189,7 @@ public class BukkitScoreboard extends ArenaScoreboard{
 	@Override
 	public void addedToTeam(ArenaTeam team, ArenaPlayer player) {
 		Team t = board.getTeam(team.geIDString());
-//		Log.debug(" addedToTeam " + team.getName() +"   " + t.getDisplayName() +"   " + player.getName());
+		t.setCanSeeFriendlyInvisibles(true);
 
 		if (t!=null){
 			t.setDisplayName(getTeamName(team));
@@ -200,6 +200,7 @@ public class BukkitScoreboard extends ArenaScoreboard{
 			/// not an abstract player.  So reget the player from bukkit
 			Player p = ServerUtil.findPlayerExact(player.getName());
 			if (p != null && p.isOnline()){
+				oldBoards.put(p.getName(), p.getScoreboard());
 				p.setScoreboard(board);
 				player.setPlayer(p);
 				setAllPoints(player,1);
@@ -234,7 +235,12 @@ public class BukkitScoreboard extends ArenaScoreboard{
 			Scoreboard mains = Bukkit.getScoreboardManager().getMainScoreboard();
 			for (Player p: team.getBukkitPlayers()){
 				if (p.isOnline()){
-					p.setScoreboard(mains);
+					Scoreboard sb = oldBoards.get(p.getName());
+					if (sb != null){
+						p.setScoreboard(sb);
+					} else {
+						p.setScoreboard(mains);
+					}
 				}
 				t.removePlayer(p);
 			}
@@ -244,10 +250,14 @@ public class BukkitScoreboard extends ArenaScoreboard{
 	@Override
 	public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {
 		Team t = board.getTeam(team.geIDString());
-		Scoreboard mains = Bukkit.getScoreboardManager().getMainScoreboard();
 		if (t!=null){
-			for (Player p: team.getBukkitPlayers()){
-				if (p.isOnline()){
+			Scoreboard mains = Bukkit.getScoreboardManager().getMainScoreboard();
+			Player p = Bukkit.getPlayerExact(player.getName());
+			if (p.isOnline()){
+				Scoreboard sb = oldBoards.get(p.getName());
+				if (sb != null){
+					p.setScoreboard(sb);
+				} else {
 					p.setScoreboard(mains);
 				}
 				t.removePlayer(p);

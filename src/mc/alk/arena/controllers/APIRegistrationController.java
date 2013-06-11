@@ -181,7 +181,6 @@ public class APIRegistrationController {
 			Class<? extends Arena> arenaClass, CustomCommandExecutor executor,
 			File configFile, File messageFile, File defaultPluginConfigFile, File defaultArenaFile)
 					throws Exception{
-
 		/// Create our plugin folder if its not there
 		File dir = plugin.getDataFolder();
 		FileUpdater.makeIfNotExists(dir);
@@ -239,7 +238,6 @@ public class APIRegistrationController {
 			if (rc != null){
 				ms = MessageSerializer.getMessageSerializer(gameType.getName());}
 		}
-
 		if (ms != null){
 			ms.setConfig(messageFile);
 			ms.loadAll();

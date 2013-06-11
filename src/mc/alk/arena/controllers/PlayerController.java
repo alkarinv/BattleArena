@@ -15,7 +15,9 @@ import org.bukkit.entity.Player;
 
 public final class PlayerController {
 	private static HashMap<String,ArenaPlayer> players = new HashMap<String,ArenaPlayer>();
+	public class A{
 
+	}
 	/**
 	 * wrap a player into an ArenaPlayer
 	 * @param player

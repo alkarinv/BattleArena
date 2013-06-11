@@ -66,7 +66,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		} else if(section.equalsIgnoreCase("commands")){
 			Defaults.DEBUG_COMMANDS = on;
 		} else if(section.equalsIgnoreCase("debug")){
-			Log.setDebug(on);
+			Defaults.DEBUG_MSGS = on;
 		} else if(section.equalsIgnoreCase("teams")){
 			Defaults.DEBUG_MATCH_TEAMS = on;
 		} else {

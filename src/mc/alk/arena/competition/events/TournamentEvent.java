@@ -142,14 +142,25 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		startRound();
 	}
 
+	@ArenaEventHandler
+	public void matchCompleted(MatchCompletedEvent event){
+		Match am = event.getMatch();
+//		Log.debug("MatchCompletedEvent   " + am.getTeams());
+		if (am.getState() == MatchState.ONCANCEL){
+			endEvent();
+			return;
+		}
+		matchEnded(am);
+	}
 
 	@ArenaEventHandler
 	public void matchCancelled(MatchCancelledEvent event){
 		Match am = event.getMatch();
 		if (am.getState() == MatchState.ONCANCEL){
 			endEvent();
-			return;}
-		matchEnded(am, am.getResult());
+			return;
+		}
+		matchEnded(am);
 	}
 
 	@Override
@@ -164,24 +175,17 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		}
 	}
 
-	@ArenaEventHandler
-	public void matchCompleted(MatchCompletedEvent event){
-		Match am = event.getMatch();
 
-		if (am.getState() == MatchState.ONCANCEL){
-			endEvent();
-			return;}
-
-		matchEnded(am, am.getResult());
-	}
-
-	private void matchEnded(Match am, MatchResult r) {
+	private void matchEnded(Match am) {
 		Matchup m = matchups.get(am);
+//		Log.debug("matchEnded   m=" + m);
 		if (m==null){
 			eventCancelled();
 			Log.err("[BA Error] match completed but not found in tournament");
 			return;
 		}
+		MatchResult r = am.getResult();
+//		Log.debug(" result = " + r );
 		ArenaTeam victor = null;
 		if (r.isDraw() || r.isUnknown()){ /// match was a draw, pick a random lucky winner
 			victor = pickRandomWinner(r, r.getDrawers());

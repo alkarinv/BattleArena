@@ -81,18 +81,18 @@ public class TimeUtil {
 	}
 
 	public static String dayOrDays(long t){
-		return t > 1 || t == 0? "days" : "day";
+		return MessageHandler.getSystemMessage(t > 1 || t == 0? "days" : "day");
 	}
 
 	public static String hourOrHours(long t){
-		return t > 1 || t ==0 ? "hours" : "hour";
+		return MessageHandler.getSystemMessage(t > 1 || t ==0 ? "hours" : "hour");
 	}
 
 	public static String minOrMins(long t){
-		return t > 1 || t == 0? "minutes" : "minute";
+		return MessageHandler.getSystemMessage(t > 1 || t == 0? "minutes" : "minute");
 	}
 	public static String secOrSecs(long t){
-		return t > 1 || t == 0? "sec" : "secs";
+		return MessageHandler.getSystemMessage(t > 1 || t == 0? "seconds" : "second");
 	}
 
 
