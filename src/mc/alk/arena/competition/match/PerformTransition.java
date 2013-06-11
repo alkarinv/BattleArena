@@ -5,18 +5,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.ArenaController;
 import mc.alk.arena.controllers.HeroesController;
-import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.PylamoController;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.controllers.TeleportLocationController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.PlayerHolder;
@@ -40,7 +39,6 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
 
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -50,7 +48,6 @@ import org.bukkit.potion.PotionEffect;
 
 public class PerformTransition {
 
-	static Random rand = new Random();
 	//	public static boolean debug = false;
 
 	/**
@@ -114,15 +111,21 @@ public class PerformTransition {
 
 	public static boolean transition(final PlayerHolder am, final MatchState transition,
 			final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch) {
-		if (Defaults.DEBUG_TRANSITIONS) Log.debug("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
-				" ops="+am.getParams().getTransitionOptions().getOptions(transition)
-				+"  inArena="+am.isHandled(player) + "   clearInv=" +
-				am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
-
 		final boolean insideArena = am.isHandled(player);
-		final TransitionOptions mo = am.getParams().getTransitionOptions().getOptions(transition);
+		return transition(am,transition,player,team,onlyInMatch,insideArena,am.getParams().getTransitionOptions());
+	}
+
+	public static boolean transition(final PlayerHolder am, final MatchState transition,
+			final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch,
+			final boolean insideArena, MatchTransitions tops) {
+		final TransitionOptions mo = tops.getOptions(transition);
 		if (mo == null){ /// no options
 			return true;}
+//		if (Defaults.DEBUG_TRANSITIONS) Log.debug("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
+//				" ops="+am.getParams().getTransitionOptions().getOptions(transition)
+//				+"  inArena="+am.isHandled(player) + "   clearInv=" +
+//				am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
+
 		final boolean teleportIn = mo.shouldTeleportIn();
 		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
 		final boolean teleportLobby = mo.shouldTeleportLobby();
@@ -146,39 +149,14 @@ public class PerformTransition {
 		boolean playerReady = player.isOnline();
 		final boolean dead = !player.isOnline() || player.isDead();
 		final Player p = player.getPlayer();
-		final boolean randomRespawn = mo.hasOption(TransitionOption.RANDOMRESPAWN);
-		final MatchTransitions tops = am.getParams().getTransitionOptions();
 
+//		teleport(PlayerHolder am, MatchParams mp, ArenaTeam team,
+//				ArenaPlayer player, TransitionOptions mo, int teamIndex, Arena arena) {
+
+//		final MatchTransitions tops = am.getParams().getTransitionOptions();
 		if (teleportWaitRoom || teleportLobby){ /// Teleport waiting room
 			if ( (insideArena || am.checkReady(player, team, mo, true)) && !dead){
-				/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
-				/// Since we cant really tell the eventual result.. do our best guess
-				Location l;
-				final LocationType type;
-				if (teleportWaitRoom){
-					type = LocationType.WAITROOM;
-					l = jitter(
-							am.getSpawn(teamIndex, type, randomRespawn),
-							rand.nextInt(team.size()));
-				} else {
-					type = LocationType.LOBBY;
-					l = jitter(
-							LobbyController.getLobbySpawn(am.indexOf(team), am.getParams().getType(),randomRespawn),
-							rand.nextInt(team.size()));
-				}
-				/// Feels like a kludge, but I don't want to reteleport them in onJoin
-				if (!(type == LocationType.LOBBY && player.getCurLocation() == LocationType.LOBBY)){
-					ArenaLocation src = new ArenaLocation(p.getLocation(),player.getCurLocation());
-					ArenaLocation dest = new ArenaLocation(l,type);
-					ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
-							player,team,src,dest,TeleportDirection.IN);
-
-					am.callEvent(apte);
-					player.markOldLocation();
-//					am.entering(player);
-					TeleportController.teleportPlayer(p, l, false, true);
-					PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
-				}
+				TeleportLocationController.teleport(am, team, player,mo, teamIndex);
 			} else {
 				playerReady = false;
 			}
@@ -187,19 +165,7 @@ public class PerformTransition {
 		/// Teleport In
 		if (teleportIn && transition != MatchState.ONSPAWN){ /// only tpin, respawn tps happen elsewhere
 			if ((insideArena || am.checkReady(player, team, mo, true)) && !dead){
-				/// enterArena is supposed to happen before the teleport in Event, but it depends on the result of a teleport
-				/// Since we cant really tell the eventual result.. do our best guess
-				final LocationType type = LocationType.ARENA;
-				player.markOldLocation();
-				final Location l = am.getSpawn(teamIndex, type, randomRespawn);
-				ArenaLocation src = new ArenaLocation(p.getLocation(),player.getCurLocation());
-				ArenaLocation dest = new ArenaLocation(l,type);
-				ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
-						player,team,src,dest,TeleportDirection.IN);
-				am.callEvent(apte);
-				TeleportController.teleportPlayer(p, l, false, true);
-				PlayerUtil.setGod(p,false);
-				PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
+				TeleportLocationController.teleport(am, team, player,mo, teamIndex);
 			} else {
 				playerReady = false;
 			}
@@ -387,26 +353,6 @@ public class PerformTransition {
 			return disguises.get(DisguiseInterface.DEFAULT);
 		}
 		return null;
-	}
-
-
-	static Location jitter(final Location teamSpawn, int index) {
-		if (index == 0)
-			return teamSpawn;
-		index = index % 6;
-		Location loc = teamSpawn.clone();
-
-		switch(index){
-		case 0: break;
-		case 1: loc.setX(loc.getX()-1); break;
-		case 2:	loc.setX(loc.getX()+1); break;
-		case 3:	loc.setZ(loc.getZ()-1); break;
-		case 4:	loc.setZ(loc.getZ()+1); break;
-		case 5:
-			loc.setX(loc.getX() + rand.nextDouble()-0.5);
-			loc.setZ(loc.getZ() + rand.nextDouble()-0.5);
-		}
-		return loc;
 	}
 
 }

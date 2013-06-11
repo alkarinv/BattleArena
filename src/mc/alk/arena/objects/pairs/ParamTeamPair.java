@@ -8,4 +8,5 @@ public class ParamTeamPair {
 	public ArenaTeam team;
 	public ParamTeamPair(){q=null; team =null;}
 	public ParamTeamPair(MatchParams q, ArenaTeam t){this.q=q;this.team=t;}
+	public MatchParams getMatchParams() {return q;}
 }

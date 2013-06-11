@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import mc.alk.arena.objects.arenas.Arena;
@@ -73,8 +74,8 @@ public class ArenaDebugger {
 				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));
 			}
 		}
-		locs = arena.getWaitRoomSpawnLocs();
-		if (locs != null){
+		List<Location> llocs = arena.getWaitRoomSpawnLocs();
+		if (llocs != null){
 			for (Integer i: locs.keySet()){
 				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));
 			}

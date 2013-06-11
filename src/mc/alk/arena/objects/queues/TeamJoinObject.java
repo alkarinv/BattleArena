@@ -8,10 +8,10 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
-public class TeamQObject extends QueueObject{
+public class TeamJoinObject extends QueueObject{
 	final ArenaTeam team;
 
-	public TeamQObject(ArenaTeam team, MatchParams params, JoinOptions joinOptions) {
+	public TeamJoinObject(ArenaTeam team, MatchParams params, JoinOptions joinOptions) {
 		this.matchParams = params;
 		this.team = team;
 		priority = team.getPriority();
@@ -53,5 +53,9 @@ public class TeamQObject extends QueueObject{
 	@Override
 	public boolean hasTeam(ArenaTeam team) {
 		return this.team.getId() == team.getId();
+	}
+
+	public boolean hasStartPerms() {
+		return false;
 	}
 }

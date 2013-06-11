@@ -19,28 +19,20 @@ import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
-import mc.alk.arena.events.players.ArenaPlayerEnterQueueEvent;
-import mc.alk.arena.events.players.ArenaPlayerLeaveQueueEvent;
-import mc.alk.arena.events.teams.TeamJoinedQueueEvent;
-import mc.alk.arena.events.teams.TeamLeftQueueEvent;
-import mc.alk.arena.listeners.competition.InArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.pairs.ParamTeamPair;
-import mc.alk.arena.objects.pairs.QueueResult;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
 import mc.alk.arena.objects.queues.QueueObject;
-import mc.alk.arena.objects.queues.TeamQObject;
+import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.teams.CompositeTeam;
-import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.Log;
@@ -55,25 +47,24 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 
-public class BattleArenaController implements Runnable, TeamHandler, ArenaListener, Listener{
+public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaListener, Listener{
 
-	boolean stop = false;
-	boolean running = false;
+	private boolean stop = false;
+	private boolean running = false;
 
-	static HashSet<String> disabledCommands = new HashSet<String>();
-	private final ArenaMatchQueue amq = new ArenaMatchQueue();
+	private static HashSet<String> disabledCommands = new HashSet<String>();
 	final private Set<Match> running_matches = Collections.synchronizedSet(new CopyOnWriteArraySet<Match>());
 	final private Map<String, Integer> runningMatchTypes = Collections.synchronizedMap(new HashMap<String,Integer>());
 	final private Map<ArenaType,Set<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,Set<Match>>());
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
-	long lastTimeCheck = 0;
-	final MethodController methodController;
+	private long lastTimeCheck = 0;
+	private final MethodController methodController;
 
-	LobbyController lobbies = LobbyController.INSTANCE;
+	private final ArenaMatchQueue amq = new QueueController();
+	private StateController sc = new StateController(amq);
 	final SignController signController;
+
 	public BattleArenaController(SignController signController){
 		methodController = new MethodController();
 		methodController.addAllEvents(this);
@@ -142,7 +133,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		incNumberOpenMatches(match.getParams().getType().getName());
 		/// BattleArena controller only tracks the players while they are in the queue
 		/// now that a match is starting the players are no longer our responsibility
-		unhandle(match);
+//		unhandle(match);
 		match.open();
 		if (match.isJoinablePostCreate()){
 			Set<Match> matches = unfilled_matches.get(match.getParams().getType());
@@ -154,70 +145,55 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		}
 	}
 
-	private void unhandle(Match match) {
-		Collection<ArenaTeam> teams = match.getOriginalTeams();
-		if (teams == null)
-			teams = match.getTeams();
-		if (teams == null)
-			return;
-		for (ArenaTeam team : teams){
-			unhandle(team,match.getParams());}
-	}
-
-	private void unhandle(final ArenaTeam team) {
-		unhandle(team,null);
-	}
-
-	private void unhandle(final ArenaTeam team, MatchParams mp) {
-		if (TeamController.removeTeamHandler(team, this)){
-			callEvent(new TeamLeftQueueEvent(team,mp));}
-		for (ArenaPlayer ap: team.getPlayers()){
-			unhandle(ap,team,mp);
-		}
-		if (team instanceof CompositeTeam){
-			for (ArenaTeam t: ((CompositeTeam)team).getOldTeams()){
-				TeamController.removeTeamHandler(t, this);
-			}
-		}
-	}
-
-
-	private void unhandle(final ArenaPlayer player, final ArenaTeam team, MatchParams params) {
-		methodController.updateEvents(MatchState.ONLEAVE, player);
-		leftQueue(player,team, params);
-	}
-
-	private void enteredQueue(final MatchParams params, final ArenaTeam team, QueueResult qresult){
-		callEvent(new TeamJoinedQueueEvent(team,qresult));
-		TeamController.addTeamHandler(team,this);
-		methodController.updateEvents(MatchState.ONENTER, team.getPlayers());
-		for (ArenaPlayer ap: team.getPlayers()){
-			if (!InArenaListener.inQueue(ap.getName())){
-				callEvent(new ArenaPlayerEnterQueueEvent(ap,team,qresult));
-			}
-		}
-	}
-
-	private void leftQueue(ArenaPlayer player, final ArenaTeam team, MatchParams params){
-		if (InArenaListener.inQueue(player.getName())){
-			callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params));
-		}
-	}
-
-	@ArenaEventHandler
-	public void onPlayerQuit(PlayerQuitEvent event){
-		ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
-		ParamTeamPair ptp = amq.removeFromQue(ap);
-		if (ptp != null){
-			leftQueue(ap,ptp.team,ptp.q);
-		}
-		ap.reset();
-	}
+//	private void unhandle(Match match) {
+//		Collection<ArenaTeam> teams = match.getOriginalTeams();
+//		if (teams == null)
+//			teams = match.getTeams();
+//		if (teams == null)
+//			return;
+//		for (ArenaTeam team : teams){
+//			unhandle(team,match.getParams());}
+//	}
+//
+//	private void unhandle(final ArenaTeam team) {
+//		unhandle(team,null);
+//	}
+//
+//	private void unhandle(final ArenaTeam team, MatchParams mp) {
+//		if (TeamController.removeTeamHandler(team, this)){
+//			callEvent(new TeamLeftQueueEvent(team,mp));}
+//		for (ArenaPlayer ap: team.getPlayers()){
+//			unhandle(ap,team,mp);
+//		}
+//		if (team instanceof CompositeTeam){
+//			for (ArenaTeam t: ((CompositeTeam)team).getOldTeams()){
+//				TeamController.removeTeamHandler(t, this);
+//			}
+//		}
+//	}
+//
+//
+//	private void unhandle(final ArenaPlayer player, final ArenaTeam team, MatchParams params) {
+//		methodController.updateEvents(MatchState.ONLEAVE, player);
+//		leftQueue(player,team, params);
+//	}
+//
+//	private void enteredQueue(final MatchParams params, final ArenaTeam team, JoinResult qresult){
+//		callEvent(new TeamJoinedQueueEvent(team,qresult));
+//		TeamController.addTeamHandler(team,this);
+//		methodController.updateEvents(MatchState.ONENTER, team.getPlayers());
+//		for (ArenaPlayer ap: team.getPlayers()){
+//			if (!InArenaListener.inQueue(ap.getName())){
+//				callEvent(new ArenaPlayerEnterQueueEvent(ap,team,qresult));
+//			}
+//		}
+//	}
+//
 
 	public void startMatch(Match arenaMatch) {
 		/// arenaMatch run calls.... broadcastMessage ( which unfortunately is not thread safe)
 		/// So we have to schedule a sync task... again
-		unhandle(arenaMatch); /// Since teams and players can join between onOpen and onStart.. re unhandle
+//		unhandle(arenaMatch); /// Since teams and players can join between onOpen and onStart.. re unhandle
 		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), arenaMatch);
 	}
 
@@ -227,7 +203,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		Match am = event.getMatch();
 		removeMatch(am); /// handles removing running match from the BArenaController
 		decNumberOpenMatches(am.getArena().getArenaType().getName());
-		unhandle(am);/// unhandle any teams that were added during the match
+//		unhandle(am);/// unhandle any teams that were added during the match
 		Arena arena = allarenas.get(am.getArena().getName());
 		if (arena != null)
 			amq.add(arena,shouldStart(arena)); /// add it back into the queue
@@ -236,8 +212,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	public void updateArena(Arena arena) {
 		allarenas.put(arena.getName(), arena);
 		if (amq.removeArena(arena) != null){ /// if its not being used
-			amq.add(arena,shouldStart(arena));
-		}
+			amq.add(arena,shouldStart(arena));}
 	}
 
 	public void addArena(Arena arena) {
@@ -252,26 +227,15 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	 * @param Add the TeamQueueing object to the queue
 	 * @return
 	 */
-	public QueueResult wantsToJoin(TeamQObject tqo) {
+	public JoinResult wantsToJoin(TeamJoinObject tqo) {
 		/// Can they join an existing Game
 		if (joinExistingMatch(tqo)){
-			QueueResult qr = new QueueResult();
-			qr.status = QueueResult.QueueStatus.ADDED_TO_EXISTING_MATCH;
+			JoinResult qr = new JoinResult();
+			qr.status = JoinResult.JoinStatus.ADDED_TO_EXISTING_MATCH;
 			return qr;
 		}
-
-		/// can they join the queue
-		QueueResult qr = amq.add(tqo, shouldStart(tqo.getMatchParams()));
-		if (qr != null){
-			boolean hasLobby = tqo.getMatchParams().hasLobby();
-			/// They have entered the queue
-			for (ArenaTeam at: tqo.getTeams()){
-				if (hasLobby)
-					lobbies.joinLobby(tqo.getMatchParams().getType(), at);
-				enteredQueue(tqo.getMatchParams(), at, qr);
-			}
-		}
-		return qr;
+		JoinResult jr = sc.join(tqo, shouldStart(tqo.getMatchParams()));
+		return jr;
 	}
 
 	private void callEvent(BAEvent event){
@@ -295,7 +259,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	}
 
 
-	private boolean joinExistingMatch(TeamQObject tqo) {
+	private boolean joinExistingMatch(TeamJoinObject tqo) {
 		if (unfilled_matches.isEmpty()){
 			return false;}
 		MatchParams params = tqo.getMatchParams();
@@ -332,32 +296,19 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 
 	public boolean isInQue(ArenaPlayer p) {return amq.isInQue(p);}
 
-	public QueueResult getCurrentQuePos(ArenaPlayer p) {return amq.getQueuePos(p);}
+	public JoinResult getCurrentQuePos(ArenaPlayer p) {return amq.getQueuePos(p);}
 
 	/**
 	 * Remove the player from the queue
 	 * @param player
 	 * @return The ParamTeamPair object if the player was found.  Otherwise returns null
 	 */
-	public ParamTeamPair removeFromQue(ArenaPlayer p) {
-		ArenaTeam t = TeamController.getTeam(p);
-		ParamTeamPair ptp = removeFromQue(t);
-		if (t == null){
-			unhandle(p,null, ptp != null ? ptp.q : null);
-			return null;
-		}
-		return ptp;
+	public ParamTeamPair removeFromQue(ArenaPlayer player) {
+		return amq.removeFromQue(player);
 	}
 
-	public ParamTeamPair removeFromQue(ArenaTeam t) {
-		TeamController.removeTeamHandler(t, this);
-		ParamTeamPair ptp = amq.removeFromQue(t);
-		MatchParams mp = null;
-		if (ptp != null){
-			mp = ptp.q;
-		}
-		unhandle(t,mp);
-		return ptp;
+	public ParamTeamPair removeFromQue(ArenaTeam team) {
+		return amq.removeFromQue(team);
 	}
 
 	public void addMatchup(Matchup m) {amq.addMatchup(m, shouldStart(m.getMatchParams()));}
@@ -448,13 +399,14 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		return reasons;
 	}
 
-	/**
-	 * We dont care if they leave queues
-	 */
-	@Override
-	public boolean canLeave(ArenaPlayer p) {
-		return true;
-	}
+//	/**
+//	 * We dont care if they leave queues
+//	 */
+//	@Override
+//	public boolean canLeave(ArenaPlayer p) {
+//		return true;
+//	}
+
 	public boolean hasArenaSize(int i) {return getArenaBySize(i) != null;}
 	public Arena getArenaBySize(int i) {
 		for (Arena a : allarenas.values()){
@@ -504,18 +456,18 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 		}
 	}
 
-	/**
-	 * If they are in a queue, take them out
-	 */
-	public boolean leave(ArenaPlayer p) {
-		ParamTeamPair ptp = removeFromQue(p);
-		if (ptp != null){
-			unhandle(p,ptp.team,ptp.q);
-			ptp.team.sendMessage("&cYour team has left the queue b/c &6"+p.getDisplayName()+"c has left");
-			return true;
-		}
-		return false;
-	}
+//	/**
+//	 * If they are in a queue, take them out
+//	 */
+//	public boolean leave(ArenaPlayer p) {
+//		ParamTeamPair ptp = removeFromQue(p);
+//		if (ptp != null){
+////			unhandle(p,ptp.team,ptp.q);
+//			ptp.team.sendMessage("&cYour team has left the queue b/c &6"+p.getDisplayName()+"c has left");
+//			return true;
+//		}
+//		return false;
+//	}
 
 	public boolean cancelMatch(Arena arena) {
 		synchronized(running_matches){
@@ -671,11 +623,12 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	public Collection<ArenaTeam> purgeQueue() {
 		signController.clearQueues();
 		Collection<ArenaTeam> teams = amq.purgeQueue();
-		TeamController.removeTeams(teams, this);
-		for (ArenaTeam t: teams){
-			unhandle(t);
-			t.sendMessage("&cYou have been removed from the queue");
-		}
+		amq.purgeQueue();
+//		TeamController.removeTeams(teams, this);
+//		for (ArenaTeam t: teams){
+//			unhandle(t);
+//			t.sendMessage("&cYou have been removed from the queue");
+//		}
 		return teams;
 	}
 
@@ -729,22 +682,6 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 	}
 
 	@ArenaEventHandler
-	public void onPlayerChangeWorld(PlayerTeleportEvent event){
-		if (event.isCancelled())
-			return;
-		if (event.getFrom().getWorld().getUID() != event.getTo().getWorld().getUID()){
-			ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
-			ParamTeamPair ptp = amq.removeFromQue(ap);
-			if (ptp != null){
-				unhandle(ptp.team,ptp.q);
-				ptp.team.sendMessage("&cYou have been removed from the queue for changing worlds");
-			} else {
-				unhandle(ap,null,null);
-			}
-		}
-	}
-
-	@ArenaEventHandler
 	public void onPlayerInteract(PlayerInteractEvent event){
 		if (event.isCancelled() || !Defaults.ENABLE_PLAYER_READY_BLOCK)
 			return;
@@ -757,7 +694,7 @@ public class BattleArenaController implements Runnable, TeamHandler, ArenaListen
 			final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
 			if (ap.isReady()) /// they are already ready
 				return;
-			QueueResult qtp = amq.getQueuePos(ap);
+			JoinResult qtp = amq.getQueuePos(ap);
 			if (qtp == null){
 				return;}
 			final Action action = event.getAction();

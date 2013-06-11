@@ -11,6 +11,7 @@ import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.CaseInsensitiveMap;
 
 
@@ -56,6 +57,15 @@ public class ParamController {
 	 */
 	public static MatchParams getMatchParams(String type){
 		return types.get(type);
+	}
+
+	/**
+	 * Return a copy of the found matchparams
+	 * @param type
+	 * @return
+	 */
+	public static MatchParams getMatchParamCopy(ArenaType type){
+		return getMatchParamCopy(type.getName());
 	}
 
 	/**

@@ -39,7 +39,7 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.queues.TeamQObject;
+import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
@@ -122,7 +122,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		Player[] online = ServerUtil.getOnlinePlayers();
 		for (Player p: online){
 			ArenaTeam t = TeamController.createTeam(BattleArena.toArenaPlayer(p));
-			TeamQObject tqo = new TeamQObject(t,eventParams,null);
+			TeamJoinObject tqo = new TeamJoinObject(t,eventParams,null);
 			this.joining(tqo);
 		}
 	}
@@ -285,7 +285,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	 * @param team that is joining
 	 * @return where the team ended up
 	 */
-	public TeamJoinResult joining(TeamQObject tqo){
+	public TeamJoinResult joining(TeamJoinObject tqo){
 		TeamJoinResult tjr = null;
 		ArenaTeam team = tqo.getTeam();
 		if (joinHandler == null)

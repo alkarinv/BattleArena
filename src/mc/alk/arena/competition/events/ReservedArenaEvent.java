@@ -19,7 +19,7 @@ import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
-import mc.alk.arena.objects.queues.TeamQObject;
+import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
@@ -120,7 +120,7 @@ public class ReservedArenaEvent extends Event {
 	}
 
 	@Override
-	public TeamJoinResult joining(TeamQObject tqo){
+	public TeamJoinResult joining(TeamJoinObject tqo){
 		TeamJoinResult tjr = super.joining(tqo);
 		switch(tjr.getEventType()){
 		case ADDED:
@@ -203,14 +203,12 @@ public class ReservedArenaEvent extends Event {
 	}
 
 	@Override
-	public Location getSpawn(int index, LocationType type, boolean random) {
-		// TODO Auto-generated method stub
+	public Location getSpawn(int index, boolean random) {
 		return null;
 	}
 
 	@Override
-	public Location getSpawn(ArenaPlayer player, LocationType type, boolean random) {
-		// TODO Auto-generated method stub
+	public Location getSpawn(ArenaPlayer player, boolean random) {
 		return null;
 	}
 

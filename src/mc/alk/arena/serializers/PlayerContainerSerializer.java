@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import mc.alk.arena.controllers.LobbyController;
-import mc.alk.arena.controllers.containers.LobbyContainer;
+import mc.alk.arena.controllers.containers.LobbyWRContainer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.SerializerUtil;
 import mc.alk.arena.util.Util;
@@ -34,7 +34,7 @@ public class PlayerContainerSerializer extends BaseConfig{
 	public void save(){
 		ConfigurationSection main = config.createSection("lobbies");
 		Util.printStackTrace();
-		for (LobbyContainer lobby: LobbyController.getLobbies()){
+		for (LobbyWRContainer lobby: LobbyController.getLobbies()){
 			HashMap<String, Object> amap = new HashMap<String, Object>();
 			/// Spawn locations
 			List<Location> locs = lobby.getSpawns();

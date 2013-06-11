@@ -18,7 +18,6 @@ import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.competition.InArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
-import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
@@ -27,6 +26,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.CommandUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 
@@ -85,7 +85,8 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 		teams.remove(team);
 	}
 
-	protected boolean teamJoining(ArenaTeam team){
+	public boolean teamJoining(ArenaTeam team){
+		Log.debug("teamJoining  " + team.getId() +"   this="+this.displayName);
 		teams.add(team);
 		teamIndexes.put(team, teams.size());
 		players.addAll(team.getPlayers());
@@ -166,7 +167,7 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	}
 
 	@Override
-	public Location getSpawn(int index, LocationType type, boolean random) {
+	public Location getSpawn(int index, boolean random) {
 		if (random){
 			return spawns.get(r.nextInt(spawns.size()));
 		} else{
@@ -175,7 +176,7 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	}
 
 	@Override
-	public Location getSpawn(ArenaPlayer player, LocationType type, boolean random) {
+	public Location getSpawn(ArenaPlayer player, boolean random) {
 		return oldLocs.get(player);
 	}
 

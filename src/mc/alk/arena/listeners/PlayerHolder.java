@@ -35,9 +35,9 @@ public interface PlayerHolder extends Listener, ArenaListener{
 
 	public void callEvent(BAEvent event);
 
-	public Location getSpawn(int index, LocationType type, boolean random);
+	public Location getSpawn(int index, boolean random);
 
-	public Location getSpawn(ArenaPlayer player, LocationType type, boolean random);
+	public Location getSpawn(ArenaPlayer player, boolean random);
 
 	public LocationType getLocationType();
 

@@ -82,12 +82,12 @@ public class BlankCompetition extends Competition{
 	}
 
 	@Override
-	public Location getSpawn(int index, LocationType type, boolean random) {
+	public Location getSpawn(int index,  boolean random) {
 		return null;
 	}
 
 	@Override
-	public Location getSpawn(ArenaPlayer player, LocationType type, boolean random) {
+	public Location getSpawn(ArenaPlayer player, boolean random) {
 		return null;
 	}
 

@@ -25,7 +25,7 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
-import mc.alk.arena.objects.queues.TeamQObject;
+import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
@@ -292,7 +292,7 @@ public class EventExecutor extends BAExecutor{
 		/// Check fee
 		if (!checkAndRemoveFee(sq, t)){
 			return false;}
-		TeamQObject tqo = new TeamQObject(t,sq,jp);
+		TeamJoinObject tqo = new TeamJoinObject(t,sq,jp);
 
 		/// Finally actually join the event
 		event.joining(tqo);

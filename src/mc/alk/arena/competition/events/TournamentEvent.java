@@ -440,25 +440,21 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 
 	@Override
 	public MatchState getMatchState() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean isHandled(ArenaPlayer player) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public Location getSpawn(int index, LocationType type, boolean random) {
-		// TODO Auto-generated method stub
+	public Location getSpawn(int index, boolean random) {
 		return null;
 	}
 
 	@Override
-	public Location getSpawn(ArenaPlayer player, LocationType type, boolean random) {
-		// TODO Auto-generated method stub
+	public Location getSpawn(ArenaPlayer player, boolean random) {
 		return null;
 	}
 

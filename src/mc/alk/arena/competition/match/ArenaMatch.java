@@ -22,7 +22,6 @@ import mc.alk.arena.events.teams.TeamDeathEvent;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
@@ -78,7 +77,7 @@ public class ArenaMatch extends Match {
 		super(arena, mp);
 	}
 
-	@ArenaEventHandler(priority=EventPriority.HIGH)
+	@ArenaEventHandler(bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
 	public void onPlayerQuit(PlayerQuitEvent event){
 		/// If they are just in the arena waiting for match to start, or they havent joined yet
 		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL ||
@@ -93,7 +92,7 @@ public class ArenaMatch extends Match {
 		checkAndHandleIfTeamDead(t);
 	}
 
-	@ArenaEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGH)
+	@ArenaEventHandler(suppressCastWarnings=true,bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
 	public void onPlayerDeath(PlayerDeathEvent event, final ArenaPlayer target){
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE ||
 				!insideArena.contains(target.getName())){
@@ -115,7 +114,7 @@ public class ArenaMatch extends Match {
 		}
 	}
 
-	@ArenaEventHandler(priority=EventPriority.HIGH)
+	@ArenaEventHandler(bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
 	public void onPlayerDeath(ArenaPlayerDeathEvent event){
 		final ArenaPlayer target = event.getPlayer();
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE ||
@@ -371,7 +370,8 @@ public class ArenaMatch extends Match {
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerMove(PlayerMoveEvent event){
-		if (arena.hasRegion() && tops.hasInArenaOrOptionAt(state,TransitionOption.WGNOLEAVE) && WorldGuardController.hasWorldGuard()){
+		if (!event.isCancelled() && arena.hasRegion() &&
+				tops.hasInArenaOrOptionAt(state,TransitionOption.WGNOLEAVE) && WorldGuardController.hasWorldGuard()){
 			/// Did we actually even move
 			if (event.getFrom().getBlockX() != event.getTo().getBlockX()
 					|| event.getFrom().getBlockY() != event.getTo().getBlockY()
@@ -440,7 +440,7 @@ public class ArenaMatch extends Match {
 		Integer id = respawnTimer.remove(ap.getName());
 		MatchTransitions tops = am.getParams().getTransitionOptions();
 		Bukkit.getScheduler().cancelTask(id);
-		Location loc = am.getSpawn(am.indexOf(am.getTeam(ap)),LocationType.ANY, tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
+		Location loc = am.getSpawn(am.indexOf(am.getTeam(ap)), tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
 		TeleportController.teleport(ap.getPlayer(), loc);
 	}
 

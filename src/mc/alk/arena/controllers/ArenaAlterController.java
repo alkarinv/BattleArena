@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.containers.LobbyWRContainer;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -94,6 +95,7 @@ public class ArenaAlterController {
 		changeLobbySpawn(sender,params,ac,changetype,value,otherOptions);
 		return true;
 	}
+
 	public static boolean alterArena(CommandSender sender, MatchParams params, Arena arena, String[] args) {
 		if (args.length < 3){
 			showAlterHelp(sender);
@@ -267,6 +269,11 @@ public class ArenaAlterController {
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}
+		MatchParams mp = ParamController.getMatchParamCopy(arena.getArenaType());
+		if (mp == null){
+			throw new IllegalStateException("MatchParams for " + arena.getArenaType() +" could not be found");}
+		if (arena.getWaitroom() == null){
+			arena.setWaitRoom(new LobbyWRContainer(mp));}
 		arena.setWaitRoomSpawnLoc(locindex-1,loc);
 		ac.addArena(arena);
 		return sendMessage(sender,"&2waitroom &6" + locindex +"&2 set to location=&6" + Util.getLocString(loc));

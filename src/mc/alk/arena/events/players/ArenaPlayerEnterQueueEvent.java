@@ -1,14 +1,14 @@
 package mc.alk.arena.events.players;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.pairs.QueueResult;
+import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
 public class ArenaPlayerEnterQueueEvent extends ArenaPlayerEvent{
 	final ArenaTeam team;
-	QueueResult result;
+	JoinResult result;
 
-	public ArenaPlayerEnterQueueEvent(ArenaPlayer player, ArenaTeam team, QueueResult queueResult) {
+	public ArenaPlayerEnterQueueEvent(ArenaPlayer player, ArenaTeam team, JoinResult queueResult) {
 		super(player);
 		this.team = team;
 		this.result = queueResult;
@@ -17,7 +17,7 @@ public class ArenaPlayerEnterQueueEvent extends ArenaPlayerEvent{
 	public ArenaTeam getTeam() {
 		return team;
 	}
-	public QueueResult getQueueResult(){
+	public JoinResult getQueueResult(){
 		return result;
 	}
 }

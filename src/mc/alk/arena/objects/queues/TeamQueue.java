@@ -11,11 +11,11 @@ import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.pairs.QueueResult;
+import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
 
-public class TeamQueue extends PriorityQueue<QueueObject>{
+public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollection{
 	private static final long serialVersionUID = 1L;
 	final MatchParams mp;
 
@@ -64,6 +64,13 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		return null;
 	}
 
+
+	@Override
+	public boolean remove(QueueObject queueObject) {
+		return super.remove(queueObject);
+	}
+
+
 	public synchronized int indexOf(ArenaPlayer p){
 		int i=0;
 		for (QueueObject t: this){
@@ -74,11 +81,11 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		return -1;
 	}
 
-	public synchronized QueueResult getPos(ArenaPlayer p) {
+	public synchronized JoinResult getPos(ArenaPlayer p) {
 		int i=0;
 		for (QueueObject t: this){
 			if (t.hasMember(p))
-				return new QueueResult(null,getMatchParams(),i,getNPlayers(),t.getTeam(p), this.size());
+				return new JoinResult(null,getMatchParams(),i,getNPlayers(),t.getTeam(p), this.size());
 			i++;
 		}
 		return null;
@@ -124,4 +131,5 @@ public class TeamQueue extends PriorityQueue<QueueObject>{
 		}
 		return players;
 	}
+
 }

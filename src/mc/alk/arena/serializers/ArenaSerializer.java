@@ -12,6 +12,7 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
@@ -250,7 +251,9 @@ public class ArenaSerializer extends BaseConfig{
 		locs = SerializerUtil.parseLocations(loccs);
 		if (locs != null){
 			for (Integer i: locs.keySet()){
-				arena.setWaitRoomSpawnLoc(i, locs.get(i));}
+//				arena.setWaitRoomSpawnLoc(i, locs.get(i));
+				LobbyController.addWaitRoom(arena, i, locs.get(i));
+			}
 		}
 
 		/// Item/mob/group spawns
@@ -334,8 +337,13 @@ public class ArenaSerializer extends BaseConfig{
 				}
 
 				/// Wait room spawns
-				mlocs = arena.getWaitRoomSpawnLocs();
-				if (mlocs!= null){
+				List<Location> llocs = arena.getWaitRoomSpawnLocs();
+				if (llocs!= null){
+					mlocs = new HashMap<Integer,Location>();
+					for (int i=0;i<llocs.size();i++){
+						if (llocs.get(i) != null)
+							mlocs.put(i, llocs.get(i));
+					}
 					HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
 					amap.put("waitRoomLocations", locations);
 				}

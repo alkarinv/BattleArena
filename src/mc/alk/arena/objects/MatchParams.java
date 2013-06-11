@@ -191,4 +191,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		return this.getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY);
 	}
 
+	public boolean hasQueue() {
+		return true;
+	}
+
 }

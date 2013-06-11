@@ -82,7 +82,8 @@ public class Defaults {
 	public static boolean ITEMS_UNSAFE_ENCHANTMENTS = false;
 
     /// DEBUG OPTIONS
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
+	public static boolean DEBUG_MSGS = false;
 	public static final boolean DEBUG_TRACE = false;
 	public static final boolean DEBUG_EVENTS = false;
 	public static final boolean DEBUG_TEVENTS = false;

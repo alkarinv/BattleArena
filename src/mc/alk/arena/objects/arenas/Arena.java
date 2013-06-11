@@ -12,6 +12,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.SpawnController;
 import mc.alk.arena.controllers.WorldGuardController;
+import mc.alk.arena.controllers.containers.LobbyWRContainer;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -37,7 +38,7 @@ public class Arena implements ArenaListener {
 	protected ArenaParams ap; /// Size and arena type info
 
 	protected TreeMap<Integer,Location> locs = null; /// Team spawn Locations
-	protected TreeMap<Integer,Location> wrlocs = null; /// wait room spawn locations
+
 	protected Location vloc = null;
 	/// If this is not null, this is where distance will be based off of, otherwise it's an area around the spawns
 	protected Location joinloc = null;
@@ -49,6 +50,7 @@ public class Arena implements ArenaListener {
 	protected SpawnController spawnController = null;
 
 	protected Match match = null;
+	protected LobbyWRContainer waitroom;
 
 	@Persist
 	@Deprecated
@@ -309,11 +311,7 @@ public class Arena implements ArenaListener {
 	 * @return
 	 */
 	public Location getWaitRoomSpawnLoc(int index){
-		if (wrlocs == null || wrlocs.isEmpty())
-			return null;
-		if (index >= wrlocs.size())
-			index %= wrlocs.size();
-		return wrlocs.get(index);
+		return waitroom.getSpawn(index,false);
 	}
 
 	/**
@@ -331,9 +329,7 @@ public class Arena implements ArenaListener {
 	 * @return
 	 */
 	public Location getRandomWaitRoomSpawnLoc(){
-		if (wrlocs == null)
-			return null;
-		return wrlocs.get(rand.nextInt(wrlocs.size()));
+		return waitroom.getSpawn(-1,true);
 	}
 
 	/**
@@ -355,9 +351,7 @@ public class Arena implements ArenaListener {
 	 * @param loc
 	 */
 	public void setWaitRoomSpawnLoc(int index, Location loc) {
-		if (wrlocs == null){
-			wrlocs = new TreeMap<Integer,Location>();}
-		wrlocs.put(index,loc);
+		waitroom.addSpawn(index, loc);
 	}
 
 	/**
@@ -408,7 +402,7 @@ public class Arena implements ArenaListener {
 	 * Return the waitroom spawn locations
 	 * @return
 	 */
-	public Map<Integer,Location> getWaitRoomSpawnLocs(){return wrlocs;}
+	public List<Location> getWaitRoomSpawnLocs(){return waitroom != null ? waitroom.getSpawns() : null;}
 
 	//	public Map<Integer, ItemSpawn> getItemSpawns() {return spawnsGroups;}
 
@@ -611,11 +605,11 @@ public class Arena implements ArenaListener {
 	 */
 	public String getWaitroomLocationString(){
 		StringBuilder sb = new StringBuilder();
-		if (wrlocs == null)
+		if (waitroom == null)
 			return sb.toString();
-		for (Integer i: wrlocs.keySet() ){
-			Location l = wrlocs.get(i);
-			if (l != null) sb.append("["+(i+1)+":"+Util.getLocString(l)+"] ");
+		List<Location> locs = waitroom.getSpawns();
+		for (int i=0;i<locs.size(); i++ ){
+			if (locs.get(i) != null) sb.append("["+(i+1)+":"+Util.getLocString(locs.get(i))+"] ");
 		}
 		return sb.toString();
 	}
@@ -633,7 +627,7 @@ public class Arena implements ArenaListener {
 		final MatchTransitions tops = matchParams.getTransitionOptions();
 		if (tops == null)
 			return true;
-		if ((wrlocs == null || wrlocs.isEmpty()) && tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM))
+		if ((waitroom == null || !waitroom.hasSpawns()) && tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM))
 			return false;
 		if (jp == null)
 			return true;
@@ -671,7 +665,7 @@ public class Arena implements ArenaListener {
 		final MatchTransitions tops = matchParams.getTransitionOptions();
 		if (tops != null){
 			final boolean mo = tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM);
-			if (mo && (wrlocs == null || wrlocs.isEmpty()))
+			if (mo && (waitroom == null || !waitroom.hasSpawns()))
 				reasons.add("Needs a waitroom but none has been provided");
 		}
 		if (jp == null)
@@ -752,5 +746,13 @@ public class Arena implements ArenaListener {
 		return pylamoRegion;
 	}
 
+
+	public void setWaitRoom(LobbyWRContainer waitroom) {
+		this.waitroom = waitroom;
+	}
+
+	public LobbyWRContainer getWaitroom() {
+		return waitroom;
+	}
 
 }

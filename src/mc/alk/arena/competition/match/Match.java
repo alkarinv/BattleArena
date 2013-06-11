@@ -28,7 +28,7 @@ import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
-import mc.alk.arena.controllers.containers.LobbyContainer;
+import mc.alk.arena.controllers.containers.LobbyWRContainer;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
 import mc.alk.arena.controllers.messaging.MatchMessager;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
@@ -68,7 +68,7 @@ import mc.alk.arena.objects.messaging.Channel.ServerChannel;
 import mc.alk.arena.objects.modules.ArenaModule;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.queues.TeamQObject;
+import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
@@ -250,7 +250,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		scoreboard.addObjective(defaultObjective);
 		defaultObjective.setScoreBoard(scoreboard);
 
-		LobbyContainer lc = LobbyController.getLobby(params.getType());
+		LobbyWRContainer lc = LobbyController.getLobby(params.getType());
 		if (lc != null){
 			insideArena.addAll(lc.getInsidePlayers());
 		}
@@ -850,7 +850,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 	public void onJoin(ArenaTeam team) {
 		if (joinHandler != null){
-			TeamQObject tqo = new TeamQObject(team,params,null);
+			TeamJoinObject tqo = new TeamJoinObject(team,params,null);
 			joinHandler.joiningTeam(tqo);
 		} else {
 			addTeam(team);
@@ -1475,26 +1475,36 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			}
 		}
 	}
-
+//
+//	@Override
+//	public Location getSpawn(int index, LocationType type, boolean random) {
+//
+//		switch(type){
+//		case ARENA: return this.getTeamSpawn(index, random);
+//		case WAITROOM: return this.getWaitRoomSpawn(index, random);
+//		case LOBBY: return LobbyController.getLobbySpawn(index, params.getType(), random);
+//		default:
+//			break;
+//		}
+//		return null;
+//	}
+//	@Override
+//	public Location getSpawn(ArenaPlayer player, LocationType type, boolean random) {
+//		switch(type){
+//		case HOME: return oldlocs.get(player.getName());
+//		default:
+//			break;
+//		}
+//		return null;
+//	}
 	@Override
-	public Location getSpawn(int index, LocationType type, boolean random) {
-
-		switch(type){
-		case ARENA: return this.getTeamSpawn(index, random);
-		case WAITROOM: return this.getWaitRoomSpawn(index, random);
-		case LOBBY: return LobbyController.getLobbySpawn(index, params.getType(), random);
-		default:
-			break;
-		}
-		return null;
+	public Location getSpawn(int index, boolean random) {
+		return this.getTeamSpawn(index, random);
 	}
+
 	@Override
-	public Location getSpawn(ArenaPlayer player, LocationType type, boolean random) {
-		switch(type){
-		case HOME: return oldlocs.get(player.getName());
-		default:
-			break;
-		}
+	public Location getSpawn(ArenaPlayer player, boolean random) {
+//		return this.getTeamSpawn(player, random);
 		return null;
 	}
 
@@ -1502,4 +1512,5 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public LocationType getLocationType() {
 		return LocationType.ARENA;
 	}
+
 }

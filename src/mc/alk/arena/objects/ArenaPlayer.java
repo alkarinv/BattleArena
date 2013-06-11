@@ -5,6 +5,8 @@ import java.util.Stack;
 
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.PermissionsUtil;
@@ -32,6 +34,8 @@ public class ArenaPlayer {
 	 */
 	Stack<Competition> competitions = new Stack<Competition>();
 
+	Arena arena;
+
 	/** Which class did the player pick during the competition */
 	ArenaClass chosenClass;
 
@@ -45,6 +49,8 @@ public class ArenaPlayer {
 
 	/** Has the player specified they are "ready" by clicking a block or sign */
 	boolean isReady;
+
+	JoinOptions jo;
 
 	public ArenaPlayer(Player player) {
 		this.player = player;
@@ -216,4 +222,19 @@ public class ArenaPlayer {
 			}
 		}
 	}
+
+	//	public Arena getArena() {
+	//		return arena;
+	//	}
+	//	public void setArena(Arena arena){
+	//		this.arena = arena;
+	//	}
+
+	public JoinOptions getJoinOptions() {
+		return jo;
+	}
+	public void setArena(JoinOptions options){
+		this.jo= options;
+	}
+
 }

@@ -4,7 +4,7 @@ import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
-import mc.alk.arena.objects.queues.TeamQObject;
+import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 
@@ -20,7 +20,7 @@ public class BinPackAdd extends TeamJoinHandler {
 		super(params, competition,clazz);
 	}
 	@Override
-	public TeamJoinResult joiningTeam(TeamQObject tqo) {
+	public TeamJoinResult joiningTeam(TeamJoinObject tqo) {
 		ArenaTeam team = tqo.getTeam();
 		if (team.size()==1){
 			ArenaTeam oldTeam = addToPreviouslyLeftTeam(team.getPlayers().iterator().next());

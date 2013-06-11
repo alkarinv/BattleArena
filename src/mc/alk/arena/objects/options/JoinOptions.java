@@ -221,4 +221,12 @@ public class JoinOptions extends ArenaSize{
 	public boolean isSpecific(){
 		return specific;
 	}
+
+	public boolean hasArena() {
+		return options.containsKey(JoinOption.ARENA);
+	}
+
+	public Arena getArena() {
+		return hasArena() ? (Arena) options.get(JoinOption.ARENA) : null;
+	}
 }

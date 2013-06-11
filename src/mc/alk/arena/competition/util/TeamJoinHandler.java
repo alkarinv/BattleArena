@@ -10,7 +10,7 @@ import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.queues.TeamQObject;
+import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
@@ -95,7 +95,7 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		pickupTeams.clear();
 	}
 
-	public abstract TeamJoinResult joiningTeam(TeamQObject tqo);
+	public abstract TeamJoinResult joiningTeam(TeamJoinObject tqo);
 
 	public boolean canLeave(ArenaPlayer p) {
 		return true;

@@ -33,13 +33,13 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 
-public class LobbyContainer extends PlayerContainer{
-	Set<ArenaPlayer> inLobby = Collections.synchronizedSet(new HashSet<ArenaPlayer>());
+public class LobbyWRContainer extends PlayerContainer{
+	Set<ArenaPlayer> inTheWRL = Collections.synchronizedSet(new HashSet<ArenaPlayer>());
 	Map<String, Long> userTime = new ConcurrentHashMap<String, Long>();
 	Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
 	Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
 
-	public LobbyContainer(MatchParams params){
+	public LobbyWRContainer(MatchParams params){
 		super();
 		this.params = params;
 		methodController.addListener(new BlockPlaceListener(this));
@@ -60,21 +60,22 @@ public class LobbyContainer extends PlayerContainer{
 		return true;
 	}
 
-	@ArenaEventHandler
-	public void onPlayerQuit(PlayerQuitEvent event){
-		ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
-		playerLeaving(ap);
-	}
 
 	@Override
 	public void playerLeaving(ArenaPlayer ap){
-		if (inLobby.contains(ap)){
+		if (inTheWRL.contains(ap)){
 			/// remove from lobby
 			doTransition(this, MatchState.ONCANCEL, ap, ap.getTeam(), true);
 			callEvent(new ArenaPlayerLeaveLobbyEvent(ap,null));
 			updateBukkitEvents(MatchState.ONLEAVE,ap);
 		}
 		super.playerLeaving(ap);
+	}
+
+	@ArenaEventHandler
+	public void onPlayerQuit(PlayerQuitEvent event){
+		ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
+		playerLeaving(ap);
 	}
 
 	@EventHandler
@@ -93,21 +94,21 @@ public class LobbyContainer extends PlayerContainer{
 		if (event.getArenaType() != this.getParams().getType()){
 			return;}
 		ArenaPlayer ap = event.getPlayer();
-		boolean inside = inLobby.contains(ap);
+		boolean inside = inTheWRL.contains(ap);
 		if (Defaults.DEBUG) Log.info(event.getPlayer().getName() + " onArenaPlayerTeleportEvent --- " + event.getArenaType() +"   " + event.getSrcLocation() +"  -- " +
 				event.getDestLocation() +"    inside="+inside);
 		if (event.getDirection() == TeleportDirection.IN){
-			if (!inside && event.getDestType() == LocationType.LOBBY){
+			if (!inside || ap.getCurLocation() == LocationType.HOME){
 				updateBukkitEvents(MatchState.ONENTER,event.getPlayer());
 				doTransition(this, MatchState.ONENTER, ap,event.getTeam(), false);
 				callEvent(new ArenaPlayerEnterLobbyEvent(ap, event.getTeam()));
-				ap.setCurLocation(LocationType.LOBBY);
-				inLobby.add(ap);
+				ap.setCurLocation(event.getDestType());
+				inTheWRL.add(ap);
 //				methodController.updateEvents(MatchState.ON, player)
 			} else if (inside){
 				/// they are going somewhere else, maybe into a game.
 				players.remove(ap);
-				inLobby.remove(ap);
+				inTheWRL.remove(ap);
 				updateBukkitEvents(MatchState.ONLEAVE,event.getPlayer());
 			}
 		} else if (inside && event.getDirection() == TeleportDirection.OUT){
@@ -118,7 +119,7 @@ public class LobbyContainer extends PlayerContainer{
 				oldLocs.remove(ap);
 			}
 			players.remove(ap);
-			inLobby.remove(ap);
+			inTheWRL.remove(ap);
 			ap.setCurLocation(LocationType.HOME);
 		}
 
@@ -137,19 +138,19 @@ public class LobbyContainer extends PlayerContainer{
 	}
 
 	public void cancel() {
-		synchronized(inLobby){
-			for (ArenaPlayer ap: inLobby){
+		synchronized(inTheWRL){
+			for (ArenaPlayer ap: inTheWRL){
 				doTransition(this, MatchState.ONCANCEL, ap, null, false);
 			}
 		}
 		players.clear();
-		inLobby.clear();
+		inTheWRL.clear();
 	}
 
 	public Collection<String> getInsidePlayers() {
 		HashSet<String> in = new HashSet<String>();
-		synchronized(inLobby){
-			for (ArenaPlayer ap: inLobby){
+		synchronized(inTheWRL){
+			for (ArenaPlayer ap: inTheWRL){
 				in.add(ap.getName());}
 		}
 		return in;
@@ -178,6 +179,10 @@ public class LobbyContainer extends PlayerContainer{
 //				readyClick(event);
 			}
 		}
+	}
+
+	public boolean hasSpawns() {
+		return !spawns.isEmpty();
 	}
 
 }
