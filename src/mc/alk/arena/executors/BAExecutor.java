@@ -366,6 +366,9 @@ public class BAExecutor extends CustomCommandExecutor {
 		try{
 			Competition comp = null;
 			while ((comp = p.getCompetition()) != null){
+				if (!comp.canLeave(p)){
+					return sendMessage(p, "&cYou can't leave the " + comp.getName() +" now");
+				}
 				p.removeCompetition(comp);
 				inSystem=true;
 				if (comp.leave(p)){
@@ -794,7 +797,14 @@ public class BAExecutor extends CustomCommandExecutor {
 				return true;
 			}
 		}
-
+		for (ArenaPlayer ap: d.getAllPlayers()){
+			if (!d.getOptions().matches(ap, d.getMatchParams())){
+				dc.cancelFormingDuel(d, "&4[Duel]&6" + player.getDisplayName()+" wasn't within " +
+						d.getMatchParams().getTransitionOptions().getOptions(MatchState.PREREQS).getWithinDistance()+
+						"&c blocks of an arena");
+				return true;
+			}
+		}
 		if (dc.accept(player) == null){
 			return true;
 		}
@@ -846,11 +856,21 @@ public class BAExecutor extends CustomCommandExecutor {
 			if (MoneyController.balance(player.getName()) < wager){
 				return sendMessage(player,"&4[Duel] You can't afford that wager!");}
 		}
-
+		if (!duelOptions.matches(player, mp)){
+			return sendMessage(player, "&cYou need to be within &6" +
+					mp.getTransitionOptions().getOptions(MatchState.PREREQS).getWithinDistance() +
+					"&c blocks of an arena");
+		}
 		/// Announce warnings
 		for (ArenaPlayer ap: duelOptions.getChallengedPlayers()){
 			if (!canJoin(ap)){
 				return sendMessage(player,"&4[Duel] &6"+ap.getDisplayName()+"&c is in a match, event, or queue");}
+			if (!duelOptions.matches(ap, mp)){
+				return sendMessage(player, "&6"+ap.getDisplayName() +"&c needs to be within " +
+						mp.getTransitionOptions().getOptions(MatchState.PREREQS).getWithinDistance() +
+						"&c blocks of an arena");
+			}
+
 			final MatchTransitions ops = mp.getTransitionOptions();
 			if (ops != null){
 				ArenaTeam t = TeamController.createTeam(ap);
@@ -882,6 +902,11 @@ public class BAExecutor extends CustomCommandExecutor {
 			t = TeamController.createTeam(player);
 		}
 		for (ArenaPlayer ap: t.getPlayers()){
+			if (!duelOptions.matches(ap, mp)){
+				return sendMessage(player, "&6"+ap.getDisplayName() +"&c needs to be within " +
+						mp.getTransitionOptions().getOptions(MatchState.PREREQS).getWithinDistance());
+			}
+
 			if (wager != null){
 				if (MoneyController.balance(ap.getName()) < wager){
 					return sendMessage(player,"&4[Duel] Your teammate &6"+ap.getDisplayName()+"&c can't afford that wager!");}

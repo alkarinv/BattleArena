@@ -136,6 +136,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			Collections.synchronizedSet(new HashSet<ArenaTeam>());
 	final Map<ArenaTeam,Integer> individualTeamTimers = Collections.synchronizedMap(new HashMap<ArenaTeam,Integer>());
 	boolean addedVictoryConditions = false;
+	double prizePoolMoney = 0;
 
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
@@ -748,6 +749,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		insideArena.remove(player.getName());
 		team.setAlive(player);
 		player.addCompetition(this);
+		if (tops.hasEntranceFee()){
+			prizePoolMoney += tops.getEntranceFee();}
 		arenaInterface.onJoin(player,team);
 	}
 
@@ -859,7 +862,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	 */
 	@Override
 	public boolean canLeave(ArenaPlayer p) {
-		return true;
+		return !tops.hasOptionAt(state, TransitionOption.NOLEAVE);
 	}
 
 	/**
@@ -910,6 +913,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	private void privateRemovedFromTeam(ArenaTeam team,ArenaPlayer ap){
 		if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" removedFromTeam("+team.getName()+":"+team.getId()+")"+ap.getName());
 		HeroesController.removedFromTeam(team, ap.getPlayer());
+		if (state.ordinal() < MatchState.ONSTART.ordinal() && tops.hasEntranceFee()){
+			this.prizePoolMoney -= tops.getEntranceFee();
+		}
 		scoreboard.removedFromTeam(team,ap);
 	}
 

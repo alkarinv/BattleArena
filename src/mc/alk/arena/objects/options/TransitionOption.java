@@ -91,6 +91,7 @@ public enum TransitionOption{
 	FLIGHTOFF("flightOff",false),					/// Disable flight
 	FLIGHTON("flightOn",false),						/// Enable flight
 	FLIGHTSPEED("flightSpeed",true),				/// =<float> Set flight speed
+	NOLEAVE("noLeave",false),						/// Prevent players from leaving the competition
 
 	/// onSpawn and onDeath only Options
 	RANDOMSPAWN ("randomSpawn",false), 				/// Spawn player at a random spawn location
@@ -112,6 +113,10 @@ public enum TransitionOption{
 	WGRESETREGION("wgResetRegion",false),			/// Reset the region to it's previous state (from when it was created)
 	WGNOLEAVE("wgNoLeave",false),					/// Disallow players from leaving the region
 	WGNOENTER("wgNoEnter", false),					/// Disallow players from entering the region
+
+	/// onVictory, onDrawers, onLosers only Options
+	POOLMONEY("poolMoney",true),					/// =<double>: give the players a percent of the money contributed by all players
+
 	;
 
 	final String name; /// Transition name
@@ -141,6 +146,7 @@ public enum TransitionOption{
 	public Object parseValue(String value) throws Exception{
 		/// Handle values for this option
 		switch(this){
+		case POOLMONEY:
 		case MONEY:
 			return Double.valueOf(value);
 		case LEVELRANGE:
