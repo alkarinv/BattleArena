@@ -253,7 +253,7 @@ public class BukkitScoreboard extends ArenaScoreboard{
 		if (t!=null){
 			Scoreboard mains = Bukkit.getScoreboardManager().getMainScoreboard();
 			Player p = Bukkit.getPlayerExact(player.getName());
-			if (p.isOnline()){
+			if (p!= null && p.isOnline()){
 				Scoreboard sb = oldBoards.get(p.getName());
 				if (sb != null){
 					p.setScoreboard(sb);

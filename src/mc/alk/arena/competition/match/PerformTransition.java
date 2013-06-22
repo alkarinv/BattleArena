@@ -14,18 +14,13 @@ import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.PylamoController;
-import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.TeleportLocationController;
 import mc.alk.arena.controllers.WorldGuardController;
-import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaClass;
-import mc.alk.arena.objects.ArenaLocation;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.TeleportDirection;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
@@ -39,7 +34,6 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
 
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
@@ -121,10 +115,10 @@ public class PerformTransition {
 		final TransitionOptions mo = tops.getOptions(transition);
 		if (mo == null){ /// no options
 			return true;}
-//		if (Defaults.DEBUG_TRANSITIONS) Log.debug("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
-//				" ops="+am.getParams().getTransitionOptions().getOptions(transition)
-//				+"  inArena="+am.isHandled(player) + "   clearInv=" +
-//				am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
+		if (Defaults.DEBUG_TRANSITIONS) Log.debug("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
+				" ops="+am.getParams().getTransitionOptions().getOptions(transition)
+				+"  inArena="+am.isHandled(player) + "   clearInv=" +
+				am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
 
 		final boolean teleportIn = mo.shouldTeleportIn();
 		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
@@ -242,37 +236,9 @@ public class PerformTransition {
 
 		/// Teleport out, need to do this at the end so that all the onCancel/onComplete options are completed first
 		if (teleportOut ){ /// Lets not teleport people out who are already out(like dead ppl)
-			Location loc = null;
-			final LocationType type;
-			if (mo.hasOption(TransitionOption.TELEPORTTO)){
-				loc = mo.getTeleportToLoc();
-				type = LocationType.CUSTOM;
-			} else {
-				type = LocationType.HOME;
-				loc = player.getOldLocation();
-			}
-			player.clearOldLocation();
-			if (loc == null){
-				Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
-			} else if (insideArena || !onlyInMatch){
-				TeleportController.teleportPlayer(p, loc, wipeInventory, true);
-			}
-//			LocationType type = LocationType.ARENA;
-			ArenaLocation src = new ArenaLocation(p.getLocation(),player.getCurLocation());
-			ArenaLocation dest = new ArenaLocation(loc,type);
-			ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
-					player,team,src,dest,TeleportDirection.OUT);
-//			ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(player,team,null,type,false);
-			am.callEvent(apte);
-			player.setReady(false);
-			/// If players are outside of the match, but need requirements, warn them
+			TeleportLocationController.teleportOut(am, team, player,mo, teamIndex,
+					insideArena, onlyInMatch, wipeInventory);
 		}
-//		else if (transition == MatchState.ONPRESTART && !insideArena){
-//			World w = am.getArena().getSpawnLoc(0).getWorld();
-//			/// Warn players about requirements
-//			if (!am.tops.playerReady(player, w)){
-//				MessageUtil.sendMessage(player, am.tops.getRequiredString(player,w,"&eRemember you still need the following"));}
-//		}
 		/// Restore their exp and items.. Has to happen AFTER teleport
 		boolean restoreAll = mo.hasOption(TransitionOption.RESTOREALL);
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREGAMEMODE)){ psc.restoreGamemode(player);}

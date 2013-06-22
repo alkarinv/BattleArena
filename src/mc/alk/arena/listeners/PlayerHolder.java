@@ -1,6 +1,7 @@
 package mc.alk.arena.listeners;
 
 import mc.alk.arena.events.BAEvent;
+import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.LocationType;
@@ -42,4 +43,21 @@ public interface PlayerHolder extends Listener, ArenaListener{
 	public LocationType getLocationType();
 
 	public ArenaTeam getTeam(ArenaPlayer player);
+
+	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte);
+
+	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte);
+
+	public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte);
+
+	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte);
+
+	public void onPreEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte);
+
+	public void onPostEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte);
+
+	public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte);
+
+	public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte);
+
 }

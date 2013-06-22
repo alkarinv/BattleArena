@@ -24,5 +24,6 @@ public interface MatchMessageHandler {
 	public String format(String text, Map<String, String> params);
 	public void sendAddedToTeam(ArenaTeam team, ArenaPlayer player);
 	public void sendTeamJoinedEvent(Channel serverChannel, ArenaTeam team);
+	void sendCountdownTillPrestart(Channel serverChannel, int seconds);
 
 }

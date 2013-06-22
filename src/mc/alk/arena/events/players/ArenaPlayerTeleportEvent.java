@@ -11,17 +11,17 @@ public class ArenaPlayerTeleportEvent extends ArenaPlayerEvent{
 	final ArenaTeam team;
 	final ArenaLocation src;
 	final ArenaLocation dest;
-	final TeleportDirection type;
+	final TeleportDirection direction;
 	final ArenaType arenaType;
 
 	public ArenaPlayerTeleportEvent(ArenaType at, ArenaPlayer arenaPlayer, ArenaTeam team,
-			ArenaLocation src, ArenaLocation dest, TeleportDirection type) {
+			ArenaLocation src, ArenaLocation dest, TeleportDirection direction) {
 		super(arenaPlayer);
 		this.arenaType = at;
 		this.team = team;
 		this.src = src;
 		this.dest = dest;
-		this.type = type;
+		this.direction = direction;
 	}
 
 	public ArenaType getArenaType(){
@@ -33,7 +33,7 @@ public class ArenaPlayerTeleportEvent extends ArenaPlayerEvent{
 	}
 
 	public TeleportDirection getDirection(){
-		return type;
+		return direction;
 	}
 
 	public LocationType getSrcType(){

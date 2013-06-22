@@ -6,6 +6,7 @@ import java.util.Stack;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.meta.PlayerMetaData;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -19,6 +20,9 @@ import org.bukkit.inventory.PlayerInventory;
 
 
 public class ArenaPlayer {
+	static int count = 0;
+
+	final int id=count++;
 
 	/** Player name, needed if Player is not available or null */
 	final String name;
@@ -55,6 +59,8 @@ public class ArenaPlayer {
 
 	JoinOptions jo;
 
+	PlayerMetaData meta = new PlayerMetaData();
+
 	public ArenaPlayer(Player player) {
 		this.player = player;
 		this.name = player.getName();
@@ -76,13 +82,12 @@ public class ArenaPlayer {
 		if (!(obj instanceof ArenaPlayer)) {
 			return false;}
 		if (obj == this) return true;
-		final ArenaPlayer o = (ArenaPlayer) obj;
-		return o.getName().equals(getName());
+		return ((ArenaPlayer)obj).id == this.id;
 	}
 
 	@Override
 	public int hashCode() {
-		return name.hashCode();
+		return id;
 	}
 
 	public Player getPlayer() {
@@ -234,18 +239,15 @@ public class ArenaPlayer {
 		}
 	}
 
-	//	public Arena getArena() {
-	//		return arena;
-	//	}
-	//	public void setArena(Arena arena){
-	//		this.arena = arena;
-	//	}
-
 	public JoinOptions getJoinOptions() {
 		return jo;
 	}
+
 	public void setArena(JoinOptions options){
 		this.jo= options;
 	}
 
+	public PlayerMetaData getMetaData(){
+		return meta;
+	}
 }

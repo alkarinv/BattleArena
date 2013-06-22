@@ -156,13 +156,13 @@ public class BTInterface {
 			aBTI.stopTracking(players);
 	}
 
-	@SuppressWarnings("deprecation")
 	public Integer getElo(ArenaTeam t) {
 		if (!isValid())
 			return new Integer((int) Defaults.DEFAULT_ELO);
 		Stat s = getRecord(ti,t);
-		return (int) (s == null ? Defaults.DEFAULT_ELO : s.getRanking());
+		return (int) (s == null ? Defaults.DEFAULT_ELO : s.getRating());
 	}
+
 	public Stat loadRecord(ArenaTeam team) {
 		if (!isValid()) return null;
 		return loadRecord(ti, team);
@@ -182,7 +182,6 @@ public class BTInterface {
 	}
 
 
-	@SuppressWarnings("deprecation")
 	public String getRankMessage(OfflinePlayer player) {
 		Stat stat = loadRecord(player);
 		if (stat == null){
@@ -190,7 +189,7 @@ public class BTInterface {
 		Integer rank = ti.getRank(player.getName());
 		if (rank == null)
 			rank = -1;
-		return "&eRank:&6"+rank+"&e (&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)&6["+stat.getRanking()+"]&e" +
+		return "&eRank:&6"+rank+"&e (&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)&6["+stat.getRating()+"]&e" +
 				". Highest &6["+ stat.getMaxRating()+"]&e Longest Streak &b"+stat.getMaxStreak();
 	}
 	public boolean setRating(OfflinePlayer player, Integer elo) {

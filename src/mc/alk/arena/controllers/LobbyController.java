@@ -7,6 +7,7 @@ import java.util.Map;
 import mc.alk.arena.controllers.containers.LobbyWRContainer;
 import mc.alk.arena.controllers.containers.PlayerContainer;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -38,7 +39,7 @@ public enum LobbyController {
 	private LobbyWRContainer getOrCreate(Arena arena) {
 		LobbyWRContainer lobby = waitrooms.get(arena);
 		if (lobby == null){
-			lobby = new LobbyWRContainer(ParamController.getMatchParamCopy(arena.getArenaType()));
+			lobby = new LobbyWRContainer(ParamController.getMatchParamCopy(arena.getArenaType()), LocationType.ARENA);
 			waitrooms.put(arena, lobby);
 			arena.setWaitRoom(lobby);
 		}
@@ -48,7 +49,7 @@ public enum LobbyController {
 	private LobbyWRContainer getOrCreate(ArenaType type) {
 		LobbyWRContainer lobby = lobbies.get(type);
 		if (lobby == null){
-			lobby = new LobbyWRContainer(ParamController.getMatchParamCopy(type));
+			lobby = new LobbyWRContainer(ParamController.getMatchParamCopy(type), LocationType.LOBBY);
 			lobbies.put(type, lobby);
 		}
 		return lobby;

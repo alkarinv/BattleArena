@@ -9,6 +9,7 @@ import java.util.Set;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -158,6 +159,8 @@ public abstract class TeamJoinHandler implements TeamHandler {
 	}
 
 	public boolean isFull() {
+		if (maxTeams == CompetitionSize.MAX || maxTeamSize == CompetitionSize.MAX)
+			return false;
 		/// Check to see if we have filled up our number of teams
 		if ( maxTeams > teams.size()){
 			return false;}

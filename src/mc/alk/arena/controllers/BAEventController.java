@@ -10,12 +10,10 @@ import java.util.Map;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.competition.events.ReservedArenaEvent;
 import mc.alk.arena.events.events.EventFinishedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
-import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
 
 import org.bukkit.Bukkit;
@@ -164,19 +162,6 @@ public class BAEventController implements Listener{
 		final String key = getKey(eventParams);
 		Map<EventState,List<Event>> events = allEvents.get(key);
 		return events != null ? new EnumMap<EventState,List<Event>>(events) : null;
-	}
-
-	public Event getEvent(Arena arena) {
-		for (Map<EventState,List<Event>> map : allEvents.values()){
-			for (List<Event> list: map.values()){
-				for (Event event: list){
-					if (event instanceof ReservedArenaEvent && ((ReservedArenaEvent)event).getArena().equals(arena)){
-						return event;
-					}
-				}
-			}
-		}
-		return null;
 	}
 
 	public boolean removeEvent(Event event){

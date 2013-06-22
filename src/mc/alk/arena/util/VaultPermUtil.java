@@ -23,7 +23,7 @@ public class VaultPermUtil {
 					getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
 			if (provider != null && provider.getProvider() != null) {
 				perm = provider.getProvider();
-			} else if (AnnouncementOptions.hc == null){
+			} else if (AnnouncementOptions.chatPlugin == null){
 				Log.info("[BattleArena] Vault Perms not detected");
 				return false;
 			}

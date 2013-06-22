@@ -119,7 +119,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 				MapOfTreeSet<String,RListener> lists2 = bel.getSpecificPlayerListener().getListeners();
 				String str = MessageUtil.joinBukkitPlayers(bel.getSpecificPlayerListener().getPlayers(),", ");
 				String has = bel.hasListeners() ? "&2true" : "&cfalse";
-				sendMessage(sender, "---- Event &e" + bel.getSpecificPlayerListener().getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
+				if (!lists2.isEmpty())
+					sendMessage(sender, "---- Event &e" + bel.getSpecificPlayerListener().getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
 				for (String p : lists2.keySet()){
 					if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
 						continue;
@@ -128,6 +129,20 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 						sendMessage(sender, "!!! "+rl.getPriority() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
 					}
 				}
+				lists2 = bel.getSpecificArenaPlayerListener().getListeners();
+				str = MessageUtil.joinBukkitPlayers(bel.getSpecificArenaPlayerListener().getPlayers(),", ");
+				has = bel.hasListeners() ? "&2true" : "&cfalse";
+				if (!lists2.isEmpty())
+					sendMessage(sender, "---- ArenaPlayerEvent &e" + bel.getSpecificArenaPlayerListener().getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
+				for (String p : lists2.keySet()){
+					if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
+						continue;
+					TreeSet<RListener> rls = lists2.get(p);
+					for (RListener rl : rls){
+						sendMessage(sender, "!!! "+rl.getPriority() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
+					}
+				}
+
 				EnumMap<EventPriority, List<RListener>> lists = bel.getMatchListener().getListeners();
 				for (EventPriority ep: lists.keySet()){
 					for (RListener rl : lists.get(ep)){

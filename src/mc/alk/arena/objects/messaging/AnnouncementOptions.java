@@ -8,11 +8,10 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.util.Log;
 import net.milkbowl.vault.chat.Chat;
 
-import com.dthielke.herochat.Herochat;
 public class AnnouncementOptions {
 
 	public enum AnnouncementOption{
-		ANNOUNCE, DONTANNOUNCE, SERVER, HEROCHAT;
+		ANNOUNCE, DONTANNOUNCE, SERVER, CHANNEL;
 
 		public static AnnouncementOption fromName(String str){
 			str = str.toUpperCase();
@@ -22,14 +21,14 @@ public class AnnouncementOptions {
 			} catch (Exception e){}
 			if (ao != null)
 				return ao;
-			if (str.toLowerCase().contains("hc"))
-				return AnnouncementOption.HEROCHAT;
+			if (str.contains("HC") || str.contains("HEROCHAT"))
+				return AnnouncementOption.CHANNEL;
 			return null;
 		}
 	}
 
 	static AnnouncementOptions defaultOptions;
-	public static Herochat hc = null;
+	public static ChatPlugin chatPlugin = null;
 	public static Chat chat = null;
 
 	Map<MatchState, Map<AnnouncementOption,Object>> matchOptions =
@@ -37,8 +36,8 @@ public class AnnouncementOptions {
 	Map<MatchState, Map<AnnouncementOption,Object>> eventOptions =
 			new EnumMap<MatchState, Map<AnnouncementOption,Object>>(MatchState.class);
 
-	public static void setHerochat(Herochat hc) {
-		AnnouncementOptions.hc = hc;
+	public static void setChatPlugin(ChatPlugin plugin) {
+		AnnouncementOptions.chatPlugin = plugin;
 	}
 	public static void setVaultChat(Chat chat) {
 		AnnouncementOptions.chat = chat;
@@ -51,17 +50,16 @@ public class AnnouncementOptions {
 			ops = new EnumMap<AnnouncementOption,Object>(AnnouncementOption.class);
 			options.put(ms, ops);
 		}
-		if (bo == AnnouncementOption.HEROCHAT){
-			if (hc == null){
-				Log.err(BattleArena.getPluginName()+"config.yml Announcement option herochat="+value+
-						", will be ignored as HeroChat plugin is not enabled. Defaulting to Server Announcement");
+		if (bo == AnnouncementOption.CHANNEL){
+			if (chatPlugin == null){
+				Log.err(BattleArena.getPluginName()+"config.yml Announcement option channel="+value+
+						", will be ignored as a Chat plugin is not enabled. Defaulting to Server Announcement");
 				ops.put(AnnouncementOption.SERVER, null);
 				return;
 			}
-
-			com.dthielke.herochat.Channel channel = Herochat.getChannelManager().getChannel(value);
+			Channel channel = chatPlugin.getChannel(value);
 			if (channel == null){
-				Log.err(BattleArena.getPluginName()+"config.yml Announcement option herochat="+value+
+				Log.err(BattleArena.getPluginName()+"config.yml Announcement option channel="+value+
 						", will be ignored as HeroChat channel " + value +" can not be found. Defaulting to Server Announcement");
 				ops.put(AnnouncementOption.SERVER, null);
 				return;
@@ -76,25 +74,25 @@ public class AnnouncementOptions {
 
 	public Channel getChannel(boolean match, MatchState state) {
 		Map<MatchState, Map<AnnouncementOption,Object>> options = match ? matchOptions : eventOptions;
-
-		Map<AnnouncementOption,Object> obj = options.get(state);
+		Map<AnnouncementOption,Object> ops = options.get(state);
 		/// Dont announce
-		if (obj == null || obj.containsKey(AnnouncementOption.DONTANNOUNCE))
+		if (ops == null || ops.containsKey(AnnouncementOption.DONTANNOUNCE))
 			return Channel.NullChannel;
 
-		/// Herochat option enabled
-		if (obj.containsKey(AnnouncementOption.HEROCHAT)){
-			String hcChannelName = (String) obj.get(AnnouncementOption.HEROCHAT);
-			if (hc == null){
-				Log.warn(BattleArena.getPluginName()+"Herochat is not enabled, ignoring config.yml announcement option herochat="+hcChannelName);
+
+		/// Channel option enabled
+		if (ops.containsKey(AnnouncementOption.CHANNEL)){
+			String hcChannelName = (String) ops.get(AnnouncementOption.CHANNEL);
+			if (chatPlugin == null){
+				Log.warn(BattleArena.getPluginName()+" channel plugin is not enabled, ignoring config.yml announcement option channel="+hcChannelName);
 				return Channel.ServerChannel;
 			}
-			com.dthielke.herochat.Channel channel = Herochat.getChannelManager().getChannel(hcChannelName);
+			Channel channel = chatPlugin.getChannel(hcChannelName);
 			if (channel == null){
-				Log.warn(BattleArena.getPluginName()+"Herochat channel not found!. ignoring config.yml announcement option herochat="+hcChannelName);
+				Log.warn(BattleArena.getPluginName()+" channel not found!. ignoring config.yml announcement option channel="+hcChannelName);
 				return Channel.ServerChannel;
 			} else {
-				return new HerochatChannel(channel);
+				return channel;
 			}
 		}
 		return Channel.ServerChannel;
@@ -107,6 +105,14 @@ public class AnnouncementOptions {
 //		System.out.println("## hasOption = " + matchOptions.containsKey(state) +"  " + state);
 		Map<MatchState, Map<AnnouncementOption,Object>> options = match ? matchOptions : eventOptions;
 		return options.containsKey(state);
+	}
+
+	public Map<MatchState, Map<AnnouncementOption, Object>> getMatchOptions() {
+		return matchOptions;
+	}
+
+	public Map<MatchState, Map<AnnouncementOption, Object>> getEventOptions() {
+		return eventOptions;
 	}
 
 

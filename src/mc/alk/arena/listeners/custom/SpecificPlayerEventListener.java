@@ -86,7 +86,6 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 		//		if (players != null && rl.isSpecificPlayerMethod()){
 		for (String player: players){
 			addSPListener(player, rl);}
-
 	}
 
 	/**
@@ -99,10 +98,8 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 	public synchronized void removeListener(RListener rl, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("    removing listener  player="+players+"   listener="+rl);
 
-		//		if (players != null && rl.isSpecificPlayerMethod()){
 		for (String player: players){
 			removeSPListener(player, rl);}
-		//		}
 	}
 
 	@Override

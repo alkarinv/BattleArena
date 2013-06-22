@@ -21,6 +21,8 @@ import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.TimeUtil;
+import mc.alk.arena.util.Util;
+import mc.alk.v1r6.util.Log;
 
 /**
  *
@@ -62,6 +64,8 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		if (serverChannel != Channel.NullChannel){
 			ops.addAll(serverMessage.getOptions());
 		}
+//		Util.printStackTrace();
+		Log.debug(serverChannel +" #### <--------------------------   " + serverMessage);
 
 		String msg = message.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), teams.size(), message, ops);
@@ -73,6 +77,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 			msgf.formatTeams(teams);
 			String newmsg = msgf.getFormattedMessage(message);
 			t.sendMessage(newmsg);
+			Log.debug(serverChannel +" 2222  <--------------------------   " + message +"   " + newmsg +"    " + t);
 		}
 
 		if (serverChannel != Channel.NullChannel){
@@ -224,5 +229,25 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		return MessageFormatter.replaceEach(text, searchList, replaceList);
 	}
 
+	@Override
+	public void sendCountdownTillPrestart(Channel serverChannel, int seconds) {
+		Util.printStackTrace();
+		Message message = getNodeMessage("event.countdownTillEvent");
+		Message serverMessage = getNodeMessage("event.server_countdownTillEvent");
+		Set<MessageOption> ops = message.getOptions();
+		if (serverChannel != Channel.NullChannel){
+			ops.addAll(serverMessage.getOptions());
+		}
+		String msg = message.getMessage();
+		Log.debug(serverChannel +" <--------------------------   " + msg);
+		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), ops.size(), 0, message, ops);
+		msgf.formatCommonOptions(null,seconds);
+		Log.debug(serverChannel +" 2222 <--------------------------   " + serverMessage);
+		if (serverChannel != Channel.NullChannel){
+			msg = msgf.getFormattedMessage(serverMessage);
+			Log.debug(serverChannel +" 3333 <--------------------------   " + msg);
+			serverChannel.broadcast(msg);
+		}
+	}
 
 }

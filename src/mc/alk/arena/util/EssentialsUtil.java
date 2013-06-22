@@ -45,8 +45,13 @@ public class EssentialsUtil {
 	}
 
 	public static boolean inJail(String playerName) {
-		User user = getUser(playerName);
-		return user.getJailTimeout() > System.currentTimeMillis();
+		try{
+			User user = getUser(playerName);
+			return user.getJailTimeout() > System.currentTimeMillis();
+		} catch(Exception e){
+			Log.printStackTrace(e);
+			return false;
+		}
 	}
 
 }

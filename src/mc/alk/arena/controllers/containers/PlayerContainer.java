@@ -14,12 +14,15 @@ import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.events.BAEvent;
+import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.competition.InArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.PlayerContainerState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -37,25 +40,37 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
+	public static final PlayerContainer HOMECONTAINER = new PlayerContainer(){
+		@Override
+		public LocationType getLocationType() {return LocationType.HOME;}
+		@Override
+		public ArenaTeam getTeam(ArenaPlayer player) {return null;}
+	};
+
 	protected String name;
+
 	protected String displayName;
 
+	protected MatchParams params;
+
+	PlayerContainerState state = PlayerContainerState.OPEN;
+
 	HashSet<String> disabledCommands = new HashSet<String>();
+
 	final MethodController methodController = new MethodController();
-	MatchParams params;
 
 	protected Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
 
-	protected Map<ArenaPlayer,Location> oldLocs = new ConcurrentHashMap<ArenaPlayer,Location>();
-
-	ArrayList<Location> spawns = new ArrayList<Location>();
+	protected ArrayList<Location> spawns = new ArrayList<Location>();
 
 	/** Our teams */
 	protected List<ArenaTeam> teams = Collections.synchronizedList(new ArrayList<ArenaTeam>());
 
 	/** our values for the team index, only used if the Team.getIndex is null*/
 	final Map<ArenaTeam,Integer> teamIndexes = new ConcurrentHashMap<ArenaTeam,Integer>();
+
 	Random r = new Random();
+
 	public PlayerContainer(){
 		methodController.addAllEvents(this);
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
@@ -177,7 +192,22 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 
 	@Override
 	public Location getSpawn(ArenaPlayer player, boolean random) {
-		return oldLocs.get(player);
+		return null;
+	}
+
+	/**
+	 * Set the spawn location for the team with the given index
+	 * @param index
+	 * @param loc
+	 */
+	public void setSpawnLoc(int index, Location loc){
+		if (spawns.size() > index){
+			spawns.set(index, loc);
+		} else if (spawns.size() == index){
+			spawns.add(loc);
+		} else {
+			throw new IllegalStateException("You must set the "+(spawns.size()+1) +" index first");
+		}
 	}
 
 	public List<Location> getSpawns(){
@@ -199,4 +229,42 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
+
+
+	@Override
+	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPreEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostEnter(ArenaPlayer player,ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	public void setContainerState(PlayerContainerState state) {
+		this.state = state;
+	}
+
+	public PlayerContainerState getContainerState() {
+		return this.state;
+	}
+
+	public boolean isOpen() {
+		return state == PlayerContainerState.OPEN;
+	}
+
 }

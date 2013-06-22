@@ -13,7 +13,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.util.Log;
 
 
 public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollection{
@@ -132,5 +131,4 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 		}
 		return players;
 	}
-
 }

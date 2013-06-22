@@ -64,7 +64,7 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 		EventParams ep = new EventParams(mp);
 		try {
 			HashSet<Integer> ignoreArgs = new HashSet<Integer>(Arrays.asList(1)); /// ignore the matchType argument
-			eoo = EventOpenOptions.parseOptions(args,ignoreArgs);
+			eoo = EventOpenOptions.parseOptions(args,ignoreArgs, ep);
 			event = new TournamentEvent(eventParams);
 			checkOpenOptions(event,ep , eoo);
 
@@ -111,11 +111,12 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 
 	@MCCommand(cmds={"status"}, usage="status", order=1)
 	public boolean eventStatus(CommandSender sender, EventParams eventParams, Arena arena, Integer round) {
-		Event event = controller.getEvent(arena);
-		if (event == null){
-			return sendMessage(sender, "&cNo event could be found using that arena!");}
-		StringBuilder sb = new StringBuilder(event.getStatus());
-		return sendMessage(sender,sb.toString());
+//		Event event = controller.getEvent(arena);
+//		if (event == null){
+//			return sendMessage(sender, "&cNo event could be found using that arena!");}
+//		StringBuilder sb = new StringBuilder(event.getStatus());
+//		return sendMessage(sender,sb.toString());
+		return true;
 	}
 
 	@MCCommand(cmds={"status"}, usage="status", order=2)

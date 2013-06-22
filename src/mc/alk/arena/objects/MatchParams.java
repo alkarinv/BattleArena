@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.controllers.LobbyController;
+import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.modules.ArenaModule;
@@ -203,6 +204,10 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	public boolean hasQueue() {
 		return true;
+	}
+
+	public GameManager getGameManager() {
+		return GameManager.getGameManager(this);
 	}
 
 }

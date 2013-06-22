@@ -13,7 +13,6 @@ import mc.alk.arena.Permissions;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
 
@@ -49,7 +48,6 @@ public class TeleportController implements Listener{
 
 	private static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
 		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
-		NotifierUtil.notify("tp", player.getName()+"  teleporting to loc=" + location +"   curloc="+player.getLocation() +"  online="+player.isOnline() +"  dead="+player.isDead());
 
 		if (!player.isOnline() || player.isDead()){
 			if (Defaults.DEBUG)Log.warn(BattleArena.getPluginName()+" Offline teleporting Player=" + player.getName() + " loc=" + location);

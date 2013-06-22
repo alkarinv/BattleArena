@@ -76,10 +76,11 @@ public class MethodController {
 	public void updateEvents(MatchState matchState, List<String> players) {
 		try {
 			Collection<Class<? extends Event>> keys = bukkitMethods.keySet();
-			if (keys==null)
-				return;
 			for (Class<? extends Event> event: keys){
 				updateEvent(matchState, players, event);}
+			Collection<Class<? extends BAEvent>> mkeys = matchMethods.keySet();
+			for (Class<? extends BAEvent> event: mkeys){
+				updateBAEvent(matchState, players, event);}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -102,7 +103,6 @@ public class MethodController {
 			e.printStackTrace();
 		}
 	}
-
 	private void updateEvent(MatchState matchState, Collection<String> players, final Class<? extends Event> event) {
 		final List<RListener> rls = bukkitMethods.get(event);
 		if (rls == null || rls.isEmpty()){
@@ -115,6 +115,47 @@ public class MethodController {
 					rl +",   " + players);
 			if (mem.getBeginState() == matchState){
 				BukkitEventHandler bel = getCreate(event,mem);
+				bel.addListener(rl,players);
+			} else if (mem.getEndState() == matchState || mem.getCancelState() == matchState) {
+				for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
+					BukkitEventHandler bel = ls.get(event);
+					if (bel != null){
+						bel.removeListener(rl, players);
+					}
+				}
+			}
+		}
+	}
+
+	private static BukkitEventHandler getCreateBA(Class<? extends BAEvent> event, ArenaEventMethod mem){
+		HashMap<Type,BukkitEventHandler> gels = bukkitListeners.get(mem.getBukkitPriority());
+		if (gels == null){
+			gels = new HashMap<Type,BukkitEventHandler>();
+			bukkitListeners.put(mem.getBukkitPriority(), gels);
+		}
+		BukkitEventHandler gel = gels.get(event);
+		if (Defaults.DEBUG_EVENTS) System.out.println("***************************** checking for " + event);
+
+		if (gel == null){
+			if (Defaults.DEBUG_EVENTS) System.out.println("***************************** making new gel for type " + event);
+			gel = new BukkitEventHandler(event,mem.getBukkitPriority(), mem.getPlayerMethod());
+			gels.put(event, gel);
+		}
+		return gel;
+	}
+
+	private void updateBAEvent(MatchState matchState, Collection<String> players, final Class<? extends BAEvent> event) {
+		final List<RListener> rls = matchMethods.get(event);
+		if (rls == null || rls.isEmpty()){
+			return;}
+		if (Defaults.DEBUG_EVENTS) System.out.println("updateBAEventListener "+  event.getSimpleName() +"    " + matchState);
+
+		for (RListener rl : rls){
+			ArenaEventMethod mem = rl.getMethod();
+			if (Defaults.DEBUG_EVENTS) System.out.println("  updateBAEventListener "+  event.getSimpleName() +"    " + matchState +":" +
+					rl +",   " + players);
+			if (mem.getBeginState() == matchState){
+				BukkitEventHandler bel = getCreateBA(event,mem);
 				bel.addListener(rl,players);
 			} else if (mem.getEndState() == matchState || mem.getCancelState() == matchState) {
 				for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
@@ -236,7 +277,9 @@ public class MethodController {
 						break;
 					}
 					Type t = m.getReturnType();
-					if (Player.class.isAssignableFrom((Class<?>) t) || HumanEntity.class.isAssignableFrom((Class<?>) t)){
+					if (Player.class.isAssignableFrom((Class<?>) t) ||
+							HumanEntity.class.isAssignableFrom((Class<?>) t) ||
+							ArenaPlayer.class.isAssignableFrom((Class<?>) t)){
 						playerMethods.add(m);
 						getPlayerMethod = m;
 					} else if (Entity.class.isAssignableFrom((Class<?>) t)){
@@ -300,7 +343,7 @@ public class MethodController {
 
 			List<ArenaEventMethod> mths = baEvent ? matchTypeMap.get(bukkitEvent) : bukkitTypeMap.get(bukkitEvent);
 			if (mths == null){
-				//				System.out.println("bukkitEvent !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " + bukkitEvent + "  " + getPlayerMethod);
+//				System.out.println("bukkitEvent !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " + bukkitEvent + "  " + getPlayerMethod);
 				mths = new ArrayList<ArenaEventMethod>();
 				if (baEvent){
 					matchTypeMap.put((Class<? extends BAEvent>) bukkitEvent, mths);

@@ -107,7 +107,7 @@ public class ArenaMatchQueue{
 	private synchronized JoinResult addToQueue(final QueueObject to, boolean checkStart) {
 		if (!ready_matches.isEmpty())
 			notifyAll();
-		TeamCollection tq = getTeamQ(to);
+		TeamCollection tq = getTeamQ(to.getMatchParams(), to.getJoinOptions().getArena());
 		tq.add(to);
 		/// return if we aren't going to check for a start (aka we already have too many matches running)
 		JoinResult qr;
@@ -193,6 +193,24 @@ public class ArenaMatchQueue{
 		notifyAll();
 	}
 
+	public void fillMatch(ArenaMatch arenaMatch) {
+		TeamJoinHandler jh = arenaMatch.getTeamJoinHandler();
+		MatchParams mp = arenaMatch.getParams();
+		TeamCollection tq = getTeamQ(mp, arenaMatch.getArena());
+		synchronized(tq){
+			for (QueueObject qo : tq){
+				if (! (qo instanceof TeamJoinObject)){
+					continue;}
+
+				if (mp.matches(qo.getMatchParams())){
+					jh.joiningTeam((TeamJoinObject) qo);
+				}
+				if (jh.isFull())
+					break;
+			}
+		}
+	}
+
 	/**
 	 * @param TeamQueue : Queue we are searching for matches
 	 * @param forceStart : whether we are trying to start a match that usually would need more players
@@ -201,7 +219,7 @@ public class ArenaMatchQueue{
 	private JoinResult findMatch(final TeamCollection tq, boolean forceStart, boolean forceStartRespectMinimumPlayers) {
 		if (suspend)
 			return new JoinResult();
-		if (Defaults.DEBUG) System.out.println("findMatch " + tq +"  " + tq.size() +"  mp=" + tq.getMatchParams());
+		if (Defaults.DEBUGQ) System.out.println("findMatch " + tq +"  " + tq.size() +"  mp=" + tq.getMatchParams());
 		/// The idea here is we iterate through all arenas
 		/// See if one matches with the type of TeamQueue that we have been given
 		/// Then we make sure those players are ready, and if not send them messages
@@ -249,13 +267,13 @@ public class ArenaMatchQueue{
 		boolean skipNonMatched = false;
 		synchronized(arenaqueue){ synchronized(tq){
 			for (Arena a : arenaqueue){
-				if (a == null || !a.valid() || (!a.matches(baseParams, null) && !forceStart))
+				if (a == null || !a.valid() || !a.isOpen() || (!a.matches(baseParams, null) && !forceStart))
 					continue;
 				MatchParams newParams = new MatchParams(baseParams);
 				if (!forceStart && !newParams.intersect(a.getParameters())){ /// only intersect if not forceStart
 					continue;}
 				final TeamCollection iterate;
-				Log.debug(" #####  --------   " + tq  +"    " + tq.size());
+//				Log.debug(" #####  --------   " + tq  +"    " + tq.size());
 				if (tq instanceof CompositeTeamQueue){
 					iterate = tq;
 				} else {
@@ -266,9 +284,11 @@ public class ArenaMatchQueue{
 						iterate = tq;
 					}
 				}
-				Log.debug("  ###### 222 --------   " + iterate  +"    " + iterate.size());
+//				Log.debug("  ###### 222 --------   " + iterate  +"    " + iterate.size());
+				if (newParams.getMinPlayers() > tq.size())
+					continue;
 
-				if (Defaults.DEBUG) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
+				if (Defaults.DEBUGQ) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
 						"   tq=" + tq +" --- ap="+a.getParameters() +"    baseP="+baseParams +" newP="+newParams +"  " + newParams.getMaxPlayers() +
 						" tqparams="+tq.getMatchParams());
 				for (QueueObject qo : iterate){
@@ -399,7 +419,7 @@ public class ArenaMatchQueue{
 
 		///remove the arena from the queue, start up our match
 		if (hasComp){
-			qr.status = JoinResult.JoinStatus.ADDED_TO_QUEUE;
+			qr.status = JoinResult.JoinStatus.STARTED_NEW_GAME;
 			qr.match = getMatchAndRemove(tq, tjh, comp.getTeams(), qteams, arena, params);
 			return;
 		}
@@ -465,12 +485,12 @@ public class ArenaMatchQueue{
 		return m;
 	}
 
-	private TeamCollection getTeamQ(QueueObject qo) {
-		if (qo.getJoinOptions().hasArena()){
-			TeamQueue tq = getOrCreateArenaTeamQ(qo.getMatchParams(), qo.getJoinOptions().getArena());
-			return new CompositeTeamQueue(tq,getOrCreateGameQ(qo.getMatchParams()));
+	private TeamCollection getTeamQ(MatchParams mp, Arena arena) {
+		if (arena != null){
+			TeamQueue tq = getOrCreateArenaTeamQ(mp, arena);
+			return new CompositeTeamQueue(tq,getOrCreateGameQ(mp));
 		} else {
-			return getOrCreateGameQ(qo.getMatchParams());
+			return getOrCreateGameQ(mp);
 		}
 	}
 
@@ -848,4 +868,5 @@ public class ArenaMatchQueue{
 		//		}
 		return new JoinResult();
 	}
+
 }

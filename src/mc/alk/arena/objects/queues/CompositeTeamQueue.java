@@ -7,25 +7,24 @@ import mc.alk.arena.util.Log;
 
 
 public class CompositeTeamQueue implements  TeamCollection{
-	TeamCollection[] queues;
-	int size = 0;
-	MatchParams mp;
+	final TeamCollection[] queues;
+	final MatchParams mp;
 
 	public CompositeTeamQueue(TeamCollection ... queues) {
 		this.queues = queues;
-		for (TeamCollection tq: this.queues){
-			size += tq.size();
-		}
 		this.mp = queues[0].getMatchParams();
 	}
 
 	public boolean add(QueueObject to) {
 		queues[0].add(to);
-		size += to.size();
 		return true;
 	}
 
 	public int size() {
+		int size = 0;
+		for (TeamCollection tq: this.queues){
+			size += tq.size();
+		}
 		return size;
 	}
 
@@ -39,7 +38,7 @@ public class CompositeTeamQueue implements  TeamCollection{
 	}
 
 	public boolean isEmpty() {
-		return size==0;
+		return this.size() == 0;
 	}
 
 	@Override

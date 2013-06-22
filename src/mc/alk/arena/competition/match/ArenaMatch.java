@@ -40,6 +40,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
+import mc.alk.arena.util.Util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -75,12 +76,17 @@ public class ArenaMatch extends Match {
 	public ArenaMatch(Arena arena, MatchParams mp) {
 		super(arena, mp);
 	}
+	@ArenaEventHandler(priority=EventPriority.LOW, begin=MatchState.ONPRESTART, end=MatchState.ONSTART)
+	public void onPlayerMove2(PlayerMoveEvent e){
+		e.setCancelled(true);
+	}
 
 	@ArenaEventHandler(bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
 	public void onPlayerQuit(PlayerQuitEvent event){
+		Log.debug("onPlayerQuit " + event.getPlayer().getName());
 		/// If they are just in the arena waiting for match to start, or they havent joined yet
 		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL ||
-				!insideArena.contains(event.getPlayer().getName()) ){
+				!inMatch.contains(event.getPlayer().getName()) ){
 			return;}
 		ArenaPlayer player = BattleArena.toArenaPlayer(event.getPlayer());
 		onLeave(player);
@@ -89,7 +95,7 @@ public class ArenaMatch extends Match {
 	@ArenaEventHandler(suppressCastWarnings=true,bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
 	public void onPlayerDeath(PlayerDeathEvent event, final ArenaPlayer target){
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE ||
-				!insideArena.contains(target.getName())){
+				!inMatch.contains(target.getName())){
 			return;}
 		final ArenaTeam t = getTeam(target);
 		if (t==null)
@@ -112,7 +118,7 @@ public class ArenaMatch extends Match {
 	public void onPlayerDeath(ArenaPlayerDeathEvent event){
 		final ArenaPlayer target = event.getPlayer();
 		if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE ||
-				!insideArena.contains(target.getName())){
+				!inMatch.contains(target.getName())){
 			return;}
 		final ArenaTeam t = event.getTeam();
 
@@ -181,7 +187,7 @@ public class ArenaMatch extends Match {
 	}
 
 	@ArenaEventHandler(suppressCastWarnings=true,priority=EventPriority.LOW)
-	public void onEntityDamageByEntity(EntityDamageEvent event) {
+	public void onEntityDamageEvent(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player))
 			return;
 		final TransitionOptions to = tops.getOptions(state);
@@ -354,12 +360,13 @@ public class ArenaMatch extends Match {
 			Location l = mo.hasOption(TransitionOption.TELEPORTTO) ? mo.getTeleportToLoc() : oldlocs.get(p.getName());
 			if (l != null)
 				event.setRespawnLocation(l);
-			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
-				@Override
-				public void run() {
-					stopTracking(p);
-				}
-			});
+			Util.printStackTrace();
+//			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+//				@Override
+//				public void run() {
+//					stopTracking(p);
+//				}
+//			});
 		}
 	}
 
@@ -567,5 +574,4 @@ public class ArenaMatch extends Match {
 		for (String s: commands){
 			disabledCommands.add("/" + s.toLowerCase());}
 	}
-
 }

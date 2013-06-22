@@ -89,7 +89,7 @@ public class JoinOptions extends ArenaSize{
 					arenajoinloc.distance(joinedLocation) <= distance);
 		}
 
-		for (Location l : arena.getSpawnLocs().values()){
+		for (Location l : arena.getSpawns()){
 			if (l.getWorld().getUID() != wid)
 				return false;
 			if (l.distance(joinedLocation) <= distance)
@@ -104,7 +104,7 @@ public class JoinOptions extends ArenaSize{
 		if (arenajoinloc != null){
 			return (wid == arenajoinloc.getWorld().getUID());}
 
-		for (Location l : arena.getSpawnLocs().values()){
+		for (Location l : arena.getSpawns()){
 			if (l.getWorld().getUID() != wid)
 				return false;
 		}

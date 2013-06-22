@@ -2,6 +2,7 @@ package mc.alk.arena.competition;
 
 import java.util.Collection;
 
+import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.LocationType;
@@ -62,19 +63,13 @@ public class BlankCompetition extends Competition{
 	public boolean leave(ArenaPlayer p) {return true;}
 
 	@Override
-	public MatchState getMatchState() {
-		return null;
-	}
+	public MatchState getMatchState() { return null;}
 
 	@Override
-	public boolean isHandled(ArenaPlayer player) {
-		return false;
-	}
+	public boolean isHandled(ArenaPlayer player) {return false;}
 
 	@Override
-	public int indexOf(ArenaTeam team) {
-		return 0;
-	}
+	public int indexOf(ArenaTeam team) { return 0;}
 
 	@Override
 	public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b) {
@@ -93,5 +88,29 @@ public class BlankCompetition extends Competition{
 
 	@Override
 	public LocationType getLocationType() {return null;}
+
+	@Override
+	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPreEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostEnter(ArenaPlayer player,ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
 
 }

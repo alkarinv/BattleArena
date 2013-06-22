@@ -18,9 +18,6 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.CustomCommandExecutor;
 import mc.alk.arena.executors.DuelExecutor;
-import mc.alk.arena.executors.EventExecutor;
-import mc.alk.arena.executors.ReservedArenaEventExecutor;
-import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.RegisteredCompetition;
 import mc.alk.arena.objects.arenas.Arena;
@@ -270,16 +267,13 @@ public class APIRegistrationController {
 
 	private static void createExecutor(JavaPlugin plugin, String cmd, CustomCommandExecutor executor, MatchParams mp) {
 		CustomCommandExecutor exe = null;
-		if (mp instanceof EventParams){
-			exe = new ReservedArenaEventExecutor();
-			EventController.addEventExecutor((EventParams) mp, (EventExecutor) exe);
+
+		if (mp.isDuelOnly()){
+			exe = new DuelExecutor();
 		} else {
-			if (mp.isDuelOnly()){
-				exe = new DuelExecutor();
-			} else {
-				exe = new BAExecutor();
-			}
+			exe = new BAExecutor();
 		}
+
 		if (executor != null){
 			exe.addMethods(executor, executor.getClass().getMethods());}
 

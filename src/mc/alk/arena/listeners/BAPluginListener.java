@@ -12,6 +12,7 @@ import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TagAPIController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
+import mc.alk.arena.objects.messaging.plugins.HerochatPlugin;
 import mc.alk.arena.util.DisguiseInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
@@ -24,8 +25,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
-
-import com.dthielke.herochat.Herochat;
 
 
 /**
@@ -136,10 +135,10 @@ public class BAPluginListener implements Listener {
 	}
 
 	public void loadHeroChat(){
-		if (AnnouncementOptions.hc == null){
+		if (AnnouncementOptions.chatPlugin == null){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("Herochat");
 			if (plugin != null) {
-				AnnouncementOptions.setHerochat((Herochat) plugin);
+				AnnouncementOptions.setChatPlugin(new HerochatPlugin());
 				Log.info("[BattleArena] Herochat detected, adding channel options");
 			}
 		}
@@ -264,7 +263,7 @@ public class BAPluginListener implements Listener {
 							getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
 					if (provider != null && provider.getProvider() != null) {
 						AnnouncementOptions.setVaultChat(provider.getProvider());
-					} else if (AnnouncementOptions.hc == null){
+					} else if (AnnouncementOptions.chatPlugin == null){
 						Log.info("[BattleArena] Vault chat not detected, ignoring channel options");
 					}
 				} catch (Error e){

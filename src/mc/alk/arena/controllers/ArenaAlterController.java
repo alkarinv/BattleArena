@@ -7,6 +7,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.containers.LobbyWRContainer;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -273,7 +274,7 @@ public class ArenaAlterController {
 		if (mp == null){
 			throw new IllegalStateException("MatchParams for " + arena.getArenaType() +" could not be found");}
 		if (arena.getWaitroom() == null){
-			arena.setWaitRoom(new LobbyWRContainer(mp));}
+			arena.setWaitRoom(new LobbyWRContainer(mp, LocationType.WAITROOM));}
 		arena.setWaitRoomSpawnLoc(locindex-1,loc);
 		ac.addArena(arena);
 		return sendMessage(sender,"&2waitroom &6" + locindex +"&2 set to location=&6" + Util.getLocString(loc));

@@ -81,4 +81,10 @@ public class MatchMessager {
 		try{impl.sendAddedToTeam(team,player);}catch(Exception e){e.printStackTrace();}
 	}
 
+	public void sendCountdownTillPrestart(int remaining) {
+		try{impl.sendCountdownTillPrestart(getChannel(MatchState.ONCOUNTDOWNTOEVENT), remaining);}
+		catch(Exception e){e.printStackTrace();}
+
+	}
+
 }

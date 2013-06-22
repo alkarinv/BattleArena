@@ -29,6 +29,8 @@ import mc.alk.arena.events.events.EventOpenEvent;
 import mc.alk.arena.events.events.EventResultEvent;
 import mc.alk.arena.events.events.EventStartEvent;
 import mc.alk.arena.events.events.TeamJoinedEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.CompetitionState;
@@ -51,6 +53,7 @@ import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 
 
 public abstract class Event extends Competition implements CountdownCallback, ArenaListener {
@@ -239,9 +242,12 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	}
 
 	public void removeAllTeams(){
+
 		for (ArenaTeam t: teams){
+			Log.debug(t +"    " + t.getPlayers().size());
 			TeamController.removeTeamHandler(t,this);
 			for (ArenaPlayer p: t.getPlayers()){
+				Log.debug(t +"  Sdfjdkjfj  " + p.getName());
 				p.removeCompetition(this);
 			}
 		}
@@ -534,6 +540,40 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 			TransitionOptions mo, boolean b) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+		Log.debug("!!!!!!!!!!!!!!!!!! onPostQuit " + player +"   " + this);
+		player.removeCompetition(this);
+	}
+
+	@Override
+	public void onPreEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostEnter(ArenaPlayer player,ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@Override
+	public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+	@EventHandler
+	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
+		if (hasPlayer(event.getPlayer())){
+			event.getPlayer().removeCompetition(this);
+		}
 	}
 
 }

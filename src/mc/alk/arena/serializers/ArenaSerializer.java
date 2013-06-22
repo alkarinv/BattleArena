@@ -97,13 +97,13 @@ public class ArenaSerializer extends BaseConfig{
 
 	public void loadArenas(Plugin plugin){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
-//		Log.info("["+plugin.getName()+ "] Loading arenas from " + file.getPath()+" using config "+ config.getName());
+		//		Log.info("["+plugin.getName()+ "] Loading arenas from " + file.getPath()+" using config "+ config.getName());
 		loadArenas(plugin, BattleArena.getBAController(), config,null);
 	}
 
 	public void loadArenas(Plugin plugin, ArenaType arenaType){
 		try {config.load(file);} catch (Exception e){e.printStackTrace();}
-//		Log.info("["+plugin.getName()+ "] Loading arenas from " + file.getPath() +" using config "+ config.getName() +" at=" + arenaType);
+		//		Log.info("["+plugin.getName()+ "] Loading arenas from " + file.getPath() +" using config "+ config.getName() +" at=" + arenaType);
 		loadArenas(plugin, BattleArena.getBAController(), config, arenaType);
 	}
 
@@ -167,7 +167,7 @@ public class ArenaSerializer extends BaseConfig{
 					transfer(cs,"arenas."+name, "brokenArenas."+name);}
 			}
 		}
-//		Util.printStackTrace();
+		//		Util.printStackTrace();
 		if (!loadedArenas.isEmpty()) {
 			Log.info(pname+"Loaded "+arenaType+" arenas: " + StringUtils.join(loadedArenas,", "));
 		} else {
@@ -243,7 +243,12 @@ public class ArenaSerializer extends BaseConfig{
 		Map<Integer,Location> locs = SerializerUtil.parseLocations(loccs);
 		if (locs != null){
 			for (Integer i: locs.keySet()){
-				arena.setSpawnLoc(i, locs.get(i));}
+				try{
+					arena.setSpawnLoc(i, locs.get(i));
+				} catch(IllegalStateException e){
+					Log.printStackTrace(e);
+				}
+			}
 		}
 
 		/// Wait room spawns
@@ -251,7 +256,6 @@ public class ArenaSerializer extends BaseConfig{
 		locs = SerializerUtil.parseLocations(loccs);
 		if (locs != null){
 			for (Integer i: locs.keySet()){
-//				arena.setWaitRoomSpawnLoc(i, locs.get(i));
 				LobbyController.addWaitRoom(arena, i, locs.get(i));
 			}
 		}
@@ -330,7 +334,7 @@ public class ArenaSerializer extends BaseConfig{
 				amap.put("nTeams", arena.getParameters().getNTeamRange());
 
 				/// Spawn locations
-				Map<Integer, Location> mlocs = arena.getSpawnLocs();
+				Map<Integer, Location> mlocs = toMap(arena.getSpawns());
 				if (mlocs != null){
 					HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
 					amap.put("locations", locations);
@@ -360,9 +364,17 @@ public class ArenaSerializer extends BaseConfig{
 					amap.put("spawns", spawnmap);
 				}
 
-				Location vloc = arena.getVisitorLoc();
-				if (vloc != null)
-					amap.put("vloc",SerializerUtil.getLocString(vloc));
+				/// Wait room spawns
+				llocs = arena.getVisitorLocs();
+				if (llocs!= null){
+					mlocs = new HashMap<Integer,Location>();
+					for (int i=0;i<llocs.size();i++){
+						if (llocs.get(i) != null)
+							mlocs.put(i, llocs.get(i));
+					}
+					HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
+					amap.put("waitRoomLocations", locations);
+				}
 
 				Map<String,Object> persisted = Persistable.objectsToYamlMap(arena, Arena.class);
 				if (persisted != null && !persisted.isEmpty()){
@@ -383,6 +395,15 @@ public class ArenaSerializer extends BaseConfig{
 					f.getPath() + " configSection="+config.getCurrentPath()+"." + config.getName());
 		ConfigurationSection maincs = config.createSection("arenas");
 		SerializerUtil.expandMapIntoConfig(maincs, map);
+	}
+
+	private static Map<Integer, Location> toMap(List<Location> spawns) {
+		if (spawns == null)
+			return null;
+		HashMap<Integer,Location> map = new HashMap<Integer,Location>();
+		for (int i=0;i<spawns.size();i++)
+			map.put(i, spawns.get(i));
+		return map;
 	}
 
 	protected void saveArenas() {

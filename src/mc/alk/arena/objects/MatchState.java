@@ -8,6 +8,7 @@ package mc.alk.arena.objects;
 public enum MatchState implements CompetitionState{
 	NONE("None"), DEFAULTS("defaults"),
 	ONENTER("onEnter"), ONLEAVE("onLeave"), //ONENTERWAITROOM("onEnterWaitRoom"),
+	ONENTERARENA("onEnterArena"), ONLEAVEARENA("onLeaveArena"), //ONENTERWAITROOM("onEnterWaitRoom"),
 	INQUEUE("inQueue"),
 	INCOURTYARD("inCourtyard"), INLOBBY("inLobby"), INWAITROOM("inWaitroom"),INARENA("inArena"),
 	PREREQS ("preReqs"), ONJOIN ("onJoin"), ONOPEN("onOpen"),
@@ -35,6 +36,8 @@ public enum MatchState implements CompetitionState{
 		try{
 			return MatchState.valueOf(str);
 		} catch (Exception e){
+			if (str.equals("ONCOUNTDOWNTOEVENT"))
+				return ONCOUNTDOWNTOEVENT;
 			return null;
 		}
 	}

@@ -61,6 +61,13 @@ public class MessageUtil {
 		return sendMessage(player.getPlayer(),message);
 	}
 
+	public static boolean sendMessage(final ArenaPlayer player, final List<String> messages) {
+		for (String s: messages){
+			sendMessage(player.getPlayer(),s);
+		}
+		return true;
+	}
+
 	public static void sendMessage(Set<ArenaPlayer> players, String message) {
 		final String msg = colorChat(message);
 		for (ArenaPlayer p: players){

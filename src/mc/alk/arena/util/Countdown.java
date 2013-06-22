@@ -35,7 +35,7 @@ public class Countdown implements Runnable{
 		this.seconds = seconds - (rem != 0? rem : this.interval);
 		startTime = System.currentTimeMillis();
 		expectedEndTime = startTime + seconds*1000;
-		this.timerId  = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, this,
+		this.timerId  = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this,
 				(long)(time * Defaults.TICK_MULT));
 	}
 

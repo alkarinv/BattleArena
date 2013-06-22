@@ -1,25 +1,18 @@
 package mc.alk.arena.executors;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.competition.events.ReservedArenaEvent;
-import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.BAEventController.SizeEventPair;
-import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.EventOpenOptions;
@@ -54,14 +47,6 @@ public class EventExecutor extends BAExecutor{
 		MatchTransitions tops = eventParams.getTransitionOptions();
 		StringBuilder sb = new StringBuilder(tops.getOptionString());
 		return sendMessage(sender,sb.toString());
-	}
-
-	@MCCommand(cmds={"cancel"},admin=true, order=1)
-	public boolean eventCancel(CommandSender sender, EventParams eventParams, Arena arena) {
-		Event event = controller.getEvent(arena);
-		if (event == null){
-			return sendMessage(sender, "&cThere was no event in " + arena.getName());}
-		return cancelEvent(sender,eventParams,event);
 	}
 
 	@MCCommand(cmds={"cancel"},admin=true, order=2)
@@ -141,8 +126,7 @@ public class EventExecutor extends BAExecutor{
 			return sendMessage(sender,"&eThere is no open "+event.getCommand()+" right now");}
 		int size = event.getNTeams();
 		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(eventParams.getMaxTeamSize());
-		String arena =event instanceof ReservedArenaEvent? " &eArena=&5"+((ReservedArenaEvent) event).getArena().getName() : "";
-		sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers+arena);
+		sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers);
 		StringBuilder sb = new StringBuilder(event.getInfo());
 		return sendMessage(sender,sb.toString());
 	}
@@ -193,47 +177,7 @@ public class EventExecutor extends BAExecutor{
 		if (isDisabled(p, eventParams)){
 			return true;}
 		Event event = controller.getOpenEvent(eventParams);
-		/// If we allow players to start their own events
-		if (event == null && Defaults.ALLOW_PLAYER_EVENT_CREATION){
-			EventExecutor ee = EventController.getEventExecutor(eventParams.getName());
-			if (ee == null){
-				return false;}
-			if (ee instanceof ReservedArenaEventExecutor){
-				ReservedArenaEventExecutor exe = (ReservedArenaEventExecutor) ee;
-				try {
-					List<String> openops = eventParams.getPlayerOpenOptions();
-					LinkedList<String> lops;
-					if (openops == null){
-						lops = new LinkedList<String>();
-						if (args != null)
-							lops.addAll(Arrays.asList(args));
-						lops.add("silent");
-					} else {
-						lops = new LinkedList<String>(openops);
-						if (args != null)
-							lops.addAll(Arrays.asList(args));
-					}
-					lops.remove("join");
-					if (!lops.getFirst().equalsIgnoreCase("auto") && !lops.getFirst().equalsIgnoreCase("open"))
-						lops.addFirst("auto");
-					String ops[] = lops.toArray(new String[lops.size()]);
-					EventOpenOptions eoo = EventOpenOptions.parseOptions(ops, null);
-					event = exe.openIt(eventParams, eoo);
-				} catch (InvalidEventException e ) {
-					MessageUtil.sendMessage(p, e.getMessage());
-					sendSystemMessage(p, "you_cant_join_event");
-					return false;
-				} catch (InvalidOptionException e){
-					MessageUtil.sendMessage(p, e.getMessage());
-					sendSystemMessage(p, "you_cant_join_event");
-					return false;
-				}catch (Exception e) {
-					Log.printStackTrace(e);
-					sendSystemMessage(p, "you_cant_join_event");
-					return false;
-				}
-			}
-		}
+
 		/// perform join checks
 		if (event == null){
 			sendSystemMessage(p, "no_event_open");
@@ -315,14 +259,6 @@ public class EventExecutor extends BAExecutor{
 		return eventTeams(sender, event);
 	}
 
-	@MCCommand(cmds={"teams"}, admin=true, order=1)
-	public boolean eventTeams(CommandSender sender, EventParams eventParams, Arena arena) {
-		Event event = controller.getEvent(arena);
-		if (event == null){
-			return sendMessage(sender, "&cNo event could be found using that arena!");}
-		return eventTeams(sender, event);
-	}
-
 	private boolean eventTeams(CommandSender sender, Event event) {
 		StringBuilder sb = new StringBuilder();
 		for (ArenaTeam t: event.getTeams()){
@@ -341,24 +277,10 @@ public class EventExecutor extends BAExecutor{
 		return sendMessage(sender,sb.toString());
 	}
 
-	@MCCommand(cmds={"status"}, usage="status", order=3)
-	public boolean eventStatus(CommandSender sender, EventParams eventParams, Arena arena) {
-		Event event = controller.getEvent(arena);
-		if (event == null){
-			return sendMessage(sender, "&cNo event could be found using that arena!");}
-		StringBuilder sb = new StringBuilder(event.getStatus());
-		appendTeamStatus(sender, event, sb);
-		return sendMessage(sender,sb.toString());
-	}
 
 	private void appendTeamStatus(CommandSender sender, Event event, StringBuilder sb) {
 		if (PermissionsUtil.isAdmin(sender) || sender.hasPermission("arena.event.status")){
 			Set<String> inside = null;
-			if (event instanceof ReservedArenaEvent){
-				ReservedArenaEvent rae = (ReservedArenaEvent) event;
-				Match match = rae.getMatch();
-				inside = match.getInsidePlayers();
-			}
 			for (ArenaTeam t: event.getTeams()){
 				sb.append("\n" + t.getTeamInfo(inside));
 			}

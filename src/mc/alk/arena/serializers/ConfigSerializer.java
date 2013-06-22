@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -33,6 +34,7 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.ConfigException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
+import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.objects.modules.ArenaModule;
 import mc.alk.arena.objects.modules.BrokenArenaModule;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -247,8 +249,8 @@ public class ConfigSerializer extends BaseConfig{
 			mp.setUseTrackerPvP(cs.getBoolean("useTrackerPvP", false));
 		}
 		mp.setUseTrackerMessages(cs.getBoolean("useTrackerMessages", false));
-//		mp.set
-//		mp.setOverrideBTMessages(cs.getBoolean(path))
+		//		mp.set
+		//		mp.setOverrideBTMessages(cs.getBoolean(path))
 		/// What is the default rating for this match type
 		Rating rating = cs.contains("rated") ? Rating.fromBoolean(cs.getBoolean("rated")) : Rating.ANY;
 		if (rating == null || rating == Rating.UNKNOWN)
@@ -653,12 +655,37 @@ public class ConfigSerializer extends BaseConfig{
 		if (modules != null && !modules.isEmpty()){
 			main.set("modules", getModuleList(modules));
 		}
-		/// TODO Come back and add custom AnnouncementOption support, for now leave it strictly in config.yml
-		//		AnnouncementOptions ao = params.getAnnouncementOptions();
-		//		if (ao != null){
-		//			ao.
-		//		}
-		//		Map<String,Object> map = new LinkedHashMap<String,Object>();
+
+		/// Announcements
+		AnnouncementOptions ao = params.getAnnouncementOptions();
+		if (ao != null){
+			Map<MatchState, Map<AnnouncementOption, Object>> map = ao.getMatchOptions();
+			if (map != null){
+				cs = main.createSection("announcements");
+				for (Entry<MatchState, Map<AnnouncementOption, Object>> entry : map.entrySet()){
+					List<String> ops = new ArrayList<String>();
+					for (Entry<AnnouncementOption,Object> entry2 : entry.getValue().entrySet()){
+						Object o = entry2.getValue();
+						ops.add(entry2.getKey() +(o != null ? o.toString() :""));
+					}
+					cs.set(entry.getKey().name(), ops);
+				}
+			}
+
+			map = ao.getEventOptions();
+			if (map != null){
+				cs = main.createSection("eventAnnouncements");
+				for (Entry<MatchState, Map<AnnouncementOption, Object>> entry : map.entrySet()){
+					List<String> ops = new ArrayList<String>();
+					for (Entry<AnnouncementOption,Object> entry2 : entry.getValue().entrySet()){
+						Object o = entry2.getValue();
+						ops.add(entry2.getKey() +(o != null ? o.toString() :""));
+					}
+					cs.set(entry.getKey().name(), ops);
+				}
+			}
+		}
+
 		MatchTransitions alltops = params.getTransitionOptions();
 		Map<MatchState,TransitionOptions> transitions =
 				new TreeMap<MatchState,TransitionOptions>(alltops.getAllOptions());

@@ -113,7 +113,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 	/**
 	 * Signify that the set of players were added to the team
 	 * @param t
-	 * @param players
+	 * @param inArena
 	 * @return true if the player could be added to the team, false otherwise
 	 */
 	public abstract boolean addedToTeam(ArenaTeam team, ArenaPlayer player);
@@ -128,7 +128,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 	/**
 	 * Signify that the set of players were added to the team
 	 * @param t
-	 * @param players
+	 * @param inArena
 	 */
 	public abstract void removedFromTeam(ArenaTeam team, ArenaPlayer player);
 

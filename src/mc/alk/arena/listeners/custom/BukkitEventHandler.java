@@ -4,9 +4,11 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.event.Event;
+
 
 
 /**
@@ -17,6 +19,7 @@ import org.bukkit.event.Event;
 public class BukkitEventHandler {
 	ArenaEventListener ml;
 	SpecificPlayerEventListener spl;
+	SpecificArenaPlayerEventListener sapl;
 
 	/**
 	 * Construct a listener to listen for the given bukkit event
@@ -27,6 +30,7 @@ public class BukkitEventHandler {
 			org.bukkit.event.EventPriority bukkitPriority, Method getPlayerMethod) {
 		ml = new ArenaEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
 		spl = new SpecificPlayerEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
+		sapl = new SpecificArenaPlayerEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
 		if (Defaults.DEBUG_EVENTS) Log.info("Registering BukkitEventListener for type " + bukkitEvent +" pm="+getPlayerMethod);
 	}
 
@@ -35,7 +39,7 @@ public class BukkitEventHandler {
 	 * @return
 	 */
 	public boolean hasListeners(){
-		return ml.hasListeners() || spl.hasListeners();
+		return ml.hasListeners() || spl.hasListeners() || sapl.hasListeners();
 	}
 
 	/**
@@ -47,7 +51,11 @@ public class BukkitEventHandler {
 	 */
 	public void addListener(RListener rl, Collection<String> players) {
 		if (players != null && rl.isSpecificPlayerMethod()){
-			spl.addListener(rl, players);
+			if (ArenaPlayer.class.isAssignableFrom(rl.getMethod().getPlayerMethod().getReturnType())){
+				sapl.addListener(rl, players);
+			} else {
+				spl.addListener(rl, players);
+			}
 		} else {
 			ml.addListener(rl);
 		}
@@ -62,7 +70,12 @@ public class BukkitEventHandler {
 	 */
 	public void removeListener(RListener rl, Collection<String> players) {
 		if (players != null && rl.isSpecificPlayerMethod()){
-			spl.removeListener(rl, players);
+			if (ArenaPlayer.class.isAssignableFrom(rl.getMethod().getPlayerMethod().getReturnType())){
+				sapl.removeListener(rl, players);
+			} else {
+				spl.removeListener(rl, players);
+			}
+
 		} else {
 			ml.removeListener(rl);
 		}
@@ -75,6 +88,7 @@ public class BukkitEventHandler {
 	public void removeAllListener(RListener rl) {
 		spl.removeAllListeners(rl);
 		ml.removeAllListeners(rl);
+		sapl.removeAllListeners(rl);
 	}
 
 	public ArenaEventListener getMatchListener(){
@@ -83,6 +97,10 @@ public class BukkitEventHandler {
 
 	public SpecificPlayerEventListener getSpecificPlayerListener(){
 		return spl;
+	}
+
+	public SpecificArenaPlayerEventListener getSpecificArenaPlayerListener(){
+		return sapl;
 	}
 
 }

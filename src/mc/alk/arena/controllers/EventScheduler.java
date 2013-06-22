@@ -8,14 +8,11 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.events.events.EventFinishedEvent;
 import mc.alk.arena.executors.EventExecutor;
-import mc.alk.arena.executors.ReservedArenaEventExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
-import mc.alk.arena.objects.exceptions.InvalidOptionException;
-import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.pairs.EventPair;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
@@ -67,17 +64,11 @@ public class EventScheduler implements Runnable, ArenaListener{
 			String args[] = eventPair.getArgs();
 			Event event = null;
 			try {
-				if (ee instanceof ReservedArenaEventExecutor){
-					ReservedArenaEventExecutor exe = (ReservedArenaEventExecutor) ee;
-					EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null);
-					event = exe.openIt(eventParams, eoo);
-				} else if (ee instanceof TournamentExecutor){
+				if (ee instanceof TournamentExecutor){
 					TournamentExecutor exe = (TournamentExecutor) ee;
 					event = exe.openIt(sender, eventParams, args);
 				}
 			} catch (InvalidEventException e) {
-				/** do nothing */
-			} catch (InvalidOptionException e) {
 				/** do nothing */
 			} catch (Exception e){
 				e.printStackTrace();
@@ -104,8 +95,8 @@ public class EventScheduler implements Runnable, ArenaListener{
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
 				Bukkit.getServer().broadcastMessage(
 						MessageUtil.colorChat(
-						ChatColor.YELLOW+"Next event will start in "+
-						TimeUtil.convertSecondsToString(Defaults.TIME_BETWEEN_SCHEDULED_EVENTS)));}
+								ChatColor.YELLOW+"Next event will start in "+
+										TimeUtil.convertSecondsToString(Defaults.TIME_BETWEEN_SCHEDULED_EVENTS)));}
 		} else {
 			running = false;
 		}

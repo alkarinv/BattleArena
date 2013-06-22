@@ -21,15 +21,12 @@ import org.bukkit.event.Listener;
 public enum InArenaListener implements Listener {
 	INSTANCE;
 
-	final Set<String> players = Collections.synchronizedSet(new HashSet<String>());
-	final Set<String> qplayers = Collections.synchronizedSet(new HashSet<String>());
+	final Set<String> inArena = Collections.synchronizedSet(new HashSet<String>());
+	final Set<String> inGame = Collections.synchronizedSet(new HashSet<String>());
+	final Set<String> inQueue = Collections.synchronizedSet(new HashSet<String>());
 	final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 	boolean registered = false;
 
-	private InArenaListener(){
-		if (BattleArena.getSelf().isEnabled())
-			Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
-	}
 
 	@EventHandler
 	public void onArenaPlayerEnterQueueEvent(ArenaPlayerEnterQueueEvent event){
@@ -39,12 +36,12 @@ public enum InArenaListener implements Listener {
 				Bukkit.getPluginManager().registerEvents(l, BattleArena.getSelf());
 			}
 		}
-		qplayers.add(event.getPlayer().getName());
+		inQueue.add(event.getPlayer().getName());
 	}
 
 	@EventHandler
 	public void onArenaPlayerLeaveQueueEvent(ArenaPlayerLeaveQueueEvent event){
-		if (qplayers.remove(event.getPlayer().getName()) && qplayers.isEmpty() && players.isEmpty()){
+		if (inQueue.remove(event.getPlayer().getName()) && inQueue.isEmpty() && inArena.isEmpty()){
 			registered = false;
 			for (Listener l: listeners){
 				HandlerList.unregisterAll(l);
@@ -60,14 +57,14 @@ public enum InArenaListener implements Listener {
 				Bukkit.getPluginManager().registerEvents(l, BattleArena.getSelf());
 			}
 		}
-		Log.debug("  +++++++  player " + event.getPlayer().getName() );
-		players.add(event.getPlayer().getName());
+		Log.debug("#####################  +++++++  player " + event.getPlayer().getName() );
+		inArena.add(event.getPlayer().getName());
 	}
 
 	@EventHandler
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveMatchEvent event){
-		Log.debug("  --------  player " + event.getPlayer().getName() );
-		if (players.remove(event.getPlayer().getName()) && players.isEmpty()){
+		Log.debug("#####################  --------  player " + event.getPlayer().getName() );
+		if (inArena.remove(event.getPlayer().getName()) && inArena.isEmpty()){
 			registered = false;
 			for (Listener l: listeners){
 				HandlerList.unregisterAll(l);
@@ -76,23 +73,24 @@ public enum InArenaListener implements Listener {
 	}
 
 	public boolean isPlayerInQueue(String name) {
-		return qplayers.contains(name);
+		return inQueue.contains(name);
 	}
 
 	public boolean isPlayerInArena(String name) {
-		return players.contains(name);
+		return inArena.contains(name);
 	}
 
 	public static boolean inArena(String name) {
-		return INSTANCE.players.contains(name);
+		return INSTANCE.inArena.contains(name);
 	}
 
 	public static boolean inQueue(String name) {
-		return INSTANCE.qplayers.contains(name);
+		return INSTANCE.inQueue.contains(name);
 	}
 
 	public static void addListener(Listener listener){
 		INSTANCE.listeners.add(listener);
 	}
+
 
 }

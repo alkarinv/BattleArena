@@ -56,9 +56,12 @@ public class EventOpenOptions {
 	}
 
 	Map<EventOpenOption,Object> options = new EnumMap<EventOpenOption,Object>(EventOpenOption.class);
+	MatchParams params;
+
 	int announceInterval = 0, secTillStart = 0;
 
-	public static EventOpenOptions parseOptions(String[] args, Set<Integer> ignoreArgs) throws InvalidOptionException{
+	public static EventOpenOptions parseOptions(String[] args, Set<Integer> ignoreArgs, MatchParams params)
+			throws InvalidOptionException{
 		EventOpenOptions eoo = new EventOpenOptions();
 		Map<EventOpenOption,Object> ops = eoo.options;
 		int i =0;
@@ -122,6 +125,8 @@ public class EventOpenOptions {
 			if (obj != null)
 				ops.put(to, obj);
 		}
+		eoo.params = new MatchParams(params);
+		eoo.updateParams(eoo.params);
 		return eoo;
 	}
 
@@ -154,6 +159,10 @@ public class EventOpenOptions {
 		/// Team size
 		if (hasOption(EventOpenOption.TEAMSIZE)){
 			mp.setTeamSizes((MinMax)getOption(EventOpenOption.TEAMSIZE));}
+	}
+
+	public MatchParams getParams() {
+		return params;
 	}
 
 	public Arena getArena(MatchParams mp, JoinOptions jp) throws InvalidOptionException{
@@ -216,4 +225,6 @@ public class EventOpenOptions {
 			return EventOpenOption.OPEN.toString().toLowerCase();
 		}
 	}
+
+
 }

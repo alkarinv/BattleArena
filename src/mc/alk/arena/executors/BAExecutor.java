@@ -11,7 +11,7 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.Competition;
+import mc.alk.arena.Permissions;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController;
@@ -40,18 +40,19 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.PlayerContainerState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
+import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.JoinOptions.JoinOption;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.pairs.JoinResult;
-import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.pairs.WantedTeamSizePair;
 import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -82,6 +83,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	final TeamController teamc;
 	final EventController ec;
 	final DuelController dc;
+
 	public BAExecutor(){
 		super();
 		this.ec = BattleArena.getEventController();
@@ -154,14 +156,14 @@ public class BAExecutor extends CustomCommandExecutor {
 			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix");}
 
 		/// Check if this match type is disabled
-		if (isDisabled(player, mp)){
+		if (isDisabled(player, mp) && !player.hasPermission(Permissions.ADMIN_NODE)){
 			return true;}
+
 		/// Check Perms
 		if (!adminJoin && !hasMPPerm(player,mp,"join")){
 			return sendSystemMessage(player,"no_join_perms", mp.getCommand());}
 
 		/// Can the player join this match/event at this moment?
-
 		if (!canJoin(player)){
 			return true;}
 		/// Call the joining event
@@ -220,6 +222,11 @@ public class BAExecutor extends CustomCommandExecutor {
 				return sendSystemMessage(player,"valid_arena_not_built",mp.toPrettyString());
 			}
 		}
+
+		if (arena != null && !arena.isJoinable()){
+			return MessageUtil.sendMessage(player, "&c " + arena.getName() +" not joinable");
+		}
+
 		//		BTInterface bti = BTInterface.getInterface(mp);
 		//		if (bti.isValid()){
 		//			bti.updateRanking(t);
@@ -292,69 +299,11 @@ public class BAExecutor extends CustomCommandExecutor {
 	public boolean leave(ArenaPlayer p, MatchParams mp, boolean adminLeave) {
 		if (!canLeave(p)){
 			return true;}
-
-		boolean inSystem = false;
-		/// Are they even in a queue?
-		ParamTeamPair qo = ac.removeFromQue(p);
-		Log.debug(" ---- qo ====== " + qo);
-		if(qo != null){
-			ArenaTeam t = TeamController.getTeam(p);
-			if (t != null && qo != null){
-				inSystem = true;
-				TeamController.removeTeamHandlers(t);
-				sendSystemMessage(p,"you_left_queue",qo.getMatchParams().getName());
-			} else {
-				sendSystemMessage(p,"you_not_in_queue");
-			}
-		}
-
-		try{
-			Competition comp = null;
-			while ((comp = p.getCompetition()) != null){
-				p.removeCompetition(comp);
-				inSystem=true;
-				if (comp.leave(p)){
-					sendSystemMessage(p,"you_left_competition",comp.getName());}
-				if (comp.getParams().hasLobby()){
-					LobbyController.leaveLobby(comp.getParams(), p);}
-			}
-
-			if (inSystem){
-				return true;
-			}
-
-			comp = ac.getMatch(p);
-			if (comp != null){
-				inSystem = true;
-				comp.leave(p);
-				return sendSystemMessage(p,"you_left_competition",comp.getName());
-			}
-
-			comp = insideEvent(p);
-			if (comp != null){
-				inSystem = true;
-				comp.leave(p);
-				return sendSystemMessage(p,"you_left_competition", comp.getName());
-			}
-
-			ParamTeamPair qtp = null;
-			ArenaTeam t = teamc.getSelfFormedTeam(p); /// They are in the queue, they are part of a team
-			if (t != null)
-				qtp = ac.removeFromQue(t);
-			else
-				qtp = ac.removeFromQue(p);
-			if (qtp!= null && t!= null && t.size() > 1){
-				inSystem = true;
-				t.sendMessage(MessageHandler.getSystemMessage("team_left_queue", qtp.q.getName(), p.getName()));
-			} else if (qtp != null){
-				inSystem = true;
-				sendSystemMessage(p,"you_left_queue",qtp.q.getName());
-			} else {
-				return sendSystemMessage(p,"you_not_in_queue");
-			}
-			refundFee(qtp.q, qtp.team);
-		} finally {
-			new ArenaPlayerLeaveEvent(p,p.getTeam()).callEvent();
+		ArenaPlayerLeaveEvent event = new ArenaPlayerLeaveEvent(p,p.getTeam(),
+				ArenaPlayerLeaveEvent.QuitReason.QUITCOMMAND);
+		event.callEvent();
+		if (event.getMessages() != null && !event.getMessages().isEmpty()){
+			MessageUtil.sendMessage(event.getPlayer(), event.getMessages());
 		}
 		return true;
 	}
@@ -371,11 +320,17 @@ public class BAExecutor extends CustomCommandExecutor {
 	//		return true;
 	//	}
 
-	@MCCommand(cmds={"cancel"},admin=true,exact=2,usage="cancel <arenaname or player>")
-	public boolean arenaCancel(CommandSender sender, String[] args) {
+	@MCCommand(cmds={"cancel"},admin=true,usage="cancel <arenaname or player>")
+	public boolean arenaCancel(CommandSender sender, MatchParams params, String[] args) {
+		Match match = ac.getSingleMatch(params);
+		if (match != null){
+			match.cancelMatch();
+			return sendMessage(sender,"&2You have canceled the match for &6" + params.getType());
+		}
+		if (args.length < 2)
+			return sendMessage(sender, "cancel <arenaname or player>");
 		if (args[1].equalsIgnoreCase("all")){
 			return cancelAll(sender);}
-
 		Player player = ServerUtil.findPlayer(args[1]);
 		if (player != null){
 			ArenaPlayer ap = PlayerController.toArenaPlayer(player);
@@ -521,6 +476,40 @@ public class BAExecutor extends CustomCommandExecutor {
 		return sendMessage(p,"&eYou are currently not in any arena queues.");
 	}
 
+	@MCCommand(cmds={"auto"}, admin=true, perm="arena.auto")
+	public boolean arenaAuto(CommandSender sender, MatchParams params, String args[]) {
+
+		try {
+			EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null, params);
+			Arena arena = eoo.getArena(params, null);
+			arena.setAllContainerState(PlayerContainerState.OPEN);
+			ac.createAndAutoMatch(arena, eoo);
+			final int max = arena.getParameters().getMaxPlayers();
+			final String maxPlayers = max == ArenaParams.MAX ? "&6any&2 number of players" : max+"&2 players";
+			sendMessage(sender,"&2You have "+args[0]+"ed a &6" + params.getName() +
+					"&2 inside &6" + arena.getName() +" &2TeamSize=&6" + arena.getParameters().getTeamSizeRange() +"&2 #Teams=&6"+
+					arena.getParameters().getNTeamRange() +"&2 supporting "+maxPlayers +"&2 at &5"+arena.getName() );
+		} catch (InvalidOptionException e) {
+			sendMessage(sender, e.getMessage());
+		} catch (Exception e){
+			sendMessage(sender, e.getMessage());
+			Log.printStackTrace(e);
+		}
+		return true;
+	}
+
+	@MCCommand(cmds={"open"}, admin=true, perm="arena.open")
+	public boolean arenaOpen(CommandSender sender, Arena arena) {
+		arena.setAllContainerState(PlayerContainerState.OPEN);
+		return sendMessage(sender,"&6" + arena.getName() +ChatColor.YELLOW+" is now &2open");
+	}
+
+	@MCCommand(cmds={"close"}, admin=true, perm="arena.close")
+	public boolean arenaClose(CommandSender sender, Arena arena) {
+		arena.setAllContainerState(PlayerContainerState.CLOSED);
+		return sendMessage(sender,"&6" + arena.getName() +ChatColor.YELLOW+" is now &4closed");
+	}
+
 	@MCCommand(cmds={"delete"}, admin=true, perm="arena.delete")
 	public boolean arenaDelete(CommandSender sender, Arena arena) {
 		new ArenaDeleteEvent(arena).callEvent();
@@ -608,17 +597,17 @@ public class BAExecutor extends CustomCommandExecutor {
 				sendMessage(sender,ChatColor.YELLOW + "That arena doesnt exist!");
 				return true;
 			}
-			if (arena.getVisitorLoc() == null){
-				sendMessage(sender,ChatColor.YELLOW + "That arena doesnt allow visitors!");
-				return true;
-			}
-			if (visitors.containsKey(pname)){
-				/// Already have their old location.. dont store it
-			} else {
-				visitors.put(pname, p.getLocation());
-			}
-			TeleportController.teleport(p, arena.getVisitorLoc());
-			sendMessage(sender,ChatColor.YELLOW + "You are now watching " + arena.getName() +" /watch leave : to leave");
+			//			if (arena.getVisitorLoc() == null){
+			//				sendMessage(sender,ChatColor.YELLOW + "That arena doesnt allow visitors!");
+			//				return true;
+			//			}
+			//			if (visitors.containsKey(pname)){
+			//				/// Already have their old location.. dont store it
+			//			} else {
+			//				visitors.put(pname, p.getLocation());
+			//			}
+			//			TeleportController.teleport(p, arena.getVisitorLoc());
+			//			sendMessage(sender,ChatColor.YELLOW + "You are now watching " + arena.getName() +" /watch leave : to leave");
 		}
 		return true;
 	}
@@ -910,20 +899,6 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	public boolean canLeave(ArenaPlayer p){
 		return true;
-		//		Match am = ac.getMatch(p);
-		//		if (am != null){
-		//			sendMessage(p,ChatColor.YELLOW + "You cant leave during a match!");
-		//			return false;
-		//		}
-		//
-		//		/// Let the Arena Event controllers handle people inside of events
-		//		Event aec = insideEvent(p);
-		//		if (aec != null && !aec.canLeave(p)){
-		//			sendMessage(p, "&eYou can't leave the &6"+aec.getName()+"&e while its &6"+aec.getState());
-		//			return false;
-		//		}
-		//
-		//		return true;
 	}
 
 	public boolean canJoin(ArenaTeam t){
@@ -949,7 +924,8 @@ public class BAExecutor extends CustomCommandExecutor {
 	private boolean _canJoin(ArenaPlayer player, boolean showMessages, boolean teammate) {
 		/// Check for any competition
 		if (player.getCompetition() != null){
-			if (showMessages) sendMessage(player, "&cYou are already in a competition. &6/arena leave");
+			Log.debug(player.getCompetition() +" <<<<<<<<<<<<<<<<<<<<<< ");
+			if (showMessages) sendMessage(player, "&cYou are still in the "+player.getCompetition().getName()+". &6/arena leave");
 			return false;
 		}
 		/// Inside MobArena?
