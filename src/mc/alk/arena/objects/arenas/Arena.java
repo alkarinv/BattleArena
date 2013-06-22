@@ -646,6 +646,15 @@ public class Arena extends PlayerContainer {
 		return this.name.equals(arena.name);
 	}
 
+	public boolean withinDistance(Location location, double distance){
+		for (Location l: spawns){
+			if (location.getWorld().getUID() == l.getWorld().getUID() &&
+					location.distance(l) < distance)
+				return true;
+		}
+		return false;
+	}
+
 	public List<String> getInvalidMatchReasons(MatchParams matchParams, JoinOptions jp) {
 		List<String> reasons = new ArrayList<String>();
 		reasons.addAll(getParameters().getInvalidMatchReasons(matchParams));

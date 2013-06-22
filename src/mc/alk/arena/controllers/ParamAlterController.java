@@ -103,7 +103,7 @@ public class ParamAlterController {
 		case MATCHTIME: params.setMatchTime((Integer)value);break;
 		case PRESTARTTIME:
 			iv = ((Integer)value).intValue();
-			checkGreater(iv,1, true);
+			checkGreater(iv,0, true);
 			params.setSecondsTillMatch(iv);
 			break;
 		case VICTORYTIME:

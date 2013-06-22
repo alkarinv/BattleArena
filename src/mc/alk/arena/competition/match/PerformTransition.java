@@ -168,6 +168,7 @@ public class PerformTransition {
 
 		/// Only do if player is online options
 		if (playerReady && !dead){
+			Double prizeMoney = null; /// kludge, take out when I find a better way to display messages
 			if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){ psc.storeGamemode(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREEXPERIENCE)){ psc.storeExperience(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREITEMS)) { psc.storeItems(player);}
@@ -192,6 +193,11 @@ public class PerformTransition {
 			if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p);}
 			if (DisguiseInterface.enabled() && disguiseAllAs != null) {DisguiseInterface.disguisePlayer(p, disguiseAllAs);}
 			if (mo.getMoney() != null) {MoneyController.add(player.getName(), mo.getMoney());}
+			if (mo.hasOption(TransitionOption.POOLMONEY) && am instanceof Match) {
+				prizeMoney = ((Match)am).prizePoolMoney * mo.getDouble(TransitionOption.POOLMONEY) /
+						team.size();
+				MoneyController.add(player.getName(), prizeMoney);
+			}
 			if (mo.getExperience() != null) {ExpUtil.giveExperience(p, mo.getExperience());}
 			if (mo.hasOption(TransitionOption.REMOVEPERMS)){ removePerms(player, mo.getRemovePerms());}
 			if (mo.hasOption(TransitionOption.ADDPERMS)){ addPerms(player, mo.getAddPerms(), 0);}
@@ -224,9 +230,10 @@ public class PerformTransition {
 			try{if (effects != null)
 				EffectUtil.enchantPlayer(p, effects);} catch (Exception e){}
 
-			String prizeMsg = mo.getPrizeMsg(null);
-			if (prizeMsg != null)
+			String prizeMsg = mo.getPrizeMsg(null, prizeMoney);
+			if (prizeMsg != null){
 				MessageUtil.sendMessage(player,"&eYou have been given \n"+prizeMsg);
+			}
 			if (teleportIn){
 				transition(am, MatchState.ONSPAWN, player, team, false);
 			}

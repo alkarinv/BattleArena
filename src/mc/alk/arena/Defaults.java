@@ -53,6 +53,7 @@ public class Defaults {
 	/// 30 minutes before people can duel a players that has rejected it once before
 	public static int DUEL_CHALLENGE_INTERVAL = 60*30;
 	public static boolean DUEL_ALLOW_RATED = false;
+	public static boolean DUEL_CHALLENGE_ADMINS = false;
 
 	/// EVENT OPTIONS
 	public static boolean ALLOW_PLAYER_EVENT_CREATION = false;

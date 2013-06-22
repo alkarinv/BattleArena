@@ -11,6 +11,7 @@ import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.Log;
@@ -81,7 +82,7 @@ public class DuelOptions {
 					throw new InvalidOptionException("&cPlayer &6" + p.getDisplayName() +"&c is not online!");
 				if (challenger != null && p.getName().equals(challenger.getName()))
 					throw new InvalidOptionException("&cYou can't challenge yourself!");
-				if (p.hasPermission(Permissions.DUEL_EXEMPT)){
+				if (p.hasPermission(Permissions.DUEL_EXEMPT) && !Defaults.DUEL_CHALLENGE_ADMINS){
 					throw new InvalidOptionException("&cThis player can not be challenged!");}
 				dop.challengedPlayers.add(BattleArena.toArenaPlayer(p));
 				continue;
@@ -189,6 +190,24 @@ public class DuelOptions {
 
 	public static void setDefaults(DuelOptions dop) {
 		DuelOptions.defaultOptions = dop;
+	}
+
+	public boolean matches(ArenaPlayer player, MatchParams mp) {
+		if (mp.getTransitionOptions().hasOptionAt(MatchState.PREREQS, TransitionOption.WITHINDISTANCE)){
+			Integer distance = mp.getTransitionOptions().getOptions(MatchState.PREREQS).getWithinDistance();
+			if (options.containsKey(DuelOption.ARENA) ){
+				Arena arena = (Arena) options.get(DuelOption.ARENA);
+				return arena.withinDistance(player.getLocation(), distance);
+			} else {
+				for (Arena arena: BattleArena.getBAController().getArenas(mp)){
+					Log.debug("matches  === " + arena.withinDistance(player.getLocation(), distance));
+					if (arena.withinDistance(player.getLocation(), distance))
+						return true;
+				}
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

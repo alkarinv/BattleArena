@@ -286,6 +286,9 @@ public class TransitionOptions {
 	}
 
 	public String getPrizeMsg(String header) {
+		return getPrizeMsg(header,null);
+	}
+	public String getPrizeMsg(String header, Double poolMoney) {
 		StringBuilder sb = new StringBuilder();
 		boolean hasSomething = false;
 		if (header != null){
@@ -300,6 +303,11 @@ public class TransitionOptions {
 			hasSomething = true;
 			sb.append("&5 - &6" + getMoney()+" " + Defaults.MONEY_STR);
 		}
+		if (poolMoney != null){
+			hasSomething = true;
+			sb.append("&5 - &6" + poolMoney+" " + Defaults.MONEY_STR);
+		}
+
 		if (getGiveItems() != null){
 			hasSomething = true;
 			List<ItemStack> items = getGiveItems();

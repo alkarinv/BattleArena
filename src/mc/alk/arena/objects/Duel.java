@@ -2,6 +2,8 @@ package mc.alk.arena.objects;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
@@ -69,5 +71,16 @@ public class Duel {
 	}
 	public Object getDuelOptionValue(DuelOption option){
 		return options.getOptionValue(option);
+	}
+
+	public DuelOptions getOptions(){
+		return options;
+	}
+
+	public Set<ArenaPlayer> getAllPlayers() {
+		HashSet<ArenaPlayer> players = new HashSet<ArenaPlayer>();
+		players.addAll(challengedPlayers.keySet());
+		players.addAll(challenger.getPlayers());
+		return players;
 	}
 }
