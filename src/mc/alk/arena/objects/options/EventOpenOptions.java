@@ -9,6 +9,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.arenas.Arena;
@@ -64,6 +65,7 @@ public class EventOpenOptions {
 			throws InvalidOptionException{
 		EventOpenOptions eoo = new EventOpenOptions();
 		Map<EventOpenOption,Object> ops = eoo.options;
+
 		int i =0;
 		for (String op: args){
 			if ( ignoreArgs != null && ignoreArgs.contains(i++) || op == null || op.isEmpty())
@@ -80,11 +82,14 @@ public class EventOpenOptions {
 			try{
 				to = EventOpenOption.valueOf(split[0]);
 			} catch(IllegalArgumentException e){
+				e.printStackTrace();
 				throw new InvalidOptionException("&cThe option " + split[0]+" does not exist, \n&cvalid options=&6"+
 						EventOpenOption.getValidList());
 			}
+
 			if (split.length == 1){
-				ops.put(to,null);
+				if (to != EventOpenOption.ARENA)
+					ops.put(to,null);
 				continue;
 			}
 			String val = split[1].trim();
@@ -125,6 +130,14 @@ public class EventOpenOptions {
 			if (obj != null)
 				ops.put(to, obj);
 		}
+//		if (!ops.containsKey(EventOpenOption.TEAMSIZE)){
+//			params.setTeamSizes(new MinMax(1));
+//			ops.put(EventOpenOption.TEAMSIZE, new MinMax(1));
+//		}
+//		if (!ops.containsKey(EventOpenOption.NTEAMS)){
+//			params.setNTeams(new MinMax(2));
+//			ops.put(EventOpenOption.NTEAMS, new MinMax(2));
+//		}
 		eoo.params = new MatchParams(params);
 		eoo.updateParams(eoo.params);
 		return eoo;
@@ -147,7 +160,7 @@ public class EventOpenOptions {
 		if (hasOption(EventOpenOption.UNRATED))
 			mp.setRating(Rating.UNRATED);
 		/// By default lets make the teamSize the min team size if max # teams not specified as a finite range
-		if (mp.getMaxTeams() == ArenaParams.MAX){
+		if (mp.getMaxTeams() == ArenaSize.MAX){
 			mp.setMaxTeamSize(mp.getMinTeamSize());
 		}
 
@@ -191,7 +204,7 @@ public class EventOpenOptions {
 			autoFindArena = true;
 		}
 		if (!arena.valid()){
-			throw new InvalidOptionException("&c Arena is not valid.");}
+			throw new InvalidOptionException("&cArena "+arena.getName()+" is not valid.");}
 		/// We have verified there is a valid arena.. now get a real one from the queue
 		final String arenaName = arena.getName();
 		if (autoFindArena){
@@ -203,7 +216,7 @@ public class EventOpenOptions {
 			if (arena == null){
 				throw new InvalidOptionException("&c Arena &6" +arenaName+"&c is currently in use, you'll have to wait till its free");}
 		}
-		ArenaParams ap = arena.getParameters();
+		ArenaParams ap = arena.getParams();
 		if (!ap.matches(mp)){
 			throw new InvalidOptionException(StringUtils.join(ap.getInvalidMatchReasons(mp),"\n"));}
 

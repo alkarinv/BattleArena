@@ -13,9 +13,9 @@ import mc.alk.arena.controllers.BukkitInterface;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.EventScheduler;
+import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
-import mc.alk.arena.controllers.SignController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.executors.ArenaEditorExecutor;
@@ -28,8 +28,8 @@ import mc.alk.arena.executors.TeamExecutor;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.BAPluginListener;
 import mc.alk.arena.listeners.BASignListener;
+import mc.alk.arena.listeners.SignUpdateListener;
 import mc.alk.arena.listeners.competition.InArenaListener;
-import mc.alk.arena.listeners.competition.MatchListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
@@ -83,9 +83,8 @@ public class BattleArena extends JavaPlugin {
 	private static BAExecutor commandExecutor;
 	private final BAPlayerListener playerListener = new BAPlayerListener(arenaController);
 	private final BAPluginListener pluginListener = new BAPluginListener();
-	private final SignController signController = new SignController();
-	private final BASignListener signListener = new BASignListener(signController);
-	private final MatchListener matchListener = new MatchListener(signController);
+	private final SignUpdateListener signUpdateListener = new SignUpdateListener();
+	private final BASignListener signListener = new BASignListener(signUpdateListener);
 
 	private ArenaControllerSerializer arenaControllerSerializer;
 	private static final BAConfigSerializer baConfigSerializer = new BAConfigSerializer();
@@ -104,10 +103,10 @@ public class BattleArena extends JavaPlugin {
 		MessageUtil.sendMessage(sender,"&4["+pluginname+"] &6v"+version+"&f enabling!");
 
 		BukkitInterface.setServer(Bukkit.getServer()); /// Set the server
-		arenaController = new BattleArenaController(signController);
+		arenaController = new BattleArenaController(signUpdateListener);
 
 		/// Create our plugin folder if its not there
-		File dir = getDataFolder();
+		final File dir = getDataFolder();
 		FileUpdater.makeIfNotExists(dir);
 		FileUpdater.makeIfNotExists(new File(dir+"/competitions"));
 		FileUpdater.makeIfNotExists(new File(dir+"/messages"));
@@ -135,10 +134,11 @@ public class BattleArena extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(playerListener, this);
 		Bukkit.getPluginManager().registerEvents(pluginListener, this);
 		Bukkit.getPluginManager().registerEvents(signListener, this);
-		Bukkit.getPluginManager().registerEvents(matchListener, this);
 		Bukkit.getPluginManager().registerEvents(tc, this);
 		Bukkit.getPluginManager().registerEvents(new TeleportController(), this);
 		Bukkit.getPluginManager().registerEvents(InArenaListener.INSTANCE, this);
+		Bukkit.getPluginManager().registerEvents(signUpdateListener, this);
+
 
 		/// Register our different Victory Types
 		VictoryType.register(LastManStanding.class, this);
@@ -178,16 +178,13 @@ public class BattleArena extends JavaPlugin {
 		/// persist our disabled arena types
 		StateFlagSerializer sfs = new StateFlagSerializer();
 		sfs.setConfig(dir.getPath() +"/saves/state.yml");
-		commandExecutor.setDisabled(sfs.load());
-
+		commandExecutor.setDisabled(sfs.loadEnabled());
 		ArenaSerializer.setBAC(arenaController);
 
-		arenaControllerSerializer.load();
+		sfs.loadLobbyStates(LobbyController.getLobbies());
+		sfs.loadContainerStates(arenaController.getArenas());
 
-		/// Load up our signs
-		signSerializer.setConfig(dir.getPath()+"/saves/signs.yml");
-		signSerializer.loadAll(signController);
-		signController.updateAllSigns();
+		arenaControllerSerializer.load();
 
 		/// Set our commands
 		getCommand("watch").setExecutor(commandExecutor);
@@ -212,6 +209,11 @@ public class BattleArena extends JavaPlugin {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
 			@Override
 			public void run() {
+				/// Load up our signs
+				signSerializer.setConfig(dir.getPath()+"/saves/signs.yml");
+				signSerializer.loadAll(signUpdateListener);
+				signUpdateListener.updateAllSigns();
+
 				eventSchedulerSerializer.loadAll();
 				if (Defaults.START_NEXT)
 					es.startNext();
@@ -242,14 +244,16 @@ public class BattleArena extends JavaPlugin {
 	public void onDisable() {
 		StateFlagSerializer sfs = new StateFlagSerializer();
 		sfs.setConfig(getDataFolder().getPath() +"/saves/state.yml");
-		sfs.save(commandExecutor.getDisabled());
+		sfs.save(commandExecutor.getDisabled(),
+				LobbyController.getLobbies(),
+				arenaController.getArenas());
 
 		BattleArena.getSelf();
 		arenaController.stop();
 		/// we no longer save arenas as those get saved after each alteration now
 		arenaControllerSerializer.save();
 		eventSchedulerSerializer.saveScheduledEvents();
-		signSerializer.saveAll(signController);
+		signSerializer.saveAll(signUpdateListener);
 
 		if (Defaults.AUTO_UPDATE)
 			PluginUpdater.updatePlugin(this);

@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.containers.LobbyWRContainer;
+import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.LocationType;
@@ -66,6 +66,8 @@ public class ArenaAlterController {
 				if (Integer.valueOf(str) != null)
 					return SPAWNLOC;
 			} catch (Exception e){}
+			if (str.equalsIgnoreCase("main"))
+				return SPAWNLOC;
 			if (TeamUtil.getTeamIndex(str) != null){
 				return SPAWNLOC;}
 			return null;
@@ -97,7 +99,9 @@ public class ArenaAlterController {
 		return true;
 	}
 
-	public static boolean alterArena(CommandSender sender, MatchParams params, Arena arena, String[] args) {
+	public static boolean alterArena(CommandSender sender, MatchParams params, Arena arena, String[] args)
+		throws IllegalStateException
+	{
 		if (args.length < 3){
 			showAlterHelp(sender);
 			return false;
@@ -142,7 +146,7 @@ public class ArenaAlterController {
 			break;
 		}
 		if (success)
-			BattleArena.saveArenas();
+			BattleArena.saveArenas(params.getType().getPlugin());
 		return success;
 	}
 
@@ -222,18 +226,15 @@ public class ArenaAlterController {
 			sendMessage(sender,"&cYou need to be in game to use this command");
 			return -1;
 		}
-		Integer locindex = -1;
-		try{locindex = Integer.parseInt(value);}catch(Exception e){}
-		if (locindex == -1){
-			locindex = TeamUtil.getTeamIndex(value);
-			if (locindex!=null)
-				locindex++;
-		}
-		if (locindex == null || locindex <= 0 || locindex > 100){
-			sendMessage(sender,"&cspawn number must be in the range [1-100]");
+		try{return Integer.parseInt(value) -1;}catch(Exception e){}
+		if (value.equalsIgnoreCase("main"))
+			return Integer.MAX_VALUE;
+		Integer locindex = TeamUtil.getTeamIndex(value);
+		if (locindex == null || locindex > Defaults.MAX_SPAWNS){
+			sendMessage(sender,"&cspawn number must be in the range [1-"+Defaults.MAX_SPAWNS+"] or be main");
 			return -1;
 		}
-		return locindex;
+ 		return locindex-1;
 	}
 
 	private static boolean changeLobbySpawn(CommandSender sender, MatchParams params, BattleArenaController ac,
@@ -243,17 +244,17 @@ public class ArenaAlterController {
 		int locindex = verifySpawnLocation(sender,value);
 		if (locindex == -1)
 			return false;
-
+		String locstr = locindex == Integer.MAX_VALUE ? "main" : locindex+"";
 		Player p = (Player) sender;
 		Location loc = null;
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}
-		LobbyController.addLobby(params.getType(), 0, loc);
+		LobbyController.addLobby(params.getType(), locindex, loc);
 		PlayerContainerSerializer pcs = new PlayerContainerSerializer();
 		pcs.setConfig(BattleArena.getSelf().getDataFolder().getPath()+"/saves/containers.yml");
 		pcs.save();
-		return sendMessage(sender,"&2Lobby &6"+locindex +"&2 for&6 "+ params.getName() +" &2 set to location=&6" + Util.getLocString(loc));
+		return sendMessage(sender,"&2Lobby &6"+locstr +"&2 for&6 "+ params.getName() +" &2 set to location=&6" + Util.getLocString(loc));
 	}
 
 	private static boolean changeWaitroomSpawn(CommandSender sender, Arena arena, BattleArenaController ac,
@@ -263,10 +264,9 @@ public class ArenaAlterController {
 		int locindex = verifySpawnLocation(sender,value);
 		if (locindex == -1)
 			return false;
-
+		String locstr = locindex == Integer.MAX_VALUE ? "main" : locindex+"";
 		Player p = (Player) sender;
 		Location loc = null;
-		ac.removeArena(arena);
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}
@@ -274,10 +274,11 @@ public class ArenaAlterController {
 		if (mp == null){
 			throw new IllegalStateException("MatchParams for " + arena.getArenaType() +" could not be found");}
 		if (arena.getWaitroom() == null){
-			arena.setWaitRoom(new LobbyWRContainer(mp, LocationType.WAITROOM));}
-		arena.setWaitRoomSpawnLoc(locindex-1,loc);
+			arena.setWaitRoom(new RoomContainer(mp, LocationType.WAITROOM));}
+		arena.setWaitRoomSpawnLoc(locindex,loc);
+		ac.removeArena(arena);
 		ac.addArena(arena);
-		return sendMessage(sender,"&2waitroom &6" + locindex +"&2 set to location=&6" + Util.getLocString(loc));
+		return sendMessage(sender,"&2waitroom &6" + locstr +"&2 set to location=&6" + Util.getLocString(loc));
 	}
 
 	private static boolean changeVisitorSpawn(CommandSender sender, Arena arena, BattleArenaController ac,
@@ -293,7 +294,8 @@ public class ArenaAlterController {
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}
-		arena.setSpawnLoc(locindex-1,loc);
+
+		arena.setSpawnLoc(locindex,loc);
 		return sendMessage(sender,"&2team &6" + changetype +"&2 spawn set to location=&6" + Util.getLocString(loc));
 	}
 
@@ -308,13 +310,13 @@ public class ArenaAlterController {
 
 		Player p = (Player) sender;
 		Location loc = null;
-		ac.removeArena(arena);
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}
-		arena.setSpawnLoc(locindex-1,loc);
+		arena.setSpawnLoc(locindex,loc);
+		ac.removeArena(arena);
 		ac.addArena(arena);
-		return sendMessage(sender,"&2team &6" + changetype +"&2 spawn set to location=&6" + Util.getLocString(loc));
+		return sendMessage(sender,"&2 spawn &6"+changetype +" set to location=&6" + Util.getLocString(loc));
 	}
 
 
@@ -325,7 +327,7 @@ public class ArenaAlterController {
 			return false;
 		}
 		ac.removeArena(arena);
-		arena.getParameters().setType(t);
+		arena.getParams().setType(t);
 		ac.addArena(arena);
 		return sendMessage(sender,"&2Altered arena type to &6" + value);
 	}
@@ -333,7 +335,7 @@ public class ArenaAlterController {
 	private static boolean changeNTeams(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
 		try{
 			final MinMax mm = MinMax.valueOf(value);
-			arena.getParameters().setNTeams(mm);
+			arena.getParams().setNTeams(mm);
 			return sendMessage(sender,"&2Altered arena number of teams to &6" + value);
 		} catch (Exception e){
 			sendMessage(sender,"size "+ value + " not found");
@@ -344,7 +346,7 @@ public class ArenaAlterController {
 	private static boolean changeTeamSize(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
 		try{
 			final MinMax mm = MinMax.valueOf(value);
-			arena.getParameters().setTeamSizes(mm);
+			arena.getParams().setTeamSizes(mm);
 			return sendMessage(sender,"&2Altered arena team size to &6" + value);
 		} catch (Exception e){
 			sendMessage(sender,"size "+ value + " not found");

@@ -2,8 +2,8 @@ package mc.alk.arena.controllers;
 
 import java.util.Random;
 
+import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.controllers.containers.LobbyWRContainer;
 import mc.alk.arena.controllers.containers.PlayerContainer;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.PlayerHolder;
@@ -17,7 +17,6 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;
 
@@ -60,9 +59,8 @@ public class TeleportLocationController {
 		player.clearOldLocation();
 		if (loc == null){
 			Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
-		} else if (insideArena || !onlyInMatch){
-			TeleportController.teleportPlayer(player.getPlayer(), loc, wipeInventory, true);
 		}
+
 		ArenaLocation src = new ArenaLocation(am, player.getLocation(),player.getCurLocation());
 		ArenaLocation dest = new ArenaLocation(PlayerContainer.HOMECONTAINER, loc,type);
 		ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
@@ -74,14 +72,9 @@ public class TeleportLocationController {
 		PlayerHolder src = apte.getSrcLocation().getPlayerHolder();
 		PlayerHolder dest = apte.getDestLocation().getPlayerHolder();
 		TeleportDirection td = apte.getDirection();
-		Log.debug( player.getName() +"   " + player.getCurLocation()
-				 + "  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   "   + td);
-		Log.debug("" + src.getLocationType() +"  --- " + dest.getLocationType());
 
 		switch (td){
 		case RESPAWN:
-			Util.printStackTrace();
-			Log.debug("################################# what to do here???? ########");
 			break;
 		case FIRSTIN:
 			mp.getGameManager().onPreJoin(player,apte);
@@ -103,7 +96,6 @@ public class TeleportLocationController {
 		player.setCurLocation(dest.getLocationType());
 		switch (td){
 		case RESPAWN:
-			Log.debug("################################# what to do here???? ########");
 			break;
 		case FIRSTIN:
 			mp.getGameManager().onPostJoin(player,apte);
@@ -120,7 +112,6 @@ public class TeleportLocationController {
 		default:
 			break;
 		}
-
 	}
 
 	private static TeleportDirection calcTeleportDirection(ArenaPlayer player, ArenaLocation src, ArenaLocation dest) {
@@ -137,30 +128,28 @@ public class TeleportLocationController {
 		final MatchParams mp = am.getParams();
 		final boolean randomRespawn = mo.hasOption(TransitionOption.RANDOMRESPAWN);
 		Location l;
-		final boolean teleportIn = mo.shouldTeleportIn();
 		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
 		final boolean teleportLobby = mo.shouldTeleportLobby();
 		final LocationType type;
 		final PlayerHolder ph;
-		Log.debug(player.getName() +" ^^^^^^^^^^^^^^^  " + teleportIn +"  ^^^^^^^^^^ " + teleportWaitRoom +"   lobby="+ teleportLobby +"   " + mp.getName());
 		if (teleportWaitRoom){
-			final LobbyWRContainer wr ;
+			if (mo.hasOption(TransitionOption.TELEPORTMAINWAITROOM)){
+				teamIndex = Defaults.MAIN_SPAWN;}
 			if (am instanceof Match){
 				Match m = (Match) am;
-				wr = m.getArena().getWaitroom();
+				ph = m.getArena().getWaitroom();
 			} else {
-				wr = (LobbyWRContainer) am;
+				ph = am;
 			}
-			ph = wr;
-			Log.debug("wr === " + wr +"      am============" + am);
 			type = LocationType.WAITROOM;
-			l = jitter(wr.getSpawn(teamIndex, randomRespawn),teamIndex);
+			l = jitter(ph.getSpawn(teamIndex, randomRespawn),teamIndex);
 		} else if (teleportLobby){
+			if (mo.hasOption(TransitionOption.TELEPORTMAINLOBBY)){
+				teamIndex = Defaults.MAIN_SPAWN;}
 			ph = LobbyController.getLobby(mp.getType());
-			Log.debug(" ######### ph ==== " + ph +"   " );
 			type = LocationType.LOBBY;
 			l = jitter(LobbyController.getLobbySpawn(teamIndex,mp.getType(),randomRespawn),0);
-		} else {
+		} else { // They should teleportIn, aka to the Arena
 			Arena arena = null;
 			if (am instanceof Match){
 				Match m = (Match) am;
@@ -168,23 +157,10 @@ public class TeleportLocationController {
 			}
 			ph = am;
 			type = LocationType.ARENA;
-			l = arena.getSpawnLoc(teamIndex);
+			l = arena.getSpawn(teamIndex,false);
 		}
 		return new ArenaLocation(ph, l,type);
 	}
-	/// enterArena is supposed to happen before the teleport in Event, but it depends on the result of a teleport
-	/// Since we cant really tell the eventual result.. do our best guess
-//	final LocationType type = LocationType.ARENA;
-//	player.markOldLocation();
-//	final Location l = am.getSpawn(teamIndex, type, randomRespawn);
-//	ArenaLocation src = new ArenaLocation(p.getLocation(),player.getCurLocation());
-//	ArenaLocation dest = new ArenaLocation(l,type);
-//	ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
-//			player,team,src,dest,TeleportDirection.IN);
-//	am.callEvent(apte);
-//	TeleportController.teleportPlayer(p, l, false, true);
-//	PlayerUtil.setGod(p,false);
-//	PlayerStoreController.setGameMode(p, GameMode.SURVIVAL);
 
 	static Location jitter(final Location teamSpawn, int index) {
 		if (index == 0)

@@ -15,7 +15,7 @@ import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeleportController;
-import mc.alk.arena.controllers.containers.LobbyWRContainer;
+import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.listeners.custom.BukkitEventHandler;
 import mc.alk.arena.listeners.custom.RListener;
 import mc.alk.arena.objects.ArenaClass;
@@ -27,22 +27,18 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
-import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfTreeSet;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.NotifierUtil;
-import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -224,24 +220,13 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		if (type == null){
 			return sendMessage(sender, "&cArenaType not found &6" + arenatype);}
 
-		LobbyWRContainer lobby = LobbyController.getLobby(type);
+		RoomContainer lobby = LobbyController.getLobby(type);
 		if (lobby == null){
 			return sendMessage(sender, "&cThere is no lobby for &6" + type.getName());}
 		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(lobby, ToStringStyle.MULTI_LINE_STYLE);
 		sendMessage(sender, rtsb.toString());
 		rtsb = new ReflectionToStringBuilder(lobby.getParams().getTransitionOptions(), ToStringStyle.MULTI_LINE_STYLE);
 		return sendMessage(sender, rtsb.toString());
-	}
-
-	@MCCommand(cmds={"version"}, admin=true)
-	public boolean showVersion(CommandSender sender) {
-		sendMessage(sender, BattleArena.getNameAndVersion());
-		for (ArenaType at : ArenaType.getTypes()){
-			String name = at.getPlugin().getName();
-			String version = at.getPlugin().getDescription().getVersion();
-			sendMessage(sender, at.getName() +"  " + name +"  " + version);
-		}
-		return true;
 	}
 
 	private MatchParams findMatchParam(CommandSender sender, String paramName) {
@@ -346,55 +331,6 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		return sendMessage(sender, "Player " + p.getName() +"  hasPerm " + perm +" " +p.hasPermission(perm));
 	}
 
-	@MCCommand(cmds={"listInv"}, admin=true)
-	public boolean listSaves(CommandSender sender, OfflinePlayer p) {
-		Collection<String> dates = InventorySerializer.getDates(p.getName());
-		if (dates == null){
-			return sendMessage(sender, "There are no inventory saves for this player");
-		}
-		int i=0;
-		sendMessage(sender, "Most recent inventory saves");
-		for (String date: dates){
-			sendMessage(sender, ++i +" : " + date);
-		}
-		return true;
-	}
-
-	@MCCommand(cmds={"listInv"}, admin=true)
-	public boolean listSave(CommandSender sender, OfflinePlayer p, Integer index) {
-		if (index < 0 || index > Defaults.NUM_INV_SAVES){
-			return sendMessage(sender,"&c index must be between 1-"+Defaults.NUM_INV_SAVES);}
-		PInv pinv = InventorySerializer.getInventory(p.getName(), index-1);
-		if (pinv == null)
-			return sendMessage(sender, "&cThis index doesn't have an inventory!");
-		sendMessage(sender, "&6" + p.getName() +" inventory at save " + index);
-		boolean has = false;
-		for (ItemStack is: pinv.armor){
-			if (is == null || is.getType() == Material.AIR) continue;
-			sendMessage(sender, "&a armor: &6" + InventoryUtil.getItemString(is));
-			has = true;
-		}
-		for (ItemStack is: pinv.contents){
-			if (is == null || is.getType() == Material.AIR) continue;
-			sendMessage(sender, "&b inv: &6" + InventoryUtil.getItemString(is));
-			has = true;
-		}
-		if (!has){
-			sendMessage(sender, "&cThis index doesn't have any items");}
-		return true;
-	}
-
-	@MCCommand(cmds={"restoreInv"}, admin=true)
-	public boolean restoreInv(CommandSender sender, ArenaPlayer p, Integer index) {
-		if (index < 0 || index > Defaults.NUM_INV_SAVES){
-			return sendMessage(sender,"&c index must be between 1-"+Defaults.NUM_INV_SAVES);}
-		if (InventorySerializer.restoreInventory(p,index-1)){
-			return sendMessage(sender, "&2Player inventory restored");
-		} else {
-			return sendMessage(sender, "&cPlayer inventory could not be restored");
-		}
-	}
-
 	@MCCommand(cmds={"setexp"}, op=true)
 	public boolean setExp(CommandSender sender, ArenaPlayer p, Integer exp) {
 		ExpUtil.setTotalExperience(p.getPlayer(), exp);
@@ -425,17 +361,6 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public boolean allowAdminCommands(CommandSender sender, Boolean enable) {
 		Defaults.ALLOW_ADMIN_CMDS_IN_Q_OR_MATCH = enable;
 		return sendMessage(sender,"&2Admins can "+ (enable ? "&6use" : "&cnot use")+"&2 commands in match");
-	}
-
-	@MCCommand(cmds={"giveAdminPerms"}, op=true)
-	public boolean giveAdminPerms(CommandSender sender, Player player, Boolean enable) {
-		if (!PermissionsUtil.giveAdminPerms(player,enable)){
-			return sendMessage(sender,"&cCouldn't change the admin perms of &6"+player.getName());}
-		if (enable){
-			return sendMessage(sender,"&2 "+player.getName()+" &6now has&2 admin perms");
-		} else {
-			return sendMessage(sender,"&2 "+player.getName()+" &4no longer has&2 admin perms");
-		}
 	}
 
 	@MCCommand(cmds={"notify"}, admin=true)

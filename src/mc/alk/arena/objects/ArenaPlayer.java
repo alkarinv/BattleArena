@@ -102,11 +102,11 @@ public class ArenaPlayer {
 		return player.isOnline();
 	}
 
-	public int getHealth() {
+	public double getHealth() {
 		return PlayerUtil.getHealth(player);
 	}
 
-	public void setHealth(int health) {
+	public void setHealth(double health) {
 		PlayerUtil.setHealth(player,health);
 	}
 

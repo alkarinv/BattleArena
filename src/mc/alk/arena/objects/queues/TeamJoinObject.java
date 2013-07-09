@@ -12,10 +12,10 @@ public class TeamJoinObject extends QueueObject{
 	final ArenaTeam team;
 
 	public TeamJoinObject(ArenaTeam team, MatchParams params, JoinOptions joinOptions) {
+		super(joinOptions);
 		this.matchParams = params;
 		this.team = team;
 		priority = team.getPriority();
-		this.jp = joinOptions;
 	}
 
 	public ArenaTeam getTeam() {

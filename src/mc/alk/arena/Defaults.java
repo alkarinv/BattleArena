@@ -40,11 +40,11 @@ public class Defaults {
 	public static boolean USE_COLORNAMES = true;
 
 	/// EVENT OPTIONS
-	public static int AUTO_EVENT_COUNTDOWN_TIME = 180;
+	public static int AUTO_EVENT_COUNTDOWN_TIME = 120;
 	public static int ANNOUNCE_EVENT_INTERVAL = 60;
 
 	/// TOURNEY OPTIONS
-	public static final int TIME_BETWEEN_ROUNDS = 20;
+	public static final int TIME_BETWEEN_ROUNDS = 15;
 
 	/// WORLDGUARD OPTIONS
 	public static final int MAX_REGION_SIZE = 5000000;
@@ -83,7 +83,7 @@ public class Defaults {
 	public static boolean ITEMS_UNSAFE_ENCHANTMENTS = false;
 
     /// DEBUG OPTIONS
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 	public static final boolean DEBUGQ = false;
 	public static final boolean DEBUG_TRACE = false;
 	public static final boolean DEBUG_EVENTS = false;
@@ -96,10 +96,11 @@ public class Defaults {
 	public static boolean DEBUG_COMMANDS = false;
 
 	public static int TIME_BETWEEN_CLASS_CHANGE = 3;
+	public static final int MAX_SPAWNS = 100;
 
 	public static boolean DEBUG_VIRTUAL = false;
 	public static boolean DEBUG_TRANSITIONS = false;
-	public static boolean DEBUG_STORAGE = false;
+	public static boolean DEBUG_STORAGE = true;
 	public static boolean DEBUG_TRACKING = false;
 	public static boolean DEBUG_MATCH_TEAMS = false;
 
@@ -110,4 +111,6 @@ public class Defaults {
 	public static File DIR_SAVES;
 	public static File DIR_COMPETITIONS;
 
+	public static final int MAIN_SPAWN = Integer.MAX_VALUE;
+	public static final int MAX_TEAMS = 1000;
 }

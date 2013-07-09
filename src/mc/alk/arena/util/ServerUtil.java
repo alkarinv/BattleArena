@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Set;
 
 import mc.alk.arena.Defaults;
+import mc.alk.plugin.updater.v1r2.Version;
 import mc.alk.virtualPlayer.VirtualPlayers;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -105,6 +106,29 @@ public class ServerUtil {
 				unfoundplayers.add(name);
 			}
 		}
+	}
+
+	public static Version getBukkitVersion(){
+		final String pkg = Bukkit.getServer().getClass().getPackage().getName();
+		String version = pkg.substring(pkg.lastIndexOf('.') + 1);
+		System.out.println("version = " + version +"    " + Bukkit.getVersion());
+		System.out.println("version = " + version +"    " + Bukkit.getVersion());
+		System.out.println("version = " + version +"    " + Bukkit.getVersion());
+		System.out.println("version = " + version +"    " + Bukkit.getVersion());
+		System.out.println("version = " + version +"    " + Bukkit.getVersion());
+		System.out.println("version = " + version +"    " + Bukkit.getVersion());
+//		final Class<?> clazz;
+//		try {
+			if (version.equalsIgnoreCase("craftbukkit")){
+				return new Version("v1_4_5-");
+			} else{
+				return new Version(version);
+			}
+//		} catch (ClassNotFoundException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//		return null;
 	}
 
 }

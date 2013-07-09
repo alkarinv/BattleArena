@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.TeamController;
@@ -29,7 +30,6 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.CommandUtil;
-import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 
@@ -60,8 +60,11 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	final MethodController methodController = new MethodController();
 
 	protected Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
-
+	/** Spawn points */
 	protected ArrayList<Location> spawns = new ArrayList<Location>();
+
+	/** Main Spawn is different than the normal spawns.  It is specified by Defaults.MAIN_SPAWN */
+	Location mainSpawn = null;
 
 	/** Our teams */
 	protected List<ArenaTeam> teams = Collections.synchronizedList(new ArrayList<ArenaTeam>());
@@ -101,7 +104,6 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	}
 
 	public boolean teamJoining(ArenaTeam team){
-		Log.debug("teamJoining  " + team.getId() +"   this="+this.displayName);
 		teams.add(team);
 		teamIndexes.put(team, teams.size());
 		players.addAll(team.getPlayers());
@@ -110,6 +112,7 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 
 	@EventHandler
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
+		// TODO
 		if (!event.isCancelled() && InArenaListener.inQueue(event.getPlayer().getName()) &&
 				CommandUtil.shouldCancel(event, disabledCommands)){
 			event.setCancelled(true);
@@ -183,6 +186,8 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 
 	@Override
 	public Location getSpawn(int index, boolean random) {
+		if (index == Defaults.MAIN_SPAWN)
+			return mainSpawn != null ? mainSpawn : (spawns.size()==1 ? spawns.get(0) : null);
 		if (random){
 			return spawns.get(r.nextInt(spawns.size()));
 		} else{
@@ -200,20 +205,27 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	 * @param index
 	 * @param loc
 	 */
-	public void setSpawnLoc(int index, Location loc){
-		if (spawns.size() > index){
+	public void setSpawnLoc(int index, Location loc) throws IllegalStateException{
+		if (index == Defaults.MAIN_SPAWN){
+			mainSpawn = loc;
+		} else if (spawns.size() > index){
 			spawns.set(index, loc);
 		} else if (spawns.size() == index){
 			spawns.add(loc);
 		} else {
-			throw new IllegalStateException("You must set the "+(spawns.size()+1) +" index first");
+			throw new IllegalStateException("You must set spawn " + (spawns.size()+1) + " first");
 		}
+	}
+	public boolean validIndex(int index){
+		return spawns != null && spawns.size() < index;
 	}
 
 	public List<Location> getSpawns(){
 		return spawns;
 	}
-
+	public Location getMainSpawn(){
+		return mainSpawn;
+	}
 	public String getName() {
 		return name;
 	}

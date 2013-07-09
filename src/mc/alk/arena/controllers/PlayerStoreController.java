@@ -23,7 +23,7 @@ public class PlayerStoreController {
 	/// TODO since the number of things I am storing is so large now, this might be a good time to refactor these
 	/// into something a bit cleaner
 	final HashMap <String, Integer> expmap = new HashMap<String,Integer>();
-	final HashMap <String, Integer> healthmap = new HashMap<String,Integer>();
+	final HashMap <String, Double> healthmap = new HashMap<String,Double>();
 	final HashMap <String, Integer> healthpmap = new HashMap<String,Integer>();
 	final HashMap <String, Integer> hungermap = new HashMap<String,Integer>();
 	final HashMap <String, Integer> magicmap = new HashMap<String,Integer>();
@@ -62,7 +62,7 @@ public class PlayerStoreController {
 		final String name = player.getName();
 		if (healthmap.containsKey(name))
 			return;
-		int health = player.getHealth();
+		double health = player.getHealth();
 		if (Defaults.DEBUG_STORAGE) Log.info("storing health=" + health+" for player=" + player.getName());
 		healthmap.put(name, health);
 	}
@@ -70,7 +70,7 @@ public class PlayerStoreController {
 	public void restoreHealth(ArenaPlayer p) {
 		if (!healthmap.containsKey(p.getName()))
 			return;
-		Integer val = healthmap.remove(p.getName());
+		Double val = healthmap.remove(p.getName());
 		if (val == null || val <= 0)
 			return;
 		if (Defaults.DEBUG_STORAGE) Log.info("restoring health=" + val+" for player=" + p.getName());

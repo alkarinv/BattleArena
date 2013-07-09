@@ -38,6 +38,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
 
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -204,6 +205,7 @@ public class BAConfigSerializer extends BaseConfig{
 		defaults.setUseTrackerPvP(false);
 		defaults.setTeamSizes(new MinMax(1,ArenaSize.MAX));
 		defaults.setNTeams(new MinMax(2,ArenaSize.MAX));
+		defaults.setNConcurrentCompetitions(ArenaSize.toInt(cs.getString("nConcurrentCompetitions","infinite")));
 
 		List<String> list = cs.getStringList("defaultDuelOptions");
 		if (list != null && !list.isEmpty()){
@@ -262,6 +264,7 @@ public class BAConfigSerializer extends BaseConfig{
 			tops.addOption(TransitionOption.CLEAREXPERIENCE);
 			tops.addOption(TransitionOption.STOREITEMS);
 			tops.addOption(TransitionOption.DEENCHANT);
+			tops.addOption(TransitionOption.GAMEMODE,GameMode.SURVIVAL);
 			tops.addOption(TransitionOption.FLIGHTOFF);
 			OptionSetController.addOptionSet("storeAll", tops);
 

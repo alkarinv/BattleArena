@@ -11,7 +11,6 @@ import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
 import mc.alk.arena.events.players.ArenaPlayerEnterQueueEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveMatchEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveQueueEvent;
-import mc.alk.arena.util.Log;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -57,13 +56,11 @@ public enum InArenaListener implements Listener {
 				Bukkit.getPluginManager().registerEvents(l, BattleArena.getSelf());
 			}
 		}
-		Log.debug("#####################  +++++++  player " + event.getPlayer().getName() );
 		inArena.add(event.getPlayer().getName());
 	}
 
 	@EventHandler
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveMatchEvent event){
-		Log.debug("#####################  --------  player " + event.getPlayer().getName() );
 		if (inArena.remove(event.getPlayer().getName()) && inArena.isEmpty()){
 			registered = false;
 			for (Listener l: listeners){

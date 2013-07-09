@@ -44,7 +44,9 @@ public enum TransitionOption{
 	NOTEAMNAMECOLOR("noTeamNameColor", false),		/// Dont use team name color
 
 	/// Teleport Options
+	TELEPORTMAINWAITROOM("teleportMainWaitRoom",false), /// Teleport players to the main waitroom
 	TELEPORTWAITROOM("teleportWaitRoom",false), 	/// Teleport players to the waitroom
+	TELEPORTMAINLOBBY("teleportMainLobby",false), 	/// Teleport players to the main lobby
 	TELEPORTLOBBY("teleportLobby",false), 			/// Teleport players to the lobby
 	TELEPORTCOURTYARD("teleportCourtyard",false), 	/// Teleport players to the courtyard
 	TELEPORTIN ("teleportIn",false),  				/// Teleport players into the arena
@@ -146,6 +148,8 @@ public enum TransitionOption{
 	public Object parseValue(String value) throws Exception{
 		/// Handle values for this option
 		switch(this){
+		case HEALTHP:
+		case HEALTH:
 		case POOLMONEY:
 		case MONEY:
 			return Double.valueOf(value);
@@ -153,7 +157,6 @@ public enum TransitionOption{
 			return MinMax.valueOf(value);
 		case DISGUISEALLAS:
 			return value;
-		case HEALTH: case HEALTHP:
 		case MAGIC: case MAGICP:
 		case HUNGER:
 		case EXPERIENCE:

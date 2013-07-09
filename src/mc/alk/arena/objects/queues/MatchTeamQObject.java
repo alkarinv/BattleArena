@@ -11,6 +11,7 @@ public class MatchTeamQObject extends QueueObject{
 	final Matchup matchup;
 
 	public MatchTeamQObject(Matchup matchup){
+		super(matchup.getJoinOptions());
 		matchParams = matchup.getMatchParams();
 		this.matchup = matchup;
 		this.priority = matchup.getPriority();

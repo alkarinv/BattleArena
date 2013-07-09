@@ -11,11 +11,20 @@ import java.util.Set;
  * @param <K>
  * @param <V>
  */
-public class MapOfHash<K,V> extends HashMap<K,HashSet<V>>{
+public class MapOfSet<K,V> extends HashMap<K,Set<V>>{
 	private static final long serialVersionUID = 1L;
+	@SuppressWarnings("rawtypes")
+	Class<? extends Set> instanstiationClass = HashSet.class;
+
+	public MapOfSet(){
+		super();
+	}
+	public MapOfSet(Class<? extends Set<V>> setClass){
+		this.instanstiationClass = setClass;
+	}
 
 	public void add(K k, V v) {
-		HashSet<V> set = getOrMake(k);
+		Set<V> set = getOrMake(k);
 		set.add(v);
 	}
 
@@ -32,10 +41,16 @@ public class MapOfHash<K,V> extends HashMap<K,HashSet<V>>{
 		return removed;
 	}
 
-	private HashSet<V> getOrMake(K k) {
-		HashSet<V> set = get(k);
+	@SuppressWarnings("unchecked")
+	private Set<V> getOrMake(K k) {
+		Set<V> set = get(k);
 		if (set == null){
-			set = new HashSet<V>();
+			try {
+				set = instanstiationClass.newInstance();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
 			synchronized(this){
 				put(k, set);
 			}
@@ -43,11 +58,8 @@ public class MapOfHash<K,V> extends HashMap<K,HashSet<V>>{
 		return set;
 	}
 
-	public HashSet<V> getSafe(K k){
-		HashSet<V> set = get(k);
-		if (set == null)
-			return null;
-		return new HashSet<V>(set);
+	public Set<V> getSafer(K k){
+		return !containsKey(k) ? null : new HashSet<V>(get(k));
 	}
 
 }

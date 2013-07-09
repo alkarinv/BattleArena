@@ -1,6 +1,6 @@
 package mc.alk.arena.util;
 
-import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.ArenaSize;
 
 public class MinMax {
 	public int min;
@@ -26,7 +26,7 @@ public class MinMax {
 		if (s.contains("+")){
 			s = s.replaceAll("\\+", "");
 			Integer i = Integer.valueOf(s);
-			return new MinMax(i,ArenaParams.MAX);
+			return new MinMax(i,ArenaSize.MAX);
 		}
 		if (s.contains("-")){
 			String[] vals = s.split("-");
@@ -48,7 +48,7 @@ public class MinMax {
 	public static String getStr(int min, int max){
 		if (min==max)
 			return min+"";
-		if (max == ArenaParams.MAX){
+		if (max == ArenaSize.MAX){
 			return min+"+";}
 		return min+"-"+max;
 	}

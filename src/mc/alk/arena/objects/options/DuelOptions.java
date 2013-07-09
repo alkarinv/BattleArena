@@ -200,7 +200,6 @@ public class DuelOptions {
 				return arena.withinDistance(player.getLocation(), distance);
 			} else {
 				for (Arena arena: BattleArena.getBAController().getArenas(mp)){
-					Log.debug("matches  === " + arena.withinDistance(player.getLocation(), distance));
 					if (arena.withinDistance(player.getLocation(), distance))
 						return true;
 				}

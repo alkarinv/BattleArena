@@ -1,5 +1,6 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -22,8 +23,8 @@ public class StateController {
 		JoinResult jr = amq.join(tqo,shouldStart );
 		MatchParams mp = tqo.getMatchParams();
 		/// who is responsible for doing what
-		Log.debug(" Join status = " + jr.status +"    " + tqo.getTeam() + "   " + tqo.getTeam().getId() +" --"
-				+ ", haslobby="+mp.hasLobby() +"  ,wr="+(mp.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM))+"  "+
+		if (Defaults.DEBUG)Log.info(" Join status = " + jr.status +"    " + tqo.getTeam() + "   " + tqo.getTeam().getId() +" --"
+				+ ", haslobby="+mp.needsLobby() +"  ,wr="+(mp.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM))+"  "+
 				"   --- hasArena=" + tqo.getJoinOptions().hasArena());
 		switch(jr.status){
 		case ADDED_TO_ARENA_QUEUE:
@@ -38,11 +39,11 @@ public class StateController {
 		default:
 			break;
 		}
-		if (mp.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTLOBBY)){
+		if (mp.needsLobby()){
 			lobbies.joinLobby(tqo.getMatchParams().getType(), tqo.getTeam());
 		}
 		if (tqo.getJoinOptions().hasArena()){
-			if (mp.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM)){
+			if (mp.needsWaitroom()){
 				waitrooms.joinWaitroom(tqo.getJoinOptions().getArena(), tqo.getTeam());
 			} else if (mp.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)){
 				tqo.getJoinOptions().getArena().teamJoining(tqo.getTeam());

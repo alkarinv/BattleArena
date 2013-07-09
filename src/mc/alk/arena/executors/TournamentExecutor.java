@@ -8,7 +8,6 @@ import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.events.TournamentEvent;
 import mc.alk.arena.controllers.BAEventController.SizeEventPair;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
@@ -29,7 +28,12 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 		super();
 	}
 
+	@Override
 	@MCCommand(cmds={"open","auto"},admin=true)
+	public boolean arenaAuto(CommandSender sender, MatchParams params, String args[]) {
+		return open(sender, (EventParams)params, args);
+	}
+
 	public boolean open(CommandSender sender, EventParams eventParams, String[] args) {
 		try {
 			openIt(sender,eventParams,args);
@@ -60,6 +64,7 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 			sendMessage(sender,"&cCommand: &6/tourney <open|auto> <matchType> [options...]");
 			return null;
 		}
+
 		EventOpenOptions eoo=null;
 		EventParams ep = new EventParams(mp);
 		try {
@@ -98,7 +103,7 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 			return null;
 		}
 		final int max = ep.getMaxPlayers();
-		final String maxPlayers = max == ArenaParams.MAX ? "&6any&2 number of players" : max+"&2 players";
+		final String maxPlayers = max == ArenaSize.MAX ? "&6any&2 number of players" : max+"&2 players";
 		sendMessage(sender,"&2You have "+eoo.getOpenCmd()+"ed a &6" + event.getDisplayName() +
 				" &2TeamSize=&6" + ep.getTeamSizeRange() +"&2 #Teams=&6"+
 				ep.getNTeamRange() +"&2 supporting "+maxPlayers);

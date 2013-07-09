@@ -3,6 +3,7 @@ package mc.alk.arena.controllers;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.competition.BlockBreakListener;
 import mc.alk.arena.listeners.competition.BlockPlaceListener;
+import mc.alk.arena.listeners.competition.DamageListener;
 import mc.alk.arena.listeners.competition.ItemDropListener;
 import mc.alk.arena.listeners.competition.ItemPickupListener;
 import mc.alk.arena.listeners.competition.PlayerTeleportListener;
@@ -14,6 +15,10 @@ import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
 public class ListenerAdder {
 
 	public static void addListeners(PlayerHolder match, MatchTransitions tops) {
+		boolean needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
+
+		if (needsDamageEvents){
+			match.addArenaListener(new DamageListener(match));}
 		if (tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE, TransitionOption.WGNOENTER)){
 			match.addArenaListener(new PlayerTeleportListener(match));}
 		if (tops.hasAnyOption(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF)){

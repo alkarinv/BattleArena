@@ -15,6 +15,8 @@ import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.Util;
 
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -34,7 +36,7 @@ public class PlayerRestoreController {
 	Location lastLoc = null;
 
 	Integer exp = null;
-	Integer health = null;
+	Double health = null;
 	Integer hunger = null;
 	Integer magic = null;
 	GameMode gamemode = null;
@@ -49,6 +51,7 @@ public class PlayerRestoreController {
 	}
 
 	public synchronized boolean handle(final Player p, PlayerRespawnEvent event) {
+		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
 		if (message != null){
 			handleMessage(p);}
 
@@ -61,8 +64,8 @@ public class PlayerRestoreController {
 		}
 
 		/// Teleport players, or set respawn point
-		if (tp2 != null && lastLoc != null){
-			handleEnsureTeleport(p, event);}
+//		if (tp2 != null && lastLoc != null){
+//			handleEnsureTeleport(p, event);}
 
 		/// Teleport players, or set respawn point
 		if (teleportLocation != null){
@@ -171,7 +174,7 @@ public class PlayerRestoreController {
 	}
 
 	private void handleHealth() {
-		final int val = health;
+		final Double val = health;
 		health = null;
 		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 			public void run() {
@@ -211,7 +214,6 @@ public class PlayerRestoreController {
 		final Location loc = teleportLocation;
 		tp2 = loc;
 		teleportLocation = null;
-		NotifierUtil.notify("tp", name+"  respawning to loc=" + loc +"   curloc="+p.getLocation());
 		if (loc != null){
 			if (event == null){
 				Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
@@ -364,7 +366,7 @@ public class PlayerRestoreController {
 			this.exp += exp;
 	}
 
-	public void setHealth(Integer health) {
+	public void setHealth(Double health) {
 		this.health = health;
 	}
 
@@ -439,7 +441,7 @@ public class PlayerRestoreController {
 		return exp;
 	}
 
-	public Integer getHealth() {
+	public Double getHealth() {
 		return health;
 	}
 

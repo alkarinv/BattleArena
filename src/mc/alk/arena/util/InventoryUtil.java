@@ -269,6 +269,12 @@ public class InventoryUtil {
 		if (DEBUG) System.out.println(mat +"   " + itemStr +"   " + dataValue);
 		if (mat != null && mat != Material.AIR) {
 			return new ItemStack(mat.getId(), 1, dataValue);
+		} else {
+			if (itemStr.equalsIgnoreCase("steak")){
+				return new ItemStack(Material.COOKED_BEEF, 1);
+			} else if (itemStr.equalsIgnoreCase("chicken")){
+				return new ItemStack(Material.COOKED_CHICKEN, 1);
+			}
 		}
 		itemStr = itemStr.toUpperCase();
 		for (Material m : Material.values()){
@@ -972,7 +978,6 @@ public class InventoryUtil {
 			}
 		} else {
 			ItemStack is = inv.getHelmet();
-			Log.debug("is == " + is  +"  isarmor = " + InventoryUtil.isRealArmor(is));
 			if (is != null && is.getType() != Material.AIR && InventoryUtil.isRealArmor(is)){
 				nitems2 += is.getAmount();
 				dura2 += is.getDurability()*is.getAmount();

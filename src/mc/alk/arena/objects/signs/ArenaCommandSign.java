@@ -1,5 +1,8 @@
 package mc.alk.arena.objects.signs;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.executors.BAExecutor;
@@ -8,22 +11,29 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.JoinType;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.util.SerializerUtil;
+import mc.alk.arena.util.SignUtil;
 
-public class ArenaCommandSign {
+import org.bukkit.Location;
+import org.bukkit.block.Sign;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+
+public class ArenaCommandSign implements ConfigurationSerializable{
 	public static enum ARENA_COMMAND{
 		JOIN, LEAVE, START;
 	}
-
+	final Location location;
 	MatchParams mp;
 	ARENA_COMMAND command;
 	String options1;
 	String options2;
 
-	public ArenaCommandSign(MatchParams mp, ARENA_COMMAND cmd, String op1, String op2) {
+	public ArenaCommandSign(Location location, MatchParams mp, ARENA_COMMAND cmd, String op1, String op2) {
 		this.mp = mp;
 		this.command = cmd;
 		this.options1 = op1;
 		this.options2 = op2;
+		this.location = location;
 	}
 
 	public void performAction(ArenaPlayer player) {
@@ -39,7 +49,7 @@ public class ArenaCommandSign {
 		String args[];
 		switch (command){
 		case JOIN:
-			args = new String[]{"join", options1,options2};
+			args = new String[]{"join", options1};
 			executor.join(player, mp, args, true);
 			break;
 		case LEAVE:
@@ -57,7 +67,7 @@ public class ArenaCommandSign {
 		String args[];
 		switch (command){
 		case JOIN:
-			args = new String[]{"join", options1,options2};
+			args = new String[]{"join", options1};
 			executor.eventJoin(player, ep, args, true);
 			break;
 		case LEAVE:
@@ -76,6 +86,35 @@ public class ArenaCommandSign {
 
 	public ARENA_COMMAND getCommand() {
 		return command;
+	}
+	public String getOption1(){
+		return options1;
+	}
+
+	@Override
+	public Map<String, Object> serialize() {
+		HashMap<String,Object> map = new HashMap<String,Object>();
+		map.put("location", SerializerUtil.getBlockLocString(location));
+		return map;
+	}
+
+	public static ArenaCommandSign deserialize(Map<String, Object> map) {
+		Location location = SerializerUtil.getLocation((String) map.get("location"));
+		if (location == null)
+			return null;
+		Sign s = SignUtil.getSign(location);
+		if (s == null)
+			return null;
+		ArenaCommandSign acs = SignUtil.getArenaCommandSign(s);
+		return acs;
+	}
+
+	public Location getLocation() {
+		return location;
+	}
+
+	public Sign getSign() {
+		return SignUtil.getSign(location);
 	}
 
 }

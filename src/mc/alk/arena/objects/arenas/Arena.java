@@ -9,12 +9,9 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.SpawnController;
-import mc.alk.arena.controllers.WorldGuardController;
-import mc.alk.arena.controllers.containers.LobbyWRContainer;
-import mc.alk.arena.controllers.containers.PlayerContainer;
-import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
@@ -30,14 +27,11 @@ import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.Persist;
-import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-public class Arena extends PlayerContainer {
-
-	protected ArenaParams ap; /// Size and arena type info
+public class Arena extends RoomContainer {
 
 	/// If this is not null, this is where distance will be based off of, otherwise it's an area around the spawns
 	protected Location joinloc = null;
@@ -48,21 +42,13 @@ public class Arena extends PlayerContainer {
 
 	protected Match match = null;
 
-	protected LobbyWRContainer waitroom;
+	protected RoomContainer waitroom;
 
-	protected LobbyWRContainer visitorRoom;
+	protected RoomContainer visitorRoom;
 
-	protected LobbyWRContainer lobby;
+	protected RoomContainer lobby;
 
 	protected Random rand = new Random(); /// a random
-
-	@Persist
-	@Deprecated
-	protected String wgRegionName;
-
-	@Persist
-	@Deprecated
-	protected String wgRegionWorld;
 
 	@Persist
 	protected WorldGuardRegion wgRegion;
@@ -74,18 +60,13 @@ public class Arena extends PlayerContainer {
 	 * Arena constructor
 	 */
 	public Arena(){
-
+		super(LocationType.ARENA);
 	}
 
 	/**
 	 * Called after construction or after persistance variables have been assigned, whichever is later
 	 */
 	void privateInit(){
-		/// Transition to the new way of making regions (actually still only halfway complete)
-		if (wgRegionWorld != null && wgRegionName != null && wgRegion == null){
-			wgRegion = new WorldGuardRegion(wgRegionWorld, wgRegionName);
-			wgRegionWorld = wgRegionName = null;
-		}
 		try{init();}catch(Exception e){e.printStackTrace();}
 	}
 	/**
@@ -100,8 +81,6 @@ public class Arena extends PlayerContainer {
 	 */
 	void privateDelete(){
 		try{delete();}catch(Exception e){e.printStackTrace();}
-		if (wgRegionName != null && wgRegionWorld != null && WorldGuardController.hasWorldGuard())
-			WorldGuardController.deleteRegion(wgRegionWorld, wgRegionName);
 	}
 
 	/**
@@ -336,7 +315,7 @@ public class Arena extends PlayerContainer {
 	 * @param loc
 	 */
 	public void setWaitRoomSpawnLoc(int index, Location loc) {
-		waitroom.addSpawn(index, loc);
+		waitroom.setSpawnLoc(index, loc);
 	}
 
 	/**
@@ -347,28 +326,28 @@ public class Arena extends PlayerContainer {
 		return joinloc;
 	}
 
-	/**
-	 * Set a visitor spawn location
-	 * @param loc
-	 */
-	public void setVisitorLoc(int index, Location loc) {
-		if (visitorRoom == null){
-			this.visitorRoom = new LobbyWRContainer(ParamController.getMatchParams(getArenaType().getName()),
-					LocationType.VISITORROOM);}
-		this.visitorRoom.setSpawnLoc(index, loc);
-	}
+	//	/**
+	//	 * Set a visitor spawn location
+	//	 * @param loc
+	//	 */
+	//	public void setVisitorLoc(int index, Location loc) {
+	//		if (visitorRoom == null){
+	//			this.visitorRoom = new RoomContainer(ParamController.getMatchParams(getArenaType().getName()),
+	//					LocationType.VISITORROOM);}
+	//		this.visitorRoom.setSpawnLoc(index, loc);
+	//	}
 
-	/**
-	 * Set the Arena parameters
-	 * @param arenaParams
-	 */
-	public void setParameters(ArenaParams arenaParams){this.ap = arenaParams;}
-
-	/**
-	 * Get the arena params
-	 * @return
-	 */
-	public ArenaParams getParameters() {return ap;}
+//	/**
+//	 * Set the Arena parameters
+//	 * @param arenaParams
+//	 */
+//	public void setParameters(ArenaParams arenaParams){this.ap = arenaParams;}
+//
+//	/**
+//	 * Get the arena params
+//	 * @return
+//	 */
+//	public ArenaParams getParameters() {return ap;}
 
 	/**
 	 * Set the name of this arena
@@ -397,7 +376,7 @@ public class Arena extends PlayerContainer {
 	 * @return ArenaType
 	 */
 	public ArenaType getArenaType() {
-		return ap.getType();
+		return params.getType();
 	}
 
 	/**
@@ -405,7 +384,7 @@ public class Arena extends PlayerContainer {
 	 * @return
 	 */
 	public boolean valid() {
-		return (!(name == null || spawns.size() <1 || spawns.get(0) == null || !ap.valid() ));
+		return (!(name == null || spawns.size() <1 || spawns.get(0) == null || !params.valid() ));
 	}
 
 	public List<String> getInvalidReasons() {
@@ -413,7 +392,7 @@ public class Arena extends PlayerContainer {
 		if (name == null) reasons.add("Arena name is null");
 		if (spawns.size() <1) reasons.add("needs to have at least 1 spawn location");
 		if (spawns.get(0) == null) reasons.add("1st spawn is set to a null location");
-		reasons.addAll(ap.getInvalidReasons());
+		reasons.addAll(params.getInvalidReasons());
 		return reasons;
 	}
 
@@ -543,6 +522,7 @@ public class Arena extends PlayerContainer {
 	 * Return the team of this player
 	 * @return
 	 */
+	@Override
 	public ArenaTeam getTeam(ArenaPlayer p){
 		return match == null ? null : match.getTeam(p);
 	}
@@ -572,35 +552,6 @@ public class Arena extends PlayerContainer {
 			spawnController.stop();}
 	}
 
-
-	/**
-	 * Return a string of appended spawn locations
-	 * @return
-	 */
-	public String getSpawnLocationString(){
-		StringBuilder sb = new StringBuilder();
-		for (int i=0;i< spawns.size();i++){
-			Location l = spawns.get(i);
-			if (l != null) sb.append("["+(i+1)+":"+Util.getLocString(l)+"] ");
-		}
-		return sb.toString();
-	}
-
-	/**
-	 * Return a string of appended waitroom spawn locations
-	 * @return
-	 */
-	public String getWaitroomLocationString(){
-		StringBuilder sb = new StringBuilder();
-		if (waitroom == null)
-			return sb.toString();
-		List<Location> locs = waitroom.getSpawns();
-		for (int i=0;i<locs.size(); i++ ){
-			if (locs.get(i) != null) sb.append("["+(i+1)+":"+Util.getLocString(locs.get(i))+"] ");
-		}
-		return sb.toString();
-	}
-
 	/**
 	 * Checks to see whether this arena has paramaters that match the given matchparams
 	 * @param eventParams
@@ -608,13 +559,12 @@ public class Arena extends PlayerContainer {
 	 * @return
 	 */
 	public boolean matches(final MatchParams matchParams, final JoinOptions jp) {
-		boolean matches = getParameters().matches(matchParams);
-		if (!matches)
+		if (!getParams().matches(matchParams))
 			return false;
 		final MatchTransitions tops = matchParams.getTransitionOptions();
 		if (tops == null)
 			return true;
-		if ((waitroom == null || !waitroom.hasSpawns()) && tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM))
+		if ((waitroom == null || !waitroom.hasSpawns()) && matchParams.needsWaitroom())
 			return false;
 		if (jp == null)
 			return true;
@@ -657,7 +607,7 @@ public class Arena extends PlayerContainer {
 
 	public List<String> getInvalidMatchReasons(MatchParams matchParams, JoinOptions jp) {
 		List<String> reasons = new ArrayList<String>();
-		reasons.addAll(getParameters().getInvalidMatchReasons(matchParams));
+		reasons.addAll(getParams().getInvalidMatchReasons(matchParams));
 		final MatchTransitions tops = matchParams.getTransitionOptions();
 		if (tops != null){
 			final boolean mo = tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM);
@@ -683,6 +633,7 @@ public class Arena extends PlayerContainer {
 		return reasons;
 	}
 
+
 	/**
 	 * Arena printing
 	 */
@@ -697,14 +648,12 @@ public class Arena extends PlayerContainer {
 	 */
 	public String toDetailedString(){
 		StringBuilder sb = new StringBuilder("&6" + name+" &e");
-		sb.append("&eTeamSizes=&6"+ap.getTeamSizeRange() + " &eTypes=&6" +ap.getType());
-		sb.append("&e, #Teams:&6"+ap.getNTeamRange());
+		sb.append("&eTeamSizes=&6"+params.getTeamSizeRange() + " &eTypes=&6" +params.getType());
+		sb.append("&e, #Teams:&6"+params.getNTeamRange());
 		sb.append("&e, #spawns:&6" +spawns.size() +"\n");
 		sb.append("&eteamSpawnLocs=&b"+getSpawnLocationString()+"\n");
-		sb.append("&ewrSpawnLocs=&b"+getWaitroomLocationString()+"\n");
-		if (timedSpawns != null){
-			sb.append("&e#item/mob spawns:&6" +timedSpawns.size() +"\n");
-		}
+		if (waitroom != null) sb.append("&ewrSpawnLocs=&b"+waitroom.getSpawnLocationString()+"\n");
+		if (timedSpawns != null){sb.append("&e#item/mob spawns:&6" +timedSpawns.size() +"\n");}
 		return sb.toString();
 	}
 
@@ -713,8 +662,8 @@ public class Arena extends PlayerContainer {
 	 * @return
 	 */
 	public String toSummaryString(){
-		StringBuilder sb = new StringBuilder("&4" + name+" &e type=&6"+ap.getType());
-		sb.append(" &eTeamSizes:&6"+ap.getTeamSizeRange()+"&e, nTeams:&6"+ap.getNTeamRange());
+		StringBuilder sb = new StringBuilder("&4" + name+" &e type=&6"+params.getType());
+		sb.append(" &eTeamSizes:&6"+params.getTeamSizeRange()+"&e, nTeams:&6"+params.getNTeamRange());
 		sb.append("&e #spawns:&6" +spawns.size() +"&e 1stSpawn:&6");
 		if (!spawns.isEmpty()){
 			Location l = spawns.get(0);
@@ -740,13 +689,20 @@ public class Arena extends PlayerContainer {
 		return pylamoRegion;
 	}
 
-
-	public void setWaitRoom(LobbyWRContainer waitroom) {
+	public void setWaitRoom(RoomContainer waitroom) {
 		this.waitroom = waitroom;
 	}
 
-	public LobbyWRContainer getWaitroom() {
+	public RoomContainer getWaitroom() {
 		return waitroom;
+	}
+
+	public void setLobby(RoomContainer waitroom) {
+		this.lobby = waitroom;
+	}
+
+	public RoomContainer getLobby() {
+		return lobby;
 	}
 
 	@Override
@@ -758,10 +714,24 @@ public class Arena extends PlayerContainer {
 		return visitorRoom!=null ? visitorRoom.getSpawns() : null;
 	}
 
-	public boolean isJoinable() {
-		return this.isOpen() &&
-				(waitroom != null ? waitroom.isOpen() : true) &&
-				(lobby != null ? lobby.isOpen() : true);
+	public boolean isJoinable(MatchParams mp) {
+		if (!isOpen())
+			return false;
+		else if ( mp.needsWaitroom() && (waitroom == null || !waitroom.isOpen()) )
+			return false;
+		else if ( mp.needsLobby() && (lobby == null || !lobby.isOpen()) )
+			return false;
+		return true;
+	}
+
+	public String getNotJoinableReasons(MatchParams mp) {
+		if (!isOpen())
+			return "&cArena is not open!";
+		else if ( mp.needsWaitroom() && (waitroom == null || !waitroom.isOpen()) )
+			return "&cWaitroom is not open!";
+		else if ( mp.needsLobby() && (lobby == null || !lobby.isOpen()) )
+			return "&cLobby is not open!";
+		return "";
 	}
 
 	public void setAllContainerState(PlayerContainerState state) {
@@ -770,5 +740,27 @@ public class Arena extends PlayerContainer {
 			waitroom.setContainerState(state);
 		if (lobby != null)
 			lobby.setContainerState(state);
+	}
+
+	public void setContainerState(ChangeType cs, PlayerContainerState state) throws IllegalStateException{
+		switch (cs){
+		case LOBBY:
+			if (lobby == null)
+				throw new IllegalStateException("Arena " + getName() +" does not have a Lobby");
+			lobby.setContainerState(state);
+			break;
+		case VLOC:
+			if (visitorRoom == null)
+				throw new IllegalStateException("Arena " + getName() +" does not have a visitorRoom");
+			visitorRoom.setContainerState(state);
+			break;
+		case WAITROOM:
+			if (waitroom == null)
+				throw new IllegalStateException("Arena " + getName() +" does not have a waitroom");
+			waitroom.setContainerState(state);
+			break;
+		default:
+			throw new IllegalStateException(cs +" can not be set to "+state);
 		}
+	}
 }

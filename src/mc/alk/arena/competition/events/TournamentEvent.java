@@ -32,6 +32,7 @@ import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -91,6 +92,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		mp.setSecondsToLoot(oParms.getSecondsToLoot());
 		TimeUtil.testClock();
 		super.openEvent(mp);
+
 		EventParams copy = new EventParams(mp);
 		copy.setMaxTeams(CompetitionSize.MAX);
 		this.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(copy, this));
@@ -145,7 +147,6 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 	@ArenaEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
 		Match am = event.getMatch();
-//		Log.debug("MatchCompletedEvent   " + am.getTeams());
 		if (am.getState() == MatchState.ONCANCEL){
 			endEvent();
 			return;
@@ -175,17 +176,16 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		}
 	}
 
-
 	private void matchEnded(Match am) {
+		if (state == EventState.CLOSED || state == EventState.FINISHED)
+			return;
 		Matchup m = matchups.get(am);
-//		Log.debug("matchEnded   m=" + m);
 		if (m==null){
 			eventCancelled();
 			Log.err("[BA Error] match completed but not found in tournament");
 			return;
 		}
 		MatchResult r = am.getResult();
-//		Log.debug(" result = " + r );
 		ArenaTeam victor = null;
 		if (r.isDraw() || r.isUnknown()){ /// match was a draw, pick a random lucky winner
 			victor = pickRandomWinner(r, r.getDrawers());
@@ -282,7 +282,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 				loffset--;
 				hoffset++;
 			}
-			m = new Matchup(eventParams,newTeams);
+			m = new Matchup(eventParams,newTeams, new JoinOptions());
 			m.addArenaListener(this);
 			m.addMatchCreationListener(this);
 			tr.addMatchup(m);
@@ -304,7 +304,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 				newTeams.add(aliveTeams.get(index));
 				newTeams.add(aliveTeams.get(size-1-index));
 			}
-			m = new Matchup(eventParams,newTeams);
+			m = new Matchup(eventParams,newTeams, new JoinOptions());
 			m.addArenaListener(this);
 			m.addMatchCreationListener(this);
 			tr.addMatchup(m);

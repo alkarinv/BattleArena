@@ -2,7 +2,6 @@ package mc.alk.arena.listeners;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.SignController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.signs.ArenaCommandSign;
@@ -24,9 +23,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class BASignListener implements Listener{
-	SignController signController;
-	public BASignListener(SignController signController){
-		this.signController = signController;
+	SignUpdateListener sul;
+	public BASignListener(SignUpdateListener sul){
+		this.sul = sul;
 	}
 
 	@EventHandler
@@ -41,9 +40,10 @@ public class BASignListener implements Listener{
 			String[] lines = ((Sign)event.getClickedBlock().getState()).getLines();
 			if (!lines[0].matches("^.[0-9a-fA-F]\\*.*$")){
 				return;}
-			ArenaCommandSign acs = SignUtil.getArenaCommandSign(lines);
+			ArenaCommandSign acs = SignUtil.getArenaCommandSign(((Sign)event.getClickedBlock().getState()));
 			if (acs == null){
 				return;}
+			sul.addSign(acs);
 			ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
 			acs.performAction(ap);
 		}
@@ -73,7 +73,7 @@ public class BASignListener implements Listener{
 			return;
 		}
 		/// is the sign a command sign
-		ArenaCommandSign acs = SignUtil.getArenaCommandSign(lines);
+		ArenaCommandSign acs = SignUtil.getArenaCommandSign((Sign)block.getState());
 		if (acs != null){
 			if (!admin){
 				cancelSignPlace(event,block);
@@ -132,6 +132,7 @@ public class BASignListener implements Listener{
 			cmd = Character.toUpperCase(cmd.charAt(0)) + cmd.substring(1);
 			event.setLine(1, MessageUtil.colorChat(ChatColor.GREEN+cmd.toLowerCase()) );
 			MessageUtil.sendMessage(event.getPlayer(), "&2Arena command sign created");
+			sul.addSign(acs);
 		} catch (Exception e){
 			MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Command Sign");
 			Log.printStackTrace(e);
@@ -157,7 +158,7 @@ public class BASignListener implements Listener{
 			event.setLine(1, MessageUtil.colorChat( ""));
 			acs.setLocation(event.getBlock().getLocation());
 
-			signController.addStatusSign(acs);
+//			signController.addStatusSign(acs);
 			MessageUtil.sendMessage(event.getPlayer(), "&2Arena status sign created");
 		} catch (Exception e){
 			MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Status Sign");

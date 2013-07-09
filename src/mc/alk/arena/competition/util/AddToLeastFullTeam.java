@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event.TeamSizeComparator;
-import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.JoinOptions;
@@ -19,9 +20,11 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 
 	public AddToLeastFullTeam(MatchParams params, Competition competition, Class<? extends ArenaTeam> clazz) throws NeverWouldJoinException{
 		super(params,competition,clazz);
-		if (maxTeams == ArenaParams.MAX)
+		if (minTeams == ArenaSize.MAX || maxTeams == ArenaSize.MAX)
 			throw new NeverWouldJoinException("If you add players by adding them to the next team in the list, there must be a finite number of players");
 		/// Lets add in all our teams first
+		if (minTeams > Defaults.MAX_TEAMS)
+			throw new NeverWouldJoinException("You can't make more than "+Defaults.MAX_TEAMS +" teams");
 		for (int i=0;i<minTeams;i++){
 			ArenaTeam team = TeamFactory.createTeam(clazz);
 			addTeam(team);

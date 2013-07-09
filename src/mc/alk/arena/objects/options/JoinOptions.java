@@ -58,7 +58,7 @@ public class JoinOptions extends ArenaSize{
 	Location joinedLocation = null;
 
 	/** Specific arena or match size.  Is the user requesting a special arena or match size */
-	boolean specific = false;
+//	boolean specific = false;
 
 	/** When the player joined, can be null */
 	Long joinTime;
@@ -72,7 +72,7 @@ public class JoinOptions extends ArenaSize{
 	}
 
 	public boolean matches(MatchParams params) {
-		return matchesTeamSize(params);
+		return matchesTeamSize(params.getSize());
 	}
 
 	public static boolean matches(JoinOptions jo, Match match) {
@@ -124,7 +124,6 @@ public class JoinOptions extends ArenaSize{
 		if (teamSize.manuallySet){
 			length = args.length -1;
 			jos.setTeamSize(teamSize.size);
-			jos.specific = true;
 		}
 
 		ops.put(JoinOption.TEAMSIZE, teamSize);
@@ -141,7 +140,6 @@ public class JoinOptions extends ArenaSize{
 					throw new InvalidOptionException("&cYou specified 2 arenas!");}
 				arena = a;
 				ops.put(JoinOption.ARENA, arena);
-				jos.specific = true;
 				continue;
 			}
 			Integer teamIndex = TeamUtil.getTeamIndex(op);
@@ -218,15 +216,15 @@ public class JoinOptions extends ArenaSize{
 		return options.get(option);
 	}
 
-	public boolean isSpecific(){
-		return specific;
-	}
-
 	public boolean hasArena() {
 		return options.containsKey(JoinOption.ARENA);
 	}
 
 	public Arena getArena() {
 		return hasArena() ? (Arena) options.get(JoinOption.ARENA) : null;
+	}
+
+	public void setArena(Arena arena) {
+		options.put(JoinOption.ARENA, arena);
 	}
 }

@@ -18,7 +18,6 @@ import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
 import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.util.Log;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
@@ -27,6 +26,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class QueueController extends ArenaMatchQueue implements ArenaListener, Listener{
 	final MethodController methodController = new MethodController();
+
 	public QueueController(){
 		super();
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
@@ -38,18 +38,24 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 		event.callEvent();
 	}
 
-	private void leftQueue(ArenaPlayer player, final ArenaTeam team, MatchParams params){
+	private void leftQueue(ArenaPlayer player, final ArenaTeam team, MatchParams params, ParamTeamPair ptp){
 		if (InArenaListener.inQueue(player.getName())){
-			callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params));
+			callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params,ptp));
 			methodController.updateEvents(MatchState.ONLEAVE, player);
 		}
+	}
+
+	@Override
+	protected void leaveQueue(ArenaPlayer player, final ArenaTeam team, MatchParams params, ParamTeamPair ptp){
+		callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params,ptp));
+		methodController.updateEvents(MatchState.ONLEAVE, player);
 	}
 
 	@Override
 	public synchronized ParamTeamPair removeFromQue(ArenaPlayer player) {
 		ParamTeamPair ptp = super.removeFromQue(player);
 		if (ptp != null){
-			leftQueue(player,ptp.team,ptp.q);
+			leftQueue(player,ptp.team,ptp.q,ptp);
 		}
 		return ptp;
 	}
@@ -57,9 +63,7 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 	@ArenaEventHandler
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
 		ArenaPlayer player = event.getPlayer();
-		Log.debug("onPlayerQuit   -- " + player.getName());
 		ParamTeamPair ptp = removeFromQue(player);
-//		sendSystemMessage(p,"you_left_queue",ptp.q.getName());
 		if (ptp != null){
 			player.reset();
 			event.addMessage(MessageHandler.getSystemMessage("you_left_queue",ptp.q.getName()));
@@ -84,7 +88,7 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 			ParamTeamPair ptp = removeFromQue(ap);
 			if (ptp != null){
 				ptp.team.sendMessage("&cYou have been removed from the queue for changing worlds");
-				leftQueue(ap, ptp.team, ptp.q);
+				leftQueue(ap, ptp.team, ptp.q, ptp);
 			}
 		}
 	}
@@ -94,7 +98,7 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 		JoinResult jr = super.join(tqo, shouldStart);
 		for (ArenaTeam t: tqo.getTeams()){
 			for (ArenaPlayer ap: t.getPlayers()){
-				ArenaPlayerEnterQueueEvent event = new ArenaPlayerEnterQueueEvent(ap,t,jr);
+				ArenaPlayerEnterQueueEvent event = new ArenaPlayerEnterQueueEvent(ap,t,tqo,jr);
 				callEvent(event);
 			}
 			methodController.updateEvents(MatchState.ONENTER, t.getPlayers());

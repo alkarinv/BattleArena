@@ -15,6 +15,7 @@ import mc.alk.arena.Permissions;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController;
+import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
@@ -30,13 +31,15 @@ import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.arenas.ArenaCreateEvent;
 import mc.alk.arena.events.arenas.ArenaDeleteEvent;
 import mc.alk.arena.events.players.ArenaPlayerJoinEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
-import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.ArenaSize;
+import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -46,6 +49,8 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.messaging.AnnouncementOptions;
+import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.options.EventOpenOptions;
@@ -61,6 +66,7 @@ import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
+import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
 
@@ -167,6 +173,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		/// Can the player join this match/event at this moment?
 		if (!canJoin(player)){
 			return true;}
+
 		/// Call the joining event
 		ArenaPlayerJoinEvent event = new ArenaPlayerJoinEvent(player);
 		event.callEvent();
@@ -191,10 +198,11 @@ public class BAExecutor extends CustomCommandExecutor {
 		try {
 			jp = JoinOptions.parseOptions(mp,t, player, Arrays.copyOfRange(args, 1, args.length));
 			wtsr = (WantedTeamSizePair) jp.getOption(JoinOption.TEAMSIZE);
-			if (wtsr.manuallySet){
-				mp.intersect(jp);
-			} else {
-				mp.setTeamSize(Math.max(t.size(), mp.getMinTeamSize()));}
+//			if (wtsr.manuallySet){
+////				mp.intersect(jp);
+//				mp.setTeamSize(wtsr.size);
+//			} else {
+//				mp.setTeamSize(Math.max(t.size(), mp.getMinTeamSize()));}
 		} catch (InvalidOptionException e) {
 			return sendMessage(player, e.getMessage());
 		} catch (Exception e){
@@ -207,8 +215,8 @@ public class BAExecutor extends CustomCommandExecutor {
 			if (!wtsr.manuallySet){
 				arena = ac.getArenaByNearbyMatchParams(mp,jp);
 				if (arena != null){
-					mp.setMinTeamSize(arena.getParameters().getMinTeamSize());
-					mp.setMaxTeamSize(arena.getParameters().getMaxTeamSize());
+					mp.setMinTeamSize(arena.getParams().getMinTeamSize());
+					mp.setMaxTeamSize(arena.getParams().getMaxTeamSize());
 				}
 			}
 			if (arena == null){
@@ -224,8 +232,9 @@ public class BAExecutor extends CustomCommandExecutor {
 			}
 		}
 
-		if (arena != null && !arena.isJoinable()){
-			return MessageUtil.sendMessage(player, "&c " + arena.getName() +" not joinable");
+		if (arena != null && !arena.isJoinable(mp)){
+			return MessageUtil.sendMessage(player, "&c" + arena.getName() +" can't be joined at this time.\n" +
+					arena.getNotJoinableReasons(mp) );
 		}
 
 		//		BTInterface bti = BTInterface.getInterface(mp);
@@ -248,35 +257,86 @@ public class BAExecutor extends CustomCommandExecutor {
 			return true;}
 
 		TeamJoinObject tqo = new TeamJoinObject(t,mp,jp);
+		AnnouncementOptions ao = mp.getAnnouncementOptions();
+		Channel channel = null;
+		String sysmsg = null;
+		{
+			ao = mp.getAnnouncementOptions();
+			channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
+				AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
+			sysmsg = MessageHandler.getSystemMessage("match_starts_when_time",mp.getSecondsTillMatch());
+			NotifierUtil.notify("msgs", "  ao = " + ao +"   sysmsg=" + sysmsg +"   channel="+ channel +"   team size= " + t.size());
+			if (ao != null){
+				NotifierUtil.notify("msgs", "  channel = " + ao.getChannel(true, MatchState.ONENTERQUEUE));
+			} else {
+				NotifierUtil.notify("msgs", "  channel = " +
+						AnnouncementOptions.getDefaultChannel(true, MatchState.ONENTERQUEUE));
+			}
+		}
 
 		/// Add them to the queue
 		JoinResult jr = ac.wantsToJoin(tqo);
-		switch (jr.status){
-		case ADDED_TO_ARENA_QUEUE:
-			Log.debug("You have joined the arena queue");
-			break;
+
+
+		/// Annouce to the server if they have the option set
+		ao = mp.getAnnouncementOptions();
+		channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
+			AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
+		String neededPlayers = jr.maxPlayers == CompetitionSize.MAX ? "inf" : jr.maxPlayers+"";
+		channel.broadcast(MessageHandler.getSystemMessage("server_joined_the_queue",
+				mp.getPrefix(),player.getDisplayName(),jr.playersInQueue,neededPlayers));
+
+		switch(jr.status){
+
 		case ADDED_TO_EXISTING_MATCH:
-			Log.debug("You have joined an existing game");
+			if (t.size() == 1){
+				t.sendMessage(MessageHandler.getSystemMessage("you_joined_event", mp.getName()));
+			} else {
+				t.sendMessage(MessageHandler.getSystemMessage("you_added_to_team"));
+			}
+			sysmsg = MessageHandler.getSystemMessage("match_starts_when_time",mp.getSecondsTillMatch());
+			t.sendMessage(sysmsg);
 			break;
 		case ADDED_TO_QUEUE:
-			Log.debug("You have joined the game queue");
+			sysmsg = MessageHandler.getSystemMessage("joined_the_queue",
+					mp.toPrettyString(),jr.pos, neededPlayers);
+
+			StringBuilder msg = new StringBuilder(sysmsg != null ?
+					sysmsg : "&eYou joined the &6%s&e queue.");
+			if (jr.maxPlayers != CompetitionSize.MAX){
+				String posmsg = MessageHandler.getSystemMessage("position_in_queue",jr.pos, neededPlayers);
+				msg.append( posmsg != null ? posmsg : "");
+			}
+			if (jr.time != null){
+				switch(jr.timeStatus){
+				case CANT_FORCESTART:
+					break;
+				case TIME_ONGOING:
+					Long time = jr.time - System.currentTimeMillis();
+					if (jr.maxPlayers != CompetitionSize.MAX){
+						msg.append("\n"+MessageHandler.getSystemMessage("match_starts_players_or_time",
+								jr.maxPlayers-jr.pos, TimeUtil.convertMillisToString(time),
+								jr.params.getMinPlayers()));
+					} else {
+						msg.append("\n"+MessageHandler.getSystemMessage("match_starts_when_time",
+								TimeUtil.convertMillisToString(time)));
+					}
+					break;
+				case TIME_EXPIRED:
+					msg.append("\n"+MessageHandler.getSystemMessage("you_start_when_free_pos", jr.pos));
+					break;
+				default:
+					break;
+				}
+			}
+
+			t.sendMessage(msg.toString());
 			break;
-		case ERROR:
-		case NONE:
 		default:
-			Log.debug("NOTHING!!!!!!");
 			break;
 		}
 
-
 		return true;
-	}
-
-	protected boolean hasMPPerm(ArenaPlayer player , MatchParams mp, String perm) {
-		return player.hasPermission("arena."+mp.getName().toLowerCase()+"."+perm) ||
-				player.hasPermission("arena."+mp.getCommand().toLowerCase()+"."+perm) ||
-				player.hasPermission("arena."+perm+"."+mp.getName().toLowerCase()) ||
-				player.hasPermission("arena."+perm+"."+mp.getCommand().toLowerCase());
 	}
 
 	protected boolean isDisabled(ArenaPlayer player, MatchParams mp) {
@@ -323,10 +383,11 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds={"cancel"},admin=true,usage="cancel <arenaname or player>")
 	public boolean arenaCancel(CommandSender sender, MatchParams params, String[] args) {
-		Match match = ac.getSingleMatch(params);
-		if (match != null){
-			match.cancelMatch();
-			return sendMessage(sender,"&2You have canceled the match for &6" + params.getType());
+		List<Match> matches = ac.getRunningMatches(params);
+		if (!matches.isEmpty()){
+			for (Match m: matches){
+				m.cancelMatch();}
+			return sendMessage(sender,"&2You have canceled the matches for &6" + params.getType());
 		}
 		if (args.length < 2)
 			return sendMessage(sender, "cancel <arenaname or player>");
@@ -479,17 +540,16 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds={"auto"}, admin=true, perm="arena.auto")
 	public boolean arenaAuto(CommandSender sender, MatchParams params, String args[]) {
-
 		try {
 			EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null, params);
 			Arena arena = eoo.getArena(params, null);
-			arena.setAllContainerState(PlayerContainerState.OPEN);
+
 			ac.createAndAutoMatch(arena, eoo);
-			final int max = arena.getParameters().getMaxPlayers();
-			final String maxPlayers = max == ArenaParams.MAX ? "&6any&2 number of players" : max+"&2 players";
+			final int max = arena.getParams().getMaxPlayers();
+			final String maxPlayers = max == ArenaSize.MAX ? "&6any&2 number of players" : max+"&2 players";
 			sendMessage(sender,"&2You have "+args[0]+"ed a &6" + params.getName() +
-					"&2 inside &6" + arena.getName() +" &2TeamSize=&6" + arena.getParameters().getTeamSizeRange() +"&2 #Teams=&6"+
-					arena.getParameters().getNTeamRange() +"&2 supporting "+maxPlayers +"&2 at &5"+arena.getName() );
+					"&2 inside &6" + arena.getName() +" &2TeamSize=&6" + arena.getParams().getTeamSizeRange() +"&2 #Teams=&6"+
+					arena.getParams().getNTeamRange() +"&2 supporting "+maxPlayers +"&2 at &5"+arena.getName() );
 		} catch (InvalidOptionException e) {
 			sendMessage(sender, e.getMessage());
 		} catch (Exception e){
@@ -499,23 +559,50 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"open"}, admin=true, perm="arena.open")
+	@MCCommand(cmds={"open"}, admin=true,exact=2, perm="arena.open")
 	public boolean arenaOpen(CommandSender sender, Arena arena) {
 		arena.setAllContainerState(PlayerContainerState.OPEN);
 		return sendMessage(sender,"&6" + arena.getName() +ChatColor.YELLOW+" is now &2open");
 	}
 
-	@MCCommand(cmds={"close"}, admin=true, perm="arena.close")
+	@MCCommand(cmds={"open"}, admin=true, perm="arena.open")
+	public boolean arenaOpenContainer(CommandSender sender, Arena arena, ChangeType type) {
+		try{
+			if (type == ChangeType.LOBBY){
+				LobbyContainer lc = LobbyController.getLobby(arena.getArenaType());
+				if (lc == null){
+					return sendMessage(sender,"&cYou need to set a lobby for "+arena.getArenaType().getName());}
+				lc.setContainerState(PlayerContainerState.OPEN);
+			} else {
+				arena.setContainerState(type, PlayerContainerState.OPEN);
+			}
+		} catch (IllegalStateException e){
+			return sendMessage(sender,"&c" + e.getMessage());
+		}
+		return sendMessage(sender,"&6" + arena.getName() +ChatColor.YELLOW+" is now &2open");
+	}
+
+	@MCCommand(cmds={"close"}, admin=true, exact=2, perm="arena.close")
 	public boolean arenaClose(CommandSender sender, Arena arena) {
 		arena.setAllContainerState(PlayerContainerState.CLOSED);
 		return sendMessage(sender,"&6" + arena.getName() +ChatColor.YELLOW+" is now &4closed");
+	}
+
+	@MCCommand(cmds={"close"}, admin=true, perm="arena.close")
+	public boolean arenaCloseContainer(CommandSender sender, Arena arena, ChangeType closeLocation) {
+		try{
+			arena.setContainerState(closeLocation, PlayerContainerState.CLOSED);
+		} catch (IllegalStateException e){
+			return sendMessage(sender,"&c" + e.getMessage());
+		}
+		return sendMessage(sender,"&6" + arena.getName() +ChatColor.YELLOW+" "+closeLocation+" is now &4closed");
 	}
 
 	@MCCommand(cmds={"delete"}, admin=true, perm="arena.delete")
 	public boolean arenaDelete(CommandSender sender, Arena arena) {
 		new ArenaDeleteEvent(arena).callEvent();
 		ac.deleteArena(arena);
-		BattleArena.saveArenas();
+		BattleArena.saveArenas(arena.getArenaType().getPlugin());
 		return sendMessage(sender,ChatColor.GREEN+ "You have deleted the arena &6" + arena.getName());
 	}
 
@@ -623,7 +710,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		if (ParamController.getMatchParams(name) != null){
 			return sendMessage(sender, "&cYou can't choose an arena type as an arena name");}
 
-		ArenaParams ap = new ArenaParams(mp.getType());
+		MatchParams ap = new MatchParams(mp.getType());
 		try{
 			if (args.length > 2)
 				ap.setTeamSizes(MinMax.valueOf(args[2]));
@@ -647,13 +734,17 @@ public class BAExecutor extends CustomCommandExecutor {
 		sendMessage(sender,"&2You have created the arena &6" + arena);
 		sendMessage(sender,"&2A spawn point has been created where you are standing");
 		sendMessage(sender,"&2You can add/change spawn points using &6/arena alter " + arena.getName()+" <1,2,...,x : which spawn>");
-		BattleArena.saveArenas();
+		BattleArena.saveArenas(arena.getArenaType().getPlugin());
 		return true;
 	}
 
 	@MCCommand(cmds={"alter"}, admin=true, perm="arena.alter")
 	public boolean arenaAlter(CommandSender sender, MatchParams params, Arena arena, String[] args) {
-		ArenaAlterController.alterArena(sender, params, arena, args);
+		try {
+			ArenaAlterController.alterArena(sender, params, arena, args);
+		} catch (IllegalStateException e){
+			return sendMessage(sender, "&c" +e.getMessage());
+		}
 		return true;
 	}
 
@@ -875,12 +966,21 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
+	@MCCommand(cmds={"start"}, admin=true, perm="arena.start")
+	public boolean arenaStart(CommandSender sender, MatchParams mp) {
+		List<Match> matches = ac.getRunningMatches(mp);
+		if (matches.isEmpty()){
+			return sendMessage(sender,"&cThere are no open &6" + mp.getType());
+		} else if (matches.size() > 1){
+			return sendMessage(sender,"&cThere are multiple &6" + mp.getType() +
+					"&c open.  Specify which arena.\n&e/"+mp.getCommand()+" cancel <arena>");
+		}
+		ac.startMatch(matches.get(0));
+		return sendMessage(sender, "&2" + mp.getType()+" has been started");
+	}
+
 	@MCCommand(cmds={"forceStart"}, admin=true, perm="arena.forcestart")
 	public boolean arenaForceStart(CommandSender sender, MatchParams mp) {
-		int qsize = ac.getMatchingQueueSize(mp);
-		if (qsize < 1){
-			return sendMessage(sender, "&c"+mp.getType()+" does not have enough teams queued");}
-
 		if (ac.forceStart(mp,false)){
 			return sendMessage(sender, "&2" + mp.getType()+" has been started");
 		} else {
@@ -947,7 +1047,6 @@ public class BAExecutor extends CustomCommandExecutor {
 	private boolean _canJoin(ArenaPlayer player, boolean showMessages, boolean teammate) {
 		/// Check for any competition
 		if (player.getCompetition() != null){
-			Log.debug(player.getCompetition() +" <<<<<<<<<<<<<<<<<<<<<< ");
 			if (showMessages) sendMessage(player, "&cYou are still in the "+player.getCompetition().getName()+". &6/arena leave");
 			return false;
 		}
@@ -979,7 +1078,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		Match am = ac.getMatch(player);
 		if (am != null){
 			ArenaTeam t = am.getTeam(player);
-			if (am.insideArena(player) || (!t.hasLeft(player) && t.hasAliveMember(player))){
+			if (am.isHandled(player) || (!t.hasLeft(player) && t.hasAliveMember(player))){
 				if (showMessages) sendMessage(player,"&eYou are already in a match.");
 				return false;
 			} else{
@@ -1030,6 +1129,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		}
 		return true;
 	}
+
 	public Event insideEvent(ArenaPlayer p) {
 		return EventController.insideEvent(p);
 	}

@@ -23,8 +23,7 @@ public class CompositeTeamQueue implements  TeamCollection{
 	public int size() {
 		int size = 0;
 		for (TeamCollection tq: this.queues){
-			size += tq.size();
-		}
+			size += tq.size();}
 		return size;
 	}
 
@@ -66,7 +65,6 @@ public class CompositeTeamQueue implements  TeamCollection{
 				if (++cur >= queues.length){
 					return false;
 				} else {
-					Log.debug("  cur = " + cur +"   " + queues.length);
 					iter = queues[cur].iterator();
 					return iter.hasNext();
 				}
@@ -93,5 +91,13 @@ public class CompositeTeamQueue implements  TeamCollection{
 		public void remove() {
 			iter.remove();
 		}
+	}
+
+	@Override
+	public int playerSize() {
+		int size = 0;
+		for (TeamCollection tq: this.queues){
+			size += tq.playerSize();}
+		return size;
 	}
 }

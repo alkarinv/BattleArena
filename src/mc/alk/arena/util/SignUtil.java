@@ -11,9 +11,16 @@ import mc.alk.arena.objects.signs.ArenaCommandSign;
 import mc.alk.arena.objects.signs.ArenaCommandSign.ARENA_COMMAND;
 import mc.alk.arena.objects.signs.ArenaStatusSign;
 
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
+
 public class SignUtil {
 
-	public static ArenaCommandSign getArenaCommandSign(String[] lines) {
+	public static ArenaCommandSign getArenaCommandSign(Sign sign) {
+		String[] lines = sign.getLines();
 		if (lines.length < 2)
 			return null;
 		String param = MessageUtil.decolorChat(lines[0]).replaceAll("\\"+Defaults.SIGN_PREFIX, "").trim().toLowerCase();
@@ -38,7 +45,7 @@ public class SignUtil {
 		}
 		String op1 =  MessageUtil.decolorChat(lines[2]);
 		String op2 =  MessageUtil.decolorChat(lines[3]);
-		ArenaCommandSign acs = new ArenaCommandSign(mp, cmd, op1, op2);
+		ArenaCommandSign acs = new ArenaCommandSign(sign.getLocation(), mp, cmd, op1, op2);
 		return acs;
 	}
 
@@ -59,6 +66,19 @@ public class SignUtil {
 			return new ArenaStatusSign(mp);
 
 		return null;
+	}
+
+	public static Sign getSign(World w, int x, int y, int z) {
+		Block b = w.getBlockAt(x, y, z);
+		Material t = b.getType();
+		return t == Material.SIGN || t == Material.SIGN_POST || t==Material.WALL_SIGN ? (Sign)b.getState(): null;
+	}
+
+	public static Sign getSign(Location l) {
+		if (l == null)
+			return null;
+		Material t = l.getBlock().getType();
+		return t == Material.SIGN || t == Material.SIGN_POST || t==Material.WALL_SIGN ? (Sign)l.getBlock().getState(): null;
 	}
 
 }

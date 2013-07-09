@@ -314,7 +314,6 @@ public class EventExecutor extends BAExecutor{
 
 	public static void openEvent(BAEventController controller, Event te, EventParams ep, EventOpenOptions eoo) throws InvalidOptionException, InvalidEventException{
 		eoo.updateParams(ep);
-		//		System.out.println("mp = " + mp + "   sq = " + specificparams +"   teamSize="+teamSize +"   nTeams="+nTeams);
 		te.setSilent(eoo.isSilent());
 		controller.addOpenEvent(te);
 		if (eoo.hasOption(EventOpenOption.AUTO)){

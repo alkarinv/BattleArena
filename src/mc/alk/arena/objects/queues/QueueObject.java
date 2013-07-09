@@ -13,8 +13,10 @@ public abstract class QueueObject {
 
 	protected MatchParams matchParams;
 
-	protected JoinOptions jp;
-
+	final protected JoinOptions jp;
+	public QueueObject(JoinOptions jp){
+		this.jp = jp;
+	}
 	public MatchParams getMatchParams() {
 		return matchParams;
 	}
@@ -23,9 +25,9 @@ public abstract class QueueObject {
 		return jp;
 	}
 
-	public void setJoinOptions(JoinOptions jp) {
-		this.jp = jp;
-	}
+//	public void setJoinOptions(JoinOptions jp) {
+//		this.jp = jp;
+//	}
 
 	public abstract Integer getPriority();
 

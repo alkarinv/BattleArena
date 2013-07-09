@@ -18,9 +18,11 @@ import mc.alk.arena.listeners.custom.MatchCreationCallback;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.MatchResult;
+import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
+import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.MessageUtil;
@@ -49,7 +51,11 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 				List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 				teams.add(t);
 				teams.add(t2);
-				Matchup m = new Matchup(d.getMatchParams(),teams);
+				JoinOptions jo = new JoinOptions();
+				if (d.getOptions().hasOption(DuelOption.ARENA)){
+					jo.setArena((Arena) d.getOptions().getOptionValue(DuelOption.ARENA));
+				}
+				Matchup m = new Matchup(d.getMatchParams(),teams, jo);
 				m.addArenaListener(this);
 				m.addMatchCreationListener(this);
 				formingDuels.remove(d);

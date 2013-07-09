@@ -5,6 +5,7 @@ import java.util.List;
 import mc.alk.arena.listeners.competition.HeroesListener;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.HeroesUtil;
+import mc.alk.arena.util.PlayerUtil;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -18,6 +19,7 @@ public class HeroesController {
 		try{return HeroesUtil.hasHeroClass(className);}catch(Exception e){e.printStackTrace();}
 		return false;
 	}
+
 	public static void setHeroClass(Player player, String className) {
 		if (!hasHeroes) return;
 		try{HeroesUtil.setHeroClass(player, className);}catch(Exception e){e.printStackTrace();}
@@ -96,22 +98,22 @@ public class HeroesController {
 		return null;
 	}
 
-	public static int getHealth(Player player) {
+	public static double getHealth(Player player) {
 		return hasHeroes ? HeroesUtil.getHealth(player) : player.getHealth();
 	}
 
-	public static void setHealth(Player player, int health) {
+	public static void setHealth(Player player, double health) {
 		if (hasHeroes)
 			try{HeroesUtil.setHealth(player,health);}catch(Exception e){e.printStackTrace();}
 		else
-			player.setHealth(health);
+			PlayerUtil.setHealth(player,health,true);
 	}
 
-	public static void setHealthP(Player player, int health) {
+	public static void setHealthP(Player player, double health) {
 		if (hasHeroes)
 			try{HeroesUtil.setHealthP(player,health);}catch(Exception e){e.printStackTrace();}
 		else
-			player.setHealth(health);
+			PlayerUtil.setHealthP(player,health,true);
 	}
 
 	public static void cancelExpLoss(Player player, boolean cancel) {

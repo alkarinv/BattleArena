@@ -51,6 +51,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
+import mc.alk.arena.util.Util;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -181,6 +182,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	}
 
 	protected void eventCancelled(){
+		Util.printStackTrace();
 		stopTimer();
 		List<ArenaTeam> newTeams = new ArrayList<ArenaTeam>(teams);
 		callEvent(new EventCancelEvent(this));
@@ -232,7 +234,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	public boolean leave(ArenaPlayer p) {
 		ArenaTeam t = getTeam(p);
 		p.removeCompetition(this);
-		if (eventParams.hasLobby()){
+		if (eventParams.needsLobby()){
 			LobbyController.leaveLobby(eventParams, p);
 		}
 		if (t==null) /// they arent in this Event
@@ -244,10 +246,8 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	public void removeAllTeams(){
 
 		for (ArenaTeam t: teams){
-			Log.debug(t +"    " + t.getPlayers().size());
 			TeamController.removeTeamHandler(t,this);
 			for (ArenaPlayer p: t.getPlayers()){
-				Log.debug(t +"  Sdfjdkjfj  " + p.getName());
 				p.removeCompetition(this);
 			}
 		}
@@ -553,7 +553,6 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
 	@Override
 	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug("!!!!!!!!!!!!!!!!!! onPostQuit " + player +"   " + this);
 		player.removeCompetition(this);
 	}
 

@@ -33,12 +33,12 @@ public class TeleportController implements Listener{
 	private final int TELEPORT_FIX_DELAY = 15; // ticks
 
 	public static boolean teleportPlayer(final Player player, final Location location, final boolean wipe, boolean giveBypassPerms){
-		if (!player.isOnline() || player.isDead()){
-			BAPlayerListener.teleportOnReenter(player.getName(),location, player.getLocation());
-			if (wipe){
-				InventoryUtil.clearInventory(player);}
-			return false;
-		}
+//		if (!player.isOnline() || player.isDead()){
+//			BAPlayerListener.teleportOnReenter(player.getName(),location, player.getLocation());
+//			if (wipe){
+//				InventoryUtil.clearInventory(player);}
+//			return false;
+//		}
 		return teleport(player,location,giveBypassPerms);
 	}
 
@@ -48,12 +48,6 @@ public class TeleportController implements Listener{
 
 	private static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
 		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
-
-		if (!player.isOnline() || player.isDead()){
-			if (Defaults.DEBUG)Log.warn(BattleArena.getPluginName()+" Offline teleporting Player=" + player.getName() + " loc=" + location);
-			BAPlayerListener.teleportOnReenter(player.getName(),location,player.getLocation());
-			return false;
-		}
 		try {
 			player.setVelocity(new Vector(0,0,0));
 			player.setFallDistance(0);
@@ -82,7 +76,8 @@ public class TeleportController implements Listener{
 			if (giveBypassPerms && BattleArena.getSelf().isEnabled())
 				player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);
 
-			if (!player.teleport(loc)){
+			if (!player.teleport(loc) || (Defaults.DEBUG_VIRTUAL && !player.isOnline())){
+				BAPlayerListener.teleportOnReenter(player.getName(),loc, player.getLocation());
 				if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + loc);
 				return false;
 			}

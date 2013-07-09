@@ -29,9 +29,9 @@ public abstract class HeroesUtil {
 	static Map<ArenaTeam,HeroParty> parties = Collections.synchronizedMap(new HashMap<ArenaTeam,HeroParty>());
 	static HeroesUtil util = null;
 
-	public abstract void setHeroPlayerHealth(Player player, int health);
-	public abstract int getHeroHealth(Player player);
-	public abstract void setHeroHealthP(Player player, int health);
+	public abstract void setHeroPlayerHealth(Player player, double health);
+	public abstract double getHeroHealth(Player player);
+	public abstract void setHeroHealthP(Player player, double health);
 
 	public static boolean hasHeroClass(String name) {
 		if (heroes == null)
@@ -205,15 +205,15 @@ public abstract class HeroesUtil {
 		hero.setMana((int)val);
 	}
 
-	public static void setHealth(Player player, int health) {
+	public static void setHealth(Player player, double health) {
 		util.setHeroPlayerHealth(player, health);
 	}
 
-	public static void setHealthP(Player player, int health) {
+	public static void setHealthP(Player player, double health) {
 		util.setHeroHealthP(player, health);
 	}
 
-	public static int getHealth(Player player) {
+	public static double getHealth(Player player) {
 		return util.getHeroHealth(player);
 	}
 

@@ -2,6 +2,7 @@ package mc.alk.arena.controllers.containers;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,20 +20,25 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.v1r6.util.Log;
+import mc.alk.arena.util.Util;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 
-public class LobbyWRContainer extends PlayerContainer{
+public class RoomContainer extends PlayerContainer{
 	Map<String, Long> userTime = new ConcurrentHashMap<String, Long>();
-	Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
+//	Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
 	Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
 	final LocationType type;
 
-	public LobbyWRContainer(MatchParams params, LocationType type){
+	public RoomContainer(LocationType type){
+		super();
+		this.type = type;
+	}
+
+	public RoomContainer(MatchParams params, LocationType type){
 		super();
 		this.params = params;
 		methodController.addListener(new BlockPlaceListener(this));
@@ -66,21 +72,12 @@ public class LobbyWRContainer extends PlayerContainer{
 
 	@ArenaEventHandler
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
-		Log.debug(this + " 11 ##^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ " + event.getPlayer().getName() +"  ^^^^^  " + event);
 		if (players.remove(event.getPlayer())){
-			Log.debug(this + " 22 ##^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ " + event.getPlayer().getName() +"  ^^^^^  " + event);
 			updateBukkitEvents(MatchState.ONLEAVE, event.getPlayer());
 			callEvent(new ArenaPlayerLeaveLobbyEvent(event.getPlayer(),event.getTeam()));
 			event.addMessage(MessageHandler.getSystemMessage("you_left_competition",this.params.getName()));
 			event.getPlayer().reset();
 		}
-	}
-
-	public void addSpawn(int index, Location loc) {
-		if (spawns.size() <= index)
-			spawns.add(loc);
-		else
-			spawns.set(index, loc);
 	}
 
 	@Override
@@ -89,13 +86,7 @@ public class LobbyWRContainer extends PlayerContainer{
 	}
 
 	public void cancel() {
-//		synchronized(inTheWRL){
-//			for (ArenaPlayer ap: inTheWRL){
-//				doTransition(this, MatchState.ONCANCEL, ap, null, false);
-//			}
-//		}
 		players.clear();
-//		inTheWRL.clear();
 	}
 
 	public Collection<String> getInsidePlayers() {
@@ -135,48 +126,51 @@ public class LobbyWRContainer extends PlayerContainer{
 
 	@Override
 	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(this + " %%%%%%%%%%  onPostJoin   " + player.getName() +"    " + players.contains(player));
 	}
 
 	@Override
 	public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(this + " %%%%%%%%%%  onPreQuit   " + player.getName() +"    " + players.contains(player));
-
 	}
 
 	@Override
 	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(this + " %%%%%%%%%%  onPostQuit   " + player.getName() +"    " + players.contains(player));
 	}
 
 	@Override
 	public void onPreEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(this + " %%%%%%%%%%  onPreEnter   " + player.getName() +"    " + players.contains(player));
 	}
 
 	@Override
 	public void onPostEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(this + " %%%%%%%%%%  onPostEnter   " + player.getName() +"    " + players.contains(player));
 		updateBukkitEvents(MatchState.ONENTER,player);
 		players.add(player);
 	}
 
 	@Override
 	public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(this + " %%%%%%%%%%  onPreLeave   " + player.getName() +"    " + players.contains(player));
 		updateBukkitEvents(MatchState.ONLEAVE,player);
 		players.remove(player);
 	}
 
 	@Override
 	public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(this + " %%%%%%%%%%  onPostLeave   " + player.getName() +"    " + players.contains(player));
+	}
+
+	/**
+	 * Return a string of appended spawn locations
+	 * @return
+	 */
+	public String getSpawnLocationString(){
+		StringBuilder sb = new StringBuilder();
+		List<Location> locs = getSpawns();
+		for (int i=0;i<locs.size(); i++ ){
+			if (locs.get(i) != null) sb.append("["+(i+1)+":"+Util.getLocString(locs.get(i))+"] ");
+		}
+		return sb.toString();
 	}
 
 }

@@ -15,9 +15,11 @@ public class SerializerUtil {
 
 	public static HashMap<String, String> createSaveableLocations(Map<Integer, Location> mlocs) {
 		HashMap<String,String> locations = new HashMap<String,String>();
-		for (Integer key: mlocs.keySet()){
-			String s = SerializerUtil.getLocString(mlocs.get(key));
-			locations.put(key+"",s);
+		if (mlocs != null){
+			for (Integer key: mlocs.keySet()){
+				String s = SerializerUtil.getLocString(mlocs.get(key));
+				locations.put(key+"",s);
+			}
 		}
 		return locations;
 	}

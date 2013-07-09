@@ -25,8 +25,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	Integer matchTime, intervalTime;
 	AnnouncementOptions ao = null;
 
-	Integer nLives = 1;
-	int numConcurrentCompetitions = Integer.MAX_VALUE;
+	Integer nLives = null;
+	Integer numConcurrentCompetitions = null;
 	Set<ArenaModule> modules = new HashSet<ArenaModule>();
 	Boolean useBTPvP;
 	Boolean useBTMessages;
@@ -55,9 +55,13 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	public void setVictoryType(VictoryType type){this.vc = type;}
 
-	public VictoryType getVictoryType() {return vc;}
+	public VictoryType getVictoryType() {
+		return vc == null && mparent!=null ? mparent.getVictoryType() : vc;
+	}
 
-	public String getPrefix(){return prefix;}
+	public String getPrefix(){
+		return prefix == null && mparent!=null ? mparent.getPrefix() : prefix;
+	}
 
 	public void setPrefix(String str){prefix = str;}
 
@@ -99,7 +103,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	@Override
 	public int hashCode() {
-		return ((arenaType.ordinal()) << 27) +(rating.ordinal() << 25) + (minTeams<<12)+(vc.ordinal() << 8) + minTeamSize;
+		return ((arenaType.ordinal()) << 27);
 	}
 
 	@Override
@@ -130,8 +134,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.numConcurrentCompetitions = number;
 	}
 
-	public int getNConcurrentCompetitions(){
-		return numConcurrentCompetitions;
+	public Integer getNConcurrentCompetitions(){
+		return numConcurrentCompetitions ==null && mparent!=null ? mparent.getNConcurrentCompetitions() : numConcurrentCompetitions;
 	}
 
 	public JoinType getJoinType() {
@@ -175,9 +179,9 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	}
 	@Override
 	public boolean valid() {
-		return super.valid() &&
+		return super.valid() && (getTransitionOptions() != null ?
 				(!getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY) ||
-						LobbyController.hasLobby(getType()));
+						LobbyController.hasLobby(getType())) : true);
 	}
 
 	@Override
@@ -198,10 +202,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 			this.mparent = null;
 	}
 
-	public boolean hasLobby() {
-		return this.getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY);
-	}
-
 	public boolean hasQueue() {
 		return true;
 	}
@@ -209,5 +209,26 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public GameManager getGameManager() {
 		return GameManager.getGameManager(this);
 	}
+
+	public boolean needsWaitroom() {
+		return ((getTransitionOptions() != null) && ( getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINWAITROOM) ||
+				getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTWAITROOM)));
+	}
+
+	public boolean needsLobby() {
+		return ((getTransitionOptions() != null) && ( getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINLOBBY) ||
+				getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY)));
+	}
+
+	public Rating getRated() {
+		return rating;
+	}
+
+	public boolean hasOptionAt(MatchState state, TransitionOption op) {
+		return getTransitionOptions() != null ? getTransitionOptions().hasOptionAt(state, op) : false;
+	}
+
+
+
 
 }

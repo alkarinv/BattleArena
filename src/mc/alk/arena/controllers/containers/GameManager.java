@@ -22,7 +22,6 @@ import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.v1r6.util.Log;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -68,17 +67,14 @@ public class GameManager implements PlayerHolder{
 //	@EventHandler(priority=org.bukkit.event.EventPriority.HIGHEST)
 	@ArenaEventHandler(priority=EventPriority.HIGHEST)
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
-		Log.debug(this+"   222  onPlayerQuit   -- " + event.getPlayer().getName() +"  handled="+handled.contains(event.getPlayer()));
 		if (handled.contains(event.getPlayer()) && !event.isHandledQuit()){
 			ArenaPlayer player = event.getPlayer();
-			Log.debug("onPlayerQuit   -- " + player.getName() +"   --- ");
 			ArenaTeam t = getTeam(player);
 			PerformTransition.transition(this, MatchState.ONCANCEL, player, t, false);
 		}
 	}
 
 	private void quitting(ArenaPlayer player){
-		Log.debug("~~~~~~~~~~~~~~~~~~ quitting   -- " + player.getName() +" ~~~~~~~~~~~~~~~~~~ ");
 		if (handled.remove(player)){
 			PerformTransition.transition(this, MatchState.ONLEAVE, player, null, false);
 			updateBukkitEvents(MatchState.ONLEAVE, player);
@@ -143,9 +139,7 @@ public class GameManager implements PlayerHolder{
 
 	@Override
 	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(" !!!!!! onPreJoin -------------- " + player.getName() +"    " + handled.contains(player));
 		if (handled.add(player)){
-			Log.debug(" 222 !!!!!! onPreJoin -------------- " + player.getName() +"    " + handled.contains(player));
 			PerformTransition.transition(this, MatchState.ONENTER, player, null, false);
 			updateBukkitEvents(MatchState.ONENTER, player);
 
@@ -156,42 +150,32 @@ public class GameManager implements PlayerHolder{
 
 	@Override
 	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(" !!!!!! onPostJoin -------------- " + player.getName() +"    " );
 		player.getMetaData().setJoining(false);
 	}
 
 	@Override
 	public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(" !!!!!! onPreQuit -------------- " + player.getName() +"    " );
 	}
 
 	@Override
 	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(" !!!!!! onPostQuit -------------- " + player.getName() +"    " );
-//		PerformTransition.transition(this, MatchState.ONLEAVE, player, null, false);
-//		handled.remove(player);
 		this.quitting(player);
 	}
 
 	@Override
 	public void onPreEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(" !!!!!! onPreEnter -------------- " + player.getName() +"    " );
 	}
 
 	@Override
 	public void onPostEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(" !!!!!! onPostEnter -------------- " + player.getName() +"    " );
 	}
 
 	@Override
 	public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(" !!!!!! onPreLeave -------------- " + player.getName() +"    " );
 	}
 
 	@Override
 	public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		Log.debug(" !!!!!! onPostLeave -------------- " + player.getName() +"    " );
-
 	}
 
 	public boolean hasPlayer(ArenaPlayer player) {

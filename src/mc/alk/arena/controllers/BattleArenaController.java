@@ -20,9 +20,12 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
+import mc.alk.arena.listeners.SignUpdateListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.PlayerContainerState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaListener;
@@ -60,16 +63,44 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	final private Map<ArenaType,List<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,List<Match>>());
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
 	private final MethodController methodController;
-
+	final private Map<Match, OldMatchContainerState> oldArenaStates = new HashMap<Match, OldMatchContainerState>();
+	final private Map<ArenaType,OldLobbyState> oldLobbyState = new HashMap<ArenaType,OldLobbyState>();
 	private final ArenaMatchQueue amq = new QueueController();
 	private StateController sc = new StateController(amq);
-	final SignController signController;
+	final SignUpdateListener signUpdateListener;
 
-	public BattleArenaController(SignController signController){
+	public class OldLobbyState{
+		PlayerContainerState pcs;
+		Set<Match> running = new HashSet<Match>();
+		public boolean isEmpty() {return running.isEmpty();}
+		public void add(Match am){running.add(am);}
+		public boolean remove(Match am) {return running.remove(am);}
+	}
+
+	public class OldMatchContainerState{
+		final PlayerContainerState waitroomCS;
+		final PlayerContainerState arenaCS;
+
+		public OldMatchContainerState(Arena arena) {
+			//			PlayerContainer pc = LobbyController.getLobby(arena.getArenaType());
+			//			if (pc != null){
+			//				lobbyCS = pc.getContainerState();}
+			waitroomCS = (arena.getWaitroom()!=null) ? arena.getWaitroom().getContainerState() : null;
+			arenaCS = arena.getContainerState();
+		}
+
+		public void revert(Arena arena) {
+			if (waitroomCS != null && arena.getWaitroom()!=null){
+				arena.getWaitroom().setContainerState(waitroomCS);}
+			arena.setContainerState(arenaCS);
+		}
+	}
+
+	public BattleArenaController(SignUpdateListener signUpdateListener){
 		methodController = new MethodController();
 		methodController.addAllEvents(this);
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
-		this.signController = signController;
+		this.signUpdateListener = signUpdateListener;
 	}
 
 	/// Run is Thread Safe
@@ -134,8 +165,22 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		return arenaMatch;
 	}
 
+
 	public Match createAndAutoMatch(Arena arena, EventOpenOptions eoo) throws NeverWouldJoinException {
 		Match m = createMatch(arena,eoo);
+		/// save the old states to put back after the match
+		oldArenaStates.put(m,new OldMatchContainerState(arena));
+		if (LobbyController.hasLobby(arena.getArenaType())){
+			RoomContainer pc = LobbyController.getLobby(arena.getArenaType());
+			OldLobbyState ols = oldLobbyState.get(arena.getArenaType());
+			if (ols == null){
+				ols = new OldLobbyState();
+				ols.pcs = pc.getContainerState();
+				oldLobbyState.put(arena.getArenaType(), ols);
+			}
+			ols.add(m);
+		}
+		arena.setAllContainerState(PlayerContainerState.OPEN);
 		m.setTimedStart(eoo.getSecTillStart(), eoo.getInterval());
 		return m;
 	}
@@ -170,10 +215,21 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		Match am = event.getMatch();
 		removeMatch(am); /// handles removing running match from the BArenaController
 		decNumberOpenMatches(am.getArena().getArenaType().getName());
+		/// put back old states if it was autoed
+		OldMatchContainerState states = oldArenaStates.remove(am);
+		OldLobbyState ols = oldLobbyState.get(am.getArena().getArenaType());
+		if (ols != null){ /// we only put back the lobby state if its the last autoed match finishing
+			if (ols.remove(am) && ols.isEmpty()){
+				LobbyController.getLobby(am.getArena().getArenaType()).setContainerState(ols.pcs);
+			}
+		}
 		//		unhandle(am);/// unhandle any teams that were added during the match
 		Arena arena = allarenas.get(am.getArena().getName().toUpperCase());
-		if (arena != null)
+		if (arena != null){
+			if (states != null){
+				states.revert(arena);}
 			amq.add(arena,shouldStart(arena)); /// add it back into the queue
+		}
 	}
 
 	public void updateArena(Arena arena) {
@@ -222,21 +278,17 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 
 
 	private boolean joinExistingMatch(TeamJoinObject tqo) {
-		Log.debug("unfilled = " + unfilled_matches.size());
 		if (unfilled_matches.isEmpty()){
 			return false;}
 		MatchParams params = tqo.getMatchParams();
 		synchronized(unfilled_matches){
 			List<Match> matches = unfilled_matches.get(params.getType());
-			Log.debug("matches = " + matches);
 			if (matches == null)
 				return false;
 			Iterator<Match> iter = matches.iterator();
 			while (iter.hasNext()){
 				Match match = iter.next();
 				/// We dont want people joining in a non waitroom state
-				Log.debug("matches = " + match +"   stilljoin=" + match.canStillJoin() +"   matches="+
-						match.getParams().matches(params));
 				if (!match.canStillJoin()){
 					continue;}
 				if (match.getParams().matches(params)){
@@ -318,7 +370,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 				return a;}
 			if (a.getArenaType() != mp.getType())
 				continue;
-			int m2 = a.getParameters().getMinTeamSize();
+			int m2 = a.getParams().getMinTeamSize();
 			if (m2 > m1 && m2 -m1 < sizeDif){
 				sizeDif = m2 - m1;
 				possible = a;
@@ -361,7 +413,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	public boolean hasArenaSize(int i) {return getArenaBySize(i) != null;}
 	public Arena getArenaBySize(int i) {
 		for (Arena a : allarenas.values()){
-			if (a.getParameters().matchesTeamSize(i)){
+			if (a.getParams().matchesTeamSize(i)){
 				return a;}
 		}
 		return null;
@@ -469,7 +521,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	public boolean insideArena(ArenaPlayer p) {
 		synchronized(running_matches){
 			for (Match am: running_matches){
-				if (am.insideArena(p)){
+				if (am.isHandled(p)){
 					return true;
 				}
 			}
@@ -567,20 +619,13 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 				am.cancelMatch();
 			}
 		}
-		signController.clearQueues();
 		amq.resume();
 	}
 
 
 	public Collection<ArenaTeam> purgeQueue() {
-		signController.clearQueues();
 		Collection<ArenaTeam> teams = amq.purgeQueue();
 		amq.purgeQueue();
-		//		TeamController.removeTeams(teams, this);
-		//		for (ArenaTeam t: teams){
-		//			unhandle(t);
-		//			t.sendMessage("&cYou have been removed from the queue");
-		//		}
 		return teams;
 	}
 
@@ -593,9 +638,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	public List<String> getInvalidQueueReasons(QueueObject qo) {
 		return amq.invalidReason(qo);
 	}
-	public int getMatchingQueueSize(MatchParams mp) {
-		return amq.getMatchingQueueSize(mp);
-	}
+
 	public boolean forceStart(MatchParams mp, boolean respectMinimumPlayers) {
 		return amq.forceStart(mp, respectMinimumPlayers);
 	}
@@ -651,6 +694,18 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 			this.forceStart(qtp.params, true);
 		}
 	}
+	public List<Match> getRunningMatches(MatchParams params){
+		List<Match> list = new ArrayList<Match>();
+		synchronized(running_matches){
+			for (Match m: running_matches){
+				if (m.getParams().getType() == params.getType()){
+					list.add(m);
+				}
+			}
+			return list;
+		}
+
+	}
 
 	public Match getSingleMatch(MatchParams params) {
 		Match match = null;
@@ -665,6 +720,4 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		}
 		return match;
 	}
-
-
 }

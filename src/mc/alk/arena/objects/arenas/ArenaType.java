@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.CaseInsensitiveMap;
 import mc.alk.arena.util.Log;
@@ -141,7 +141,7 @@ public class ArenaType implements Comparable<ArenaType>{
 	 * @param arenaParams
 	 * @return
 	 */
-	public static Arena createArena(String arenaName, ArenaParams arenaParams) {
+	public static Arena createArena(String arenaName, MatchParams arenaParams) {
 		ArenaType arenaType = arenaParams.getType();
 		return createArena(arenaType, arenaName, arenaParams, true);
 	}
@@ -154,12 +154,12 @@ public class ArenaType implements Comparable<ArenaType>{
 	 * @param init : whether we should call init directly after arena creation
 	 * @return
 	 */
-	public static Arena createArena(String arenaName, ArenaParams arenaParams, boolean init) {
+	public static Arena createArena(String arenaName, MatchParams arenaParams, boolean init) {
 		ArenaType arenaType = arenaParams.getType();
 		return createArena(arenaType, arenaName, arenaParams, true);
 	}
 
-	private static Arena createArena(ArenaType arenaType, String arenaName, ArenaParams arenaParams, boolean init){
+	private static Arena createArena(ArenaType arenaType, String arenaName, MatchParams arenaParams, boolean init){
 		Class<?> arenaClass = classes.get(arenaType.name);
 		if (arenaClass == null){
 			Log.err("[BA Error] arenaClass " + arenaType.name +" is not found");
@@ -170,8 +170,15 @@ public class ArenaType implements Comparable<ArenaType>{
 		try {
 			Constructor<?> constructor = arenaClass.getConstructor(args);
 			Arena arena = (Arena) constructor.newInstance((Object[])args);
+
+			arenaParams.setName(arenaName);
+			arenaParams.setType(arenaType);
 			arena.setName(arenaName);
-			arena.setParameters(arenaParams);
+			arena.setParams(arenaParams);
+			arenaParams.setParent(ParamController.getMatchParamCopy(arenaType));
+
+			if (LobbyController.hasLobby(arenaType))
+				arena.setLobby(LobbyController.getLobby(arenaType));
 			if (init)
 				arena.privateInit();
 			return arena;

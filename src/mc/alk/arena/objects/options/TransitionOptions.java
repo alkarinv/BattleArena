@@ -85,8 +85,17 @@ public class TransitionOptions {
 	public boolean hasItems() {
 		return options.containsKey(TransitionOption.NEEDITEMS) ||
 				options.containsKey(TransitionOption.GIVEITEMS);}
-	public boolean shouldTeleportLobby() {return options.containsKey(TransitionOption.TELEPORTLOBBY);}
-	public boolean shouldTeleportWaitRoom() {return options.containsKey(TransitionOption.TELEPORTWAITROOM);}
+	public boolean hasGiveItems() {
+		return  options.containsKey(TransitionOption.GIVEITEMS);}
+
+	public boolean shouldTeleportLobby() {
+		return options.containsKey(TransitionOption.TELEPORTLOBBY) ||
+				options.containsKey(TransitionOption.TELEPORTMAINLOBBY);
+	}
+	public boolean shouldTeleportWaitRoom() {
+		return options.containsKey(TransitionOption.TELEPORTWAITROOM) ||
+				options.containsKey(TransitionOption.TELEPORTMAINWAITROOM);
+	}
 	public boolean shouldTeleportIn() {return options.containsKey(TransitionOption.TELEPORTIN);}
 	public boolean teleportsIn() {return shouldTeleportIn() || shouldTeleportWaitRoom();}
 
@@ -98,8 +107,8 @@ public class TransitionOptions {
 	public boolean blockBreakOff() {return options.containsKey(TransitionOption.BLOCKBREAKOFF);}
 	public boolean blockPlaceOff() {return options.containsKey(TransitionOption.BLOCKPLACEOFF);}
 
-	public Integer getHealth() {return getInt(TransitionOption.HEALTH);}
-	public Integer getHealthP() {return getInt(TransitionOption.HEALTHP);}
+	public Double getHealth() {return getDouble(TransitionOption.HEALTH);}
+	public Double getHealthP() {return getDouble(TransitionOption.HEALTHP);}
 	public Integer getHunger() {return getInt(TransitionOption.HUNGER);}
 	public Integer getMagic() { return getInt(TransitionOption.MAGIC);}
 	public Integer getMagicP() { return getInt(TransitionOption.MAGICP);}

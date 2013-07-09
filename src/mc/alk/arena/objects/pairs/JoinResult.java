@@ -20,7 +20,7 @@ public class JoinResult {
 	public ArenaTeam team;
 	public int playersInQueue; ///
 	public int teamsInQueue; ///
-	public int neededPlayers;
+	public int maxPlayers;
 	public Long time;
 	public JoinStatus status = JoinStatus.NONE;
 	public TimeStatus timeStatus = TimeStatus.UNKNOWN;
@@ -33,7 +33,7 @@ public class JoinResult {
 		this.team =t;
 		this.playersInQueue = playersInQueue;
 		this.teamsInQueue = teamsInQueue;
-		this.neededPlayers = params.getMaxPlayers();
+		this.maxPlayers = params.getMaxPlayers();
 	}
 
 	public JoinResult(Match match, MatchParams params, int pos, int playersInQueue, QueueObject to, int teamsInQueue) {
@@ -43,7 +43,7 @@ public class JoinResult {
 		this.team =null;
 		this.playersInQueue = playersInQueue;
 		this.teamsInQueue = teamsInQueue;
-		this.neededPlayers = params.getMaxPlayers();
+		this.maxPlayers = params.getMaxPlayers();
 	}
 
 }

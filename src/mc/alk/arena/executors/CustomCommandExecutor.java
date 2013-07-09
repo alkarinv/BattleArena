@@ -4,6 +4,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Permissions;
+import mc.alk.arena.controllers.ArenaAlterController;
+import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.ArenaEditor.CurrentSelection;
 import mc.alk.arena.controllers.BattleArenaController;
@@ -81,6 +83,8 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
 			return "<player> ";
 		} else if (Arena.class == theclass){
 			return "<arena> ";
+		} else if (ChangeType.class == theclass){
+			return "<Arena | Lobby | Waitroom>";
 		} else if (MatchParams.class == theclass){
 			return "";
 		} else if (EventParams.class == theclass){
@@ -103,9 +107,18 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
 			return verifyArenaPlayer(string);
 		} else if (Arena.class == clazz){
 			return verifyArena(string);
+		} else if (ChangeType.class == clazz){
+			return verifyChangeType(string);
 		}
 
 		return super.verifyArg(clazz, command, string, usedString);
+	}
+
+	private ChangeType verifyChangeType(String name) {
+		ChangeType cs = ArenaAlterController.ChangeType.fromName(name);
+		if (cs == null){
+			throw new IllegalArgumentException(name+" is not a valid type. Waitroom, Lobby, Arena ");}
+		return cs;
 	}
 
 	private ArenaPlayer verifyArenaPlayer(String name) throws IllegalArgumentException {
@@ -154,6 +167,13 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
 
 	public static boolean sendMessage(ArenaPlayer player, String msg){
 		return MessageUtil.sendMessage(player, msg);
+	}
+
+	protected boolean hasMPPerm(ArenaPlayer player , MatchParams mp, String perm) {
+		return player.hasPermission("arena."+mp.getName().toLowerCase()+"."+perm) ||
+				player.hasPermission("arena."+mp.getCommand().toLowerCase()+"."+perm) ||
+				player.hasPermission("arena."+perm+"."+mp.getName().toLowerCase()) ||
+				player.hasPermission("arena."+perm+"."+mp.getCommand().toLowerCase());
 	}
 }
 

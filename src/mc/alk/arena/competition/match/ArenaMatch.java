@@ -25,7 +25,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.PVPState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
@@ -40,7 +39,6 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
-import mc.alk.arena.util.Util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -48,11 +46,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -83,7 +78,6 @@ public class ArenaMatch extends Match {
 
 	@ArenaEventHandler(bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
 	public void onPlayerQuit(PlayerQuitEvent event){
-		Log.debug("onPlayerQuit " + event.getPlayer().getName());
 		/// If they are just in the arena waiting for match to start, or they havent joined yet
 		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL ||
 				!inMatch.contains(event.getPlayer().getName()) ){
@@ -186,55 +180,7 @@ public class ArenaMatch extends Match {
 		}
 	}
 
-	@ArenaEventHandler(suppressCastWarnings=true,priority=EventPriority.LOW)
-	public void onEntityDamageEvent(EntityDamageEvent event) {
-		if (!(event.getEntity() instanceof Player))
-			return;
-		final TransitionOptions to = tops.getOptions(state);
-		if (to == null)
-			return;
-		final PVPState pvp = to.getPVP();
-		if (pvp == null)
-			return;
-		final ArenaPlayer target = BattleArena.toArenaPlayer((Player) event.getEntity());
-		if (pvp == PVPState.INVINCIBLE){
-			/// all damage is cancelled
-			target.setFireTicks(0);
-			event.setDamage(0);
-			event.setCancelled(true);
-			return;
-		}
-		if (!(event instanceof EntityDamageByEntityEvent)){
-			return;}
 
-		final Entity damagerEntity = ((EntityDamageByEntityEvent)event).getDamager();
-		ArenaPlayer damager=null;
-		switch(pvp){
-		case ON:
-			ArenaTeam targetTeam = getTeam(target);
-			if (targetTeam == null || !targetTeam.hasAliveMember(target)) /// We dont care about dead players
-				return;
-			damager = DmgDeathUtil.getPlayerCause(damagerEntity);
-			if (damager == null){ /// damage from some source, its not pvp though. so we dont care
-				return;}
-			ArenaTeam t = getTeam(damager);
-			if (t != null && t.hasMember(target)){ /// attacker is on the same team
-				event.setCancelled(true);
-			} else {/// different teams... lets make sure they can actually hit
-				event.setCancelled(false);
-			}
-			break;
-		case OFF:
-			damager = DmgDeathUtil.getPlayerCause(damagerEntity);
-			if (damager != null){ /// damage done from a player
-				event.setDamage(0);
-				event.setCancelled(true);
-			}
-			break;
-		default:
-			break;
-		}
-	}
 
 //	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGHER)
 //	public void onCheckEmulateDeath(EntityDamageEvent event) {
@@ -303,10 +249,15 @@ public class ArenaMatch extends Match {
 				Bukkit.getScheduler().cancelTask(timer);}
 			final Location loc;
 			final ArenaTeam t = getTeam(p);
-			if (mo.hasOption(TransitionOption.TELEPORTLOBBY) || mo.hasOption(TransitionOption.TELEPORTWAITROOM)){
+			if (mo.hasAnyOption(TransitionOption.TELEPORTLOBBY,TransitionOption.TELEPORTMAINLOBBY,
+					TransitionOption.TELEPORTWAITROOM,TransitionOption.TELEPORTMAINWAITROOM)){
 				final int index = this.getTeamIndex(t);
 				if (mo.hasOption(TransitionOption.TELEPORTLOBBY)){
 					loc = LobbyController.getLobbySpawn(index, getParams().getType(), randomRespawn);
+				} else if (mo.hasOption(TransitionOption.TELEPORTMAINLOBBY)){
+					loc = LobbyController.getLobbySpawn(Defaults.MAIN_SPAWN, getParams().getType(), randomRespawn);
+				} else if (mo.hasOption(TransitionOption.TELEPORTMAINWAITROOM)){
+					loc = this.getWaitRoomSpawn(Defaults.MAIN_SPAWN, randomRespawn);
 				} else {
 					loc = this.getWaitRoomSpawn(index, randomRespawn);
 				}
@@ -360,13 +311,6 @@ public class ArenaMatch extends Match {
 			Location l = mo.hasOption(TransitionOption.TELEPORTTO) ? mo.getTeleportToLoc() : oldlocs.get(p.getName());
 			if (l != null)
 				event.setRespawnLocation(l);
-			Util.printStackTrace();
-//			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
-//				@Override
-//				public void run() {
-//					stopTracking(p);
-//				}
-//			});
 		}
 	}
 
@@ -501,7 +445,7 @@ public class ArenaMatch extends Match {
 			List<ItemStack> items = new ArrayList<ItemStack>();
 			if (chosen.getItems()!=null)
 				items.addAll(chosen.getItems());
-			if (ro != null && ro.hasItems()){
+			if (ro != null && ro.hasGiveItems()){
 				items.addAll(ro.getGiveItems());
 			}
 			if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){

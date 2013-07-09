@@ -85,7 +85,7 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 		int i=0;
 		for (QueueObject t: this){
 			if (t.hasMember(p))
-				return new JoinResult(null,getMatchParams(),i,getNPlayers(),t.getTeam(p), this.size());
+				return new JoinResult(null,getMatchParams(),i,playerSize(),t.getTeam(p), this.size());
 			i++;
 		}
 		return null;
@@ -94,15 +94,6 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 	public MatchParams getMatchParams() {return mp;}
 	public int getMinTeams() {
 		return mp.getMinTeams();
-	}
-
-	public int getNPlayers(){
-		ArrayList<QueueObject> teams = new ArrayList<QueueObject>(this);
-		int count =0;
-		for (QueueObject t: teams){
-			count += t.size();
-		}
-		return count;
 	}
 
 	public static class TeamQueueComparator implements Comparator<QueueObject>{
@@ -130,5 +121,15 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 			}
 		}
 		return players;
+	}
+
+	@Override
+	public int playerSize() {
+		ArrayList<QueueObject> teams = new ArrayList<QueueObject>(this);
+		int count =0;
+		for (QueueObject t: teams){
+			count += t.size();
+		}
+		return count;
 	}
 }

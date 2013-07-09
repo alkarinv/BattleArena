@@ -34,6 +34,7 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
 
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
@@ -115,9 +116,9 @@ public class PerformTransition {
 		final TransitionOptions mo = tops.getOptions(transition);
 		if (mo == null){ /// no options
 			return true;}
-		if (Defaults.DEBUG_TRANSITIONS) Log.debug("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
-				" ops="+am.getParams().getTransitionOptions().getOptions(transition)
-				+"  inArena="+am.isHandled(player) + "   clearInv=" +
+		if (Defaults.DEBUG_TRANSITIONS) Log.info("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
+				" ops="+am.getParams().getTransitionOptions().getOptions(transition)+" onlyInMatch="+onlyInMatch+
+				" inArena="+am.isHandled(player) + " dead="+player.isDead()+" online="+player.isOnline()+" clearInv=" +
 				am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
 
 		final boolean teleportIn = mo.shouldTeleportIn();
@@ -134,7 +135,7 @@ public class PerformTransition {
 		final boolean forceClearInventory = wipeInventory && mo.shouldTeleportOut();
 
 		List<PotionEffect> effects = mo.getEffects()!=null ? new ArrayList<PotionEffect>(mo.getEffects()) : null;
-		final Integer health = mo.getHealth();
+		final Double health = mo.getHealth();
 		final Integer hunger = mo.getHunger();
 		final String disguiseAllAs = mo.getDisguiseAllAs();
 		final Boolean undisguise = mo.undisguise();
@@ -169,7 +170,11 @@ public class PerformTransition {
 		/// Only do if player is online options
 		if (playerReady && !dead){
 			Double prizeMoney = null; /// kludge, take out when I find a better way to display messages
-			if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){ psc.storeGamemode(player);}
+			if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){
+				psc.storeGamemode(player);
+				// for now, put this here, tis a kludge though
+				PlayerUtil.setGameMode(p, GameMode.SURVIVAL);
+			}
 			if (storeAll || mo.hasOption(TransitionOption.STOREEXPERIENCE)){ psc.storeExperience(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREITEMS)) { psc.storeItems(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEALTH)){ psc.storeHealth(player);}

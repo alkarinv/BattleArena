@@ -11,6 +11,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
+import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
 
@@ -22,23 +23,24 @@ public class Matchup {
 	public List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 	Arena arena = null;
 
-	public Arena getArena() {return arena;}
-	public void setArena(Arena arena) {this.arena = arena;}
 	List<ArenaListener> listeners = new ArrayList<ArenaListener>();
 
 	MatchParams params = null;
 	MatchCreationCallback creationListener;
 	Match match = null;
+	final JoinOptions joinOptions;
 
-	public Matchup(MatchParams params, ArenaTeam team, ArenaTeam team2) {
+	public Matchup(MatchParams params, ArenaTeam team, ArenaTeam team2, JoinOptions joinOptions) {
 		this.params = params;
 		teams.add(team);
 		teams.add(team2);
+		this.joinOptions = joinOptions;
 	}
 
-	public Matchup(MatchParams params, Collection<ArenaTeam> teams) {
+	public Matchup(MatchParams params, Collection<ArenaTeam> teams, JoinOptions joinOptions) {
 		this.teams = new ArrayList<ArenaTeam>(teams);
 		this.params = new MatchParams(params);
+		this.joinOptions = joinOptions;
 	}
 
 	public MatchParams getMatchParams() {
@@ -126,4 +128,12 @@ public class Matchup {
 	public MatchCreationCallback getMatchCreationListener() {
 		return creationListener;
 	}
+
+	public JoinOptions getJoinOptions() {
+		return joinOptions;
+	}
+
+	public Arena getArena() {return joinOptions.getArena();}
+	public void setArena() {joinOptions.setArena(arena);}
+
 }
