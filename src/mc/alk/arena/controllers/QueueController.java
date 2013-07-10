@@ -29,8 +29,8 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 
 	public QueueController(){
 		super();
-		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
 		methodController.addAllEvents(this);
+		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
 	}
 
 	private void callEvent(BAEvent event){
@@ -40,15 +40,17 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 
 	private void leftQueue(ArenaPlayer player, final ArenaTeam team, MatchParams params, ParamTeamPair ptp){
 		if (InArenaListener.inQueue(player.getName())){
-			callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params,ptp));
 			methodController.updateEvents(MatchState.ONLEAVE, player);
+			callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params,ptp));
 		}
 	}
 
 	@Override
 	protected void leaveQueue(ArenaPlayer player, final ArenaTeam team, MatchParams params, ParamTeamPair ptp){
-		callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params,ptp));
-		methodController.updateEvents(MatchState.ONLEAVE, player);
+		if (InArenaListener.inQueue(player.getName())){
+			methodController.updateEvents(MatchState.ONLEAVE, player);
+			callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params,ptp));
+		}
 	}
 
 	@Override
@@ -88,7 +90,6 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 			ParamTeamPair ptp = removeFromQue(ap);
 			if (ptp != null){
 				ptp.team.sendMessage("&cYou have been removed from the queue for changing worlds");
-				leftQueue(ap, ptp.team, ptp.q, ptp);
 			}
 		}
 	}
@@ -96,14 +97,27 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 	@Override
 	public JoinResult join(TeamJoinObject tqo, boolean shouldStart) {
 		JoinResult jr = super.join(tqo, shouldStart);
-		for (ArenaTeam t: tqo.getTeams()){
-			for (ArenaPlayer ap: t.getPlayers()){
-				ArenaPlayerEnterQueueEvent event = new ArenaPlayerEnterQueueEvent(ap,t,tqo,jr);
-				callEvent(event);
+		switch(jr.status){
+		case ADDED_TO_ARENA_QUEUE:
+		case ADDED_TO_QUEUE:
+			for (ArenaTeam t: tqo.getTeams()){
+				for (ArenaPlayer ap: t.getPlayers()){
+					ArenaPlayerEnterQueueEvent event = new ArenaPlayerEnterQueueEvent(ap,t,tqo,jr);
+					callEvent(event);
+				}
+				methodController.updateEvents(MatchState.ONENTER, t.getPlayers());
 			}
-			methodController.updateEvents(MatchState.ONENTER, t.getPlayers());
-		}
 
+			break;
+		case NONE:
+			break;
+		case ERROR:
+		case ADDED_TO_EXISTING_MATCH:
+		case STARTED_NEW_GAME:
+			return jr;
+		default:
+			break;
+		}
 		return jr;
 	}
 }

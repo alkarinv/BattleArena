@@ -23,7 +23,6 @@ import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.CommandLineString;
-import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.JoinType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -97,8 +96,9 @@ public class ConfigSerializer extends BaseConfig{
 	public static MatchParams loadMatchParams(Plugin plugin, ArenaType at, String name,
 			ConfigurationSection cs, boolean isArena) throws ConfigException, InvalidOptionException {
 
-		JoinType jt = getJoinType(cs); /// how is this game joined
-		MatchParams mp = jt == JoinType.QUEUE ? new MatchParams(at) : new EventParams(at);
+//		JoinType jt = getJoinType(cs); /// how is this game joined
+//		MatchParams mp = jt == JoinType.QUEUE ? new MatchParams(at) : new EventParams(at);
+		MatchParams mp = new MatchParams(at);
 		if (!isArena || cs.contains("victoryCondition"))
 			mp.setVictoryType(loadVictoryType(cs)); /// How does one win this game
 
@@ -362,7 +362,7 @@ public class ConfigSerializer extends BaseConfig{
 	}
 
 	public static TransitionOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, IllegalArgumentException {
-		if (cs == null)
+		if (cs == null || !cs.contains("options"))
 			return null;
 		Set<Object> optionsstr = new HashSet<Object>(cs.getList("options"));
 		Map<TransitionOption,Object> options = new EnumMap<TransitionOption,Object>(TransitionOption.class);

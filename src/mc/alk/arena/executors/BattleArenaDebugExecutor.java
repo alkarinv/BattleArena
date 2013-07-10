@@ -135,7 +135,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 						continue;
 					TreeSet<RListener> rls = lists2.get(p);
 					for (RListener rl : rls){
-						sendMessage(sender, "!!! "+rl.getPriority() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
+						sendMessage(sender, "!!! "+rl.getPriority() +"  " + p +"  Listener  " +
+								rl.getListener().getClass().getSimpleName());
 					}
 				}
 

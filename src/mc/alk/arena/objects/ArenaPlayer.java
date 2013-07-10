@@ -5,6 +5,7 @@ import java.util.Stack;
 
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.controllers.containers.AreaContainer;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.meta.PlayerMetaData;
 import mc.alk.arena.objects.options.JoinOptions;
@@ -50,7 +51,7 @@ public class ArenaPlayer {
 	Location oldLocation;
 
 	/** The current location of the player (in arena, lobby, etc)*/
-	LocationType curLocation = LocationType.HOME;
+	ArenaLocation curLocation = new ArenaLocation(AreaContainer.HOMECONTAINER, null , LocationType.HOME);
 
 	List<SpawnInstance> mobs;
 
@@ -213,10 +214,10 @@ public class ArenaPlayer {
 	public Location getOldLocation(){
 		return oldLocation;
 	}
-	public void setCurLocation(LocationType type){
+	public void setCurLocation(ArenaLocation type){
 		this.curLocation = type;
 	}
-	public LocationType getCurLocation(){
+	public ArenaLocation getCurLocation(){
 		return this.curLocation;
 	}
 	public void despawnMobs(){

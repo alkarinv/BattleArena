@@ -7,7 +7,7 @@ import org.bukkit.Location;
 
 public class ArenaLocation {
 	final PlayerHolder ph;
-	final Location location;
+	Location location;
 	final LocationType type;
 
 	public ArenaLocation(PlayerHolder ph, Location location, LocationType type){
@@ -20,6 +20,9 @@ public class ArenaLocation {
 	}
 	public Location getLocation(){
 		return this.location;
+	}
+	public void setLocation(Location location){
+		this.location = location;
 	}
 	public PlayerHolder getPlayerHolder(){
 		return ph;

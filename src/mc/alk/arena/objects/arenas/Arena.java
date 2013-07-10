@@ -11,6 +11,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.SpawnController;
+import mc.alk.arena.controllers.containers.AreaContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.LocationType;
@@ -31,7 +32,7 @@ import mc.alk.arena.serializers.Persist;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-public class Arena extends RoomContainer {
+public class Arena extends AreaContainer {
 
 	/// If this is not null, this is where distance will be based off of, otherwise it's an area around the spawns
 	protected Location joinloc = null;

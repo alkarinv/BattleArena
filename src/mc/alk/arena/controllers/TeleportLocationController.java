@@ -4,7 +4,7 @@ import java.util.Random;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.controllers.containers.PlayerContainer;
+import mc.alk.arena.controllers.containers.AbstractAreaContainer;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaLocation;
@@ -30,12 +30,13 @@ public class TeleportLocationController {
 		/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
 		/// Since we cant really tell the eventual result.. do our best guess
 		ArenaLocation dest = getArenaLocation(am,team,player,mo,teamIndex);
-		ArenaLocation src;
-		if (player.getCurLocation() == LocationType.HOME){
-			src = new ArenaLocation(PlayerContainer.HOMECONTAINER, player.getLocation(),player.getCurLocation());
-		} else {
-			src = new ArenaLocation(am, player.getLocation(),player.getCurLocation());
-		}
+		ArenaLocation src = player.getCurLocation();
+		src.setLocation(player.getLocation());
+//		if (player.getCurLocation().getType() == LocationType.HOME){
+//			src = new ArenaLocation(AbstractAreaContainer.HOMECONTAINER, player.getLocation(),player.getCurLocation());
+//		} else {
+//			src = new ArenaLocation(am, player.getLocation(),player.getCurLocation());
+//		}
 		TeleportDirection td = calcTeleportDirection(player, src,dest);
 		player.markOldLocation();
 		ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(mp.getType(),player,team,src,dest,td);
@@ -61,8 +62,9 @@ public class TeleportLocationController {
 			Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
 		}
 
-		ArenaLocation src = new ArenaLocation(am, player.getLocation(),player.getCurLocation());
-		ArenaLocation dest = new ArenaLocation(PlayerContainer.HOMECONTAINER, loc,type);
+//		ArenaLocation src = new ArenaLocation(am, player.getLocation(),player.getCurLocation());
+		ArenaLocation src = player.getCurLocation();
+		ArenaLocation dest = new ArenaLocation(AbstractAreaContainer.HOMECONTAINER, loc,type);
 		ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
 				player,team,src,dest,TeleportDirection.OUT);
 		movePlayer(player, apte,mp);
@@ -72,7 +74,8 @@ public class TeleportLocationController {
 		PlayerHolder src = apte.getSrcLocation().getPlayerHolder();
 		PlayerHolder dest = apte.getDestLocation().getPlayerHolder();
 		TeleportDirection td = apte.getDirection();
-
+		Log.debug(" ###########  " + player.getCurLocation()  +"  -->  " + dest.getLocationType() );
+		Log.debug(" ---- << -- " + player.getName() +"   src=" + src +"   dest="+dest +"    td=" + td);
 		switch (td){
 		case RESPAWN:
 			break;
@@ -93,7 +96,7 @@ public class TeleportLocationController {
 		}
 		dest.callEvent(apte);
 		TeleportController.teleportPlayer(player.getPlayer(), apte.getDestLocation().getLocation(), false, true);
-		player.setCurLocation(dest.getLocationType());
+		player.setCurLocation(apte.getDestLocation());
 		switch (td){
 		case RESPAWN:
 			break;
@@ -115,9 +118,9 @@ public class TeleportLocationController {
 	}
 
 	private static TeleportDirection calcTeleportDirection(ArenaPlayer player, ArenaLocation src, ArenaLocation dest) {
-		if (player.getCurLocation() == LocationType.HOME){
+		if (player.getCurLocation().getType() == LocationType.HOME){
 			return TeleportDirection.FIRSTIN;
-		} else if (player.getCurLocation() == dest.getType()){
+		} else if (player.getCurLocation().getType() == dest.getType()){
 			return TeleportDirection.RESPAWN;
 		}
 		return TeleportDirection.IN;

@@ -8,10 +8,11 @@ Battleground:
     matchTime: 60
     nTeams: 4
     teamSize: 1
+    nLives: 1
     defaults:
         options: [woolTeams]
     preReqs:
-        options: [clearInventory]
+        options: []
     onEnter:
         options: [storeAll]
     onLeave:
@@ -25,13 +26,13 @@ Battleground:
     onComplete:
         options: [teleportOut ]
     onSpawn:
-        options: [enchants, health=20, hunger=20]
+        options: [enchants, health=20, hunger=20, respawnWithClass]
         giveClass:
             default: gladiator
         enchants:
             - speed:3
     onDeath:
-        options: [respawn, clearInventory]
+        options: [clearInventory]
     winner:
         options: [enchants, health=20, hunger=20]
         enchants:

@@ -40,7 +40,8 @@ public class BASignListener implements Listener{
 			String[] lines = ((Sign)event.getClickedBlock().getState()).getLines();
 			if (!lines[0].matches("^.[0-9a-fA-F]\\*.*$")){
 				return;}
-			ArenaCommandSign acs = SignUtil.getArenaCommandSign(((Sign)event.getClickedBlock().getState()));
+			ArenaCommandSign acs = SignUtil.getArenaCommandSign(((Sign)event.getClickedBlock().getState()),
+					((Sign)event.getClickedBlock().getState()).getLines());
 			if (acs == null){
 				return;}
 			sul.addSign(acs);
@@ -73,7 +74,7 @@ public class BASignListener implements Listener{
 			return;
 		}
 		/// is the sign a command sign
-		ArenaCommandSign acs = SignUtil.getArenaCommandSign((Sign)block.getState());
+		ArenaCommandSign acs = SignUtil.getArenaCommandSign((Sign)block.getState(), lines);
 		if (acs != null){
 			if (!admin){
 				cancelSignPlace(event,block);

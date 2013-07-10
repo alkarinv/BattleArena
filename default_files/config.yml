@@ -114,6 +114,7 @@ defaultOptions:
     ## server : use herochat with the channel specified
     ## herochat=<channel> : use herochat with the channel specified
     announcements:
+        onCountDownToEvent: [ announce, server ]  ## event is now open
         onPreStart: [ announce, server ]  ## match going to happen soon, example 'P1[p1Elo] vs P2[p2elo]'
         onStart: [ dontannounce ]  ## match starting
         onVictory:  [ announce, server ] ## match has been won, exmaple 'P1[p1elo] has defeated P2[p2elo]'

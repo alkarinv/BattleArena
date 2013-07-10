@@ -6,6 +6,7 @@ Colosseum:
     victoryCondition: LastManStanding
     nTeams: 4
     teamSize: 1
+    nLives: 2
     preReqs:
         options: [clearInventory]
     onEnter:
@@ -21,7 +22,7 @@ Colosseum:
     onComplete:
         options: [teleportOut]
     onSpawn:
-        options: [enchants, health=20, hunger=20, deEnchant,giveItems, woolTeams]
+        options: [enchants, health=20, hunger=20, deEnchant,giveItems, woolTeams, respawnWithClass]
         enchants:
             - speed:1
         items: # ignored if options doesnt have "giveItems"

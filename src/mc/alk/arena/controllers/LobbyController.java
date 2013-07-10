@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mc.alk.arena.controllers.containers.LobbyContainer;
-import mc.alk.arena.controllers.containers.PlayerContainer;
+import mc.alk.arena.controllers.containers.AbstractAreaContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.LocationType;
@@ -23,14 +23,14 @@ public enum LobbyController {
 	Map<Arena,RoomContainer> waitrooms = new HashMap<Arena,RoomContainer>();
 
 	public boolean joinLobby(ArenaType type, ArenaTeam team) {
-		PlayerContainer lobby = lobbies.get(type);
+		AbstractAreaContainer lobby = lobbies.get(type);
 		if (lobby == null)
 			return false;
 		return lobby.teamJoining(team);
 	}
 
 	public boolean joinWaitroom(Arena arena, ArenaTeam team) {
-		PlayerContainer wr = getOrCreate(arena);
+		AbstractAreaContainer wr = getOrCreate(arena);
 		return wr.teamJoining(team);
 	}
 

@@ -5,6 +5,7 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.events.players.ArenaPlayerEnterQueueEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveQueueEvent;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.signs.ArenaCommandSign;
 import mc.alk.arena.util.MapOfSet;
@@ -27,7 +28,8 @@ public class SignUpdateListener implements Listener{
 
 	private void setPeopleInQueue(Arena arena, int playersInQueue, int neededPlayers) {
 		Set<ArenaCommandSign> signLocs = arenaSigns.getSafer(arena.getName());
-		if (signLocs != null){
+		if (signLocs != null && !signLocs.isEmpty()){
+			String needed = neededPlayers == ArenaSize.MAX ? "inf" : neededPlayers+"";
 			for (ArenaCommandSign l : signLocs){
 				Sign s = l.getSign();
 				if (s == null)
@@ -44,7 +46,7 @@ public class SignUpdateListener implements Listener{
 //				} else {
 //					newLine = playersInQueue+"/&6"+neededPlayers+" &80";
 //				}
-				newLine = playersInQueue+"/&6"+neededPlayers;
+				newLine = playersInQueue+"/&6"+needed;
 				s.setLine(3, MessageUtil.colorChat(newLine));
 				s.update();
 			}

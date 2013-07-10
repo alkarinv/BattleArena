@@ -7,6 +7,7 @@ FreeForAll:
     victoryCondition: LastManStanding
     nTeams: 2+
     teamSize: 1
+    nLives: 1
     announcements: ### Override the match victory announcement as the event has one too
         onVictory:  [ dontannounce ] 
     defaults:

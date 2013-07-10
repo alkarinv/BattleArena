@@ -1,28 +1,33 @@
 Skirmish:
-    enabled: true
-    joinType: Queue
-    database: arena
-    rated: false
-    command: sk
-    prefix: "&b[Skirmish]&e"
-    victoryCondition: LastManStanding
+  command: sk
+  prefix: '&b[Skirmish]&e'
+  gameSize:
     nTeams: 2
     teamSize: 1
-    defaults:
-        options: [woolTeams]
-    preReqs:
-        options: []
-    onEnter:
-        options: [storeGamemode]
-    onLeave:
-        options: [restoreGamemode]
-    onStart:
-        options: [teleportIn, pvpOn, blockBreakOff]
-    onSpawn:
-        options: []
-    onDeath:
-        options: []
-    onComplete:
-        options: [teleportOut]
-    winner:
-        options: [health=20, hunger=20]
+  nLives: 1
+  victoryCondition: LastManStanding
+  times: {}
+  tracking:
+    database: arena
+    rated: false
+    useTrackerMessages: false
+  defaults:
+    options: []
+  onEnter:
+    options:
+    - storeGamemode
+  onLeave:
+    options:
+    - restoreGamemode
+  onStart:
+    options:
+    - teleportIn
+    - pvpOn
+    - blockBreakOff
+  onComplete:
+    options:
+    - teleportOut
+  winner:
+    options:
+    - health=20.0
+    - hunger=20

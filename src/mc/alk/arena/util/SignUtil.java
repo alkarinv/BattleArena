@@ -19,15 +19,19 @@ import org.bukkit.block.Sign;
 
 public class SignUtil {
 
-	public static ArenaCommandSign getArenaCommandSign(Sign sign) {
-		String[] lines = sign.getLines();
+	public static ArenaCommandSign getArenaCommandSign(Sign sign, String[] lines) {
+//		String[] lines = sign.getLines();
+//		Log.debug("  sign +=  " + sign +"   " + lines.length);
 		if (lines.length < 2)
 			return null;
 		String param = MessageUtil.decolorChat(lines[0]).replaceAll("\\"+Defaults.SIGN_PREFIX, "").trim().toLowerCase();
+		Log.debug(" lines[   " + lines[0]);
 		MatchParams mp = ParamController.getMatchParamCopy(param);
+		Log.debug(" mp === " + mp);
 		if (mp == null){
 			Collection<MatchParams> params = ParamController.getAllParams();
 			for (MatchParams p: params){
+				Log.debug(p.getName() +"   " );
 				if (p.getName().toLowerCase().startsWith(param) || p.getCommand().toLowerCase().startsWith(param)){
 					mp = p;
 					break;

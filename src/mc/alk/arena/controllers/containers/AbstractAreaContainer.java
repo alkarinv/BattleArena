@@ -39,8 +39,8 @@ import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
-	public static final PlayerContainer HOMECONTAINER = new PlayerContainer(){
+public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler{
+	public static final AbstractAreaContainer HOMECONTAINER = new AbstractAreaContainer(){
 		@Override
 		public LocationType getLocationType() {return LocationType.HOME;}
 		@Override
@@ -57,9 +57,9 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 
 	HashSet<String> disabledCommands = new HashSet<String>();
 
-	final MethodController methodController = new MethodController();
+	private final MethodController methodController = new MethodController();
 
-	protected Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
+	protected Set<String> players = new HashSet<String>();
 	/** Spawn points */
 	protected ArrayList<Location> spawns = new ArrayList<Location>();
 
@@ -74,7 +74,7 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 
 	Random r = new Random();
 
-	public PlayerContainer(){
+	public AbstractAreaContainer(){
 		methodController.addAllEvents(this);
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
 	}
@@ -87,6 +87,7 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	public void playerLeaving(ArenaPlayer player){
 		methodController.updateEvents(MatchState.ONLEAVE, player);
 	}
+
 	protected void updateBukkitEvents(MatchState matchState,ArenaPlayer player){
 		methodController.updateEvents(matchState, player);
 	}
@@ -106,7 +107,9 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 	public boolean teamJoining(ArenaTeam team){
 		teams.add(team);
 		teamIndexes.put(team, teams.size());
-		players.addAll(team.getPlayers());
+		for (ArenaPlayer ap: team.getPlayers()){
+			players.add(ap.getName());}
+
 		return true;
 	}
 
@@ -142,7 +145,7 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 
 	@Override
 	public boolean leave(ArenaPlayer p) {
-		return players.remove(p);
+		return players.remove(p.getName());
 	}
 
 	@Override
@@ -166,7 +169,7 @@ public abstract class PlayerContainer implements PlayerHolder, TeamHandler{
 
 	@Override
 	public boolean isHandled(ArenaPlayer player) {
-		return players.contains(player);
+		return players.contains(player.getName());
 	}
 
 	@Override

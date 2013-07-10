@@ -105,7 +105,7 @@ public class ArenaCommandSign implements ConfigurationSerializable{
 		Sign s = SignUtil.getSign(location);
 		if (s == null)
 			return null;
-		ArenaCommandSign acs = SignUtil.getArenaCommandSign(s);
+		ArenaCommandSign acs = SignUtil.getArenaCommandSign(s, s.getLines());
 		return acs;
 	}
 

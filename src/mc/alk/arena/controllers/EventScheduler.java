@@ -56,7 +56,6 @@ public class EventScheduler implements Runnable, ArenaListener{
 
 			EventExecutor ee = EventController.getEventExecutor(eventPair.getEventParams().getName());
 			if (ee == null){
-				Log.err("executor for " + eventPair.getEventParams() +" was not found");
 				return;
 			}
 			CommandSender sender = Bukkit.getConsoleSender();
@@ -64,7 +63,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 			String args[] = eventPair.getArgs();
 			Event event = null;
 			try {
-				if (ee instanceof TournamentExecutor){
+				if (ee != null && ee instanceof TournamentExecutor){
 					TournamentExecutor exe = (TournamentExecutor) ee;
 					event = exe.openIt(sender, eventParams, args);
 				}
