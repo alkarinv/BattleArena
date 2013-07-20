@@ -14,6 +14,7 @@ public enum GameOption{
 	VICTORYTIME("secondsToLoot"),
 	VICTORYCONDITION("victoryCondition"),
 	COMMAND("command"),
+	RATED("rated")
 	;
 
 	final String name;
@@ -50,6 +51,8 @@ public enum GameOption{
 			return value;
 		case VICTORYCONDITION:
 			return VictoryType.fromString(value);
+		case RATED:
+			return Boolean.valueOf(value);
 		default:
 			break;
 		}

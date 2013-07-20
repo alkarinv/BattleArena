@@ -51,7 +51,6 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.arena.util.Util;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -182,7 +181,6 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	}
 
 	protected void eventCancelled(){
-		Util.printStackTrace();
 		stopTimer();
 		List<ArenaTeam> newTeams = new ArrayList<ArenaTeam>(teams);
 		callEvent(new EventCancelEvent(this));

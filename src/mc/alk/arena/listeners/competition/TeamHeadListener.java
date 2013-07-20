@@ -13,7 +13,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 
 public class TeamHeadListener implements ArenaListener{
 
-
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerInventoryClick(InventoryClickEvent event) {
 		if (event.getSlot() == 39/*Helm Slot*/)

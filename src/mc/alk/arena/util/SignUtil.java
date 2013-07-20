@@ -25,13 +25,13 @@ public class SignUtil {
 		if (lines.length < 2)
 			return null;
 		String param = MessageUtil.decolorChat(lines[0]).replaceAll("\\"+Defaults.SIGN_PREFIX, "").trim().toLowerCase();
-		Log.debug(" lines[   " + lines[0]);
+//		Log.debug(" lines[   " + lines[0]);
 		MatchParams mp = ParamController.getMatchParamCopy(param);
-		Log.debug(" mp === " + mp);
+//		Log.debug(" mp === " + mp);
 		if (mp == null){
 			Collection<MatchParams> params = ParamController.getAllParams();
 			for (MatchParams p: params){
-				Log.debug(p.getName() +"   " );
+//				Log.debug(p.getName() +"   " );
 				if (p.getName().toLowerCase().startsWith(param) || p.getCommand().toLowerCase().startsWith(param)){
 					mp = p;
 					break;

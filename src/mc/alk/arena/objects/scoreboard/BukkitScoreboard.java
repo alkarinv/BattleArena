@@ -16,6 +16,7 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -25,8 +26,8 @@ import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
 public class BukkitScoreboard extends ArenaScoreboard{
+	static final boolean DEBUG = false;
 	Scoreboard board;
-
 	final boolean colorPlayerNames;
 	HashMap<DisplaySlot,ArenaObjective> slots = new HashMap<DisplaySlot,ArenaObjective>();
 	HashMap<String,Scoreboard> oldBoards = new HashMap<String,Scoreboard>();
@@ -284,6 +285,7 @@ public class BukkitScoreboard extends ArenaScoreboard{
 			Score sc = o.getScore(Bukkit.getOfflinePlayer(MessageUtil.colorChat(team.getScoreboardDisplayName())));
 			sc.setScore(points);
 		}
+		if (DEBUG) printScoreBoard();
 	}
 
 	@Override
@@ -294,6 +296,17 @@ public class BukkitScoreboard extends ArenaScoreboard{
 			return;
 		Score sc = o.getScore(player.getPlayer());
 		sc.setScore(points);
+		if (DEBUG) printScoreBoard();
 	}
 
+	public void printScoreBoard(){
+		Objective o = board.getObjective(DisplaySlot.SIDEBAR);
+		Log.info(" ------- "+o.getDisplayName() +" ------ ");
+		for (Team t : board.getTeams()){
+			Log.info(" team name="+t.getName() +" <-> "+t.getDisplayName());
+			for (OfflinePlayer p : t.getPlayers()){
+				Log.info(p.getName() +" : " + o.getScore(p).getScore());
+			}
+		}
+	}
 }

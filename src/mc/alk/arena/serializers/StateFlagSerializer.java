@@ -50,6 +50,8 @@ public class StateFlagSerializer extends BaseConfig{
 
 	public void loadContainerStates(Map<String, Arena> arenas){
 		ConfigurationSection cs = config.getConfigurationSection("closedContainers");
+		if (cs == null)
+			return;
 		for (Arena a: arenas.values()){
 			ConfigurationSection cs2 = cs.getConfigurationSection(a.getName());
 			if (cs2 == null)

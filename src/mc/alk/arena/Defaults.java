@@ -100,7 +100,7 @@ public class Defaults {
 
 	public static boolean DEBUG_VIRTUAL = false;
 	public static boolean DEBUG_TRANSITIONS = false;
-	public static boolean DEBUG_STORAGE = true;
+	public static boolean DEBUG_STORAGE = false;
 	public static boolean DEBUG_TRACKING = false;
 	public static boolean DEBUG_MATCH_TEAMS = false;
 

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -42,16 +43,17 @@ import mc.alk.arena.events.matches.MatchPrestartEvent;
 import mc.alk.arena.events.matches.MatchResultEvent;
 import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.matches.MatchTimerIntervalEvent;
+import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
 import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveMatchEvent;
+import mc.alk.arena.events.players.ArenaPlayerReadyEvent;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.events.prizes.ArenaDrawersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaLosersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaWinnersPrizeEvent;
 import mc.alk.arena.events.teams.TeamDeathEvent;
-import mc.alk.arena.listeners.competition.TeamHeadListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.LocationType;
@@ -136,7 +138,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	final Set<ArenaTeam> nonEndingTeams =
 			Collections.synchronizedSet(new HashSet<ArenaTeam>());
 	final Map<ArenaTeam,Integer> individualTeamTimers = Collections.synchronizedMap(new HashMap<ArenaTeam,Integer>());
-	boolean addedVictoryConditions = false;
+	AtomicBoolean addedVictoryConditions = new AtomicBoolean(false);
 	final GameManager gameManager;
 	double prizePoolMoney = 0;
 
@@ -232,12 +234,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		/// Register the events we are listening to
 		ArrayList<Class<? extends Event>> events = new ArrayList<Class<? extends Event>>();
 		events.addAll(Arrays.asList(PlayerQuitEvent.class, PlayerRespawnEvent.class,
-				PlayerCommandPreprocessEvent.class, PlayerDeathEvent.class, PlayerInteractEvent.class));
+				PlayerCommandPreprocessEvent.class, PlayerDeathEvent.class,
+				PlayerInteractEvent.class, ArenaPlayerDeathEvent.class, ArenaPlayerReadyEvent.class));
 		if (noLeave){
 			events.add(PlayerMoveEvent.class);}
 		ListenerAdder.addListeners(this, tops);
-		if (woolTeams){
-			this.addArenaListener(new TeamHeadListener());}
 
 		methodController.addSpecificEvents(this, events);
 		/// add a default objective
@@ -388,7 +389,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	private void startMatch(){
 		if (state == MatchState.ONCANCEL) return; /// If the match was cancelled, dont proceed
 		transitionTo(MatchState.ONSTART);
-		if (!addedVictoryConditions){
+		if (!addedVictoryConditions.get()){
 			addVictoryConditions();
 		}
 		List<ArenaTeam> competingTeams = new ArrayList<ArenaTeam>();
@@ -804,6 +805,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND){
 			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
 		privateAddedToTeam(team,player);
+		defaultObjective.setPoints(player, 0);
 		scoreboard.addedToTeam(team, player);
 
 		mc.sendAddedToTeam(team,player);
@@ -926,7 +928,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		}
 		return true;
 	}
-
 
 	protected void checkAndHandleIfTeamDead(ArenaTeam team){
 		if (team.isDead()){
@@ -1070,8 +1071,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public void setMessageHandler(MatchMessageHandler mc){this.mc.setMessageHandler(mc);}
 	public MatchMessageHandler getMessageHandler(){return mc.getMessageHandler();}
 
-	private void addVictoryConditions(){
-		addedVictoryConditions = true;
+	private synchronized void addVictoryConditions(){
+		addedVictoryConditions.set(true);
 		VictoryCondition vt = VictoryType.createVictoryCondition(this);
 
 		/// Add a time limit unless one is provided by default
@@ -1371,19 +1372,20 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	}
 
 	public void timeExpired() {
-		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
+		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams, true);
 		callEvent(event);
 		MatchResult result = event.getResult();
 		/// No one has an opinion of how this match ends... so declare it a draw
 		if (result.isUnknown() || (result.getDrawers().isEmpty() &&
 				result.getLosers().isEmpty() && result.getVictors().isEmpty())){
-			result.setDrawers(teams);}
+			result = defaultObjective.getMatchResult(this);
+		}
 		try{mc.sendTimeExpired();}catch(Exception e){Log.printStackTrace(e);}
 		this.endingMatchWinLossOrDraw(result);
 	}
 
 	public void intervalTick(int remaining) {
-		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams);
+		MatchFindCurrentLeaderEvent event = new MatchFindCurrentLeaderEvent(this,teams,false);
 		callEvent(event);
 		callEvent(new MatchTimerIntervalEvent(this, remaining));
 		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeaders());}catch(Exception e){Log.printStackTrace(e);}

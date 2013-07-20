@@ -12,10 +12,12 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 public class MatchFindCurrentLeaderEvent extends MatchEvent {
 	final List<ArenaTeam> teams;
 	MatchResult result = new MatchResult();
+	final boolean matchEnding;
 
-	public MatchFindCurrentLeaderEvent(Match match, List<ArenaTeam> teams) {
+	public MatchFindCurrentLeaderEvent(Match match, List<ArenaTeam> teams, boolean matchEnding) {
 		super(match);
 		this.teams = teams;
+		this.matchEnding = matchEnding;
 	}
 
 	public List<ArenaTeam> getTeams() {
@@ -51,5 +53,9 @@ public class MatchFindCurrentLeaderEvent extends MatchEvent {
 
 	public void setResult(MatchResult result){
 		this.result = result;
+	}
+
+	public boolean isMatchEnding(){
+		return matchEnding;
 	}
 }

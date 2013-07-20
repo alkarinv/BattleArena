@@ -48,6 +48,7 @@ public class PlayerUtil {
 			HeroesController.setHealth(player,health);
 			return;
 		}
+
 		final double oldHealth = player.getHealth();
 		if (oldHealth > health){
 			EntityDamageEvent event = new EntityDamageEvent(player,  DamageCause.CUSTOM, (int)(oldHealth-health) );

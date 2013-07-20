@@ -173,7 +173,6 @@ public class ArenaMatch extends Match {
 			}, 15*20L);
 			deathTimer.put(target.getName(), timer);
 		}
-
 		if (exiting){
 			PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);
 			checkAndHandleIfTeamDead(t);
@@ -362,6 +361,7 @@ public class ArenaMatch extends Match {
 	public void onPlayerInteract(PlayerInteractEvent event){
 		playerInteract(event);
 	}
+
 	public void playerInteract(PlayerInteractEvent event){
 		if (event.getClickedBlock() == null)
 			return;

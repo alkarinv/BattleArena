@@ -23,6 +23,7 @@ public class PlayerKills extends VictoryCondition implements ScoreTracker{
 		kills = new ArenaObjective("playerkills","Player Kills",5);
 		kills.setDisplayName(MessageUtil.colorChat("&4Player Kills"));
 	}
+
 	@ArenaEventHandler(priority=EventPriority.LOW)
 	public void playerKillEvent(ArenaPlayerKillEvent event) {
 		kills.addPoints(event.getPlayer(), event.getPoints());
@@ -31,11 +32,15 @@ public class PlayerKills extends VictoryCondition implements ScoreTracker{
 
 	@ArenaEventHandler(priority = EventPriority.LOW)
 	public void onFindCurrentLeader(MatchFindCurrentLeaderEvent event) {
-		Collection<ArenaTeam> leaders = kills.getLeaders();
-		if (leaders.size() > 1){
-			event.setCurrentDrawers(leaders);
+		if (event.isMatchEnding()){
+			event.setResult(kills.getMatchResult(match));
 		} else {
-			event.setCurrentLeaders(leaders);
+			Collection<ArenaTeam> leaders = kills.getLeaders();
+			if (leaders.size() > 1){
+				event.setCurrentDrawers(leaders);
+			} else {
+				event.setCurrentLeaders(leaders);
+			}
 		}
 	}
 

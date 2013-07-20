@@ -66,7 +66,6 @@ import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
-import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
 
@@ -198,11 +197,6 @@ public class BAExecutor extends CustomCommandExecutor {
 		try {
 			jp = JoinOptions.parseOptions(mp,t, player, Arrays.copyOfRange(args, 1, args.length));
 			wtsr = (WantedTeamSizePair) jp.getOption(JoinOption.TEAMSIZE);
-//			if (wtsr.manuallySet){
-////				mp.intersect(jp);
-//				mp.setTeamSize(wtsr.size);
-//			} else {
-//				mp.setTeamSize(Math.max(t.size(), mp.getMinTeamSize()));}
 		} catch (InvalidOptionException e) {
 			return sendMessage(player, e.getMessage());
 		} catch (Exception e){
@@ -228,7 +222,7 @@ public class BAExecutor extends CustomCommandExecutor {
 							return sendMessage(player,"&c"+rs.get(0));
 					}
 				}
-				return sendSystemMessage(player,"valid_arena_not_built",mp.toPrettyString());
+				return sendSystemMessage(player,"valid_arena_not_built",mp.getName());
 			}
 		}
 
@@ -265,13 +259,6 @@ public class BAExecutor extends CustomCommandExecutor {
 			channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE) :
 				AnnouncementOptions.getDefaultChannel(true,MatchState.ONENTERQUEUE);
 			sysmsg = MessageHandler.getSystemMessage("match_starts_when_time",mp.getSecondsTillMatch());
-			NotifierUtil.notify("msgs", "  ao = " + ao +"   sysmsg=" + sysmsg +"   channel="+ channel +"   team size= " + t.size());
-			if (ao != null){
-				NotifierUtil.notify("msgs", "  channel = " + ao.getChannel(true, MatchState.ONENTERQUEUE));
-			} else {
-				NotifierUtil.notify("msgs", "  channel = " +
-						AnnouncementOptions.getDefaultChannel(true, MatchState.ONENTERQUEUE));
-			}
 		}
 
 		/// Add them to the queue
@@ -285,7 +272,6 @@ public class BAExecutor extends CustomCommandExecutor {
 		String neededPlayers = jr.maxPlayers == CompetitionSize.MAX ? "inf" : jr.maxPlayers+"";
 		channel.broadcast(MessageHandler.getSystemMessage("server_joined_the_queue",
 				mp.getPrefix(),player.getDisplayName(),jr.playersInQueue,neededPlayers));
-
 		switch(jr.status){
 
 		case ADDED_TO_EXISTING_MATCH:
@@ -299,10 +285,9 @@ public class BAExecutor extends CustomCommandExecutor {
 			break;
 		case ADDED_TO_QUEUE:
 			sysmsg = MessageHandler.getSystemMessage("joined_the_queue",
-					mp.toPrettyString(),jr.pos, neededPlayers);
+					mp.getName(),jr.pos, neededPlayers);
 
-			StringBuilder msg = new StringBuilder(sysmsg != null ?
-					sysmsg : "&eYou joined the &6%s&e queue.");
+			StringBuilder msg = new StringBuilder(sysmsg != null ? sysmsg : "&eYou joined the &6%s&e queue.");
 			if (jr.maxPlayers != CompetitionSize.MAX){
 				String posmsg = MessageHandler.getSystemMessage("position_in_queue",jr.pos, neededPlayers);
 				msg.append( posmsg != null ? posmsg : "");
@@ -459,7 +444,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"resetElo"}, op=true, usage="resetElo")
 	public boolean resetElo(CommandSender sender, MatchParams mp){
 		if (!StatController.hasInterface(mp)){
-			return sendMessage(sender,"&eThere is no tracking for " +mp.toPrettyString());}
+			return sendMessage(sender,"&eThere is no tracking for " +mp.getName());}
 		StatController sc = new StatController(mp);
 		sc.resetStats();
 		return sendMessage(sender,mp.getPrefix()+" &2Elo's and stats for &6"+mp.getName()+"&2 now reset");
@@ -468,7 +453,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"setRating"}, admin=true, usage="setRating <player> <rating>")
 	public boolean setElo(CommandSender sender, MatchParams mp, OfflinePlayer player, int rating) {
 		if (!StatController.hasInterface(mp)){
-			return sendMessage(sender,"&eThere is no tracking for " +mp.toPrettyString());}
+			return sendMessage(sender,"&eThere is no tracking for " +mp.getName());}
 		StatController sc = new StatController(mp);
 		if (sc.setRating(player, rating))
 			return sendMessage(sender,"&6" + player.getName()+"&e now has &6" + rating +"&e rating");
@@ -479,7 +464,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"rank"}, helpOrder=3)
 	public boolean rank(Player sender,MatchParams mp) {
 		if (!StatController.hasInterface(mp)){
-			return sendMessage(sender,"&cThere is no tracking for &6" +mp.toPrettyString());}
+			return sendMessage(sender,"&cThere is no tracking for &6" +mp.getName());}
 		StatController sc = new StatController(mp);
 		String rankMsg = sc.getRankMessage(sender);
 		return MessageUtil.sendMessage(sender, rankMsg);
@@ -488,7 +473,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"rank"}, helpOrder=4)
 	public boolean rankOther(CommandSender sender,MatchParams mp, OfflinePlayer player) {
 		if (!StatController.hasInterface(mp)){
-			return sendMessage(sender,"&cThere is no tracking for " +mp.toPrettyString());}
+			return sendMessage(sender,"&cThere is no tracking for " +mp.getName());}
 		StatController sc = new StatController(mp);
 		String rankMsg = sc.getRankMessage(player);
 		return MessageUtil.sendMessage(sender, rankMsg);
@@ -513,7 +498,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		if (x < 1 || x > 100){
 			x = 5;}
 		if (!StatController.hasInterface(mp)){
-			return sendMessage(sender,"&eThere is no tracking for " +mp.toPrettyString());}
+			return sendMessage(sender,"&eThere is no tracking for " +mp.getName());}
 
 		final String teamSizeStr = (mp.getMinTeamSize() > 1 ? "teamSize=&6" + mp.getMinTeamSize(): "");
 		final String arenaString = mp.getType().toPrettyString(mp.getMinTeamSize(), mp.getMaxTeamSize());
@@ -531,7 +516,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		if(ac.isInQue(p)){
 			JoinResult qpp = ac.getCurrentQuePos(p);
 			if (qpp != null){
-				return sendMessage(p,"&e"+qpp.params.toPrettyString()+"&e Queue Position: "+
+				return sendMessage(p,"&e"+qpp.params.getName()+"&e Queue Position: "+
 						" &6" + (qpp.pos+1) +"&e. &6"+qpp.playersInQueue+" &eplayers in queue");
 			}
 		}
@@ -940,7 +925,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		/// Check to make sure at least one arena can be joined at some time
 		Arena arena = ac.getArenaByMatchParams(mp,jp);
 		if (arena == null){
-			return sendMessage(player,"&cA valid arena has not been built for a " + mp.toPrettyString());}
+			return sendMessage(player,"&cA valid arena has not been built for a " + mp.getName());}
 		final MatchTransitions ops = mp.getTransitionOptions();
 		if (ops == null){
 			return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix ");}
@@ -1069,7 +1054,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		/// Inside the queue waiting for a match?
 		JoinResult qpp = ac.getCurrentQuePos(player);
 		if(qpp != null && qpp.pos != -1){
-			if (showMessages) sendMessage(player,"&eYou are in the " + qpp.params.toPrettyString() + " queue.");
+			if (showMessages) sendMessage(player,"&eYou are in the " + qpp.params.getName() + " queue.");
 			String cmd = qpp.params.getCommand();
 			if (showMessages) sendMessage(player,"&eType &6/"+cmd+" leave");
 			return false;

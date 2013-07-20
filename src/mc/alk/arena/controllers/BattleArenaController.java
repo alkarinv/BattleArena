@@ -127,7 +127,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		@Override
 		public void run() {
 			openMatch(match);
-			startMatch(match);
+			match.run();
 		}
 	}
 
@@ -211,7 +211,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 
 	@ArenaEventHandler
 	public void matchFinished(MatchFinishedEvent event){
-		//		if (Defaults.DEBUG ) System.out.println("BattleArenaController::matchComplete=" + am + ":" );
+		if (Defaults.DEBUG ) System.out.println("BattleArenaController::matchComplete=" + this + ":" );
 		Match am = event.getMatch();
 		removeMatch(am); /// handles removing running match from the BArenaController
 		decNumberOpenMatches(am.getArena().getArenaType().getName());

@@ -34,7 +34,7 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 	}
 
 	private void callEvent(BAEvent event){
-		methodController.callEvent(event);
+//		methodController.callEvent(event);
 		event.callEvent();
 	}
 

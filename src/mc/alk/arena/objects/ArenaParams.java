@@ -77,6 +77,7 @@ public class ArenaParams{
 				size = new ArenaSize(getSize());}
 			return size.intersect(params.getSize());
 		}
+
 		return true;
 	}
 
@@ -180,12 +181,14 @@ public class ArenaParams{
 	public String toPrettyString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("&e"+arenaType.getName());
-		return sb.toString();
+		return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
 	}
 
 	@Override
 	public String toString(){
-		return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
+		return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+
+				getNTeamRange()+",teamSize="+getTeamSizeRange() +" options=\n"+
+				(getTransitionOptions()==null ? "" : getTransitionOptions().getOptionString());
 	}
 
 

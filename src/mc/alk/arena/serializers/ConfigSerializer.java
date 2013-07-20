@@ -96,8 +96,6 @@ public class ConfigSerializer extends BaseConfig{
 	public static MatchParams loadMatchParams(Plugin plugin, ArenaType at, String name,
 			ConfigurationSection cs, boolean isArena) throws ConfigException, InvalidOptionException {
 
-//		JoinType jt = getJoinType(cs); /// how is this game joined
-//		MatchParams mp = jt == JoinType.QUEUE ? new MatchParams(at) : new EventParams(at);
 		MatchParams mp = new MatchParams(at);
 		if (!isArena || cs.contains("victoryCondition"))
 			mp.setVictoryType(loadVictoryType(cs)); /// How does one win this game
@@ -209,8 +207,9 @@ public class ConfigSerializer extends BaseConfig{
 			allTops.addTransitionOption(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN);
 		if (!isArena)
 			ParamController.setTransitionOptions(mp, allTops);
-		else
+		else {
 			mp.setTransitionOptions(allTops);
+		}
 		/// By Default if they respawn in the arena.. people must want infinite lives
 		if (mp.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWN) && !cs.contains("nLives")){
 			mp.setNLives(Integer.MAX_VALUE);
@@ -591,6 +590,8 @@ public class ConfigSerializer extends BaseConfig{
 					} else {
 						Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
 					}
+				} catch (IllegalArgumentException e) {
+					Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
 				} catch (Exception e){
 					Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
 					e.printStackTrace();

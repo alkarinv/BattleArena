@@ -678,46 +678,40 @@ public class InventoryUtil {
 		if (c != null){ /// we have color, so strip it
 			str = PATTERN_COLOR.matcher(str).replaceFirst("");}
 		ItemStack is =null;
-		try{
-			String split[] = str.split(" +");
-			is = InventoryUtil.getItemStack(split[0].trim());
-			if (is == null)
-				return null;
-			int amt;
-			if (split.length > 1){
-				try {
-					amt = Integer.valueOf(split[split.length-1]);
-				} catch (Exception e){
-					amt = 1;
-				}
-			} else {
+		String split[] = str.split(" +");
+		is = InventoryUtil.getItemStack(split[0].trim());
+		if (is == null)
+			return null;
+		int amt;
+		if (split.length > 1){
+			try {
+				amt = Integer.valueOf(split[split.length-1]);
+			} catch (Exception e){
 				amt = 1;
 			}
-			is.setAmount(amt);
-			if (lore != null && !lore.isEmpty())
-				handler.setLore(is,lore);
-			if (c!=null)
-				handler.setItemColor(is, c);
-			if (displayName != null)
-				handler.setDisplayName(is,displayName);
-			if (ownerName != null)
-				handler.setOwnerName(is,ownerName);
+		} else {
+			amt = 1;
+		}
+		is.setAmount(amt);
+		if (lore != null && !lore.isEmpty())
+			handler.setLore(is,lore);
+		if (c!=null)
+			handler.setItemColor(is, c);
+		if (displayName != null)
+			handler.setDisplayName(is,displayName);
+		if (ownerName != null)
+			handler.setOwnerName(is,ownerName);
 
-			for (int i = 1; i < split.length-1;i++){
-				EnchantmentWithLevel ewl = getEnchantment(split[i].trim());
-				if (ewl == null){
-					throw new IllegalArgumentException(" enchantment " + split[i].trim() +" does not exist");
-				}
-				try {
-					is.addUnsafeEnchantment(ewl.e, ewl.lvl);
-				} catch (IllegalArgumentException iae){
-					Log.warn(ewl+" can not be applied to the item " + str);
-				}
+		for (int i = 1; i < split.length-1;i++){
+			EnchantmentWithLevel ewl = getEnchantment(split[i].trim());
+			if (ewl == null){
+				throw new IllegalArgumentException(" enchantment " + split[i].trim() +" does not exist");
 			}
-		} catch(Exception e){
-			e.printStackTrace();
-			Log.err(e.getMessage());
-			throw new Exception("[BA error] Coudln't parse item="+str);
+			try {
+				is.addUnsafeEnchantment(ewl.e, ewl.lvl);
+			} catch (IllegalArgumentException iae){
+				Log.warn(ewl+" can not be applied to the item " + str);
+			}
 		}
 		return is;
 	}
@@ -788,7 +782,7 @@ public class InventoryUtil {
 			str = str.substring(0,index);
 		}
 
-		//        System.out.println("String = <" + str +">   " + lvl);
+		//		        System.out.println("String = <" + str +">   " + lvl);
 		try {e = Enchantment.getById(Integer.valueOf(str));} catch (Exception err){}
 		if (e == null)
 			e = Enchantment.getByName(str);

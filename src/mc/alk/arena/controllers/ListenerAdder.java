@@ -8,6 +8,7 @@ import mc.alk.arena.listeners.competition.ItemDropListener;
 import mc.alk.arena.listeners.competition.ItemPickupListener;
 import mc.alk.arena.listeners.competition.PlayerTeleportListener;
 import mc.alk.arena.listeners.competition.PotionListener;
+import mc.alk.arena.listeners.competition.TeamHeadListener;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
@@ -16,7 +17,10 @@ public class ListenerAdder {
 
 	public static void addListeners(PlayerHolder match, MatchTransitions tops) {
 		boolean needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
-
+		boolean woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS) && match.getParams().getMaxTeamSize() >1 ||
+				tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS);
+		if (woolTeams){
+			match.addArenaListener(new TeamHeadListener());}
 		if (needsDamageEvents){
 			match.addArenaListener(new DamageListener(match));}
 		if (tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE, TransitionOption.WGNOENTER)){

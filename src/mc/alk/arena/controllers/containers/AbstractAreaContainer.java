@@ -81,7 +81,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
 	public void callEvent(BAEvent event){
 		event.callEvent();
-		methodController.callEvent(event);
+//		methodController.callEvent(event);
 	}
 
 	public void playerLeaving(ArenaPlayer player){

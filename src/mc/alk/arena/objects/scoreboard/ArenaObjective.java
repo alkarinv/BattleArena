@@ -1,6 +1,7 @@
 package mc.alk.arena.objects.scoreboard;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -176,6 +177,18 @@ public class ArenaObjective implements ScoreTracker{
 
 	public MatchResult getMatchResult(Match match){
 		TreeMap<Integer,Collection<ArenaTeam>> ranks = this.getTeamRanks();
+		/// Deal with teams that haven't scored and possibly aren't inside the ranks
+		HashSet<ArenaTeam> unfoundTeams = new HashSet<ArenaTeam>(match.getAliveTeams());
+		for (Collection<ArenaTeam> t : ranks.values()){
+			unfoundTeams.removeAll(t);
+		}
+		Collection<ArenaTeam> zeroes = ranks.get(0);
+		if (zeroes != null){
+			zeroes.addAll(unfoundTeams);
+		} else {
+			ranks.put(0, unfoundTeams);
+		}
+
 		MatchResult result = new MatchResult();
 		if (ranks == null || ranks.isEmpty())
 			return result;

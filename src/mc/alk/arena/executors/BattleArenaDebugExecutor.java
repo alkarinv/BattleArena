@@ -1,11 +1,6 @@
 package mc.alk.arena.executors;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeSet;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -16,21 +11,16 @@ import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.containers.RoomContainer;
-import mc.alk.arena.listeners.custom.BukkitEventHandler;
-import mc.alk.arena.listeners.custom.RListener;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
-import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.MapOfTreeSet;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.TeamUtil;
@@ -105,50 +95,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 	@MCCommand( cmds = {"showListeners"}, admin=true)
 	public boolean showListeners(CommandSender sender, String args[]) {
-		String limitToPlayer = args.length > 1 ? args[1] : null;
-
-		EnumMap<org.bukkit.event.EventPriority, HashMap<Type, BukkitEventHandler>> gels = MethodController.getEventListeners();
-		for (org.bukkit.event.EventPriority bp: gels.keySet()){
-			sendMessage(sender, "&4#### &f----!! Bukkit Priority=&5"+bp+"&f !!---- &4####");
-			HashMap<Type, BukkitEventHandler> types = gels.get(bp);
-			for (BukkitEventHandler bel: types.values()){
-				MapOfTreeSet<String,RListener> lists2 = bel.getSpecificPlayerListener().getListeners();
-				String str = MessageUtil.joinBukkitPlayers(bel.getSpecificPlayerListener().getPlayers(),", ");
-				String has = bel.hasListeners() ? "&2true" : "&cfalse";
-				if (!lists2.isEmpty())
-					sendMessage(sender, "---- Event &e" + bel.getSpecificPlayerListener().getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
-				for (String p : lists2.keySet()){
-					if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
-						continue;
-					TreeSet<RListener> rls = lists2.get(p);
-					for (RListener rl : rls){
-						sendMessage(sender, "!!! "+rl.getPriority() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
-					}
-				}
-				lists2 = bel.getSpecificArenaPlayerListener().getListeners();
-				str = MessageUtil.joinBukkitPlayers(bel.getSpecificArenaPlayerListener().getPlayers(),", ");
-				has = bel.hasListeners() ? "&2true" : "&cfalse";
-				if (!lists2.isEmpty())
-					sendMessage(sender, "---- ArenaPlayerEvent &e" + bel.getSpecificArenaPlayerListener().getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
-				for (String p : lists2.keySet()){
-					if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
-						continue;
-					TreeSet<RListener> rls = lists2.get(p);
-					for (RListener rl : rls){
-						sendMessage(sender, "!!! "+rl.getPriority() +"  " + p +"  Listener  " +
-								rl.getListener().getClass().getSimpleName());
-					}
-				}
-
-				EnumMap<EventPriority, List<RListener>> lists = bel.getMatchListener().getListeners();
-				for (EventPriority ep: lists.keySet()){
-					for (RListener rl : lists.get(ep)){
-						sendMessage(sender, "!!! " + ep  + "  -  " + rl);
-					}
-				}
-			}
-		}
-		return true;
+		String limitToPlayer = args.length > 1 ? args[1] : "";
+		return MethodController.showAllListeners(sender,limitToPlayer);
 	}
 
 	@MCCommand(cmds={"addKill"}, admin=true,min=2,usage="addKill <player>")
@@ -185,13 +133,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		MatchParams mp = findMatchParam(sender, paramName);
 		if (mp == null)
 			return true;
-		sendMessage(sender, mp.toString());
-		MatchTransitions mt = mp.getTransitionOptions();
-		if (mt == null){
-			return sendMessage(sender, ChatColor.RED+"MatchTransitions are null");
-		}
-		sendMessage(sender, mt.getOptionString());
-		return true;
+		return sendMessage(sender, mp.toString());
 	}
 
 	@MCCommand(cmds={"showPlayerVars"}, admin=true)
@@ -342,7 +284,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, Integer spawnIndex) {
 		if (spawnIndex < 1)
 			spawnIndex=1;
-		Location loc = arena.getSpawnLoc(spawnIndex-1);
+		Location loc = arena.getSpawn(spawnIndex-1, false);
 		if (loc ==null){
 			return sendMessage(sender,"&2Spawn " + spawnIndex +" doesn't exist");}
 		TeleportController.teleport(sender.getPlayer(), loc);

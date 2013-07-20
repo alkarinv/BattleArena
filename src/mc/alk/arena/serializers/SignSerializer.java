@@ -23,6 +23,8 @@ public class SignSerializer extends BaseConfig {
 				continue;
 			for (String strloc : signLocations){
 				cs = cs.getConfigurationSection(strloc);
+				if (cs == null)
+					continue;
 				ArenaCommandSign acs = ArenaCommandSign.deserialize(cs.getValues(true));
 				if (acs == null)
 					continue;

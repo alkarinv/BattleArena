@@ -74,8 +74,6 @@ public class TeleportLocationController {
 		PlayerHolder src = apte.getSrcLocation().getPlayerHolder();
 		PlayerHolder dest = apte.getDestLocation().getPlayerHolder();
 		TeleportDirection td = apte.getDirection();
-		Log.debug(" ###########  " + player.getCurLocation()  +"  -->  " + dest.getLocationType() );
-		Log.debug(" ---- << -- " + player.getName() +"   src=" + src +"   dest="+dest +"    td=" + td);
 		switch (td){
 		case RESPAWN:
 			break;

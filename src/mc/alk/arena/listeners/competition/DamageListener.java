@@ -12,7 +12,6 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.DmgDeathUtil;
-import mc.alk.arena.util.Log;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -40,15 +39,12 @@ public class DamageListener implements ArenaListener{
 
 	@ArenaEventHandler(suppressCastWarnings=true,priority=EventPriority.LOW)
 	public void onEntityDamageEvent(EntityDamageEvent event) {
-		Log.debug(" onEntityDamageEvent " + event);
 		if (!(event.getEntity() instanceof Player))
 			return;
 		final TransitionOptions to = transitionOptions.getOptions(match.getMatchState());
-		Log.debug(" onEntityDamageEvent " + event + "   to = " + to);
 		if (to == null)
 			return;
 		final PVPState pvp = to.getPVP();
-		Log.debug(" onEntityDamageEvent " + event + "   to = " + to +"   " + pvp);
 		if (pvp == null)
 			return;
 		final ArenaPlayer target = BattleArena.toArenaPlayer((Player) event.getEntity());

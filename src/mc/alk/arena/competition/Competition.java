@@ -163,7 +163,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 		if (event instanceof CompetitionEvent && ((CompetitionEvent)event).getCompetition()==null){
 			((CompetitionEvent)event).setCompetition(this);}
 		event.callEvent(); /// Call anyone using generic bukkit listeners
-		methodController.callEvent(event); /// Call our listeners listening to only this competition
+//		methodController.callEvent(event); /// Call our listeners listening to only this competition
 	}
 
 	/**

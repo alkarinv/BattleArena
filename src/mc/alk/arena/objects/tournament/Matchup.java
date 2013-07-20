@@ -59,6 +59,7 @@ public class Matchup {
 		}
 		return sb.toString() + " result=" + result;
 	}
+
 	public List<ArenaTeam> getTeams() {return teams;}
 	public ArenaTeam getTeam(int i) {
 		return teams.get(i);

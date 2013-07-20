@@ -113,6 +113,8 @@ public class ParamAlterController {
 		case VICTORYCONDITION:
 			params.setVictoryCondition((VictoryType)value);
 			break;
+		case RATED:
+			params.setRated((Boolean)value);
 		default:
 			break;
 		}

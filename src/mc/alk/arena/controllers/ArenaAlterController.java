@@ -32,7 +32,7 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class ArenaAlterController {
 	public enum ChangeType{
-		NTEAMS(true,true),
+		NTEAMS(true,false),
 		TEAMSIZE(true,false),
 		WAITROOM(true,false),
 		LOBBY(true,false),
@@ -79,6 +79,7 @@ public class ArenaAlterController {
 			for (ChangeType r: ChangeType.values()){
 				if (!first) sb.append(", ");
 				sb.append(r);
+				first = false;
 			}
 			return sb.toString();
 		}
@@ -357,7 +358,7 @@ public class ArenaAlterController {
 	private static void showAlterHelp(CommandSender sender) {
 		sendMessage(sender,ChatColor.GOLD+ "Usage: /arena alter <arenaname> <teamSize|nTeams|type|1|2|3...|vloc|waitroom> <value> [option]");
 		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena 1 &e: sets spawn location 1 to where you are standing");
-		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena 1 wg &e: causes spawn 1 to have the worldguard area selected");
+//		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena 1 wg &e: causes spawn 1 to have the worldguard area selected");
 		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena teamSize 3+ ");
 		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena nTeams 2 ");
 		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena type deathmatch ");

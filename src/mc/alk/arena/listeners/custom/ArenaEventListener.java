@@ -3,9 +3,11 @@ package mc.alk.arena.listeners.custom;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.events.EventPriority;
@@ -22,7 +24,7 @@ import org.bukkit.event.Event;
  */
 public class ArenaEventListener extends BukkitEventListener{
 	/** Set of arena listeners */
-	final public EnumMap<EventPriority, List<RListener>> listeners = new EnumMap<EventPriority, List<RListener>>(EventPriority.class);
+	final public EnumMap<EventPriority, Set<RListener>> listeners = new EnumMap<EventPriority, Set<RListener>>(EventPriority.class);
 
 	private volatile RListener[] handlers = null;
 
@@ -50,7 +52,7 @@ public class ArenaEventListener extends BukkitEventListener{
 	 * Get the set of arena listeners
 	 * @return
 	 */
-	public EnumMap<EventPriority, List<RListener>> getListeners(){
+	public EnumMap<EventPriority, Set<RListener>> getListeners(){
 		return listeners;
 	}
 
@@ -91,12 +93,13 @@ public class ArenaEventListener extends BukkitEventListener{
 	public synchronized void addMatchListener(RListener spl) {
 		if (!hasListeners()){
 			startListening();}
-		List<RListener> l = listeners.get(spl.getPriority());
+		Set<RListener> l = listeners.get(spl.getPriority());
 		if (l == null){
-			l = new ArrayList<RListener>();
+			l = new HashSet<RListener>();
 			listeners.put(spl.getPriority(), l);
 		}
 		l.add(spl);
+
 		handlers = null;
 		bake();
 	}
@@ -107,7 +110,7 @@ public class ArenaEventListener extends BukkitEventListener{
 	 * @return
 	 */
 	private boolean removeMatchListener(RListener listener) {
-		final List<RListener> list = listeners.get(listener.getPriority());
+		final Set<RListener> list = listeners.get(listener.getPriority());
 		if (list==null)
 			return false;
 		boolean changed = false;
@@ -128,7 +131,7 @@ public class ArenaEventListener extends BukkitEventListener{
 	private synchronized void bake() {
 		if (handlers != null) return;
 		List<RListener> entries = new ArrayList<RListener>();
-		for (Entry<EventPriority,List<RListener>> entry : listeners.entrySet()){
+		for (Entry<EventPriority,Set<RListener>> entry : listeners.entrySet()){
 			entries.addAll(entry.getValue());}
 		handlers = entries.toArray(new RListener[entries.size()]);
 	}
