@@ -21,6 +21,7 @@ import org.bukkit.inventory.ItemStack;
 public class MatchTransitions {
 	final Map<MatchState,TransitionOptions> ops = new EnumMap<MatchState,TransitionOptions>(MatchState.class);
 	final Set<TransitionOption> allops = new HashSet<TransitionOption>();
+	MatchTransitions parent = null;
 
 	public MatchTransitions() {}
 	public MatchTransitions(MatchTransitions o) {
@@ -79,6 +80,7 @@ public class MatchTransitions {
 		}
 		return false;
 	}
+
 	public MatchState getMatchState(TransitionOption option) {
 		for (MatchState state: ops.keySet()){
 			TransitionOptions tops = ops.get(state);
@@ -193,5 +195,10 @@ public class MatchTransitions {
 		return sb.toString();
 	}
 
-
+	public void setParent(MatchTransitions parent){
+		this.parent = parent;
+	}
+	public MatchTransitions getParent(){
+		return parent;
+	}
 }

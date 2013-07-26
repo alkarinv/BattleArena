@@ -17,7 +17,7 @@ import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.controllers.BattleArenaController;
-import mc.alk.arena.controllers.LobbyController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.messaging.EventMessageHandler;
 import mc.alk.arena.controllers.messaging.EventMessageImpl;
@@ -123,7 +123,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	public void addAllOnline() {
 		Player[] online = ServerUtil.getOnlinePlayers();
 		for (Player p: online){
-			ArenaTeam t = TeamController.createTeam(BattleArena.toArenaPlayer(p));
+			ArenaTeam t = TeamController.createTeam(eventParams, BattleArena.toArenaPlayer(p));
 			TeamJoinObject tqo = new TeamJoinObject(t,eventParams,null);
 			this.joining(tqo);
 		}
@@ -233,7 +233,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		ArenaTeam t = getTeam(p);
 		p.removeCompetition(this);
 		if (eventParams.needsLobby()){
-			LobbyController.leaveLobby(eventParams, p);
+			RoomController.leaveLobby(eventParams, p);
 		}
 		if (t==null) /// they arent in this Event
 			return false;

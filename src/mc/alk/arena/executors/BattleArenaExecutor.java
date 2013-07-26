@@ -4,6 +4,8 @@ import java.util.Collection;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.BAEventController;
+import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.serializers.InventorySerializer;
@@ -89,5 +91,25 @@ public class BattleArenaExecutor extends CustomCommandExecutor{
 		}
 		return true;
 	}
+
+	@MCCommand(cmds={"reload"}, admin=true, perm="arena.reload")
+	public boolean arenaReload(CommandSender sender) {
+		BAEventController baec = BattleArena.getBAEventController();
+		if (ac.hasRunningMatches() || !ac.isQueueEmpty() || baec.hasOpenEvent()){
+			sendMessage(sender, "&cYou can't reload the config while matches are running or people are waiting in the queue");
+			return sendMessage(sender, "&cYou can use &6/arena cancel all&c to cancel all matches and clear queues");
+		}
+
+		ac.stop();
+		/// Get rid of any current players
+		PlayerController.clearArenaPlayers();
+
+		BattleArena.getSelf().reloadConfig();
+		BattleArena.getSelf().reloadCompetitions();
+
+		ac.resume();
+		return sendMessage(sender, "&6BattleArena&e configuration reloaded");
+	}
+
 
 }

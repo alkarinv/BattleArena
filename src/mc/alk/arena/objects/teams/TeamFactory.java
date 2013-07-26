@@ -4,27 +4,37 @@ import java.lang.reflect.Constructor;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 
 public class TeamFactory {
 
-	public static ArenaTeam createTeam(ArenaPlayer p){
+	public static ArenaTeam createTeam(MatchParams params, ArenaPlayer p){
 		return new CompositeTeam(p);
 	}
 
-//	public static Team createTeam(Set<ArenaPlayer> players){
-//		return new CompositeTeam(players);
-//	}
+	//	public static Team createTeam(Set<ArenaPlayer> players){
+	//		return new CompositeTeam(players);
+	//	}
 
-	public static CompositeTeam createCompositeTeam(Set<ArenaPlayer> players) {
-		return new CompositeTeam(players);
+	public static CompositeTeam createCompositeTeam(MatchParams params, Set<ArenaPlayer> players) {
+		CompositeTeam ct =  new CompositeTeam(players);
+		ct.setCurrentParams(params);
+		return ct;
+	}
+
+	public static CompositeTeam createCompositeTeam(MatchParams params) {
+		CompositeTeam ct =  new CompositeTeam();
+		ct.setCurrentParams(params);
+		return ct;
 	}
 
 	public static CompositeTeam createCompositeTeam() {
 		return new CompositeTeam();
 	}
-	public static CompositeTeam createCompositeTeam(ArenaTeam team) {
-		return new CompositeTeam(team);
-	}
+
+	//	public static CompositeTeam createCompositeTeam(ArenaTeam team) {
+	//		return new CompositeTeam(team);
+	//	}
 
 	public static ArenaTeam createTeam(Class<? extends ArenaTeam> clazz) {
 		Class<?>[] args = {};

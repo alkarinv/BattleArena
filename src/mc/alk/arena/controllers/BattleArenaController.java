@@ -36,6 +36,7 @@ import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
+import mc.alk.arena.objects.queues.ArenaQueue;
 import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -62,6 +63,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	final private Map<String, Integer> runningMatchTypes = Collections.synchronizedMap(new HashMap<String,Integer>());
 	final private Map<ArenaType,List<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,List<Match>>());
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
+	private Map<ArenaType, LinkedList<Arena>> nextArena = new ConcurrentHashMap<ArenaType, LinkedList<Arena>>();
 	private final MethodController methodController;
 	final private Map<Match, OldMatchContainerState> oldArenaStates = new HashMap<Match, OldMatchContainerState>();
 	final private Map<ArenaType,OldLobbyState> oldLobbyState = new HashMap<ArenaType,OldLobbyState>();
@@ -170,8 +172,8 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		Match m = createMatch(arena,eoo);
 		/// save the old states to put back after the match
 		oldArenaStates.put(m,new OldMatchContainerState(arena));
-		if (LobbyController.hasLobby(arena.getArenaType())){
-			RoomContainer pc = LobbyController.getLobby(arena.getArenaType());
+		if (RoomController.hasLobby(arena.getArenaType())){
+			RoomContainer pc = RoomController.getLobby(arena.getArenaType());
 			OldLobbyState ols = oldLobbyState.get(arena.getArenaType());
 			if (ols == null){
 				ols = new OldLobbyState();
@@ -191,6 +193,9 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 			running_matches.add(match);
 		}
 		incNumberOpenMatches(match.getParams().getType().getName());
+		if (isNextArena(match.getArena())){
+			this.removeNextArena(match.getArena());
+		}
 		match.open();
 		if (match.isJoinablePostCreate()){
 			List<Match> matches = unfilled_matches.get(match.getParams().getType());
@@ -220,7 +225,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		OldLobbyState ols = oldLobbyState.get(am.getArena().getArenaType());
 		if (ols != null){ /// we only put back the lobby state if its the last autoed match finishing
 			if (ols.remove(am) && ols.isEmpty()){
-				LobbyController.getLobby(am.getArena().getArenaType()).setContainerState(ols.pcs);
+				RoomController.getLobby(am.getArena().getArenaType()).setContainerState(ols.pcs);
 			}
 		}
 		//		unhandle(am);/// unhandle any teams that were added during the match
@@ -229,6 +234,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 			if (states != null){
 				states.revert(arena);}
 			amq.add(arena,shouldStart(arena)); /// add it back into the queue
+			addOrUpdateNextArena(arena);
 		}
 	}
 
@@ -236,11 +242,49 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		allarenas.put(arena.getName().toUpperCase(), arena);
 		if (amq.removeArena(arena) != null){ /// if its not being used
 			amq.add(arena,shouldStart(arena));}
+		addOrUpdateNextArena(arena);
 	}
 
 	public void addArena(Arena arena) {
 		allarenas.put(arena.getName().toUpperCase(), arena);
+		addOrUpdateNextArena(arena);
 		amq.add(arena, shouldStart(arena));
+	}
+
+	private LinkedList<Arena> addOrUpdateNextArena(Arena arena) {
+		ArenaType arenaType = arena.getArenaType();
+		LinkedList<Arena> list = nextArena.get(arenaType);
+		if (list == null){
+			list = new ArenaQueue();
+			nextArena.put(arenaType, list);
+		}
+		list.addLast(arena);
+		return list;
+	}
+
+	private boolean isNextArena(Arena arena){
+		LinkedList<Arena> list = nextArena.get(arena.getArenaType());
+		if (list == null){
+			return false;}
+		return list.isEmpty() ? false : list.getFirst().getName().equals(arena.getName());
+	}
+
+	public Arena getNextArena(ArenaType arenaType){
+		LinkedList<Arena> list = nextArena.get(arenaType);
+		if (list == null){
+			return null;}
+		return list == null || list.isEmpty() ? null : list.getFirst();
+	}
+
+	/**
+	 * Lets not remove the "last" arena.  that way people always get 1 next
+	 */
+	private boolean removeNextArena(Arena arena) {
+		ArenaType arenaType = arena.getArenaType();
+		LinkedList<Arena> list = nextArena.get(arenaType);
+		if (list == null){
+			return false;}
+		return list.size() == 1 ? true : list.remove(arena);
 	}
 
 	public Map<String, Arena> getArenas(){return allarenas;}
@@ -257,7 +301,28 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 			qr.status = JoinResult.JoinStatus.ADDED_TO_EXISTING_MATCH;
 			return qr;
 		}
+		/// Add a default arena if they havent specified
+		if (!tqo.getJoinOptions().hasArena()){
+			tqo.getJoinOptions().setArena(getNextArena(tqo.getMatchParams().getType()));
+		}
 		JoinResult jr = sc.join(tqo, shouldStart(tqo.getMatchParams()));
+		switch(jr.status){
+		case ADDED_TO_ARENA_QUEUE:
+			break;
+		case ADDED_TO_EXISTING_MATCH:
+			break;
+		case ADDED_TO_QUEUE:
+			break;
+		case ERROR:
+			break;
+		case NONE:
+			break;
+		case STARTED_NEW_GAME:
+			break;
+		default:
+			break;
+
+		}
 		return jr;
 	}
 
@@ -341,7 +406,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	}
 
 	public Arena nextArenaByMatchParams(MatchParams mp){
-		return amq.getNextArena(mp);
+		return amq.getNextArena(mp,null);
 	}
 
 	public Arena getArenaByMatchParams(MatchParams mp, JoinOptions jp) {
@@ -589,7 +654,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		amq.removeAllArenas();
 		allarenas.clear();
 		amq.resume();
-
+		nextArena.clear();
 	}
 
 	public void removeAllArenas(ArenaType arenaType) {
@@ -608,6 +673,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 			if (a != null && a.getArenaType() == arenaType){
 				iter.remove();}
 		}
+		nextArena.remove(arenaType);
 		amq.resume();
 	}
 

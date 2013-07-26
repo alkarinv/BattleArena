@@ -8,8 +8,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
+import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
 
@@ -40,6 +43,8 @@ public abstract class AbstractTeam implements ArenaTeam{
 	ArenaObjective objective;
 	protected ChatColor color = null;
 	protected ItemStack headItem = null;
+	ArenaStat stat;
+	MatchParams params;
 
 	/**
 	 * Default Constructor
@@ -418,6 +423,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 	public void setTeamChatColor(ChatColor color) {
 		this.color = color;
 	}
+
 	@Override
 	public ChatColor getTeamChatColor() {
 		return color;
@@ -447,6 +453,33 @@ public abstract class AbstractTeam implements ArenaTeam{
 
 	public void setHeadItem(ItemStack item){
 		this.headItem = item;
+	}
+
+	@Override
+	public MatchParams getCurrentParams() {
+		return params;
+	}
+
+	@Override
+	public void setCurrentParams(MatchParams params) {
+		this.params = params;
+	}
+
+	@Override
+	public void setArenaStat(ArenaStat stat){
+		this.stat = stat;
+	}
+
+	@Override
+	public ArenaStat getStat(){
+		return StatController.loadRecord(getCurrentParams(), this);
+//		return stat;
+	}
+
+	@Override
+	public ArenaStat getStat(MatchParams params){
+		return StatController.loadRecord(params, this);
+//		return stat;
 	}
 }
 

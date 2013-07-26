@@ -6,7 +6,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaClassController;
-import mc.alk.arena.controllers.LobbyController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.TeleportController;
@@ -163,7 +163,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		if (type == null){
 			return sendMessage(sender, "&cArenaType not found &6" + arenatype);}
 
-		RoomContainer lobby = LobbyController.getLobby(type);
+		RoomContainer lobby = RoomController.getLobby(type);
 		if (lobby == null){
 			return sendMessage(sender, "&cThere is no lobby for &6" + type.getName());}
 		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(lobby, ToStringStyle.MULTI_LINE_STYLE);

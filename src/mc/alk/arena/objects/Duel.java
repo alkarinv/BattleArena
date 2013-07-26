@@ -59,7 +59,7 @@ public class Duel {
 	}
 
 	public ArenaTeam makeChallengedTeam() {
-		return TeamFactory.createCompositeTeam(challengedPlayers.keySet());
+		return TeamFactory.createCompositeTeam(mp, challengedPlayers.keySet());
 	}
 
 	public MatchParams getMatchParams() {

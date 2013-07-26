@@ -203,6 +203,7 @@ public class BAConfigSerializer extends BaseConfig{
 
 		defaults.setRated(true);
 		defaults.setUseTrackerPvP(false);
+		defaults.setTeamRating(false);
 		defaults.setTeamSizes(new MinMax(1,ArenaSize.MAX));
 		defaults.setNTeams(new MinMax(2,ArenaSize.MAX));
 		defaults.setNConcurrentCompetitions(ArenaSize.toInt(cs.getString("nConcurrentCompetitions","infinite")));

@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
-import mc.alk.arena.controllers.LobbyController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
@@ -181,54 +181,54 @@ public class ArenaMatch extends Match {
 
 
 
-//	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGHER)
-//	public void onCheckEmulateDeath(EntityDamageEvent event) {
-//		//		Log.debug("############## checking emulate   " + event.getEntity() +"    " + event.isCancelled() +"    " + event.getDamage());
-//		if (event.isCancelled() || event.getDamage() <= 0 || !(event.getEntity() instanceof Player))
-//			return;
-//		Player target = ((Player) event.getEntity());
-//		//		Log.debug("############## checking health   " + event.getDamage() +"    " + target.getHealth());
-//		if (event.getDamage() < target.getHealth()){
-//			return;}
-//
-//		PlayerInventory pinv = target.getInventory();
-//		ArenaPlayer ap = BattleArena.toArenaPlayer(target);
-//		ArenaTeam targetTeam = getTeam(ap);
-//		if (clearsInventoryOnDeath){
-//			pinv.clear();
-//			if (woolTeams){
-//				if (targetTeam != null && targetTeam.getHeadItem() != null){
-//					TeamUtil.setTeamHead(targetTeam.getHeadItem(), target);
-//				}
-//			}
-//		}
-//
-//		Integer nDeaths = targetTeam.getNDeaths(ap);
-//		boolean exiting = !respawns || (nDeaths != null && nDeaths +1 >= nLivesPerPlayer);
-//
-//		ArenaPlayerDeathEvent apde = new ArenaPlayerDeathEvent(ap,targetTeam);
-//		callEvent(apde);
-//		ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
-//		if (killer != null){
-//			ArenaTeam killT = getTeam(killer);
-//			if (killT != null){ /// they must be in the same match for this to count
-//				killT.addKill(killer);
-//				callEvent(new ArenaPlayerKillEvent(killer,killT,ap));
-//			}
-//		}
-//		PerformTransition.transition(this, MatchState.ONDEATH, ap, targetTeam , false);
-//		PerformTransition.transition(this, MatchState.ONDEATH, ap, targetTeam , false);
-//
-//		EffectUtil.deEnchantAll(target);
-//		target.closeInventory();
-//		target.setFireTicks(0);
-//		target.setHealth(target.getMaxHealth());
-//		if (!exiting){
-//			final int teamIndex = indexOf(targetTeam);
-//			final Location l = PerformTransition.jitter(getTeamSpawn(teamIndex,false),rand.nextInt(targetTeam.size()));
-//			TeleportController.teleportPlayer(target, l, false, true);
-//		}
-//	}
+	//	@MatchEventHandler(suppressCastWarnings=true,priority=EventPriority.HIGHER)
+	//	public void onCheckEmulateDeath(EntityDamageEvent event) {
+	//		//		Log.debug("############## checking emulate   " + event.getEntity() +"    " + event.isCancelled() +"    " + event.getDamage());
+	//		if (event.isCancelled() || event.getDamage() <= 0 || !(event.getEntity() instanceof Player))
+	//			return;
+	//		Player target = ((Player) event.getEntity());
+	//		//		Log.debug("############## checking health   " + event.getDamage() +"    " + target.getHealth());
+	//		if (event.getDamage() < target.getHealth()){
+	//			return;}
+	//
+	//		PlayerInventory pinv = target.getInventory();
+	//		ArenaPlayer ap = BattleArena.toArenaPlayer(target);
+	//		ArenaTeam targetTeam = getTeam(ap);
+	//		if (clearsInventoryOnDeath){
+	//			pinv.clear();
+	//			if (woolTeams){
+	//				if (targetTeam != null && targetTeam.getHeadItem() != null){
+	//					TeamUtil.setTeamHead(targetTeam.getHeadItem(), target);
+	//				}
+	//			}
+	//		}
+	//
+	//		Integer nDeaths = targetTeam.getNDeaths(ap);
+	//		boolean exiting = !respawns || (nDeaths != null && nDeaths +1 >= nLivesPerPlayer);
+	//
+	//		ArenaPlayerDeathEvent apde = new ArenaPlayerDeathEvent(ap,targetTeam);
+	//		callEvent(apde);
+	//		ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
+	//		if (killer != null){
+	//			ArenaTeam killT = getTeam(killer);
+	//			if (killT != null){ /// they must be in the same match for this to count
+	//				killT.addKill(killer);
+	//				callEvent(new ArenaPlayerKillEvent(killer,killT,ap));
+	//			}
+	//		}
+	//		PerformTransition.transition(this, MatchState.ONDEATH, ap, targetTeam , false);
+	//		PerformTransition.transition(this, MatchState.ONDEATH, ap, targetTeam , false);
+	//
+	//		EffectUtil.deEnchantAll(target);
+	//		target.closeInventory();
+	//		target.setFireTicks(0);
+	//		target.setHealth(target.getMaxHealth());
+	//		if (!exiting){
+	//			final int teamIndex = indexOf(targetTeam);
+	//			final Location l = PerformTransition.jitter(getTeamSpawn(teamIndex,false),rand.nextInt(targetTeam.size()));
+	//			TeleportController.teleportPlayer(target, l, false, true);
+	//		}
+	//	}
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerRespawn(PlayerRespawnEvent event, final ArenaPlayer p){
@@ -252,9 +252,9 @@ public class ArenaMatch extends Match {
 					TransitionOption.TELEPORTWAITROOM,TransitionOption.TELEPORTMAINWAITROOM)){
 				final int index = this.getTeamIndex(t);
 				if (mo.hasOption(TransitionOption.TELEPORTLOBBY)){
-					loc = LobbyController.getLobbySpawn(index, getParams().getType(), randomRespawn);
+					loc = RoomController.getLobbySpawn(index, getParams().getType(), randomRespawn);
 				} else if (mo.hasOption(TransitionOption.TELEPORTMAINLOBBY)){
-					loc = LobbyController.getLobbySpawn(Defaults.MAIN_SPAWN, getParams().getType(), randomRespawn);
+					loc = RoomController.getLobbySpawn(Defaults.MAIN_SPAWN, getParams().getType(), randomRespawn);
 				} else if (mo.hasOption(TransitionOption.TELEPORTMAINWAITROOM)){
 					loc = this.getWaitRoomSpawn(Defaults.MAIN_SPAWN, randomRespawn);
 				} else {
@@ -460,7 +460,10 @@ public class ArenaMatch extends Match {
 		/// Also debuff them
 		EffectUtil.deEnchantAll(p);
 		boolean armorTeams = tops.hasAnyOption(TransitionOption.ARMORTEAMS);
-		Color color = armorTeams ? TeamUtil.getTeamColor(am.indexOf(am.getTeam(ap))) : null;
+		ArenaTeam team = am.getTeam(ap);
+		Log.debug(" team " + team +"   ap " + ap.getName()  + "    name == " + am.getClass().getSimpleName());
+		Color color = armorTeams && team != null ? TeamUtil.getTeamColor(am.indexOf(team)) : null;
+		Log.debug(" color = " + color);
 		ap.despawnMobs();
 		/// Regive class/items
 		ArenaClassController.giveClass(ap, ac);

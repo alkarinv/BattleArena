@@ -8,10 +8,13 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.util.Log;
 import net.milkbowl.vault.chat.Chat;
 
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+
 public class AnnouncementOptions {
 
 	public enum AnnouncementOption{
-		ANNOUNCE, DONTANNOUNCE, SERVER, CHANNEL;
+		ANNOUNCE, DONTANNOUNCE, SERVER, CHANNEL, WORLD;
 
 		public static AnnouncementOption fromName(String str){
 			str = str.toUpperCase();
@@ -50,7 +53,8 @@ public class AnnouncementOptions {
 			ops = new EnumMap<AnnouncementOption,Object>(AnnouncementOption.class);
 			options.put(ms, ops);
 		}
-		if (bo == AnnouncementOption.CHANNEL){
+		switch (bo){
+		case CHANNEL:
 			if (chatPlugin == null){
 				Log.err(BattleArena.getPluginName()+"config.yml Announcement option channel="+value+
 						", will be ignored as a Chat plugin is not enabled. Defaulting to Server Announcement");
@@ -64,6 +68,25 @@ public class AnnouncementOptions {
 				ops.put(AnnouncementOption.SERVER, null);
 				return;
 			}
+			break;
+		case DONTANNOUNCE:
+			break;
+		case SERVER:
+			break;
+		case WORLD:
+			World w = Bukkit.getWorld(value);
+			if (w == null){
+				Log.err(BattleArena.getPluginName()+"config.yml Announcement option world="+value+
+						", will be ignored as world " + value +" can not be found. Defaulting to Server Announcement");
+				ops.put(AnnouncementOption.SERVER, null);
+				return;
+			} else {
+
+			}
+			break;
+		default:
+			break;
+
 		}
 		ops.put(bo, value);
 	}
@@ -78,7 +101,6 @@ public class AnnouncementOptions {
 		/// Dont announce
 		if (ops == null || ops.containsKey(AnnouncementOption.DONTANNOUNCE))
 			return Channel.NullChannel;
-
 
 		/// Channel option enabled
 		if (ops.containsKey(AnnouncementOption.CHANNEL)){
@@ -95,14 +117,19 @@ public class AnnouncementOptions {
 				return channel;
 			}
 		}
+		if (ops.containsKey(AnnouncementOption.WORLD)){
+			World w = Bukkit.getWorld((String)ops.get(AnnouncementOption.WORLD));
+			if (w != null){
+				return new WorldChannel(w);}
+		}
 		return Channel.ServerChannel;
 	}
 
 	public static Channel getDefaultChannel(boolean match, MatchState state) {
 		return defaultOptions.getChannel(match, state);
 	}
+
 	public boolean hasOption(boolean match, MatchState state) {
-//		System.out.println("## hasOption = " + matchOptions.containsKey(state) +"  " + state);
 		Map<MatchState, Map<AnnouncementOption,Object>> options = match ? matchOptions : eventOptions;
 		return options.containsKey(state);
 	}

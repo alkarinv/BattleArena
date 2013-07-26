@@ -3,7 +3,6 @@ package mc.alk.arena.objects.stats;
 
 public class BlankArenaStat implements ArenaStat{
 	public static final BlankArenaStat BLANK_STAT = new BlankArenaStat();
-
 	private BlankArenaStat(){}
 
 	public int getWinsVersus(ArenaStat st2) {
@@ -28,6 +27,11 @@ public class BlankArenaStat implements ArenaStat{
 
 	public int getRating() {
 		return 1250;
+	}
+
+	@Override
+	public String getDB() {
+		return "";
 	}
 
 }

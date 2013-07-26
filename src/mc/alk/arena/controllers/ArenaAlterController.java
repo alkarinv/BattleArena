@@ -7,7 +7,6 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -251,7 +250,7 @@ public class ArenaAlterController {
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}
-		LobbyController.addLobby(params.getType(), locindex, loc);
+		RoomController.addLobby(params.getType(), locindex, loc);
 		PlayerContainerSerializer pcs = new PlayerContainerSerializer();
 		pcs.setConfig(BattleArena.getSelf().getDataFolder().getPath()+"/saves/containers.yml");
 		pcs.save();
@@ -275,7 +274,9 @@ public class ArenaAlterController {
 		if (mp == null){
 			throw new IllegalStateException("MatchParams for " + arena.getArenaType() +" could not be found");}
 		if (arena.getWaitroom() == null){
-			arena.setWaitRoom(new RoomContainer(mp, LocationType.WAITROOM));}
+			RoomContainer room = RoomController.getOrCreateWaitroom(arena);
+			arena.setWaitRoom(room);
+		}
 		arena.setWaitRoomSpawnLoc(locindex,loc);
 		ac.removeArena(arena);
 		ac.addArena(arena);

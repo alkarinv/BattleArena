@@ -38,4 +38,14 @@ public class EssentialsController {
 		return EssentialsUtil.inJail(player.getName());
 	}
 
+	public static Boolean isGod(ArenaPlayer player) {
+		if (!hasEssentials) return false;
+		return EssentialsUtil.isGod(player.getName());
+	}
+
+	public static Boolean isFlying(ArenaPlayer player) {
+		if (!hasEssentials) return false;
+		return EssentialsUtil.isFlying(player.getName());
+	}
+
 }

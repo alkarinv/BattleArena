@@ -5,7 +5,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
+import mc.alk.arena.objects.stats.ArenaStat;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -244,4 +246,20 @@ public class MatchingTeam implements ArenaTeam{
 
 	@Override
 	public void setHeadItem(ItemStack item) { /* do nothing */}
+
+	@Override
+	public ArenaStat getStat(MatchParams params) {return null;}
+
+	@Override
+	public ArenaStat getStat() { return null;}
+
+	@Override
+	public MatchParams getCurrentParams() {return null;}
+
+	@Override
+	public void setCurrentParams(MatchParams params) {}
+
+	@Override
+	public void setArenaStat(ArenaStat stat){/* do nothing */}
+
 }

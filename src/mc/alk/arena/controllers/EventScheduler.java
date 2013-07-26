@@ -7,12 +7,16 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.events.events.EventFinishedEvent;
+import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
+import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.pairs.EventPair;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
@@ -54,28 +58,35 @@ public class EventScheduler implements Runnable, ArenaListener{
 			if (stop)
 				return;
 
-			EventExecutor ee = EventController.getEventExecutor(eventPair.getEventParams().getName());
-			if (ee == null){
-				return;
-			}
 			CommandSender sender = Bukkit.getConsoleSender();
-			EventParams eventParams = eventPair.getEventParams();
+			MatchParams params = eventPair.getEventParams();
 			String args[] = eventPair.getArgs();
-			Event event = null;
+			boolean success = false;
 			try {
+				EventExecutor ee = EventController.getEventExecutor(eventPair.getEventParams().getName());
 				if (ee != null && ee instanceof TournamentExecutor){
 					TournamentExecutor exe = (TournamentExecutor) ee;
-					event = exe.openIt(sender, eventParams, args);
+					Event event = exe.openIt(sender, (EventParams)params, args);
+					if (event != null){
+						event.addArenaListener(scheduler);
+						success = true;
+					}
+					if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] Running event ee=" + ee  +"  event" + event +"  args=" + args);
+				} else { /// normal match
+					EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null, params);
+					Arena arena = eoo.getArena(params, null);
+
+					BattleArena.getBAController().createAndAutoMatch(arena, eoo);
+					arena.addArenaListener(scheduler);
+					success = true;
 				}
 			} catch (InvalidEventException e) {
 				/** do nothing */
 			} catch (Exception e){
 				e.printStackTrace();
 			}
-			if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] Running event ee=" + ee  +"  event" + event +"  args=" + args);
-			if (event != null){
-				event.addArenaListener(scheduler);
-			} else {  /// wait then start up the scheduler again in x seconds
+
+			if (!success){ /// wait then start up the scheduler again in x seconds
 				currentTimer = Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(),
 						scheduler, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			}
@@ -88,6 +99,23 @@ public class EventScheduler implements Runnable, ArenaListener{
 		e.removeArenaListener(this);
 		if (continuous){
 			if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] finished event "+ e+"  scheduling next event in "+ 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS + " ticks");
+
+			/// Wait x sec then start the next event
+			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
+			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
+				Bukkit.getServer().broadcastMessage(
+						MessageUtil.colorChat(
+								ChatColor.YELLOW+"Next event will start in "+
+										TimeUtil.convertSecondsToString(Defaults.TIME_BETWEEN_SCHEDULED_EVENTS)));}
+		} else {
+			running = false;
+		}
+	}
+
+	@ArenaEventHandler
+	public void onMatchFinished(MatchFinishedEvent event){
+		if (continuous){
+			if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] finished event "+ event.getEventName()+"  scheduling next event in "+ 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS + " ticks");
 
 			/// Wait x sec then start the next event
 			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
@@ -130,7 +158,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 	}
 
 
-	public boolean scheduleEvent(EventParams eventParams, String[] args) {
+	public boolean scheduleEvent(MatchParams eventParams, String[] args) {
 		events.add(new EventPair(eventParams,args));
 		return true;
 	}

@@ -1,5 +1,6 @@
 package mc.alk.arena.objects.meta;
 
+
 public class PlayerMetaData {
 	boolean joining = false;
 

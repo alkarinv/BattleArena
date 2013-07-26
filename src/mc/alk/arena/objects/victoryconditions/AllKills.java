@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.TreeMap;
 
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
 import mc.alk.arena.events.players.ArenaPlayerKillEvent;
+import mc.alk.arena.objects.MatchResult.WinLossDraw;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
@@ -18,17 +20,23 @@ import mc.alk.arena.util.MessageUtil;
 /// TODO refactor with MobKills and PlayerKills
 public class AllKills extends VictoryCondition implements ScoreTracker {
 	final ArenaObjective kills;
+	final StatController sc;
 
 	public AllKills(Match match) {
 		super(match);
 		kills = new ArenaObjective("allkills","All Kills",5);
 		kills.setDisplayName(MessageUtil.colorChat("&4All Kills"));
+		boolean isRated = match.getParams().isRated();
+		boolean soloRating = !match.getParams().isTeamRating();
+		sc = (isRated && soloRating) ? new StatController(match.getParams()): null;
 	}
 
 	@ArenaEventHandler(priority=EventPriority.LOW)
 	public void playerKillEvent(ArenaPlayerKillEvent event) {
 		kills.addPoints(event.getPlayer(), event.getPoints());
 		kills.addPoints(event.getTeam(), event.getPoints());
+		if (sc != null)
+			sc.addRecord(event.getPlayer(),event.getTarget(),WinLossDraw.WIN);
 	}
 
 	@ArenaEventHandler(priority = EventPriority.LOW)

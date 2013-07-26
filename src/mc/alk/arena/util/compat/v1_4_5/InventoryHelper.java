@@ -1,4 +1,4 @@
-package mc.alk.arena.util.compat.post;
+package mc.alk.arena.util.compat.v1_4_5;
 
 import java.awt.Color;
 import java.util.List;

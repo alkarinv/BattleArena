@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mc.alk.arena.controllers.LobbyController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
@@ -30,6 +30,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	Set<ArenaModule> modules = new HashSet<ArenaModule>();
 	Boolean useBTPvP;
 	Boolean useBTMessages;
+	Boolean useBTTeamRating;
+
 	MatchParams mparent=null;
 
 	public MatchParams(ArenaType at) {
@@ -181,13 +183,13 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public boolean valid() {
 		return super.valid() && (getTransitionOptions() != null ?
 				(!getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY) ||
-						LobbyController.hasLobby(getType())) : true);
+						RoomController.hasLobby(getType())) : true);
 	}
 
 	@Override
 	public Collection<String> getInvalidReasons() {
 		List<String> reasons = new ArrayList<String>();
-		if (getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY) && !LobbyController.hasLobby(getType()))
+		if (getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY) && !RoomController.hasLobby(getType()))
 				reasons.add("Needs a Lobby");
 		reasons.addAll(super.getInvalidReasons());
 		return reasons;
@@ -228,7 +230,12 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		return getTransitionOptions() != null ? getTransitionOptions().hasOptionAt(state, op) : false;
 	}
 
+	public void setTeamRating(Boolean b) {
+		this.useBTTeamRating = b;
+	}
 
-
+	public Boolean isTeamRating(){
+		return useBTTeamRating != null ? useBTTeamRating : (mparent!= null ? mparent.isTeamRating() : null);
+	}
 
 }

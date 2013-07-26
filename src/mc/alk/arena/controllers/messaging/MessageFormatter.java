@@ -29,7 +29,6 @@ public class MessageFormatter{
 
 	final Set<MessageOption> ops;
 	final Message msg;
-	HashMap<Integer,ArenaStat> stats = null;
 	final HashMap<Integer,TeamNames> tns;
 	final MatchParams mp;
 	final String typeName;
@@ -45,7 +44,6 @@ public class MessageFormatter{
 		this.mp = mp;
 		typeName = mp.getType().getName();
 		sc = new StatController(mp);
-		stats = new HashMap<Integer,ArenaStat>();
 		this.impl = impl;
 	}
 
@@ -169,10 +167,10 @@ public class MessageFormatter{
 			case TEAM: replaceList[i] = tn.name;break;
 			case TEAMSHORT: replaceList[i] = tn.shortName;break;
 			case TEAMLONG: replaceList[i] = tn.longName;break;
-			case WINS: replaceList[i] = getStat(team).getWins()+""; break;
-			case LOSSES: replaceList[i] = getStat(team).getLosses()+""; break;
-			case RANKING: replaceList[i] = getStat(team).getRanking()+"" ; break;
-			case RATING: replaceList[i] = getStat(team).getRating()+"" ; break;
+			case WINS: replaceList[i] = team.getStat().getWins()+""; break;
+			case LOSSES: replaceList[i] = team.getStat().getLosses()+""; break;
+			case RANKING: replaceList[i] = team.getStat().getRanking()+"" ; break;
+			case RATING: replaceList[i] = team.getStat().getRating()+"" ; break;
 			default:
 				continue;
 			}
@@ -185,7 +183,7 @@ public class MessageFormatter{
 
 	public void formatTwoTeamsOptions(ArenaTeam t, Collection<ArenaTeam> teams){
 		ArenaTeam oteam = null;
-		ArenaStat st1 = null;
+		ArenaStat st1 = t.getStat();
 		int i = teamIndex;
 		for (MessageOption mop : ops){
 			if (mop == null)
@@ -199,10 +197,9 @@ public class MessageFormatter{
 				break;
 			case WINSAGAINST:
 				try{
-					st1 = getStat(t);
 					oteam = getOtherTeam(t,teams);
 					if (oteam != null){
-						ArenaStat st2 = getStat(oteam);
+						ArenaStat st2 = oteam.getStat();
 						repl = st1.getWinsVersus(st2)+"";
 					} else {
 						repl = "0";
@@ -214,10 +211,10 @@ public class MessageFormatter{
 				break;
 			case LOSSESAGAINST:
 				try{
-					st1 = getStat(t);
+					st1 = t.getStat();
 					oteam = getOtherTeam(t,teams);
 					if (oteam != null){
-						ArenaStat st2 = getStat(oteam);
+						ArenaStat st2 = oteam.getStat();
 						repl = st1.getLossesVersus(st2) +"";
 					} else {
 						repl = "0";
@@ -345,16 +342,6 @@ public class MessageFormatter{
 		return null;
 	}
 
-
-	private ArenaStat getStat(ArenaTeam t) {
-		if (stats.containsKey(t.getId()))
-			return stats.get(t.getId());
-		ArenaStat st = sc.loadRecord(t);
-		stats.put(t.getId(), st);
-		return st;
-	}
-
-
 	private String formatTeamName(Message message, ArenaTeam t) {
 		if (t== null)
 			return null;
@@ -371,10 +358,10 @@ public class MessageFormatter{
 			String repl = null;
 			switch(mop){
 			case NAME: repl = t.getDisplayName(); break;
-			case WINS: repl = getStat(t).getWins()+""; break;
-			case LOSSES: repl = getStat(t).getLosses()+"" ; break;
-			case RANKING: repl = getStat(t).getRanking()+""; break;
-			case RATING: repl = getStat(t).getRating()+""; break;
+			case WINS: repl = t.getStat().getWins()+""; break;
+			case LOSSES: repl = t.getStat().getLosses()+"" ; break;
+			case RANKING: repl = t.getStat().getRanking()+""; break;
+			case RATING: repl = t.getStat().getRating()+""; break;
 			default:
 				continue;
 			}

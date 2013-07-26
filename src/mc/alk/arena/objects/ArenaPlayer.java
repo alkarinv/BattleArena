@@ -5,11 +5,12 @@ import java.util.Stack;
 
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.containers.AreaContainer;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.meta.PlayerMetaData;
-import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.spawns.SpawnInstance;
+import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
@@ -57,8 +58,6 @@ public class ArenaPlayer {
 
 	/** Has the player specified they are "ready" by clicking a block or sign */
 	boolean isReady;
-
-	JoinOptions jo;
 
 	PlayerMetaData meta = new PlayerMetaData();
 
@@ -208,18 +207,23 @@ public class ArenaPlayer {
 		if (oldLocation == null){
 			oldLocation = getLocation();}
 	}
+
 	public void clearOldLocation(){
 		oldLocation = null;
 	}
+
 	public Location getOldLocation(){
 		return oldLocation;
 	}
+
 	public void setCurLocation(ArenaLocation type){
 		this.curLocation = type;
 	}
+
 	public ArenaLocation getCurLocation(){
 		return this.curLocation;
 	}
+
 	public void despawnMobs(){
 		if (mobs != null){
 			for (SpawnInstance es: mobs){
@@ -227,9 +231,11 @@ public class ArenaPlayer {
 			mobs.clear();
 		}
 	}
+
 	public void setMobs(List<SpawnInstance> mobs){
 		this.mobs = mobs;
 	}
+
 	public void spawnMobs(){
 		if (mobs != null){
 			for (SpawnInstance es: mobs){
@@ -240,15 +246,13 @@ public class ArenaPlayer {
 		}
 	}
 
-	public JoinOptions getJoinOptions() {
-		return jo;
-	}
-
-	public void setArena(JoinOptions options){
-		this.jo= options;
-	}
-
 	public PlayerMetaData getMetaData(){
 		return meta;
 	}
+
+
+	public ArenaStat getStat(MatchParams type) {
+		return StatController.loadRecord(type, this);
+	}
+
 }

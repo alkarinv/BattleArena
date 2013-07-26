@@ -174,6 +174,9 @@ public class ConfigSerializer extends BaseConfig{
 			TransitionOptions tops = null;
 			try{
 				tops = getTransitionOptions(cs.getConfigurationSection(transition.toString()));
+				/// check for the most common alternate spelling of onPrestart
+				if (tops == null && transition == MatchState.ONPRESTART){
+					tops = getTransitionOptions(cs.getConfigurationSection("onPrestart"));}
 			} catch (Exception e){
 				Log.err("Invalid Option was not added!!! transition= " + transition);
 				e.printStackTrace();
@@ -271,6 +274,8 @@ public class ConfigSerializer extends BaseConfig{
 		}
 		if (!isArena || cs.contains("useTrackerMessages"))
 			mp.setUseTrackerMessages(cs.getBoolean("useTrackerMessages", false));
+		if (cs.contains("teamRating")){
+			mp.setTeamRating(cs.getBoolean("teamRating",false));}
 		//		mp.set
 		//		mp.setOverrideBTMessages(cs.getBoolean(path))
 		/// What is the default rating for this match type

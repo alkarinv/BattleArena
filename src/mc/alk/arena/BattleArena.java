@@ -10,10 +10,11 @@ import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.BukkitInterface;
+import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.EventScheduler;
-import mc.alk.arena.controllers.LobbyController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
@@ -181,7 +182,7 @@ public class BattleArena extends JavaPlugin {
 		commandExecutor.setDisabled(sfs.loadEnabled());
 		ArenaSerializer.setBAC(arenaController);
 
-		sfs.loadLobbyStates(LobbyController.getLobbies());
+		sfs.loadLobbyStates(RoomController.getLobbies());
 		sfs.loadContainerStates(arenaController.getArenas());
 
 		arenaControllerSerializer.load();
@@ -245,7 +246,7 @@ public class BattleArena extends JavaPlugin {
 		StateFlagSerializer sfs = new StateFlagSerializer();
 		sfs.setConfig(getDataFolder().getPath() +"/saves/state.yml");
 		sfs.save(commandExecutor.getDisabled(),
-				LobbyController.getLobbies(),
+				RoomController.getLobbies(),
 				arenaController.getArenas());
 
 		BattleArena.getSelf();
@@ -350,8 +351,15 @@ public class BattleArena extends JavaPlugin {
 		super.reloadConfig();
 		baConfigSerializer.loadDefaults();
 		classesSerializer.loadAll();
-		baConfigSerializer.loadCompetitions();
 		MessageSerializer.loadDefaults();
+	}
+
+	/**
+	 * Reload our competitions
+	 */
+	public void reloadCompetitions(){
+		CompetitionController.reloadCompetitions();
+
 	}
 
 	/**

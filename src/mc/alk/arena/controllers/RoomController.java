@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.containers.AbstractAreaContainer;
+import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.LocationType;
@@ -16,11 +16,11 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 
 import org.bukkit.Location;
 
-public enum LobbyController {
+public enum RoomController {
 	INSTANCE;
 
 	Map<ArenaType,LobbyContainer> lobbies = new HashMap<ArenaType,LobbyContainer>();
-	Map<Arena,RoomContainer> waitrooms = new HashMap<Arena,RoomContainer>();
+	Map<String,RoomContainer> waitrooms = new HashMap<String,RoomContainer>();
 
 	public boolean joinLobby(ArenaType type, ArenaTeam team) {
 		AbstractAreaContainer lobby = lobbies.get(type);
@@ -35,13 +35,16 @@ public enum LobbyController {
 	}
 
 	private RoomContainer getOrCreate(Arena arena) {
-		RoomContainer lobby = waitrooms.get(arena);
-		if (lobby == null){
-			lobby = new RoomContainer(ParamController.getMatchParamCopy(arena.getArenaType()), LocationType.ARENA);
-			waitrooms.put(arena, lobby);
-			arena.setWaitRoom(lobby);
+		RoomContainer room = waitrooms.get(arena.getName());
+		if (room == null){
+			if (arena.getWaitroom() == null){
+				room = new RoomContainer(ParamController.getMatchParamCopy(arena.getArenaType()), LocationType.WAITROOM);
+			} else {
+				room = arena.getWaitroom();
+			}
+			waitrooms.put(arena.getName(), room);
 		}
-		return lobby;
+		return room;
 	}
 
 	private RoomContainer getOrCreate(ArenaType type) {
@@ -54,19 +57,34 @@ public enum LobbyController {
 	}
 
 	public static void addLobby(ArenaType type, int index, Location location) {
-		RoomContainer lobby = INSTANCE.getOrCreate(type);
-		lobby.setSpawnLoc(index,location);
+		RoomContainer room = INSTANCE.getOrCreate(type);
+		room.setSpawnLoc(index,location);
 	}
 	public static void addWaitRoom(Arena arena, int index, Location location) {
-		RoomContainer lobby = INSTANCE.getOrCreate(arena);
-		lobby.setSpawnLoc(index,location);
+		RoomContainer room = INSTANCE.getOrCreate(arena);
+		if (arena.getWaitroom() == null)
+			arena.setWaitRoom(room);
+		room.setSpawnLoc(index,location);
 	}
+
 	public static boolean hasLobby(ArenaType type) {
 		return INSTANCE.lobbies.containsKey(type);
 	}
 
+	public static boolean hasWaitroom(Arena arena) {
+		return INSTANCE.waitrooms.containsKey(arena.getName());
+	}
+
 	public static LobbyContainer getLobby(ArenaType type) {
 		return INSTANCE.lobbies.get(type);
+	}
+
+	public static RoomContainer getWaitroom(Arena arena) {
+		return INSTANCE.waitrooms.get(arena.getName());
+	}
+
+	public static RoomContainer getOrCreateWaitroom(Arena arena) {
+		return INSTANCE.getOrCreate(arena);
 	}
 
 	public static Location getLobbySpawn(int index, ArenaType type, boolean randomRespawn) {
@@ -102,9 +120,6 @@ public enum LobbyController {
 		if (lobby == null)
 			return;
 		lobby.playerLeaving(p);
-
 	}
-
-
 
 }

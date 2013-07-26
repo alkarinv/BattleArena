@@ -39,7 +39,7 @@ public class InventoryUtil {
 			if (version.equalsIgnoreCase("craftbukkit")){
 				clazz = Class.forName("mc.alk.arena.util.compat.pre.InventoryHelper");
 			} else{
-				clazz = Class.forName("mc.alk.arena.util.compat.post.InventoryHelper");
+				clazz = Class.forName("mc.alk.arena.util.compat.v1_4_5.InventoryHelper");
 			}
 
 			handler = (IInventoryHelper) clazz.getConstructor(args).newInstance((Object[])args);

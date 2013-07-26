@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
+import mc.alk.arena.objects.stats.ArenaStat;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -146,5 +148,16 @@ public interface ArenaTeam {
 	public ItemStack getHeadItem();
 
 	public void setHeadItem(ItemStack item);
+
+	public void setArenaStat(ArenaStat stat);
+
+	public ArenaStat getStat();
+
+	public ArenaStat getStat(MatchParams mp);
+
+
+	public MatchParams getCurrentParams();
+
+	public void setCurrentParams(MatchParams params);
 }
 

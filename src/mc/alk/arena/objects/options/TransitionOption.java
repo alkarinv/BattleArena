@@ -31,6 +31,10 @@ public enum TransitionOption{
 	RESTOREHEALTH("restoreHealth",false),			/// Restore Health
 	STOREHUNGER("storeHunger",false),				/// Store Hunger
 	RESTOREHUNGER("restoreHunger",false),			/// Restore Hunger
+	STOREGODMODE("storeGodmode",false),				/// Store Godmode
+	RESTOREGODMODE("restoreGodmode",false),			/// Restore Godmode
+	STOREFLIGHT("storeFlight",false),				/// Store FLight
+	RESTOREFLIGHT("restoreFlight",false),			/// Restore Flight
 	STOREMAGIC("storeMagic",false),					/// HEROES only: Store Magic
 	RESTOREMAGIC("restoreMagic",false),				/// HEROES only: Restore Magic
 	STOREHEROCLASS("storeHeroClass",false),			/// HEROES only: Store the hero class
@@ -163,7 +167,7 @@ public enum TransitionOption{
 		case WITHINDISTANCE:
 			return Integer.valueOf(value);
 		case INVULNERABLE:
-			return Integer.valueOf(value)*20; // multiply by number of ticks per second
+			return Integer.valueOf(value);
 		case FLIGHTSPEED:
 			return Float.valueOf(value);
 		case GAMEMODE:

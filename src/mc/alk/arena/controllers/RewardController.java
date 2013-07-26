@@ -25,6 +25,8 @@ public class RewardController {
 	public void giveRewards() {
 		for (ArenaTeam t: event.getTeams()){
 			for (ArenaPlayer player: t.getPlayers()){
+				if (t.hasLeft(player))
+					continue;
 				Player p = player.getPlayer();
 				if (event.getMoney() != null && MoneyController.hasEconomy()){
 					MoneyController.add(p.getName(), event.getMoney());}

@@ -17,7 +17,7 @@ import org.bukkit.event.Event;
  *
  */
 public class BukkitEventHandler {
-	ArenaEventListener ml;
+	ArenaEventListener ael;
 	SpecificPlayerEventListener spl;
 	SpecificArenaPlayerEventListener sapl;
 
@@ -28,7 +28,7 @@ public class BukkitEventHandler {
 	 */
 	public BukkitEventHandler(final Class<? extends Event> bukkitEvent,
 			org.bukkit.event.EventPriority bukkitPriority, Method getPlayerMethod) {
-		ml = new ArenaEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
+		ael = new ArenaEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
 		spl = new SpecificPlayerEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
 		sapl = new SpecificArenaPlayerEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
 		if (Defaults.DEBUG_EVENTS) Log.info("Registering BukkitEventListener for type " + bukkitEvent +" pm="+getPlayerMethod);
@@ -39,7 +39,7 @@ public class BukkitEventHandler {
 	 * @return
 	 */
 	public boolean hasListeners(){
-		return ml.hasListeners() || spl.hasListeners() || sapl.hasListeners();
+		return ael.hasListeners() || spl.hasListeners() || sapl.hasListeners();
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class BukkitEventHandler {
 				spl.addListener(rl, players);
 			}
 		} else {
-			ml.addListener(rl);
+			ael.addListener(rl);
 		}
 	}
 
@@ -77,7 +77,7 @@ public class BukkitEventHandler {
 			}
 
 		} else {
-			ml.removeListener(rl);
+			ael.removeListener(rl);
 		}
 	}
 
@@ -87,12 +87,12 @@ public class BukkitEventHandler {
 	 */
 	public void removeAllListener(RListener rl) {
 		spl.removeAllListeners(rl);
-		ml.removeAllListeners(rl);
+		ael.removeAllListeners(rl);
 		sapl.removeAllListeners(rl);
 	}
 
 	public ArenaEventListener getMatchListener(){
-		return ml;
+		return ael;
 	}
 
 	public SpecificPlayerEventListener getSpecificPlayerListener(){

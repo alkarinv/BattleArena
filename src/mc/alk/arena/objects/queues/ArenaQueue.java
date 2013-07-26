@@ -11,9 +11,10 @@ public class ArenaQueue extends LinkedList<Arena> {
 
 	@Override
 	public void addLast(Arena arena){
-		for (Arena a : this){
-			if (a.getName().equals(arena.getName()))
-				return;
+		Iterator<Arena> iter = this.iterator();
+		while (iter.hasNext() ){
+			if (iter.next().getName().equals(arena.getName())){
+				iter.remove();}
 		}
 		super.addLast(arena);
 	}

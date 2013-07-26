@@ -54,4 +54,23 @@ public class EssentialsUtil {
 		}
 	}
 
+	public static Boolean isGod(String playerName) {
+		try{
+			User user = getUser(playerName);
+			return user.isGodModeEnabled();
+		} catch(Exception e){
+			Log.printStackTrace(e);
+			return false;
+		}
+	}
+	public static Boolean isFlying(String playerName) {
+		try{
+			User user = getUser(playerName);
+			return user.isFlying();
+		} catch(Exception e){
+			Log.printStackTrace(e);
+			return false;
+		}
+	}
+
 }

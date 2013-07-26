@@ -1,22 +1,37 @@
 package mc.alk.arena.util;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.objects.CommandLineString;
+import mc.alk.arena.util.compat.IPlayerHelper;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 
 public class PlayerUtil {
+	static IPlayerHelper handler = null;
+
+	static {
+		Class<?>[] args = {};
+		try {
+			Method m = Player.class.getMethod("getHealth", new Class<?>[]{});
+			if (m.getReturnType() == double.class){
+				final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_6_1.PlayerHelper");
+				handler = (IPlayerHelper) clazz.getConstructor(args).newInstance((Object[])args);
+			} else {
+				final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.pre.PlayerHelper");
+				handler = (IPlayerHelper) clazz.getConstructor(args).newInstance((Object[])args);
+			}
+		} catch (Exception e) {
+			Log.printStackTrace(e);
+		}
+	}
 
 	public static int getHunger(final Player player) {
 		return player.getFoodLevel();
@@ -44,28 +59,7 @@ public class PlayerUtil {
 	}
 
 	public static void setHealth(final Player player, final Double health, boolean skipHeroes) {
-		if (!skipHeroes && HeroesController.enabled()){
-			HeroesController.setHealth(player,health);
-			return;
-		}
-
-		final double oldHealth = player.getHealth();
-		if (oldHealth > health){
-			EntityDamageEvent event = new EntityDamageEvent(player,  DamageCause.CUSTOM, (int)(oldHealth-health) );
-			Bukkit.getPluginManager().callEvent(event);
-			if (!event.isCancelled()){
-				player.setLastDamageCause(event);
-				final double dmg = Math.max(0,oldHealth - event.getDamage());
-				player.setHealth((int)dmg);
-			}
-		} else if (oldHealth < health){
-			EntityRegainHealthEvent event = new EntityRegainHealthEvent(player, (int)(health-oldHealth),RegainReason.CUSTOM);
-			Bukkit.getPluginManager().callEvent(event);
-			if (!event.isCancelled()){
-				final double regen = Math.min(oldHealth + event.getAmount(),player.getMaxHealth());
-				player.setHealth((int)regen);
-			}
-		}
+		handler.setHealth(player,health,skipHeroes);
 	}
 
 	public static Double getHealth(Player player) {
@@ -74,7 +68,7 @@ public class PlayerUtil {
 
 	public static Double getHealth(Player player, boolean skipHeroes) {
 		return !skipHeroes && HeroesController.enabled() ?
-				HeroesController.getHealth(player) : (double)player.getHealth();
+				HeroesController.getHealth(player) : handler.getHealth(player);
 	}
 
 	public static void setInvulnerable(Player player, Integer invulnerableTime) {

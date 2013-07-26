@@ -6,6 +6,7 @@ import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.PerformTransition;
+import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
@@ -22,8 +23,10 @@ import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.PlayerUtil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 
 public class GameManager implements PlayerHolder{
@@ -142,6 +145,9 @@ public class GameManager implements PlayerHolder{
 		if (handled.add(player)){
 			PerformTransition.transition(this, MatchState.ONENTER, player, null, false);
 			updateBukkitEvents(MatchState.ONENTER, player);
+			// When teleporting in for the first time defaults
+			PlayerUtil.setGameMode(player.getPlayer(), GameMode.SURVIVAL);
+			EssentialsController.setGod(player.getPlayer(), false);
 
 			player.getMetaData().setJoining(true);
 			handled.add(player);

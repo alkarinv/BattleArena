@@ -56,17 +56,37 @@ public class StatController {
 			BTInterface.resumeTrackingMessages(p);
 	}
 
-	public void addRecord(Set<ArenaTeam> victors,Set<ArenaTeam> losers,
-			Set<ArenaTeam> drawers, WinLossDraw wld) {
+	public void addRecord(ArenaPlayer victor,ArenaPlayer loser, WinLossDraw wld) {
 		if (!enabled)
 			return;
 
-		BTInterface.addRecord(mp, victors, losers, drawers, wld);
+		BTInterface.addRecord(mp, victor, loser, wld);
+	}
+
+	public void addRecord(Set<ArenaTeam> victors,Set<ArenaTeam> losers,
+			Set<ArenaTeam> drawers, WinLossDraw wld, boolean teamRating) {
+		if (!enabled)
+			return;
+
+		BTInterface.addRecord(mp, victors, losers, drawers, wld, teamRating);
 	}
 
 	public ArenaStat loadRecord(ArenaTeam t) {
-		if (!enabled) return BLANK_STAT;
+		return loadRecord(mp,t);
+	}
+
+	public static ArenaStat loadRecord(MatchParams mp, ArenaTeam t) {
+		if (!enabled || mp == null) return BLANK_STAT;
 		return BTInterface.loadRecord(mp.getDBName(),t);
+	}
+
+	public ArenaStat loadRecord(ArenaPlayer ap) {
+		return loadRecord(mp,ap);
+	}
+
+	public static ArenaStat loadRecord(MatchParams mp, ArenaPlayer ap) {
+		if (!enabled) return BLANK_STAT;
+		return BTInterface.loadRecord(mp.getDBName(),ap);
 	}
 
 	public void resetStats() {

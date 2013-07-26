@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import mc.alk.arena.controllers.LobbyController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.SerializerUtil;
@@ -24,7 +24,7 @@ public class PlayerContainerSerializer extends BaseConfig{
 
 			for (int i = 0;i< strlocs.size();i++){
 				Location l = SerializerUtil.getLocation(strlocs.get(i));
-				LobbyController.addLobby(params.getType(), i, l);
+				RoomController.addLobby(params.getType(), i, l);
 			}
 		}
 	}
@@ -32,7 +32,7 @@ public class PlayerContainerSerializer extends BaseConfig{
 	@Override
 	public void save(){
 		ConfigurationSection main = config.createSection("lobbies");
-		for (RoomContainer lobby: LobbyController.getLobbies()){
+		for (RoomContainer lobby: RoomController.getLobbies()){
 			HashMap<String, Object> amap = new HashMap<String, Object>();
 			/// Spawn locations
 			List<Location> locs = lobby.getSpawns();

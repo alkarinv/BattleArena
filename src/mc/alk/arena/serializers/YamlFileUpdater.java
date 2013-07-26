@@ -102,6 +102,14 @@ public class YamlFileUpdater {
 					"    match_starts_when_time: '&eMatch starts in %s'");
 			try {version = fu.update();} catch (IOException e) {e.printStackTrace();}
 		}
+		newVersion = new Version("1.6.1");
+		if (version.compareTo(newVersion) < 0){
+			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+			fu.replace("version:.*", "version: "+newVersion);
+			fu.addAfter(".*match_starts_players_or_time:.*",
+					"    match_starts_players_or_time2: '&eMatch starts in %s &ewith at least &6%s&e players'");
+			try {version = fu.update();} catch (IOException e) {e.printStackTrace();}
+		}
 
 		ms.setConfig(new File(dir+"/messages.yml"));
 	}

@@ -60,6 +60,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 	private final MethodController methodController = new MethodController();
 
 	protected Set<String> players = new HashSet<String>();
+
 	/** Spawn points */
 	protected ArrayList<Location> spawns = new ArrayList<Location>();
 
@@ -81,7 +82,6 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
 	public void callEvent(BAEvent event){
 		event.callEvent();
-//		methodController.callEvent(event);
 	}
 
 	public void playerLeaving(ArenaPlayer player){

@@ -718,9 +718,9 @@ public class Arena extends AreaContainer {
 	public boolean isJoinable(MatchParams mp) {
 		if (!isOpen())
 			return false;
-		else if ( mp.needsWaitroom() && (waitroom == null || !waitroom.isOpen()) )
+		else if ( mp.needsWaitroom() && (waitroom == null || !waitroom.isOpen() || waitroom.getSpawns().isEmpty()) )
 			return false;
-		else if ( mp.needsLobby() && (lobby == null || !lobby.isOpen()) )
+		else if ( mp.needsLobby() && (lobby == null || !lobby.isOpen() || lobby.getSpawns().isEmpty()) )
 			return false;
 		return true;
 	}
@@ -728,10 +728,18 @@ public class Arena extends AreaContainer {
 	public String getNotJoinableReasons(MatchParams mp) {
 		if (!isOpen())
 			return "&cArena is not open!";
-		else if ( mp.needsWaitroom() && (waitroom == null || !waitroom.isOpen()) )
+		else if ( mp.needsWaitroom() && waitroom == null )
+			return "&cYou need to create a waitroom!";
+		else if ( mp.needsWaitroom() && !waitroom.isOpen() )
 			return "&cWaitroom is not open!";
-		else if ( mp.needsLobby() && (lobby == null || !lobby.isOpen()) )
+		else if ( mp.needsWaitroom() && waitroom.getSpawns().isEmpty() )
+			return "&cYou need to set a spawn point for the waitroom!";
+		else if ( mp.needsLobby() && lobby == null )
+			return "&cYou need to create a lobby!";
+		else if ( mp.needsLobby() && !lobby.isOpen() )
 			return "&cLobby is not open!";
+		else if ( mp.needsLobby() && lobby.getSpawns().isEmpty() )
+			return "&cYou need to set a spawn point for the lobby!";
 		return "";
 	}
 

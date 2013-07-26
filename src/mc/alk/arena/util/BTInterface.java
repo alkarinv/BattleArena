@@ -62,23 +62,27 @@ public class BTInterface {
 		return db == null ? false : btis.containsKey(db);
 	}
 
-	public static void addRecord(TrackerInterface bti, Set<ArenaTeam> victors,Set<ArenaTeam> losers, Set<ArenaTeam> drawers, WinLossDraw wld) {
+	public static void addRecord(TrackerInterface bti, Set<ArenaTeam> victors,Set<ArenaTeam> losers,
+			Set<ArenaTeam> drawers, WinLossDraw wld, boolean teamRating) {
 		if (victors != null){
 			Set<ArenaPlayer> winningPlayers = new HashSet<ArenaPlayer>();
 			for (ArenaTeam w : victors){
 				winningPlayers.addAll(w.getPlayers());
 			}
-			WLT wlt = null;
-			switch(wld){
-			case WIN: wlt = WLT.WIN; break;
-			case LOSS: wlt = WLT.LOSS; break;
-			case DRAW: wlt = WLT.TIE; break;
-			default: wlt = WLT.WIN; break;
-			}
-			addRecord(bti,winningPlayers, losers,wlt);
+			WLT wlt = getWLT(wld);
+			addRecord(bti,winningPlayers, losers,wlt, teamRating);
 		}
 	}
-	public static void addRecord(TrackerInterface bti, Set<ArenaPlayer> players, Collection<ArenaTeam> losers, WLT win) {
+	public static WLT getWLT(WinLossDraw wld){
+		switch(wld){
+		case WIN: return WLT.WIN;
+		case LOSS: return WLT.LOSS;
+		case DRAW: return WLT.TIE;
+		default: return WLT.WIN;
+		}
+	}
+	public static void addRecord(TrackerInterface bti, Set<ArenaPlayer> players, Collection<ArenaTeam> losers,
+			WLT win, boolean teamRating) {
 		if (bti == null)
 			return;
 		try{
@@ -172,15 +176,23 @@ public class BTInterface {
 		try{return ti.loadRecord(player);} catch(Exception e){e.printStackTrace();return null;}
 	}
 
+	public static ArenaStat loadRecord(String dbName, ArenaPlayer ap) {
+		TrackerInterface ti = btis.get(dbName);
+		if (ti == null)
+			return StatController.BLANK_STAT;
+		Stat st = null;
+		try{st = ti.loadPlayerRecord(ap.getName());}catch(Exception e){e.printStackTrace();}
+		return st == null ? StatController.BLANK_STAT : new TrackerArenaStat(dbName, st);
+	}
+
 	public static ArenaStat loadRecord(String dbName, ArenaTeam t) {
 		TrackerInterface ti = btis.get(dbName);
 		if (ti == null)
 			return StatController.BLANK_STAT;
 		Stat st = null;
 		try{st = ti.loadRecord(t.getBukkitPlayers());}catch(Exception e){e.printStackTrace();}
-		return st == null ? StatController.BLANK_STAT : new TrackerArenaStat(st);
+		return st == null ? StatController.BLANK_STAT : new TrackerArenaStat(dbName, st);
 	}
-
 
 	public String getRankMessage(OfflinePlayer player) {
 		Stat stat = loadRecord(player);
@@ -205,11 +217,35 @@ public class BTInterface {
 	public static void setTrackerPlugin(Plugin plugin) {
 		battleTracker = (Tracker) plugin;
 	}
-	public static void addRecord(MatchParams mp, Set<ArenaTeam> victors,
-			Set<ArenaTeam> losers, Set<ArenaTeam> drawers, WinLossDraw wld) {
+
+	public static void addRecord(MatchParams mp, ArenaPlayer victor,ArenaPlayer loser, WinLossDraw wld) {
 		TrackerInterface bti = BTInterface.getInterface(mp);
 		if (bti != null ){
-			try{BTInterface.addRecord(bti,victors,losers,drawers,wld);}catch(Exception e){e.printStackTrace();}
+			switch (wld){
+			case DRAW:
+				break;
+			case LOSS:
+				break;
+			case UNKNOWN:
+				break;
+			case WIN:
+				break;
+			default:
+				break;
+			}
+			bti.addPlayerRecord(victor.getName(), loser.getName(), getWLT(wld));
+		}
+	}
+
+	public static void addRecord(MatchParams mp, Set<ArenaTeam> victors,
+			Set<ArenaTeam> losers, Set<ArenaTeam> drawers, WinLossDraw wld, boolean teamRating) {
+		TrackerInterface bti = BTInterface.getInterface(mp);
+		if (bti != null ){
+			try{
+				BTInterface.addRecord(bti,victors,losers,drawers,wld, teamRating);
+			}catch(Exception e){
+				Log.printStackTrace(e);
+			}
 		}
 	}
 

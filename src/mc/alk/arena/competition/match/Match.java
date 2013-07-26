@@ -22,9 +22,9 @@ import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.controllers.ArenaController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.ListenerAdder;
-import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.RewardController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.WorldGuardController;
@@ -65,7 +65,7 @@ import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.events.ArenaEventHandler;
-import mc.alk.arena.objects.messaging.Channel.ServerChannel;
+import mc.alk.arena.objects.messaging.ServerChannel;
 import mc.alk.arena.objects.modules.ArenaModule;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
@@ -248,7 +248,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		scoreboard.addObjective(defaultObjective);
 		defaultObjective.setScoreBoard(scoreboard);
 
-		RoomContainer lc = LobbyController.getLobby(params.getType());
+		RoomContainer lc = RoomController.getLobby(params.getType());
 		if (lc != null){
 			inMatch.addAll(lc.getInsidePlayers());
 		}
@@ -525,7 +525,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  losers=" + losers+"  drawers="+drawers +" " + matchResult);
 			if (params.isRated()){
 				StatController sc = new StatController(params);
-				sc.addRecord(victors,losers,drawers,result.getResult());
+				sc.addRecord(victors,losers,drawers,result.getResult(), params.isTeamRating());
 			}
 
 			if (result.hasVictor()){ /// We have a true winner
@@ -551,10 +551,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			final Set<ArenaTeam> victors = matchResult.getVictors();
 			final Set<ArenaTeam> losers = matchResult.getLosers();
 			final Set<ArenaTeam> drawers = matchResult.getDrawers();
-			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am +"  victors="+ victors + "  losers=" + losers+"  drawers="+drawers +" " + matchResult);
+			if (Defaults.DEBUG) System.out.println("Match::MatchVictory():"+ am.getID() +"  victors="+ victors + "  losers=" + losers+"  drawers="+drawers +" " + matchResult);
+
 			if (params.isRated()){
 				StatController sc = new StatController(params);
-				sc.addRecord(victors,losers,drawers,am.getResult().getResult());
+				sc.addRecord(victors,losers,drawers,am.getResult().getResult(), params.isTeamRating());
 			}
 			if (matchResult.hasVictor()){ /// We have a true winner
 				try{mc.sendOnVictoryMsg(victors, losers);}catch(Exception e){Log.printStackTrace(e);}
@@ -622,8 +623,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		MatchCompleted(Match am){this.am = am;}
 		public void run() {
 			transitionTo(MatchState.ONCOMPLETE);
-			final Collection<ArenaTeam> victors = am.getVictors();
-			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + victors +"  d=" + am.getDrawers() +"   l=" + am.getLosers());
+			if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + am.getResult());
 			/// ONCOMPLETE can teleport people out of the arena,
 			/// So the order of events is usually
 			/// ONCOMPLETE(half of effects) -> ONLEAVE( and all effects) -> ONCOMPLETE( rest of effects)
@@ -642,12 +642,14 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 						callEvent(event);
 						new RewardController(event,psc).giveRewards();
 					}
+
 					if (am.getDrawers() != null){
 						PerformTransition.transition(am, MatchState.DRAWERS, am.getDrawers(), false);
 						ArenaPrizeEvent event = new ArenaDrawersPrizeEvent(am, am.getDrawers());
 						callEvent(event);
 						new RewardController(event,psc).giveRewards();
 					}
+
 					if (am.getVictors() != null){
 						PerformTransition.transition(am, MatchState.WINNER, am.getVictors(), false);
 						ArenaPrizeEvent event = new ArenaWinnersPrizeEvent(am, am.getVictors());
@@ -1027,7 +1029,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (this.woolTeams)
 			TeamUtil.removeTeamHead(this.getTeamIndex(t), player.getPlayer());
 		t.killMember(player);
-		checkAndHandleIfTeamDead(t);
+		if (this.getState().ordinal() < MatchState.ONVICTORY.ordinal())
+			checkAndHandleIfTeamDead(t);
 		inMatch.remove(player.getName());
 		player.removeCompetition(this);
 		scoreboard.setDead(t,player);
@@ -1380,6 +1383,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 				result.getLosers().isEmpty() && result.getVictors().isEmpty())){
 			result = defaultObjective.getMatchResult(this);
 		}
+
 		try{mc.sendTimeExpired();}catch(Exception e){Log.printStackTrace(e);}
 		this.endingMatchWinLossOrDraw(result);
 	}

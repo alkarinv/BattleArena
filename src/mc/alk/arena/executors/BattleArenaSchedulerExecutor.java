@@ -5,7 +5,7 @@ import java.util.List;
 
 import mc.alk.arena.controllers.EventScheduler;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.pairs.EventPair;
 
 import org.apache.commons.lang.StringUtils;
@@ -19,7 +19,7 @@ public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
 
 	@MCCommand(cmds={"add"}, admin=true)
 	public boolean schedule(CommandSender sender, String eventType, String[] args) {
-		EventParams ep = ParamController.getEventParamCopy(eventType);
+		MatchParams ep = ParamController.getMatchParamCopy(eventType);
 		if (ep == null){
 			return sendMessage(sender, "&cEvent type " + eventType+ " not found!");
 		}

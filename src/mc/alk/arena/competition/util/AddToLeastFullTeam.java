@@ -27,6 +27,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 			throw new NeverWouldJoinException("You can't make more than "+Defaults.MAX_TEAMS +" teams");
 		for (int i=0;i<minTeams;i++){
 			ArenaTeam team = TeamFactory.createTeam(clazz);
+			team.setCurrentParams(params);
 			addTeam(team);
 		}
 	}
@@ -63,6 +64,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 		/// Since this is nearly the same as BinPack add... can we merge somehow easily?
 		if (teams.size() < maxTeams){
 			ArenaTeam ct = TeamFactory.createTeam(clazz);
+			ct.setCurrentParams(tqo.getMatchParams());
 			ct.addPlayers(team.getPlayers());
 			if (ct.size() == maxTeamSize){
 				addTeam(ct);

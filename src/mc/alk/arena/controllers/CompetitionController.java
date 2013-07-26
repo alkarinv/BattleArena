@@ -56,4 +56,16 @@ public class CompetitionController {
 		return true;
 	}
 
+	public static void reloadCompetitions() {
+		for (String plugin : registeredCompetitions.keySet()){
+			Map<String, RegisteredCompetition> comps = registeredCompetitions.get(plugin);
+			if (comps == null || comps.isEmpty())
+				continue;
+			for (RegisteredCompetition rc: comps.values()){
+				rc.reload();
+				break; /// we only need to reload once per plugin
+			}
+		}
+	}
+
 }

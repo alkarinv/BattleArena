@@ -1,20 +1,20 @@
 package mc.alk.arena.objects.pairs;
 
-import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.MatchParams;
 
 
 public class EventPair{
-	EventParams eventParams;
+	MatchParams eventParams;
 	String[] args;
-	public EventPair(EventParams event, String[] args) {
+	public EventPair(MatchParams event, String[] args) {
 		this.eventParams = event;
 		this.args = args;
 	}
 
-	public EventParams getEventParams() {
+	public MatchParams getEventParams() {
 		return eventParams;
 	}
-	public void setEventParams(EventParams eventParams) {
+	public void setEventParams(MatchParams eventParams) {
 		this.eventParams = eventParams;
 	}
 	public String[] getArgs() {

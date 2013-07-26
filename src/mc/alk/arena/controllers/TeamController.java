@@ -13,8 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
@@ -244,9 +244,9 @@ public enum TeamController implements Listener, TeamHandler {
 		}
 	}
 
-	public static ArenaTeam createTeam(ArenaPlayer p) {
+	public static ArenaTeam createTeam(MatchParams mp, ArenaPlayer p) {
 		if (DEBUG) System.out.println("------- createTeam sans handler " + p.getName());
-		return TeamFactory.createTeam(p);
+		return TeamFactory.createTeam(mp, p);
 	}
 
 
@@ -274,12 +274,12 @@ public enum TeamController implements Listener, TeamHandler {
 		}
 	}
 
-	public static CompositeTeam createCompositeTeam(ArenaTeam t, TeamHandler th) {
-		CompositeTeam ct = TeamFactory.createCompositeTeam(t);
-		addTeamHandler(ct,th);
-		if (DEBUG) System.out.println("------- createCompositeTeam " + ct);
-		return ct;
-	}
+//	public static CompositeTeam createCompositeTeam(ArenaTeam t, TeamHandler th) {
+//		CompositeTeam ct = TeamFactory.createCompositeTeam(t);
+//		addTeamHandler(ct,th);
+//		if (DEBUG) System.out.println("------- createCompositeTeam " + ct);
+//		return ct;
+//	}
 
 	@Override
 	public String toString(){

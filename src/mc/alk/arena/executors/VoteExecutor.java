@@ -1,7 +1,7 @@
 package mc.alk.arena.executors;
 
 import mc.alk.arena.controllers.BattleArenaController;
-import mc.alk.arena.controllers.LobbyController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -16,7 +16,7 @@ public class VoteExecutor extends CustomCommandExecutor{
 
 	@MCCommand
 	public boolean voteForArena(ArenaPlayer ap, Arena arena){
-		LobbyContainer pc = LobbyController.getLobby(arena.getArenaType());
+		LobbyContainer pc = RoomController.getLobby(arena.getArenaType());
 		if (pc == null){
 			return sendMessage(ap, "&cThere is no lobby for "+arena.getArenaType());}
 		if (!pc.isHandled(ap)){

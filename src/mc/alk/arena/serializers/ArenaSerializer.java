@@ -13,8 +13,8 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
-import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.WorldGuardController;
 import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
 import mc.alk.arena.objects.MatchParams;
@@ -130,7 +130,6 @@ public class ArenaSerializer extends BaseConfig{
 		Set<String> brokenArenas = new HashSet<String>();
 		Set<String> loadedArenas = new HashSet<String>();
 		for (String name : keys){
-
 			if (loadedArenas.contains(name) || brokenArenas.contains(name)) /// We already tried to load this arena
 				continue;
 			boolean broken = brokenKeys.contains(name);
@@ -203,6 +202,7 @@ public class ArenaSerializer extends BaseConfig{
 			return false;
 		}
 		MatchParams q = new MatchParams(atype);
+
 		try {
 			if (cs.contains("params"))
 				q = ConfigSerializer.loadMatchParams(plugin, atype, name, cs.getConfigurationSection("params"),true);
@@ -219,6 +219,7 @@ public class ArenaSerializer extends BaseConfig{
 			q.setNTeams(mm);
 		}
 		Arena arena = ArenaType.createArena(name, q,false);
+
 		if (!q.valid()){
 			Log.err( name + " This arena is not valid arenaq=" + q.toString());
 			return false;
@@ -245,7 +246,7 @@ public class ArenaSerializer extends BaseConfig{
 		locs = SerializerUtil.parseLocations(loccs);
 		if (locs != null){
 			for (Integer i: locs.keySet()){
-				LobbyController.addWaitRoom(arena, i, locs.get(i));
+				RoomController.addWaitRoom(arena, i, locs.get(i));
 			}
 		}
 

@@ -11,8 +11,8 @@ import mc.alk.arena.util.Log;
 
 public class StateController {
 	private final ArenaMatchQueue amq;
-	private LobbyController lobbies = LobbyController.INSTANCE;
-	private LobbyController waitrooms = LobbyController.INSTANCE;
+	private RoomController lobbies = RoomController.INSTANCE;
+	private RoomController waitrooms = RoomController.INSTANCE;
 
 
 	public StateController(ArenaMatchQueue amq){

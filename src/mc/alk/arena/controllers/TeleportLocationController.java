@@ -32,11 +32,8 @@ public class TeleportLocationController {
 		ArenaLocation dest = getArenaLocation(am,team,player,mo,teamIndex);
 		ArenaLocation src = player.getCurLocation();
 		src.setLocation(player.getLocation());
-//		if (player.getCurLocation().getType() == LocationType.HOME){
-//			src = new ArenaLocation(AbstractAreaContainer.HOMECONTAINER, player.getLocation(),player.getCurLocation());
-//		} else {
-//			src = new ArenaLocation(am, player.getLocation(),player.getCurLocation());
-//		}
+		Log.debug(" ########### @@ " + player.getCurLocation()  +"  -->  " + am.getTeam(player) );
+
 		TeleportDirection td = calcTeleportDirection(player, src,dest);
 		player.markOldLocation();
 		ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(mp.getType(),player,team,src,dest,td);
@@ -62,7 +59,6 @@ public class TeleportLocationController {
 			Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
 		}
 
-//		ArenaLocation src = new ArenaLocation(am, player.getLocation(),player.getCurLocation());
 		ArenaLocation src = player.getCurLocation();
 		ArenaLocation dest = new ArenaLocation(AbstractAreaContainer.HOMECONTAINER, loc,type);
 		ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
@@ -74,6 +70,9 @@ public class TeleportLocationController {
 		PlayerHolder src = apte.getSrcLocation().getPlayerHolder();
 		PlayerHolder dest = apte.getDestLocation().getPlayerHolder();
 		TeleportDirection td = apte.getDirection();
+		Log.debug(" ###########  " + player.getCurLocation()  +"  -->  " + dest.getLocationType() );
+		Log.debug(" ---- << -- " + player.getName() +"   src=" + src +"   dest="+dest +"    td=" + td);
+
 		switch (td){
 		case RESPAWN:
 			break;
@@ -143,13 +142,14 @@ public class TeleportLocationController {
 				ph = am;
 			}
 			type = LocationType.WAITROOM;
+			Log.debug(" teamindex = " + teamIndex +"   " + am.getClass().getSimpleName()  +"  " +am);
 			l = jitter(ph.getSpawn(teamIndex, randomRespawn),teamIndex);
 		} else if (teleportLobby){
 			if (mo.hasOption(TransitionOption.TELEPORTMAINLOBBY)){
 				teamIndex = Defaults.MAIN_SPAWN;}
-			ph = LobbyController.getLobby(mp.getType());
+			ph = RoomController.getLobby(mp.getType());
 			type = LocationType.LOBBY;
-			l = jitter(LobbyController.getLobbySpawn(teamIndex,mp.getType(),randomRespawn),0);
+			l = jitter(RoomController.getLobbySpawn(teamIndex,mp.getType(),randomRespawn),0);
 		} else { // They should teleportIn, aka to the Arena
 			Arena arena = null;
 			if (am instanceof Match){

@@ -1,8 +1,5 @@
 package mc.alk.arena.objects.messaging;
 
-import mc.alk.arena.util.MessageUtil;
-
-import org.bukkit.Bukkit;
 
 
 public interface Channel {
@@ -21,16 +18,4 @@ public interface Channel {
 			return "[NullChannel]";
 		}
 	}
-
-	public class ServerChannel implements Channel {
-		private ServerChannel(){}
-
-		@Override
-		public void broadcast(String msg) {
-			if (msg == null || msg.trim().isEmpty())
-				return;
-			Bukkit.getServer().broadcastMessage(MessageUtil.colorChat(msg));
-		}
-	}
-
 }

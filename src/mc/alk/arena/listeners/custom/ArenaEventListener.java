@@ -124,7 +124,7 @@ public class ArenaEventListener extends BukkitEventListener{
 		}
 		if (!hasListeners()){
 			stopListening();}
-		if (changed) bake();
+		if (changed) handlers = null;
 		return changed;
 	}
 

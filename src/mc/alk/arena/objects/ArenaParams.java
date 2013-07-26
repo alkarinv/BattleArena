@@ -244,9 +244,16 @@ public class ArenaParams{
 		size.setMinTeams(n);
 		size.setMaxTeams(n);
 	}
+
 	public void setNTeams(MinMax mm) {
 		if (size == null){ size = new ArenaSize();}
 		size.setNTeams(mm);
+	}
+	public MinMax getNTeams(){
+		return size == null ? null : new MinMax(size.getMinTeams(), size.getMaxTeams());
+	}
+	public MinMax getTeamSizes(){
+		return size == null ? null : new MinMax(size.getMinTeamSize(), size.getMaxTeamSize());
 	}
 
 	public void setTeamSizes(MinMax mm) {

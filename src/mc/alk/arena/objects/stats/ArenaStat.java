@@ -9,5 +9,5 @@ public interface ArenaStat {
 	public int getLosses();
 	public int getRanking();
 	public int getRating();
-
+	public String getDB();
 }

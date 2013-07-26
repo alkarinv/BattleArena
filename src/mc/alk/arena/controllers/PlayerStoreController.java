@@ -31,6 +31,8 @@ public class PlayerStoreController {
 	final HashMap <String, PInv> itemmap = new HashMap<String,PInv>();
 	final HashMap <String, PInv> matchitemmap = new HashMap<String,PInv>();
 	final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
+	final HashMap <String, Boolean> godmode = new HashMap<String,Boolean>();
+	final HashMap <String, Boolean> flight = new HashMap<String,Boolean>();
 	final HashMap <String, String> arenaclass = new HashMap<String,String>();
 
 	@SuppressWarnings("deprecation")
@@ -206,6 +208,38 @@ public class PlayerStoreController {
 		gamemode.put(p.getName(), p.getPlayer().getGameMode());
 	}
 
+	public void storeGodmode(ArenaPlayer p) {
+		if (!EssentialsController.enabled() || godmode.containsKey(p.getName())){
+			return;
+		}
+		if (Defaults.DEBUG_STORAGE)  Log.info("storing godmode " + p.getName() +" " + p.getPlayer().getGameMode());
+		Boolean b = EssentialsController.isGod(p);
+		if (b)
+			godmode.put(p.getName(), b);
+	}
+
+	public void restoreFlight(ArenaPlayer p) {
+		if (!p.isOnline() || !flight.containsKey(p.getName()))
+			return;
+		EssentialsController.setFlight(p.getPlayer(), flight.get(p));
+	}
+
+	public void storeFlight(ArenaPlayer p) {
+		if (!EssentialsController.enabled() || flight.containsKey(p.getName())){
+			return;
+		}
+		if (Defaults.DEBUG_STORAGE)  Log.info("storing flight " + p.getName() +" " + p.getPlayer().getGameMode());
+		Boolean b = EssentialsController.isFlying(p);
+		if (b)
+			flight.put(p.getName(), b);
+	}
+
+	public void restoreGodmode(ArenaPlayer p) {
+		if (!p.isOnline() || !godmode.containsKey(p.getName()))
+			return;
+		EssentialsController.setGod(p.getPlayer(), godmode.get(p));
+	}
+
 	public void restoreGamemode(ArenaPlayer p) {
 		GameMode gm = gamemode.remove(p.getName());
 		if (gm == null)
@@ -216,6 +250,7 @@ public class PlayerStoreController {
 			setGameMode(p.getPlayer(), gm);
 		}
 	}
+
 
 	public static void setGameMode(Player p, GameMode gm){
 		if (Defaults.DEBUG_STORAGE)  Log.info("set gamemode " + p.getName() +" " + p.isOnline()+":"+p.isDead() +" gm=" +gm +"  " + p.getGameMode());
@@ -268,18 +303,6 @@ public class PlayerStoreController {
 			return;
 		HeroesController.setHeroClass(p.getPlayer(), heroClass);
 	}
-
-//	public void setNameColor(ArenaPlayer p, ChatColor teamColor) {
-//		if (!TagAPIController.enabled())
-//			return;
-//		TagAPIController.setNameColor(p.getPlayer(), teamColor);
-//	}
-//
-//	public void removeNameColor(ArenaPlayer p) {
-//		if (!TagAPIController.enabled() || !p.isOnline())
-//			return;
-//		TagAPIController.removeNameColor(p.getPlayer());
-//	}
 
 	public void cancelExpLoss(ArenaPlayer p, boolean cancel) {
 		if (!HeroesController.enabled())

@@ -208,7 +208,7 @@ public class EventExecutor extends BAExecutor{
 		/// Get the team
 		ArenaTeam t = teamc.getSelfFormedTeam(p);
 		if (t==null){
-			t = TeamController.createTeam(p); }
+			t = TeamController.createTeam(eventParams, p); }
 		/// Get or Make a team for the Player
 
 		if (!canJoin(t,true)){
@@ -286,7 +286,6 @@ public class EventExecutor extends BAExecutor{
 			}
 		}
 	}
-
 
 	@MCCommand(cmds={"result"},usage="result", order=2)
 	public boolean eventResult(CommandSender sender, EventParams eventParams) {

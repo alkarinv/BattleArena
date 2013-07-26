@@ -5,7 +5,10 @@ import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 
 public class TrackerArenaStat implements ArenaStat{
 	final Stat stat;
-	public TrackerArenaStat(Stat stat) {
+	final String db;
+
+	public TrackerArenaStat(String db, Stat stat) {
+		this.db = db;
 		this.stat = stat;
 	}
 
@@ -50,5 +53,10 @@ public class TrackerArenaStat implements ArenaStat{
 	@Override
 	public String toString(){
 		return stat.toString();
+	}
+
+	@Override
+	public String getDB() {
+		return db;
 	}
 }

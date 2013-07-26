@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mc.alk.arena.controllers.LobbyController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.CaseInsensitiveMap;
 import mc.alk.arena.util.Log;
@@ -177,8 +177,10 @@ public class ArenaType implements Comparable<ArenaType>{
 			arena.setParams(arenaParams);
 			arenaParams.setParent(ParamController.getMatchParamCopy(arenaType));
 
-			if (LobbyController.hasLobby(arenaType))
-				arena.setLobby(LobbyController.getLobby(arenaType));
+			if (RoomController.hasLobby(arenaType))
+				arena.setLobby(RoomController.getLobby(arenaType));
+			if (RoomController.hasWaitroom(arena))
+				arena.setWaitRoom(RoomController.getWaitroom(arena));
 			if (init)
 				arena.privateInit();
 			return arena;
