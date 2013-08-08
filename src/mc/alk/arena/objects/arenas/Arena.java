@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.SpawnController;
 import mc.alk.arena.controllers.containers.AreaContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
@@ -46,10 +46,6 @@ public class Arena extends AreaContainer {
 	protected RoomContainer waitroom;
 
 	protected RoomContainer visitorRoom;
-
-	protected RoomContainer lobby;
-
-	protected Random rand = new Random(); /// a random
 
 	@Persist
 	protected WorldGuardRegion wgRegion;
@@ -338,18 +334,6 @@ public class Arena extends AreaContainer {
 	//		this.visitorRoom.setSpawnLoc(index, loc);
 	//	}
 
-//	/**
-//	 * Set the Arena parameters
-//	 * @param arenaParams
-//	 */
-//	public void setParameters(ArenaParams arenaParams){this.ap = arenaParams;}
-//
-//	/**
-//	 * Get the arena params
-//	 * @return
-//	 */
-//	public ArenaParams getParameters() {return ap;}
-
 	/**
 	 * Set the name of this arena
 	 * @param arenaName
@@ -586,7 +570,41 @@ public class Arena extends AreaContainer {
 		}
 		return true;
 	}
+	/**
+	 * Checks to see whether this arena has paramaters that match the given matchparams
+	 * @param eventParams
+	 * @param jp
+	 * @return
+	 */
+	public boolean matchesIgnoreSize(final MatchParams matchParams, final JoinOptions jp) {
+		if (this.getArenaType() != matchParams.getType())
+			return false;
+//		if (!getParams().matches(matchParams))
+//			return false;
+		final MatchTransitions tops = matchParams.getTransitionOptions();
+		if (tops == null)
+			return true;
+		if ((waitroom == null || !waitroom.hasSpawns()) && matchParams.needsWaitroom())
+			return false;
+		if (jp == null)
+			return true;
+		if (!jp.matches(this))
+			return false;
 
+		final TransitionOptions ops = tops.getOptions(MatchState.PREREQS);
+		if (ops == null)
+			return true;
+
+		if (ops.hasOption(TransitionOption.WITHINDISTANCE)){
+			if (!jp.nearby(this,ops.getWithinDistance())){
+				return false;}
+		}
+		if (ops.hasOption(TransitionOption.SAMEWORLD)){
+			if (!jp.sameWorld(this)){
+				return false;}
+		}
+		return true;
+	}
 	public boolean matches(Arena arena) {
 		if (arena == null)
 			return false;
@@ -663,8 +681,12 @@ public class Arena extends AreaContainer {
 	 * @return
 	 */
 	public String toSummaryString(){
-		StringBuilder sb = new StringBuilder("&4" + name+" &e type=&6"+params.getType());
-		sb.append(" &eTeamSizes:&6"+params.getTeamSizeRange()+"&e, nTeams:&6"+params.getNTeamRange());
+		StringBuilder sb = new StringBuilder("&4" + name);
+		if (params != null){
+			sb.append("&e type=&6"+params.getType());
+			sb.append(" &eTeamSizes:&6"+params.getTeamSizeRange()+"&e, nTeams:&6"+params.getNTeamRange());
+		}
+
 		sb.append("&e #spawns:&6" +spawns.size() +"&e 1stSpawn:&6");
 		if (!spawns.isEmpty()){
 			Location l = spawns.get(0);
@@ -698,12 +720,8 @@ public class Arena extends AreaContainer {
 		return waitroom;
 	}
 
-	public void setLobby(RoomContainer waitroom) {
-		this.lobby = waitroom;
-	}
-
 	public RoomContainer getLobby() {
-		return lobby;
+		return RoomController.getLobby(getArenaType());
 	}
 
 	@Override
@@ -720,8 +738,11 @@ public class Arena extends AreaContainer {
 			return false;
 		else if ( mp.needsWaitroom() && (waitroom == null || !waitroom.isOpen() || waitroom.getSpawns().isEmpty()) )
 			return false;
-		else if ( mp.needsLobby() && (lobby == null || !lobby.isOpen() || lobby.getSpawns().isEmpty()) )
-			return false;
+		else if ( mp.needsLobby()){
+			RoomContainer lobby = RoomController.getLobby(getArenaType());
+			if (lobby == null || !lobby.isOpen() || lobby.getSpawns().isEmpty())
+				return false;
+		}
 		return true;
 	}
 
@@ -734,12 +755,15 @@ public class Arena extends AreaContainer {
 			return "&cWaitroom is not open!";
 		else if ( mp.needsWaitroom() && waitroom.getSpawns().isEmpty() )
 			return "&cYou need to set a spawn point for the waitroom!";
-		else if ( mp.needsLobby() && lobby == null )
+		else if ( mp.needsLobby() && getLobby()==null )
 			return "&cYou need to create a lobby!";
-		else if ( mp.needsLobby() && !lobby.isOpen() )
-			return "&cLobby is not open!";
-		else if ( mp.needsLobby() && lobby.getSpawns().isEmpty() )
-			return "&cYou need to set a spawn point for the lobby!";
+		else if ( mp.needsLobby() ){
+			RoomContainer lobby = getLobby();
+			if (!lobby.isOpen()){
+				return "&cLobby is not open!";
+			} else if ( mp.needsLobby() && lobby.getSpawns().isEmpty() ){
+				return "&cYou need to set a spawn point for the lobby!";}
+		}
 		return "";
 	}
 
@@ -747,6 +771,7 @@ public class Arena extends AreaContainer {
 		setContainerState(state);
 		if (waitroom != null)
 			waitroom.setContainerState(state);
+		RoomContainer lobby = getLobby();
 		if (lobby != null)
 			lobby.setContainerState(state);
 	}
@@ -754,6 +779,7 @@ public class Arena extends AreaContainer {
 	public void setContainerState(ChangeType cs, PlayerContainerState state) throws IllegalStateException{
 		switch (cs){
 		case LOBBY:
+			RoomContainer lobby = getLobby();
 			if (lobby == null)
 				throw new IllegalStateException("Arena " + getName() +" does not have a Lobby");
 			lobby.setContainerState(state);

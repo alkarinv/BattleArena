@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -24,6 +25,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -204,6 +206,17 @@ public class ArenaAlterController {
 				WorldGuardController.createProtectedRegion(sender, id);
 				sendMessage(sender,"&2Region added! ");
 			}
+
+			ConfigurationSection cs = BattleArena.getSelf().getConfig().getConfigurationSection("defaultWGFlags");
+			if (cs != null){
+				Set<String> set = cs.getKeys(false);
+				if (set != null){
+					for (String key: set){
+						WorldGuardController.setFlag(region, key, cs.getBoolean(key, false));
+					}
+				}
+			}
+
 			arena.addWorldGuardRegion(w.getName(), id);
 			WorldGuardController.saveSchematic(sender, id);
 			MatchParams mp = ParamController.getMatchParams(arena.getArenaType().getName());
@@ -278,8 +291,7 @@ public class ArenaAlterController {
 			arena.setWaitRoom(room);
 		}
 		arena.setWaitRoomSpawnLoc(locindex,loc);
-		ac.removeArena(arena);
-		ac.addArena(arena);
+		ac.updateArena(arena);
 		return sendMessage(sender,"&2waitroom &6" + locstr +"&2 set to location=&6" + Util.getLocString(loc));
 	}
 
@@ -298,6 +310,8 @@ public class ArenaAlterController {
 			loc = p.getLocation();}
 
 		arena.setSpawnLoc(locindex,loc);
+		ac.updateArena(arena);
+
 		return sendMessage(sender,"&2team &6" + changetype +"&2 spawn set to location=&6" + Util.getLocString(loc));
 	}
 
@@ -316,8 +330,7 @@ public class ArenaAlterController {
 		if (loc == null){
 			loc = p.getLocation();}
 		arena.setSpawnLoc(locindex,loc);
-		ac.removeArena(arena);
-		ac.addArena(arena);
+		ac.updateArena(arena);
 		return sendMessage(sender,"&2 spawn &6"+changetype +" set to location=&6" + Util.getLocString(loc));
 	}
 
@@ -328,9 +341,8 @@ public class ArenaAlterController {
 			sendMessage(sender,"&ctype &6"+ value + "&c not found. valid types=&6"+ArenaType.getValidList());
 			return false;
 		}
-		ac.removeArena(arena);
 		arena.getParams().setType(t);
-		ac.addArena(arena);
+		ac.updateArena(arena);
 		return sendMessage(sender,"&2Altered arena type to &6" + value);
 	}
 
@@ -338,6 +350,7 @@ public class ArenaAlterController {
 		try{
 			final MinMax mm = MinMax.valueOf(value);
 			arena.getParams().setNTeams(mm);
+			ac.updateArena(arena);
 			return sendMessage(sender,"&2Altered arena number of teams to &6" + value);
 		} catch (Exception e){
 			sendMessage(sender,"size "+ value + " not found");
@@ -349,6 +362,7 @@ public class ArenaAlterController {
 		try{
 			final MinMax mm = MinMax.valueOf(value);
 			arena.getParams().setTeamSizes(mm);
+			ac.updateArena(arena);
 			return sendMessage(sender,"&2Altered arena team size to &6" + value);
 		} catch (Exception e){
 			sendMessage(sender,"size "+ value + " not found");

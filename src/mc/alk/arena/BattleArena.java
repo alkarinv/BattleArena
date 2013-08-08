@@ -14,9 +14,9 @@ import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.EventScheduler;
-import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.executors.ArenaEditorExecutor;
@@ -37,6 +37,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.victoryconditions.AllKills;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
 import mc.alk.arena.objects.victoryconditions.InfiniteLives;
+import mc.alk.arena.objects.victoryconditions.KillLimit;
 import mc.alk.arena.objects.victoryconditions.LastManStanding;
 import mc.alk.arena.objects.victoryconditions.MobKills;
 import mc.alk.arena.objects.victoryconditions.NLives;
@@ -152,6 +153,7 @@ public class BattleArena extends JavaPlugin {
 		VictoryType.register(PlayerKills.class, this);
 		VictoryType.register(MobKills.class, this);
 		VictoryType.register(AllKills.class, this);
+		VictoryType.register(KillLimit.class, this);
 
 		/// Load our configs, then arenas
 		baConfigSerializer.setConfig(FileUtil.load(clazz,dir.getPath() +"/config.yml","/default_files/config.yml"));

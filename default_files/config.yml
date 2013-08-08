@@ -1,4 +1,4 @@
-configVersion: 2.2.6
+configVersion: 2.2.7
 
 # For help the wiki is a good source of information
 # Wiki: # http://battleplugins.com/w/index.php/BattleArena
@@ -45,6 +45,14 @@ useArenasOnlyInOrder: false
 # If this is happening on your server set this to true.  
 # This option will be taken away once I have confirmed bukkit has fixed the problem
 enableInvisibleTeleportFix: true
+
+# When using WorldGuard when you select an area with the worldguard wand and perform the action
+# /<game type> alter <arena name> addregion
+# what are the default WG flags that will be used
+# These can be changed by the region name, which are called, ba-<arena name> inside of WG
+defaultWGFlags:
+  build: false
+  mob-spawning: false
 
 ### Option sets allow you to give an easy to remember name for a group of options
 # you can add as many of your own as you want

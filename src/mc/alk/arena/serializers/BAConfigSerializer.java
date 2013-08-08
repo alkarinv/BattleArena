@@ -53,7 +53,7 @@ public class BAConfigSerializer extends BaseConfig{
 		defaults.setName(Defaults.DEFAULT_CONFIG_NAME);
 		defaults.setCommand(Defaults.DEFAULT_CONFIG_NAME);
 
-		ParamController.addMatchType(defaults);
+		ParamController.addMatchParams(defaults);
 
 		parseDefaultOptions(config.getConfigurationSection("defaultOptions"),defaults);
 		if (!Defaults.MONEY_SET)
@@ -136,7 +136,7 @@ public class BAConfigSerializer extends BaseConfig{
 				EventExecutor executor = new TournamentExecutor();
 				BattleArena.getSelf().getCommand("tourney").setExecutor(executor);
 				EventController.addEventExecutor(tourney.getParams(), executor);
-				ParamController.addMatchType(ep);
+				ParamController.addMatchParams(ep);
 			} catch (Exception e){
 				Log.err("Tourney could not be added");
 			}

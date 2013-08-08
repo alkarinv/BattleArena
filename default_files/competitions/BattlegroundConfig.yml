@@ -4,11 +4,11 @@ Battleground:
     database: bg
     rated: true
     prefix: "&c[Battleground]&e"
-    victoryCondition: highestKills
+    victoryCondition: PlayerKills
     matchTime: 60
     nTeams: 4
     teamSize: 1
-    nLives: 1
+    nLives: infinite
     defaults:
         options: [woolTeams]
     preReqs:

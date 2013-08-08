@@ -74,6 +74,11 @@ public class AnnouncementOptions {
 		case SERVER:
 			break;
 		case WORLD:
+			if (value == null){
+				Log.err(BattleArena.getPluginName()+"config.yml Announcement option world needs a value. Defaulting to Server Announcement");
+				ops.put(AnnouncementOption.SERVER, null);
+				return;
+			}
 			World w = Bukkit.getWorld(value);
 			if (w == null){
 				Log.err(BattleArena.getPluginName()+"config.yml Announcement option world="+value+

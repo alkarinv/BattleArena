@@ -2,6 +2,7 @@ package mc.alk.arena.objects.events;
 
 import java.lang.reflect.Method;
 
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 
 import org.bukkit.event.Event;
@@ -10,9 +11,10 @@ public class ArenaEventMethod {
 	final Method callMethod;
 	final Class<? extends Event> bukkitEvent;
 	final Method getPlayerMethod;
-	final MatchState beginState, endState, cancelState;
+	final MatchState beginState, endState;
 	final EventPriority priority;
 	final org.bukkit.event.EventPriority bukkitPriority;
+	final boolean specificArenaPlayer;
 
 	public ArenaEventMethod(Method callMethod, Class<? extends Event> event,
 			MatchState begin, MatchState end, MatchState cancel, EventPriority priority,
@@ -28,14 +30,19 @@ public class ArenaEventMethod {
 		this.getPlayerMethod = getPlayerMethod;
 		this.beginState = begin;
 		this.endState = end;
-		this.cancelState = cancel;
 		this.priority = priority;
 		this.bukkitPriority = bukkitPriority;
-	}
+		this.specificArenaPlayer = 	getPlayerMethod != null &&
+				ArenaPlayer.class.isAssignableFrom(getPlayerMethod().getReturnType());
 
+	}
 
 	public boolean isSpecificPlayerMethod() {
 		return getPlayerMethod != null;
+	}
+
+	public boolean isSpecificArenaPlayerMethod() {
+		return this.specificArenaPlayer;
 	}
 
 	public EventPriority getPriority(){
@@ -62,10 +69,6 @@ public class ArenaEventMethod {
 		return endState;
 	}
 
-	public MatchState getCancelState() {
-		return cancelState;
-	}
-
 	@Override
 	public String toString(){
 		return "[MEM "+callMethod.getName()+", " + (bukkitEvent != null ? bukkitEvent.getSimpleName():"null")+
@@ -75,5 +78,7 @@ public class ArenaEventMethod {
 	public org.bukkit.event.EventPriority getBukkitPriority() {
 		return bukkitPriority;
 	}
+
+
 
 }

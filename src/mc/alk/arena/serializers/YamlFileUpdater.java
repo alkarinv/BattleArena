@@ -151,6 +151,9 @@ public class YamlFileUpdater {
 			newVersion = new Version("2.2.6");
 			if (version.compareTo(newVersion) < 0){
 				version = to2Point26(version, yfu, configFile, newVersion);}
+			newVersion = new Version("2.2.7");
+			if (version.compareTo(newVersion) < 0){
+				version = to2Point27(version, yfu, configFile, newVersion);}
 
 		} catch (IOException e){
 			e.printStackTrace();
@@ -437,6 +440,20 @@ public class YamlFileUpdater {
 		fu.addAfter(".*allowRatedDuels.*",
 				"    # default duel options to pass in. Example [rated,money=100]",
 				"    defaultDuelOptions: []","");
+		return fu.update();
+	}
+
+	private static Version to2Point27(Version version, YamlFileUpdater yfu, File configFile, Version newVersion) throws IOException {
+		FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+		fu.replace("configVersion:.*", "configVersion: "+newVersion);
+		fu.addAfter(".*enableInvisibleTeleportFix.*", "",
+				"# When using WorldGuard when you select an area with the worldguard wand and perform the action",
+				"# /<game type> alter <arena name> addregion",
+				"# what are the default WG flags that will be used",
+				"# These can be changed by the region name, which are called, ba-<arena name> inside of WG",
+				"defaultWGFlags:",
+				"  build: false",
+				"  mob-spawning: false", "");
 		return fu.update();
 	}
 

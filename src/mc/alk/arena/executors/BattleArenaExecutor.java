@@ -11,12 +11,10 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
-import mc.alk.arena.util.PermissionsUtil;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class BattleArenaExecutor extends CustomCommandExecutor{
@@ -67,17 +65,6 @@ public class BattleArenaExecutor extends CustomCommandExecutor{
 			return sendMessage(sender, "&2Player inventory restored");
 		} else {
 			return sendMessage(sender, "&cPlayer inventory could not be restored");
-		}
-	}
-
-	@MCCommand(cmds={"giveAdminPerms"}, op=true)
-	public boolean giveAdminPerms(CommandSender sender, Player player, Boolean enable) {
-		if (!PermissionsUtil.giveAdminPerms(player,enable)){
-			return sendMessage(sender,"&cCouldn't change the admin perms of &6"+player.getName());}
-		if (enable){
-			return sendMessage(sender,"&2 "+player.getName()+" &6now has&2 admin perms");
-		} else {
-			return sendMessage(sender,"&2 "+player.getName()+" &4no longer has&2 admin perms");
 		}
 	}
 

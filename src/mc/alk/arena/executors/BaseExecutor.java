@@ -12,6 +12,7 @@ import java.util.PriorityQueue;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.Log;
 
 import org.apache.commons.lang.StringUtils;
@@ -282,7 +283,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 	}
 
 	private void logInvocationError(Exception e, MethodWrapper mwrapper, Arguments newArgs) {
-		System.err.println("[CustomCommandExecutor Error] "+mwrapper.method +" : " + mwrapper.obj +"  : " + newArgs);
+		System.err.println("["+BattleArena.getNameAndVersion()+" Error] "+mwrapper.method +" : " + mwrapper.obj +"  : " + newArgs);
 		if (newArgs!=null && newArgs.args != null){
 			for (Object o: newArgs.args)
 				System.err.println("[Error] object=" + o);
@@ -497,7 +498,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 			npages += onlyop.size();
 		npages = (int) Math.ceil( (float)npages/LINES_PER_PAGE);
 		if (page > npages || page <= 0){
-			if (page <= 0){
+			if (npages <= 0){
 				sendMessage(sender, "&4There are no methods for this command");
 			} else {
 				sendMessage(sender, "&4That page doesnt exist, try 1-"+npages);

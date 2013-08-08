@@ -21,7 +21,6 @@ import org.bukkit.inventory.ItemStack;
 public class MatchTransitions {
 	final Map<MatchState,TransitionOptions> ops = new EnumMap<MatchState,TransitionOptions>(MatchState.class);
 	final Set<TransitionOption> allops = new HashSet<TransitionOption>();
-	MatchTransitions parent = null;
 
 	public MatchTransitions() {}
 	public MatchTransitions(MatchTransitions o) {
@@ -61,6 +60,11 @@ public class MatchTransitions {
 		tops.addOption(option,value);
 	}
 
+	public boolean removeTransitionOption(MatchState state, TransitionOption option) {
+		TransitionOptions tops = ops.get(state);
+		return tops == null ? false : tops.removeOption(option) != null;
+	}
+
 	public void removeTransitionOptions(MatchState ms) {
 		ops.remove(ms);
 		calculateAllOptions();
@@ -71,6 +75,10 @@ public class MatchTransitions {
 		for (TransitionOptions top: ops.values()){
 			allops.addAll(top.getOptions().keySet());
 		}
+	}
+
+	public boolean hasAnyOption(TransitionOption option) {
+		return allops.contains(option);
 	}
 
 	public boolean hasAnyOption(TransitionOption... options) {
@@ -195,10 +203,21 @@ public class MatchTransitions {
 		return sb.toString();
 	}
 
-	public void setParent(MatchTransitions parent){
-		this.parent = parent;
+	public Double getDoubleOption(MatchState state, TransitionOption option) {
+		TransitionOptions tops = getOptions(state);
+		return tops == null ? null : tops.getDouble(option);
 	}
-	public MatchTransitions getParent(){
-		return parent;
+
+	public static MatchTransitions mergeChildWithParent(MatchTransitions pmt, MatchTransitions cmt) {
+		if (cmt == null){
+			cmt = new MatchTransitions();}
+		if (pmt == null)
+			return cmt;
+		for (MatchState ms: pmt.ops.keySet()){
+			cmt.ops.put(ms, new TransitionOptions(pmt.ops.get(ms)));
+		}
+		cmt.calculateAllOptions();
+		return cmt;
 	}
+
 }

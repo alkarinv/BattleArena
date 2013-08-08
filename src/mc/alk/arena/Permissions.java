@@ -14,5 +14,4 @@ public class Permissions {
 	public static final String MULTIVERSE_INV_IGNORE_NODE = "mvinv.bypass.*";
 	public static final String MULTIVERSE_CORE_IGNORE_NODE = "mv.bypass.gamemode.*";
 	public static final String WORLDGUARD_BYPASS_NODE = "worldguard.region.bypass.";
-
 }

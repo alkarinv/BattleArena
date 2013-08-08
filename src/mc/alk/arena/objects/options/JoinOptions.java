@@ -15,6 +15,7 @@ import mc.alk.arena.objects.pairs.WantedTeamSizePair;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.TeamUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
 
 public class JoinOptions extends ArenaSize{
@@ -57,11 +58,14 @@ public class JoinOptions extends ArenaSize{
 	/** Location they have joined from */
 	Location joinedLocation = null;
 
-	/** Specific arena or match size.  Is the user requesting a special arena or match size */
-//	boolean specific = false;
+	MatchParams params;
 
-	/** When the player joined, can be null */
-	Long joinTime;
+	/** When the player joined, (defaults to when the JoinOptions was created) */
+	long joinTime;
+
+	public JoinOptions(){
+		joinTime = System.currentTimeMillis();
+	}
 
 	public boolean matches(Arena arena) {
 		if (options.containsKey(JoinOption.ARENA)){
@@ -119,14 +123,8 @@ public class JoinOptions extends ArenaSize{
 		Map<JoinOption,Object> ops = jos.options;
 		Arena arena = null;
 		String lastArg = args.length - 1 >= 0 ? args[args.length-1] : "";
-		final WantedTeamSizePair teamSize = WantedTeamSizePair.getWantedTeamSize(player,t,mp,lastArg);
 		int length = args.length;
-		if (teamSize.manuallySet){
-			length = args.length -1;
-			jos.setTeamSize(teamSize.size);
-		}
 
-		ops.put(JoinOption.TEAMSIZE, teamSize);
 		for (int i=0;i<length;i++){
 			String op = args[i];
 			if (op.isEmpty())
@@ -134,14 +132,15 @@ public class JoinOptions extends ArenaSize{
 			Object obj = null;
 			Arena a = BattleArena.getBAController().getArena(op);
 			if (a != null){
-				if (!a.valid()){
-					throw new InvalidOptionException("&cThe specified arena is not valid!");}
 				if (arena != null){
 					throw new InvalidOptionException("&cYou specified 2 arenas!");}
+				if (!a.valid()){
+					throw new InvalidOptionException("&cThe specified arena is not valid!");}
 				arena = a;
 				ops.put(JoinOption.ARENA, arena);
 				continue;
 			}
+
 			Integer teamIndex = TeamUtil.getTeamIndex(op);
 			if (teamIndex != null){
 				ops.put(JoinOption.TEAM, teamIndex);
@@ -171,11 +170,37 @@ public class JoinOptions extends ArenaSize{
 				obj = BattleArena.getBAController().getArena(val);
 				if (obj==null){
 					throw new InvalidOptionException("&cCouldnt find the arena &6" +val);}
+				a = (Arena) obj;
+				if (!a.valid()){
+					throw new InvalidOptionException("&cThe specified arena is not valid!");}
+				arena = a;
 			default:
 				break;
 			}
 			ops.put(jo, obj);
 		}
+		if (arena != null && !arena.matchesIgnoreSize(mp, jos)){
+			throw new InvalidOptionException("&cThe arena &6" +arena.getName() +"&c doesn't match your join requirements");
+		} else if (arena == null){
+			arena = BattleArena.getBAController().getNextArena(mp.getType());
+			jos.setArena(arena);
+		}
+		if (arena != null){
+			MatchParams old = new MatchParams(mp);
+			mp = arena.getParams();
+			mp.setParent(old);
+			if (!arena.matchesIgnoreSize(mp, jos))
+				throw new InvalidOptionException("&cThe arena &6" +arena.getName() +
+						"&c isn't valid. " + StringUtils.join( arena.getInvalidMatchReasons(mp, jos), '\n'));
+		}
+		final WantedTeamSizePair teamSize = WantedTeamSizePair.getWantedTeamSize(player,t,mp,lastArg);
+		if (teamSize.manuallySet){
+			length = args.length -1;
+			jos.setTeamSize(teamSize.size);
+		}
+
+		jos.params=mp;
+		ops.put(JoinOption.TEAMSIZE, teamSize);
 		return jos;
 	}
 
@@ -226,5 +251,9 @@ public class JoinOptions extends ArenaSize{
 
 	public void setArena(Arena arena) {
 		options.put(JoinOption.ARENA, arena);
+	}
+
+	public MatchParams getMatchParams() {
+		return params;
 	}
 }

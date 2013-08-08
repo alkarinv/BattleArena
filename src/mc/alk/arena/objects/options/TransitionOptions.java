@@ -159,7 +159,7 @@ public class TransitionOptions {
 	public Boolean undisguise() {return options.containsKey(TransitionOption.UNDISGUISE);}
 
 	public boolean playerReady(ArenaPlayer p, World w) {
-		if (p==null || !p.isOnline() || p.isDead())
+		if (p==null || !p.isOnline() || p.isDead() || p.getPlayer().isSleeping())
 			return false;
 		if (needsItems()){
 			List<ItemStack> items = getNeedItems();
@@ -235,7 +235,6 @@ public class TransitionOptions {
 	}
 
 	public String getNotReadyMsg(ArenaPlayer p, World w, String headerMsg) {
-		//		System.out.println(" Here in getNot ready msg with " + p.getName());
 		StringBuilder sb = new StringBuilder(headerMsg);
 		boolean isReady = true;
 		if (needsItems()){

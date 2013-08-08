@@ -20,7 +20,8 @@ public class WantedTeamSizePair {
 	 * @return
 	 * @throws InvalidOptionException
 	 */
-	public static WantedTeamSizePair getWantedTeamSize(ArenaPlayer player, ArenaTeam t, MatchParams mp, String stringsize) throws InvalidOptionException {
+	public static WantedTeamSizePair getWantedTeamSize(ArenaPlayer player, ArenaTeam t,
+			MatchParams mp, String stringsize) throws InvalidOptionException {
 		/// Check to see if the user has specified a wanted team size
 		MinMax mm = null;
 		try{mm = MinMax.valueOf(stringsize);} catch (Exception e){}

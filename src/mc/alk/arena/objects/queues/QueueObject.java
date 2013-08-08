@@ -14,6 +14,7 @@ public abstract class QueueObject {
 	protected MatchParams matchParams;
 
 	final protected JoinOptions jp;
+
 	public QueueObject(JoinOptions jp){
 		this.jp = jp;
 	}
@@ -40,4 +41,6 @@ public abstract class QueueObject {
 	public abstract Collection<ArenaTeam> getTeams();
 
 	public abstract boolean hasTeam(ArenaTeam team);
+
+	public long getJoinTime(){return jp.getJoinTime();}
 }

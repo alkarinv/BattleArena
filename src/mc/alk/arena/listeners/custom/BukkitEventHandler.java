@@ -4,7 +4,6 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.event.Event;
@@ -51,7 +50,7 @@ public class BukkitEventHandler {
 	 */
 	public void addListener(RListener rl, Collection<String> players) {
 		if (players != null && rl.isSpecificPlayerMethod()){
-			if (ArenaPlayer.class.isAssignableFrom(rl.getMethod().getPlayerMethod().getReturnType())){
+			if (rl.isSpecificArenaPlayerMethod()){
 				sapl.addListener(rl, players);
 			} else {
 				spl.addListener(rl, players);
@@ -70,12 +69,11 @@ public class BukkitEventHandler {
 	 */
 	public void removeListener(RListener rl, Collection<String> players) {
 		if (players != null && rl.isSpecificPlayerMethod()){
-			if (ArenaPlayer.class.isAssignableFrom(rl.getMethod().getPlayerMethod().getReturnType())){
+			if (rl.isSpecificArenaPlayerMethod()){
 				sapl.removeListener(rl, players);
 			} else {
 				spl.removeListener(rl, players);
 			}
-
 		} else {
 			ael.removeListener(rl);
 		}

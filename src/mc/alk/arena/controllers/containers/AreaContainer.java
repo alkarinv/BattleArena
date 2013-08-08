@@ -40,8 +40,8 @@ public class AreaContainer extends AbstractAreaContainer{
 	public AreaContainer(MatchParams params, LocationType type){
 		super();
 		this.params = params;
+		this.params.flatten();
 		this.type = type;
-//		ListenerAdder.addListeners(this, tops);
 	}
 
 	@Override

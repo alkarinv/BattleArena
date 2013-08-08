@@ -43,4 +43,18 @@ public class VaultPermUtil {
 		}
 	}
 
+	public static boolean giveWorldGuardPerms(Player player, Boolean enable) {
+		String perms[] = {"worldguard.region.wand", "worldguard.region.info.*","worldguard.region.list",
+				"worldguard.region.flag.regions.*","worldguard.region.flag.flags.*",
+				"worldguard.region.setpriority.*"};
+		for (String p: perms){
+			if (enable) {
+				perm.playerAdd(player, p);
+			} else {
+				perm.playerRemove(player, p);
+			}
+		}
+		return true;
+	}
+
 }

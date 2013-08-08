@@ -3,7 +3,6 @@ package mc.alk.arena.objects.queues;
 import java.util.Iterator;
 
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.util.Log;
 
 
 public class CompositeTeamQueue implements  TeamCollection{

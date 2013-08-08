@@ -20,17 +20,17 @@ import org.bukkit.ChatColor;
 
 public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
-	String prefix;
+	String prefix = null;
 	VictoryType vc = null;
-	Integer matchTime, intervalTime;
+	Integer matchTime = null, intervalTime = null;
 	AnnouncementOptions ao = null;
 
 	Integer nLives = null;
 	Integer numConcurrentCompetitions = null;
-	Set<ArenaModule> modules = new HashSet<ArenaModule>();
-	Boolean useBTPvP;
-	Boolean useBTMessages;
-	Boolean useBTTeamRating;
+	Set<ArenaModule> modules = null;
+	Boolean useBTPvP = null;
+	Boolean useBTMessages = null;
+	Boolean useBTTeamRating = null;
 
 	MatchParams mparent=null;
 
@@ -49,10 +49,33 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.ao = mp.ao;
 		this.nLives = mp.nLives;
 		this.numConcurrentCompetitions = mp.numConcurrentCompetitions;
-		this.modules = new HashSet<ArenaModule>(mp.modules);
 		this.mparent = mp.mparent;
 		this.useBTMessages = mp.useBTMessages;
 		this.useBTPvP = mp.useBTPvP;
+		if (mp.modules != null)
+			this.modules = new HashSet<ArenaModule>(mp.modules);
+	}
+
+	@Override
+	public void flatten() {
+		if (mparent != null){
+			if (this.prefix == null) this.prefix = mparent.prefix;
+			if (this.vc == null) this.vc = mparent.vc;
+			if (this.matchTime == null) this.matchTime = mparent.matchTime;
+			if (this.intervalTime == null) this.intervalTime = mparent.intervalTime;
+			if (this.ao == null) this.ao = mparent.ao;
+			if (this.nLives == null) this.nLives = mparent.nLives;
+			if (this.numConcurrentCompetitions == null) this.numConcurrentCompetitions = mparent.numConcurrentCompetitions;
+			if (this.useBTMessages == null) this.useBTMessages = mparent.useBTMessages;
+			if (this.useBTPvP == null) this.useBTPvP = mparent.useBTPvP;
+			if (this.modules != null && mparent.modules != null){
+				this.modules.addAll(mparent.modules);
+			} else if (mparent.modules != null){
+				this.modules = new HashSet<ArenaModule>(mparent.modules);
+			}
+			this.mparent = null;
+		}
+		super.flatten();
 	}
 
 	public void setVictoryType(VictoryType type){this.vc = type;}
@@ -145,6 +168,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	}
 
 	public void addModule(ArenaModule am) {
+		if (modules == null)
+			modules = new HashSet<ArenaModule>();
 		modules.add(am);
 	}
 
@@ -153,6 +178,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	}
 
 	public Collection<ArenaModule> getAllModules(){
+		if (modules == null)
+			return null;
 		List<ArenaModule> ms = new ArrayList<ArenaModule>(modules);
 		if (mparent != null){
 			ms.addAll(mparent.getAllModules());}
@@ -190,7 +217,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public Collection<String> getInvalidReasons() {
 		List<String> reasons = new ArrayList<String>();
 		if (getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY) && !RoomController.hasLobby(getType()))
-				reasons.add("Needs a Lobby");
+			reasons.add("Needs a Lobby");
 		reasons.addAll(super.getInvalidReasons());
 		return reasons;
 	}
@@ -213,21 +240,27 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	}
 
 	public boolean needsWaitroom() {
-		return ((getTransitionOptions() != null) && ( getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINWAITROOM) ||
-				getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTWAITROOM)));
+		return ( ((getTransitionOptions() != null) &&
+				( getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINWAITROOM) ||
+						getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTWAITROOM)) ) ||
+						((parent != null && parent.getTransitionOptions() != null) &&
+								( parent.getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINWAITROOM) ||
+										parent.getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTWAITROOM)))
+				);
 	}
 
 	public boolean needsLobby() {
-		return ((getTransitionOptions() != null) && ( getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINLOBBY) ||
-				getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY)));
+		return ( ((getTransitionOptions() != null) &&
+				( getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINLOBBY) ||
+						getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY)) ) ||
+						((parent != null && parent.getTransitionOptions() != null) &&
+								(parent.getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINLOBBY) ||
+										parent.getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY)))
+				);
 	}
 
 	public Rating getRated() {
 		return rating;
-	}
-
-	public boolean hasOptionAt(MatchState state, TransitionOption op) {
-		return getTransitionOptions() != null ? getTransitionOptions().hasOptionAt(state, op) : false;
 	}
 
 	public void setTeamRating(Boolean b) {

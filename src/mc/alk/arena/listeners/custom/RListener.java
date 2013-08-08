@@ -14,9 +14,15 @@ public class RListener {
 		this.al = spl;
 		this.mem = mem;
 	}
+
 	public boolean isSpecificPlayerMethod(){
 		return mem.isSpecificPlayerMethod();
 	}
+
+	public boolean isSpecificArenaPlayerMethod(){
+		return mem.isSpecificArenaPlayerMethod();
+	}
+
 	public ArenaEventMethod getMethod() {
 		return mem;
 	}

@@ -2,12 +2,12 @@ package mc.alk.arena.listeners.custom;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.TreeMap;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.events.EventPriority;
@@ -24,7 +24,8 @@ import org.bukkit.event.Event;
  */
 public class ArenaEventListener extends BukkitEventListener{
 	/** Set of arena listeners */
-	final public EnumMap<EventPriority, Set<RListener>> listeners = new EnumMap<EventPriority, Set<RListener>>(EventPriority.class);
+	final public EnumMap<EventPriority, Map<RListener,Integer>> listeners =
+			new EnumMap<EventPriority, Map<RListener,Integer>>(EventPriority.class);
 
 	private volatile RListener[] handlers = null;
 
@@ -52,7 +53,7 @@ public class ArenaEventListener extends BukkitEventListener{
 	 * Get the set of arena listeners
 	 * @return
 	 */
-	public EnumMap<EventPriority, Set<RListener>> getListeners(){
+	public EnumMap<EventPriority, Map<RListener,Integer>> getListeners(){
 		return listeners;
 	}
 
@@ -87,21 +88,32 @@ public class ArenaEventListener extends BukkitEventListener{
 
 	/**
 	 * add an arena listener to this bukkit event
-	 * @param spl
+	 * @param rl
 	 * @return
 	 */
-	public synchronized void addMatchListener(RListener spl) {
+	public synchronized void addMatchListener(RListener rl) {
 		if (!hasListeners()){
 			startListening();}
-		Set<RListener> l = listeners.get(spl.getPriority());
+		Map<RListener,Integer> l = listeners.get(rl.getPriority());
 		if (l == null){
-			l = new HashSet<RListener>();
-			listeners.put(spl.getPriority(), l);
+			l = new TreeMap<RListener,Integer>(new Comparator<RListener>(){
+				@Override
+				public int compare(RListener o1, RListener o2) {
+					return o1.getListener().equals(o2.getListener()) ? 0 :
+						new Integer(o1.hashCode()).compareTo(o2.hashCode());
+				}
+			});
+			listeners.put(rl.getPriority(), l);
 		}
-		l.add(spl);
 
-		handlers = null;
-		bake();
+		Integer count = l.get(rl);
+		if (count == null){
+			l.put(rl,1);
+			handlers = null;
+			bake();
+		} else {
+			l.put(rl,count+1);
+		}
 	}
 
 	/**
@@ -110,29 +122,27 @@ public class ArenaEventListener extends BukkitEventListener{
 	 * @return
 	 */
 	private boolean removeMatchListener(RListener listener) {
-		final Set<RListener> list = listeners.get(listener.getPriority());
-		if (list==null)
+		final Map<RListener,Integer> map = listeners.get(listener.getPriority());
+		if (map==null)
 			return false;
-		boolean changed = false;
-		Iterator<RListener> iter = list.iterator();
-		while (iter.hasNext()){
-			RListener rl = iter.next();
-			if (rl.equals(listener)){
-				iter.remove();
-				changed = true;
-			}
+		Integer count = map.get(listener);
+		if (count == null || count == 1){
+			map.remove(listener);
+			handlers = null;
+			if (!hasListeners()){
+				stopListening();}
+			return true;
+		} else {
+			map.put(listener, count-1);
+			return false;
 		}
-		if (!hasListeners()){
-			stopListening();}
-		if (changed) handlers = null;
-		return changed;
 	}
 
 	private synchronized void bake() {
 		if (handlers != null) return;
 		List<RListener> entries = new ArrayList<RListener>();
-		for (Entry<EventPriority,Set<RListener>> entry : listeners.entrySet()){
-			entries.addAll(entry.getValue());}
+		for (Entry<EventPriority,Map<RListener,Integer>> entry : listeners.entrySet()){
+			entries.addAll(entry.getValue().keySet());}
 		handlers = entries.toArray(new RListener[entries.size()]);
 	}
 

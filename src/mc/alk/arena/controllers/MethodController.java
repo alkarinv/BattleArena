@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 import java.util.TreeSet;
 
 import mc.alk.arena.Defaults;
@@ -69,24 +69,31 @@ public class MethodController {
 	public void updateEvents(MatchState matchState, ArenaPlayer player){
 		List<String> players = new ArrayList<String>();
 		players.add(player.getName());
-		updateEvents(matchState,players);
+		updateEvents(null, matchState,players);
 	}
 
 	public void updateEvents(MatchState matchState, Collection<ArenaPlayer> players){
 		List<String> strplayers = new ArrayList<String>();
 		for (ArenaPlayer ap: players){
 			strplayers.add(ap.getName());}
-		updateEvents(matchState,strplayers);
+		updateEvents(null, matchState,strplayers);
 	}
 
-	public void updateEvents(MatchState matchState, List<String> players) {
+	public void updateEvents(ArenaListener listener, MatchState matchState, Collection<ArenaPlayer> players){
+		List<String> strplayers = new ArrayList<String>();
+		for (ArenaPlayer ap: players){
+			strplayers.add(ap.getName());}
+		updateEvents(listener, matchState,strplayers);
+	}
+
+	public void updateEvents(ArenaListener listener, MatchState matchState, List<String> players) {
 		try {
 			Collection<Class<? extends Event>> keys = bukkitMethods.keySet();
 			for (Class<? extends Event> event: keys){
-				updateEvent(matchState, players, event);}
+				updateEvent(listener, matchState, players, event);}
 			Collection<Class<? extends BAEvent>> mkeys = matchMethods.keySet();
 			for (Class<? extends BAEvent> event: mkeys){
-				updateBAEvent(matchState, players, event);}
+				updateBAEvent(listener, matchState, players, event);}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -104,25 +111,28 @@ public class MethodController {
 			players.add(player.getName());
 
 			for (Class<? extends Event> event: events){
-				updateEvent(matchState,players, event);}
+				updateEvent(null, matchState,players, event);}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	private void updateEvent(MatchState matchState, Collection<String> players, final Class<? extends Event> event) {
+	private void updateEvent(ArenaListener listener, MatchState matchState,
+			Collection<String> players, final Class<? extends Event> event) {
 		final List<RListener> rls = bukkitMethods.get(event);
 		if (rls == null || rls.isEmpty()){
 			return;}
 		if (Defaults.DEBUG_EVENTS) System.out.println("updateEventListener "+  event.getSimpleName() +"    " + matchState);
 
 		for (RListener rl : rls){
+			if (listener != null && !rl.getListener().equals(listener))
+				continue;
 			ArenaEventMethod mem = rl.getMethod();
-			if (Defaults.DEBUG_EVENTS) System.out.println("  updateEventListener "+  event.getSimpleName() +"    " + matchState +":" +
-					rl +",   " + players);
+			if (Defaults.DEBUG_EVENTS) System.out.println("  updateEventListener "+  event.getSimpleName() +
+					"    " + matchState +":" +rl +",   " + players);
 			if (mem.getBeginState() == matchState){
 				BukkitEventHandler bel = getCreate(event,mem);
 				bel.addListener(rl,players);
-			} else if (mem.getEndState() == matchState || mem.getCancelState() == matchState) {
+			} else if (mem.getEndState() == matchState) {
 				for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
 					BukkitEventHandler bel = ls.get(event);
 					if (bel != null){
@@ -150,20 +160,23 @@ public class MethodController {
 		return gel;
 	}
 
-	private void updateBAEvent(MatchState matchState, Collection<String> players, final Class<? extends BAEvent> event) {
+	private void updateBAEvent(ArenaListener listener, MatchState matchState,
+			Collection<String> players, final Class<? extends BAEvent> event) {
 		final List<RListener> rls = matchMethods.get(event);
 		if (rls == null || rls.isEmpty()){
 			return;}
 		if (Defaults.DEBUG_EVENTS) System.out.println("updateBAEventListener "+  event.getSimpleName() +"    " + matchState);
 
 		for (RListener rl : rls){
+			if (listener != null && !rl.getListener().equals(listener))
+				continue;
 			ArenaEventMethod mem = rl.getMethod();
 			if (Defaults.DEBUG_EVENTS) System.out.println("  updateBAEventListener "+  event.getSimpleName() +"    " + matchState +":" +
 					rl +",   " + players);
 			if (mem.getBeginState() == matchState){
 				BukkitEventHandler bel = getCreateBA(event,mem);
 				bel.addListener(rl,players);
-			} else if (mem.getEndState() == matchState || mem.getCancelState() == matchState) {
+			} else if (mem.getEndState() == matchState ) {
 				for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
 					BukkitEventHandler bel = ls.get(event);
 					if (bel != null){
@@ -365,7 +378,7 @@ public class MethodController {
 						beginState, endState,cancelState, priority, bukkitPriority ));
 			} else {
 				if (beginState == MatchState.NONE) beginState = MatchState.ONOPEN;
-				if (endState == MatchState.NONE) endState = MatchState.ONCOMPLETE;
+				if (endState == MatchState.NONE) endState = MatchState.ONFINISH;
 				if (cancelState == MatchState.NONE) cancelState = MatchState.ONCANCEL;
 				mths.add(new ArenaEventMethod(method, bukkitEvent,beginState,
 						endState,cancelState, priority, bukkitPriority));
@@ -536,10 +549,10 @@ public class MethodController {
 					}
 				}
 
-				EnumMap<mc.alk.arena.objects.events.EventPriority, Set<RListener>> lists = bel.getMatchListener().getListeners();
+				EnumMap<mc.alk.arena.objects.events.EventPriority, Map<RListener,Integer>> lists = bel.getMatchListener().getListeners();
 				for (mc.alk.arena.objects.events.EventPriority ep: lists.keySet()){
-					for (RListener rl : lists.get(ep)){
-						Log.info( "! " + ep  + "  -  " + rl);
+					for (Entry<RListener,Integer> entry : lists.get(ep).entrySet()){
+						Log.info( "! " + ep  + "  -  " + entry.getKey() +"  count="+entry.getValue());
 					}
 				}
 			}

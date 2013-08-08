@@ -70,7 +70,7 @@ public class TestBattleArena extends TestCase{
 
 		Arena arena = ArenaType.createArena("testArena", mp);
 		assertNotNull(arena);
-		ParamController.addMatchType(mp);
+		ParamController.addMatchParams(mp);
 		bac.addArena(arena);
 	}
 

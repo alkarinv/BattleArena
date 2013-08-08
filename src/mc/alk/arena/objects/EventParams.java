@@ -18,10 +18,20 @@ public class EventParams extends MatchParams{
 			EventParams ep = (EventParams) mp;
 			this.secondsTillStart = ep.secondsTillStart;
 			this.announcementInterval = ep.announcementInterval;
+			this.eparent = ep.eparent;
 			if (ep.openOptions != null)
 				this.openOptions = new ArrayList<String>(ep.openOptions);
-			this.eparent = ep.eparent;
 		}
+	}
+	@Override
+	public void flatten() {
+		if (eparent != null){
+			if (this.secondsTillStart == null) this.secondsTillStart = eparent.secondsTillStart;
+			if (this.announcementInterval == null) this.announcementInterval = eparent.announcementInterval;
+			if (this.openOptions == null) this.openOptions = eparent.openOptions;
+			this.eparent = null;
+		}
+		super.flatten();
 	}
 
 	public EventParams(ArenaType at) {

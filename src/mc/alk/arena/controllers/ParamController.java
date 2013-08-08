@@ -19,8 +19,9 @@ public class ParamController {
 	static final CaseInsensitiveMap<MatchParams> types = new CaseInsensitiveMap<MatchParams>();
 	static final Map<String, MatchTransitions> transitions = new ConcurrentHashMap<String, MatchTransitions>();
 	static final CaseInsensitiveMap<Set<String>> aliases = new CaseInsensitiveMap<Set<String>>();
+	static final CaseInsensitiveMap<MatchParams> arenaParams = new CaseInsensitiveMap<MatchParams>();
 
-	public static void addMatchType(MatchParams matchParams) {
+	public static void addMatchParams(MatchParams matchParams) {
 		types.put(matchParams.getName(), matchParams);
 		Set<String> a = aliases.get(matchParams.getName());
 		if (a != null){
@@ -28,6 +29,10 @@ public class ParamController {
 				types.put(alias, matchParams);}
 		}
 		addAlias(matchParams.getCommand(), matchParams);
+	}
+
+	public static void addArenaParams(String arenaName, MatchParams mp) {
+		arenaParams.put(arenaName, mp);
 	}
 
 	public static void addAlias(String alias, MatchParams matchParams) {
@@ -118,4 +123,5 @@ public class ParamController {
 	public static EventParams getDefaultConfig() {
 		return (EventParams) types.get(Defaults.DEFAULT_CONFIG_NAME);
 	}
+
 }

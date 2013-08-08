@@ -1,9 +1,7 @@
 package mc.alk.arena.listeners.custom;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.TreeSet;
 
 import mc.alk.arena.Defaults;
@@ -31,7 +29,8 @@ import org.bukkit.event.entity.EntityDeathEvent;
  */
 public class SpecificPlayerEventListener extends BukkitEventListener{
 	/** map of player to listeners listening for that player */
-	final public MapOfTreeSet<String,RListener> listeners = new MapOfTreeSet<String,RListener>(new RListenerPriorityComparator());
+	final protected MapOfTreeSet<String,RListener> listeners = new MapOfTreeSet<String,RListener>(
+			new RListenerPriorityComparator());
 
 	/** The method which will return a Player if invoked */
 	final Method getPlayerMethod;
@@ -169,10 +168,10 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 		TreeSet<RListener> spls = listeners.getSafe(p.getName());
 		if (spls == null){
 			return;}
-		doMethods(event,p, new ArrayList<RListener>(spls));
+		doMethods(event,p, spls);
 	}
 
-	private void doMethods(Event event, final Player p, List<RListener> lmethods) {
+	private void doMethods(Event event, final Player p, Collection<RListener> lmethods) {
 		/// For each of the splisteners methods that deal with this BukkitEvent
 		ArenaPlayer arenaPlayer = null;
 		for(RListener lmethod: lmethods){

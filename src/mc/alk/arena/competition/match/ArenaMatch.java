@@ -24,7 +24,6 @@ import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
@@ -55,6 +54,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
 
 /**
@@ -84,6 +84,8 @@ public class ArenaMatch extends Match {
 			return;}
 		ArenaPlayer player = BattleArena.toArenaPlayer(event.getPlayer());
 		onLeave(player);
+		Log.debug(" -----------onPlayerQuit #### remoiving Player   " + player.getName());
+
 	}
 
 	@ArenaEventHandler(suppressCastWarnings=true,bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
@@ -147,7 +149,7 @@ public class ArenaMatch extends Match {
 			/// where we need to give them back the current Inventory they have on them
 			/// even if they log out
 			if (keepsInventory){
-				boolean restores = getParams().getTransitionOptions().hasAnyOption(TransitionOption.RESTOREALL);
+				boolean restores = getParams().hasAnyOption(TransitionOption.RESTOREALL);
 				/// Restores and exiting, means clear their match inventory so they won't
 				/// get their match and their already stored inventory
 				if (restores && exiting){
@@ -389,9 +391,8 @@ public class ArenaMatch extends Match {
 	public static void respawnClick(PlayerInteractEvent event, PlayerHolder am, Map<String,Integer> respawnTimer) {
 		ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
 		Integer id = respawnTimer.remove(ap.getName());
-		MatchTransitions tops = am.getParams().getTransitionOptions();
 		Bukkit.getScheduler().cancelTask(id);
-		Location loc = am.getSpawn(am.indexOf(am.getTeam(ap)), tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
+		Location loc = am.getSpawn(am.indexOf(am.getTeam(ap)), am.getParams().hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
 		TeleportController.teleport(ap.getPlayer(), loc);
 	}
 
@@ -431,22 +432,23 @@ public class ArenaMatch extends Match {
 				return;
 			}
 		}
-		MatchTransitions tops = am.getParams().getTransitionOptions();
+//		MatchTransitions tops = am.getParams().getTransitionOptions();
+		MatchParams mp = am.getParams();
 		userTime.put(playerName, System.currentTimeMillis());
 
-		final TransitionOptions mo = tops.getOptions(am.getMatchState());
-		final TransitionOptions ro = tops.getOptions(MatchState.ONSPAWN);
-		if (mo == null && ro == null)
-			return;
-		boolean woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS);
+//		final TransitionOptions mo = tops.getOptions(am.getMatchState());
+//		final TransitionOptions ro = tops.getOptions(MatchState.ONSPAWN);
+//		if (mo == null && ro == null)
+//			return;
+		boolean woolTeams = mp.hasAnyOption(TransitionOption.WOOLTEAMS);
 		/// Have They have already selected a class this match, have they changed their inventory since then?
 		/// If so, make sure they can't just select a class, drop the items, then choose another
 		if (chosen != null){
 			List<ItemStack> items = new ArrayList<ItemStack>();
 			if (chosen.getItems()!=null)
 				items.addAll(chosen.getItems());
-			if (ro != null && ro.hasGiveItems()){
-				items.addAll(ro.getGiveItems());
+			if (mp.hasOptionAt(MatchState.ONSPAWN, TransitionOption.GIVEITEMS)){
+				items.addAll(mp.getGiveItems(MatchState.ONSPAWN));
 			}
 			if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
 				MessageUtil.sendMessage(p,"&cYou can't switch classes after changing items!");
@@ -459,7 +461,9 @@ public class ArenaMatch extends Match {
 		InventoryUtil.clearInventory(p, woolTeams);
 		/// Also debuff them
 		EffectUtil.deEnchantAll(p);
-		boolean armorTeams = tops.hasAnyOption(TransitionOption.ARMORTEAMS);
+
+		MatchState state = am.getMatchState();
+		boolean armorTeams = mp.hasAnyOption(TransitionOption.ARMORTEAMS);
 		ArenaTeam team = am.getTeam(ap);
 		Log.debug(" team " + team +"   ap " + ap.getName()  + "    name == " + am.getClass().getSimpleName());
 		Color color = armorTeams && team != null ? TeamUtil.getTeamColor(am.indexOf(team)) : null;
@@ -468,16 +472,20 @@ public class ArenaMatch extends Match {
 		/// Regive class/items
 		ArenaClassController.giveClass(ap, ac);
 		ap.setPreferredClass(ac);
-		if (mo != null && mo.hasItems()){
-			try{ InventoryUtil.addItemsToInventory(p, mo.getGiveItems(), true,color);} catch(Exception e){Log.printStackTrace(e);}}
-		if (ro != null && ro.hasItems()){
-			try{ InventoryUtil.addItemsToInventory(p, ro.getGiveItems(), true,color);} catch(Exception e){Log.printStackTrace(e);}}
+		List<ItemStack> items =mp.getGiveItems(state);
+		if (items != null){
+			try{ InventoryUtil.addItemsToInventory(p, items, true,color);} catch(Exception e){Log.printStackTrace(e);}}
+		items =mp.getGiveItems(MatchState.ONSPAWN);
+		if (items!=null){
+			try{ InventoryUtil.addItemsToInventory(p, items, true,color);} catch(Exception e){Log.printStackTrace(e);}}
 
 		/// Deal with effects/buffs
-		if (mo != null && mo.getEffects()!=null){
-			EffectUtil.enchantPlayer(p, mo.getEffects());}
-		if (ro != null && ro.getEffects()!=null){
-			EffectUtil.enchantPlayer(p, ro.getEffects());}
+		List<PotionEffect> effects = mp.getEffects(state);
+		if (effects!=null){
+			EffectUtil.enchantPlayer(p, effects);}
+		effects = mp.getEffects(MatchState.ONSPAWN);
+		if (effects!=null){
+			EffectUtil.enchantPlayer(p, effects);}
 
 		MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
 	}

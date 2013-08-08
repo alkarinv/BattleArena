@@ -9,6 +9,9 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.util.MinMax;
 
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+
 
 
 public class ArenaParams{
@@ -48,6 +51,24 @@ public class ArenaParams{
 			this.allTops = new MatchTransitions(ap.allTops);
 		if (ap.size != null)
 			this.size = new ArenaSize(ap.size);
+	}
+
+	public void flatten() {
+		if (parent == null){
+			return;}
+		parent = new ArenaParams(parent);
+		parent.flatten();
+		if (this.arenaType == null) this.arenaType = parent.arenaType;
+		if (this.rating == Rating.ANY) this.rating = parent.rating;
+		if (this.cmd == null) this.cmd = parent.cmd;
+		if (this.name == null) this.name = parent.name;
+		if (this.timeBetweenRounds == null) this.timeBetweenRounds = parent.timeBetweenRounds;
+		if (this.secondsTillMatch == null) this.secondsTillMatch = parent.secondsTillMatch;
+		if (this.secondsToLoot == null) this.secondsToLoot = parent.secondsToLoot;
+		if (this.dbName == null) this.dbName = parent.dbName;
+		this.allTops = MatchTransitions.mergeChildWithParent(this.allTops, parent.allTops);
+		if (this.size == null) this.size = parent.size;
+		this.parent = null;
 	}
 
 	public MatchTransitions getTransitionOptions(){
@@ -124,7 +145,9 @@ public class ArenaParams{
 	}
 
 	public String getCommand() {
-		return cmd;
+		return cmd != null ? cmd :
+			(parent != null ? parent.getCommand() : null);
+
 	}
 	public boolean isRated(){
 		return rating == Rating.RATED;
@@ -138,7 +161,7 @@ public class ArenaParams{
 		this.rating = rating;
 	}
 
-	public void setSecondsToLoot(int i) {
+	public void setSecondsToLoot(Integer i) {
 		secondsToLoot=i;
 	}
 
@@ -147,7 +170,7 @@ public class ArenaParams{
 			(parent != null ? parent.getSecondsToLoot() : null);
 	}
 
-	public void setSecondsTillMatch(int i) {
+	public void setSecondsTillMatch(Integer i) {
 		secondsTillMatch=i;
 	}
 
@@ -156,7 +179,7 @@ public class ArenaParams{
 			(parent != null ? parent.getSecondsTillMatch() : null);
 	}
 
-	public void setTimeBetweenRounds(int i) {
+	public void setTimeBetweenRounds(Integer i) {
 		timeBetweenRounds=i;
 	}
 	public Integer getTimeBetweenRounds() {
@@ -190,7 +213,6 @@ public class ArenaParams{
 				getNTeamRange()+",teamSize="+getTeamSizeRange() +" options=\n"+
 				(getTransitionOptions()==null ? "" : getTransitionOptions().getOptionString());
 	}
-
 
 	public boolean isDuelOnly() {
 		return getTransitionOptions().hasOptionAt(MatchState.DEFAULTS, TransitionOption.DUELONLY);
@@ -239,15 +261,24 @@ public class ArenaParams{
 		return size != null ? size.getMinPlayers() :
 			(parent != null ? parent.getMinPlayers() : null);
 	}
-	public void setTeamSize(int n) {
+
+	public void setTeamSize(Integer n) {
+		if (n == null){
+			size = null;
+			return;
+		}
 		if (size == null){ size = new ArenaSize();}
 		size.setMinTeams(n);
 		size.setMaxTeams(n);
 	}
 
 	public void setNTeams(MinMax mm) {
-		if (size == null){ size = new ArenaSize();}
-		size.setNTeams(mm);
+		if (mm == null){
+			size = null;
+		} else {
+			if (size == null){ size = new ArenaSize();}
+			size.setNTeams(mm);
+		}
 	}
 	public MinMax getNTeams(){
 		return size == null ? null : new MinMax(size.getMinTeams(), size.getMaxTeams());
@@ -257,8 +288,12 @@ public class ArenaParams{
 	}
 
 	public void setTeamSizes(MinMax mm) {
-		if (size == null){ size = new ArenaSize();}
-		size.setTeamSizes(mm);
+		if (mm == null){
+			size = null;
+		} else {
+			if (size == null){ size = new ArenaSize();}
+			size.setTeamSizes(mm);
+		}
 	}
 
 	public void setMinTeamSize(int n) {
@@ -282,5 +317,58 @@ public class ArenaParams{
 		return size != null ? size.matchesTeamSize(i) :
 			(parent != null ? parent.matchesTeamSize(i) : false);
 	}
+
+	public boolean hasOptionAt(MatchState state, TransitionOption op) {
+		return ( ( getTransitionOptions() != null && getTransitionOptions().hasOptionAt(state, op) ||
+				( parent != null && parent.hasOptionAt(state, op)) ));
+	}
+
+	public boolean hasEntranceFee() {
+		return hasOptionAt(MatchState.PREREQS,TransitionOption.MONEY);
+	}
+
+	public Double getEntranceFee(){
+		return getDoubleOption(MatchState.PREREQS, TransitionOption.MONEY);
+	}
+
+	public Double getDoubleOption(MatchState state, TransitionOption option){
+		MatchTransitions tops = getTransitionOptions();
+		if (tops != null){
+			Double value = tops.getDoubleOption(state,option);
+			if (value != null) {
+				return value;
+			} else if (parent != null){
+				return parent.getDoubleOption(state,option);
+			}
+		} else if (parent != null){
+			return parent.getDoubleOption(state, option);
+		}
+		return null;
+	}
+	public boolean hasAnyOption(TransitionOption option) {
+		MatchTransitions tops = getTransitionOptions();
+		return (tops != null && tops.hasAnyOption(option)) || (parent != null && parent.hasAnyOption(option));
+	}
+
+	public List<ItemStack> getWinnerItems() {
+		return getGiveItems(MatchState.WINNER);
+	}
+
+	public List<ItemStack> getLoserItems() {
+		return getGiveItems(MatchState.LOSERS);
+	}
+
+	public List<ItemStack> getGiveItems(MatchState state) {
+		MatchTransitions tops = getTransitionOptions();
+		return (tops!=null && tops.hasOptionAt(state, TransitionOption.GIVEITEMS)) ?
+				tops.getOptions(state).getGiveItems() : (parent != null ? parent.getGiveItems(state) : null);
+	}
+
+	public List<PotionEffect> getEffects(MatchState state) {
+		MatchTransitions tops = getTransitionOptions();
+		return (tops!=null && tops.hasOptionAt(state, TransitionOption.ENCHANTS)) ?
+				tops.getOptions(state).getEffects() : (parent != null ? parent.getEffects(state) : null);
+	}
+
 
 }

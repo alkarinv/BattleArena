@@ -33,6 +33,7 @@ public class ArenaType implements Comparable<ArenaType>{
 		if (!types.containsKey(name))
 			types.put(name,this);
 	}
+
 	@Override
 	public String toString(){
 		return name;
@@ -130,7 +131,6 @@ public class ArenaType implements Comparable<ArenaType>{
 		if (!types.containsKey(uarenaType)){
 			new ArenaType(arenaType,plugin);
 		}
-//		MethodController.addBukkitMethods(c,c.getMethods());
 		return types.get(uarenaType);
 	}
 
@@ -177,8 +177,6 @@ public class ArenaType implements Comparable<ArenaType>{
 			arena.setParams(arenaParams);
 			arenaParams.setParent(ParamController.getMatchParamCopy(arenaType));
 
-			if (RoomController.hasLobby(arenaType))
-				arena.setLobby(RoomController.getLobby(arenaType));
 			if (RoomController.hasWaitroom(arena))
 				arena.setWaitRoom(RoomController.getWaitroom(arena));
 			if (init)

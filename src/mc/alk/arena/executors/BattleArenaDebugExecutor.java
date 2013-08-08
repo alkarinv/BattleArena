@@ -6,9 +6,9 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaClassController;
-import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaClass;
@@ -23,6 +23,7 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.NotifierUtil;
+import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
@@ -316,6 +317,28 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			NotifierUtil.removeListener(player, type);
 			if (!sender.getName().equals(player.getName()))sendMessage(player,"&2 "+player.getName()+" &cstopped listening&2 to " + type+" debugging messages");
 			return sendMessage(sender,"&2 "+player.getName()+" &cstopped listening&2 to " + type+" debugging messages");
+		}
+	}
+
+	@MCCommand(cmds={"giveArenaAdminPerms"}, op=true)
+	public boolean giveArenaAdminPerms(CommandSender sender, Player player, Boolean enable) {
+		if (!PermissionsUtil.giveAdminPerms(player,enable)){
+			return sendMessage(sender,"&cCouldn't change the admin perms of &6"+player.getName());}
+		if (enable){
+			return sendMessage(sender,"&2 "+player.getName()+" &6now has&2 admin perms");
+		} else {
+			return sendMessage(sender,"&2 "+player.getName()+" &4no longer has&2 admin perms");
+		}
+	}
+
+	@MCCommand(cmds={"giveWGPerms"}, op=true)
+	public boolean giveWorldGuardPerms(CommandSender sender, Player player, Boolean enable) {
+		if (!PermissionsUtil.giveWGPerms(player,enable)){
+			return sendMessage(sender,"&cCouldn't change the admin perms of &6"+player.getName());}
+		if (enable){
+			return sendMessage(sender,"&2 "+player.getName()+" &6now has&2 wg perms");
+		} else {
+			return sendMessage(sender,"&2 "+player.getName()+" &4no longer has&2 wg perms");
 		}
 	}
 

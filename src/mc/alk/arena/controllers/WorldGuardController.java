@@ -24,10 +24,6 @@ public class WorldGuardController {
 	static boolean hasWorldGuard = false;
 	static boolean hasWorldEdit = false;
 
-	public static enum WorldGuardFlag{
-		ENTRY, EXIT
-	}
-
 	public static class WorldGuardException extends Exception{
 		private static final long serialVersionUID = 1L;
 		public WorldGuardException(String msg) {
@@ -91,11 +87,11 @@ public class WorldGuardController {
 		return hasWorldEdit;
 	}
 
-	public static boolean setFlag(WorldGuardRegion region, WorldGuardFlag flag, boolean enable) {
+	public static boolean setFlag(WorldGuardRegion region, String flag, boolean enable) {
 		return WorldGuardUtil.setFlag(region, flag, enable);
 	}
 
-	public static boolean setFlag(String worldName, String id, WorldGuardFlag flag, boolean enable) {
+	public static boolean setFlag(String worldName, String id, String flag, boolean enable) {
 		return WorldGuardUtil.setFlag(worldName, id, flag, enable);
 	}
 

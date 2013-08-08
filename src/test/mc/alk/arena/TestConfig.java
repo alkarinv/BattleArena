@@ -3,6 +3,7 @@ package test.mc.alk.arena;
 import java.io.File;
 
 import junit.framework.TestCase;
+
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.BukkitInterface;
 import mc.alk.arena.controllers.CompetitionController;

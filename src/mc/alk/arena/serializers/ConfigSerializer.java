@@ -132,7 +132,7 @@ public class ConfigSerializer extends BaseConfig{
 		mp.setParent(ParamController.getDefaultConfig());
 		if (!isArena){
 			ParamController.removeMatchType(mp);
-			ParamController.addMatchType(mp);
+			ParamController.addMatchParams(mp);
 		}
 
 		/// Load our PlayerContainers
@@ -263,7 +263,10 @@ public class ConfigSerializer extends BaseConfig{
 		String dbName = (cs.contains("database")) ? cs.getString("database",null) : cs.getString("db",null);
 		if (dbName != null){
 			mp.setDBName(dbName);
-			if (!BTInterface.addBTI(mp)){
+			try{
+				if (!BTInterface.addBTI(mp)){
+					Log.err("Couldn't add tracker interface");}
+			} catch (Exception e){
 				Log.err("Couldn't add tracker interface");
 			}
 		}
@@ -303,6 +306,8 @@ public class ConfigSerializer extends BaseConfig{
 	private static void loadTimes(ConfigurationSection cs, MatchParams mp) {
 		if (cs.contains("times")){
 			cs = cs.getConfigurationSection("times");}
+		if (cs == null)
+			return;
 		if (cs.contains("timeBetweenRounds"))
 			mp.setTimeBetweenRounds(cs.getInt("timeBetweenRounds",Defaults.TIME_BETWEEN_ROUNDS));
 		if (cs.contains("secondsToLoot"))
@@ -571,7 +576,6 @@ public class ConfigSerializer extends BaseConfig{
 					effects.add(ewa);
 				} catch (Exception e){
 					Log.err("Effect "+cs.getCurrentPath() +"."+nodeString +"."+str+ " could not be parsed in classes.yml. " + e.getMessage());
-
 				}
 			}
 		} catch (Exception e){
@@ -599,7 +603,6 @@ public class ConfigSerializer extends BaseConfig{
 					Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
 				} catch (Exception e){
 					Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
-					e.printStackTrace();
 				}
 			}
 		} catch (Exception e){

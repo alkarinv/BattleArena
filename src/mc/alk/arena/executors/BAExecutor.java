@@ -22,12 +22,12 @@ import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.HeroesController;
-import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamAlterController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
@@ -197,6 +197,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		try {
 			jp = JoinOptions.parseOptions(mp,t, player, Arrays.copyOfRange(args, 1, args.length));
 			wtsr = (WantedTeamSizePair) jp.getOption(JoinOption.TEAMSIZE);
+			mp = jp.getMatchParams();
 		} catch (InvalidOptionException e) {
 			return sendMessage(player, e.getMessage());
 		} catch (Exception e){
@@ -378,7 +379,13 @@ public class BAExecutor extends CustomCommandExecutor {
 		List<Match> matches = ac.getRunningMatches(params);
 		if (!matches.isEmpty()){
 			for (Match m: matches){
-				m.cancelMatch();}
+				m.cancelMatch();
+				if (m.getState()==MatchState.ONCANCEL){
+					Arena arena = m.getArena();
+					ac.removeArena(arena);
+					ac.addArena(arena);
+				}
+			}
 			return sendMessage(sender,"&2You have canceled the matches for &6" + params.getType());
 		}
 		if (args.length < 2)
@@ -740,6 +747,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		} catch(Exception e){
 			return sendMessage(sender,"That size not recognized.  Examples: 1 or 2 or 1-5 or 2+");
 		}
+		ParamController.addArenaParams(name, ap);
 
 		Arena arena = ArenaType.createArena(name, ap,false);
 		if (arena == null){
@@ -759,7 +767,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"alter"}, admin=true, perm="arena.alter")
+	@MCCommand(cmds={"edit", "alter"}, admin=true, perm="arena.alter")
 	public boolean arenaAlter(CommandSender sender, MatchParams params, Arena arena, String[] args) {
 		try {
 			ArenaAlterController.alterArena(sender, params, arena, args);
@@ -769,10 +777,16 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"setoption","so"}, admin=true, perm="arena.alter")
-	public boolean gameAlter(CommandSender sender, MatchParams params, String[] args) {
+	@MCCommand(cmds={"setOption","so"}, admin=true, perm="arena.alter")
+	public boolean setOption(CommandSender sender, MatchParams params, String[] args) {
 		ParamAlterController pac = new ParamAlterController(params);
 		pac.setOption(sender, args);
+		return true;
+	}
+	@MCCommand(cmds={"deleteOption","do"}, admin=true, perm="arena.alter")
+	public boolean deleteOption(CommandSender sender, MatchParams params, String[] args) {
+		ParamAlterController pac = new ParamAlterController(params);
+		pac.deleteOption(sender, args);
 		return true;
 	}
 
@@ -1163,9 +1177,9 @@ public class BAExecutor extends CustomCommandExecutor {
 		//			players = new HashSet<ArenaPlayer>();
 		//			players.add(p);
 		//		}
-		final MatchTransitions tops = pi.getTransitionOptions();
-		if (tops.hasEntranceFee()){
-			Double fee = tops.getEntranceFee();
+//		final MatchTransitions tops = pi.getTransitionOptions();
+		if (pi.hasEntranceFee()){
+			Double fee = pi.getEntranceFee();
 			if (fee == null || fee <= 0)
 				return true;
 			boolean hasEnough = true;

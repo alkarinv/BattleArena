@@ -16,7 +16,6 @@ import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.WorldGuardController;
-import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
@@ -201,33 +200,37 @@ public class ArenaSerializer extends BaseConfig{
 			Log.err(" Arena type not found for " + name);
 			return false;
 		}
-		MatchParams q = new MatchParams(atype);
+		MatchParams mp = new MatchParams(atype);
 
 		try {
 			if (cs.contains("params"))
-				q = ConfigSerializer.loadMatchParams(plugin, atype, name, cs.getConfigurationSection("params"),true);
+				mp = ConfigSerializer.loadMatchParams(plugin, atype, name, cs.getConfigurationSection("params"),true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		/// Get from the "old" way of specifying teamSize and nTeams
 		if (cs.contains("teamSize")) {
 			MinMax mm = MinMax.valueOf(cs.getString("teamSize"));
-			q.setTeamSizes(mm);
+			mp.setTeamSizes(mm);
 		}
 		if (cs.contains("nTeams")) {
 			MinMax mm = MinMax.valueOf(cs.getString("nTeams"));
-			q.setNTeams(mm);
+			mp.setNTeams(mm);
 		}
-		Arena arena = ArenaType.createArena(name, q,false);
 
-		if (!q.valid()){
-			Log.err( name + " This arena is not valid arenaq=" + q.toString());
+		if (!mp.valid()){
+			Log.err( name + " This arena is not valid arenaq=" + mp.toString());
 			return false;
 		}
+
+		ParamController.addArenaParams(name, mp);
+		Arena arena = ArenaType.createArena(name, mp,false);
 		if (arena == null){
 			Log.err("Couldnt load the Arena " + name);
 			return false;
 		}
+		Log.debug(" Arena = = " + arena.getParams());
+
 		/// Spawns
 		ConfigurationSection loccs = cs.getConfigurationSection("locations");
 		Map<Integer,Location> locs = SerializerUtil.parseLocations(loccs);
@@ -269,7 +272,6 @@ public class ArenaSerializer extends BaseConfig{
 		}
 		cs = cs.getConfigurationSection("persistable");
 		Persistable.yamlToObjects(arena, cs,Arena.class);
-		arena.setParams(q);
 		updateRegions(arena);
 		ArenaControllerInterface aci = new ArenaControllerInterface(arena);
 		aci.init();
@@ -291,7 +293,7 @@ public class ArenaSerializer extends BaseConfig{
 		MatchTransitions trans = mp.getTransitionOptions();
 		if (trans == null)
 			return;
-		WorldGuardController.setFlag(arena.getWorldGuardRegion(), WorldGuardFlag.ENTRY, !trans.hasAnyOption(TransitionOption.WGNOENTER));
+		WorldGuardController.setFlag(arena.getWorldGuardRegion(), "entry", !trans.hasAnyOption(TransitionOption.WGNOENTER));
 		try {
 			WorldGuardController.trackRegion(arena.getWorldGuardRegion());
 		} catch (RegionNotFound e) {

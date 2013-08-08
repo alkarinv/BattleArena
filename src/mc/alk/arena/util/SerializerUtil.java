@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import mc.alk.arena.controllers.BukkitInterface;
 
@@ -71,7 +72,7 @@ public class SerializerUtil {
 	public static Map<Integer, Location> parseLocations(ConfigurationSection cs) throws IllegalArgumentException {
 		if (cs == null)
 			return null;
-		HashMap<Integer,Location> locs = new HashMap<Integer,Location>();
+		Map<Integer,Location> locs = new TreeMap<Integer,Location>();
 		Set<String> indices = cs.getKeys(false);
 		for (String locIndexStr : indices){
 			Location loc = null;

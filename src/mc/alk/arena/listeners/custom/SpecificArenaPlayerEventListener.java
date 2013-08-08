@@ -1,8 +1,7 @@
 package mc.alk.arena.listeners.custom;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.TreeSet;
 
 import mc.alk.arena.Defaults;
@@ -43,10 +42,10 @@ public class SpecificArenaPlayerEventListener extends SpecificPlayerEventListene
 		TreeSet<RListener> spls = listeners.getSafe(p.getName());
 		if (spls == null){
 			return;}
-		doMethods(event,p, new ArrayList<RListener>(spls));
+		doMethods(event,p, spls);
 	}
 
-	private void doMethods(Event event, final ArenaPlayer p, List<RListener> lmethods) {
+	private void doMethods(Event event, final ArenaPlayer p, Collection<RListener> lmethods) {
 		/// For each of the splisteners methods that deal with this BukkitEvent
 		for(RListener lmethod: lmethods){
 			final Method method = lmethod.getMethod().getMethod();

@@ -24,7 +24,7 @@ public class StateController {
 		MatchParams mp = tqo.getMatchParams();
 		/// who is responsible for doing what
 		if (Defaults.DEBUG)Log.info(" Join status = " + jr.status +"    " + tqo.getTeam() + "   " + tqo.getTeam().getId() +" --"
-				+ ", haslobby="+mp.needsLobby() +"  ,wr="+(mp.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM))+"  "+
+				+ ", haslobby="+mp.needsLobby() +"  ,wr="+(mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM))+"  "+
 				"   --- hasArena=" + tqo.getJoinOptions().hasArena());
 		switch(jr.status){
 		case ADDED_TO_ARENA_QUEUE:
@@ -42,10 +42,11 @@ public class StateController {
 		if (mp.needsLobby()){
 			lobbies.joinLobby(tqo.getMatchParams().getType(), tqo.getTeam());
 		}
+		Log.debug("    tqo === " + tqo.getJoinOptions().hasArena()  +"   needs waitroom===" + mp.needsWaitroom());
 		if (tqo.getJoinOptions().hasArena()){
 			if (mp.needsWaitroom()){
 				waitrooms.joinWaitroom(tqo.getJoinOptions().getArena(), tqo.getTeam());
-			} else if (mp.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)){
+			} else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)){
 				tqo.getJoinOptions().getArena().teamJoining(tqo.getTeam());
 			}
 		}

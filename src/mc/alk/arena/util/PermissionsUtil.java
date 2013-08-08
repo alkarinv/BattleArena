@@ -49,9 +49,11 @@ public class PermissionsUtil {
 	}
 
 	public static boolean giveAdminPerms(Player player, Boolean enable) {
-		if (!hasVaultPerms)
-			return false;
-		return VaultPermUtil.giveAdminPerms(player,enable);
+		return !hasVaultPerms ? false : VaultPermUtil.giveAdminPerms(player,enable);
+	}
+
+	public static boolean giveWGPerms(Player player, Boolean enable) {
+		return !hasVaultPerms ? false : VaultPermUtil.giveWorldGuardPerms(player,enable);
 	}
 
 }

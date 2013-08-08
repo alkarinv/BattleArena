@@ -101,7 +101,10 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 		public int compare(QueueObject arg0, QueueObject arg1) {
 			Integer p1 = arg0.getPriority();
 			Integer p2 = arg1.getPriority();
-			return p1.compareTo(p2);
+			int c = p1.compareTo(p2);
+			if (c != 0)
+				return c;
+			return new Long(arg0.getJoinTime()).compareTo(arg1.getJoinTime());
 		}
 	}
 

@@ -8,7 +8,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class EffectUtil {
-	static final String version = "2.0.1";
+	static final String version = "2.1.1";
 	static final HashMap<PotionEffectType,String> effectToName = new HashMap<PotionEffectType,String>();
 	static final HashMap<String,PotionEffectType> nameToEffect= new HashMap<String,PotionEffectType>();
 	static{
@@ -39,6 +39,12 @@ public class EffectUtil {
 		}
 		if (nameToEffect.containsKey(buffName))
 			return nameToEffect.get(buffName);
+		for (PotionEffectType pet : PotionEffectType.values()){
+			if (pet == null)
+				continue;
+			if (pet.getName().replaceAll("_", "").equalsIgnoreCase(buffName))
+				return pet;
+		}
 		buffName = buffName.replaceAll("_", "");
 		type = PotionEffectType.getByName(buffName);
 		if (type != null){
@@ -82,8 +88,11 @@ public class EffectUtil {
 	}
 
 	public static PotionEffect parseArg(String arg, int defaultStrength, int defaultTime) {
-		arg = arg.replaceAll(",", ":");
-		String split[] = arg.split(":");
+		if (arg.contains("{"))
+			arg = arg.replaceFirst("=", " ");
+		arg = arg.replaceAll("[}{]", "");
+		arg = arg.replaceAll("(,|:)", " ");
+		String split[] = arg.split(" ");
 		PotionEffectType type = getEffect(split[0]);
 		if (type == null)
 			throw new IllegalArgumentException("PotionEffectType "+ arg +" not found");

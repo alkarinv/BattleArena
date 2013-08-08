@@ -127,8 +127,6 @@ public class ArenaMatchQueue{
 			qr = new JoinResult();
 		qr.params = tq.getMatchParams();
 		qr.maxPlayers = tq.getMatchParams().getMaxPlayers();
-//		Log.debug(" idt = " + idt +"   " + (idt != null ? idt.time : idt));
-
 		if (idt != null)
 			qr.time = idt.time;
 
@@ -270,20 +268,22 @@ public class ArenaMatchQueue{
 		boolean skipNonMatched = false;
 		synchronized(arenaqueue){ synchronized(tq){
 			for (Arena a : arenaqueue){
-				if (a == null || !a.valid() || !a.isOpen() || (!a.matches(baseParams, null) && !forceStart))
+				if (a == null || (a.getArenaType() != baseParams.getType()) || !a.valid() || !a.isOpen())
 					continue;
-				MatchParams newParams = new MatchParams(baseParams);
-//				Log.debug("  a nTeamSizes " + a.getParams().getTeamSizes());
-//				Log.debug("  a teams " + a.getParams().getNTeams());
-				if (a.getParams().getTeamSizes() != null)
-					newParams.setTeamSizes(a.getParams().getTeamSizes());
-				if (a.getParams().getNTeams() != null)
-					newParams.setNTeams(a.getParams().getNTeams());
-//				Log.debug(" arena params = " + a.getParams());
-//
-//				Log.debug(" params = " + baseParams);
-//				Log.debug(" new sizes = " + newParams);
 
+				MatchParams newParams = new MatchParams(baseParams);
+//				if (a.getParams().getTeamSizes() != null)
+					newParams.setTeamSizes(a.getParams().getTeamSizes());
+//				if (a.getParams().getNTeams() != null)
+					newParams.setNTeams(a.getParams().getNTeams());
+					if (Defaults.DEBUGQ) Log.info("----- AMQ check arena = " + a +
+							"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+baseParams.toPrettyString() +
+							" tqparams="+tq.getMatchParams().toPrettyString() +"  matches="  + a.matches(baseParams, null));
+					if (!a.matches(baseParams, null)){
+						for (String s : a.getInvalidMatchReasons(baseParams, null)){
+							Log.debug("   s=== " + s);
+						}
+					}
 				if (!forceStart && !newParams.intersect(a.getParams())){ /// only intersect if not forceStart
 					continue;
 				} else if (forceStart){
@@ -303,9 +303,9 @@ public class ArenaMatchQueue{
 				if (newParams.getMinPlayers() > iterate.playerSize())
 					continue;
 
-				if (Defaults.DEBUGQ) System.out.println("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
-						"   tq=" + tq +" --- ap="+a.getParams() +"    baseP="+baseParams +" newP="+newParams +"  " + newParams.getMaxPlayers() +
-						" tqparams="+tq.getMatchParams());
+				if (Defaults.DEBUGQ) Log.info("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
+						"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+baseParams.toPrettyString() +" newP="+newParams.toPrettyString() +"  " + newParams.getMaxPlayers() +
+						" tqparams="+tq.getMatchParams().toPrettyString());
 				for (QueueObject qo : iterate){
 					/// Check if we should only use 1 arena (skipNonMatched == true).  But for certain elements in the queue
 					/// We need to ignore.

@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import mc.alk.arena.controllers.WorldGuardController.WorldGuardFlag;
 import mc.alk.arena.objects.exceptions.RegionNotFound;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 
@@ -33,6 +32,7 @@ import com.sk89q.worldedit.bukkit.BukkitCommandSender;
 import com.sk89q.worldedit.bukkit.BukkitPlayer;
 import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.bukkit.selections.Polygonal2DSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import com.sk89q.worldedit.commands.SchematicCommands;
 import com.sk89q.worldedit.data.DataException;
@@ -42,10 +42,12 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.databases.ProtectionDatabaseException;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 /**
@@ -60,33 +62,6 @@ public class WorldGuardUtil {
 
 	public static boolean hasWorldGuard() {
 		return WorldEditUtil.hasWorldEdit() && hasWorldGuard;
-	}
-
-	/**
-	 * Hold over from spleef, use createProtectedRegion instead
-	 * @param sender
-	 * @param id
-	 * @return
-	 * @throws Exception
-	 */
-	@Deprecated
-	public static boolean addRegion(Player sender, String id) throws Exception {
-		Selection sel = WorldEditUtil.getSelection(sender);
-		World w = sel.getWorld();
-		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
-		ProtectedRegion region = mgr.getRegion(id);
-
-		region = new ProtectedCuboidRegion(id,
-				sel.getNativeMinimumPoint().toBlockVector(), sel.getNativeMaximumPoint().toBlockVector());
-		try {
-			wgp.getRegionManager(w).addRegion(region);
-			mgr.save();
-			region.setFlag(DefaultFlag.PVP,State.DENY);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
 	}
 
 	public static ProtectedRegion getRegion(String world, String id) {
@@ -132,9 +107,18 @@ public class WorldGuardUtil {
 		World w = sel.getWorld();
 		RegionManager mgr = wgp.getGlobalRegionManager().get(w);
 		mgr.removeRegion(id);
-
-		ProtectedRegion region = new ProtectedCuboidRegion(id,
-				sel.getNativeMinimumPoint().toBlockVector(), sel.getNativeMaximumPoint().toBlockVector());
+		ProtectedRegion region;
+	      // Detect the type of region from WorldEdit
+        if (sel instanceof Polygonal2DSelection) {
+            Polygonal2DSelection polySel = (Polygonal2DSelection) sel;
+            int minY = polySel.getNativeMinimumPoint().getBlockY();
+            int maxY = polySel.getNativeMaximumPoint().getBlockY();
+            region = new ProtectedPolygonalRegion(id, polySel.getNativePoints(), minY, maxY);
+        } else { /// default everything to cuboid
+            region = new ProtectedCuboidRegion(id,
+            		sel.getNativeMinimumPoint().toBlockVector(),
+            		sel.getNativeMaximumPoint().toBlockVector());
+        }
 		region.setPriority(11); /// some relatively high priority
 		region.setFlag(DefaultFlag.PVP,State.ALLOW);
 		wgp.getRegionManager(w).addRegion(region);
@@ -174,23 +158,34 @@ public class WorldGuardUtil {
 				pr.contains(from.getBlockX(), from.getBlockY(), from.getBlockZ()));
 	}
 
-	public static boolean setFlag(WorldGuardRegion region, WorldGuardFlag flag, boolean enable) {
+	public static boolean setFlag(WorldGuardRegion region, String flag, boolean enable) {
 		return setFlag(region.getRegionWorld(), region.getRegionID(), flag,enable);
 	}
+	public static Flag<?> getWGFlag(String flagString){
+		for (Flag<?> f: DefaultFlag.getFlags()){
+			if (f.getName().equalsIgnoreCase(flagString)){
+				return f;
+			}
+		}
+		throw new IllegalStateException("Worldguard flag " + flagString +" not found");
+	}
+	public static StateFlag getStateFlag(String flagString){
+		for (Flag<?> f: DefaultFlag.getFlags()){
+			if (f.getName().equalsIgnoreCase(flagString) && f instanceof StateFlag){
+				return (StateFlag) f;
+			}
+		}
+		throw new IllegalStateException("Worldguard flag " + flagString +" not found");
+	}
 
-	public static boolean setFlag(String worldName, String id, WorldGuardFlag flag, boolean enable) {
+	public static boolean setFlag(String worldName, String id, String flag, boolean enable) {
 		World w = Bukkit.getWorld(worldName);
 		if (w == null)
 			return false;
 		ProtectedRegion pr = getRegion(w, id);
 		if (pr == null)
 			return false;
-		StateFlag f = null;
-		switch (flag){
-		case ENTRY: f = DefaultFlag.ENTRY; break;
-		case EXIT: f = DefaultFlag.EXIT; break;
-		default: return false;
-		}
+		StateFlag f = getStateFlag(flag);
 		State newState = enable ? State.ALLOW : State.DENY;
 		State state = pr.getFlag(f);
 

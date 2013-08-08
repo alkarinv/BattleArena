@@ -110,6 +110,7 @@ public enum TransitionOption{
 
 	/// onJoin only options
 	ALWAYSJOIN("alwaysJoin",false),					/// Allow players to join at any time
+	REJOIN("rejoin",false),							/// Rejoin players
 
 	/// onSpawn Only Options
 	RESPAWNWITHCLASS("respawnWithClass", false),	/// Respawn player with their previously selected class
