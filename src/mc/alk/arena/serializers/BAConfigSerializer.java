@@ -65,6 +65,7 @@ public class BAConfigSerializer extends BaseConfig{
 		Defaults.ITEMS_UNSAFE_ENCHANTMENTS = config.getBoolean("unsafeItemEnchants", Defaults.ITEMS_UNSAFE_ENCHANTMENTS);
 		Defaults.USE_ARENAS_ONLY_IN_ORDER = config.getBoolean("useArenasOnlyInOrder", Defaults.USE_ARENAS_ONLY_IN_ORDER);
 		Defaults.ENABLE_TELEPORT_FIX = config.getBoolean("enableInvisibleTeleportFix", Defaults.ENABLE_TELEPORT_FIX);
+		Defaults.ANNOUNCE_GIVEN_ITEMS = config.getBoolean("announceGivenItemsOrClass", Defaults.ANNOUNCE_GIVEN_ITEMS);
 		parseOptionSets(config.getConfigurationSection("optionSets"));
 		ArenaMatch.setDisabledCommands(config.getStringList("disabledCommands"));
 		BattleArenaController.setDisabledCommands(config.getStringList("disabledQueueCommands"));
@@ -74,6 +75,8 @@ public class BAConfigSerializer extends BaseConfig{
 				HeroesController.addDisabledCommands(disabled);
 			}
 		}
+		if (Defaults.TESTSERVER)
+			return;
 		ModuleLoader ml = new ModuleLoader();
 		ml.loadModules(BattleArena.getSelf().getModuleDirectory());
 	}
@@ -204,6 +207,8 @@ public class BAConfigSerializer extends BaseConfig{
 		defaults.setRated(true);
 		defaults.setUseTrackerPvP(false);
 		defaults.setTeamRating(false);
+		defaults.setUseTrackerMessages(true);
+		defaults.setNLives(1);
 		defaults.setTeamSizes(new MinMax(1,ArenaSize.MAX));
 		defaults.setNTeams(new MinMax(2,ArenaSize.MAX));
 		defaults.setNConcurrentCompetitions(ArenaSize.toInt(cs.getString("nConcurrentCompetitions","infinite")));

@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -22,7 +23,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	String prefix = null;
 	VictoryType vc = null;
-	Integer matchTime = null, intervalTime = null;
+	Integer matchTime = null;
+	Integer intervalTime = null;
 	AnnouncementOptions ao = null;
 
 	Integer nLives = null;
@@ -52,6 +54,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.mparent = mp.mparent;
 		this.useBTMessages = mp.useBTMessages;
 		this.useBTPvP = mp.useBTPvP;
+		this.useBTTeamRating  = mp.useBTTeamRating;
 		if (mp.modules != null)
 			this.modules = new HashSet<ArenaModule>(mp.modules);
 	}
@@ -59,6 +62,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	@Override
 	public void flatten() {
 		if (mparent != null){
+			mparent = (MatchParams) ParamController.copy(mparent);
+			this.mparent.flatten();
 			if (this.prefix == null) this.prefix = mparent.prefix;
 			if (this.vc == null) this.vc = mparent.vc;
 			if (this.matchTime == null) this.matchTime = mparent.matchTime;
@@ -68,6 +73,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 			if (this.numConcurrentCompetitions == null) this.numConcurrentCompetitions = mparent.numConcurrentCompetitions;
 			if (this.useBTMessages == null) this.useBTMessages = mparent.useBTMessages;
 			if (this.useBTPvP == null) this.useBTPvP = mparent.useBTPvP;
+			if (this.useBTTeamRating == null) this.useBTTeamRating = mparent.useBTTeamRating;
 			if (this.modules != null && mparent.modules != null){
 				this.modules.addAll(mparent.modules);
 			} else if (mparent.modules != null){
@@ -216,7 +222,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	@Override
 	public Collection<String> getInvalidReasons() {
 		List<String> reasons = new ArrayList<String>();
-		if (getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY) && !RoomController.hasLobby(getType()))
+		if (getTransitionOptions() != null &&
+				getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY) && !RoomController.hasLobby(getType()))
 			reasons.add("Needs a Lobby");
 		reasons.addAll(super.getInvalidReasons());
 		return reasons;
@@ -225,7 +232,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	@Override
 	public void setParent(ArenaParams parent) {
 		super.setParent(parent);
-		if (parent instanceof MatchParams){
+		if (parent != null && parent instanceof MatchParams){
 			this.mparent = (MatchParams) parent;}
 		else
 			this.mparent = null;
@@ -239,25 +246,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		return GameManager.getGameManager(this);
 	}
 
-	public boolean needsWaitroom() {
-		return ( ((getTransitionOptions() != null) &&
-				( getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINWAITROOM) ||
-						getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTWAITROOM)) ) ||
-						((parent != null && parent.getTransitionOptions() != null) &&
-								( parent.getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINWAITROOM) ||
-										parent.getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTWAITROOM)))
-				);
-	}
-
-	public boolean needsLobby() {
-		return ( ((getTransitionOptions() != null) &&
-				( getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINLOBBY) ||
-						getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY)) ) ||
-						((parent != null && parent.getTransitionOptions() != null) &&
-								(parent.getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTMAINLOBBY) ||
-										parent.getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY)))
-				);
-	}
 
 	public Rating getRated() {
 		return rating;
@@ -270,5 +258,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public Boolean isTeamRating(){
 		return useBTTeamRating != null ? useBTTeamRating : (mparent!= null ? mparent.isTeamRating() : null);
 	}
+
 
 }

@@ -10,6 +10,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.util.CaseInsensitiveMap;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.TimeUtil;
 
 import org.bukkit.Bukkit;
@@ -56,7 +57,7 @@ public class SpawnController {
 	}
 
 	public void start(){
-		System.out.println("Arena::onStart " + timedSpawns);
+//		System.out.println("Arena::onStart " + timedSpawns);
 		if (timedSpawns != null && !timedSpawns.isEmpty()){
 			Plugin plugin = BattleArena.getSelf();
 			/// Create our Q, with a descending Comparator
@@ -88,13 +89,13 @@ public class SpawnController {
 		}
 
 		public void run() {
-			if (DEBUG_SPAWNS) System.out.println("SpawnNextEvent::run " + nextTimeToSpawn);
+			if (DEBUG_SPAWNS) Log.info("SpawnNextEvent::run " + nextTimeToSpawn);
 			TimeUtil.testClock();
 
 			/// Subtract the time passed from each element
 			for (NextSpawn next : spawnQ){ /// we dont need to resort after this as we are subtracting a constant from all
 				next.timeToNext -= nextTimeToSpawn;
-				if (DEBUG_SPAWNS) System.out.println("     " + next.timeToNext +"  " + next.is +"   ");
+				if (DEBUG_SPAWNS) Log.info("     " + next.timeToNext +"  " + next.is +"   ");
 			}
 			/// Find all the elements that should spawn at this time
 			NextSpawn ns = null;
@@ -113,14 +114,13 @@ public class SpawnController {
 			}
 
 			nextTimeToSpawn = spawnQ.peek().timeToNext;
-			if (DEBUG_SPAWNS) System.out.println("run SpawnNextEvent " + spawnQ.size() +"  next=" + nextTimeToSpawn);
+			if (DEBUG_SPAWNS) Log.info("run SpawnNextEvent " + spawnQ.size() +"  next=" + nextTimeToSpawn);
 			timerId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new SpawnNextEvent(nextTimeToSpawn),
 					(long)(Defaults.TICK_MULT*nextTimeToSpawn*20));
 		}
 	}
 
 	public static void registerSpawn(String s, SpawnInstance sg) {
-//		System.out.println("Adding spawn group " + s +"  sg=" + sg);
 		allSpawns.put(s,sg);
 	}
 

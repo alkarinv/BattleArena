@@ -14,9 +14,10 @@ import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.ServerUtil;
 
 import org.bukkit.ChatColor;
@@ -128,7 +129,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		}
 		Set<ArenaPlayer> foundArenaPlayers = PlayerController.toArenaPlayerSet(foundplayers);
 		for (ArenaPlayer p: foundArenaPlayers){
-			if (Defaults.DEBUG){System.out.println("player=" + player.getName());}
+			if (Defaults.DEBUG){Log.info("player=" + player.getName());}
 			ArenaTeam t = teamc.getSelfFormedTeam(p);
 			if (t!= null || !bae.canJoin(p,false)){
 				sendMessage(player,"&6"+ p.getName() + "&e is already part of a team or is in an Event");
@@ -140,7 +141,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 			}
 		}
 		foundArenaPlayers.add(player);
-		if (Defaults.DEBUG){System.out.println(player.getName() + "  players=" + foundArenaPlayers.size());}
+		if (Defaults.DEBUG){Log.info(player.getName() + "  players=" + foundArenaPlayers.size());}
 
 		if (!ac.hasArenaSize(foundArenaPlayers.size())){
 			sendMessage(player,"&6[Warning]&eAn arena for that many players has not been created yet!");

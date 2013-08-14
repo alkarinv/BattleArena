@@ -39,6 +39,8 @@ public class Defaults {
 	public static boolean USE_SCOREBOARD = true;
 	public static boolean USE_COLORNAMES = true;
 
+	public static boolean ANNOUNCE_GIVEN_ITEMS = true;
+
 	/// EVENT OPTIONS
 	public static int AUTO_EVENT_COUNTDOWN_TIME = 120;
 	public static int ANNOUNCE_EVENT_INTERVAL = 60;

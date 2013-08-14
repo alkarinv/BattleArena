@@ -251,6 +251,14 @@ public class PlayerStoreController {
 		}
 	}
 
+	public void clearInv(ArenaPlayer player) {
+		if (player.isOnline()){
+			InventoryUtil.clearInventory(player.getPlayer());
+		}else{
+			BAPlayerListener.clearInventoryOnReenter(player.getName());
+		}
+
+	}
 
 	public static void setGameMode(Player p, GameMode gm){
 		if (Defaults.DEBUG_STORAGE)  Log.info("set gamemode " + p.getName() +" " + p.isOnline()+":"+p.isDead() +" gm=" +gm +"  " + p.getGameMode());
@@ -313,5 +321,6 @@ public class PlayerStoreController {
 	public static PlayerStoreController getPlayerStoreController() {
 		return INSTANCE;
 	}
+
 
 }

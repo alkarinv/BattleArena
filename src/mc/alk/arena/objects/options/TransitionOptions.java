@@ -196,7 +196,6 @@ public class TransitionOptions {
 			if (!mm.contains(p.getLevel()))
 				return false;
 		}
-		//		System.out.println(" my options are " + options);
 		return true;
 	}
 
@@ -288,8 +287,6 @@ public class TransitionOptions {
 				isReady = false;
 			}
 		}
-
-		//		System.out.println(" Here in getNot ready msg with " + p.getName() + " ------" + sb.toString());
 		return isReady? null : sb.toString();
 	}
 
@@ -400,6 +397,19 @@ public class TransitionOptions {
 		return false;
 	}
 
+	public boolean containsAll(TransitionOptions tops) {
+		if (tops.options==null && options != null)
+			return false;
+		for (TransitionOption op: tops.options.keySet()){
+			if (!options.containsKey(op)){
+				return false;
+			}
+			if (op.hasValue() && !options.get(op).equals(tops.options.get(op)))
+				return false;
+		}
+		return true;
+	}
+
 	public Object removeOption(TransitionOption op) {
 		return options != null ? options.remove(op) : null;
 	}
@@ -482,5 +492,6 @@ public class TransitionOptions {
 		final Object o = options.get(to);
 		return o == null ? null : (Location) o;
 	}
+
 
 }

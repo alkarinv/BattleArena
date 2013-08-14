@@ -3,6 +3,7 @@ package mc.alk.arena.objects;
 import java.util.ArrayList;
 import java.util.List;
 
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.arenas.ArenaType;
 
 
@@ -26,6 +27,8 @@ public class EventParams extends MatchParams{
 	@Override
 	public void flatten() {
 		if (eparent != null){
+			eparent = (EventParams) ParamController.copy(eparent);
+			eparent.flatten();
 			if (this.secondsTillStart == null) this.secondsTillStart = eparent.secondsTillStart;
 			if (this.announcementInterval == null) this.announcementInterval = eparent.announcementInterval;
 			if (this.openOptions == null) this.openOptions = eparent.openOptions;

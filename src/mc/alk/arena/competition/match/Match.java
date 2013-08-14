@@ -53,6 +53,7 @@ import mc.alk.arena.events.prizes.ArenaLosersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaWinnersPrizeEvent;
 import mc.alk.arena.events.teams.TeamDeathEvent;
+import mc.alk.arena.objects.ArenaLocation;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.LocationType;
@@ -166,13 +167,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	@SuppressWarnings("unchecked")
 	public Match(Arena arena, MatchParams params) {
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::" + params);
-		Log.debug("  match == " + params);
+		this.params = params;
+		this.params.setName("[Match "+id+"]");
 		params.flatten();
-		Log.debug("  match flattened == " + params);
 		this.tops = params.getTransitionOptions();
 		/// Assign variables
 		this.plugin = BattleArena.getSelf();
-		this.params = params;
 		this.gameManager = GameManager.getGameManager(params);
 		this.arena = arena;
 		this.arenaInterface =new ArenaControllerInterface(arena);
@@ -220,7 +220,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		this.alwaysOpen = params.getAlwaysOpen();
 
 		/// Set waitroom variables
-
 		if (tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTLOBBY,
 				TransitionOption.TELEPORTMAINWAITROOM, TransitionOption.TELEPORTMAINLOBBY,
 				TransitionOption.TELEPORTCOURTYARD)){
@@ -748,6 +747,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		teamIndexes.put(team, teams.size());
 		teams.add(team);
 		team.reset();/// reset scores, set alive
+		team.setCurrentParams(params);
 		TeamController.addTeamHandler(team, this);
 		int index = indexOf(team);
 		team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
@@ -761,10 +761,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 				name.substring(0,Defaults.MAX_SCOREBOARD_NAME_SIZE) : name);
 		team.setArenaObjective(defaultObjective);
 		scoreboard.addTeam(team);
-
 		for (ArenaPlayer p: team.getPlayers()){
-			privateAddedToTeam(team,p);}
-		joiningOngoing(team, null);
+			if (p == null)
+				continue;
+			privateAddedToTeam(team,p);
+			joiningOngoing(team, p);
+		}
 		return true;
 	}
 
@@ -829,11 +831,24 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	}
 
 	private void joiningOngoing(final ArenaTeam team, final ArenaPlayer player) {
+		if (this.isHandled(player))
+			return;
 		final Match match = this;
-		GameManager gm = this.getGameManager();
-		if (!gm.hasPlayer(player)){
+
+		if (!gameManager.hasPlayer(player)){
 			/// onJoin Them
 			doTransition(match, MatchState.ONJOIN, player,team, true);
+		} else if (state== MatchState.NONE && params.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)){
+			/// This is a bit strange.. but in instances where people have teleported in
+			/// before the match was created, we need to add them in as if they were teleporting
+			/// These are the 2 methods called from the teleport in events
+//			player.setCurLocation(this.getLocationType());
+//			ArenaLocation l = player.getCurLocation();
+			ArenaLocation nl = new ArenaLocation(this,
+					player.getCurLocation().getLocation(), this.getLocationType());
+			player.setCurLocation(nl);
+			this.preFirstJoin(player);
+			this.postFirstJoin(player);
 		}
 		/// onPreStart Them
 		if (state.ordinal() >= MatchState.ONPRESTART.ordinal()){
@@ -926,9 +941,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (t==null) /// really? trying to make a player leave who isnt in the match
 			return false;
 		privateQuitting(p,t);
-		t.removePlayer(p);
-		Log.debug(" -----------onLeave #### remoiving Player " + t.getName() +"   " + p.getName() +"   " + t.isDead());
-//		checkAndHandleIfTeamDead(t);
+		/// Should this be a removePlayer or killMember... really depends on what we should do with them on the team
+//			t.removePlayer(p);
+		t.killMember(p);
 		Competition comp;
 		while ((comp = p.getCompetition()) != null){
 			p.removeCompetition(comp);
@@ -937,8 +952,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	}
 
 	protected void checkAndHandleIfTeamDead(ArenaTeam team){
-		Log.debug(" -----------checkAndHandleIfTeamDead #### " + team.getName() +"    " + team.isDead());
-
 		if (team.isDead()){
 			callEvent(new TeamDeathEvent(team));}
 	}
@@ -958,7 +971,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		TeamController.removeTeamHandler(team, this);
 	}
 
-	private void preFirstJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte){
+	private void preFirstJoin(ArenaPlayer player){
 		ArenaTeam team = getTeam(player);
 		final String name = player.getName();
 		inMatch.add(player.getName());
@@ -977,7 +990,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		arenaInterface.onEnter(player,team);
 	}
 
-	private void postFirstJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte){
+	private void postFirstJoin(ArenaPlayer player){
 		ArenaTeam team = getTeam(player);
 		inMatch.add(player.getName());
 
@@ -989,12 +1002,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 	@Override
 	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		preFirstJoin(player,apte);
+		preFirstJoin(player);
 	}
 
 	@Override
 	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		postFirstJoin(player,apte);
+		postFirstJoin(player);
 	}
 
 
@@ -1002,7 +1015,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (insideArena(ap)){ /// Only leave if they haven't already left.
 			/// The onCancel should teleport them out, and call leaveArena(ap)
 			PerformTransition.transition(this, MatchState.ONCANCEL, ap, team, false);
-			Log.debug(" -----------privateQuitting #### Player " + team.getName() +"   " + ap.getName() +"   " + team.isDead());
 		}
 	}
 
@@ -1045,7 +1057,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			StatController.resumeTracking(player);
 			StatController.resumeTrackingMessages(player);
 		}
-		Log.debug(state + " -----------onPostQuit #### Player " + t.getName() +"   " + player.getName() +"   " + t.isDead());
 
 		arenaInterface.onLeave(player,t);
 		callEvent(new ArenaPlayerLeaveMatchEvent(player,t));
@@ -1056,7 +1067,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	@Override
 	public void onPreEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
 		if (!inMatch.contains(player.getName())){
-			this.preFirstJoin(player,apte);
+			this.preFirstJoin(player);
 			player.getMetaData().setJoining(true);
 		}
 	}
@@ -1064,7 +1075,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	@Override
 	public void onPostEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
 		if (player.getMetaData().isJoining()){
-			this.postFirstJoin(player,apte);
+			this.postFirstJoin(player);
 			player.getMetaData().setJoining(false);
 		}
 		inMatch.add(player.getName());

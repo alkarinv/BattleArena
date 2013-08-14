@@ -154,6 +154,9 @@ public class YamlFileUpdater {
 			newVersion = new Version("2.2.7");
 			if (version.compareTo(newVersion) < 0){
 				version = to2Point27(version, yfu, configFile, newVersion);}
+			newVersion = new Version("2.2.8");
+			if (version.compareTo(newVersion) < 0){
+				version = to2Point28(version, yfu, configFile, newVersion);}
 
 		} catch (IOException e){
 			e.printStackTrace();
@@ -172,7 +175,6 @@ public class YamlFileUpdater {
 		try {
 			boolean updatedDefaultSection = false;
 			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
 				if (line.contains("configVersion")){
 					fw.write("configVersion: "+newVersion.getVersion()+"\n\n");
 				} else if (!updatedDefaultSection && (line.matches(".*useArenasOnlyInOrder:.*"))){
@@ -216,7 +218,6 @@ public class YamlFileUpdater {
 			boolean updatedDefaultSection = false;
 			boolean lineRightAfterPreReqs = false;
 			while ((line = br.readLine()) != null){
-				//				System.out.println((line.matches(".*Event Announcements.*") +"   " + line));
 				if (line.contains("configVersion")){
 					fw.write("configVersion: "+newVersion.getVersion()+"\n\n");
 				} else if (line.matches(".*preReqs:.*")){
@@ -457,6 +458,14 @@ public class YamlFileUpdater {
 		return fu.update();
 	}
 
+	private static Version to2Point28(Version version, YamlFileUpdater yfu, File configFile, Version newVersion) throws IOException {
+		FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+		fu.replace("configVersion:.*", "configVersion: "+newVersion);
+		fu.addAfter(".*announceTimeTillNextEvent.*", "",
+				"    announceGivenItemsOrClass: true ## When players are given items or a class tell them the items");
+		return fu.update();
+	}
+
 	private void messageTo1Point51(FileConfiguration fc, Version version, Version newVersion) {
 		Log.warn("BattleArena updating messages.yml to "+newVersion.getVersion());
 		if (!openFiles())
@@ -588,7 +597,6 @@ public class YamlFileUpdater {
 			fw.write("configVersion: 2.0\n");
 			while ((line = br.readLine()) != null){
 				line = line.replaceAll(colliseum, "colosseum").replaceAll(capcolliseum, "Colosseum");
-				//				System.out.println(inSection +"-"+section+"  :  " + line);
 				if (line.matches(section+":.*")){
 					inSection = true;
 					fw.write(capSection +":\n");

@@ -32,7 +32,7 @@ public class TeleportLocationController {
 		ArenaLocation dest = getArenaLocation(am,team,player,mo,teamIndex);
 		ArenaLocation src = player.getCurLocation();
 		src.setLocation(player.getLocation());
-		Log.debug(" ########### @@ " + player.getCurLocation()  +"  -->  " + am.getTeam(player) );
+//		Log.debug(" ########### @@ " + player.getCurLocation()  +"  -->  " + am.getTeam(player) );
 
 		TeleportDirection td = calcTeleportDirection(player, src,dest);
 		player.markOldLocation();
@@ -70,8 +70,8 @@ public class TeleportLocationController {
 		PlayerHolder src = apte.getSrcLocation().getPlayerHolder();
 		PlayerHolder dest = apte.getDestLocation().getPlayerHolder();
 		TeleportDirection td = apte.getDirection();
-		Log.debug(" ###########  " + player.getCurLocation()  +"  -->  " + dest.getLocationType() );
-		Log.debug(" ---- << -- " + player.getName() +"   src=" + src +"   dest="+dest +"    td=" + td);
+//		Log.debug(" ###########  " + player.getCurLocation()  +"  -->  " + dest.getLocationType() );
+//		Log.debug(" ---- << -- " + player.getName() +"   src=" + src +"   dest="+dest +"    td=" + td);
 
 		switch (td){
 		case RESPAWN:
@@ -132,6 +132,7 @@ public class TeleportLocationController {
 		final boolean teleportLobby = mo.shouldTeleportLobby();
 		final LocationType type;
 		final PlayerHolder ph;
+//		Log.debug(" teamindex = " + teamIndex +"   " + am.getClass().getSimpleName()  +"  " +am);
 		if (teleportWaitRoom){
 			if (mo.hasOption(TransitionOption.TELEPORTMAINWAITROOM)){
 				teamIndex = Defaults.MAIN_SPAWN;}
@@ -142,7 +143,6 @@ public class TeleportLocationController {
 				ph = am;
 			}
 			type = LocationType.WAITROOM;
-			Log.debug(" teamindex = " + teamIndex +"   " + am.getClass().getSimpleName()  +"  " +am);
 			l = jitter(ph.getSpawn(teamIndex, randomRespawn),teamIndex);
 		} else if (teleportLobby){
 			if (mo.hasOption(TransitionOption.TELEPORTMAINLOBBY)){
@@ -152,7 +152,9 @@ public class TeleportLocationController {
 			l = jitter(RoomController.getLobbySpawn(teamIndex,mp.getType(),randomRespawn),0);
 		} else { // They should teleportIn, aka to the Arena
 			Arena arena = null;
-			if (am instanceof Match){
+			if (am instanceof Arena){
+				arena = (Arena) am;
+			} else if (am instanceof Match){
 				Match m = (Match) am;
 				arena = m.getArena();
 			}

@@ -155,7 +155,6 @@ public class BAEventController implements Listener{
 		}
 		events.add(event);
 		event.startEvent();
-//		System.out.println("************* startEvent = " + event +"   " + events.size() +"  " + key);
 	}
 
 	public Map<EventState,List<Event>> getCurrentEvents(EventParams eventParams) {

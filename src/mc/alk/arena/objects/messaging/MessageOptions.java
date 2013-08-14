@@ -44,7 +44,6 @@ public class MessageOptions {
 	public MessageOptions(String msg) {
 		for (MessageOption mop: MessageOption.values()){
 			if (StringUtils.indexOf(msg, mop.getReplaceString()) != -1){
-//				System.out.println("Message " + msg + "   contains " + mop);
 				options.add(mop);
 			}
 		}

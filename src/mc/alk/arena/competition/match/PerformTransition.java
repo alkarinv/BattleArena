@@ -67,9 +67,7 @@ public class PerformTransition {
 
 	static boolean transition(PlayerHolder am, final MatchState transition, ArenaTeam team, boolean onlyInMatch,
 			boolean performOncePerTransitionOptions) {
-//		final TransitionOptions mo = am.tops.getOptions(transition);
 		final TransitionOptions mo = am.getParams().getTransitionOptions().getOptions(transition);
-		//		System.out.println("doing effects for " + transition + "  " + team.getName() + "  " + mo );
 		if (mo == null)
 			return true;
 		if (performOncePerTransitionOptions && (am instanceof ArenaController)){
@@ -96,13 +94,6 @@ public class PerformTransition {
 		return true;
 	}
 
-//	static boolean transition(final Match am, final MatchState transition, final ArenaPlayer player,
-//			final ArenaTeam team, final boolean onlyInMatch) {
-//		if (am.playerLeft(player)) /// The player has purposefully left the match, we have nothing to do with them anymore
-//			return true;
-//		return transition(am,transition,player,team, onlyInMatch);
-//	}
-
 	public static boolean transition(final PlayerHolder am, final MatchState transition,
 			final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch) {
 		final boolean insideArena = am.isHandled(player);
@@ -117,7 +108,7 @@ public class PerformTransition {
 			return true;}
 		if (Defaults.DEBUG_TRANSITIONS) Log.info("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
 				" ops="+am.getParams().getTransitionOptions().getOptions(transition)+" onlyInMatch="+onlyInMatch+
-				" inArena="+am.isHandled(player) + " dead="+player.isDead()+" online="+player.isOnline()+" clearInv=" +
+				" inArena="+am.isHandled(player) + " dead="+player.isDead()+":"+player.getHealth()+" online="+player.isOnline()+" clearInv=" +
 				am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
 
 		final boolean teleportIn = mo.shouldTeleportIn();
@@ -178,7 +169,7 @@ public class PerformTransition {
 			if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){psc.storeHeroClass(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){psc.storeGodmode(player);}
 			if (storeAll || mo.hasOption(TransitionOption.STOREFLIGHT)){psc.storeFlight(player);}
-			if (wipeInventory){ InventoryUtil.clearInventory(p); }
+			if (wipeInventory){InventoryUtil.clearInventory(p);}
 			if (mo.hasOption(TransitionOption.CLEAREXPERIENCE)){ ExpUtil.clearExperience(p);}
 			if (mo.hasOption(TransitionOption.HEALTH)) { PlayerUtil.setHealth(p, health);}
 			if (mo.hasOption(TransitionOption.HEALTHP)) { PlayerUtil.setHealthP(p, mo.getHealthP());}
@@ -231,10 +222,10 @@ public class PerformTransition {
 
 			try{if (effects != null)
 				EffectUtil.enchantPlayer(p, effects);} catch (Exception e){}
-
-			String prizeMsg = mo.getPrizeMsg(null, prizeMoney);
-			if (prizeMsg != null){
-				MessageUtil.sendMessage(player,"&eYou have been given \n"+prizeMsg);
+			if (Defaults.ANNOUNCE_GIVEN_ITEMS){
+				String prizeMsg = mo.getPrizeMsg(null, prizeMoney);
+				if (prizeMsg != null){
+					MessageUtil.sendMessage(player,"&eYou have been given \n"+prizeMsg);}
 			}
 			if (teleportIn){
 				transition(am, MatchState.ONSPAWN, player, team, false);
@@ -257,7 +248,7 @@ public class PerformTransition {
 				/// Teams that have left can have a -1 teamIndex
 				TeamUtil.removeTeamHead(teamIndex, p);
 			}
-			if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+transition+" transition restoring items "+insideArena);
+			if (Defaults.DEBUG_TRANSITIONS)Log.info("   "+transition+" transition restoring items "+insideArena);
 			psc.restoreItems(player);
 		}
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEALTH)){ psc.restoreHealth(player);}
@@ -299,7 +290,7 @@ public class PerformTransition {
 			final int teamIndex,final boolean woolTeams, final boolean insideArena, Color color) {
 		if (woolTeams && insideArena){
 			TeamUtil.setTeamHead(teamIndex, p);}
-		if (Defaults.DEBUG_TRANSITIONS)System.out.println("   "+ms+" transition giving items to " + p.getName());
+		if (Defaults.DEBUG_TRANSITIONS)Log.info("   "+ms+" transition giving items to " + p.getName());
 		if (items == null || items.isEmpty())
 			return;
 		InventoryUtil.addItemsToInventory(p.getPlayer(),items,woolTeams,color);

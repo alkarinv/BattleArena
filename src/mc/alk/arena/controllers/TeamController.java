@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -136,36 +135,6 @@ public enum TeamController implements Listener, TeamHandler {
 			t.sendMessage("&cYou're team has been disbanded as &6" + p.getDisplayName()+"&c has left minecraft");
 			return;
 		}
-	}
-
-	private void playerLeft(ArenaPlayer p) {
-		ArenaTeam t = handledTeams(p);
-		if (t == null ){
-			return;}
-		List<TeamHandler> unused = new ArrayList<TeamHandler>();
-		synchronized(handlers){
-			List<TeamHandler> list = handlers.get(t);
-			if (list == null){
-				return;}
-			synchronized(list){
-				TeamHandler th;
-				Iterator<TeamHandler> iter = list.iterator();
-				while (iter.hasNext()){
-					try{
-						th = iter.next();
-						if (th.leave(p)){ /// they are finished with the player, no longer need to keep them around
-							unused.add(th);
-						}
-					} catch(Exception e){
-						e.printStackTrace();
-					}
-				}
-			}
-			list.retainAll(unused);
-			if (list.isEmpty())
-				handlers.remove(t);
-		}
-		//		logHandlerList("player left " + p.getPlayer().getName());
 	}
 
 	@EventHandler

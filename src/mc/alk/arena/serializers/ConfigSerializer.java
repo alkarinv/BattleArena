@@ -19,6 +19,7 @@ import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.ModuleController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaSize;
@@ -127,7 +128,8 @@ public class ConfigSerializer extends BaseConfig{
 
 		List<String> modules = loadModules(cs, mp); /// load modules
 
-		loadTransitionOptions(cs, mp, isArena); /// load transition options
+		MatchTransitions tops = loadTransitionOptions(cs, mp, isArena); /// load transition options
+		mp.setTransitionOptions(tops);
 
 		mp.setParent(ParamController.getDefaultConfig());
 		if (!isArena){
@@ -135,10 +137,12 @@ public class ConfigSerializer extends BaseConfig{
 			ParamController.addMatchParams(mp);
 		}
 
-		/// Load our PlayerContainers
-		PlayerContainerSerializer pcs = new PlayerContainerSerializer();
-		pcs.setConfig(BattleArena.getSelf().getDataFolder()+"/saves/containers.yml");
-		pcs.load(mp);
+		try{
+			/// Load our PlayerContainers
+			PlayerContainerSerializer pcs = new PlayerContainerSerializer();
+			pcs.setConfig(BattleArena.getSelf().getDataFolder()+"/saves/containers.yml");
+			pcs.load(mp);
+		} catch (Exception e){}
 
 		String mods = modules.isEmpty() ? "" : " mods=" + StringUtils.join(modules,", ");
 		if (!isArena)
@@ -162,7 +166,7 @@ public class ConfigSerializer extends BaseConfig{
 	}
 
 
-	private static void loadTransitionOptions(ConfigurationSection cs, MatchParams mp, boolean isArena)
+	private static MatchTransitions loadTransitionOptions(ConfigurationSection cs, MatchParams mp, boolean isArena)
 			throws InvalidOptionException {
 		MatchTransitions allTops = new MatchTransitions();
 
@@ -185,12 +189,15 @@ public class ConfigSerializer extends BaseConfig{
 			if (tops == null){
 				allTops.removeTransitionOptions(transition);
 				continue;}
-			if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + transition +" "+tops);
+			if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + transition +" "+tops);
 			switch (transition){
 			case ONCOMPLETE:
+				if (allTops.hasOptionAt(MatchState.ONLEAVE, TransitionOption.CLEARINVENTORY)){
+					tops.addOption(TransitionOption.CLEARINVENTORY);
+				}
 				TransitionOptions cancelOps = new TransitionOptions(tops);
 				allTops.addTransitionOptions(MatchState.ONCANCEL, cancelOps);
-				if (Defaults.DEBUG_TRACE) System.out.println("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
+				if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
 				break;
 			case ONLEAVE:
 				if (tops.hasOption(TransitionOption.TELEPORTOUT)){
@@ -220,6 +227,7 @@ public class ConfigSerializer extends BaseConfig{
 		/// start auto setting this option, as really thats what they want
 		if (mp.getNLives() != null && mp.getNLives() > 1){
 			allTops.addTransitionOption(MatchState.ONDEATH, TransitionOption.RESPAWN);}
+		return allTops;
 	}
 
 
@@ -263,11 +271,13 @@ public class ConfigSerializer extends BaseConfig{
 		String dbName = (cs.contains("database")) ? cs.getString("database",null) : cs.getString("db",null);
 		if (dbName != null){
 			mp.setDBName(dbName);
-			try{
-				if (!BTInterface.addBTI(mp)){
-					Log.err("Couldn't add tracker interface");}
-			} catch (Exception e){
-				Log.err("Couldn't add tracker interface");
+			if (StatController.enabled()){
+				try{
+					if (!BTInterface.addBTI(mp)){
+						Log.err("Couldn't add tracker interface");}
+				} catch (Exception e){
+					Log.err("Couldn't add tracker interface");
+				}
 			}
 		}
 		if (cs.contains("overrideBattleTracker")){
@@ -728,16 +738,28 @@ public class ConfigSerializer extends BaseConfig{
 					TransitionOptions tops = transitions.get(ms);
 					if (tops == null)
 						continue;
-					Map<TransitionOption,Object> ops = tops.getOptions();
-					if (ops == null || ops.isEmpty())
+					if (tops.getOptions() == null)
 						continue;
+					tops = new TransitionOptions(tops); // make a copy so we can modify while saving
+					Map<TransitionOption,Object> ops = tops.getOptions();
+					List<String> list = new ArrayList<String>();
+
+					for (Entry<String,TransitionOptions> entry : OptionSetController.getOptionSets().entrySet()){
+						if (tops.containsAll(entry.getValue())){
+							list.add(entry.getKey());
+							for (TransitionOption op : entry.getValue().getOptions().keySet()){
+								ops.remove(op);
+							}
+						}
+					}
 					/// transition map
 					Map<String,Object> tmap = new LinkedHashMap<String,Object>();
-					List<String> list = new ArrayList<String>();
+					HashSet<TransitionOption> possibleOptionSet = new HashSet<TransitionOption>();
 					ops = new TreeMap<TransitionOption,Object>(ops); /// try to maintain some ordering
 					for (TransitionOption to: ops.keySet()){
 						try{
 							String s;
+							possibleOptionSet.add(to);
 							switch(to){
 							case NEEDITEMS:
 								tmap.put(to.toString(), getItems(tops.getNeedItems()));
@@ -772,7 +794,7 @@ public class ConfigSerializer extends BaseConfig{
 							e.printStackTrace();
 						}
 					}
-					list = getOptionSets(list);
+//					list = getOptionSets(possibleOptionSet);
 					tmap.put("options", list);
 					//			main.put(ms.toString(), tmap);
 					main.set(ms.toString(), tmap);
@@ -784,15 +806,6 @@ public class ConfigSerializer extends BaseConfig{
 
 		//		main.set("options", map);
 		params.setParent(parent); ///reset the parent
-	}
-
-	private static List<String> getOptionSets(List<String> list) {
-		HashSet<String> set = new HashSet<String>(list);
-
-		for (Entry<String,TransitionOptions> entry : OptionSetController.getOptionSets().entrySet()){
-
-		}
-		return list;
 	}
 
 	private static List<String> getModuleList(Collection<ArenaModule> modules) {

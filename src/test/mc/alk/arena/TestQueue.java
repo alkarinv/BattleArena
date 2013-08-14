@@ -1,6 +1,7 @@
 package test.mc.alk.arena;
 
 import java.io.File;
+import java.lang.reflect.Field;
 
 import junit.framework.TestCase;
 import mc.alk.arena.BattleArena;
@@ -18,6 +19,7 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.BAClassesSerializer;
+import mc.alk.arena.serializers.BAConfigSerializer;
 import mc.alk.arena.serializers.BaseConfig;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
@@ -31,21 +33,29 @@ import test.mc.alk.testbukkit.TestBukkitServer;
 import test.mc.alk.testbukkit.TestMCBukkitServer;
 
 
-public class TestBattleArena extends TestCase{
+public class TestQueue extends TestCase{
 	TestPlugin plugin = null;
 	BattleArenaController bac;
+	private static final BAConfigSerializer baConfigSerializer = new BAConfigSerializer();
+	BattleArena ba = new BattleArena();
+	ArenaPlayer[] ap = new ArenaPlayer[10];
 
 	@Override
-	protected void setUp(){
+	protected void setUp() throws Exception{
 		plugin = new TestPlugin();
-		Defaults.DEBUG_MSGS = true;
 		ArenaType.register("arena", Arena.class, plugin);
 		BukkitInterface.setServer(new TestBukkitServer());
 		plugin.onEnable();
 
-
 		/// Set test server
 		MCServer.setInstance(new TestMCBukkitServer());
+		baConfigSerializer.setConfig(new File("test_files/config.yml"));
+		baConfigSerializer.loadDefaults();
+		MatchParams mp = ParamController.getMatchParamCopy(Defaults.DEFAULT_CONFIG_NAME);
+		assertNotNull(mp);
+		for (int i=0;i<ap.length;i++){
+			ap[i] = createArenaPlayer("p"+i);
+		}
 
 		/// load classes
 		BAClassesSerializer classesSerializer = new BAClassesSerializer();
@@ -53,6 +63,9 @@ public class TestBattleArena extends TestCase{
 		classesSerializer.loadAll();
 		/// Controller
 		bac = new BattleArenaController(null);
+		Field field = BattleArena.class.getDeclaredField("arenaController");
+		field.setAccessible(true);
+		field.set(null, bac);
 
 		/// Messages
 		MessageSerializer ms = new MessageSerializer("default",null);
@@ -60,6 +73,9 @@ public class TestBattleArena extends TestCase{
 		MessageSerializer.setDefaultConfig(ms);
 		AnnouncementOptions an = new AnnouncementOptions();
 		AnnouncementOptions.setDefaultOptions(an);
+
+		mp = loadParams("Arena");
+		assertNotNull(mp);
 
 		/// Arenas
 		ArenaSerializer as = new ArenaSerializer(plugin,new File("test_files/arenas.yml"));
@@ -76,6 +92,7 @@ public class TestBattleArena extends TestCase{
 		ParamController.addMatchParams(mp);
 		bac.addArena(arena);
 	}
+
 
 	public MatchParams loadParams(String node){
 		BaseConfig bc = new BaseConfig( new File("test_files/competitions/"+node+"Config.yml"));
@@ -95,22 +112,43 @@ public class TestBattleArena extends TestCase{
 		return mp;
 	}
 
-	public void testQueue(){
-		MatchParams mp = loadParams("Arena");
-		Player p1 = new TestBukkitPlayer("p1");
-		Player p2 = new TestBukkitPlayer("p2");
-		ArenaPlayer ap1 = BattleArena.toArenaPlayer(p1);
-		ArenaPlayer ap2 = BattleArena.toArenaPlayer(p2);
-		String[] args = new String[]{""};
+	public static ArenaPlayer createArenaPlayer(String name){
+		Player p1 = new TestBukkitPlayer(name);
+		return BattleArena.toArenaPlayer(p1);
+	}
 
+	public void testMatchParams(){
+		MatchParams op = ParamController.getMatchParamCopy("arena");
+		MatchParams p = ParamController.getMatchParamCopy("arena");
+		MatchParams ap = ParamController.copyParams(BattleArena.getArena("a2").getParams());
+		assertEquals(ap.getParent().getName(), p.getName());
+		assertEquals(ap.getParent().getParent().getName(), Defaults.DEFAULT_CONFIG_NAME);
+//		System.out.println(""+new ReflectionToStringBuilder(ap.getParent().getParent(), ToStringStyle.MULTI_LINE_STYLE) );
+		ap.flatten();
+		p = ParamController.getMatchParamCopy("arena");
+//		assertTrue(p.same(op));
+//		System.out.println(""+new ReflectionToStringBuilder(ap, ToStringStyle.MULTI_LINE_STYLE) );
+	}
+
+	public void gtestQueue(){
+		String[] args = new String[]{"join", "a1"};
+		String[] args2 = new String[]{"join","a2"};
+		assertNull(BattleArena.getArena("DoesntExist"));
+		assertNotNull(BattleArena.getArena("a1"));
+		assertNotNull(BattleArena.getArena("a2"));
 		BAExecutor exec = new BAExecutor();
-		exec.join(ap1, mp, args);
-		exec.join(ap2, mp, args);
-		for (MatchParams params : ParamController.getAllParams()){
-			System.out.println("param  =  "+ params);
-		}
+
+		exec.join(ap[0], loadParams("Arena"), args);
+		exec.join(ap[1], loadParams("Arena"), args);
+
+		exec.join(ap[2], loadParams("Arena"), args2);
+		exec.join(ap[3], loadParams("Arena"), args2);
+		exec.join(ap[4], loadParams("Arena"), args2);
+		exec.join(ap[5], loadParams("Arena"), args2);
+//		for (MatchParams params : ParamController.getAllParams()){
+//			System.out.println("param  =  "+ params);
+//		}
 		delay(50);
-		assertTrue(bac.isInQue(ap1));
 	}
 
 	private void delay(long millis) {

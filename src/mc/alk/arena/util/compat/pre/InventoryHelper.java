@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class InventoryHelper implements IInventoryHelper{
 	@Override
-	public void setItemColor(ItemStack itemStack, Color color) {/* do nothing */}
+	public void setColor(ItemStack itemStack, Color color) {/* do nothing */}
 
 	@Override
 	public void setLore(ItemStack itemStack, List<String> lore) {/* do nothing */}
@@ -19,4 +19,16 @@ public class InventoryHelper implements IInventoryHelper{
 
 	@Override
 	public void setOwnerName(ItemStack itemStack, String ownerName) {/* do nothing */}
+
+	@Override
+	public Color getColor(ItemStack itemStack) {return null;}
+
+	@Override
+	public List<String> getLore(ItemStack itemStack) {return null;}
+
+	@Override
+	public String getDisplayName(ItemStack itemStack) {return null;}
+
+	@Override
+	public String getOwnerName(ItemStack itemStack) {return null;}
 }

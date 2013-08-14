@@ -90,11 +90,11 @@ public class BTInterface {
 			if (losers.size() == 1){
 				Set<Player> losingPlayers = new HashSet<Player>();
 				for (ArenaTeam t: losers){losingPlayers.addAll(t.getBukkitPlayers());}
-				if (Defaults.DEBUG_TRACKING) System.out.println("BA Debug: addRecord ");
+				if (Defaults.DEBUG_TRACKING) Log.info("BA Debug: addRecord ");
 				for (Player p: winningPlayers){
-					if (Defaults.DEBUG_TRACKING) System.out.println("BA Debug: winner = "+p.getName());}
+					if (Defaults.DEBUG_TRACKING) Log.info("BA Debug: winner = "+p.getName());}
 				for (Player p: losingPlayers){
-					if (Defaults.DEBUG_TRACKING) System.out.println("BA Debug: loser = "+p.getName());}
+					if (Defaults.DEBUG_TRACKING) Log.info("BA Debug: loser = "+p.getName());}
 				bti.addTeamRecord(winningPlayers, losingPlayers, WLT.WIN);
 			} else {
 				Collection<Collection<Player>> plosers = new ArrayList<Collection<Player>>();
@@ -112,7 +112,7 @@ public class BTInterface {
 		if (battleTracker == null)
 			return false;
 		final String dbName = pi.getDBName();
-		if (Defaults.DEBUG) System.out.println("adding BTI for " + pi +"  " + dbName);
+		if (Defaults.DEBUG) Log.info("adding BTI for " + pi +"  " + dbName);
 		TrackerInterface bti = btis.get(dbName);
 		if (bti == null){
 			/// Try to first the interface from our existing ones

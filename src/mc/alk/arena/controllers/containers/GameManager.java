@@ -1,10 +1,13 @@
 package mc.alk.arena.controllers.containers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.MethodController;
@@ -51,15 +54,16 @@ public class GameManager implements PlayerHolder{
 	private GameManager(MatchParams params){
 		this.params = params;
 		methodController.addAllEvents(this);
+		if (Defaults.TESTSERVER) return;
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
 	}
 
 	private GameManager(MatchParams mp, GameManager gameManager) {
 		this.params = mp;
-//		Set<ArenaPlayer> alreadyJoined = new HashSet<ArenaPlayer>(players);
-//		alreadyJoined.retainAll(players);
-//		gameManager.handled.removeAll(players);
-//		this.handled.addAll(alreadyJoined);
+		//		Set<ArenaPlayer> alreadyJoined = new HashSet<ArenaPlayer>(players);
+		//		alreadyJoined.retainAll(players);
+		//		gameManager.handled.removeAll(players);
+		//		this.handled.addAll(alreadyJoined);
 	}
 
 	@Override
@@ -67,7 +71,7 @@ public class GameManager implements PlayerHolder{
 
 	}
 
-//	@EventHandler(priority=org.bukkit.event.EventPriority.HIGHEST)
+	//	@EventHandler(priority=org.bukkit.event.EventPriority.HIGHEST)
 	@ArenaEventHandler(priority=EventPriority.HIGHEST)
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
 		if (handled.contains(event.getPlayer()) && !event.isHandledQuit()){
@@ -85,6 +89,13 @@ public class GameManager implements PlayerHolder{
 		}
 	}
 
+	private void cancel() {
+		List<ArenaPlayer> col = new ArrayList<ArenaPlayer>(handled);
+		for (ArenaPlayer player: col){
+			ArenaTeam t = getTeam(player);
+			PerformTransition.transition(this, MatchState.ONCANCEL, player, t, false);
+		}
+	}
 	@Override
 	public MatchParams getParams() {
 		return params;
@@ -150,7 +161,6 @@ public class GameManager implements PlayerHolder{
 			EssentialsController.setGod(player.getPlayer(), false);
 
 			player.getMetaData().setJoining(true);
-			handled.add(player);
 		}
 	}
 
@@ -187,5 +197,14 @@ public class GameManager implements PlayerHolder{
 	public boolean hasPlayer(ArenaPlayer player) {
 		return handled.contains(player);
 	}
+
+	public static void cancelAll() {
+		synchronized(map){
+			for (GameManager gm: map.values()){
+				gm.cancel();
+			}
+		}
+	}
+
 
 }

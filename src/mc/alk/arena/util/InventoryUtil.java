@@ -266,7 +266,7 @@ public class InventoryUtil {
 			}
 		}
 		Material mat = Material.matchMaterial(itemStr);
-		if (DEBUG) System.out.println(mat +"   " + itemStr +"   " + dataValue);
+		if (DEBUG) Log.info(mat +"   " + itemStr +"   " + dataValue);
 		if (mat != null && mat != Material.AIR) {
 			return new ItemStack(mat.getId(), 1, dataValue);
 		} else {
@@ -279,11 +279,9 @@ public class InventoryUtil {
 		itemStr = itemStr.toUpperCase();
 		for (Material m : Material.values()){
 			String itemName = m.name();
-			//        		ItemStack item = commonToStack.get(itemName);
 			int index = itemName.indexOf(itemStr,0);
-			//			if (DEBUG) System.out.println(index +"   " + itemName +"   " + m);
 			if (index != -1 && index == 0){
-				if (DEBUG) System.out.println(m +"   " + itemStr +"   " + dataValue);
+				if (DEBUG) Log.info(m +"   " + itemStr +"   " + dataValue);
 				return new ItemStack(m.getId(), 1, dataValue);
 			}
 		}
@@ -405,7 +403,7 @@ public class InventoryUtil {
 		boolean better = empty ? true : armorSlotBetter(armor.get(oldArmor.getType()),a);
 
 		if (color != null && a.level == ArmorLevel.LEATHER){
-			handler.setItemColor(itemStack,color);
+			handler.setColor(itemStack,color);
 		}
 		if (empty || better){
 			switch (armor.get(itemType).type){
@@ -493,10 +491,7 @@ public class InventoryUtil {
 			int toDelete = item.getAmount();
 
 			while (true) {
-				//            	System.out.println("inv= " + inv + "   " + items.length   + "    item=" + item);
 				int first = first(inv, item);
-				//            	System.out.println("first= " + first);
-
 				// Drat! we don't have this type in the inventory
 				if (first == -1) {
 					item.setAmount(toDelete);
@@ -662,7 +657,7 @@ public class InventoryUtil {
 			str = str.replaceFirst("=", " ");
 		str = str.replaceAll("[}{]", "");
 
-		if (DEBUG) System.out.println("item=" + str);
+		if (DEBUG) Log.info("item=" + str);
 
 		/// Parse Lore (thanks to Netherfoam)
 		List<String> lore = parseLore(str);
@@ -696,7 +691,7 @@ public class InventoryUtil {
 		if (lore != null && !lore.isEmpty())
 			handler.setLore(is,lore);
 		if (c!=null)
-			handler.setItemColor(is, c);
+			handler.setColor(is, c);
 		if (displayName != null)
 			handler.setDisplayName(is,displayName);
 		if (ownerName != null)
@@ -753,7 +748,7 @@ public class InventoryUtil {
 				//Now we can split it.
 				String[] lines = part.split("[;\\n]");
 				//DEBUG
-				if(DEBUG) System.out.println(Arrays.toString(lines));
+				if(DEBUG) Log.info(Arrays.toString(lines));
 				//Create a new list
 				LinkedList<String> lore = new LinkedList<String>();
 				//Add all the sections to the list
@@ -782,7 +777,6 @@ public class InventoryUtil {
 			str = str.substring(0,index);
 		}
 
-		//		        System.out.println("String = <" + str +">   " + lvl);
 		try {e = Enchantment.getById(Integer.valueOf(str));} catch (Exception err){}
 		if (e == null)
 			e = Enchantment.getByName(str);
@@ -845,6 +839,23 @@ public class InventoryUtil {
 		for (Enchantment enc : encs.keySet()){
 			sb.append(enc.getName() + ":" + encs.get(enc)+" ");
 		}
+		List<String> lore = handler.getLore(is);
+		if (lore != null && !lore.isEmpty()){
+			StringBuilder sb2 = new StringBuilder();
+			for (String s : lore){
+				sb2.append(s +"\n");}
+			sb.append("lore=\""+sb2.toString()+"\"");
+		}
+
+		Color color = handler.getColor(is);
+		if (color!=null)
+			sb.append("color=\""+color.getRed()+","+color.getGreen()+","+color.getBlue()+"\"");
+		String op = handler.getDisplayName(is);
+		if (op != null && !op.isEmpty())
+			sb.append("displayName=\""+op+"\"");
+		op = handler.getOwnerName(is);
+		if (op != null && !op.isEmpty())
+			sb.append("ownerName=\""+op+"\"");
 		sb.append(is.getAmount());
 		return sb.toString();
 	}
@@ -886,14 +897,14 @@ public class InventoryUtil {
 
 	public static void printInventory(Player p) {
 		PlayerInventory pi = p.getInventory();
-		System.out.println("Inventory of "+p.getName());
+		Log.info("Inventory of "+p.getName());
 		for (ItemStack is: pi.getContents()){
 			if (is != null && is.getType() != Material.AIR){
-				System.out.println(getCommonName(is) +"  " + is.getAmount());}
+				Log.info(getCommonName(is) +"  " + is.getAmount());}
 		}
 		for (ItemStack is: pi.getArmorContents()){
 			if (is != null && is.getType() != Material.AIR){
-				System.out.println(getCommonName(is) +"  " + is.getAmount());}
+				Log.info(getCommonName(is) +"  " + is.getAmount());}
 		}
 	}
 
@@ -992,7 +1003,7 @@ public class InventoryUtil {
 				dura2 += is.getDurability()*is.getAmount();
 			}
 		}
-		if (DEBUG) System.out.println("nitems1  " + nitems1 +":" + nitems2+"      " + dura1 +"  : " + dura2);
+		if (DEBUG) Log.info("nitems1  " + nitems1 +":" + nitems2+"      " + dura1 +"  : " + dura2);
 		if (nitems1 != nitems2 || dura1 != dura2)
 			return false;
 
@@ -1013,7 +1024,7 @@ public class InventoryUtil {
 		for (ItemStack is: items){
 			if (is == null || is.getType() == Material.AIR)
 				continue;
-			if (DEBUG)System.out.println(" iss   " + is.getAmount() +"   " + is.getMaxStackSize() +"    " + is);
+			if (DEBUG)Log.info(" iss   " + is.getAmount() +"   " + is.getMaxStackSize() +"    " + is);
 			if (is.getAmount() > is.getMaxStackSize()){
 				is = is.clone();
 				while (is.getAmount() > is.getMaxStackSize()){
@@ -1034,7 +1045,7 @@ public class InventoryUtil {
 		while (idx< items.size() && idx<pitems.size()){
 			is1 = items.get(idx);
 			is2 = pitems.get(idx);
-			if (DEBUG) System.out.println(idx  +" : " + is1 +"  " + is2);
+			if (DEBUG) Log.info(idx  +" : " + is1 +"  " + is2);
 			if ((is1==null || is1.getType() == Material.AIR) && (is2 == null || is2.getType() == Material.AIR))
 				return true;
 			if ((is1==null || is1.getType() == Material.AIR) || (is2 == null || is2.getType() == Material.AIR))
@@ -1084,6 +1095,7 @@ public class InventoryUtil {
 				}
 			}
 			inv.setContents(pinv.contents);
+
 		} catch(Exception e){
 			e.printStackTrace();
 		}

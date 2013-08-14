@@ -8,6 +8,7 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
@@ -138,7 +139,7 @@ public class EventOpenOptions {
 //			params.setNTeams(new MinMax(2));
 //			ops.put(EventOpenOption.NTEAMS, new MinMax(2));
 //		}
-		eoo.params = new MatchParams(params);
+		eoo.params = ParamController.copyParams(params);
 		eoo.updateParams(eoo.params);
 		return eoo;
 	}

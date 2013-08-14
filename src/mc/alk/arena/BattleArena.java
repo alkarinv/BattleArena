@@ -344,6 +344,14 @@ public class BattleArena extends JavaPlugin {
 	public static boolean inArena(Player player){
 		return InArenaListener.inArena(player.getName());
 	}
+	/**
+	 * Is the player physically inside an arena
+	 * @param player: the player you want to check
+	 * @return true or false: whether they are in inside an arena
+	 */
+	public static boolean inArena(ArenaPlayer player){
+		return InArenaListener.inArena(player.getName());
+	}
 
 	@Override
 	/**

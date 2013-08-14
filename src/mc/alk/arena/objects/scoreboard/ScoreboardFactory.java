@@ -16,7 +16,7 @@ public class ScoreboardFactory {
 	}
 
 	public static ArenaScoreboard createScoreboard(Match match, MatchParams params) {
-		if (!Defaults.USE_SCOREBOARD)
+		if (!Defaults.USE_SCOREBOARD || Defaults.TESTSERVER)
 			return new ArenaScoreboard(match, params);
 		return hasBukkitScoreboard ? new BukkitScoreboard(match, params) :  new ArenaScoreboard(match, params);
 	}

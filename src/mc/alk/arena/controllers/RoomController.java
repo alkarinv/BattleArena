@@ -38,7 +38,7 @@ public enum RoomController {
 		RoomContainer room = waitrooms.get(arena.getName());
 		if (room == null){
 			if (arena.getWaitroom() == null){
-				room = new RoomContainer(new MatchParams(arena.getParams()), LocationType.WAITROOM);
+				room = new RoomContainer(ParamController.copyParams(arena.getParams()), LocationType.WAITROOM);
 			} else {
 				room = arena.getWaitroom();
 			}

@@ -192,7 +192,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		if (state == EventState.CLOSED)
 			return;
 		transitionTo(EventState.CLOSED);
-		if (Defaults.DEBUG_TRACE) System.out.println("BAEvent::endEvent");
+		if (Defaults.DEBUG_TRACE) Log.info("BAEvent::endEvent");
 		stopTimer();
 
 		removeAllTeams();

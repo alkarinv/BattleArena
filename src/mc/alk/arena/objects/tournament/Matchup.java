@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.listeners.custom.MatchCreationCallback;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -39,7 +40,7 @@ public class Matchup {
 
 	public Matchup(MatchParams params, Collection<ArenaTeam> teams, JoinOptions joinOptions) {
 		this.teams = new ArrayList<ArenaTeam>(teams);
-		this.params = new MatchParams(params);
+		this.params = ParamController.copyParams(params);
 		this.joinOptions = joinOptions;
 	}
 

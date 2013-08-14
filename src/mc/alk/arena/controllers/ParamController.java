@@ -60,9 +60,19 @@ public class ParamController {
 	 * @param type
 	 * @return
 	 */
+	public static MatchParams getMatchParams(ArenaType type){
+		return types.get(type.getName());
+	}
+	/**
+	 * Returns the found matchparams
+	 * If you want to change you should make a copy
+	 * @param type
+	 * @return
+	 */
 	public static MatchParams getMatchParams(String type){
 		return types.get(type);
 	}
+
 
 	/**
 	 * Return a copy of the found matchparams
@@ -117,11 +127,31 @@ public class ParamController {
 	}
 
 	public static MatchTransitions getTransitionOptions(ArenaParams arenaParams) {
+		if (arenaParams.getName() == null)
+			return null;
 		return transitions.get(arenaParams.getName());
 	}
 
 	public static EventParams getDefaultConfig() {
 		return (EventParams) types.get(Defaults.DEFAULT_CONFIG_NAME);
+	}
+
+	public static ArenaParams copy(ArenaParams parent) {
+		if (parent instanceof EventParams){
+			return new EventParams((EventParams)parent);
+		} else if (parent instanceof MatchParams){
+			return new MatchParams((MatchParams)parent);
+		} else {
+			return new ArenaParams(parent);
+		}
+	}
+
+	public static MatchParams copyParams(MatchParams parent) {
+		if (parent instanceof EventParams){
+			return new EventParams(parent);
+		} else {
+			return new MatchParams(parent);
+		}
 	}
 
 }

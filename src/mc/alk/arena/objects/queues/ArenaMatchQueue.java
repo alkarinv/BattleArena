@@ -122,7 +122,7 @@ public class ArenaMatchQueue{
 		/// return if we aren't going to check for a start (aka we already have too many matches running)
 		JoinResult qr;
 		if (!suspend && checkStart)
-			qr = joinQueue(tq);
+			qr = joinQueue(tq,to);
 		else
 			qr = new JoinResult();
 		qr.params = tq.getMatchParams();
@@ -140,7 +140,7 @@ public class ArenaMatchQueue{
 	 * @param to
 	 * @return
 	 */
-	private IdTime updateTimer(final TeamCollection tq, QueueObject to) {
+	private IdTime updateTimer(final TeamCollection tq, final QueueObject to) {
 		JoinOptions jo = to.getJoinOptions();
 		if (jo.getJoinTime() == null)
 			return null;
@@ -154,7 +154,7 @@ public class ArenaMatchQueue{
 				idt.id = Scheduler.scheduleSynchrounousTask(new Runnable(){
 					@Override
 					public void run() {
-						JoinResult qr = findMatch(tq,true, true);
+						JoinResult qr = findMatch(tq,true, true,to);
 						if (qr.match == null)
 							return;
 						forceTimers.remove(tq.getMatchParams().getType());
@@ -177,16 +177,16 @@ public class ArenaMatchQueue{
 		for (TeamQueue tq: tqs.values()){
 			if (tq == null || tq.isEmpty())
 				continue;
-			notified |= joinQueue(tq).match != null;
+			notified |= joinQueue(tq,null).match != null;
 		}
 		return notified;
 	}
 
-	private JoinResult joinQueue(TeamCollection tq) {
+	private JoinResult joinQueue(TeamCollection tq, QueueObject qo) {
 		if (tq==null || arenaqueue.isEmpty() || tq.isEmpty())
 			return new JoinResult();
 
-		JoinResult qr = findMatch(tq, false, true);
+		JoinResult qr = findMatch(tq, false, true,qo);
 
 		return qr;
 	}
@@ -219,28 +219,31 @@ public class ArenaMatchQueue{
 	/**
 	 * @param TeamQueue : Queue we are searching for matches
 	 * @param forceStart : whether we are trying to start a match that usually would need more players
+	 * @param qo2
 	 * @return Match if one can be created from the specified TeamQueue
 	 */
-	private JoinResult findMatch(final TeamCollection tq, boolean forceStart, boolean forceStartRespectMinimumPlayers) {
+	private JoinResult findMatch(final TeamCollection tq, boolean forceStart,
+			boolean forceStartRespectMinimumPlayers, QueueObject joiningObject) {
 		if (suspend)
 			return new JoinResult();
 		if (Defaults.DEBUGQ) System.out.println("findMatch " + tq +"  " + tq.size() +"  mp=" + tq.getMatchParams());
 		/// The idea here is we iterate through all arenas
 		/// See if one matches with the type of TeamQueue that we have been given
 		/// Then we make sure those players are ready, and if not send them messages
-		final MatchParams baseParams = ParamController.getMatchParamCopy(tq.getMatchParams().getType().getName());
+		final MatchParams gameParams = ParamController.getMatchParamCopy(tq.getMatchParams().getType().getName());
 		//		final MatchParams baseParams = new MatchParams(tq.getMatchParams());
 
 		JoinResult qr = new JoinResult();
+
 		qr.status = JoinStatus.ADDED_TO_QUEUE;
 		qr.pos = tq.size();
 		qr.playersInQueue = tq.playerSize();
-		if (baseParams != null){
-			qr.maxPlayers = baseParams.getMaxPlayers();
-			if (baseParams.getMinPlayers() == baseParams.getMaxPlayers())
+		if (gameParams != null){
+			qr.maxPlayers = gameParams.getMaxPlayers();
+			if (gameParams.getMinPlayers() == gameParams.getMaxPlayers())
 				qr.timeStatus = TimeStatus.CANT_FORCESTART;
 		}
-		qr.params = baseParams;
+		qr.params = gameParams;
 
 		qr.teamsInQueue = tq.size();
 		IdTime idt = forceTimers.get(tq.getMatchParams().getType());
@@ -257,9 +260,9 @@ public class ArenaMatchQueue{
 			qr.timeStatus = TimeStatus.CANT_FORCESTART;
 		}
 		if (forceStart){
-			baseParams.setMinTeamSize(forceStartRespectMinimumPlayers ? baseParams.getMinTeamSize() : 1);
-			baseParams.setMinTeams(forceStartRespectMinimumPlayers ? baseParams.getMinTeams():
-				Math.min(baseParams.getMinTeams(),2));
+			gameParams.setMinTeamSize(forceStartRespectMinimumPlayers ? gameParams.getMinTeamSize() : 1);
+			gameParams.setMinTeams(forceStartRespectMinimumPlayers ? gameParams.getMinTeams():
+				Math.min(gameParams.getMinTeams(),2));
 		}
 		if (qr.timeStatus != TimeStatus.CANT_FORCESTART){
 			qr.timeStatus = forceStart ? TimeStatus.TIME_EXPIRED : TimeStatus.TIME_ONGOING;
@@ -268,43 +271,43 @@ public class ArenaMatchQueue{
 		boolean skipNonMatched = false;
 		synchronized(arenaqueue){ synchronized(tq){
 			for (Arena a : arenaqueue){
-				if (a == null || (a.getArenaType() != baseParams.getType()) || !a.valid() || !a.isOpen())
+				if (a == null || (a.getArenaType() != gameParams.getType()) || !a.valid() || !a.isOpen())
 					continue;
-
-				MatchParams newParams = new MatchParams(baseParams);
-//				if (a.getParams().getTeamSizes() != null)
-					newParams.setTeamSizes(a.getParams().getTeamSizes());
-//				if (a.getParams().getNTeams() != null)
-					newParams.setNTeams(a.getParams().getNTeams());
-					if (Defaults.DEBUGQ) Log.info("----- AMQ check arena = " + a +
-							"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+baseParams.toPrettyString() +
-							" tqparams="+tq.getMatchParams().toPrettyString() +"  matches="  + a.matches(baseParams, null));
-					if (!a.matches(baseParams, null)){
-						for (String s : a.getInvalidMatchReasons(baseParams, null)){
-							Log.debug("   s=== " + s);
-						}
-					}
-				if (!forceStart && !newParams.intersect(a.getParams())){ /// only intersect if not forceStart
+				if (joiningObject != null && joiningObject.getJoinOptions().hasArena() &&
+						!joiningObject.getJoinOptions().getArena().equals(a))
 					continue;
-				} else if (forceStart){
-					newParams.intersectMax(a.getParams());
+				if (joiningObject != null && joiningObject.getJoinOptions().hasArena() &&
+						joiningObject.getJoinOptions().getArena().equals(a)){
+					qr.params = a.getParams();
+//					System.out.println(" *****************  max=" + qr.maxPlayers);
 				}
+				MatchParams newParams = a.getParams();
+				if (Defaults.DEBUGQ) Log.info("----- AMQ check matches="+ a.matches(gameParams, null) + " arena = " + a +
+							"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+gameParams.toPrettyString() +
+							" tqparams="+tq.getMatchParams().toPrettyString());
+//				if (!forceStart && !newParams.intersect(a.getParams())){ /// only intersect if not forceStart
+//					continue;
+//				} else if (forceStart){
+//					newParams.intersectMax(a.getParams());
+//				}
+				/// Get both the ArenaQueue and GameQueue, or just the teamQueue
 				final TeamCollection iterate;
 				if (tq instanceof CompositeTeamQueue){
 					iterate = tq;
 				} else {
-					TeamQueue aq = getArenaTeamQ(baseParams, a);
+					TeamQueue aq = getArenaTeamQ(gameParams, a);
 					if (aq != null){
 						iterate = new CompositeTeamQueue(aq,tq);
 					} else {
 						iterate = tq;
 					}
 				}
+//				System.out.println(a.getName()+  " ####  " + a.getParams().getParent().getName() +"  ##############  " +
+//						newParams.getMinPlayers() +" <---- " + iterate.playerSize() +"  " + newParams.getParent().getParent().getName());
 				if (newParams.getMinPlayers() > iterate.playerSize())
 					continue;
-
 				if (Defaults.DEBUGQ) Log.info("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
-						"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+baseParams.toPrettyString() +" newP="+newParams.toPrettyString() +"  " + newParams.getMaxPlayers() +
+						"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+gameParams.toPrettyString() +" newP="+newParams.toPrettyString() +"  " + newParams.getMaxPlayers() +
 						" tqparams="+tq.getMatchParams().toPrettyString());
 				for (QueueObject qo : iterate){
 					/// Check if we should only use 1 arena (skipNonMatched == true).  But for certain elements in the queue
@@ -313,26 +316,30 @@ public class ArenaMatchQueue{
 					/// Allow people that selected particular join options (like certain arenas) to get a chance
 					if (skipNonMatched && qo instanceof TeamJoinObject){
 						JoinOptions jpo = qo.getJoinOptions();
+//						Log.debug(" !!! ------------  qomp " +qo.getMatchParams().getSize() +
+//								"    " + newParams.getSize() +"   "+
+//								qo.getJoinOptions() +"    " );
 						if (!jpo.matches(newParams))
 							continue;
 					}
-					MatchParams qomp = qo.getMatchParams();
+//					MatchParams qomp = qo.getMatchParams();
 					/// Check to see if the team matches these params
-					if (!qomp.matches(newParams)){
-						if (!forceStart){ /// continue to next queue object
-							continue;
-						} else { /// since we are trying to force a start... how bad does this player not match?
-							/// alright, do they want a particular place/size we aren't doing
-							JoinOptions jpo = qo.getJoinOptions();
-							if (jpo.hasArena() || jpo.hasTeamSize())
-								continue;
-						}
-					}
+					//					if (!qomp.matches(newParams)){
+					//						if (!forceStart){ /// continue to next queue object
+					//							continue;
+					//						} else { /// since we are trying to force a start... how bad does this player not match?
+					//							/// alright, do they want a particular place/size we aren't doing
+					//							JoinOptions jpo = qo.getJoinOptions();
+					//							if ((jpo.hasArena() && !jpo.getArena().equals(a)) || jpo.hasTeamSize())
+					//								continue;
+					//						}
+					//					}
 
 					try {
-						MatchParams playerMatchAndArenaParams = new MatchParams(newParams);
+						MatchParams playerMatchAndArenaParams = ParamController.copyParams(newParams);
 						//						MatchParams playerMatchAndArenaParams = new MatchParams(a.getParams());
 						//						playerMatchAndArenaParams.setParent(newParams);
+						//						newParams.setParent(ParamController.getMatchParamCopy(newParams.getType()));
 						qr.maxPlayers = playerMatchAndArenaParams.getMaxPlayers();
 						findMatch(qr, playerMatchAndArenaParams,a,iterate, forceStart);
 					} catch (NeverWouldJoinException e) {
@@ -454,10 +461,16 @@ public class ArenaMatchQueue{
 				ArenaTeam originalTeam = oteams.get(ap).getTeam(ap);
 				originalTeams.add(originalTeam);
 				tq.remove(oteams.get(ap));
-				ParamTeamPair ptp = new ParamTeamPair(tq.getMatchParams(),t, QueueType.GAME, null, tq.playerSize());
-				leaveQueue(ap, t, params,ptp);
 			}
 			t.setCurrentParams(params);
+		}
+		/// send out queue events now that the queue has been resized
+		for (ArenaTeam t: teams){
+			int playerSize = tq.playerSize();
+			for (ArenaPlayer ap :t.getPlayers()){
+				ParamTeamPair ptp = new ParamTeamPair(tq.getMatchParams(),t, QueueType.GAME, arena, playerSize);
+				leaveQueue(ap, t, params,ptp);
+			}
 		}
 		final Match m = new ArenaMatch(arena, params);
 		if (	m.getParams().getAlwaysOpen() ||
@@ -823,10 +836,10 @@ public class ArenaMatchQueue{
 		JoinResult qr = null;
 		/// try to find it without forcing first
 		if (force){
-			qr = findMatch(tq, true, false);}
+			qr = findMatch(tq, true, false,null);}
 		/// Try to find it with force option
 		if (qr == null)
-			qr = findMatch(tq, true, force);
+			qr = findMatch(tq, true, force,null);
 		if (qr.match == null)
 			return false;
 		return true;

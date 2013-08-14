@@ -301,11 +301,11 @@ public abstract class BaseExecutor implements ArenaExecutor{
 	protected Arguments verifyArgs(MethodWrapper mwrapper, MCCommand cmd,
 			CommandSender sender, Command command, String label, String[] args, int startIndex) throws IllegalArgumentException{
 		if (DEBUG){
-			System.out.println(" method="+mwrapper.method.getName() + " verifyArgs " + cmd +" sender=" +sender+", label=" + label+" args="+args);
+			Log.info(" method="+mwrapper.method.getName() + " verifyArgs " + cmd +" sender=" +sender+", label=" + label+" args="+args);
 			for (String arg: args){
-				System.out.println(" -- arg=" +arg);}
+				Log.info(" -- arg=" +arg);}
 			for (Class<?> t: mwrapper.method.getParameterTypes()){
-				System.out.println(" -- type=" +t);}
+				Log.info(" -- type=" +t);}
 		}
 		final int paramLength = mwrapper.method.getParameterTypes().length;
 
@@ -365,7 +365,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 						throw new IllegalArgumentException("Argument " + args[strIndex] + " can not be null");
 					}
 				}
-				if (DEBUG)System.out.println("   " + objIndex + " : " + strIndex + "  " +
+				if (DEBUG)Log.info("   " + objIndex + " : " + strIndex + "  " +
 						(args.length > strIndex ? args[strIndex] : null ) + " <-> " + objs[objIndex] +" !!!!!!!!!!!!!!!!!!!!!!!!!!! Cs = " + clazz.getCanonicalName());
 				if (usedString.get()){
 					strIndex++;}

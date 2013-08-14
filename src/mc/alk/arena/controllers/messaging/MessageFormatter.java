@@ -12,6 +12,7 @@ import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.MessageSerializer;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
 
@@ -570,10 +571,11 @@ public class MessageFormatter{
 
 		return replaceEach(result, searchList, replacementList, repeat, timeToLive - 1);
 	}
+
 	public void printMap(){
-		System.out.println("!!!!!!!!!!!!!! " + commonIndex +"   " + teamIndex);
+		Log.info("!!!!!!!!!!!!!! " + commonIndex +"   " + teamIndex);
 		for (int i=0;i<searchList.length;i++){
-			System.out.println(i +" : " + replaceList[i] +"  ^^^ " + searchList[i]);
+			Log.info(i +" : " + replaceList[i] +"  ^^^ " + searchList[i]);
 		}
 	}
 }

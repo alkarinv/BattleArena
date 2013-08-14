@@ -248,17 +248,6 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return deadplayers.size() == players.size();
 	}
 
-	/**
-	 * Call when a player has left this team
-	 */
-	public void playerLeft(ArenaPlayer p) {
-		if (!hasMember(p))
-			return;
-		deadplayers.remove(p);
-		players.remove(p);
-		leftplayers.add(p);
-	}
-
 	public boolean allPlayersOffline() {
 		for (ArenaPlayer p: players){
 			if (p.isOnline())
@@ -375,6 +364,17 @@ public abstract class AbstractTeam implements ArenaTeam{
 		this.kills.remove(player);
 		this.deaths.remove(player);
 		this.nameChanged = true;
+	}
+
+	/**
+	 * Call when a player has left this team
+	 */
+	public void playerLeft(ArenaPlayer p) {
+		if (!hasMember(p))
+			return;
+		deadplayers.remove(p);
+		players.remove(p);
+		leftplayers.add(p);
 	}
 
 	@Override

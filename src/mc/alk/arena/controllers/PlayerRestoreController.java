@@ -15,8 +15,6 @@ import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.Util;
 
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -51,7 +49,6 @@ public class PlayerRestoreController {
 	}
 
 	public synchronized boolean handle(final Player p, PlayerRespawnEvent event) {
-		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
 		if (message != null){
 			handleMessage(p);}
 
@@ -139,7 +136,7 @@ public class PlayerRestoreController {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 			public void run() {
 				Player pl = ServerUtil.findPlayerExact(name);
-				if (Defaults.DEBUG_STORAGE) System.out.println("### restoring items to " + name +"   pl = " + pl);
+				if (Defaults.DEBUG_STORAGE) Log.info("### restoring items to " + name +"   pl = " + pl);
 				if (pl != null){
 					ArenaPlayer ap = PlayerController.toArenaPlayer(pl);
 					PlayerStoreController.setInventory(ap, items);

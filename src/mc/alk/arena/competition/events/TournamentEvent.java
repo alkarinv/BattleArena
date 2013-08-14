@@ -202,7 +202,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 
 		if (roundFinished()){
 			TimeUtil.testClock();
-			if (Defaults.DEBUG) System.out.println("ROUND FINISHED !!!!!   " + aliveTeams);
+			if (Defaults.DEBUG) Log.info("ROUND FINISHED !!!!!   " + aliveTeams);
 
 			if (round+1 == nrounds || isFinished()){
 				ArenaTeam t = aliveTeams.get(0);

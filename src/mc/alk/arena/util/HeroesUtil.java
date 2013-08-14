@@ -48,7 +48,6 @@ public abstract class HeroesUtil {
 		Hero hero = getHero(player);
 		if (hero == null)
 			return;
-		//		System.out.println("Heroes oldClass=" + hero.getHeroClass().getName()+"  new=" + hc.getName());
 		if (hero.getHeroClass().getName().equals(hc.getName()))
 			return;
 		hero.setHeroClass(hc, false);

@@ -16,6 +16,7 @@ import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.WorldGuardController;
+import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
@@ -223,13 +224,12 @@ public class ArenaSerializer extends BaseConfig{
 			return false;
 		}
 
-		ParamController.addArenaParams(name, mp);
 		Arena arena = ArenaType.createArena(name, mp,false);
 		if (arena == null){
 			Log.err("Couldnt load the Arena " + name);
 			return false;
 		}
-		Log.debug(" Arena = = " + arena.getParams());
+		ParamController.addArenaParams(name, mp);
 
 		/// Spawns
 		ConfigurationSection loccs = cs.getConfigurationSection("locations");
@@ -321,7 +321,8 @@ public class ArenaSerializer extends BaseConfig{
 				ArenaType at = arena.getArenaType();
 				if (!at.getPlugin().getName().equals(plugin.getName()))
 					continue;
-
+				ArenaParams parentParams = arena.getParams().getParent();
+				arena.getParams().setParent(null);
 				HashMap<String, Object> amap = new HashMap<String, Object>();
 				amap.put("type", at.getName());
 
@@ -389,6 +390,7 @@ public class ArenaSerializer extends BaseConfig{
 				SerializerUtil.expandMapIntoConfig(arenacs, amap);
 
 				ConfigSerializer.saveParams(arena.getParams(), arenacs.createSection("params"), true);
+				arena.getParams().setParent(parentParams);
 
 				config.set("brokenArenas."+arenaname, null); /// take out any duplicate names in broken arenas
 			} catch (Exception e){

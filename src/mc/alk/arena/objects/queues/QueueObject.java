@@ -18,17 +18,6 @@ public abstract class QueueObject {
 	public QueueObject(JoinOptions jp){
 		this.jp = jp;
 	}
-	public MatchParams getMatchParams() {
-		return matchParams;
-	}
-
-	public JoinOptions getJoinOptions() {
-		return jp;
-	}
-
-//	public void setJoinOptions(JoinOptions jp) {
-//		this.jp = jp;
-//	}
 
 	public abstract Integer getPriority();
 
@@ -43,4 +32,13 @@ public abstract class QueueObject {
 	public abstract boolean hasTeam(ArenaTeam team);
 
 	public long getJoinTime(){return jp.getJoinTime();}
+
+	public MatchParams getMatchParams() {
+		return matchParams;
+	}
+
+	public JoinOptions getJoinOptions() {
+		return jp;
+	}
+
 }

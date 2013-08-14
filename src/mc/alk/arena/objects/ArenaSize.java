@@ -51,6 +51,12 @@ public class ArenaSize implements CompetitionSize{
 		return size1 == null || size2 == null ? false : size1.matchesNTeams(size2);
 	}
 
+	public static boolean lower(MinMax child, MinMax parent) {
+		if (child == null || parent == null)
+			return true;
+		return child.max < parent.max;
+	}
+
 	@Override
 	public void setTeamSize(int size) {
 		minTeamSize = maxTeamSize = size;

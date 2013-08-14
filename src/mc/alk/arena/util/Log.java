@@ -4,15 +4,22 @@ import java.util.logging.Logger;
 
 import mc.alk.arena.Defaults;
 
+import org.bukkit.Bukkit;
+
 public class Log {
 	private static Logger log = Logger.getLogger("Arena");
 
 	public static void info(String msg){
 		if (msg == null) return;
-		if (log != null)
-			log.info(colorChat(msg));
-		else
-			System.out.println(colorChat(msg));
+		try{
+			MessageUtil.sendMessage(Bukkit.getConsoleSender(),colorChat(msg));
+		} catch (Exception e){
+			if (log != null)
+				log.info(colorChat(msg));
+			else
+				System.out.println(colorChat(msg));
+
+		}
 	}
 	public static void warn(String msg){
 		if (msg == null) return;
@@ -35,8 +42,14 @@ public class Log {
 	}
 
 	public static void debug(String msg){
-		if (Defaults.DEBUG_MSGS)
-			System.out.println(msg);
+		msg = MessageUtil.colorChat(msg);
+		if (Defaults.DEBUG_MSGS){
+			try{
+				MessageUtil.sendMessage(Bukkit.getConsoleSender(),msg);
+			} catch (Exception e){
+				System.out.println(msg);
+			}
+		}
 		if (NotifierUtil.hasListener("debug")){
 			NotifierUtil.notify("debug", msg);}
 	}

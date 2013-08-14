@@ -20,6 +20,9 @@ public class SignUpdateListener implements Listener{
 
 	@EventHandler
 	public void onArenaPlayerEnterQueueEvent(ArenaPlayerEnterQueueEvent event){
+//		Log.debug("onArenaPlayerEnterQueueEvent === "+ event.getPlayer().getName() +"   " +
+//				event.getQueueResult().playersInQueue +" / " + event.getQueueResult().maxPlayers);
+
 		Arena arena = event.getArena();
 		if (arena == null) return;
 		int size = event.getQueueResult().playersInQueue;
@@ -47,6 +50,7 @@ public class SignUpdateListener implements Listener{
 //					newLine = playersInQueue+"/&6"+neededPlayers+" &80";
 //				}
 				newLine = playersInQueue+"/&6"+needed;
+//				Log.debug("newLine === "+ newLine);
 				s.setLine(3, MessageUtil.colorChat(newLine));
 				s.update();
 			}
@@ -55,6 +59,9 @@ public class SignUpdateListener implements Listener{
 
 	@EventHandler
 	public void onArenaPlayerLeaveQueueEvent(ArenaPlayerLeaveQueueEvent event){
+//		Log.debug("onArenaPlayerLeaveQueueEvent === "+ event.getPlayer().getName() +"   " +
+//				event.getNPlayers() +" / " + event.getParams().getMinPlayers() +"  " + event.getParams().getMaxPlayers());
+
 		Arena arena = event.getArena();
 		if (arena ==null) return;
 		int size = event.getNPlayers();

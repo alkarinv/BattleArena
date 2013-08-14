@@ -15,6 +15,7 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.regions.PylamoRegion;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.serializers.PlayerContainerSerializer;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.TeamUtil;
@@ -101,7 +102,7 @@ public class ArenaAlterController {
 		return true;
 	}
 
-	public static boolean alterArena(CommandSender sender, MatchParams params, Arena arena, String[] args)
+	public static boolean setArenaOption(CommandSender sender, MatchParams params, Arena arena, String[] args)
 		throws IllegalStateException
 	{
 		if (args.length < 3){
@@ -115,7 +116,7 @@ public class ArenaAlterController {
 		if (args.length > 3)
 			value = args[3];
 		String[] otherOptions = args.length > 4 ? Arrays.copyOfRange(args, 4, args.length) : null;
-		if (Defaults.DEBUG) System.out.println("alterArena arena=" + arena +":" + changetype + ":" + value);
+		if (Defaults.DEBUG) Log.info("alterArena arena=" + arena +":" + changetype + ":" + value);
 
 		boolean success = false;
 		ChangeType ct = ChangeType.fromName(changetype);
@@ -283,7 +284,7 @@ public class ArenaAlterController {
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}
-		MatchParams mp = ParamController.getMatchParamCopy(arena.getArenaType());
+		MatchParams mp = ParamController.getMatchParams(arena.getArenaType());
 		if (mp == null){
 			throw new IllegalStateException("MatchParams for " + arena.getArenaType() +" could not be found");}
 		if (arena.getWaitroom() == null){
@@ -371,13 +372,13 @@ public class ArenaAlterController {
 	}
 
 	private static void showAlterHelp(CommandSender sender) {
-		sendMessage(sender,ChatColor.GOLD+ "Usage: /arena alter <arenaname> <teamSize|nTeams|type|1|2|3...|vloc|waitroom> <value> [option]");
-		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena 1 &e: sets spawn location 1 to where you are standing");
+		sendMessage(sender,ChatColor.GOLD+ "Usage: /arena edit <arenaname> <teamSize|nTeams|type|1|2|3...|vloc|waitroom> <value> [option]");
+		sendMessage(sender,ChatColor.GOLD+ "Example: /arena edit MainArena 1 &e: sets spawn location 1 to where you are standing");
 //		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena 1 wg &e: causes spawn 1 to have the worldguard area selected");
-		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena teamSize 3+ ");
-		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena nTeams 2 ");
-		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena type deathmatch ");
-		sendMessage(sender,ChatColor.GOLD+ "      or /arena alter MainArena waitroom 1 &e: sets waitroom 1 to your location");
+		sendMessage(sender,ChatColor.GOLD+ "Example: /arena edit MainArena teamSize 3+ ");
+		sendMessage(sender,ChatColor.GOLD+ "Example: /arena edit MainArena nTeams 2 ");
+		sendMessage(sender,ChatColor.GOLD+ "Example: /arena edit MainArena type deathmatch ");
+		sendMessage(sender,ChatColor.GOLD+ "      or /arena edit MainArena waitroom 1 &e: sets waitroom 1 to your location");
 	}
 
 	public static Location parseLocation(CommandSender sender, String svl) {

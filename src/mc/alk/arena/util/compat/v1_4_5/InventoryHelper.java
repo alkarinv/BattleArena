@@ -13,7 +13,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 public class InventoryHelper implements IInventoryHelper{
 
 	@Override
-	public void setItemColor(ItemStack itemStack, Color color) {
+	public void setColor(ItemStack itemStack, Color color) {
 		ItemMeta meta = itemStack.getItemMeta();
 		if (meta != null && itemStack.getItemMeta() instanceof LeatherArmorMeta){
 			org.bukkit.Color bukkitColor = getBukkitColor(color);
@@ -21,6 +21,16 @@ public class InventoryHelper implements IInventoryHelper{
 			lam.setColor(bukkitColor);
 			itemStack.setItemMeta(lam);
 		}
+	}
+
+	@Override
+	public Color getColor(ItemStack itemStack) {
+		ItemMeta meta = itemStack.getItemMeta();
+		if (meta != null && itemStack.getItemMeta() instanceof LeatherArmorMeta){
+			LeatherArmorMeta lam = (LeatherArmorMeta) itemStack.getItemMeta();
+			return new Color(lam.getColor().getRed(), lam.getColor().getGreen(), lam.getColor().getBlue());
+		}
+		return null;
 	}
 
 	public static org.bukkit.Color getBukkitColor(Color color){
@@ -37,12 +47,24 @@ public class InventoryHelper implements IInventoryHelper{
 	}
 
 	@Override
+	public List<String> getLore(ItemStack itemStack) {
+		ItemMeta meta = itemStack.getItemMeta();
+		return meta == null ? null : meta.getLore();
+	}
+
+	@Override
 	public void setDisplayName(ItemStack itemStack, String displayName) {
 		ItemMeta meta = itemStack.getItemMeta();
 		if(meta != null){
 			meta.setDisplayName(displayName);
 			itemStack.setItemMeta(meta);
 		}
+	}
+
+	@Override
+	public String getDisplayName(ItemStack itemStack) {
+		ItemMeta meta = itemStack.getItemMeta();
+		return meta == null ? null : meta.getDisplayName();
 	}
 
 	@Override
@@ -53,5 +75,13 @@ public class InventoryHelper implements IInventoryHelper{
 		    sm.setOwner(ownerName);
 		    itemStack.setItemMeta(sm);
 		}
+	}
+
+	@Override
+	public String getOwnerName(ItemStack itemStack) {
+		ItemMeta im = itemStack.getItemMeta();
+		if (im != null && im instanceof SkullMeta){
+			return ((SkullMeta)im).getOwner();}
+		return null;
 	}
 }

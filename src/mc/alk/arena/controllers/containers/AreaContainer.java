@@ -27,7 +27,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 
 public class AreaContainer extends AbstractAreaContainer{
-	Map<String, Long> userTime = new ConcurrentHashMap<String, Long>();
+//	Map<String, Long> userTime = new ConcurrentHashMap<String, Long>();
 //	Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
 	Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
 	final LocationType type;
@@ -108,7 +108,7 @@ public class AreaContainer extends AbstractAreaContainer{
 		/// Check to see if it's a sign
 		if (event.getClickedBlock().getType().equals(Material.SIGN_POST)||
 				event.getClickedBlock().getType().equals(Material.WALL_SIGN)){ /// Only checking for signs
-			ArenaMatch.signClick(event,this,userTime);
+			ArenaMatch.signClick(event,this);
 		} else if (event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)) {
 			if (respawnTimer.containsKey(event.getPlayer().getName())){
 				ArenaMatch.respawnClick(event,this, respawnTimer);

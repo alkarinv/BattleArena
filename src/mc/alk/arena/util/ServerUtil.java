@@ -111,24 +111,11 @@ public class ServerUtil {
 	public static Version getBukkitVersion(){
 		final String pkg = Bukkit.getServer().getClass().getPackage().getName();
 		String version = pkg.substring(pkg.lastIndexOf('.') + 1);
-		System.out.println("version = " + version +"    " + Bukkit.getVersion());
-		System.out.println("version = " + version +"    " + Bukkit.getVersion());
-		System.out.println("version = " + version +"    " + Bukkit.getVersion());
-		System.out.println("version = " + version +"    " + Bukkit.getVersion());
-		System.out.println("version = " + version +"    " + Bukkit.getVersion());
-		System.out.println("version = " + version +"    " + Bukkit.getVersion());
-//		final Class<?> clazz;
-//		try {
-			if (version.equalsIgnoreCase("craftbukkit")){
-				return new Version("v1_4_5-");
-			} else{
-				return new Version(version);
-			}
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//		return null;
+		if (version.equalsIgnoreCase("craftbukkit")){
+			return new Version("v1_4_5-");
+		} else{
+			return new Version(version);
+		}
 	}
 
 }

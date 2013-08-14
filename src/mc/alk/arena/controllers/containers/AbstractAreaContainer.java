@@ -77,7 +77,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
 	public AbstractAreaContainer(){
 		methodController.addAllEvents(this);
-		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
+		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());}catch(Exception e){}
 	}
 
 	public void callEvent(BAEvent event){
@@ -229,6 +229,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 	public Location getMainSpawn(){
 		return mainSpawn;
 	}
+
 	public String getName() {
 		return name;
 	}
@@ -238,7 +239,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 	}
 
 	public String getDisplayName() {
-		return displayName;
+		return displayName == null ? name : displayName;
 	}
 
 	public void setDisplayName(String displayName) {

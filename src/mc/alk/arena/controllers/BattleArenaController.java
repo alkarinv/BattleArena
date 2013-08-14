@@ -20,6 +20,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.listeners.SignUpdateListener;
@@ -103,7 +104,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	public BattleArenaController(SignUpdateListener signUpdateListener){
 		methodController = new MethodController();
 		methodController.addAllEvents(this);
-		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
+		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());}catch(Exception e){}
 		this.signUpdateListener = signUpdateListener;
 	}
 
@@ -221,7 +222,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 
 	@ArenaEventHandler
 	public void matchFinished(MatchFinishedEvent event){
-		if (Defaults.DEBUG ) System.out.println("BattleArenaController::matchFinished=" + this + ":" );
+		if (Defaults.DEBUG ) Log.info("BattleArenaController::matchFinished=" + this + ":" );
 		Match am = event.getMatch();
 		removeMatch(am); /// handles removing running match from the BArenaController
 		decNumberOpenMatches(am.getArena().getArenaType().getName());
@@ -293,7 +294,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	 * @param Add the TeamQueueing object to the queue
 	 * @return
 	 */
-	public JoinResult wantsToJoin(TeamJoinObject tqo) {
+	public JoinResult wantsToJoin(TeamJoinObject tqo) throws IllegalStateException{
 		/// Can they join an existing Game
 		if (joinExistingMatch(tqo)){
 			JoinResult qr = new JoinResult();
@@ -688,6 +689,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 				am.cancelMatch();
 			}
 		}
+		GameManager.cancelAll();
 		amq.resume();
 	}
 

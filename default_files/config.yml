@@ -1,4 +1,4 @@
-configVersion: 2.2.7
+configVersion: 2.2.8
 
 # For help the wiki is a good source of information
 # Wiki: # http://battleplugins.com/w/index.php/BattleArena
@@ -114,6 +114,7 @@ defaultOptions:
     onServerStart: []
     timeBetweenScheduledEvents: 30 ## seconds between end of one event, and start of another
     announceTimeTillNextEvent: false
+    announceGivenItemsOrClass: true ## When players are given items or a class tell them the items
   
     #### Match/Event Announcements ####
     ## these only affect the broadcasts to the server or channel, not the messages the fighting players receive

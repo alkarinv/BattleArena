@@ -49,7 +49,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		} else if(section.equalsIgnoreCase("storage")){
 			Defaults.DEBUG_STORAGE = on;
 		} else if(section.equalsIgnoreCase("damage")){
-//			Defaults.DEBUG_DAMAGE = on;
+			//			Defaults.DEBUG_DAMAGE = on;
 		} else if(section.equalsIgnoreCase("commands")){
 			Defaults.DEBUG_COMMANDS = on;
 		} else if(section.equalsIgnoreCase("debug")){
@@ -105,7 +105,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		Match am = ac.getMatch(pl);
 		if (am == null){
 			return sendMessage(sender,"&ePlayer " + pl.getName() +" is not in a match");}
-//		am.addKill(pl);
+		//		am.addKill(pl);
 		ArenaTeam t = am.getTeam(pl);
 		if (t != null){
 			t.addKill(pl);
@@ -120,13 +120,16 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 
 	@MCCommand(cmds={"showVars"}, admin=true)
-	public boolean showVars(CommandSender sender, String paramName) {
+	public boolean showVars(CommandSender sender, String paramName, String[] args) {
 		MatchParams mp = findMatchParam(sender, paramName);
 		if (mp == null)
 			return true;
-		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(mp, ToStringStyle.MULTI_LINE_STYLE);
 		sendMessage(sender, mp.toString());
-		return sendMessage(sender, rtsb.toString());
+		if (args.length > 2 && args[2].equals("parent")){
+			return sendMessage(sender, new ReflectionToStringBuilder(mp.getParent(), ToStringStyle.MULTI_LINE_STYLE)+"");
+		} else {
+			return sendMessage(sender, new ReflectionToStringBuilder(mp, ToStringStyle.MULTI_LINE_STYLE)+"");
+		}
 	}
 
 	@MCCommand(cmds={"showTransitions"}, admin=true)
@@ -144,9 +147,14 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 
 	@MCCommand(cmds={"showArenaVars"}, admin=true)
-	public boolean showArenaVars(CommandSender sender, Arena arena) {
-		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(arena, ToStringStyle.MULTI_LINE_STYLE);
-		return sendMessage(sender, rtsb.toString());
+	public boolean showArenaVars(CommandSender sender, Arena arena, String[] args) {
+		if (args.length > 3 && args[3].equals("parent")){
+			return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams().getParent(), ToStringStyle.MULTI_LINE_STYLE)+"");
+		}  else if (args.length > 2 && args[2].equals("params")){
+			return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams(), ToStringStyle.MULTI_LINE_STYLE)+"");
+		} else {
+			return sendMessage(sender, new ReflectionToStringBuilder(arena, ToStringStyle.MULTI_LINE_STYLE)+"");
+		}
 	}
 
 	@MCCommand(cmds={"showMatchVars"}, admin=true)
@@ -174,7 +182,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 
 	private MatchParams findMatchParam(CommandSender sender, String paramName) {
-		MatchParams mp = ParamController.getMatchParamCopy(paramName);
+		MatchParams mp = ParamController.getMatchParams(paramName);
 		if (mp == null){
 			sendMessage(sender, "&cCouldn't find matchparams mp=" + paramName);}
 		return mp;

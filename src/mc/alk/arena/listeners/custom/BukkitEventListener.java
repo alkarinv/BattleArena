@@ -45,6 +45,7 @@ public abstract class BukkitEventListener implements Listener  {
 				invokeEvent(event);
 			}
 		};
+		if (Defaults.TESTSERVER) return;
 		Bukkit.getPluginManager().registerEvent(bukkitEvent, this, bukkitPriority, executor,BattleArena.getSelf());
 	}
 

@@ -155,7 +155,6 @@ public interface ArenaTeam {
 
 	public ArenaStat getStat(MatchParams mp);
 
-
 	public MatchParams getCurrentParams();
 
 	public void setCurrentParams(MatchParams params);

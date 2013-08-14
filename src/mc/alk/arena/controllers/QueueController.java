@@ -30,11 +30,11 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 	public QueueController(){
 		super();
 		methodController.addAllEvents(this);
-		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
+		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());} catch(Exception e){}
 	}
 
 	private void callEvent(BAEvent event){
-//		methodController.callEvent(event);
+		//		methodController.callEvent(event);
 		event.callEvent();
 	}
 
@@ -107,7 +107,6 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 				}
 				methodController.updateEvents(MatchState.ONENTER, t.getPlayers());
 			}
-
 			break;
 		case NONE:
 			break;

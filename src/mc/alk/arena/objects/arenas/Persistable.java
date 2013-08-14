@@ -56,7 +56,6 @@ public class Persistable {
 					continue;
 				}
 
-//				System.out.println("Type = " + type +"  " + name +"   " + annotations + "   " + cs.getString(name));
 				field.setAccessible(true);
 				try {
 					Object obj = null;
@@ -254,7 +253,6 @@ public class Persistable {
 				if (!(a instanceof Persist)){
 					continue;
 				}
-//						System.out.println("Type = " + type +"  " + name +"   " + annotations);
 				field.setAccessible(true);
 
 				try {

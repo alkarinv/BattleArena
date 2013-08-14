@@ -1,8 +1,10 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
@@ -19,13 +21,19 @@ public class StateController {
 		this.amq = amq;
 	}
 
-	public JoinResult join(TeamJoinObject tqo, boolean shouldStart) {
+	public JoinResult join(TeamJoinObject tqo, boolean shouldStart) throws IllegalStateException{
 		JoinResult jr = amq.join(tqo,shouldStart );
 		MatchParams mp = tqo.getMatchParams();
 		/// who is responsible for doing what
 		if (Defaults.DEBUG)Log.info(" Join status = " + jr.status +"    " + tqo.getTeam() + "   " + tqo.getTeam().getId() +" --"
 				+ ", haslobby="+mp.needsLobby() +"  ,wr="+(mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM))+"  "+
 				"   --- hasArena=" + tqo.getJoinOptions().hasArena());
+		if (tqo.getJoinOptions().hasArena()){
+			Arena a = tqo.getJoinOptions().getArena();
+			if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN) && BattleArena.getBAController().getMatch(a) != null){
+				throw new IllegalStateException("&cThe arena " + a.getDisplayName() +"&c is currently in use");
+			}
+		}
 		switch(jr.status){
 		case ADDED_TO_ARENA_QUEUE:
 		case ADDED_TO_QUEUE:
@@ -40,9 +48,8 @@ public class StateController {
 			break;
 		}
 		if (mp.needsLobby()){
-			lobbies.joinLobby(tqo.getMatchParams().getType(), tqo.getTeam());
+			lobbies.joinLobby(tqo.getMatchParams().getType(), tqo.getTeam()); //
 		}
-		Log.debug("    tqo === " + tqo.getJoinOptions().hasArena()  +"   needs waitroom===" + mp.needsWaitroom());
 		if (tqo.getJoinOptions().hasArena()){
 			if (mp.needsWaitroom()){
 				waitrooms.joinWaitroom(tqo.getJoinOptions().getArena(), tqo.getTeam());

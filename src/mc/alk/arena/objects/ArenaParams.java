@@ -56,7 +56,8 @@ public class ArenaParams{
 	public void flatten() {
 		if (parent == null){
 			return;}
-		parent = new ArenaParams(parent);
+//		parent = new ArenaParams(parent);
+		parent = ParamController.copy(parent);
 		parent.flatten();
 		if (this.arenaType == null) this.arenaType = parent.arenaType;
 		if (this.rating == Rating.ANY) this.rating = parent.rating;
@@ -72,7 +73,8 @@ public class ArenaParams{
 	}
 
 	public MatchTransitions getTransitionOptions(){
-		return allTops == null ? ParamController.getTransitionOptions(this) : allTops;
+//		return allTops == null ? ParamController.getTransitionOptions(this) : allTops;
+		return allTops;
 	}
 
 	public void setTransitionOptions(MatchTransitions transitionOptions) {
@@ -182,6 +184,7 @@ public class ArenaParams{
 	public void setTimeBetweenRounds(Integer i) {
 		timeBetweenRounds=i;
 	}
+
 	public Integer getTimeBetweenRounds() {
 		return timeBetweenRounds != null ? timeBetweenRounds :
 			(parent != null ? parent.getTimeBetweenRounds() : null);
@@ -191,7 +194,8 @@ public class ArenaParams{
 		this.dbName = dbName;
 	}
 	public String getDBName(){
-		return dbName;
+		return dbName != null ? dbName :
+			(parent != null ? parent.getDBName() : null);
 	}
 
 	public String getName() {
@@ -370,5 +374,21 @@ public class ArenaParams{
 				tops.getOptions(state).getEffects() : (parent != null ? parent.getEffects(state) : null);
 	}
 
+	public boolean needsWaitroom() {
+		return ( (allTops != null &&
+				getTransitionOptions().hasAnyOption(
+						TransitionOption.TELEPORTMAINWAITROOM,TransitionOption.TELEPORTWAITROOM)
+				) ||
+				(parent != null && parent.needsWaitroom())
+				);
+	}
 
+	public boolean needsLobby() {
+		return ( (allTops != null &&
+				getTransitionOptions().hasAnyOption(
+						TransitionOption.TELEPORTMAINLOBBY,TransitionOption.TELEPORTLOBBY)
+				) ||
+				(parent != null && parent.needsLobby())
+				);
+	}
 }

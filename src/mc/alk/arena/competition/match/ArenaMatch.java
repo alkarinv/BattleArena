@@ -64,7 +64,7 @@ import org.bukkit.potion.PotionEffect;
 public class ArenaMatch extends Match {
 	static HashSet<String> disabledCommands = new HashSet<String>();
 
-	Map<String, Long> userTime = new ConcurrentHashMap<String, Long>();
+	static Map<String, Long> userTime = new ConcurrentHashMap<String, Long>();
 	Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
 	Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
 
@@ -79,13 +79,10 @@ public class ArenaMatch extends Match {
 	@ArenaEventHandler(bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
 	public void onPlayerQuit(PlayerQuitEvent event){
 		/// If they are just in the arena waiting for match to start, or they havent joined yet
-		if (state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL ||
-				!inMatch.contains(event.getPlayer().getName()) ){
+		if (!inMatch.contains(event.getPlayer().getName()) ){
 			return;}
 		ArenaPlayer player = BattleArena.toArenaPlayer(event.getPlayer());
 		onLeave(player);
-		Log.debug(" -----------onPlayerQuit #### remoiving Player   " + player.getName());
-
 	}
 
 	@ArenaEventHandler(suppressCastWarnings=true,bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
@@ -378,7 +375,7 @@ public class ArenaMatch extends Match {
 		/// Check to see if it's a sign
 		if (event.getClickedBlock().getType().equals(Material.SIGN) ||
 				event.getClickedBlock().getType().equals(Material.WALL_SIGN)){ /// Only checking for signs
-			signClick(event,this,userTime);
+			signClick(event,this);
 		} else { /// its a ready block
 			if (respawnTimer.containsKey(event.getPlayer().getName())){
 				respawnClick(event,this,respawnTimer);
@@ -396,7 +393,7 @@ public class ArenaMatch extends Match {
 		TeleportController.teleport(ap.getPlayer(), loc);
 	}
 
-	public static void signClick(PlayerInteractEvent event, PlayerHolder am,Map<String,Long> userTime) {
+	public static void signClick(PlayerInteractEvent event, PlayerHolder am) {
 		/// Get our sign
 		final Sign sign = (Sign) event.getClickedBlock().getState();
 		/// Check to see if sign has correct format (is more efficient than doing string manipulation )
@@ -410,10 +407,13 @@ public class ArenaMatch extends Match {
 			event.setCancelled(true);}
 
 		final ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(sign.getLine(0)).replace('*',' ').trim());
+		changeClass(event.getPlayer(), am, ac);
+	}
+
+	public static void changeClass(Player p, PlayerHolder am, final ArenaClass ac) {
 		if (ac == null || !ac.valid()) /// Not a valid class sign
 			return;
 
-		final Player p = event.getPlayer();
 		if (!p.hasPermission("arena.class.use."+ac.getName().toLowerCase())){
 			MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
 			return;
@@ -465,9 +465,7 @@ public class ArenaMatch extends Match {
 		MatchState state = am.getMatchState();
 		boolean armorTeams = mp.hasAnyOption(TransitionOption.ARMORTEAMS);
 		ArenaTeam team = am.getTeam(ap);
-		Log.debug(" team " + team +"   ap " + ap.getName()  + "    name == " + am.getClass().getSimpleName());
 		Color color = armorTeams && team != null ? TeamUtil.getTeamColor(am.indexOf(team)) : null;
-		Log.debug(" color = " + color);
 		ap.despawnMobs();
 		/// Regive class/items
 		ArenaClassController.giveClass(ap, ac);
