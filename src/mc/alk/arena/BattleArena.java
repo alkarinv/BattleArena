@@ -35,6 +35,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.victoryconditions.AllKills;
+import mc.alk.arena.objects.victoryconditions.Custom;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
 import mc.alk.arena.objects.victoryconditions.InfiniteLives;
 import mc.alk.arena.objects.victoryconditions.KillLimit;
@@ -154,6 +155,7 @@ public class BattleArena extends JavaPlugin {
 		VictoryType.register(MobKills.class, this);
 		VictoryType.register(AllKills.class, this);
 		VictoryType.register(KillLimit.class, this);
+		VictoryType.register(Custom.class, this);
 
 		/// Load our configs, then arenas
 		baConfigSerializer.setConfig(FileUtil.load(clazz,dir.getPath() +"/config.yml","/default_files/config.yml"));

@@ -16,46 +16,46 @@ commands:
     arena:
         aliases: [a]
         description: Arena commands
-        usage: /arena <create|alter|join|leave|top...> [arguments]
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     skirmish:
         aliases: [sk]
         description: Skirmish commands
-        usage: /arena <join|leave> [arguments]
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     battleground:
         aliases: [bg]
         description: battleground commands
-        usage: /arena <join|leave> [arguments]
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     watch:
         description: watch a fight
-        usage: /watch <arenaName | leave>
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     tourney:
         description: Create a tournament
-        usage: /tourney
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     colosseum:
         aliases: [col]
         description: colosseum commands
-        usage: /col
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     freeforall:
         aliases: [ffa]
         description: join a ffa 
-        usage: /ffa     
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     deathMatch:
         aliases: [dm]
         description: join a dm 
-        usage: /dm 
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     arenaAlter:
         aliases: [arenaEdit,aa]
     battleArena:
         aliases: [ba]
         description: Admin commands
-        usage: /ba
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     battleArenaDebug:
         aliases: [bad]
         description: Debugging Commands
-        usage: /bad
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     battleArenaScheduler:
         aliases: [bas]
         description: Schedule Continuous Events
-        usage: /bas
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
 
 

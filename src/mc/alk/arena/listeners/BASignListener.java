@@ -127,8 +127,13 @@ public class BASignListener implements Listener{
 		try{
 			String match = acs.getMatchParams().getName().toLowerCase();
 			match = Character.toUpperCase(match.charAt(0)) + match.substring(1);
-			event.setLine(0, MessageUtil.colorChat( ChatColor.GOLD+Defaults.SIGN_PREFIX+
-					acs.getMatchParams().getColor()+match));
+			String str = MessageUtil.colorChat( ChatColor.GOLD+Defaults.SIGN_PREFIX+
+					acs.getMatchParams().getColor()+match);
+			if (str.length()>15){
+				str = MessageUtil.colorChat( ChatColor.GOLD+Defaults.SIGN_PREFIX+
+						acs.getMatchParams().getColor()+acs.getMatchParams().getCommand().toLowerCase());
+			}
+			event.setLine(0, str);
 			String cmd = acs.getCommand().toString();
 			cmd = Character.toUpperCase(cmd.charAt(0)) + cmd.substring(1);
 			event.setLine(1, MessageUtil.colorChat(ChatColor.GREEN+cmd.toLowerCase()) );

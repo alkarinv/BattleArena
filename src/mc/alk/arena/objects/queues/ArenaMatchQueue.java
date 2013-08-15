@@ -836,13 +836,11 @@ public class ArenaMatchQueue{
 		JoinResult qr = null;
 		/// try to find it without forcing first
 		if (force){
-			qr = findMatch(tq, true, false,null);}
+			qr = findMatch(tq, true, true,null);}
 		/// Try to find it with force option
 		if (qr == null)
-			qr = findMatch(tq, true, force,null);
-		if (qr.match == null)
-			return false;
-		return true;
+			qr = findMatch(tq, true, false,null);
+		return qr.match != null;
 	}
 
 	public Collection<ArenaPlayer> getPlayersInQueue(MatchParams params) {

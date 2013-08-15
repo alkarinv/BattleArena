@@ -86,8 +86,8 @@ public class PlayerUtil {
 	public static void doCommands(Player p, List<CommandLineString> doCommands) {
 		final String name = p.getName();
 		for (CommandLineString cls: doCommands){
-			CommandSender cs = cls.isConsoleSender() ? Bukkit.getConsoleSender() : p;
 			try{
+				CommandSender cs = cls.isConsoleSender() ? Bukkit.getConsoleSender() : p;
 				if (Defaults.DEBUG_TRANSITIONS) {Log.info("BattleArena doing command '"+cls.getCommand(name)+"' as "+cs.getName());}
 				Bukkit.getServer().dispatchCommand(cs, cls.getCommand(name));
 			} catch (Exception e){

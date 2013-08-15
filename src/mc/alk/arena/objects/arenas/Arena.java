@@ -383,11 +383,30 @@ public class Arena extends AreaContainer {
 
 
 	/**
-	 * TeamJoinResult a Protected Region (only available with worldguard)
+	 * Set the worldguard region for this arena (only available with worldguard)
 	 * @param wgRegionName
+	 * Deprecated: use setWorldGuardRegion instead
 	 */
+	@Deprecated
 	public void addWorldGuardRegion(String regionWorld, String regionName) {
 		wgRegion = new WorldGuardRegion(regionWorld, regionName);
+	}
+
+	/**
+	 * Set the worldguard region for this arena (only available with worldguard)
+	 * @param regionWorld
+	 * @param regionName
+	 */
+	public void setWorldGuardRegion(String regionWorld, String regionName) {
+		wgRegion = new WorldGuardRegion(regionWorld, regionName);
+	}
+
+	/**
+	 * Set the worldguard region for this arena (only available with worldguard)
+	 * @param wgRegionName
+	 */
+	public void setWorldGuardRegion(WorldGuardRegion region) {
+		wgRegion = region;
 	}
 
 	/**

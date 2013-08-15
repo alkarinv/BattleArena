@@ -204,8 +204,13 @@ public class ArenaAlterController {
 				WorldGuardController.updateProtectedRegion(sender,id);
 				sendMessage(sender,"&2Region updated! ");
 			} else {
-				WorldGuardController.createProtectedRegion(sender, id);
-				sendMessage(sender,"&2Region added! ");
+				region = WorldGuardController.createProtectedRegion(sender, id);
+				if (region != null) {
+					sendMessage(sender,"&2Region "+region.getRegionID()+" added! ");
+				} else {
+					sendMessage(sender,"&cRegion addition failed! ");
+					return false;
+				}
 			}
 
 			ConfigurationSection cs = BattleArena.getSelf().getConfig().getConfigurationSection("defaultWGFlags");
@@ -218,7 +223,7 @@ public class ArenaAlterController {
 				}
 			}
 
-			arena.addWorldGuardRegion(w.getName(), id);
+			arena.setWorldGuardRegion(region);
 			WorldGuardController.saveSchematic(sender, id);
 			MatchParams mp = ParamController.getMatchParams(arena.getArenaType().getName());
 			if (mp != null && mp.getTransitionOptions().hasAnyOption(TransitionOption.WGNOENTER)){

@@ -43,6 +43,8 @@ public enum GameOption{
 		case TEAMSIZE:
 		case NTEAMS:
 			return MinMax.valueOf(value);
+		case VICTORYTIME:
+		case PRESTARTTIME:
 		case MATCHTIME:
 		case NLIVES:
 			return ConfigSerializer.parseSize(value,-1);

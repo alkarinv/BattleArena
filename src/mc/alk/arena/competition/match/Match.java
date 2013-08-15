@@ -168,7 +168,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public Match(Arena arena, MatchParams params) {
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::" + params);
 		this.params = params;
-		this.params.setName("[Match "+id+"]");
+		this.params.setName(params.getType().getName());
 		params.flatten();
 		this.tops = params.getTransitionOptions();
 		/// Assign variables

@@ -9,6 +9,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 
 public class RoomContainer extends AreaContainer{
@@ -38,6 +39,11 @@ public class RoomContainer extends AreaContainer{
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerDropItem(PlayerDropItemEvent event){
+		event.setCancelled(true);
+	}
+
+	@ArenaEventHandler(priority=EventPriority.HIGH)
+	public void onPlayerTeleport(PlayerTeleportEvent event){
 		event.setCancelled(true);
 	}
 }

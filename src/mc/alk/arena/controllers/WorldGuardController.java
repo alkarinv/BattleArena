@@ -58,8 +58,10 @@ public class WorldGuardController {
 		WorldGuardUtil.updateProtectedRegion(p, id);
 	}
 
-	public static void createProtectedRegion(Player p, String id) throws Exception {
+	public static WorldGuardRegion createProtectedRegion(Player p, String id) throws Exception {
 		WorldGuardUtil.createProtectedRegion(p, id);
+		return WorldGuardUtil.hasRegion(p.getWorld(), id) ?
+				new WorldGuardRegion(p.getWorld().getName(),id) : null;
 	}
 
 	public static void clearRegion(String world, String id) {
