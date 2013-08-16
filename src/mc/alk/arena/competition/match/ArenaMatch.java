@@ -397,7 +397,7 @@ public class ArenaMatch extends Match {
 		/// Get our sign
 		final Sign sign = (Sign) event.getClickedBlock().getState();
 		/// Check to see if sign has correct format (is more efficient than doing string manipulation )
-		if (!sign.getLine(0).matches("^.[0-9a-fA-F]\\*.*$")){
+		if (!sign.getLine(0).matches("^.[0-9a-fA-F]\\*.*$") && !sign.getLine(0).matches("^\\[.*$")){
 			return;}
 
 		final Action action = event.getAction();
@@ -406,7 +406,8 @@ public class ArenaMatch extends Match {
 		if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the sign
 			event.setCancelled(true);}
 
-		final ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(sign.getLine(0)).replace('*',' ').trim());
+		final ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(
+				sign.getLine(0)).replace('*',' ').replace('[',' ').replace(']',' ').trim());
 		changeClass(event.getPlayer(), am, ac);
 	}
 

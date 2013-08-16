@@ -304,7 +304,8 @@ public class ArenaMatchQueue{
 				}
 //				System.out.println(a.getName()+  " ####  " + a.getParams().getParent().getName() +"  ##############  " +
 //						newParams.getMinPlayers() +" <---- " + iterate.playerSize() +"  " + newParams.getParent().getParent().getName());
-				if (newParams.getMinPlayers() > iterate.playerSize())
+				if ( (!forceStart && newParams.getMinPlayers() > iterate.playerSize() ||
+						(forceStart && gameParams.getMinPlayers() > iterate.playerSize())))
 					continue;
 				if (Defaults.DEBUGQ) Log.info("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
 						"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+gameParams.toPrettyString() +" newP="+newParams.toPrettyString() +"  " + newParams.getMaxPlayers() +
@@ -337,6 +338,10 @@ public class ArenaMatchQueue{
 
 					try {
 						MatchParams playerMatchAndArenaParams = ParamController.copyParams(newParams);
+						if (forceStart){
+							playerMatchAndArenaParams.setNTeams(gameParams.getNTeams());
+							playerMatchAndArenaParams.setTeamSizes(gameParams.getTeamSizes());
+						}
 						//						MatchParams playerMatchAndArenaParams = new MatchParams(a.getParams());
 						//						playerMatchAndArenaParams.setParent(newParams);
 						//						newParams.setParent(ParamController.getMatchParamCopy(newParams.getType()));
@@ -753,15 +758,21 @@ public class ArenaMatchQueue{
 		sb.append("------game queues------- \n");
 		synchronized(tqs){
 			for (Entry<ArenaType,TeamQueue> entry : tqs.entrySet()){
+				IdTime value = forceTimers.get(entry.getKey());
+				String time = (value != null && value.time != null) ?
+						((value.time - System.currentTimeMillis())/1000)+"" : "";
 				for (QueueObject qo: entry.getValue()){
-					sb.append(entry.getKey().getName() + " : " + qo +"\n");}}
+					sb.append(entry.getKey().getName() + " : fs="+time+" "+ qo +"\n");}}
 		}
 		sb.append("------arena queues------- \n");
 		synchronized(aqs){
 			for (Entry<ArenaType,Map<Arena,TeamQueue>> entry : aqs.entrySet()){
+				IdTime value = forceTimers.get(entry.getKey());
+				String time = (value != null && value.time != null) ?
+						((value.time - System.currentTimeMillis())/1000)+"" : "";
 				for (Entry<Arena,TeamQueue> entry2: entry.getValue().entrySet()){
 					for (QueueObject qo : entry2.getValue()){
-						sb.append(entry.getKey().getName() + " : " + entry2.getKey().getName() +" : " + qo+"\n");
+						sb.append(entry.getKey().getName() + " : fs="+time+" " + entry2.getKey().getName() +" : " + qo+"\n");
 					}
 				}
 			}

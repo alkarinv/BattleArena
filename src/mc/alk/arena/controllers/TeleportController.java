@@ -53,7 +53,7 @@ public class TeleportController implements Listener{
 			player.setFallDistance(0);
 			Location loc = location.clone();
 			loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
-			teleporting(player,true);
+			teleporting.add(player.getName());
 			/// Close their inventory so they arent taking things in/out
 			InventoryUtil.closeInventory(player);
 			player.setFireTicks(0);
@@ -90,20 +90,12 @@ public class TeleportController implements Listener{
 		return true;
 	}
 
-	private static void teleporting(Player player, boolean isteleporting){
-		if (isteleporting){
-			teleporting.add(player.getName());
-		} else {
-			teleporting.remove(player.getName());
-		}
-	}
-
 	/**
 	 * This prevents other plugins from cancelling the teleport
 	 * removes the player from the set after allowing the tp
 	 * @param event
 	 */
-	@EventHandler(priority=EventPriority.HIGHEST)
+	@EventHandler(priority=EventPriority.MONITOR)
 	public void onPlayerTeleport(PlayerTeleportEvent event){
 		if (teleporting.remove(event.getPlayer().getName())){
 			event.setCancelled(false);

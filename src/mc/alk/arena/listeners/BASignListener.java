@@ -38,7 +38,7 @@ public class BASignListener implements Listener{
 		}
 		if (event.getClickedBlock().getState() instanceof Sign){
 			String[] lines = ((Sign)event.getClickedBlock().getState()).getLines();
-			if (!lines[0].matches("^.[0-9a-fA-F]\\*.*$")){
+			if (!lines[0].matches("^.[0-9a-fA-F]\\*.*$") && !lines[0].matches("^\\[.*$")){
 				return;}
 			ArenaCommandSign acs = SignUtil.getArenaCommandSign(((Sign)event.getClickedBlock().getState()),
 					((Sign)event.getClickedBlock().getState()).getLines());
@@ -105,7 +105,7 @@ public class BASignListener implements Listener{
 		}
 
 		try{
-			event.setLine(0, MessageUtil.colorChat(ChatColor.GOLD+Defaults.SIGN_PREFIX+ac.getDisplayName()));
+			event.setLine(0, MessageUtil.colorChat("["+ac.getDisplayName()+"&0]"));
 			MessageUtil.sendMessage(event.getPlayer(), "&2Arena class sign created");
 		} catch (Exception e){
 			MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Class Sign");

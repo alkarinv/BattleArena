@@ -55,7 +55,7 @@ public class SignUtil {
 
 	public static ArenaClass getArenaClassSign(String[] lines) {
 		ArenaClass ac = ArenaClassController.getClass(
-				MessageUtil.decolorChat(lines[0]).replaceAll("\\"+Defaults.SIGN_PREFIX, ""));
+				MessageUtil.decolorChat(lines[0]).replaceAll("[\\[\\"+Defaults.SIGN_PREFIX+"\\]]", ""));
 		return ac;
 	}
 
