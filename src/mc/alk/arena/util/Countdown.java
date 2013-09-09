@@ -41,7 +41,6 @@ public class Countdown implements Runnable{
 
 	public void run() {
 		timerId = null;
-
 		final boolean continueOn = callback.intervalTick(seconds);
 		if (!continueOn || seconds <=0)
 			return;
@@ -66,6 +65,10 @@ public class Countdown implements Runnable{
 
 	public Long getTimeRemaining(){
 		return expectedEndTime == null ? null : expectedEndTime - System.currentTimeMillis();
+	}
+
+	public int getID(){
+		return id;
 	}
 }
 

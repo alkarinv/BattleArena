@@ -430,7 +430,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 	}
 
 	@Override
-	public String geIDString(){
+	public String getIDString(){
 		return String.valueOf(id);
 	}
 

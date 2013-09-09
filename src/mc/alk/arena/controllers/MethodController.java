@@ -8,10 +8,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeSet;
 
 import mc.alk.arena.Defaults;
@@ -45,14 +47,14 @@ import org.bukkit.event.entity.EntityDeathEvent;
 public class MethodController {
 
 	/** Our Dynamic listeners, listening for bukkit events*/
-	static EnumMap<EventPriority, HashMap<Type, BukkitEventHandler>> bukkitListeners =
+	EnumMap<EventPriority, HashMap<Type, BukkitEventHandler>> bukkitListeners =
 			new EnumMap<EventPriority,HashMap<Type, BukkitEventHandler>>(EventPriority.class);
 
 	/** Our registered bukkit events and the methods to call when they happen*/
 	static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<ArenaEventMethod>>> bukkitEventMethods =
 			new HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<ArenaEventMethod>>>();
 
-	/** Our registered bukkit events and the methods to call when they happen*/
+	/** Our registered match events and the methods to call when they happen*/
 	static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends BAEvent>,List<ArenaEventMethod>>> matchEventMethods =
 			new HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends BAEvent>,List<ArenaEventMethod>>>();
 
@@ -60,9 +62,13 @@ public class MethodController {
 
 	private HashMap<Class<? extends BAEvent>,List<RListener>> matchMethods = new HashMap<Class<? extends BAEvent>,List<RListener>>();
 
-	public MethodController(){}
+	static Set<MethodController> controllers = new HashSet<MethodController>();
 
-	public static EnumMap<EventPriority, HashMap<Type, BukkitEventHandler>> getEventListeners() {
+	public MethodController(){
+		controllers.add(this);
+	}
+
+	public EnumMap<EventPriority, HashMap<Type, BukkitEventHandler>> getEventListeners() {
 		return bukkitListeners;
 	}
 
@@ -95,7 +101,7 @@ public class MethodController {
 			for (Class<? extends BAEvent> event: mkeys){
 				updateBAEvent(listener, matchState, players, event);}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -113,7 +119,7 @@ public class MethodController {
 			for (Class<? extends Event> event: events){
 				updateEvent(null, matchState,players, event);}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 	private void updateEvent(ArenaListener listener, MatchState matchState,
@@ -143,7 +149,7 @@ public class MethodController {
 		}
 	}
 
-	private static BukkitEventHandler getCreateBA(Class<? extends BAEvent> event, ArenaEventMethod mem){
+	private BukkitEventHandler getCreateBA(Class<? extends BAEvent> event, ArenaEventMethod mem){
 		HashMap<Type,BukkitEventHandler> gels = bukkitListeners.get(mem.getBukkitPriority());
 		if (gels == null){
 			gels = new HashMap<Type,BukkitEventHandler>();
@@ -187,7 +193,7 @@ public class MethodController {
 		}
 	}
 
-	private static BukkitEventHandler getCreate(Class<? extends Event> event, ArenaEventMethod mem){
+	private BukkitEventHandler getCreate(Class<? extends Event> event, ArenaEventMethod mem){
 		HashMap<Type,BukkitEventHandler> gels = bukkitListeners.get(mem.getBukkitPriority());
 		if (gels == null){
 			gels = new HashMap<Type,BukkitEventHandler>();
@@ -320,7 +326,7 @@ public class MethodController {
 							try {
 								getEntityMethod = EntityDeathEvent.class.getMethod("getEntity", new Class<?>[]{});
 							} catch (Exception e) {
-								e.printStackTrace();
+								Log.printStackTrace(e);
 								continue;
 							}
 						} else if (entityMethods.size() > 1 && !EntityDamageEvent.class.isAssignableFrom(bukkitEvent)){
@@ -397,8 +403,8 @@ public class MethodController {
 	}
 
 	private boolean removeListener(ArenaListener listener, HashMap<?,List<RListener>> methods){
-		synchronized(bukkitMethods){
-			for (List<RListener> rls: bukkitMethods.values()){
+		synchronized(methods){
+			for (List<RListener> rls: methods.values()){
 				Iterator<RListener> iter = rls.iterator();
 				while(iter.hasNext()){
 					RListener rl = iter.next();
@@ -508,7 +514,7 @@ public class MethodController {
 	}
 
 	public void deconstruct() {
-		bukkitMethods.clear();
+		controllers.remove(this);
 	}
 
 	public static boolean showAllListeners(String player) {
@@ -516,47 +522,67 @@ public class MethodController {
 	}
 
 	public static boolean showAllListeners(CommandSender sender, String limitToPlayer) {
-		EnumMap<org.bukkit.event.EventPriority, HashMap<Type, BukkitEventHandler>> gels = MethodController.getEventListeners();
-		for (org.bukkit.event.EventPriority bp: gels.keySet()){
-			Log.info("&4#### &f----!! Bukkit Priority=&5"+bp+"&f !!---- &4####");
-			HashMap<Type, BukkitEventHandler> types = gels.get(bp);
-			for (BukkitEventHandler bel: types.values()){
-				MapOfTreeSet<String,RListener> lists2 = bel.getSpecificPlayerListener().getListeners();
-				String str = MessageUtil.joinBukkitPlayers(bel.getSpecificPlayerListener().getPlayers(),", ");
-				String has = bel.hasListeners() ? "&2true" : "&cfalse";
-				if (!lists2.isEmpty())
-					Log.info( "---- Event &e" + bel.getSpecificPlayerListener().getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
-				for (String p : lists2.keySet()){
-					if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
-						continue;
-					TreeSet<RListener> rls = lists2.get(p);
-					for (RListener rl : rls){
-						Log.info( "!! "+rl.getPriority() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
-					}
-				}
-				lists2 = bel.getSpecificArenaPlayerListener().getListeners();
-				str = MessageUtil.joinBukkitPlayers(bel.getSpecificArenaPlayerListener().getPlayers(),", ");
-				has = bel.hasListeners() ? "&2true" : "&cfalse";
-				if (!lists2.isEmpty())
-					Log.info( "---- ArenaPlayerEvent &e" + bel.getSpecificArenaPlayerListener().getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
-				for (String p : lists2.keySet()){
-					if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
-						continue;
-					TreeSet<RListener> rls = lists2.get(p);
-					for (RListener rl : rls){
-						Log.info("!!! "+rl.getPriority() +"  " + p +"  Listener  " +
-								rl.getListener().getClass().getSimpleName());
-					}
-				}
+		Log.info("&2# &f-!! controller=&5"+controllers.size()+"&f !!- &2#");
+		for (MethodController mc: controllers){
+//			EnumMap<org.bukkit.event.EventPriority, HashMap<Type, BukkitEventHandler>> gels = MethodController.getEventListeners();
+			EnumMap<org.bukkit.event.EventPriority, HashMap<Type, BukkitEventHandler>> gels = mc.getEventListeners();
+			if (gels.isEmpty())
+				continue;
+			Log.info("&c###### &f----!! controller=&5"+mc.hashCode()+"&f !!---- &c######");
 
-				EnumMap<mc.alk.arena.objects.events.EventPriority, Map<RListener,Integer>> lists = bel.getMatchListener().getListeners();
-				for (mc.alk.arena.objects.events.EventPriority ep: lists.keySet()){
-					for (Entry<RListener,Integer> entry : lists.get(ep).entrySet()){
-						Log.info( "! " + ep  + "  -  " + entry.getKey() +"  count="+entry.getValue());
+			for (org.bukkit.event.EventPriority bp: gels.keySet()){
+				Log.info("&4#### &f----!! Bukkit Priority=&5"+bp+"&f !!---- &4####");
+				HashMap<Type, BukkitEventHandler> types = gels.get(bp);
+				for (BukkitEventHandler bel: types.values()){
+					MapOfTreeSet<String,RListener> lists2 = bel.getSpecificPlayerListener().getListeners();
+					String str = MessageUtil.joinBukkitPlayers(bel.getSpecificPlayerListener().getPlayers(),", ");
+					String has = bel.hasListeners() ? "&2true" : "&cfalse";
+					if (!lists2.isEmpty())
+						Log.info( "---- Event &e" + bel.getSpecificPlayerListener().getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
+					for (String p : lists2.keySet()){
+						if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
+							continue;
+						TreeSet<RListener> rls = lists2.get(p);
+						for (RListener rl : rls){
+							Log.info( "!! "+rl.getPriority() +"  " + p +"  Listener  " + rl.getListener().getClass().getSimpleName());
+						}
+					}
+					lists2 = bel.getSpecificArenaPlayerListener().getListeners();
+					str = MessageUtil.joinBukkitPlayers(bel.getSpecificArenaPlayerListener().getPlayers(),", ");
+					has = bel.hasListeners() ? "&2true" : "&cfalse";
+					if (!lists2.isEmpty())
+						Log.info( "---- ArenaPlayerEvent &e" + bel.getSpecificArenaPlayerListener().getEvent().getSimpleName() +"&f:"+has+"&f, players="+str);
+					for (String p : lists2.keySet()){
+						if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
+							continue;
+						TreeSet<RListener> rls = lists2.get(p);
+						for (RListener rl : rls){
+							Log.info("!!! "+rl.getPriority() +"  " + p +"  Listener  " +
+									rl.getListener().getClass().getSimpleName());
+						}
+					}
+
+					EnumMap<mc.alk.arena.objects.events.EventPriority, Map<RListener,Integer>> lists = bel.getMatchListener().getListeners();
+					for (mc.alk.arena.objects.events.EventPriority ep: lists.keySet()){
+						for (Entry<RListener,Integer> entry : lists.get(ep).entrySet()){
+							Log.info( "! " + ep  + "  -  " + entry.getKey() +"  count="+entry.getValue());
+						}
 					}
 				}
 			}
+
 		}
 		return true;
+	}
+
+	public void callEvent(BAEvent event) {
+		Class<?> clazz = event.getClass();
+		for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
+			BukkitEventHandler beh = ls.get(clazz);
+			if (beh == null)
+				continue;
+			beh.invokeArenaEvent(event);
+		}
+		event.callEvent();
 	}
 }

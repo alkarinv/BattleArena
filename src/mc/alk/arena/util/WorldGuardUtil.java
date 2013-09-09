@@ -289,7 +289,7 @@ public class WorldGuardUtil {
 			cc = new CommandContext(args);
 			return loadAndPaste(cc, we, session, bcs,editSession,pos);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return false;
 		}
 	}
@@ -339,7 +339,7 @@ public class WorldGuardUtil {
 			sc.save(cc, session, lPlayer, editSession);
 			return true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return false;
 		}
 	}
@@ -389,7 +389,7 @@ public class WorldGuardUtil {
 		} catch (IOException e) {
 			printError(player,"Schematic could not read or it does not exist: " + e.getMessage());
 		} catch (Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			printError(player,"Error : " + e.getMessage());
 		}
 		return true;

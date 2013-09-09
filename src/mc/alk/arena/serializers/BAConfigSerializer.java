@@ -11,11 +11,11 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.TournamentEvent;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.controllers.APIRegistrationController;
-import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.QueueController;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.objects.ArenaSize;
@@ -46,7 +46,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class BAConfigSerializer extends BaseConfig{
 
 	public void loadDefaults(){
-		try {config.load(file);} catch (Exception e){e.printStackTrace();}
+		try {config.load(file);} catch (Exception e){Log.printStackTrace(e);}
 		EventParams defaults = new EventParams(ArenaType.register(Defaults.DEFAULT_CONFIG_NAME, Arena.class, BattleArena.getSelf()));
 		VictoryType.register(Custom.class, BattleArena.getSelf());
 		defaults.setVictoryType(VictoryType.getType(Custom.class));
@@ -68,7 +68,7 @@ public class BAConfigSerializer extends BaseConfig{
 		Defaults.ANNOUNCE_GIVEN_ITEMS = config.getBoolean("announceGivenItemsOrClass", Defaults.ANNOUNCE_GIVEN_ITEMS);
 		parseOptionSets(config.getConfigurationSection("optionSets"));
 		ArenaMatch.setDisabledCommands(config.getStringList("disabledCommands"));
-		BattleArenaController.setDisabledCommands(config.getStringList("disabledQueueCommands"));
+		QueueController.setDisabledCommands(config.getStringList("disabledQueueCommands"));
 		if (HeroesController.enabled()){
 			List<String> disabled = config.getStringList("disabledHeroesSkills");
 			if (disabled != null && !disabled.isEmpty()){
@@ -82,7 +82,7 @@ public class BAConfigSerializer extends BaseConfig{
 	}
 
 	public void loadCompetitions(){
-		try {config.load(file);} catch (Exception e){e.printStackTrace();}
+		try {config.load(file);} catch (Exception e){Log.printStackTrace(e);}
 		Set<String> defaultMatchTypes = new HashSet<String>(Arrays.asList(
 				new String[] {"Arena","Skirmish","Colosseum","Battleground", "Duel"}));
 		Set<String> defaultEventTypes = new HashSet<String>(Arrays.asList(new String[] {"FreeForAll","DeathMatch"}));
@@ -144,7 +144,7 @@ public class BAConfigSerializer extends BaseConfig{
 				Log.err("Tourney could not be added");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -204,6 +204,7 @@ public class BAConfigSerializer extends BaseConfig{
 		int value = cs.getInt("readyBlockType", Defaults.READY_BLOCK.getId());
 		Defaults.READY_BLOCK = value > 0 && value < Material.values().length ? Material.values()[value] : Defaults.READY_BLOCK;
 
+		defaults.setWaitroomClosedWhileRunning(false);
 		defaults.setRated(true);
 		defaults.setUseTrackerPvP(false);
 		defaults.setTeamRating(false);
@@ -219,7 +220,7 @@ public class BAConfigSerializer extends BaseConfig{
 				DuelOptions dop = DuelOptions.parseOptions(list.toArray(new String[list.size()]));
 				DuelOptions.setDefaults(dop);
 			} catch (InvalidOptionException e) {
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 	}
@@ -252,7 +253,7 @@ public class BAConfigSerializer extends BaseConfig{
 							OptionSetController.addOptionSet(key, to);}
 					} catch (Exception e) {
 						Log.err("Couldn't parse optionSet=" + key);
-						e.printStackTrace();
+						Log.printStackTrace(e);
 					}
 				}
 			}

@@ -40,7 +40,7 @@ public class ModuleLoader {
 				if (am != null){
 					am.setEnabled(false);
 				}
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 		if (loadedModules.isEmpty()){

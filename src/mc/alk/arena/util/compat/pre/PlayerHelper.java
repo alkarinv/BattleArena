@@ -3,6 +3,7 @@ package mc.alk.arena.util.compat.pre;
 import java.lang.reflect.Method;
 
 import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.compat.IPlayerHelper;
 
 import org.bukkit.Bukkit;
@@ -19,7 +20,7 @@ public class PlayerHelper implements IPlayerHelper{
 		try {
 			getHealth = Player.class.getMethod("getHealth", new Class<?>[]{});
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -55,7 +56,7 @@ public class PlayerHelper implements IPlayerHelper{
 		try {
 			return new Double((Integer)getHealth.invoke(player, getHealthArgs));
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return 20;
 		}
 	}

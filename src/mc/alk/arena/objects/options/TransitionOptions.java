@@ -357,7 +357,7 @@ public class TransitionOptions {
 				options.containsKey(TransitionOption.RANDOMSPAWN);
 	}
 
-	public Boolean deEnchant() {
+	public boolean deEnchant() {
 		return options.containsKey(TransitionOption.DEENCHANT);
 	}
 

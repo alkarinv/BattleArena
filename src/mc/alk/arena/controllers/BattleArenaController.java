@@ -20,6 +20,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
+import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
@@ -44,24 +45,16 @@ import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
-import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.PermissionsUtil;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 
 public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaListener, Listener{
 
 	private boolean stop = false;
 	private boolean running = false;
 
-	private static HashSet<String> disabledCommands = new HashSet<String>();
 	final private Set<Match> running_matches = Collections.synchronizedSet(new CopyOnWriteArraySet<Match>());
 	final private Map<String, Integer> runningMatchTypes = Collections.synchronizedMap(new HashMap<String,Integer>());
 	final private Map<ArenaType,List<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,List<Match>>());
@@ -115,10 +108,19 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		while (!stop){
 			match = amq.getArenaMatch();
 			if (match != null){
+				preOpenChanges(match);
+
 				Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new OpenAndStartMatch(match));
 			}
 		}
 		running = false;
+	}
+
+	private void preOpenChanges(Match match) {
+		if (match.getParams().isWaitroomClosedWhenRunning()){
+			saveStates(match, match.getArena());
+			match.getArena().setContainerState(ChangeType.WAITROOM, PlayerContainerState.CLOSED);
+		}
 	}
 
 	/**
@@ -178,6 +180,14 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 
 	public Match createAndAutoMatch(Arena arena, EventOpenOptions eoo) throws NeverWouldJoinException {
 		Match m = createMatch(arena,eoo);
+		preOpenChanges(m);
+		saveStates(m,arena);
+		arena.setAllContainerState(PlayerContainerState.OPEN);
+		m.setTimedStart(eoo.getSecTillStart(), eoo.getInterval());
+		return m;
+	}
+
+	private void saveStates(Match m, Arena arena) {
 		/// save the old states to put back after the match
 		oldArenaStates.put(m,new OldMatchContainerState(arena));
 		if (RoomController.hasLobby(arena.getArenaType())){
@@ -190,9 +200,6 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 			}
 			ols.add(m);
 		}
-		arena.setAllContainerState(PlayerContainerState.OPEN);
-		m.setTimedStart(eoo.getSecTillStart(), eoo.getInterval());
-		return m;
 	}
 
 	private void openMatch(Match match){
@@ -213,6 +220,18 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		}
 	}
 
+	private void restoreStates(Match am, Arena arena){
+		OldLobbyState ols = oldLobbyState.get(am.getArena().getArenaType());
+		if (ols != null){ /// we only put back the lobby state if its the last autoed match finishing
+			if (ols.remove(am) && ols.isEmpty()){
+				RoomController.getLobby(am.getArena().getArenaType()).setContainerState(ols.pcs);
+			}
+		}
+		OldMatchContainerState states = oldArenaStates.remove(am);
+		if (states != null){
+			states.revert(arena);}
+	}
+
 	public void startMatch(Match arenaMatch) {
 		/// arenaMatch run calls.... broadcastMessage ( which unfortunately is not thread safe)
 		/// So we have to schedule a sync task... again
@@ -227,13 +246,8 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		removeMatch(am); /// handles removing running match from the BArenaController
 		decNumberOpenMatches(am.getArena().getArenaType().getName());
 		/// put back old states if it was autoed
-		OldMatchContainerState states = oldArenaStates.remove(am);
-		OldLobbyState ols = oldLobbyState.get(am.getArena().getArenaType());
-		if (ols != null){ /// we only put back the lobby state if its the last autoed match finishing
-			if (ols.remove(am) && ols.isEmpty()){
-				RoomController.getLobby(am.getArena().getArenaType()).setContainerState(ols.pcs);
-			}
-		}
+		restoreStates(am, am.getArena());
+
 		//		unhandle(am);/// unhandle any teams that were added during the match
 		final Arena arena = allarenas.get(am.getArena().getName().toUpperCase());
 		if (am.getParams().hasOptionAt(MatchState.ONCOMPLETE, TransitionOption.REJOIN)){
@@ -244,9 +258,8 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 				BattleArena.getBAExecutor().join(ap, mp, args);
 			}
 		}
-		if (arena != null){
-			if (states != null){
-				states.revert(arena);}
+		/// isEnabled to check to see if we are shutting down
+		if (arena != null && BattleArena.getSelf().isEnabled()){
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
 				@Override
 				public void run() {
@@ -713,10 +726,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	public boolean forceStart(MatchParams mp, boolean respectMinimumPlayers) {
 		return amq.forceStart(mp, respectMinimumPlayers);
 	}
-	public static void setDisabledCommands(List<String> commands) {
-		for (String s: commands){
-			disabledCommands.add("/" + s.toLowerCase());}
-	}
+
 	public Collection<ArenaPlayer> getPlayersInAllQueues(){
 		return amq.getPlayersInAllQueues();
 	}
@@ -737,34 +747,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		return amq;
 	}
 
-	@ArenaEventHandler
-	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
-		if (!event.isCancelled() && CommandUtil.shouldCancel(event, disabledCommands)){
-			event.setCancelled(true);
-			event.getPlayer().sendMessage(ChatColor.RED+"You cannot use that command when you are in the queue");
-			if (PermissionsUtil.isAdmin(event.getPlayer())){
-				MessageUtil.sendMessage(event.getPlayer(),"&cYou can set &6/bad allowAdminCommands true: &c to change");}
-		}
-	}
 
-	@ArenaEventHandler
-	public void onPlayerInteract(PlayerInteractEvent event){
-		if (event.isCancelled() || !Defaults.ENABLE_PLAYER_READY_BLOCK)
-			return;
-		if (event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)) {
-			final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
-			if (ap.isReady()) /// they are already ready
-				return;
-			JoinResult qtp = amq.getQueuePos(ap);
-			if (qtp == null){
-				return;}
-			final Action action = event.getAction();
-			if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the block
-				event.setCancelled(true);}
-			MessageUtil.sendMessage(ap, "&2You ready yourself for the arena");
-			this.forceStart(qtp.params, true);
-		}
-	}
 	public List<Match> getRunningMatches(MatchParams params){
 		List<Match> list = new ArrayList<Match>();
 		synchronized(running_matches){

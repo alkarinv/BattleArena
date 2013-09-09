@@ -83,7 +83,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 			} catch (InvalidEventException e) {
 				/** do nothing */
 			} catch (Exception e){
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 
 			if (!success){ /// wait then start up the scheduler again in x seconds

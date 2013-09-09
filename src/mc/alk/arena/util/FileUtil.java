@@ -17,7 +17,7 @@ public class FileUtil {
 			try {
 				return new FileInputStream(file);
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 		String path = file.getPath();
@@ -35,7 +35,7 @@ public class FileUtil {
 			try {
 				inputStream = new FileInputStream(defaultPluginFile);
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 
@@ -85,7 +85,7 @@ public class FileUtil {
 				while((len=inputStream.read(buf))>0){
 					out.write(buf,0,len);}
 			} catch (Exception e){
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			} finally {
 				if (out != null) try {out.close();} catch (Exception e){}
 				if (inputStream != null) try {inputStream.close();} catch (Exception e){}

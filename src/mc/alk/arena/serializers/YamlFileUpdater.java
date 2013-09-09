@@ -68,7 +68,7 @@ public class YamlFileUpdater {
 			fu.replace(".*you_left_match:.*","    you_left_competition: '&eYou have left the %s event'");
 			fu.replace(".*you_left_queue:.*", "    you_left_queue: '&eYou have left the &6%s queue'");
 			fu.replace(".*teammate_cant_join.*", "    teammate_cant_join: \"&cOne of your teammates can't join\"");
-			try {version = fu.update();} catch (IOException e) {e.printStackTrace();}
+			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
 		newVersion = new Version("1.5.5");
 		if (version.compareTo(newVersion) < 0){
@@ -77,7 +77,7 @@ public class YamlFileUpdater {
 			fu.replace(".*joined_the_queue:.*",
 					"    joined_the_queue: '&eYou joined the &6%s&e queue.'",
 					"    position_in_queue: 'Position: &6%s/%s'");
-			try {version = fu.update();} catch (IOException e) {e.printStackTrace();}
+			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
 		newVersion = new Version("1.6.0");
 		if (version.compareTo(newVersion) < 0){
@@ -100,7 +100,7 @@ public class YamlFileUpdater {
 			fu.replaceAll("eventprefix","prefix");
 			fu.replace(".*match_starts_when_time.*",
 					"    match_starts_when_time: '&eMatch starts in %s'");
-			try {version = fu.update();} catch (IOException e) {e.printStackTrace();}
+			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
 		newVersion = new Version("1.6.1");
 		if (version.compareTo(newVersion) < 0){
@@ -108,7 +108,7 @@ public class YamlFileUpdater {
 			fu.replace("version:.*", "version: "+newVersion);
 			fu.addAfter(".*match_starts_players_or_time:.*",
 					"    match_starts_players_or_time2: '&eMatch starts in %s &ewith at least &6%s&e players'");
-			try {version = fu.update();} catch (IOException e) {e.printStackTrace();}
+			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
 
 		ms.setConfig(new File(dir+"/messages.yml"));
@@ -159,7 +159,7 @@ public class YamlFileUpdater {
 				version = to2Point28(version, yfu, configFile, newVersion);}
 
 		} catch (IOException e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 
 		bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
@@ -198,7 +198,7 @@ public class YamlFileUpdater {
 			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		} finally{
 			try {br.close();} catch (Exception e) {}
 			try {fw.close();} catch (Exception e) {}
@@ -251,7 +251,7 @@ public class YamlFileUpdater {
 			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+newVersion.getVersion()));
 			renameTo(tempFile, configFile);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		} finally{
 			try {br.close();} catch (Exception e) {}
 			try {fw.close();} catch (Exception e) {}
@@ -284,7 +284,7 @@ public class YamlFileUpdater {
 			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		} finally{
 			try {br.close();} catch (Exception e) {}
 			try {fw.close();} catch (Exception e) {}
@@ -315,7 +315,7 @@ public class YamlFileUpdater {
 			renameTo(tempFile, configFile);
 			bacs.setConfig(new File(BattleArena.getSelf().getDataFolder()+"/config.yml"));
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		} finally{
 			try {br.close();} catch (Exception e) {}
 			try {fw.close();} catch (Exception e) {}
@@ -331,7 +331,7 @@ public class YamlFileUpdater {
 					"disabledHeroesSkills: []");
 			return fu.update() != null;
 		} catch (Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return false;
 		}
 	}
@@ -487,7 +487,7 @@ public class YamlFileUpdater {
 			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+newVersion.getVersion()));
 			renameTo(tempFile,configFile);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		} finally{
 			try {br.close();} catch (Exception e) {}
 			try {fw.close();} catch (Exception e) {}
@@ -514,7 +514,7 @@ public class YamlFileUpdater {
 			renameTo(configFile,new File(backupDir +"/"+configFile.getName()+newVersion.getVersion()));
 			renameTo(tempFile,configFile);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		} finally{
 			try {br.close();} catch (Exception e) {}
 			try {fw.close();} catch (Exception e) {}
@@ -529,14 +529,14 @@ public class YamlFileUpdater {
 		try {
 			br = new BufferedReader(new FileReader(configFile));
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return false;
 		}
 		try {
 			tempFile = new File(BattleArena.getSelf().getDataFolder()+"/temp.yml");
 			fw = new BufferedWriter(new FileWriter(tempFile));
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			try{br.close();}catch (Exception e2){}
 			return false;
 		}
@@ -548,7 +548,7 @@ public class YamlFileUpdater {
 			fw.close();
 			br.close();
 		} catch(Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -608,7 +608,7 @@ public class YamlFileUpdater {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		} finally{
 			try {br.close();} catch (Exception e) {}
 			try {fw.close();} catch (Exception e) {}

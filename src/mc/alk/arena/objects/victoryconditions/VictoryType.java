@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.util.CaseInsensitiveMap;
+import mc.alk.arena.util.Log;
 
 import org.bukkit.plugin.Plugin;
 
@@ -71,7 +72,7 @@ public class VictoryType {
 			}
 			return newVC;
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return null;
 	}

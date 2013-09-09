@@ -29,7 +29,7 @@ public class VaultPermUtil {
 			}
 		} catch (Error e){
 			Log.err(BattleArena.getPluginName() +" exception loading permissions through Vault");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return false;
 		}
 		return true;

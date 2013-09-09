@@ -3,7 +3,9 @@ package mc.alk.arena.controllers;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -26,6 +28,7 @@ public class ArenaClassController {
 	public static void addClass(ArenaClass ac){
 		classes.put(ac.getName().toUpperCase(), ac);
 		classes.put(MessageUtil.decolorChat(ac.getDisplayName()).toUpperCase(),ac);
+		classes.put(MessageUtil.decolorChat(ac.getDisplayName().replaceAll("\\[\\]", "")).toUpperCase(),ac);
 	}
 
 	public static ArenaClass getClass(String name){
@@ -77,5 +80,9 @@ public class ArenaClassController {
 
 	public static void giveClassEnchants(Player player, ArenaClass ac) {
 		try{if (ac.getEffects() != null) EffectUtil.enchantPlayer(player, ac.getEffects());} catch (Exception e){}
+	}
+
+	public static Set<ArenaClass> getClasses() {
+		return new HashSet<ArenaClass>(classes.values());
 	}
 }

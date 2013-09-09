@@ -152,6 +152,10 @@ public class BAPlayerListener implements Listener  {
 		getOrCreateRestorer(playerName).setMagic(val);
 	}
 
+	public static void deEnchantOnEnter(String playerName) {
+		getOrCreateRestorer(playerName).deEnchant();
+	}
+
 	public static void killAllOnReenter(Set<String> keys) {
 		if (keys==null)
 			return;

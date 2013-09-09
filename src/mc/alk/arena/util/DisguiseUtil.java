@@ -40,7 +40,7 @@ public class DisguiseUtil {
 				disguiseInterface.disguisePlayer(player, d);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 

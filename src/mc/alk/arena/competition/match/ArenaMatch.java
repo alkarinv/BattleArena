@@ -116,8 +116,9 @@ public class ArenaMatch extends Match {
 		final ArenaTeam t = event.getTeam();
 
 		Integer nDeaths = t.addDeath(target);
-		boolean exiting = !respawns || (nDeaths != null && nDeaths >= nLivesPerPlayer);
-		boolean trueDeath = event.getPlayerDeathEvent() != null;
+		boolean exiting = event.isExiting() || !respawns || (nDeaths != null && nDeaths >= nLivesPerPlayer);
+		event.setExiting(exiting);
+		final boolean trueDeath = event.getPlayerDeathEvent() != null;
 
 		if (trueDeath){
 			PlayerDeathEvent pde = event.getPlayerDeathEvent();
@@ -375,7 +376,7 @@ public class ArenaMatch extends Match {
 		/// Check to see if it's a sign
 		if (event.getClickedBlock().getType().equals(Material.SIGN) ||
 				event.getClickedBlock().getType().equals(Material.WALL_SIGN)){ /// Only checking for signs
-			signClick(event,this);
+//			signClick(event,this);
 		} else { /// its a ready block
 			if (respawnTimer.containsKey(event.getPlayer().getName())){
 				respawnClick(event,this,respawnTimer);

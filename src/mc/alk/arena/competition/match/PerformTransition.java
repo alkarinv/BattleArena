@@ -122,7 +122,7 @@ public class PerformTransition {
 
 		/// People that are quiting/leaving with wipeInventory should lose their inventory
 		/// even if they are "dead" or "offline"
-		final boolean forceClearInventory = wipeInventory && mo.shouldTeleportOut();
+//		final boolean forceClearInventory = wipeInventory && mo.shouldTeleportOut();
 
 		List<PotionEffect> effects = mo.getEffects()!=null ? new ArrayList<PotionEffect>(mo.getEffects()) : null;
 		final Double health = mo.getHealth();
@@ -182,7 +182,7 @@ public class PerformTransition {
 			if (mo.hasOption(TransitionOption.FLIGHTON)) { PlayerUtil.setFlight(p,true); }
 			if (mo.hasOption(TransitionOption.FLIGHTSPEED)) { PlayerUtil.setFlightSpeed(p,mo.getFlightSpeed()); }
 			if (mo.hasOption(TransitionOption.DOCOMMANDS)) { PlayerUtil.doCommands(p,mo.getDoCommands()); }
-			if (mo.deEnchant() != null && mo.deEnchant()) { deEnchant(p);}
+			if (mo.deEnchant()) { psc.deEnchant(p);}
 			if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p);}
 			if (DisguiseInterface.enabled() && disguiseAllAs != null) {DisguiseInterface.disguisePlayer(p, disguiseAllAs);}
 			if (mo.getMoney() != null) {MoneyController.add(player.getName(), mo.getMoney());}
@@ -230,8 +230,15 @@ public class PerformTransition {
 			if (teleportIn){
 				transition(am, MatchState.ONSPAWN, player, team, false);
 			}
-		} else if (forceClearInventory){
-			InventoryUtil.clearInventory(p);
+		/// else we have a subste of the options we should always do regardless if they are alive or not
+		}  else if (teleportOut){
+			if (mo.hasOption(TransitionOption.REMOVEPERMS)){ removePerms(player, mo.getRemovePerms());}
+			if (mo.hasOption(TransitionOption.GAMEMODE)) { PlayerUtil.setGameMode(p,mo.getGameMode()); }
+			if (mo.hasOption(TransitionOption.FLIGHTOFF)) { PlayerUtil.setFlight(p,false); }
+			if (mo.deEnchant()) { psc.deEnchant(p);}
+
+
+			if (wipeInventory) { InventoryUtil.clearInventory(p); }
 		}
 
 		/// Teleport out, need to do this at the end so that all the onCancel/onComplete options are completed first
@@ -258,11 +265,6 @@ public class PerformTransition {
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREGODMODE)){psc.restoreGodmode(player);}
 		if (restoreAll || mo.hasOption(TransitionOption.RESTOREFLIGHT)){psc.restoreFlight(player);}
 		return true;
-	}
-
-	private static void deEnchant(Player p) {
-		try{ EffectUtil.deEnchantAll(p);} catch (Exception e){}
-		HeroesController.deEnchant(p);
 	}
 
 	private static void setMagicLevel(Player p, Integer magic) {

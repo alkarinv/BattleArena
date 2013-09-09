@@ -5,6 +5,7 @@ import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.util.Log;
 
 public class TeamFactory {
 
@@ -46,7 +47,7 @@ public class TeamFactory {
 			System.err.println("Add the following line to your Team Class '" + clazz.getSimpleName()+".java'");
 			System.err.println("public " + clazz.getSimpleName()+"(){}");
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return null;
 	}

@@ -104,7 +104,7 @@ public class APIRegistrationController {
 		try {
 			fw = new BufferedWriter(new FileWriter(pluginFile));
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return false;
 		}
 		try {
@@ -113,7 +113,7 @@ public class APIRegistrationController {
 				fw.write(line+"\n");
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return false;
 		} finally {
 			if (fw !=null) try {fw.close(); } catch (Exception e){}
@@ -169,7 +169,7 @@ public class APIRegistrationController {
 			return _registerCompetition(plugin, name, cmd, arenaClass, executor,
 					configFile, messageFile, defaultPluginConfigFile, defaultArenaFile);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return true;
 		}
 	}

@@ -8,6 +8,7 @@ import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.serializers.InventorySerializer;
+import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
@@ -320,6 +321,14 @@ public class PlayerStoreController {
 
 	public static PlayerStoreController getPlayerStoreController() {
 		return INSTANCE;
+	}
+
+	public void deEnchant(Player p) {
+		try{ EffectUtil.deEnchantAll(p);} catch (Exception e){}
+		HeroesController.deEnchant(p);
+		if (!p.isOnline() || p.isDead()){
+			BAPlayerListener.deEnchantOnEnter(p.getName());
+		}
 	}
 
 

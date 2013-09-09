@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers;
 
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MobArenaUtil;
 
 import org.bukkit.plugin.Plugin;
@@ -15,7 +16,7 @@ public class MobArenaInterface {
 			mai.ma = new MobArenaUtil(plugin);
 		} catch (Error e){
 			mai = null;
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 	public static boolean hasMobArena() {

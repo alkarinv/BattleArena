@@ -19,6 +19,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.KeyValue;
+import mc.alk.arena.util.Log;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -45,7 +46,7 @@ public class InventorySerializer {
 			try {
 				date = format.parse(strdate);
 			} catch (ParseException e) {
-				e.printStackTrace();
+				Log.printStackTrace(e);
 				continue;
 			}
 			dates.add(date.getTime());
@@ -83,7 +84,7 @@ public class InventorySerializer {
 			try {
 				date = format.parse(strdate);
 			} catch (ParseException e) {
-				e.printStackTrace();
+				Log.printStackTrace(e);
 				continue;
 			}
 			PInv pinv = ArenaControllerSerializer.getInventory(cs);

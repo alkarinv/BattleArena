@@ -14,11 +14,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.objects.YamlSerializable;
+import mc.alk.arena.objects.exceptions.SerializationException;
 import mc.alk.arena.serializers.Persist;
 import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.SerializerUtil;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -55,7 +58,7 @@ public class Persistable {
 				if (!(a instanceof Persist || !cs.contains(name))){
 					continue;
 				}
-
+//				System.out.println("Type = " + type +"  " + name +"   " + annotations + "   " + cs.getString(name));
 				field.setAccessible(true);
 				try {
 					Object obj = null;
@@ -165,7 +168,7 @@ public class Persistable {
 				} catch (NotPersistableException e) {
 					System.err.println(e.getMessage());
 				} catch (Exception e) {
-					e.printStackTrace();
+					Log.printStackTrace(e);
 				}
 			}
 		}
@@ -200,6 +203,8 @@ public class Persistable {
 			return SerializerUtil.getLocation(name.toString());
 		} else if (type == ItemStack.class){
 			return InventoryUtil.parseItem(name.toString());
+		} else if (type == Block.class){
+			return SerializerUtil.parseBlock(name.toString());
 		} else if (YamlSerializable.class.isAssignableFrom((Class<?>) type)){
 			if (Map.class.isAssignableFrom(name.getClass())){
 				return createYamlSerializable((Class<?>)type, (Map<String,Object>)name, null);
@@ -222,11 +227,14 @@ public class Persistable {
 			ys = (YamlSerializable) ys.yamlToObject(map, value);
 			return ys;
 		} catch (NoSuchMethodException e){
-			System.err.println("If you have custom constructors for your YamlSerializable class you must also have a public default constructor");
-			System.err.println("Add the following line to your YamlSerializable Class '" + clazz.getSimpleName()+".java'");
-			System.err.println("public " + clazz.getSimpleName()+"(){}");
+			Log.err("If you have custom constructors for your YamlSerializable class you must also have a public default constructor");
+			Log.err("Add the following line to your YamlSerializable Class '" + clazz.getSimpleName()+".java'");
+			Log.err("public " + clazz.getSimpleName()+"(){}");
+		} catch (SerializationException e) {
+			Log.err("[BA Error] loading value=" + value +"   map="+map +"  class="+clazz.getSimpleName());
+			Log.err(e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return null;
 	}
@@ -278,6 +286,8 @@ public class Persistable {
 					} else if (type == long.class){
 						map.put(name, field.getLong(object));
 					} else if (type == Location.class || type == ItemStack.class){
+						obj = objToYaml(field.get(object));
+					} else if (type == Block.class){
 						obj = objToYaml(field.get(object));
 					} else if (List.class.isAssignableFrom(type)){
 						@SuppressWarnings("unchecked")
@@ -346,7 +356,7 @@ public class Persistable {
 				} catch (NotPersistableException e) {
 					System.err.println(e.getMessage());
 				} catch (Exception e) {
-					e.printStackTrace();
+					Log.printStackTrace(e);
 				}
 			}
 		}
@@ -368,7 +378,14 @@ public class Persistable {
 		} else if (obj instanceof ItemStack){
 			return InventoryUtil.getItemString((ItemStack)obj);
 		} else if (obj instanceof YamlSerializable){
-			return ((YamlSerializable)obj).objectToYaml();
+			try{
+				return ((YamlSerializable)obj).objectToYaml();
+			} catch (SerializationException e) {
+				Log.err("[BA Error] saving object =" + obj);
+				Log.err(e.getMessage());
+			}
+		} else if (obj instanceof Block){
+			return SerializerUtil.getBlockString((Block) obj);
 		}
 		return obj;
 	}

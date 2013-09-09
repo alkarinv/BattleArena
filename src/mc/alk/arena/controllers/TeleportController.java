@@ -85,7 +85,7 @@ public class TeleportController implements Listener{
 			if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());
 		} catch (Exception e){
 			Log.err("[BA Error] teleporting player=" + player.getName() +" to " + location +" " + giveBypassPerms);
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return true;
 	}
@@ -164,7 +164,7 @@ public class TeleportController implements Listener{
 			} catch (IllegalArgumentException e){
 				Log.info(e.getMessage());
 			} catch(Exception e){
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 		return res;

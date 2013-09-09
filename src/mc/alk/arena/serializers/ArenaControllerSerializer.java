@@ -12,6 +12,7 @@ import mc.alk.arena.controllers.PlayerRestoreController;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.SerializerUtil;
 
 import org.bukkit.GameMode;
@@ -30,7 +31,7 @@ public class ArenaControllerSerializer extends BaseConfig{
 	public void load(){
 		try {
 			config.load(file);
-		} catch (Exception e){e.printStackTrace();}
+		} catch (Exception e){Log.printStackTrace(e);}
 
 		ConfigurationSection cs = config.getConfigurationSection("tpOnReenter");
 		if (cs != null){
@@ -40,7 +41,7 @@ public class ArenaControllerSerializer extends BaseConfig{
 				try {
 					loc = SerializerUtil.getLocation(loccs.getString("loc"));
 				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
+					Log.printStackTrace(e);
 				}
 				if (loc == null){
 					System.err.println("Couldnt load the player " + name +" when reading tpOnReenter inside arenaplayers.yml");
@@ -104,7 +105,7 @@ public class ArenaControllerSerializer extends BaseConfig{
 				is = InventoryUtil.parseItem(stritem);
 			} catch (Exception e) {
 				System.err.println("Couldnt reparse "+stritem +" for player " + cs.getName());
-				e.printStackTrace();
+				Log.printStackTrace(e);
 				continue;
 			}
 			items.add(is);
@@ -119,7 +120,7 @@ public class ArenaControllerSerializer extends BaseConfig{
 				is = InventoryUtil.parseItem(stritem);
 			} catch (Exception e) {
 				System.err.println("Couldnt reparse "+stritem +" for player " + cs.getName());
-				e.printStackTrace();
+				Log.printStackTrace(e);
 				continue;
 			}
 			items.add(is);
@@ -199,7 +200,7 @@ public class ArenaControllerSerializer extends BaseConfig{
 		try {
 			config.save(file);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 

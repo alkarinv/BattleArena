@@ -139,7 +139,7 @@ public interface ArenaTeam {
 
 	public ChatColor getTeamChatColor();
 
-	public String geIDString();
+	public String getIDString();
 
 	public void setScoreboardDisplayName(String name);
 

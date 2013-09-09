@@ -1,14 +1,9 @@
 package mc.alk.arena.events.events;
 
 import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.events.BAEvent;
 
-public class EventFinishedEvent extends BAEvent {
-	final Event event;
+public class EventFinishedEvent extends EventEvent {
 	public EventFinishedEvent(Event event){
-		this.event = event;
-	}
-	public Event getEvent(){
-		return event;
+		super(event);
 	}
 }

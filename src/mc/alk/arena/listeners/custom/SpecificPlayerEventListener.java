@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.TreeSet;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.listeners.custom.RListener.RListenerPriorityComparator;
@@ -201,7 +202,7 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 				}
 				method.invoke(lmethod.getListener(), os); /// Invoke the listening arenalisteners method
 			} catch (Exception e){
-				Log.err("[BA:Error] method=" + method + ",  types.length=" +types.length +",  p=" + p +",  listener="+lmethod);
+				Log.err("["+BattleArena.getNameAndVersion()+" Error] method=" + method + ",  types.length=" +types.length +",  p=" + p +",  listener="+lmethod);
 				Log.printStackTrace(e);
 			}
 		}

@@ -71,4 +71,9 @@ public class KillLimit extends VictoryCondition implements ScoreTracker{
 		this.kills.setScoreBoard(scoreboard);
 		scoreboard.addObjective(kills);
 	}
+
+	@Override
+	public void setDisplayTeams(boolean display) {
+		kills.setDisplayPlayers(display);
+	}
 }

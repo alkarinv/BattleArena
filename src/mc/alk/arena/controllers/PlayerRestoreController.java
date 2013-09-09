@@ -6,6 +6,7 @@ import java.util.List;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
@@ -43,6 +44,7 @@ public class PlayerRestoreController {
 	PInv matchItems = null;
 	List<ItemStack> removeItems = null;
 	String message = null;
+	boolean deEnchant = false;
 
 	public PlayerRestoreController(String name) {
 		this.name = name;
@@ -100,6 +102,12 @@ public class PlayerRestoreController {
 		/// Remove Items
 		if (removeItems != null){
 			handleRemoveItems();}
+
+		/// DeEnchant
+		if (deEnchant){
+			try{ EffectUtil.deEnchantAll(p);} catch (Exception e){}
+			HeroesController.deEnchant(p);
+		}
 		return stillHandling();
 	}
 
@@ -363,6 +371,9 @@ public class PlayerRestoreController {
 			this.exp += exp;
 	}
 
+	public void deEnchant() {
+		this.deEnchant = true;
+	}
 	public void setHealth(Double health) {
 		this.health = health;
 	}
@@ -469,4 +480,5 @@ public class PlayerRestoreController {
 	public String getMessage() {
 		return message;
 	}
+
 }

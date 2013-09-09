@@ -101,4 +101,8 @@ public class BukkitEventHandler {
 		return sapl;
 	}
 
+	public void invokeArenaEvent(Event event) {
+		ael.invokeEvent(event);
+	}
+
 }

@@ -128,7 +128,7 @@ public class GameManager implements PlayerHolder{
 
 	@Override
 	public void callEvent(BAEvent event) {
-
+		methodController.callEvent(event);
 	}
 
 	@Override

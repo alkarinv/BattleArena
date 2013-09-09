@@ -1,16 +1,21 @@
 package mc.alk.arena.executors;
 
 import java.util.Collection;
+import java.util.Set;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
+import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -68,13 +73,18 @@ public class BattleArenaExecutor extends CustomCommandExecutor{
 		}
 	}
 
+
 	@MCCommand(cmds={"version"}, admin=true)
-	public boolean showVersion(CommandSender sender) {
-		sendMessage(sender, BattleArena.getNameAndVersion());
-		for (ArenaType at : ArenaType.getTypes()){
-			String name = at.getPlugin().getName();
-			String version = at.getPlugin().getDescription().getVersion();
-			sendMessage(sender, at.getName() +"  " + name +"  " + version);
+	public boolean showVersion(CommandSender sender, String[] args) {
+		sendMessage(sender, "&6"+BattleArena.getNameAndVersion());
+		if (args.length > 1 && args[1].equalsIgnoreCase("all")){
+			for (ArenaType at : ArenaType.getTypes()){
+				String name = at.getPlugin().getName();
+				String version = at.getPlugin().getDescription().getVersion();
+				sendMessage(sender, at.getName() +"  " + name +"  " + version);
+			}
+		} else {
+			sendMessage(sender, "&2For all game type versions, type &6/ba version all");
 		}
 		return true;
 	}
@@ -98,5 +108,25 @@ public class BattleArenaExecutor extends CustomCommandExecutor{
 		return sendMessage(sender, "&6BattleArena&e configuration reloaded");
 	}
 
+	@MCCommand(cmds={"listClasses"}, admin=true)
+	public boolean listArenaClasses(CommandSender sender) {
+		Set<ArenaClass> classes = ArenaClassController.getClasses();
+		sendMessage(sender, "&2Registered classes");
+		for (ArenaClass ac: classes){
+			sendMessage(sender, "&6"+ac.getName()+"&2 : " + ac.getDisplayName());
+		}
+		return true;
+	}
+
+	@MCCommand(cmds={"kick"}, admin=true, perm="arena.kick")
+	public boolean arenaKick(CommandSender sender, ArenaPlayer player) {
+		ArenaPlayerLeaveEvent event = new ArenaPlayerLeaveEvent(player, player.getTeam(),
+				ArenaPlayerLeaveEvent.QuitReason.KICKED);
+		event.callEvent();
+		if (event.getMessages() != null && !event.getMessages().isEmpty()) {
+			MessageUtil.sendMessage(event.getPlayer(), event.getMessages());
+		}
+		return sendMessage(sender,"&2You have kicked &6"+player.getName());
+	}
 
 }

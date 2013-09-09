@@ -123,6 +123,8 @@ public class ConfigSerializer extends BaseConfig{
 		/// number of concurrently running matches of this type
 		if (cs.contains("nConcurrentCompetitions"))
 			mp.setNConcurrentCompetitions(ArenaSize.toInt(cs.getString("nConcurrentCompetitions","infinite")));
+		if (cs.contains("waitroomClosedWhileRunning"))
+			mp.setWaitroomClosedWhileRunning(cs.getBoolean("waitroomClosedWhileRunning",false));
 
 		loadAnnouncementsOptions(cs, mp); /// Load announcement options
 
@@ -183,7 +185,7 @@ public class ConfigSerializer extends BaseConfig{
 					tops = getTransitionOptions(cs.getConfigurationSection("onPrestart"));}
 			} catch (Exception e){
 				Log.err("Invalid Option was not added!!! transition= " + transition);
-				e.printStackTrace();
+				Log.printStackTrace(e);
 				continue;
 			}
 			if (tops == null){
@@ -423,28 +425,28 @@ public class ConfigSerializer extends BaseConfig{
 				tops.addOption(TransitionOption.TELEPORTTO, SerializerUtil.getLocation(cs.getString("teleportTo")));}
 		} catch (Exception e){
 			Log.err("Error setting the value of teleportTo ");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		try{
 			if (cs.contains("giveClass")){
 				tops.addOption(TransitionOption.GIVECLASS, getArenaClasses(cs.getConfigurationSection("giveClass")));}
 		} catch (Exception e){
 			Log.err("Error setting the value of giveClass ");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		try{
 			if (cs.contains("giveDisguise")){
 				tops.addOption(TransitionOption.GIVEDISGUISE, getArenaDisguises(cs.getConfigurationSection("giveDisguise")));}
 		} catch (Exception e){
 			Log.err("Error setting the value of giveDisguise ");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		try{
 			if (cs.contains("doCommands")){
 				tops.addOption(TransitionOption.DOCOMMANDS, getDoCommands(cs.getStringList("doCommands")));}
 		} catch (Exception e){
 			Log.err("Error setting the value of doCommands ");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		try{
 			/// Convert from old to new style aka ("needItems" and items: list, to needItems:)
@@ -462,7 +464,7 @@ public class ConfigSerializer extends BaseConfig{
 			}
 		} catch (Exception e){
 			Log.err("Error setting the value of needItems ");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		try{
 			List<ItemStack> items = getItemList(cs,"giveItems");
@@ -475,7 +477,7 @@ public class ConfigSerializer extends BaseConfig{
 				options.remove(TransitionOption.GIVEITEMS);}
 		} catch (Exception e){
 			Log.err("Error setting the value of giveItems ");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 
 		try{
@@ -486,7 +488,7 @@ public class ConfigSerializer extends BaseConfig{
 				options.remove(TransitionOption.ENCHANTS);
 		} catch (Exception e){
 			Log.err("Error setting the value of enchants ");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 
 		setPermissionSection(cs,"addPerms",tops);
@@ -617,7 +619,7 @@ public class ConfigSerializer extends BaseConfig{
 			}
 		} catch (Exception e){
 			Log.err(cs.getCurrentPath() +"."+nodeString + " could not be parsed in config.yml");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return items;
 	}
@@ -634,7 +636,7 @@ public class ConfigSerializer extends BaseConfig{
 			try{
 				return JoinType.fromString(type);
 			} catch (Exception e){
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 		return isMatch ? JoinType.QUEUE : JoinType.JOINPHASE;
@@ -693,6 +695,8 @@ public class ConfigSerializer extends BaseConfig{
 		}
 
 		if (params.getNConcurrentCompetitions() != null)  main.set("nConcurrentCompetitions", ArenaSize.toString(params.getNConcurrentCompetitions()));
+
+		if (params.isWaitroomClosedWhenRunning() != null)  main.set("waitroomClosedWhileRunning", params.isWaitroomClosedWhenRunning());
 
 		Collection<ArenaModule> modules = params.getModules();
 		if (modules != null && !modules.isEmpty()){ main.set("modules", getModuleList(modules));}
@@ -791,7 +795,7 @@ public class ConfigSerializer extends BaseConfig{
 							list.add(s);
 						} catch (Exception e){
 							Log.err("[BA Error] couldn't save " + to);
-							e.printStackTrace();
+							Log.printStackTrace(e);
 						}
 					}
 //					list = getOptionSets(possibleOptionSet);
@@ -799,7 +803,7 @@ public class ConfigSerializer extends BaseConfig{
 					//			main.put(ms.toString(), tmap);
 					main.set(ms.toString(), tmap);
 				} catch(Exception e){
-					e.printStackTrace();
+					Log.printStackTrace(e);
 				}
 			}
 		}

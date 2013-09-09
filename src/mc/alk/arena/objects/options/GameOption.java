@@ -5,22 +5,35 @@ import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.util.MinMax;
 
 public enum GameOption{
-	NLIVES ("nLives"),
-	TEAMSIZE("teamSize"),
-	NTEAMS("nTeams"),
-	PREFIX("prefix"),
-	PRESTARTTIME("secondsTillMatch"),
-	MATCHTIME("matchTime"),
-	VICTORYTIME("secondsToLoot"),
-	VICTORYCONDITION("victoryCondition"),
-	COMMAND("command"),
-	RATED("rated")
+	NLIVES ("nLives", true, false),
+	TEAMSIZE("teamSize",true, false),
+	NTEAMS("nTeams",true, false),
+	PREFIX("prefix",true, false),
+	PRESTARTTIME("secondsTillMatch",true, false),
+	MATCHTIME("matchTime",true, false),
+	VICTORYTIME("secondsToLoot",true, false),
+	VICTORYCONDITION("victoryCondition",true, false),
+	COMMAND("command",true, false),
+	RATED("rated",true, false),
+	GIVEITEMS("giveItems",true, false),
+	CLOSEWAITROOMWHILERUNNING("closeWaitroomWhileRunning", true,false)
 	;
 
 	final String name;
-//	final Class<?> clazz;
 
-	GameOption(String name){this.name= name;}
+	final boolean needsValue; /// whether the transition needs a value
+
+	final boolean needsPlayer; /// whether we need a player
+
+	GameOption(String name, Boolean hasValue, Boolean needsPlayer){
+		this.name = name;
+		this.needsValue = hasValue;
+		this.needsPlayer = needsPlayer;
+	}
+
+	public boolean hasValue(){return needsValue;}
+
+	public boolean needsPlayer(){return needsPlayer;}
 
 	@Override
 	public String toString(){return name;}
@@ -34,6 +47,10 @@ public enum GameOption{
 				return GameOption.PRESTARTTIME;
 			if (str.equalsIgnoreCase("secondsToLoot"))
 				return GameOption.VICTORYTIME;
+			if (str.equalsIgnoreCase("items"))
+				return GameOption.GIVEITEMS;
+			if (str.equalsIgnoreCase("waitroomClosedWhileRunning"))
+				return GameOption.CLOSEWAITROOMWHILERUNNING;
 			return null;
 		}
 	}
@@ -53,6 +70,7 @@ public enum GameOption{
 			return value;
 		case VICTORYCONDITION:
 			return VictoryType.fromString(value);
+		case CLOSEWAITROOMWHILERUNNING:
 		case RATED:
 			return Boolean.valueOf(value);
 		default:

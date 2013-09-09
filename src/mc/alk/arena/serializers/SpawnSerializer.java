@@ -34,7 +34,7 @@ public class SpawnSerializer {
 	}
 
 	public void loadAll(){
-		try {config.load(f);} catch (Exception e){e.printStackTrace();}
+		try {config.load(f);} catch (Exception e){Log.printStackTrace(e);}
 
 		ConfigurationSection as = config.getConfigurationSection("spawnGroups");
 		if (as == null){
@@ -76,7 +76,7 @@ public class SpawnSerializer {
 			}
 		} catch (Exception e){
 			Log.warn(cs.getCurrentPath() +" could not be parsed in config.yml");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return spawns;
 	}

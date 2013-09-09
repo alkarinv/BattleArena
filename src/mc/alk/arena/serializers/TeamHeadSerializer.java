@@ -17,7 +17,7 @@ import org.bukkit.inventory.ItemStack;
 public class TeamHeadSerializer extends BaseConfig{
 
 	public void loadAll(){
-		try {config.load(file);} catch (Exception e){e.printStackTrace();}
+		try {config.load(file);} catch (Exception e){Log.printStackTrace(e);}
 		loadTeams(config);
 	}
 
@@ -34,7 +34,7 @@ public class TeamHeadSerializer extends BaseConfig{
 				teamName = addTeamHead(teamStr);
 			} catch (Exception e) {
 				Log.err("Error parsing teamHead " + teamStr);
-				e.printStackTrace();
+				Log.printStackTrace(e);
 				continue;
 			}
 			if (first) first = false;

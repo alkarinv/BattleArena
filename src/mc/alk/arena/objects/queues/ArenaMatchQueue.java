@@ -106,9 +106,6 @@ public class ArenaMatchQueue{
 	private synchronized JoinResult addToQueue(final QueueObject to, boolean checkStart) {
 		if (!ready_matches.isEmpty())
 			notifyAll();
-		//		if (to.getJoinOptions().getArena() == null){
-		//			to.getJoinOptions().setArena(getNextArena(to.getMatchParams(), to.getJoinOptions()));
-		//		}
 		TeamCollection tq = getTeamQ(to.getMatchParams(), to.getJoinOptions().getArena());
 		tq.add(to);
 		IdTime idt = null;
@@ -178,6 +175,17 @@ public class ArenaMatchQueue{
 			if (tq == null || tq.isEmpty())
 				continue;
 			notified |= joinQueue(tq,null).match != null;
+		}
+		if (!aqs.isEmpty()){
+			synchronized(aqs){
+				for (Map<Arena, TeamQueue> map: aqs.values()){
+					for (TeamQueue tq: map.values()){
+						if (tq == null || tq.isEmpty())
+							continue;
+						notified |= joinQueue(tq,null).match != null;
+					}
+				}
+			}
 		}
 		return notified;
 	}
@@ -279,17 +287,11 @@ public class ArenaMatchQueue{
 				if (joiningObject != null && joiningObject.getJoinOptions().hasArena() &&
 						joiningObject.getJoinOptions().getArena().equals(a)){
 					qr.params = a.getParams();
-//					System.out.println(" *****************  max=" + qr.maxPlayers);
 				}
 				MatchParams newParams = a.getParams();
 				if (Defaults.DEBUGQ) Log.info("----- AMQ check matches="+ a.matches(gameParams, null) + " arena = " + a +
 							"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+gameParams.toPrettyString() +
 							" tqparams="+tq.getMatchParams().toPrettyString());
-//				if (!forceStart && !newParams.intersect(a.getParams())){ /// only intersect if not forceStart
-//					continue;
-//				} else if (forceStart){
-//					newParams.intersectMax(a.getParams());
-//				}
 				/// Get both the ArenaQueue and GameQueue, or just the teamQueue
 				final TeamCollection iterate;
 				if (tq instanceof CompositeTeamQueue){
@@ -317,34 +319,15 @@ public class ArenaMatchQueue{
 					/// Allow people that selected particular join options (like certain arenas) to get a chance
 					if (skipNonMatched && qo instanceof TeamJoinObject){
 						JoinOptions jpo = qo.getJoinOptions();
-//						Log.debug(" !!! ------------  qomp " +qo.getMatchParams().getSize() +
-//								"    " + newParams.getSize() +"   "+
-//								qo.getJoinOptions() +"    " );
 						if (!jpo.matches(newParams))
 							continue;
 					}
-//					MatchParams qomp = qo.getMatchParams();
-					/// Check to see if the team matches these params
-					//					if (!qomp.matches(newParams)){
-					//						if (!forceStart){ /// continue to next queue object
-					//							continue;
-					//						} else { /// since we are trying to force a start... how bad does this player not match?
-					//							/// alright, do they want a particular place/size we aren't doing
-					//							JoinOptions jpo = qo.getJoinOptions();
-					//							if ((jpo.hasArena() && !jpo.getArena().equals(a)) || jpo.hasTeamSize())
-					//								continue;
-					//						}
-					//					}
-
 					try {
 						MatchParams playerMatchAndArenaParams = ParamController.copyParams(newParams);
 						if (forceStart){
 							playerMatchAndArenaParams.setNTeams(gameParams.getNTeams());
 							playerMatchAndArenaParams.setTeamSizes(gameParams.getTeamSizes());
 						}
-						//						MatchParams playerMatchAndArenaParams = new MatchParams(a.getParams());
-						//						playerMatchAndArenaParams.setParent(newParams);
-						//						newParams.setParent(ParamController.getMatchParamCopy(newParams.getType()));
 						qr.maxPlayers = playerMatchAndArenaParams.getMaxPlayers();
 						findMatch(qr, playerMatchAndArenaParams,a,iterate, forceStart);
 					} catch (NeverWouldJoinException e) {

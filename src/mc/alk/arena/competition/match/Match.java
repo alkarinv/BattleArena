@@ -90,9 +90,9 @@ import mc.alk.arena.util.Countdown.CountdownCallback;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
+import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.event.Event;
@@ -171,6 +171,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		this.params.setName(params.getType().getName());
 		params.flatten();
 		this.tops = params.getTransitionOptions();
+
 		/// Assign variables
 		this.plugin = BattleArena.getSelf();
 		this.gameManager = GameManager.getGameManager(params);
@@ -244,11 +245,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 		methodController.addSpecificEvents(this, events);
 		/// add a default objective
-		defaultObjective = new ArenaObjective("default","Player Kills",0);
-
-		defaultObjective.setDisplayName(ChatColor.GOLD+"Still Alive");
-		scoreboard.addObjective(defaultObjective);
-		defaultObjective.setScoreBoard(scoreboard);
+		defaultObjective = scoreboard.createObjective("default",
+				"Player Kills", "&6Still Alive", SAPIDisplaySlot.SIDEBAR, 100);
+		if (params.getMaxTeamSize() <= 2){
+			defaultObjective.setDisplayTeams(false);}
 
 		RoomContainer lc = RoomController.getLobby(params.getType());
 		if (lc != null){
@@ -327,7 +327,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	//		updateBukkitEvents(MatchState.ONBEGIN);
 	//		PerformTransition.transition(this, MatchState.ONBEGIN, teams, true);
 	//		arenaInterface.onBegin();
-	//		try{mc.sendOnBeginMsg(teams);}catch(Exception e){e.printStackTrace();}
+	//		try{mc.sendOnBeginMsg(teams);}catch(Exception e){Log.printStackTrace(e);}
 	//		/// Schedule the start of the match
 	//		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 	//			public void run() {
@@ -754,9 +754,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (woolTeams)
 			team.setHeadItem(TeamUtil.getTeamHead(index));
 		String name = TeamUtil.createTeamName(index);
-		if ( alwaysTeamNames || (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
+		if ( alwaysTeamNames ||
+				(!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
 			team.setDisplayName(name);
 		}
+
 		team.setScoreboardDisplayName(name.length() > Defaults.MAX_SCOREBOARD_NAME_SIZE ?
 				name.substring(0,Defaults.MAX_SCOREBOARD_NAME_SIZE) : name);
 		team.setArenaObjective(defaultObjective);
@@ -803,7 +805,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	 */
 	@Override
 	public boolean addedToTeam(final ArenaTeam team, final ArenaPlayer player) {
-		Log.info(getID()+" addedToTeam("+team.getName()+":"+team.getId()+", " + player.getName()+") inside="+inMatch.contains(player.getName()));
 		if (isEnding())
 			return false;
 		if (Defaults.DEBUG_MATCH_TEAMS)
@@ -1137,6 +1138,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			if (nLivesPerPlayer== Integer.MAX_VALUE) nLivesPerPlayer = 1;
 			nLivesPerPlayer = Math.max(nLivesPerPlayer, ((DefinesNumLivesPerPlayer)vc).getLivesPerPlayer());}
 		if (vc instanceof ScoreTracker){
+			if (params.getMaxTeamSize() <= 2){
+				((ScoreTracker)vc).setDisplayTeams(false);
+			}
 			((ScoreTracker)vc).setScoreBoard(scoreboard);
 		}
 		/// update listener to ONOPEN if we are already opened
@@ -1331,15 +1335,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		World w = arena.getSpawn(0,false).getWorld();
 		if (Defaults.DEBUG) System.out.println(p.getName()+"  online=" + online +" isready="+tops.playerReady(p,w));
 		if (!online){
-			//				Log.warn("[BattleArena] "+p.getName()+" killed for not being online");
 			t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for not being online");
 			ready = false;
 		} else if (inBed){
-			//				Log.warn("[BattleArena] "+p.getName()+" killed for not being online");
 			t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for being in bed while the match starts");
 			ready = false;
 		} else if (p.isDead()){
-			//				Log.warn("[BattleArena] "+p.getName()+" killed for not being online");
 			t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for being dead while the match starts");
 			ready = false;
 		} else if (!inmatch && !tops.playerReady(p,w)){ /// Players are about to be teleported into arena
@@ -1463,6 +1464,23 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 	public Collection<ArenaTeam> getOriginalTeams(){
 		return originalTeams;
+	}
+
+	public void killTeam(int teamIndex) {
+		if (teams.size() <= teamIndex)
+			return;
+		ArenaTeam t = teams.get(teamIndex);
+		if (t == null)
+			return;
+		killTeam(t);
+	}
+
+	public void killTeam(ArenaTeam t){
+		for (ArenaPlayer ap: t.getLivingPlayers()){
+			ArenaPlayerDeathEvent apde = new ArenaPlayerDeathEvent(ap,t);
+			apde.setExiting(true);
+			callEvent(apde);
+		}
 	}
 
 	public Set<String> getInsidePlayers(){

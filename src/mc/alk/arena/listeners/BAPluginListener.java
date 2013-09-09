@@ -253,7 +253,7 @@ public class BAPluginListener implements Listener {
 					}
 				} catch (Error e){
 					Log.err(BattleArena.getPluginName() +" exception loading economy through Vault");
-					e.printStackTrace();
+					Log.printStackTrace(e);
 				}
 			}
 			/// Load Vault chat
@@ -268,7 +268,7 @@ public class BAPluginListener implements Listener {
 					}
 				} catch (Error e){
 					Log.err(BattleArena.getPluginName() +" exception loading chat through Vault");
-					e.printStackTrace();
+					Log.printStackTrace(e);
 				}
 			}
 			/// Load Vault Permissions

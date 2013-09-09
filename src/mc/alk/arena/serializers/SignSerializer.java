@@ -6,6 +6,7 @@ import java.util.Set;
 
 import mc.alk.arena.listeners.SignUpdateListener;
 import mc.alk.arena.objects.signs.ArenaCommandSign;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.SerializerUtil;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,7 +26,12 @@ public class SignSerializer extends BaseConfig {
 				cs = cs.getConfigurationSection(strloc);
 				if (cs == null)
 					continue;
-				ArenaCommandSign acs = ArenaCommandSign.deserialize(cs.getValues(true));
+				ArenaCommandSign acs = null;
+				try {
+					acs = ArenaCommandSign.deserialize(cs.getValues(true));
+				} catch (IllegalArgumentException e){
+					Log.err("[BattleArena] Sign not loaded: " + e.getMessage());
+				}
 				if (acs == null)
 					continue;
 				sc.addSign(acs);

@@ -10,6 +10,7 @@ import mc.alk.arena.controllers.BukkitInterface;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class SerializerUtil {
@@ -81,6 +82,21 @@ public class SerializerUtil {
 			locs.put(i, loc);
 		}
 		return locs;
+	}
+
+
+	public static String getBlockString(Block b) {
+		return b.getTypeId() +";" +b.getData() + ";"+getBlockLocString(b.getLocation());
+	}
+
+
+	public static Block parseBlock(String string) {
+		String[] split = string.split(";");
+		Integer.valueOf(split[0]);
+		Integer.valueOf(split[1]);
+		Location l = getLocation(split[2]);
+		Block b = l.getWorld().getBlockAt(l);
+		return b;
 	}
 
 }

@@ -92,7 +92,7 @@ public class PlayerUtil {
 				Bukkit.getServer().dispatchCommand(cs, cls.getCommand(name));
 			} catch (Exception e){
 				Log.err("[BattleArena] Error executing command as console or player");
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 
 		}

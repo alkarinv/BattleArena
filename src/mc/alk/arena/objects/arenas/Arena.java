@@ -22,12 +22,12 @@ import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.PlayerContainerState;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.regions.PylamoRegion;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.Persist;
+import mc.alk.arena.util.Log;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -64,41 +64,41 @@ public class Arena extends AreaContainer {
 	 * Called after construction or after persistance variables have been assigned, whichever is later
 	 */
 	void privateInit(){
-		try{init();}catch(Exception e){e.printStackTrace();}
+		try{init();}catch(Exception e){Log.printStackTrace(e);}
 	}
 	/**
 	 * private Arena crate events, calls create for subclasses to be able to override
 	 */
 	void privateCreate(){
-		try{create();}catch(Exception e){e.printStackTrace();}
+		try{create();}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
 	 * private Arena delete events, calls delete for subclasses to be able to override
 	 */
 	void privateDelete(){
-		try{delete();}catch(Exception e){e.printStackTrace();}
+		try{delete();}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
 	 * private Arena onOpen events, calls onOpen for subclasses to be able to override
 	 */
 	void privateOnOpen(){
-		try{onOpen();}catch(Exception e){e.printStackTrace();}
+		try{onOpen();}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
 	 * private Arena onBegin events, calls onBegin for subclasses to be able to override
 	 */
 	void privateOnBegin(){
-		try{onBegin();}catch(Exception e){e.printStackTrace();}
+		try{onBegin();}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
 	 * private Arena onPrestart events, calls onPrestart for subclasses to be able to override
 	 */
 	void privateOnPrestart(){
-		try{onPrestart();}catch(Exception e){e.printStackTrace();}
+		try{onPrestart();}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class Arena extends AreaContainer {
 	 */
 	void privateOnStart(){
 		startSpawns();
-		try{onStart();}catch(Exception e){e.printStackTrace();}
+		try{onStart();}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class Arena extends AreaContainer {
 	 */
 	void privateOnVictory(MatchResult result){
 		stopSpawns();
-		try{onVictory(result);}catch(Exception e){e.printStackTrace();}
+		try{onVictory(result);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class Arena extends AreaContainer {
 	 */
 	void privateOnComplete(){
 		stopSpawns();
-		try{onComplete();}catch(Exception e){e.printStackTrace();}
+		try{onComplete();}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
@@ -130,27 +130,27 @@ public class Arena extends AreaContainer {
 	 */
 	void privateOnCancel(){
 		stopSpawns();
-		try{onCancel();}catch(Exception e){e.printStackTrace();}
+		try{onCancel();}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
 	 * private Arena onFinish events, calls onFinish for subclasses to be able to override
 	 */
 	void privateOnFinish(){
-		try{onFinish();}catch(Exception e){e.printStackTrace();}
+		try{onFinish();}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
 	 * private Arena onEnter events, calls onEnter for subclasses to be able to override
 	 */
 	void privateOnEnter(ArenaPlayer player, ArenaTeam team){
-		try{onEnter(player,team);}catch(Exception e){e.printStackTrace();}
+		try{onEnter(player,team);}catch(Exception e){Log.printStackTrace(e);}
 	}
 	/**
 	 * private Arena onEnterWaitRoom events, calls onEnterWaitRoom for subclasses to be able to override
 	 */
 	void privateOnEnterWaitRoom(ArenaPlayer player, ArenaTeam team){
-		try{onEnterWaitRoom(player,team);}catch(Exception e){e.printStackTrace();}
+		try{onEnterWaitRoom(player,team);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
@@ -158,7 +158,7 @@ public class Arena extends AreaContainer {
 	 * Happens when a player joins a team
 	 */
 	void privateOnJoin(ArenaPlayer player, ArenaTeam team){
-		try{onJoin(player,team);}catch(Exception e){e.printStackTrace();}
+		try{onJoin(player,team);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
@@ -166,7 +166,7 @@ public class Arena extends AreaContainer {
 	 * Happens when a player leaves a team
 	 */
 	void privateOnLeave(ArenaPlayer player, ArenaTeam team){
-		try{onLeave(player,team);}catch(Exception e){e.printStackTrace();}
+		try{onLeave(player,team);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 
@@ -174,7 +174,7 @@ public class Arena extends AreaContainer {
 	 * private Arena onFinish events, calls onFinish for subclasses to be able to override
 	 */
 	void privateOnFinish(ArenaPlayer player, ArenaTeam team){
-		try{onFinish();}catch(Exception e){e.printStackTrace();}
+		try{onFinish();}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
@@ -540,6 +540,14 @@ public class Arena extends AreaContainer {
 	}
 
 	/**
+	 * Return the team with this index
+	 * @return
+	 */
+	public ArenaTeam getTeam(int teamIndex){
+		return match == null ? null : match.getTeam(teamIndex);
+	}
+
+	/**
 	 * Start any spawns happening for this arena
 	 */
 	public void startSpawns(){
@@ -565,30 +573,9 @@ public class Arena extends AreaContainer {
 	public boolean matches(final MatchParams matchParams, final JoinOptions jp) {
 		if (!getParams().matches(matchParams))
 			return false;
-		final MatchTransitions tops = matchParams.getTransitionOptions();
-		if (tops == null)
-			return true;
-		if ((waitroom == null || !waitroom.hasSpawns()) && matchParams.needsWaitroom())
-			return false;
-		if (jp == null)
-			return true;
-		if (!jp.matches(this))
-			return false;
-
-		final TransitionOptions ops = tops.getOptions(MatchState.PREREQS);
-		if (ops == null)
-			return true;
-
-		if (ops.hasOption(TransitionOption.WITHINDISTANCE)){
-			if (!jp.nearby(this,ops.getWithinDistance())){
-				return false;}
-		}
-		if (ops.hasOption(TransitionOption.SAMEWORLD)){
-			if (!jp.sameWorld(this)){
-				return false;}
-		}
-		return true;
+		return matchesIgnoreSize(matchParams,jp);
 	}
+
 	/**
 	 * Checks to see whether this arena has paramaters that match the given matchparams
 	 * @param eventParams
@@ -598,8 +585,8 @@ public class Arena extends AreaContainer {
 	public boolean matchesIgnoreSize(final MatchParams matchParams, final JoinOptions jp) {
 		if (this.getArenaType() != matchParams.getType())
 			return false;
-//		if (!getParams().matches(matchParams))
-//			return false;
+		//		if (!getParams().matches(matchParams))
+		//			return false;
 		final MatchTransitions tops = matchParams.getTransitionOptions();
 		if (tops == null)
 			return true;
@@ -610,15 +597,11 @@ public class Arena extends AreaContainer {
 		if (!jp.matches(this))
 			return false;
 
-		final TransitionOptions ops = tops.getOptions(MatchState.PREREQS);
-		if (ops == null)
-			return true;
-
-		if (ops.hasOption(TransitionOption.WITHINDISTANCE)){
-			if (!jp.nearby(this,ops.getWithinDistance())){
+		if (matchParams.hasOptionAt(MatchState.PREREQS,TransitionOption.WITHINDISTANCE)){
+			if (!jp.nearby(this,matchParams.getDoubleOption(MatchState.PREREQS, TransitionOption.WITHINDISTANCE))){
 				return false;}
 		}
-		if (ops.hasOption(TransitionOption.SAMEWORLD)){
+		if (matchParams.hasOptionAt(MatchState.PREREQS, TransitionOption.SAMEWORLD)){
 			if (!jp.sameWorld(this)){
 				return false;}
 		}
@@ -648,22 +631,21 @@ public class Arena extends AreaContainer {
 		reasons.addAll(getParams().getInvalidMatchReasons(matchParams));
 		final MatchTransitions tops = matchParams.getTransitionOptions();
 		if (tops != null){
-			final boolean mo = tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM);
-			if (mo && (waitroom == null || !waitroom.hasSpawns()))
+			if (matchParams.needsWaitroom() && (waitroom == null || !waitroom.hasSpawns()))
 				reasons.add("Needs a waitroom but none has been provided");
+			if (matchParams.needsLobby() && (!RoomController.hasLobby(matchParams.getType())))
+				reasons.add("Needs a lobby but none has been provided");
 		}
 		if (jp == null)
 			return reasons;
 		if (!jp.matches(this))
 			reasons.add("You didn't specify this arena");
-		final TransitionOptions ops = tops.getOptions(MatchState.PREREQS);
-		if (ops == null)
-			return reasons;
-		if (ops.hasOption(TransitionOption.WITHINDISTANCE)){
-			if (!jp.nearby(this,ops.getWithinDistance())){
-				reasons.add("You aren't within " + ops.getWithinDistance() +" blocks");}
+		if (matchParams.hasOptionAt(MatchState.PREREQS,TransitionOption.WITHINDISTANCE)){
+			if (!jp.nearby(this,matchParams.getDoubleOption(MatchState.PREREQS,TransitionOption.WITHINDISTANCE))){
+				reasons.add("You aren't within " +
+						matchParams.getDoubleOption(MatchState.PREREQS,TransitionOption.WITHINDISTANCE) +" blocks");}
 		}
-		if (ops.hasOption(TransitionOption.SAMEWORLD)){
+		if (matchParams.hasOptionAt(MatchState.PREREQS,TransitionOption.SAMEWORLD)){
 			if (!jp.sameWorld(this)){
 				reasons.add("You aren't in the same world");}
 		}

@@ -186,7 +186,7 @@ public class ArenaType implements Comparable<ArenaType>{
 			Log.err("Add the following line to your Arena Class '" + arenaClass.getSimpleName()+".java'");
 			Log.err("public " + arenaClass.getSimpleName()+"(){}");
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return null;
 	}

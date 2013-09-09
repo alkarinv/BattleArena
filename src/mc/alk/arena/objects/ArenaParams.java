@@ -14,7 +14,7 @@ import org.bukkit.potion.PotionEffect;
 
 
 
-public class ArenaParams{
+public class ArenaParams {
 	ArenaType arenaType;
 	Rating rating = Rating.ANY;
 
@@ -30,6 +30,7 @@ public class ArenaParams{
 
 	ArenaParams parent;
 	ArenaSize size;
+	Boolean closeWaitroomWhileRunning;
 
 	public ArenaParams(ArenaType at) {
 		this.arenaType = at;
@@ -46,6 +47,7 @@ public class ArenaParams{
 		this.secondsTillMatch = ap.secondsTillMatch;
 		this.secondsToLoot = ap.secondsToLoot;
 		this.dbName = ap.dbName;
+		this.closeWaitroomWhileRunning = ap.closeWaitroomWhileRunning;
 		this.setParent(ap.parent);
 		if (ap.allTops != null)
 			this.allTops = new MatchTransitions(ap.allTops);
@@ -67,6 +69,7 @@ public class ArenaParams{
 		if (this.secondsTillMatch == null) this.secondsTillMatch = parent.secondsTillMatch;
 		if (this.secondsToLoot == null) this.secondsToLoot = parent.secondsToLoot;
 		if (this.dbName == null) this.dbName = parent.dbName;
+		if (this.closeWaitroomWhileRunning == null) this.closeWaitroomWhileRunning = parent.closeWaitroomWhileRunning;
 		this.allTops = MatchTransitions.mergeChildWithParent(this.allTops, parent.allTops);
 		if (this.size == null) this.size = parent.size;
 		this.parent = null;
@@ -391,4 +394,14 @@ public class ArenaParams{
 				(parent != null && parent.needsLobby())
 				);
 	}
+
+	public Boolean isWaitroomClosedWhenRunning(){
+		return closeWaitroomWhileRunning != null ? closeWaitroomWhileRunning :
+			(parent != null ? parent.isWaitroomClosedWhenRunning() : false);
+	}
+
+	public void setWaitroomClosedWhileRunning(Boolean value) {
+		this.closeWaitroomWhileRunning = value;
+	}
+
 }

@@ -41,6 +41,7 @@ public class ArenaAlterController {
 		SPAWNLOC(true,false),
 		VLOC(true,true),
 		TYPE(true,false),
+		GIVEITEMS(false,true),
 		ADDREGION(false,true),
 		ADDPYLAMOREGION(false,true);
 
@@ -231,7 +232,7 @@ public class ArenaAlterController {
 		} catch (Exception e) {
 			sendMessage(sender,"&cAdding WorldGuard region failed!");
 			sendMessage(sender, "&c" + e.getMessage());
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return true;
 	}

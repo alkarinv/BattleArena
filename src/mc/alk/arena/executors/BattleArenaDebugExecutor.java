@@ -1,5 +1,6 @@
 package mc.alk.arena.executors;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 
 import mc.alk.arena.BattleArena;
@@ -158,12 +159,33 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 
 	@MCCommand(cmds={"showMatchVars"}, admin=true)
-	public boolean showMatchVars(CommandSender sender, Arena arena) {
+	public boolean showMatchVars(CommandSender sender, Arena arena, String[] vars) {
 		Match m = BattleArena.getBAController().getMatch(arena);
 		if (m == null){
 			return sendMessage(sender, "&cMatch not currently running in arena " + arena.getName());}
-		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(m, ToStringStyle.MULTI_LINE_STYLE);
-		return sendMessage(sender, rtsb.toString());
+		if (vars.length > 2){
+			String param = vars[2];
+			boolean sb = vars.length > 3 && Boolean.valueOf(vars[3]);
+			for(Field field : Match.class.getDeclaredFields()){
+				if (field.getName().equalsIgnoreCase(param)){
+					field.setAccessible(true);
+					try {
+						if (sb){
+							return sendMessage(sender, "&2Parameter " + param +" = <"+field.get(m) +">" );
+						} else {
+							ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(field.get(m), ToStringStyle.MULTI_LINE_STYLE);
+							return sendMessage(sender, rtsb.toString());
+						}
+					} catch (Exception e) {
+						return sendMessage(sender, "&cError getting param "+param+" : msg=" + e.getMessage());
+					}
+				}
+			}
+			return sendMessage(sender, "&cThe param &6"+param+ "&c does not exist in &6" + m.getClass().getSimpleName());
+		} else {
+			ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(m, ToStringStyle.MULTI_LINE_STYLE);
+			return sendMessage(sender, rtsb.toString());
+		}
 	}
 
 	@MCCommand(cmds={"showLobbyVars"}, admin=true)
@@ -349,5 +371,4 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			return sendMessage(sender,"&2 "+player.getName()+" &4no longer has&2 wg perms");
 		}
 	}
-
 }

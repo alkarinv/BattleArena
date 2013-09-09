@@ -15,13 +15,14 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.PlayerInventory;
 
 
-public class ArenaPlayer {
+public class ArenaPlayer  {
 	static int count = 0;
 
 	final int id=count++;
@@ -74,6 +75,7 @@ public class ArenaPlayer {
 	public void reset() {
 		this.isReady = false;
 		this.currentClass = null;
+		this.preferredClass = null;
 		this.despawnMobs();
 	}
 
@@ -253,6 +255,10 @@ public class ArenaPlayer {
 
 	public ArenaStat getStat(MatchParams type) {
 		return StatController.loadRecord(type, this);
+	}
+
+	public Player regetPlayer() {
+		return Bukkit.getPlayerExact(this.getName());
 	}
 
 }

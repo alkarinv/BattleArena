@@ -1,6 +1,7 @@
 package mc.alk.arena.objects.stats;
 
 
+
 public interface ArenaStat {
 	public int getWinsVersus(ArenaStat stat);
 	public int getLossesVersus(ArenaStat stat);

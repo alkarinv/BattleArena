@@ -96,13 +96,13 @@ public class ArenaSerializer extends BaseConfig{
 	}
 
 	public void loadArenas(Plugin plugin){
-		try {config.load(file);} catch (Exception e){e.printStackTrace();}
+		try {config.load(file);} catch (Exception e){Log.printStackTrace(e);}
 		//		Log.info("["+plugin.getName()+ "] Loading arenas from " + file.getPath()+" using config "+ config.getName());
 		loadArenas(plugin, BattleArena.getBAController(), config,null);
 	}
 
 	public void loadArenas(Plugin plugin, ArenaType arenaType){
-		try {config.load(file);} catch (Exception e){e.printStackTrace();}
+		try {config.load(file);} catch (Exception e){Log.printStackTrace(e);}
 		//		Log.info("["+plugin.getName()+ "] Loading arenas from " + file.getPath() +" using config "+ config.getName() +" at=" + arenaType);
 		loadArenas(plugin, BattleArena.getBAController(), config, arenaType);
 	}
@@ -158,7 +158,7 @@ public class ArenaSerializer extends BaseConfig{
 			} catch(IllegalArgumentException e){
 				Log.err(e.getMessage());
 			} catch(Exception e){
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 			if (!success){
 				brokenArenas.add(name);
@@ -178,7 +178,7 @@ public class ArenaSerializer extends BaseConfig{
 			try {
 				config.save(file);
 			} catch (IOException e) {
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 	}
@@ -189,7 +189,7 @@ public class ArenaSerializer extends BaseConfig{
 			cs.createSection(string2, map);
 			cs.set(string,null);
 		} catch(Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -207,7 +207,7 @@ public class ArenaSerializer extends BaseConfig{
 			if (cs.contains("params"))
 				mp = ConfigSerializer.loadMatchParams(plugin, atype, name, cs.getConfigurationSection("params"),true);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		/// Get from the "old" way of specifying teamSize and nTeams
 		if (cs.contains("teamSize")) {
@@ -262,7 +262,7 @@ public class ArenaSerializer extends BaseConfig{
 				try {
 					s = parseSpawnable(scs);
 				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
+					Log.printStackTrace(e);
 					continue;
 				}
 				if (s == null)
@@ -297,7 +297,7 @@ public class ArenaSerializer extends BaseConfig{
 		try {
 			WorldGuardController.trackRegion(arena.getWorldGuardRegion());
 		} catch (RegionNotFound e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -306,7 +306,7 @@ public class ArenaSerializer extends BaseConfig{
 		try {
 			config.save(file);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -394,7 +394,7 @@ public class ArenaSerializer extends BaseConfig{
 
 				config.set("brokenArenas."+arenaname, null); /// take out any duplicate names in broken arenas
 			} catch (Exception e){
-				e.printStackTrace();
+				Log.printStackTrace(e);
 				if (arenaname != null){
 					transfer(config, "arenas."+arenaname, "brokenArenas."+arenaname);
 				}

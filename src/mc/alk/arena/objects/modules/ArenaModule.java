@@ -6,6 +6,7 @@ import java.io.IOException;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.util.FileUtil;
+import mc.alk.arena.util.Log;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -79,7 +80,7 @@ public abstract class ArenaModule implements Listener, ArenaListener{
 		try {
 			config.load(getConfigFile());
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -99,7 +100,7 @@ public abstract class ArenaModule implements Listener, ArenaListener{
 				try {
 					f.createNewFile();
 				} catch (IOException e) {
-					e.printStackTrace();
+					Log.printStackTrace(e);
 				}
 			}
 			return;
@@ -107,7 +108,7 @@ public abstract class ArenaModule implements Listener, ArenaListener{
 		try {
 			config.save(f);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 

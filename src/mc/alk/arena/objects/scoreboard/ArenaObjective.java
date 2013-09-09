@@ -3,150 +3,101 @@ package mc.alk.arena.objects.scoreboard;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.ScoreTracker;
 import mc.alk.arena.util.ScoreMap;
+import mc.alk.scoreboardapi.api.SAPIFactory;
+import mc.alk.scoreboardapi.api.SEntry;
+import mc.alk.scoreboardapi.api.SObjective;
+import mc.alk.scoreboardapi.api.SScoreboard;
+import mc.alk.scoreboardapi.api.STeam;
+import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
 
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
-public class ArenaObjective implements ScoreTracker{
-	ScoreMap<ArenaTeam> teamPoints = new ScoreMap<ArenaTeam>();
-	ScoreMap<ArenaPlayer> playerPoints = new ScoreMap<ArenaPlayer>();
-	ArenaScoreboard scoreboard =null;
 
-	final String name;
-	String criteria;
-	String displayName;
-	ArenaDisplaySlot slot = ArenaDisplaySlot.SIDEBAR;
-	boolean displayPlayers = true;
-	boolean displayTeams = true;
+public class ArenaObjective implements SObjective, ScoreTracker{
 
-	int priority = 10;
+	protected ScoreMap<ArenaTeam> teamPoints = new ScoreMap<ArenaTeam>();
+	protected ScoreMap<ArenaPlayer> playerPoints = new ScoreMap<ArenaPlayer>();
+	protected SObjective o;
 
 	public ArenaObjective(String name, String criteria) {
-		this(name,criteria,10);
+		this(name,criteria,null, SAPIDisplaySlot.SIDEBAR,50);
 	}
 
 	public ArenaObjective(String name, String criteria, int priority) {
-		this.name = name;
-		this.criteria = criteria;
-		this.priority = priority;
-	}
-	public int getPriority(){
-		return priority;
-	}
-	public String getName(){
-		return name;
+		this(name,criteria,null,SAPIDisplaySlot.SIDEBAR,priority);
 	}
 
-	public String getCriteria() {
-		return criteria;
+	public ArenaObjective(String name, String criteria, String displayName, SAPIDisplaySlot slot) {
+		this(name,criteria,displayName,slot, 50);
 	}
 
-	public String getDisplayName(){
-		return displayName == null ? name : displayName;
+	public ArenaObjective(String name, String criteria, String displayName,
+			SAPIDisplaySlot slot, int priority) {
+		o = SAPIFactory.createObjective(name,criteria,slot, priority);
+		if (displayName != null){
+			setDisplayName(displayName);}
 	}
 
-	public void setDisplayName(String displayName){
-		this.displayName = displayName;
+	public void setDisplaySlot(ArenaDisplaySlot sidebar) {
+		o.setDisplaySlot(sidebar.toSAPI());
 	}
 
-	public Integer getPoints(ArenaTeam team) {
-		return teamPoints.containsKey(team) ? teamPoints.get(team) : 0;
+	public Integer getPoints(ArenaTeam t) {
+		return teamPoints.get(t);
 	}
 
-	public Integer addPoints(ArenaTeam team, int points) {
-		Integer totalpoints = teamPoints.addPoints(team, points);
-		if (displayTeams && scoreboard != null)
-			scoreboard.setPoints(this,team,totalpoints);
-
-		return totalpoints;
+	public void setAllPoints(int points) {
+		for (ArenaTeam t: teamPoints.keySet()){
+			setPoints(t, points);
+		}
+		for (ArenaPlayer p: playerPoints.keySet()){
+			setPoints(p, points);
+		}
 	}
 
-	public Integer subtractPoints(ArenaTeam team, int points) {
-		Integer totalpoints = addPoints(team,-points);
-		if (displayTeams && scoreboard != null)
-			scoreboard.setPoints(this,team,totalpoints);
-
-		return totalpoints;
+	public void setAllPoints(Match match, int points){
+		for (ArenaTeam t: match.getTeams()){
+			if (o.isDisplayTeams()){
+				setPoints(t, points);
+			}
+			if (o.isDisplayPlayers()){
+				for (ArenaPlayer p : t.getPlayers()){
+					setPoints(p, points);}
+			}
+		}
 	}
 
-	public Integer setPoints(ArenaTeam team, int points) {
-		Integer oldpoints = teamPoints.setPoints(team,points);
-		if (displayTeams && scoreboard != null)
-			scoreboard.setPoints(this,team,points);
 
-		return oldpoints;
+	public int addPoints(ArenaTeam team, int points) {
+		int oldPoints = teamPoints.getPoints(team);
+		setPoints(team,points+oldPoints);
+		return points+oldPoints;
 	}
 
-	public Integer getPoints(ArenaPlayer player) {
-		return playerPoints.containsKey(player) ? playerPoints.get(player) : 0;
+	public int addPoints(ArenaPlayer ap, int points) {
+		int oldPoints = playerPoints.getPoints(ap);
+		setPoints(ap,points+oldPoints);
+		return points+oldPoints;
 	}
 
-	public Integer addPoints(Player player, int points) {
-		return playerPoints.addPoints(BattleArena.toArenaPlayer(player),points);
+	public int subtractPoints(ArenaTeam team, int points) {
+		int oldPoints = teamPoints.getPoints(team);
+		setPoints(team,oldPoints-points);
+		return oldPoints-points;
 	}
 
-	public Integer setPoints(Player player, int points) {
-		return playerPoints.setPoints(BattleArena.toArenaPlayer(player),points);
-	}
-
-	public Integer addPoints(ArenaPlayer player, int points) {
-		Integer totalpoints = playerPoints.addPoints(player,points);
-		if (displayPlayers && scoreboard != null)
-			scoreboard.setPoints(this,player,totalpoints);
-		return totalpoints;
-	}
-
-	public Integer subtractPoints(Player player, int points) {
-		return playerPoints.addPoints(BattleArena.toArenaPlayer(player),-points);
-	}
-
-	public Integer subtractPoints(ArenaPlayer player, int points) {
-		Integer totalpoints = playerPoints.addPoints(player,-points);
-		if (displayPlayers && scoreboard != null)
-			scoreboard.setPoints(this,player,totalpoints);
-		return totalpoints;
-	}
-
-	public Integer setPoints(ArenaPlayer player, int points) {
-		playerPoints.setPoints(player,points);
-		if (displayPlayers && scoreboard != null)
-			scoreboard.setPoints(this,player,points);
-
-		return points;
-	}
-
-	public Map<ArenaTeam,Integer> getTeamPoints(){
-		return teamPoints;
-	}
-
-	public Map<ArenaPlayer,Integer> getPlayerPoints(){
-		return playerPoints;
-	}
-
-	public boolean containsKey(ArenaTeam team) {
-		return teamPoints.containsKey(team);
-	}
-
-	public boolean containsKey(ArenaPlayer player) {
-		return playerPoints.containsKey(player);
-	}
-
-	public boolean containsKey(Player player) {
-		return playerPoints.containsKey(BattleArena.toArenaPlayer(player));
-	}
-
-	@Override
-	public void setScoreBoard(ArenaScoreboard scoreboard) {
-		this.scoreboard = scoreboard;
+	public int subtractPoints(ArenaPlayer ap, int points) {
+		int oldPoints = playerPoints.getPoints(ap);
+		setPoints(ap,oldPoints-points);
+		return oldPoints-points;
 	}
 
 	public List<ArenaTeam> getTeamLeaders() {
@@ -163,16 +114,6 @@ public class ArenaObjective implements ScoreTracker{
 
 	public TreeMap<Integer, Collection<ArenaPlayer>> getPlayerRanks() {
 		return playerPoints.getRankings();
-	}
-
-	@Override
-	public List<ArenaTeam> getLeaders() {
-		return teamPoints.getLeaders();
-	}
-
-	@Override
-	public TreeMap<?, Collection<ArenaTeam>> getRanks() {
-		return teamPoints.getRankings();
 	}
 
 	public MatchResult getMatchResult(Match match){
@@ -210,34 +151,156 @@ public class ArenaObjective implements ScoreTracker{
 		return result;
 	}
 
-	public void setAllPoints(int points) {
-		for (ArenaTeam t: teamPoints.keySet()){
-			this.setPoints(t, points);
-		}
-		for (ArenaPlayer p: playerPoints.keySet()){
-			this.setPoints(p, points);
-		}
-	}
-	public void setAllPoints(Match match, int points){
-		for (ArenaTeam t: match.getTeams()){
-			setPoints(t, points);
-			for (ArenaPlayer p : t.getPlayers()){
-				setPoints(p, points);}
-		}
-	}
-	public void setDisplaySlot(ArenaDisplaySlot slot) {
-		this.slot = slot;
+	public void setPoints(ArenaPlayer p, int points) {
+		o.setPoints(p.getName(), points);
+		playerPoints.setPoints(p, points);
 	}
 
-	public ArenaDisplaySlot getDisplaySlot() {
-		return this.slot;
+	public void setPoints(ArenaTeam t, int points) {
+		o.setPoints(t.getIDString(), points);
+		teamPoints.setPoints(t, points);
 	}
 
+	@Override
+	public List<ArenaTeam> getLeaders() {
+		return getTeamLeaders();
+	}
+
+	@Override
+	public TreeMap<?, Collection<ArenaTeam>> getRanks() {
+		return getTeamRanks();
+	}
+
+	@Override
+	public void setScoreBoard(ArenaScoreboard scoreboard) {
+		scoreboard.setObjectiveScoreboard(this);
+	}
+
+	@Override
+	public void setDisplayName(String displayName) {
+		o.setDisplayName(displayName);
+	}
+
+	@Override
+	public boolean setPoints(SEntry entry, int points) {
+		return o.setPoints(entry, points);
+	}
+
+	@Override
+	public SAPIDisplaySlot getDisplaySlot() {
+		return o.getDisplaySlot();
+	}
+
+	@Override
+	public int getPriority() {
+		return o.getPriority();
+	}
+
+	@Override
+	public void setDisplaySlot(SAPIDisplaySlot slot) {
+		o.setDisplaySlot(slot);
+	}
+
+	@Override
+	public String getName() {
+		return o.getName();
+	}
+
+	@Override
+	public String getDisplayName() {
+		return o.getDisplayName();
+	}
+
+	@Override
+	public boolean setTeamPoints(STeam t, int points) {
+		return o.setTeamPoints(t, points);
+	}
+
+	@Override
+	public boolean setPoints(String id, int points) {
+		return o.setPoints(id, points);
+	}
+
+	@Override
+	public SEntry addEntry(String id, int points) {
+		return o.addEntry(id, points);
+	}
+
+	@Override
 	public void setDisplayPlayers(boolean b) {
-		this.displayPlayers = b;
+		o.setDisplayPlayers(b);
 	}
 
-	public void setDisplayTeams(boolean b) {
-		this.displayTeams = b;
+	@Override
+	public void setDisplayTeams(boolean display) {
+		o.setDisplayTeams(display);
 	}
+
+	@Override
+	public void setScoreBoard(SScoreboard scoreboard) {
+		o.setScoreBoard(scoreboard);
+		scoreboard.registerNewObjective(this);
+	}
+
+	@Override
+	public String toString(){
+		return o.toString();
+	}
+
+	@Override
+	public boolean isDisplayTeams() {
+		return o.isDisplayTeams();
+	}
+
+	@Override
+	public boolean isDisplayPlayers() {
+		return o.isDisplayPlayers();
+	}
+
+	@Override
+	public SScoreboard getScoreboard() {
+		return o.getScoreboard();
+	}
+
+	@Override
+	public SEntry addEntry(OfflinePlayer player, int points) {
+		return o.addEntry(player, points);
+	}
+
+	@Override
+	public SEntry removeEntry(OfflinePlayer player) {
+		return o.removeEntry(player);
+	}
+
+	@Override
+	public SEntry removeEntry(String id) {
+		return o.removeEntry(id);
+	}
+
+	@Override
+	public boolean addEntry(SEntry entry, int defaultPoints) {
+		return o.addEntry(entry, defaultPoints);
+	}
+
+	@Override
+	public SEntry removeEntry(SEntry entry) {
+		return o.removeEntry(entry);
+	}
+
+	@Override
+	public boolean contains(SEntry e) {
+		return o.contains(e);
+	}
+
+	@Override
+	public STeam addTeam(String id, int points) {
+		return o.addTeam(id, points);
+	}
+
+	@Override
+	public boolean addTeam(STeam entry, int points) {
+		return o.addTeam(entry, points);
+	}
+
+
 }

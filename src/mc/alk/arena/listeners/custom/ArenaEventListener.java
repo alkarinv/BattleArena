@@ -92,8 +92,8 @@ public class ArenaEventListener extends BukkitEventListener{
 	 * @return
 	 */
 	public synchronized void addMatchListener(RListener rl) {
-		if (!hasListeners()){
-			startListening();}
+//		if (!hasListeners()){
+//			startListening();}
 		Map<RListener,Integer> l = listeners.get(rl.getPriority());
 		if (l == null){
 			l = new TreeMap<RListener,Integer>(new Comparator<RListener>(){
@@ -129,8 +129,8 @@ public class ArenaEventListener extends BukkitEventListener{
 		if (count == null || count == 1){
 			map.remove(listener);
 			handlers = null;
-			if (!hasListeners()){
-				stopListening();}
+//			if (!hasListeners()){
+//				stopListening();}
 			return true;
 		} else {
 			map.put(listener, count-1);

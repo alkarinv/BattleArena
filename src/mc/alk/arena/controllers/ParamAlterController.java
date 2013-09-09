@@ -22,7 +22,7 @@ public class ParamAlterController {
 
 	public boolean setOption(CommandSender sender, String[] args) {
 		if (args.length < 3){
-			sendMessage(sender, "&6/<game> setoption <option> <value>");
+			sendMessage(sender, "&6/<game> setoption <option> [value]");
 			return sendMessage(sender, "&6/<game> setoption <stage> <option> [value]");
 		}
 		RegisteredCompetition rc = CompetitionController.getCompetition(params.getName());
@@ -30,7 +30,6 @@ public class ParamAlterController {
 			return sendMessage(sender, "&cGame &6" + params.getName() +"&c not found!");
 		}
 		GameOption go = GameOption.fromString(args[1]);
-
 		if (go != null){
 			try {
 				setGameOption(go,args[2]);
@@ -47,6 +46,7 @@ public class ParamAlterController {
 				return true;
 			} catch (Exception e) {
 				Log.err(e.getMessage());
+				e.printStackTrace();
 				sendMessage(sender, "&cCould not set game option &6" + args[1] +"&c bad value &6"+ args[2]);
 				sendMessage(sender, e.getMessage());
 				return false;
@@ -168,6 +168,7 @@ public class ParamAlterController {
 		case PREFIX: params.setPrefix((String)value); break;
 		case COMMAND: params.setCommand((String)value); break;
 		case MATCHTIME: params.setMatchTime((Integer)value);break;
+		case CLOSEWAITROOMWHILERUNNING: params.setWaitroomClosedWhileRunning((Boolean)value); break;
 		case PRESTARTTIME:
 			iv = ((Integer)value).intValue();
 			checkGreater(iv,0, true);

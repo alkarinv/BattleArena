@@ -131,7 +131,7 @@ public class MessageFormatter{
 					continue;
 				}
 			} catch (Exception e){
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 			searchList[i] = mop.getReplaceString();
 			i++;
@@ -206,7 +206,7 @@ public class MessageFormatter{
 						repl = "0";
 					}
 				} catch(Exception e){
-					e.printStackTrace();
+					Log.printStackTrace(e);
 				}
 
 				break;
@@ -221,7 +221,7 @@ public class MessageFormatter{
 						repl = "0";
 					}
 				} catch(Exception e){
-					e.printStackTrace();
+					Log.printStackTrace(e);
 				}
 				break;
 			default:

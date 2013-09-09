@@ -13,7 +13,7 @@ public class EssentialsUtil {
 		try{
 			essentials = (Essentials) plugin;
 		} catch(Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return false;
 		}
 		return true;

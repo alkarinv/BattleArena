@@ -44,10 +44,10 @@ public class BTInterface {
 		return valid;
 	}
 	public Stat getRecord(TrackerInterface bti, ArenaTeam t){
-		try{return bti.getRecord(t.getBukkitPlayers());} catch(Exception e){e.printStackTrace();return null;}
+		try{return bti.getRecord(t.getBukkitPlayers());} catch(Exception e){Log.printStackTrace(e);return null;}
 	}
 	public Stat loadRecord(TrackerInterface bti, ArenaTeam t){
-		try{return bti.loadRecord(t.getBukkitPlayers());} catch(Exception e){e.printStackTrace();return null;}
+		try{return bti.loadRecord(t.getBukkitPlayers());} catch(Exception e){Log.printStackTrace(e);return null;}
 	}
 	public static TrackerInterface getInterface(MatchParams sq){
 		if (sq == null)
@@ -104,7 +104,7 @@ public class BTInterface {
 				bti.addRecordGroup(winningPlayers, plosers, WLT.WIN);
 			}
 		} catch(Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -173,7 +173,7 @@ public class BTInterface {
 	}
 	public Stat loadRecord(OfflinePlayer player){
 		if (!isValid()) return null;
-		try{return ti.loadRecord(player);} catch(Exception e){e.printStackTrace();return null;}
+		try{return ti.loadRecord(player);} catch(Exception e){Log.printStackTrace(e);return null;}
 	}
 
 	public static ArenaStat loadRecord(String dbName, ArenaPlayer ap) {
@@ -181,7 +181,7 @@ public class BTInterface {
 		if (ti == null)
 			return StatController.BLANK_STAT;
 		Stat st = null;
-		try{st = ti.loadPlayerRecord(ap.getName());}catch(Exception e){e.printStackTrace();}
+		try{st = ti.loadPlayerRecord(ap.getName());}catch(Exception e){Log.printStackTrace(e);}
 		return st == null ? StatController.BLANK_STAT : new TrackerArenaStat(dbName, st);
 	}
 
@@ -190,7 +190,7 @@ public class BTInterface {
 		if (ti == null)
 			return StatController.BLANK_STAT;
 		Stat st = null;
-		try{st = ti.loadRecord(t.getBukkitPlayers());}catch(Exception e){e.printStackTrace();}
+		try{st = ti.loadRecord(t.getBukkitPlayers());}catch(Exception e){Log.printStackTrace(e);}
 		return st == null ? StatController.BLANK_STAT : new TrackerArenaStat(dbName, st);
 	}
 

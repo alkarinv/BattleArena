@@ -1,6 +1,7 @@
 package mc.alk.arena.objects.stats;
 
 
+
 public class BlankArenaStat implements ArenaStat{
 	public static final BlankArenaStat BLANK_STAT = new BlankArenaStat();
 	private BlankArenaStat(){}

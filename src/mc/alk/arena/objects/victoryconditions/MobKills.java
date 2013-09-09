@@ -124,4 +124,9 @@ public class MobKills extends VictoryCondition implements ScoreTracker{
 		this.mkills.setScoreBoard(scoreboard);
 		scoreboard.addObjective(mkills);
 	}
+
+	@Override
+	public void setDisplayTeams(boolean display) {
+		mkills.setDisplayTeams(display);
+	}
 }

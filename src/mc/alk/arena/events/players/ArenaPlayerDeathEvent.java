@@ -8,6 +8,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 public class ArenaPlayerDeathEvent extends ArenaPlayerEvent{
 	final ArenaTeam team;
 	PlayerDeathEvent event;
+	boolean exiting = false;
 
 	public ArenaPlayerDeathEvent(ArenaPlayer arenaPlayer, ArenaTeam team) {
 		super(arenaPlayer);
@@ -28,4 +29,13 @@ public class ArenaPlayerDeathEvent extends ArenaPlayerEvent{
 	public boolean isTrueDeath() {
 		return event != null;
 	}
+
+	public boolean isExiting() {
+		return exiting;
+	}
+
+	public void setExiting(boolean exiting) {
+		this.exiting = exiting;
+	}
+
 }

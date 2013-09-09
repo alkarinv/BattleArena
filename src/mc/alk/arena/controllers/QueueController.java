@@ -1,6 +1,10 @@
 package mc.alk.arena.controllers;
 
+import java.util.HashSet;
+import java.util.List;
+
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.BAEvent;
@@ -18,14 +22,22 @@ import mc.alk.arena.objects.pairs.ParamTeamPair;
 import mc.alk.arena.objects.queues.ArenaMatchQueue;
 import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.CommandUtil;
+import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.PermissionsUtil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class QueueController extends ArenaMatchQueue implements ArenaListener, Listener{
 	final MethodController methodController = new MethodController();
+	private static HashSet<String> disabledCommands = new HashSet<String>();
 
 	public QueueController(){
 		super();
@@ -34,8 +46,8 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 	}
 
 	private void callEvent(BAEvent event){
-		//		methodController.callEvent(event);
-		event.callEvent();
+		methodController.callEvent(event);
+//		event.callEvent();
 	}
 
 	private void leftQueue(ArenaPlayer player, final ArenaTeam team, MatchParams params, ParamTeamPair ptp){
@@ -118,5 +130,39 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 			break;
 		}
 		return jr;
+	}
+
+	public static void setDisabledCommands(List<String> commands) {
+		for (String s: commands){
+			disabledCommands.add("/" + s.toLowerCase());}
+	}
+
+	@ArenaEventHandler
+	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
+		if (!event.isCancelled() && CommandUtil.shouldCancel(event, disabledCommands)){
+			event.setCancelled(true);
+			event.getPlayer().sendMessage(ChatColor.RED+"You cannot use that command when you are in the queue");
+			if (PermissionsUtil.isAdmin(event.getPlayer())){
+				MessageUtil.sendMessage(event.getPlayer(),"&cYou can set &6/bad allowAdminCommands true: &c to change");}
+		}
+	}
+
+	@ArenaEventHandler
+	public void onPlayerInteract(PlayerInteractEvent event){
+		if (event.isCancelled() || !Defaults.ENABLE_PLAYER_READY_BLOCK)
+			return;
+		if (event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)) {
+			final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
+			if (ap.isReady()) /// they are already ready
+				return;
+			JoinResult qtp = getQueuePos(ap);
+			if (qtp == null){
+				return;}
+			final Action action = event.getAction();
+			if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the block
+				event.setCancelled(true);}
+			MessageUtil.sendMessage(ap, "&2You ready yourself for the arena");
+			this.forceStart(qtp.params, true);
+		}
 	}
 }

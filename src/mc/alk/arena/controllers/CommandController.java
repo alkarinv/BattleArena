@@ -21,7 +21,7 @@ public class CommandController {
 				clazz = Class.forName("org.bukkit.craftbukkit." + version + ".CraftServer");
 			}
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return null;
 		}
 		return getCommandMapFromServer(clazz);
@@ -37,7 +37,7 @@ public class CommandController {
 		} catch (final SecurityException e) {
 			Log.err("You will need to disable the security manager to use dynamic commands");
 		} catch (final Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		return null;
 	}

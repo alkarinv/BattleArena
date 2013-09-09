@@ -18,7 +18,7 @@ import org.bukkit.potion.PotionEffect;
 public class BAClassesSerializer extends BaseConfig{
 
 	public void loadAll(){
-		try {config.load(file);} catch (Exception e){e.printStackTrace();}
+		try {config.load(file);} catch (Exception e){Log.printStackTrace(e);}
 		loadClasses(config.getConfigurationSection("classes"));
 	}
 
@@ -40,7 +40,7 @@ public class BAClassesSerializer extends BaseConfig{
 				ArenaClassController.addClass(ac);
 			} catch (Exception e){
 				Log.err("There was an error loading the class " + className +". It will be disabled");
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 		if (first){
@@ -63,7 +63,7 @@ public class BAClassesSerializer extends BaseConfig{
 			try {
 				commands = ConfigSerializer.getDoCommands(cs.getStringList("doCommands"));
 			} catch (InvalidOptionException e) {
-				e.printStackTrace();
+				Log.printStackTrace(e);
 			}
 		}
 		String displayName = cs.getString("displayName", null);

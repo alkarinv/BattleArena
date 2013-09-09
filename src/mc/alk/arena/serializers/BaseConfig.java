@@ -53,7 +53,7 @@ public class BaseConfig implements FileConfig{
 				file.createNewFile();
 			} catch (IOException e) {
 				Log.err("Couldn't create the config file=" + file);
-				e.printStackTrace();
+				Log.printStackTrace(e);
 				return false;
 			}
 		}
@@ -63,7 +63,7 @@ public class BaseConfig implements FileConfig{
 			config.load(file);
 		} catch (Exception e) {
 			Log.err("Couldn't load the config file=" + file);
-			e.printStackTrace();
+			Log.printStackTrace(e);
 			return false;
 		}
 		return true;
@@ -73,7 +73,7 @@ public class BaseConfig implements FileConfig{
 		try {
 			config.load(file);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 	public void save() {
@@ -82,7 +82,7 @@ public class BaseConfig implements FileConfig{
 		try {
 			config.save(file);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 

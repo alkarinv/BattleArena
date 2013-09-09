@@ -78,10 +78,7 @@ public class MoneyController {
 			Defaults.MONEY_SET = true;
 		} catch (Error e){
 			Log.err("[BattleArena] Error setting currency name through vault");
-			e.printStackTrace();
-		} catch (Exception e){
-			Log.err("[BattleArena] Error setting currency name through vault");
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 

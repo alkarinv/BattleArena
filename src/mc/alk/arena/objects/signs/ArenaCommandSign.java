@@ -98,7 +98,7 @@ public class ArenaCommandSign implements ConfigurationSerializable{
 		return map;
 	}
 
-	public static ArenaCommandSign deserialize(Map<String, Object> map) {
+	public static ArenaCommandSign deserialize(Map<String, Object> map) throws IllegalArgumentException{
 		Location location = SerializerUtil.getLocation((String) map.get("location"));
 		if (location == null)
 			return null;

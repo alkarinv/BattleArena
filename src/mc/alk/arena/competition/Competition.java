@@ -162,7 +162,8 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 	public void callEvent(BAEvent event) {
 		if (event instanceof CompetitionEvent && ((CompetitionEvent)event).getCompetition()==null){
 			((CompetitionEvent)event).setCompetition(this);}
-		event.callEvent(); /// Call anyone using generic bukkit listeners
+//		event.callEvent(); /// Call anyone using generic bukkit listeners
+		methodController.callEvent(event);
 	}
 
 	/**
@@ -199,6 +200,15 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 		for (ArenaTeam t: teams) {
 			if (t.hasMember(player)) return t;}
 		return null;
+	}
+
+	/**
+	 * Get the team with this index
+	 * @param teamIndex
+	 * @return ArenaPlayer, or null if no team exists
+	 */
+	public ArenaTeam getTeam(int teamIndex) {
+		return teams.size() <= teamIndex? null : teams.get(teamIndex);
 	}
 
 	/**

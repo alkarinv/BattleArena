@@ -50,7 +50,7 @@ public class InventoryUtil {
 			} catch (Exception e2){
 				e2.printStackTrace();
 			}
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -594,8 +594,8 @@ public class InventoryUtil {
 				inv.setItemInHand(null);
 			}
 			p.updateInventory();
-		} catch(Exception ee){
-			ee.printStackTrace();
+		} catch(Exception e){
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -618,8 +618,8 @@ public class InventoryUtil {
 				inv.setItemInHand(null);
 			}
 			p.updateInventory();
-		} catch(Exception ee){
-			ee.printStackTrace();
+		} catch(Exception e){
+			Log.printStackTrace(e);
 		}
 	}
 
@@ -758,7 +758,7 @@ public class InventoryUtil {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace(); //Damn.
+			Log.printStackTrace(e); //Damn.
 		}
 		return null;
 	}
@@ -1097,7 +1097,7 @@ public class InventoryUtil {
 			inv.setContents(pinv.contents);
 
 		} catch(Exception e){
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 		try {p.getPlayer().updateInventory(); } catch (Exception e){} /// Yes this can throw errors
 	}

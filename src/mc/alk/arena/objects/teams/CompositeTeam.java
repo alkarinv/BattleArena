@@ -6,6 +6,7 @@ import java.util.Set;
 
 import mc.alk.arena.objects.ArenaPlayer;
 
+
 /**
  * Class that is a collection of other teams
  * @author alkarin
@@ -101,5 +102,4 @@ public class CompositeTeam extends AbstractTeam{
 			t.clear();
 		}
 	}
-
 }

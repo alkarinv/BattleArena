@@ -224,7 +224,7 @@ public class MatchingTeam implements ArenaTeam{
 	}
 
 	@Override
-	public String geIDString(){ return String.valueOf(id);}
+	public String getIDString(){ return String.valueOf(id);}
 
 	@Override
 	public void setArenaObjective(ArenaObjective objective) {/* do nothing */}

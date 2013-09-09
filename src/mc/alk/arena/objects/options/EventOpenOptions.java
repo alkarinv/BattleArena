@@ -83,7 +83,6 @@ public class EventOpenOptions {
 			try{
 				to = EventOpenOption.valueOf(split[0]);
 			} catch(IllegalArgumentException e){
-				e.printStackTrace();
 				throw new InvalidOptionException("&cThe option " + split[0]+" does not exist, \n&cvalid options=&6"+
 						EventOpenOption.getValidList());
 			}

@@ -24,7 +24,7 @@ public class EventScheduleSerializer extends BaseConfig {
 	EventScheduler es;
 
 	public void loadAll(){
-		try {config.load(file);} catch (Exception e){e.printStackTrace();}
+		try {config.load(file);} catch (Exception e){Log.printStackTrace(e);}
 		loadScheduledEvents(config.getConfigurationSection("events"));
 
 	}
@@ -66,7 +66,7 @@ public class EventScheduleSerializer extends BaseConfig {
 		try {
 			config.save(file);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.printStackTrace(e);
 		}
 	}
 

@@ -229,8 +229,7 @@ public class BAExecutor extends CustomCommandExecutor {
 				}
 			}
 			if (arena == null) {
-				Map<Arena, List<String>> reasons = ac
-						.getNotMachingArenaReasons(mp, jp);
+				Map<Arena, List<String>> reasons = ac.getNotMachingArenaReasons(mp, jp);
 				if (!reasons.isEmpty()) {
 					for (Arena a : reasons.keySet()) {
 						List<String> rs = reasons.get(a);
@@ -300,8 +299,11 @@ public class BAExecutor extends CustomCommandExecutor {
 						MatchState.ONENTERQUEUE);
 		String neededPlayers = jr.maxPlayers == CompetitionSize.MAX ? "inf"
 				: jr.maxPlayers + "";
+		List<Object> vars = new ArrayList<Object>();
+		vars.add(mp);
+		vars.add(t);
 		channel.broadcast(MessageHandler.getSystemMessage(
-				"server_joined_the_queue", mp.getPrefix(),
+				vars, "server_joined_the_queue", mp.getPrefix(),
 				player.getDisplayName(), jr.playersInQueue, neededPlayers));
 		switch (jr.status) {
 
@@ -334,7 +336,10 @@ public class BAExecutor extends CustomCommandExecutor {
 					break;
 				case TIME_ONGOING:
 					Long time = jr.time - System.currentTimeMillis();
-					if (jr.maxPlayers != CompetitionSize.MAX) {
+					if (jr.maxPlayers - jr.pos <=0){
+						msg.append("\n"
+								+ MessageHandler.getSystemMessage("you_start_when_free"));
+					} else if (jr.maxPlayers != CompetitionSize.MAX) {
 						msg.append("\n"
 								+ MessageHandler.getSystemMessage(
 										"match_starts_players_or_time",
@@ -419,6 +424,8 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds = { "cancel" }, admin = true, usage = "cancel <arenaname or player>")
 	public boolean arenaCancel(CommandSender sender, MatchParams params,
 			String[] args) {
+		if (args.length > 1 && args[1].equalsIgnoreCase("all")) {
+			return cancelAll(sender);}
 		List<Match> matches = ac.getRunningMatches(params);
 		if (!matches.isEmpty()) {
 			for (Match m : matches) {
@@ -434,9 +441,6 @@ public class BAExecutor extends CustomCommandExecutor {
 		}
 		if (args.length < 2)
 			return sendMessage(sender, "cancel <arenaname or player>");
-		if (args[1].equalsIgnoreCase("all")) {
-			return cancelAll(sender);
-		}
 		Player player = ServerUtil.findPlayer(args[1]);
 		if (player != null) {
 			ArenaPlayer ap = PlayerController.toArenaPlayer(player);

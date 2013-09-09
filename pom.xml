@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.9.4.3.1</version>
+    <version>3.9.4.6.2</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -32,6 +32,12 @@
     <!-- Dependencies -->
     <dependencies>
         <!-- Dependencies that have maven repos -->
+        <dependency>
+            <groupId>mc.alk</groupId>
+            <artifactId>BattleScoreboardAPI</artifactId>
+            <version>[1.0.1,)</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattleTracker</artifactId>
@@ -169,6 +175,7 @@
                         <configuration>
                             <artifactSet>
                                 <includes>
+                                    <include>mc.alk:BattleScoreboardAPI</include>
                                     <include>mc.alk:PluginUpdater</include>
                                 </includes>
                             </artifactSet>
