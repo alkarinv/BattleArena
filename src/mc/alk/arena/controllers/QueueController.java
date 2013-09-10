@@ -32,7 +32,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class QueueController extends ArenaMatchQueue implements ArenaListener, Listener{
@@ -82,14 +81,6 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 			player.reset();
 			event.addMessage(MessageHandler.getSystemMessage("you_left_queue",ptp.q.getName()));
 		}
-	}
-
-	@ArenaEventHandler
-	public void onPlayerQuit(PlayerQuitEvent event){
-		ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
-		ParamTeamPair ptp = removeFromQue(ap);
-		if (ptp != null){
-			ap.reset();}
 	}
 
 	@ArenaEventHandler

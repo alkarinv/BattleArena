@@ -7,8 +7,10 @@ import java.util.Set;
 
 import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerRestoreController;
 import mc.alk.arena.controllers.WorldGuardController;
+import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.util.InventoryUtil.PInv;
@@ -19,6 +21,7 @@ import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
@@ -37,22 +40,6 @@ public class BAPlayerListener implements Listener  {
 		this.bac = bac;
 	}
 
-//	/**
-//	 *
-//	 * Why priority.HIGHEST: if an exception happens after we have already set their respawn location,
-//	 * they relog in at a separate time and will not get teleported to the correct place.
-//	 * As a workaround, try to handle this event last.
-//	 * @param event
-//	 */
-//	@EventHandler(priority = EventPriority.HIGHEST)
-//	public void onPlayerJoin(PlayerJoinEvent event) {
-//		if (restore.containsKey(event.getPlayer().getName())){
-//			if (restore.get(event.getPlayer().getName()).handle(event.getPlayer(),null)){
-//				restore.remove(event.getPlayer().getName());
-//			}
-//		}
-//	}
-
 	/**
 	 * Why priority highest, some other plugins try to force respawn the player in spawn(or some other loc)
 	 * problem is if they have come from the creative world, their game mode gets reset to creative
@@ -68,6 +55,16 @@ public class BAPlayerListener implements Listener  {
 		}
 	}
 
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onPlayerQuit(PlayerQuitEvent event){
+		if (!PlayerController.hasArenaPlayer(event.getPlayer()))
+			return;
+		ArenaPlayer p = PlayerController.getArenaPlayer(event.getPlayer());
+		ArenaPlayerLeaveEvent aple = new ArenaPlayerLeaveEvent(p, p.getTeam(),
+				ArenaPlayerLeaveEvent.QuitReason.QUITMC);
+		aple.callEvent();
+
+	}
 	private static PlayerRestoreController getOrCreateRestorer(final String name){
 		if (restore.containsKey(name))
 			return restore.get(name);

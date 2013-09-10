@@ -51,7 +51,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -74,15 +73,6 @@ public class ArenaMatch extends Match {
 	@ArenaEventHandler(priority=EventPriority.LOW, begin=MatchState.ONPRESTART, end=MatchState.ONSTART)
 	public void onPlayerMove2(PlayerMoveEvent e){
 		e.setCancelled(true);
-	}
-
-	@ArenaEventHandler(bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
-	public void onPlayerQuit(PlayerQuitEvent event){
-		/// If they are just in the arena waiting for match to start, or they havent joined yet
-		if (!inMatch.contains(event.getPlayer().getName()) ){
-			return;}
-		ArenaPlayer player = BattleArena.toArenaPlayer(event.getPlayer());
-		onLeave(player);
 	}
 
 	@ArenaEventHandler(suppressCastWarnings=true,bukkitPriority=org.bukkit.event.EventPriority.MONITOR)

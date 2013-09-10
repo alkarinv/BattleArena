@@ -157,6 +157,8 @@ public class TeleportLocationController {
 			} else if (am instanceof Match){
 				Match m = (Match) am;
 				arena = m.getArena();
+			} else {
+				Log.err("[BA Error instance is " + am.getClass().getSimpleName());
 			}
 			ph = am;
 			type = LocationType.ARENA;

@@ -27,6 +27,7 @@ import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.PlayerUtil;
+import mc.alk.v1r6.util.Log;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;

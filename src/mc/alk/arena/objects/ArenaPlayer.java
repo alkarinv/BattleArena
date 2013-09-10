@@ -22,7 +22,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.PlayerInventory;
 
 
-public class ArenaPlayer  {
+public class ArenaPlayer {
 	static int count = 0;
 
 	final int id=count++;

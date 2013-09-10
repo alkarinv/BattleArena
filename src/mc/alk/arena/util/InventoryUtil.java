@@ -1103,5 +1103,16 @@ public class InventoryUtil {
 	}
 
 
-
+	public static List<ItemStack> getItemList(Player player){
+		List<ItemStack> items = new ArrayList<ItemStack>();
+		for (ItemStack item: player.getInventory().getArmorContents()){
+			if (item != null && item.getType() != Material.AIR){
+				items.add(item);}
+		}
+		for (ItemStack item: player.getInventory().getContents()){
+			if (item != null && item.getType() != Material.AIR){
+				items.add(item);}
+		}
+		return items;
+	}
 }

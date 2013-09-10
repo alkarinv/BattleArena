@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -20,8 +21,6 @@ import mc.alk.arena.objects.teams.TeamHandler;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 
 public enum TeamController implements Listener, TeamHandler {
@@ -138,17 +137,8 @@ public enum TeamController implements Listener, TeamHandler {
 	}
 
 	@EventHandler
-	public void onPlayerQuit(PlayerQuitEvent event) {
-		ArenaPlayer ap = PlayerController.toArenaPlayer(event.getPlayer());
-//		playerLeft(ap);
-		leaveSelfTeam(ap);
-	}
-
-	@EventHandler
-	public void onPlayerKick(PlayerKickEvent event) {
-		ArenaPlayer ap = PlayerController.toArenaPlayer(event.getPlayer());
-//		playerLeft(ap);
-		leaveSelfTeam(ap);
+	public void onPlayerLeave(ArenaPlayerLeaveEvent event) {
+		leaveSelfTeam(event.getPlayer());
 	}
 
 	public Map<ArenaTeam,CopyOnWriteArrayList<TeamHandler>> getTeams() {

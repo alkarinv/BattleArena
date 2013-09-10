@@ -39,6 +39,19 @@ public final class PlayerController {
 		return ap;
 	}
 
+	/**
+	 * Returns the ArenaPlayer for the given player
+	 * @param player
+	 * @return player if found, null otherwise
+	 */
+	public static ArenaPlayer getArenaPlayer(Player player){
+		return players.get(player.getName());
+	}
+
+	public static boolean hasArenaPlayer(Player player){
+		return players.containsKey(player.getName());
+	}
+
 	public static List<ArenaPlayer> toArenaPlayerList(Collection<Player> players){
 		List<ArenaPlayer> aplayers = new ArrayList<ArenaPlayer>(players.size());
 		for (Player p: players)

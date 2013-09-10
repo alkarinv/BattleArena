@@ -100,7 +100,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 
@@ -236,7 +235,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 		/// Register the events we are listening to
 		ArrayList<Class<? extends Event>> events = new ArrayList<Class<? extends Event>>();
-		events.addAll(Arrays.asList(PlayerQuitEvent.class, PlayerRespawnEvent.class,
+		events.addAll(Arrays.asList(ArenaPlayerLeaveEvent.class, PlayerRespawnEvent.class,
 				PlayerCommandPreprocessEvent.class, PlayerDeathEvent.class,
 				PlayerInteractEvent.class, ArenaPlayerDeathEvent.class, ArenaPlayerReadyEvent.class));
 		if (noLeave){
@@ -606,7 +605,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 						new RewardController(event,psc).giveRewards();
 					}
 					if (result.getVictors() != null){
-						PerformTransition.transition(am, MatchState.WINNER, result.getVictors(), false);
+						PerformTransition.transition(am, MatchState.WINNERS, result.getVictors(), false);
 						ArenaPrizeEvent event = new ArenaWinnersPrizeEvent(am, result.getVictors());
 						callEvent(event);
 						new RewardController(event,psc).giveRewards();
@@ -653,7 +652,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 					}
 
 					if (am.getVictors() != null){
-						PerformTransition.transition(am, MatchState.WINNER, am.getVictors(), false);
+						PerformTransition.transition(am, MatchState.WINNERS, am.getVictors(), false);
 						ArenaPrizeEvent event = new ArenaWinnersPrizeEvent(am, am.getVictors());
 						callEvent(event);
 						new RewardController(event,psc).giveRewards();

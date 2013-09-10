@@ -358,7 +358,7 @@ public class ArenaParams {
 	}
 
 	public List<ItemStack> getWinnerItems() {
-		return getGiveItems(MatchState.WINNER);
+		return getGiveItems(MatchState.WINNERS);
 	}
 
 	public List<ItemStack> getLoserItems() {

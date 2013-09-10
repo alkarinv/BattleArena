@@ -1,5 +1,6 @@
 package mc.alk.arena.objects.options;
 
+import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.MinMax;
 
 import org.bukkit.GameMode;
@@ -171,6 +172,8 @@ public enum TransitionOption{
 			return Integer.valueOf(value);
 		case FLIGHTSPEED:
 			return Float.valueOf(value);
+		case ENCHANTS:
+			return EffectUtil.parseArg(value, 1, 120);
 		case GAMEMODE:
 			GameMode gm = null;
 			try {

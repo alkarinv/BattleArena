@@ -421,7 +421,7 @@ public class TransitionOptions {
 		String prestart = at.getGiveString(MatchState.ONPRESTART);
 		String start = at.getGiveString(MatchState.ONSTART);
 		String onspawn = at.getGiveString(MatchState.ONSPAWN);
-		String prizes = at.getGiveString(MatchState.WINNER);
+		String prizes = at.getGiveString(MatchState.WINNERS);
 		String firstPlacePrizes = at.getGiveString(MatchState.FIRSTPLACE);
 		String participantPrizes = at.getGiveString(MatchState.PARTICIPANTS);
 		boolean rated = sq.isRated();

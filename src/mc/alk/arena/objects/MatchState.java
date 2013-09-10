@@ -15,7 +15,7 @@ public enum MatchState implements CompetitionState{
 	ONBEGIN("onBegin"), ONPRESTART ("onPreStart"), ONSTART ("onStart"), ONVICTORY ("onVictory"),
 	ONCOMPLETE ("onComplete"), ONCANCEL ("onCancel"), ONFINISH("onFinish"),
 	ONSPAWN ("onSpawn"), ONDEATH ("onDeath"),
-	WINNER ("winner"), DRAWERS ("drawers"), LOSERS ("losers"),
+	WINNERS ("winners"), DRAWERS ("drawers"), LOSERS ("losers"),
 	FIRSTPLACE ("firstPlace"), PARTICIPANTS("participants"),
 	ONMATCHINTERVAL("onMatchInterval"), ONMATCHTIMEEXPIRED("onMatchTimeExpired"),
 	ONCOUNTDOWNTOEVENT("onCountdownToEvent"),
@@ -36,8 +36,8 @@ public enum MatchState implements CompetitionState{
 		try{
 			return MatchState.valueOf(str);
 		} catch (Exception e){
-			if (str.equals("ONCOUNTDOWNTOEVENT"))
-				return ONCOUNTDOWNTOEVENT;
+			if (str.equals("ONCOUNTDOWNTOEVENT")) return ONCOUNTDOWNTOEVENT;
+			else if (str.equals("WINNER")) return WINNERS;
 			return null;
 		}
 	}

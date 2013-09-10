@@ -181,8 +181,11 @@ public class ConfigSerializer extends BaseConfig{
 			try{
 				tops = getTransitionOptions(cs.getConfigurationSection(transition.toString()));
 				/// check for the most common alternate spelling of onPrestart
+				/// also check for the old version of winners (winner)
 				if (tops == null && transition == MatchState.ONPRESTART){
 					tops = getTransitionOptions(cs.getConfigurationSection("onPrestart"));}
+				else if (tops == null && transition == MatchState.WINNERS){
+					tops = getTransitionOptions(cs.getConfigurationSection("winner"));}
 			} catch (Exception e){
 				Log.err("Invalid Option was not added!!! transition= " + transition);
 				Log.printStackTrace(e);
@@ -231,7 +234,6 @@ public class ConfigSerializer extends BaseConfig{
 			allTops.addTransitionOption(MatchState.ONDEATH, TransitionOption.RESPAWN);}
 		return allTops;
 	}
-
 
 	private static void loadAnnouncementsOptions(ConfigurationSection cs, MatchParams mp) {
 		if (cs.contains("announcements")){
