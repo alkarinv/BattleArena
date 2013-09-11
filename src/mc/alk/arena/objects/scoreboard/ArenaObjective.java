@@ -76,19 +76,19 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 	}
 
 
-	public int addPoints(ArenaTeam team, int points) {
+	public Integer addPoints(ArenaTeam team, int points) {
 		int oldPoints = teamPoints.getPoints(team);
 		setPoints(team,points+oldPoints);
 		return points+oldPoints;
 	}
 
-	public int addPoints(ArenaPlayer ap, int points) {
+	public Integer addPoints(ArenaPlayer ap, int points) {
 		int oldPoints = playerPoints.getPoints(ap);
 		setPoints(ap,points+oldPoints);
 		return points+oldPoints;
 	}
 
-	public int subtractPoints(ArenaTeam team, int points) {
+	public Integer subtractPoints(ArenaTeam team, int points) {
 		int oldPoints = teamPoints.getPoints(team);
 		setPoints(team,oldPoints-points);
 		return oldPoints-points;
@@ -151,14 +151,14 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 		return result;
 	}
 
-	public void setPoints(ArenaPlayer p, int points) {
+	public Integer setPoints(ArenaPlayer p, int points) {
 		o.setPoints(p.getName(), points);
-		playerPoints.setPoints(p, points);
+		return playerPoints.setPoints(p, points);
 	}
 
-	public void setPoints(ArenaTeam t, int points) {
+	public Integer setPoints(ArenaTeam t, int points) {
 		o.setPoints(t.getIDString(), points);
-		teamPoints.setPoints(t, points);
+		return teamPoints.setPoints(t, points);
 	}
 
 	@Override

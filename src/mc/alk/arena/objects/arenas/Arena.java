@@ -270,6 +270,19 @@ public class Arena extends AreaContainer {
 	 */
 	protected void onExit(ArenaPlayer p, ArenaTeam team) {}
 
+	/**
+	 * Returns the spawns
+	 * Deprecated use getSpawns()
+	 * @return
+	 */
+	@Deprecated
+	public Map<Integer, Location> getSpawnLocs(){
+		Map<Integer, Location> locs = new HashMap<Integer,Location>();
+		for (int i=0;i<this.getSpawns().size();i++){
+			locs.put(i, spawns.get(i));
+		}
+		return locs;
+	}
 
 	/**
 	 * Returns the spawn location of this index.

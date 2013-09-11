@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.9.4.6.4</version>
+    <version>3.9.4.6.6</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -190,7 +190,8 @@
     <distributionManagement>
         <repository>
             <id>battleplugins-repo</id>
-            <url>sftp://192.184.84.106/var/www/maven/</url>
+            <url>ftp://192.184.84.106/var/www/maven/</url>
+            <!-- <url>scp://192.184.84.106/var/www/maven/</url> -->
         </repository>
     </distributionManagement>
     

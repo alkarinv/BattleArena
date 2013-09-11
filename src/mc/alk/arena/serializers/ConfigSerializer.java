@@ -407,6 +407,8 @@ public class ConfigSerializer extends BaseConfig{
 			TransitionOption to = null;
 			try{
 				to = TransitionOption.fromString(key);
+				if (to == TransitionOption.ENCHANTS) /// we deal with these later
+					continue;
 				if (to.hasValue() && value == null){
 					Log.err("Transition Option " + to +" needs a value! " + key+"=<value>");
 					continue;

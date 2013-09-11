@@ -181,4 +181,11 @@ public class ArenaScoreboard implements SScoreboard {
 		arenaObjective.setScoreBoard(board);
 	}
 
+	public void setPoints(ArenaObjective objective, ArenaTeam team, int points) {
+		objective.setPoints(team, points);
+	}
+
+	public void setPoints(ArenaObjective objective, ArenaPlayer player, int points) {
+		objective.setPoints(player, points);
+	}
 }
