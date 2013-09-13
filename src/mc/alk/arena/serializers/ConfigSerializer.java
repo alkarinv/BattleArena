@@ -125,6 +125,8 @@ public class ConfigSerializer extends BaseConfig{
 			mp.setNConcurrentCompetitions(ArenaSize.toInt(cs.getString("nConcurrentCompetitions","infinite")));
 		if (cs.contains("waitroomClosedWhileRunning"))
 			mp.setWaitroomClosedWhileRunning(cs.getBoolean("waitroomClosedWhileRunning",false));
+		if (cs.contains("cancelIfNotEnoughPlayers"))
+			mp.setCancelIfNotEnoughPlayers(cs.getBoolean("cancelIfNotEnoughPlayers",false));
 
 		loadAnnouncementsOptions(cs, mp); /// Load announcement options
 
@@ -701,6 +703,8 @@ public class ConfigSerializer extends BaseConfig{
 		if (params.getNConcurrentCompetitions() != null)  main.set("nConcurrentCompetitions", ArenaSize.toString(params.getNConcurrentCompetitions()));
 
 		if (params.isWaitroomClosedWhenRunning() != null)  main.set("waitroomClosedWhileRunning", params.isWaitroomClosedWhenRunning());
+
+		if (params.isCancelIfNotEnoughPlayers() != null)  main.set("cancelIfNotEnoughPlayers", params.isCancelIfNotEnoughPlayers());
 
 		Collection<ArenaModule> modules = params.getModules();
 		if (modules != null && !modules.isEmpty()){ main.set("modules", getModuleList(modules));}

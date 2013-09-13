@@ -38,7 +38,8 @@ public enum RoomController {
 		RoomContainer room = waitrooms.get(arena.getName());
 		if (room == null){
 			if (arena.getWaitroom() == null){
-				room = new RoomContainer(ParamController.copyParams(arena.getParams()), LocationType.WAITROOM);
+				room = new RoomContainer("wr_"+arena.getName()+"",
+						ParamController.copyParams(arena.getParams()), LocationType.WAITROOM);
 			} else {
 				room = arena.getWaitroom();
 			}
@@ -50,7 +51,8 @@ public enum RoomController {
 	private RoomContainer getOrCreate(ArenaType type) {
 		LobbyContainer lobby = lobbies.get(type);
 		if (lobby == null){
-			lobby = new LobbyContainer(ParamController.getMatchParamCopy(type), LocationType.LOBBY);
+			lobby = new LobbyContainer("lb_"+type.getName(),
+					ParamController.getMatchParamCopy(type), LocationType.LOBBY);
 			lobbies.put(type, lobby);
 		}
 		return lobby;

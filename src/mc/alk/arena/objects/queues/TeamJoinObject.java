@@ -38,6 +38,7 @@ public class TeamJoinObject extends QueueObject{
 	public int size() {
 		return team.size();
 	}
+
 	@Override
 	public String toString(){
 		return team.getPriority()+" " + team.toString()+":" + team.getId();

@@ -24,6 +24,8 @@ import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinStatus;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.messaging.MatchMessageImpl;
+import mc.alk.arena.controllers.messaging.MessageHandler;
+import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -40,6 +42,7 @@ import mc.alk.arena.objects.queues.TeamQueue.TeamQueueComparator;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
 
 import org.bukkit.Bukkit;
 
@@ -50,7 +53,7 @@ public class ArenaMatchQueue{
 	final Map<ArenaType, TeamQueue> tqs = new HashMap<ArenaType, TeamQueue>();
 	final Map<ArenaType, Map<Arena,TeamQueue>> aqs = new HashMap<ArenaType, Map<Arena,TeamQueue>>();
 	final Map<ArenaType, IdTime> forceTimers = Collections.synchronizedMap(new HashMap<ArenaType, IdTime>());
-
+	final Map<String, IdTime> arenaForceTimers = Collections.synchronizedMap(new HashMap<String, IdTime>());
 	public enum QueueType{
 		GAME,ARENA;
 	}
@@ -110,11 +113,7 @@ public class ArenaMatchQueue{
 		tq.add(to);
 		IdTime idt = null;
 		if (to instanceof TeamJoinObject){
-			/// If forceStart we need to track the first Team who joins, we will base how long till the force start off them
-			/// we should also report to the user that the match will start in x seconds, despite the queue size
-			if (Defaults.MATCH_FORCESTART_START_ONJOIN /*|| (qr != null && qr.params != null && qr.params.getMinPlayers() <= qr.playersInQueue)*/){
-				idt = updateTimer(tq,to);
-			}
+			idt = updateTimer(to.getJoinOptions().getArena(),tq,to);
 		}
 		/// return if we aren't going to check for a start (aka we already have too many matches running)
 		JoinResult qr;
@@ -137,31 +136,59 @@ public class ArenaMatchQueue{
 	 * @param to
 	 * @return
 	 */
-	private IdTime updateTimer(final TeamCollection tq, final QueueObject to) {
+	private IdTime updateTimer(final Arena a, final TeamCollection tq, final QueueObject to) {
 		JoinOptions jo = to.getJoinOptions();
 		if (jo.getJoinTime() == null)
 			return null;
-		IdTime idt = forceTimers.get(tq.getMatchParams().getType());
+		IdTime idt = getTime(a,tq.getMatchParams());
 		if (idt == null){
 			long now = System.currentTimeMillis();
 			Long time = (now - jo.getJoinTime() + Defaults.MATCH_FORCESTART_TIME*1000);
 			idt = new IdTime();
 			idt.time = now + time;
 			if (time > 0){
+				final ArenaMatchQueue amq = this;
 				idt.id = Scheduler.scheduleSynchrounousTask(new Runnable(){
 					@Override
 					public void run() {
-						JoinResult qr = findMatch(tq,true, true,to);
-						if (qr.match == null)
-							return;
-						forceTimers.remove(tq.getMatchParams().getType());
+						/// Timer expired, find a match
+						JoinResult qr = findMatch(tq,true, true,a);
+						if (qr.match == null){
+							/// we found no match.. should we cancel
+							if (a != null && tq.getMatchParams().isCancelIfNotEnoughPlayers()){
+								amq.removeFromQue(a);
+							}
+						}
+						removeTimer(a,tq.getMatchParams());
 					}
 				}, (int) (time/1000)* 20);
-				forceTimers.put(tq.getMatchParams().getType(), idt);
+				putTimer(idt,a,tq.getMatchParams());
 			}
 
 		}
 		return idt;
+	}
+
+	private void removeTimer(Arena a, MatchParams p){
+		if (a == null){
+			forceTimers.remove(p.getType());
+		} else {
+			arenaForceTimers.remove(a.getName());
+		}
+	}
+
+	private void putTimer(IdTime idt, Arena a, MatchParams p){
+		if (a == null){
+			forceTimers.put(p.getType(),idt);
+		} else {
+			arenaForceTimers.put(a.getName(), idt);
+		}
+	}
+
+	private IdTime getTime(Arena a, MatchParams p){
+		return a == null ?
+				forceTimers.get(p.getType()) :
+					arenaForceTimers.get(a.getName());
 	}
 
 	/**
@@ -194,7 +221,8 @@ public class ArenaMatchQueue{
 		if (tq==null || arenaqueue.isEmpty() || tq.isEmpty())
 			return new JoinResult();
 
-		JoinResult qr = findMatch(tq, false, true,qo);
+		JoinResult qr = qo == null ?  findMatch(tq, false, true,null)
+				: findMatch(tq, false, true,qo.getJoinOptions().getArena());
 
 		return qr;
 	}
@@ -231,7 +259,7 @@ public class ArenaMatchQueue{
 	 * @return Match if one can be created from the specified TeamQueue
 	 */
 	private JoinResult findMatch(final TeamCollection tq, boolean forceStart,
-			boolean forceStartRespectMinimumPlayers, QueueObject joiningObject) {
+			boolean forceStartRespectMinimumPlayers, Arena specificArena) {
 		if (suspend)
 			return new JoinResult();
 		if (Defaults.DEBUGQ) System.out.println("findMatch " + tq +"  " + tq.size() +"  mp=" + tq.getMatchParams());
@@ -248,13 +276,13 @@ public class ArenaMatchQueue{
 		qr.playersInQueue = tq.playerSize();
 		if (gameParams != null){
 			qr.maxPlayers = gameParams.getMaxPlayers();
-			if (gameParams.getMinPlayers() == gameParams.getMaxPlayers())
+			if (!gameParams.getMinPlayers().equals(gameParams.getMaxPlayers()))
 				qr.timeStatus = TimeStatus.CANT_FORCESTART;
 		}
 		qr.params = gameParams;
 
 		qr.teamsInQueue = tq.size();
-		IdTime idt = forceTimers.get(tq.getMatchParams().getType());
+		IdTime idt =  getTime(specificArena, tq.getMatchParams());
 		if (idt != null){
 			qr.time = idt.time;
 			if (idt.time <= System.currentTimeMillis()){
@@ -281,36 +309,35 @@ public class ArenaMatchQueue{
 			for (Arena a : arenaqueue){
 				if (a == null || (a.getArenaType() != gameParams.getType()) || !a.valid() || !a.isOpen())
 					continue;
-				if (joiningObject != null && joiningObject.getJoinOptions().hasArena() &&
-						!joiningObject.getJoinOptions().getArena().equals(a))
+				if (specificArena != null && !specificArena.equals(a))
 					continue;
-				if (joiningObject != null && joiningObject.getJoinOptions().hasArena() &&
-						joiningObject.getJoinOptions().getArena().equals(a)){
+				if (specificArena != null && specificArena.equals(a)){
 					qr.params = a.getParams();
 				}
 				MatchParams newParams = a.getParams();
 				if (Defaults.DEBUGQ) Log.info("----- AMQ check matches="+ a.matches(gameParams, null) + " arena = " + a +
-							"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+gameParams.toPrettyString() +
-							" tqparams="+tq.getMatchParams().toPrettyString());
+						"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+gameParams.toPrettyString() +
+						" tqparams="+tq.getMatchParams().toPrettyString());
 				/// Get both the ArenaQueue and GameQueue, or just the teamQueue
 				final TeamCollection iterate;
 				if (tq instanceof CompositeTeamQueue){
 					iterate = tq;
 				} else {
 					TeamQueue aq = getArenaTeamQ(gameParams, a);
-					if (aq != null){
+					if (aq != null && tq != aq){
 						iterate = new CompositeTeamQueue(aq,tq);
 					} else {
 						iterate = tq;
 					}
 				}
-//				System.out.println(a.getName()+  " ####  " + a.getParams().getParent().getName() +"  ##############  " +
-//						newParams.getMinPlayers() +" <---- " + iterate.playerSize() +"  " + newParams.getParent().getParent().getName());
-				if ( (!forceStart && newParams.getMinPlayers() > iterate.playerSize() ||
+//								System.out.println(a.getName()+  " ####  " + a.getParams().getParent().getName() +"  ##############  " +
+//										newParams.getMinPlayers() +" <---- " + iterate.playerSize() +"  " + newParams.getParent().getParent().getName());
+				if ( (!forceStart && newParams.getMaxPlayers() > iterate.playerSize() ||
 						(forceStart && gameParams.getMinPlayers() > iterate.playerSize())))
 					continue;
 				if (Defaults.DEBUGQ) Log.info("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
-						"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+gameParams.toPrettyString() +" newP="+newParams.toPrettyString() +"  " + newParams.getMaxPlayers() +
+						"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+gameParams.toPrettyString() +
+						" newP="+newParams.toPrettyString() +"  " + newParams.getMaxPlayers() +
 						" tqparams="+tq.getMatchParams().toPrettyString());
 				for (QueueObject qo : iterate){
 					/// Check if we should only use 1 arena (skipNonMatched == true).  But for certain elements in the queue
@@ -371,7 +398,7 @@ public class ArenaMatchQueue{
 			MatchParams mp = qo.getMatchParams();
 			if (!mp.matches(params))
 				continue;
-			if (mp.getMinTeamSize() != params.getMinTeamSize()){
+			if (!mp.getMinTeamSize().equals(params.getMinTeamSize())){
 				delayed.add(qo);
 			} else {
 				newList.add(qo);
@@ -381,16 +408,14 @@ public class ArenaMatchQueue{
 		}
 		qr.teamsInQueue = teamsInQueue;
 		qr.playersInQueue = playersInQueue;
-
 		if (!hasPrematched &&
-				(playersInQueue < params.getMinPlayers() || (!forceStart && playersInQueue < params.getMaxPlayers()))) /// we don't have enough players to match these params
+				(playersInQueue < params.getMinPlayers() || (!forceStart && playersInQueue < params.getMinPlayers()))) /// we don't have enough players to match these params
 			return;
 
 		newList.addAll(delayed);
 
 		Map<ArenaPlayer, QueueObject> qteams = new HashMap<ArenaPlayer, QueueObject>();
 		Competition comp = new BlankCompetition(params);
-		//		Competition lastValidComp = null;
 
 		teamsInQueue = 0;
 		playersInQueue = 0;
@@ -474,24 +499,23 @@ public class ArenaMatchQueue{
 		m.setOriginalTeams(originalTeams);
 
 		tjh.deconstruct(); /// now with alwaysJoin I believe this should go away
-		/// For forcestart we need to reset the next timer
-		if (Defaults.MATCH_FORCESTART_ENABLED){
-			forceTimers.remove(tq.getMatchParams().getType());
-			for (QueueObject qo : tq){
-				if (qo instanceof MatchTeamQObject)
-					continue;
-				JoinOptions jo = qo.getJoinOptions();
-				if (jo == null)
-					continue;
-				updateTimer(tq,qo);
-				break;
-			}
-		}
+		/// reset the timer
+		arenaForceTimers.remove(m.getArena().getName());
+		//		for (QueueObject qo : tq){
+		//			if (qo instanceof MatchTeamQObject)
+		//				continue;
+		//			JoinOptions jo = qo.getJoinOptions();
+		//			if (jo == null)
+		//				continue;
+		//			updateTimer(tq,qo);
+		//			break;
+		//		}
+
 		return m;
 	}
 
 	protected void leaveQueue(ArenaPlayer ap, ArenaTeam t, MatchParams params, ParamTeamPair ptp) {
-
+		Log.debug(" leaveQueue  ==== " + ap.getName());
 	}
 
 	private Match getPreMadeMatch(TeamCollection tq,  Arena arena, QueueObject tto) {
@@ -592,6 +616,39 @@ public class ArenaMatchQueue{
 		return null;
 	}
 
+	public synchronized void removeFromQue(Arena arena) {
+		List<ArenaPlayer> players = new ArrayList<ArenaPlayer>();
+		final MatchParams params;
+		synchronized(aqs){
+			Map<Arena,TeamQueue> map = aqs.get(arena.getArenaType());
+			if (map == null || !map.containsKey(arena))
+				return;
+			TeamQueue tq = map.get(arena);
+			params = tq.getMatchParams();
+			for (QueueObject qo : tq){
+				for (ArenaTeam t: qo.getTeams()){
+//					ParamTeamPair ptp = new ParamTeamPair(params,t,QueueType.ARENA, arena, 0);
+//					for (ArenaPlayer ap: t.getPlayers()){
+//						leaveQueue(ap, t, params,ptp);
+//						MessageUtil.sendMessage(ap,
+//								MessageHandler.getSystemMessage(params, "cancelled_lack_of_players"));
+//						players.add(ap);
+//					}
+					players.addAll(t.getPlayers());
+				}
+			}
+			tq.clear();
+		}
+		for (ArenaPlayer ap: players){
+			MessageUtil.sendMessage(ap,
+					MessageHandler.getSystemMessage(params, "cancelled_lack_of_players"));
+			ArenaPlayerLeaveEvent event = new ArenaPlayerLeaveEvent(ap, ap.getTeam(),
+					ArenaPlayerLeaveEvent.QuitReason.OTHER);
+			event.callEvent();
+
+		}
+	}
+
 	public synchronized ParamTeamPair removeFromQue(ArenaTeam team) {
 		for (TeamQueue tq : tqs.values()){
 			if (tq.remove(team) != null){
@@ -610,10 +667,12 @@ public class ArenaMatchQueue{
 	}
 
 	public JoinResult getQueuePos(ArenaPlayer p) {
-		for (TeamQueue tq : tqs.values()){
-			JoinResult qtp = tq.getPos(p);
-			if (qtp != null)
-				return qtp;
+		synchronized(tqs){
+			for (TeamQueue tq : tqs.values()){
+				JoinResult qtp = tq.getPos(p);
+				if (qtp != null)
+					return qtp;
+			}
 		}
 		synchronized(aqs){
 			for (Map<Arena,TeamQueue> map : aqs.values()){
@@ -750,10 +809,10 @@ public class ArenaMatchQueue{
 		sb.append("------arena queues------- \n");
 		synchronized(aqs){
 			for (Entry<ArenaType,Map<Arena,TeamQueue>> entry : aqs.entrySet()){
-				IdTime value = forceTimers.get(entry.getKey());
-				String time = (value != null && value.time != null) ?
-						((value.time - System.currentTimeMillis())/1000)+"" : "";
 				for (Entry<Arena,TeamQueue> entry2: entry.getValue().entrySet()){
+					IdTime value = arenaForceTimers.get(entry2.getKey().getName());
+					String time = (value != null && value.time != null) ?
+							((value.time - System.currentTimeMillis())/1000)+"" : "";
 					for (QueueObject qo : entry2.getValue()){
 						sb.append(entry.getKey().getName() + " : fs="+time+" " + entry2.getKey().getName() +" : " + qo+"\n");
 					}
@@ -820,7 +879,10 @@ public class ArenaMatchQueue{
 
 		for (IdTime idt: forceTimers.values()){
 			Bukkit.getScheduler().cancelTask(idt.id);}
+		for (IdTime idt: arenaForceTimers.values()){
+			Bukkit.getScheduler().cancelTask(idt.id);}
 		forceTimers.clear();
+		arenaForceTimers.clear();
 	}
 
 	public boolean forceStart(MatchParams mp, boolean force) {
@@ -843,7 +905,7 @@ public class ArenaMatchQueue{
 	}
 
 	public boolean hasArenaQueue(Arena arena) {
-		return aqs.containsKey(arena);
+		return aqs.containsKey(arena.getArenaType());
 	}
 
 	public boolean hasGameQueue(MatchParams matchParams) {

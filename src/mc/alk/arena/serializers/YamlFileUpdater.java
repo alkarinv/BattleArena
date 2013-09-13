@@ -32,13 +32,15 @@ public class YamlFileUpdater {
 	public YamlFileUpdater(File backupDir){
 		this.backupDir = backupDir;
 		if (!backupDir.exists()){
-			backupDir.mkdirs();}
+			try{backupDir.mkdirs();}catch(Exception e){}
+		}
 	}
 
 	public YamlFileUpdater(Plugin plugin){
 		backupDir = new File(plugin.getDataFolder() +"/saves/backups");
 		if (!backupDir.exists()){
-			backupDir.mkdirs();}
+			try{backupDir.mkdirs();}catch(Exception e){}
+		}
 	}
 
 	public void updateMessageSerializer(Plugin plugin, MessageSerializer ms) {
@@ -108,6 +110,14 @@ public class YamlFileUpdater {
 			fu.replace("version:.*", "version: "+newVersion);
 			fu.addAfter(".*match_starts_players_or_time:.*",
 					"    match_starts_players_or_time2: '&eMatch starts in %s &ewith at least &6%s&e players'");
+			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
+		}
+		newVersion = new Version("1.6.2");
+		if (version.compareTo(newVersion) < 0){
+			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+			fu.replace("version:.*", "version: "+newVersion);
+			fu.addAfter(".*you_joined_event:.*",
+					"    cancelled_lack_of_players: '{prefix} &cThe &6{matchname} &cwas cancelled because there were not enough players'");
 			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
 

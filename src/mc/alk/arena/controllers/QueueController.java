@@ -25,6 +25,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
+import mc.alk.v1r6.util.Log;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -58,8 +59,10 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 
 	@Override
 	protected void leaveQueue(ArenaPlayer player, final ArenaTeam team, MatchParams params, ParamTeamPair ptp){
+		Log.debug(" leave Queue  " + player.getName() + "  ,,, " + InArenaListener.inQueue(player.getName()));
 		if (InArenaListener.inQueue(player.getName())){
 			methodController.updateEvents(MatchState.ONLEAVE, player);
+			Log.debug(" ONLEAVE ::: leave Queue  " + player.getName() + "  ,,, " + InArenaListener.inQueue(player.getName()));
 			callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params,ptp));
 		}
 	}
@@ -68,7 +71,7 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 	public synchronized ParamTeamPair removeFromQue(ArenaPlayer player) {
 		ParamTeamPair ptp = super.removeFromQue(player);
 		if (ptp != null){
-			leftQueue(player,ptp.team,ptp.q,ptp);
+			leftQueue(player,ptp.team,ptp.params,ptp);
 		}
 		return ptp;
 	}
@@ -79,7 +82,7 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 		ParamTeamPair ptp = removeFromQue(player);
 		if (ptp != null){
 			player.reset();
-			event.addMessage(MessageHandler.getSystemMessage("you_left_queue",ptp.q.getName()));
+			event.addMessage(MessageHandler.getSystemMessage("you_left_queue",ptp.params.getName()));
 		}
 	}
 

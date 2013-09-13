@@ -14,12 +14,12 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class RoomContainer extends AreaContainer{
 
-	public RoomContainer(LocationType type){
-		super(type);
+	public RoomContainer(String name, LocationType type){
+		super(name, type);
 	}
 
-	public RoomContainer(MatchParams params, LocationType type){
-		super(params,type);
+	public RoomContainer(String name, MatchParams params, LocationType type){
+		super(name,params,type);
 	}
 
 	@ArenaEventHandler(suppressCastWarnings=true,priority=EventPriority.LOW)

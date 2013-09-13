@@ -7,7 +7,7 @@ import mc.alk.arena.objects.queues.ArenaMatchQueue.QueueType;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
 public class ParamTeamPair {
-	public final MatchParams q;
+	public final MatchParams params;
 	public final ArenaTeam team;
 	public final QueueType type;
 	public final Arena arena;
@@ -21,14 +21,14 @@ public class ParamTeamPair {
 
 	public ParamTeamPair(MatchParams matchParams, ArenaTeam t,
 			QueueType type, Arena arena, int playersInQueue) {
-		this.q=matchParams;
+		this.params=matchParams;
 		this.team=t;
 		this.type=type;
 		this.arena = arena;
 		this.nPlayersInQueue = playersInQueue;
 	}
 
-	public MatchParams getMatchParams() {return q;}
+	public MatchParams getMatchParams() {return params;}
 
 	public Arena getArena(){
 		return arena;

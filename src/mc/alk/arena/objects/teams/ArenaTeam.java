@@ -56,6 +56,10 @@ public interface ArenaTeam {
 
 	public boolean isDead();
 
+	/**
+	 * The number of players in this team
+	 * @return the number of players in the team
+	 */
 	public int size();
 
 	public void reset() ;

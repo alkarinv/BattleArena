@@ -29,7 +29,30 @@ public class MessageHandler extends MessageSerializer {
 				}
 			}
 			try{
-				return String.format(string,varArgs);
+				return String.format(stringmsg,varArgs);
+			} catch (Exception e){
+				final String err = "&c[BA Message Error] system.+"+string;
+				Log.err(err);
+				for (Object o: varArgs){
+					Log.err("Message Option: " + o);}
+				Log.printStackTrace(e);
+				return err;
+			}
+		}
+		return null;
+	}
+
+	public static String getSystemMessage(MatchParams params, String string, Object... varArgs) {
+		final Message msg = getDefaultMessage("system."+string);
+		if (msg != null){
+			String stringmsg = msg.getMessage();
+			if (stringmsg.indexOf('{') == -1)
+				return getSystemMessage(string,varArgs);
+			stringmsg = stringmsg.replaceAll("\\{matchname\\}", params.getName());
+			stringmsg = stringmsg.replaceAll("\\{cmd\\}", params.getCommand());
+			stringmsg = stringmsg.replaceAll("\\{prefix\\}", params.getPrefix());
+			try{
+				return String.format(stringmsg,varArgs);
 			} catch (Exception e){
 				final String err = "&c[BA Message Error] system.+"+string;
 				Log.err(err);

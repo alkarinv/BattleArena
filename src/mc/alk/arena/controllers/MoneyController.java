@@ -76,9 +76,9 @@ public class MoneyController {
 		try{
 			Defaults.MONEY_STR = economy.currencyNameSingular();
 			Defaults.MONEY_SET = true;
-		} catch (Error e){
-			Log.err("[BattleArena] Error setting currency name through vault");
-			Log.printStackTrace(e);
+		} catch (Throwable e){
+			Log.err("[BattleArena] Error setting currency name through vault. Defaulting to BattleArena/config.yml");
+			Log.err("[BattleArena] Error was '" + e.getMessage()+"'");
 		}
 	}
 

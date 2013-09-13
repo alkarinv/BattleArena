@@ -11,7 +11,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
  */
 public class ArenaPlayerLeaveEvent extends ArenaPlayerEvent{
 	public enum QuitReason{
-		QUITCOMMAND, QUITMC, KICKED
+		QUITCOMMAND, QUITMC, KICKED, OTHER
 	}
 	final ArenaTeam team;
 	final QuitReason reason;

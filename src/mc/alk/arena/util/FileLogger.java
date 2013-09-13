@@ -112,14 +112,16 @@ public class FileLogger {
 			while ((line = br.readLine()) != null){
 				out.write(line+"\n");
 			}
-			f2.renameTo(f);
-		} catch (IOException e) {
+			if (!f2.renameTo(f)){
+				Log.info("Couldn't rename file " + f.getName());
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
 			if (out != null)
-				try {out.close();} catch (IOException e) {}
+				try {out.close();} catch (Exception e) {}
 			if (br != null)
-				try {br.close();} catch (IOException e) {}
+				try {br.close();} catch (Exception e) {}
 		}
 		return f2;
 	}

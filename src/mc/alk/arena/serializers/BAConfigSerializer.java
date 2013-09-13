@@ -204,7 +204,8 @@ public class BAConfigSerializer extends BaseConfig{
 		int value = cs.getInt("readyBlockType", Defaults.READY_BLOCK.getId());
 		Defaults.READY_BLOCK = value > 0 && value < Material.values().length ? Material.values()[value] : Defaults.READY_BLOCK;
 
-		defaults.setWaitroomClosedWhileRunning(false);
+		defaults.setWaitroomClosedWhileRunning(true);
+		defaults.setCancelIfNotEnoughPlayers(false);
 		defaults.setRated(true);
 		defaults.setUseTrackerPvP(false);
 		defaults.setTeamRating(false);

@@ -31,6 +31,7 @@ public class ArenaParams {
 	ArenaParams parent;
 	ArenaSize size;
 	Boolean closeWaitroomWhileRunning;
+	Boolean cancelIfNotEnoughPlayers;
 
 	public ArenaParams(ArenaType at) {
 		this.arenaType = at;
@@ -48,6 +49,7 @@ public class ArenaParams {
 		this.secondsToLoot = ap.secondsToLoot;
 		this.dbName = ap.dbName;
 		this.closeWaitroomWhileRunning = ap.closeWaitroomWhileRunning;
+		this.cancelIfNotEnoughPlayers= ap.cancelIfNotEnoughPlayers;
 		this.setParent(ap.parent);
 		if (ap.allTops != null)
 			this.allTops = new MatchTransitions(ap.allTops);
@@ -70,13 +72,13 @@ public class ArenaParams {
 		if (this.secondsToLoot == null) this.secondsToLoot = parent.secondsToLoot;
 		if (this.dbName == null) this.dbName = parent.dbName;
 		if (this.closeWaitroomWhileRunning == null) this.closeWaitroomWhileRunning = parent.closeWaitroomWhileRunning;
+		if (this.cancelIfNotEnoughPlayers == null) this.cancelIfNotEnoughPlayers = parent.cancelIfNotEnoughPlayers;
 		this.allTops = MatchTransitions.mergeChildWithParent(this.allTops, parent.allTops);
 		if (this.size == null) this.size = parent.size;
 		this.parent = null;
 	}
 
 	public MatchTransitions getTransitionOptions(){
-//		return allTops == null ? ParamController.getTransitionOptions(this) : allTops;
 		return allTops;
 	}
 
@@ -402,6 +404,15 @@ public class ArenaParams {
 
 	public void setWaitroomClosedWhileRunning(Boolean value) {
 		this.closeWaitroomWhileRunning = value;
+	}
+
+	public Boolean isCancelIfNotEnoughPlayers(){
+		return cancelIfNotEnoughPlayers != null ? cancelIfNotEnoughPlayers :
+			(parent != null ? parent.isCancelIfNotEnoughPlayers() : false);
+	}
+
+	public void setCancelIfNotEnoughPlayers(Boolean value) {
+		this.cancelIfNotEnoughPlayers = value;
 	}
 
 }

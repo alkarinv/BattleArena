@@ -40,7 +40,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler{
-	public static final AbstractAreaContainer HOMECONTAINER = new AbstractAreaContainer(){
+	public static final AbstractAreaContainer HOMECONTAINER = new AbstractAreaContainer("home"){
 		@Override
 		public LocationType getLocationType() {return LocationType.HOME;}
 		@Override
@@ -75,9 +75,10 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
 	Random r = new Random();
 
-	public AbstractAreaContainer(){
+	public AbstractAreaContainer(String name){
 		methodController.addAllEvents(this);
 		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());}catch(Exception e){}
+		this.name = name;
 	}
 
 	public void callEvent(BAEvent event){

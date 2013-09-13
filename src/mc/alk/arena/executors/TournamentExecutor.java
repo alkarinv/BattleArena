@@ -78,11 +78,11 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 				sendMessage(sender, "&c/tourney auto <type> nTeams=2");
 				return null;
 			}
-			if (ep.getMaxTeams()== ArenaSize.MAX || ep.getMinTeams() != ep.getMaxTeams()){
+			if (ep.getMaxTeams().equals(ArenaSize.MAX) || !ep.getMinTeams().equals(ep.getMaxTeams())){
 				sendMessage(sender, "&cNumber of tournament teams must not be a range. Setting to &6teamSize="+ep.getMinTeams());
 				ep.setMaxTeams(ep.getMinTeams());
 			}
-			if (ep.getMaxTeamSize() == ArenaSize.MAX || ep.getMaxTeamSize() != ep.getMinTeamSize()){
+			if (ep.getMaxTeamSize().equals(ArenaSize.MAX) || !ep.getMaxTeamSize().equals(ep.getMinTeamSize())){
 				sendMessage(sender, "&cTournament teams must have a finite size. &eSetting to &6teamSize="+ep.getMinTeamSize());
 				ep.setMaxTeamSize(ep.getMinTeamSize());
 			}

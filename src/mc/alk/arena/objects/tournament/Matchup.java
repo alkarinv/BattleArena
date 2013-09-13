@@ -22,7 +22,6 @@ public class Matchup {
 
 	public MatchResult result = new MatchResult();
 	public List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
-	Arena arena = null;
 
 	List<ArenaListener> listeners = new ArrayList<ArenaListener>();
 
@@ -136,6 +135,6 @@ public class Matchup {
 	}
 
 	public Arena getArena() {return joinOptions.getArena();}
-	public void setArena() {joinOptions.setArena(arena);}
+	public void setArena(Arena arena) {joinOptions.setArena(arena);}
 
 }

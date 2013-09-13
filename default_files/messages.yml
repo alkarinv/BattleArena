@@ -1,4 +1,4 @@
-version: 1.6.1
+version: 1.6.2
 
 system:
     type_enabled: "&2 type &6%s&2 enabled"
@@ -45,6 +45,7 @@ system:
     event_will_start_in: "&2The event will start in &6%s"
     event_invalid_team_size: "&cThis Event can only support up to &6%s&e your team has &6%s"
     you_joined_event: '&eYou have joined the &6%s'
+    cancelled_lack_of_players: '{prefix} &cThe &6{matchname} &cwas cancelled because there were not enough players'
 
 common:
     team: '&7{name}&e'

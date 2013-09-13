@@ -26,8 +26,8 @@ import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PlayerUtil;
-import mc.alk.v1r6.util.Log;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -55,16 +55,12 @@ public class GameManager implements PlayerHolder{
 	private GameManager(MatchParams params){
 		this.params = params;
 		methodController.addAllEvents(this);
-		if (Defaults.TESTSERVER) return;
+		if (Defaults.TESTSERVER) {Log.info("GameManager Testing"); return;}
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
 	}
 
 	private GameManager(MatchParams mp, GameManager gameManager) {
 		this.params = mp;
-		//		Set<ArenaPlayer> alreadyJoined = new HashSet<ArenaPlayer>(players);
-		//		alreadyJoined.retainAll(players);
-		//		gameManager.handled.removeAll(players);
-		//		this.handled.addAll(alreadyJoined);
 	}
 
 	@Override

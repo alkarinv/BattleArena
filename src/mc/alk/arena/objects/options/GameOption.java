@@ -16,7 +16,8 @@ public enum GameOption{
 	COMMAND("command",true, false),
 	RATED("rated",true, false),
 	GIVEITEMS("giveItems",true, false),
-	CLOSEWAITROOMWHILERUNNING("closeWaitroomWhileRunning", true,false)
+	CLOSEWAITROOMWHILERUNNING("closeWaitroomWhileRunning", true,false),
+	CANCELIFNOTENOUGHPLAYERS("cancelIfNotEnoughPlayers", true,false)
 	;
 
 	final String name;
@@ -70,6 +71,7 @@ public enum GameOption{
 			return value;
 		case VICTORYCONDITION:
 			return VictoryType.fromString(value);
+		case CANCELIFNOTENOUGHPLAYERS:
 		case CLOSEWAITROOMWHILERUNNING:
 		case RATED:
 			return Boolean.valueOf(value);

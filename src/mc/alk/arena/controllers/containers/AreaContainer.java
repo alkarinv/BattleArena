@@ -32,13 +32,13 @@ public class AreaContainer extends AbstractAreaContainer{
 	Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
 	final LocationType type;
 
-	public AreaContainer(LocationType type){
-		super();
+	public AreaContainer(String name, LocationType type){
+		super(name);
 		this.type = type;
 	}
 
-	public AreaContainer(MatchParams params, LocationType type){
-		super();
+	public AreaContainer(String name, MatchParams params, LocationType type){
+		super(name);
 		this.params = params;
 		this.params.flatten();
 		this.type = type;
@@ -59,13 +59,7 @@ public class AreaContainer extends AbstractAreaContainer{
 
 	@Override
 	public void playerLeaving(ArenaPlayer ap){
-//		if (inTheWRL.contains(ap)){
-//			/// remove from lobby
-//			doTransition(this, MatchState.ONCANCEL, ap, ap.getTeam(), true);
-//			callEvent(new ArenaPlayerLeaveLobbyEvent(ap,null));
-////			updateBukkitEvents(MatchState.ONLEAVE,ap);
-//		}
-//		super.playerLeaving(ap);
+
 	}
 
 	@EventHandler
@@ -88,12 +82,7 @@ public class AreaContainer extends AbstractAreaContainer{
 	}
 
 	public Collection<String> getInsidePlayers() {
-		HashSet<String> in = new HashSet<String>(players);
-//		synchronized(players){
-//			for (String ap: players){
-//				in.add(ap.getName());}
-//		}
-		return in;
+		return new HashSet<String>(players);
 	}
 
 	@Override

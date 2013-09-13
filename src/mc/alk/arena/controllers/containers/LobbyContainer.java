@@ -17,12 +17,12 @@ public class LobbyContainer extends RoomContainer{
 	Map<Arena, Integer> arenaVotes = new ConcurrentHashMap<Arena, Integer>();
 	Set<ArenaPlayer> waitingForMatch = new HashSet<ArenaPlayer>();
 
-	public LobbyContainer(LocationType type) {
-		super(type);
+	public LobbyContainer(String name,LocationType type) {
+		super(name, type);
 	}
 
-	public LobbyContainer(MatchParams params, LocationType type){
-		super(params,type);
+	public LobbyContainer(String name, MatchParams params, LocationType type){
+		super(name, params,type);
 	}
 
 	public void castVote(ArenaPlayer ap, MatchParams mp, Arena arena) {

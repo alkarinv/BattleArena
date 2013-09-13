@@ -222,7 +222,7 @@ public class PlayerStoreController {
 	public void restoreFlight(ArenaPlayer p) {
 		if (!p.isOnline() || !flight.containsKey(p.getName()))
 			return;
-		EssentialsController.setFlight(p.getPlayer(), flight.get(p));
+		EssentialsController.setFlight(p.getPlayer(), flight.get(p.getName()));
 	}
 
 	public void storeFlight(ArenaPlayer p) {
@@ -238,7 +238,7 @@ public class PlayerStoreController {
 	public void restoreGodmode(ArenaPlayer p) {
 		if (!p.isOnline() || !godmode.containsKey(p.getName()))
 			return;
-		EssentialsController.setGod(p.getPlayer(), godmode.get(p));
+		EssentialsController.setGod(p.getPlayer(), godmode.get(p.getName()));
 	}
 
 	public void restoreGamemode(ArenaPlayer p) {

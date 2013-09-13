@@ -121,7 +121,8 @@ public class ArenaSerializer extends BaseConfig{
 			Log.info(pname+"has no arenas, cs section =" + cs.getCurrentPath());
 			return;
 		}
-		List<String> keys = new ArrayList<String>(as.getKeys(false));
+
+		List<String> keys = (as == null) ? new ArrayList<String>() : new ArrayList<String>(as.getKeys(false));
 		int oldGoodSize = keys.size();
 		Set<String> brokenKeys = bks == null ? new HashSet<String>() : bks.getKeys(false);
 		int oldBrokenSize = brokenKeys.size();

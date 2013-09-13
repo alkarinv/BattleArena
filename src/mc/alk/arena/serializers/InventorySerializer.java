@@ -137,7 +137,8 @@ public class InventorySerializer {
 		BaseConfig bs = new BaseConfig();
 		File dir = new File(BattleArena.getSelf().getDataFolder()+"/inventories/");
 		if (!dir.exists()){
-			dir.mkdirs();}
+			try {dir.mkdirs();}catch (Exception e){}
+			}
 		return bs.setConfig(dir.getPath()+"/"+name+".yml") ? bs : null;
 	}
 

@@ -57,7 +57,7 @@ public class Arena extends AreaContainer {
 	 * Arena constructor
 	 */
 	public Arena(){
-		super(LocationType.ARENA);
+		super("arena",LocationType.ARENA);
 	}
 
 	/**

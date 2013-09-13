@@ -151,6 +151,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public boolean showArenaVars(CommandSender sender, Arena arena, String[] args) {
 		if (args.length > 3 && args[3].equals("parent")){
 			return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams().getParent(), ToStringStyle.MULTI_LINE_STYLE)+"");
+		} else if (args.length > 2 && args[2].equals("waitroom")){
+			return sendMessage(sender, new ReflectionToStringBuilder(arena.getWaitroom(), ToStringStyle.MULTI_LINE_STYLE)+"");
 		}  else if (args.length > 2 && args[2].equals("params")){
 			return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams(), ToStringStyle.MULTI_LINE_STYLE)+"");
 		} else {
@@ -370,5 +372,28 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		} else {
 			return sendMessage(sender,"&2 "+player.getName()+" &4no longer has&2 wg perms");
 		}
+	}
+
+	@MCCommand(cmds={"showContainers"}, admin=true)
+	public boolean showContainers(CommandSender sender, String args[]) {
+		MatchParams p = null;
+		if (args.length > 1){
+			p = ParamController.getMatchParamCopy(args[1]);
+		}
+		if (p == null){
+			sendMessage(sender, "&5Lobbies");
+			for (RoomContainer c : RoomController.getLobbies()){
+				sendMessage(sender," &2" + c.getName() +" : &6" + c.getContainerState());
+			}
+		}
+		sendMessage(sender, "&5Arenas");
+		for (Arena a: BattleArena.getBAController().getArenas().values()){
+			if (p != null && a.getArenaType() != p.getType())
+				continue;
+			sendMessage(sender," &2" + a.getName() +" - &6" + a.getContainerState());
+			if (a.getWaitroom() != null)
+				sendMessage(sender,"   &2   - &6" + a.getWaitroom().getName() +" : &6"+a.getWaitroom().getContainerState());
+		}
+		return true;
 	}
 }

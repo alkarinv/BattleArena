@@ -1302,7 +1302,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 	public MatchResult getResult(){return matchResult;}
 	public Set<ArenaTeam> getVictors() {return matchResult.getVictors();}
-	public Set<ArenaTeam> getLosers() {return matchResult.getLosers();}
+	public synchronized Set<ArenaTeam> getLosers() {return matchResult.getLosers();}
 	public Set<ArenaTeam> getDrawers() {return matchResult.getDrawers();}
 	public Map<String,Location> getOldLocations() {return oldlocs;}
 	public int indexOf(ArenaTeam t){return teams.indexOf(t);}

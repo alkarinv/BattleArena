@@ -234,8 +234,9 @@ public class BattleArena extends JavaPlugin {
 
 	private void createMessageSerializers() {
 		File f = new File(getDataFolder()+"/messages");
-		if (!f.exists())
-			f.mkdir();
+		if (!f.exists()){
+			try {f.mkdir();}catch (Exception e){}
+		}
 		for (MatchParams mp: ParamController.getAllParams()){
 			String fileName = "defaultMessages.yml";
 			MessageSerializer ms = new MessageSerializer(mp.getName(),null);
@@ -247,18 +248,17 @@ public class BattleArena extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		StateFlagSerializer sfs = new StateFlagSerializer();
-		sfs.setConfig(getDataFolder().getPath() +"/saves/state.yml");
-		sfs.save(commandExecutor.getDisabled(),
-				RoomController.getLobbies(),
-				arenaController.getArenas());
-
-		BattleArena.getSelf();
 		arenaController.stop();
 		/// we no longer save arenas as those get saved after each alteration now
 		arenaControllerSerializer.save();
 		eventSchedulerSerializer.saveScheduledEvents();
 		signSerializer.saveAll(signUpdateListener);
+		/// Save the container states
+		StateFlagSerializer sfs = new StateFlagSerializer();
+		sfs.setConfig(getDataFolder().getPath() +"/saves/state.yml");
+		sfs.save(commandExecutor.getDisabled(),
+				RoomController.getLobbies(),
+				arenaController.getArenas());
 
 		if (Defaults.AUTO_UPDATE)
 			PluginUpdater.updatePlugin(this);

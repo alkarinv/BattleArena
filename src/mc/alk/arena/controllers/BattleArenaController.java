@@ -80,17 +80,14 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		final PlayerContainerState arenaCS;
 
 		public OldMatchContainerState(Arena arena) {
-			//			PlayerContainer pc = LobbyController.getLobby(arena.getArenaType());
-			//			if (pc != null){
-			//				lobbyCS = pc.getContainerState();}
 			waitroomCS = (arena.getWaitroom()!=null) ? arena.getWaitroom().getContainerState() : null;
 			arenaCS = arena.getContainerState();
 		}
 
 		public void revert(Arena arena) {
+			arena.setContainerState(arenaCS);
 			if (waitroomCS != null && arena.getWaitroom()!=null){
 				arena.getWaitroom().setContainerState(waitroomCS);}
-			arena.setContainerState(arenaCS);
 		}
 	}
 
@@ -109,7 +106,6 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 			match = amq.getArenaMatch();
 			if (match != null){
 				preOpenChanges(match);
-
 				Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new OpenAndStartMatch(match));
 			}
 		}
@@ -221,7 +217,9 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	}
 
 	private void restoreStates(Match am, Arena arena){
-		OldLobbyState ols = oldLobbyState.get(am.getArena().getArenaType());
+		if (arena == null)
+			arena = am.getArena();
+		OldLobbyState ols = oldLobbyState.get(arena.getArenaType());
 		if (ols != null){ /// we only put back the lobby state if its the last autoed match finishing
 			if (ols.remove(am) && ols.isEmpty()){
 				RoomController.getLobby(am.getArena().getArenaType()).setContainerState(ols.pcs);
@@ -245,11 +243,11 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		Match am = event.getMatch();
 		removeMatch(am); /// handles removing running match from the BArenaController
 		decNumberOpenMatches(am.getArena().getArenaType().getName());
-		/// put back old states if it was autoed
-		restoreStates(am, am.getArena());
 
 		//		unhandle(am);/// unhandle any teams that were added during the match
 		final Arena arena = allarenas.get(am.getArena().getName().toUpperCase());
+		/// put back old states if it was autoed
+		restoreStates(am, arena);
 		if (am.getParams().hasOptionAt(MatchState.ONCOMPLETE, TransitionOption.REJOIN)){
 			MatchParams mp = am.getParams();
 			List<ArenaPlayer> players = am.getNonLeftPlayers();

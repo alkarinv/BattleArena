@@ -114,6 +114,7 @@ public class ParamAlterController {
 		case COMMAND: params.setCommand((String)value); break;
 		case MATCHTIME: params.setMatchTime((Integer)value);break;
 		case CLOSEWAITROOMWHILERUNNING: params.setWaitroomClosedWhileRunning((Boolean)value); break;
+		case CANCELIFNOTENOUGHPLAYERS: params.setCancelIfNotEnoughPlayers((Boolean)value); break;
 		case PRESTARTTIME:
 			iv = ((Integer)value).intValue();
 			checkGreater(iv,0, true);

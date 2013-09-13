@@ -52,7 +52,7 @@ public class TestConfigUpdate extends TestCase{
 		//		deleteAllAfter(bc.getFile(), "### Arena");
 	}
 
-	private void updateSection(File file, String section) {
+	private void updateSection(File file, String section) throws Exception{
 		Log.warn("BattleArena updating " + section +" to new form");
 		String colliseum = "colliseum";
 		String capcolliseum = "Colliseum";
