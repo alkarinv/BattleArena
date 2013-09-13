@@ -14,7 +14,7 @@
   <repositories>
     <repository>
       <id>battleplugins-repo</id>
-      <url>scp://server.battleplugins.com/var/www/maven/</url>
+      <url>http://server.battleplugins.com/maven/repository/</url>
     </repository>
     <repository>
       <id>bukkit-repo</id>
@@ -193,7 +193,7 @@
   <distributionManagement>
     <repository>
       <id>battleplugins-repo</id>
-      <url>scp://server.battleplugins.com/var/www/maven</url>
+      <url>scp://server.battleplugins.com/var/www/maven/repository</url>
     </repository>
   </distributionManagement>
 </project>
