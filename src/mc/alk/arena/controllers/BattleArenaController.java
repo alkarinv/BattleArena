@@ -113,7 +113,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	}
 
 	private void preOpenChanges(Match match) {
-		if (match.getParams().isWaitroomClosedWhenRunning()){
+		if (match.hasWaitroom() && match.getParams().isWaitroomClosedWhenRunning()){
 			saveStates(match, match.getArena());
 			match.getArena().setContainerState(ChangeType.WAITROOM, PlayerContainerState.CLOSED);
 		}
