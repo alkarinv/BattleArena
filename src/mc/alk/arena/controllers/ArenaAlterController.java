@@ -37,6 +37,7 @@ public class ArenaAlterController {
 		NTEAMS(true,false),
 		TEAMSIZE(true,false),
 		WAITROOM(true,false),
+		SPECTATE(true,false),
 		LOBBY(true,false),
 		SPAWNLOC(true,false),
 		VLOC(true,true),
@@ -63,6 +64,7 @@ public class ArenaAlterController {
 			if (ct != null)
 				return ct;
 			if (str.equalsIgnoreCase("wr")) return WAITROOM;
+			if (str.equalsIgnoreCase("s")) return SPECTATE;
 			if (str.equalsIgnoreCase("l")) return LOBBY;
 			if (str.equalsIgnoreCase("v")) return VLOC;
 			try{
@@ -142,6 +144,7 @@ public class ArenaAlterController {
 		case SPAWNLOC: success = changeSpawn(sender, arena, ac, changetype, value, otherOptions); break;
 		case VLOC: success = changeVisitorSpawn(sender,arena,ac,changetype,value,otherOptions); break;
 		case WAITROOM: success = changeWaitroomSpawn(sender,arena,ac,changetype,value,otherOptions); break;
+		case SPECTATE: success = changeSpectateSpawn(sender,arena,ac,changetype,value,otherOptions); break;
 		case LOBBY: success = changeLobbySpawn(sender,params,ac,changetype,value,otherOptions); break;
 		case ADDREGION: success = addWorldGuardRegion(player,arena,ac,value); break;
 		case ADDPYLAMOREGION: success = addPylamoRegion(player,arena,ac,value); break;
@@ -302,6 +305,31 @@ public class ArenaAlterController {
 		return sendMessage(sender,"&2waitroom &6" + locstr +"&2 set to location=&6" + Util.getLocString(loc));
 	}
 
+	private static boolean changeSpectateSpawn(CommandSender sender, Arena arena, BattleArenaController ac,
+			String changetype, String value, String[] otherOptions) {
+		if (!BAExecutor.checkPlayer(sender))
+			return false;
+		int locindex = verifySpawnLocation(sender,value);
+		if (locindex == -1)
+			return false;
+		String locstr = locindex == Integer.MAX_VALUE ? "main" : locindex+"";
+		Player p = (Player) sender;
+		Location loc = null;
+		loc = parseLocation(p,value);
+		if (loc == null){
+			loc = p.getLocation();}
+		MatchParams mp = ParamController.getMatchParams(arena.getArenaType());
+		if (mp == null){
+			throw new IllegalStateException("MatchParams for " + arena.getArenaType() +" could not be found");}
+		if (arena.getSpectate() == null){
+			RoomContainer room = RoomController.getOrCreateSpectate(arena);
+			arena.setSpectate(room);
+		}
+		arena.getSpectate().setSpawnLoc(locindex,loc);
+		ac.updateArena(arena);
+		return sendMessage(sender,"&spectator room &6" + locstr +"&2 set to location=&6" + Util.getLocString(loc));
+	}
+
 	private static boolean changeVisitorSpawn(CommandSender sender, Arena arena, BattleArenaController ac,
 			String changetype, String value, String[] otherOptions) {
 		if (!BAExecutor.checkPlayer(sender))
@@ -377,6 +405,31 @@ public class ArenaAlterController {
 		}
 	}
 
+	public static boolean restoreDefaultArenaOptions(Arena arena) {
+		return restoreDefaultArenaOptions(arena,true);
+	}
+
+	private static boolean restoreDefaultArenaOptions(Arena arena, boolean save) {
+		MatchParams ap = arena.getParams();
+		MatchParams p = new MatchParams(ap.getType());
+		p.setRating(ap.getRated());
+		arena.setParams(p);
+		BattleArenaController ac = BattleArena.getBAController();
+		ac.updateArena(arena);
+		if (save)
+			BattleArena.saveArenas(arena.getArenaType().getPlugin());
+		return true;
+	}
+
+	public static boolean restoreDefaultArenaOptions(MatchParams params) {
+		BattleArenaController ac = BattleArena.getBAController();
+		for (Arena a : ac.getArenas(params)){
+			restoreDefaultArenaOptions(a);
+		}
+		BattleArena.saveArenas(params.getType().getPlugin());
+		return true;
+	}
+
 	private static void showAlterHelp(CommandSender sender) {
 		sendMessage(sender,ChatColor.GOLD+ "Usage: /arena edit <arenaname> <teamSize|nTeams|type|1|2|3...|vloc|waitroom> <value> [option]");
 		sendMessage(sender,ChatColor.GOLD+ "Example: /arena edit MainArena 1 &e: sets spawn location 1 to where you are standing");
@@ -419,4 +472,5 @@ public class ArenaAlterController {
 	public static boolean sendMessage(ArenaPlayer player, String msg){
 		return MessageUtil.sendMessage(player, msg);
 	}
+
 }

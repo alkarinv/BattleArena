@@ -3,11 +3,12 @@ package mc.alk.arena.objects.queues;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -19,9 +20,21 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 	private static final long serialVersionUID = 1L;
 	final MatchParams mp;
 
+	final Lock lock = new ReentrantLock();
+	final Condition modifiying  = lock.newCondition();
+	int playerSize = 0;
+
 	public TeamQueue(MatchParams mp, TeamQueueComparator teamQueueComparator) {
 		super(10,teamQueueComparator);
 		this.mp = mp;
+	}
+
+	@Override
+	public synchronized boolean add(QueueObject to){
+		if (to == null)
+			return false;
+		playerSize += to.getNumPlayers();
+		return super.add(to);
 	}
 
 	public synchronized boolean contains(ArenaTeam team){
@@ -46,6 +59,7 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 			QueueObject qo = iter.next();
 			if (qo.hasMember(p)){
 				iter.remove();
+				playerSize--;
 				return qo.getTeam(p);
 			}
 		}
@@ -58,6 +72,7 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 			QueueObject qo = iter.next();
 			if (qo.hasTeam(team)){
 				iter.remove();
+				playerSize -= qo.getNumPlayers();
 				return team;
 			}
 		}
@@ -67,7 +82,12 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 
 	@Override
 	public boolean remove(QueueObject queueObject) {
-		return super.remove(queueObject);
+
+		if (super.remove(queueObject)){
+			playerSize -= queueObject.getNumPlayers();
+			return true;
+		}
+		return false;
 	}
 
 
@@ -117,7 +137,7 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 	}
 
 	public synchronized Collection<ArenaPlayer> getArenaPlayers() {
-		Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
+		List<ArenaPlayer> players = new ArrayList<ArenaPlayer>();
 		for (QueueObject qo: this){
 			for (ArenaTeam t: qo.getTeams()){
 				players.addAll(t.getPlayers());
@@ -127,12 +147,8 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 	}
 
 	@Override
-	public int playerSize() {
-		ArrayList<QueueObject> teams = new ArrayList<QueueObject>(this);
-		int count =0;
-		for (QueueObject t: teams){
-			count += t.size();
-		}
-		return count;
+	public synchronized int playerSize() {
+		return playerSize;
 	}
+
 }

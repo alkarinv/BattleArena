@@ -1,5 +1,7 @@
 package mc.alk.arena.listeners.custom;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 
@@ -22,9 +24,11 @@ public abstract class BukkitEventListener implements Listener  {
 	final EventPriority bukkitPriority;
 	static long total = 0;
 	static long count=0;
+	AtomicBoolean listening = new AtomicBoolean();
+	Integer timerid = null;
 
 	public BukkitEventListener(final Class<? extends Event> bukkitEvent, EventPriority bukkitPriority) {
-		if (Defaults.DEBUG_EVENTS) System.out.println("Registering BAEventListener for type " + bukkitEvent);
+		if (Defaults.DEBUG_EVENTS) System.out.println("Registering BAEventListener for type " + bukkitEvent.getSimpleName());
 		this.bukkitEvent = bukkitEvent;
 		this.bukkitPriority = bukkitPriority;
 	}
@@ -34,13 +38,37 @@ public abstract class BukkitEventListener implements Listener  {
 	}
 
 	public void stopListening(){
-		HandlerList.unregisterAll(this);
+		listening.set(false);
+		if (BattleArena.getSelf().isEnabled()){
+			final BukkitEventListener bel = this;
+			if (timerid != null){
+				Bukkit.getScheduler().cancelTask(timerid);}
+			timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+				@Override
+				public void run() {
+					HandlerList.unregisterAll(bel);
+					timerid = null;
+				}
+			},30000L);
+		}
+	}
+
+	public boolean isListening(){
+		return listening.get();
 	}
 
 	public void startListening(){
+		if (isListening())
+			return;
+
+		listening.set(true);
+		if (timerid != null){
+			Bukkit.getScheduler().cancelTask(timerid);
+			timerid= null;
+		}
 		EventExecutor executor = new EventExecutor() {
 			public void execute(final Listener listener, final Event event) throws EventException {
-				if (event.getClass() != bukkitEvent && !bukkitEvent.isAssignableFrom(event.getClass())){
+				if (!isListening() || event.getClass() != bukkitEvent && !bukkitEvent.isAssignableFrom(event.getClass())){
 					return;}
 				invokeEvent(event);
 			}

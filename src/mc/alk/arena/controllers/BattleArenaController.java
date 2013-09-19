@@ -26,9 +26,9 @@ import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.listeners.SignUpdateListener;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.PlayerContainerState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaListener;
@@ -64,11 +64,10 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	final private Map<Match, OldMatchContainerState> oldArenaStates = new HashMap<Match, OldMatchContainerState>();
 	final private Map<ArenaType,OldLobbyState> oldLobbyState = new HashMap<ArenaType,OldLobbyState>();
 	private final ArenaMatchQueue amq = new QueueController();
-	private StateController sc = new StateController(amq);
 	final SignUpdateListener signUpdateListener;
 
 	public class OldLobbyState{
-		PlayerContainerState pcs;
+		ContainerState pcs;
 		Set<Match> running = new HashSet<Match>();
 		public boolean isEmpty() {return running.isEmpty();}
 		public void add(Match am){running.add(am);}
@@ -76,8 +75,8 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	}
 
 	public class OldMatchContainerState{
-		final PlayerContainerState waitroomCS;
-		final PlayerContainerState arenaCS;
+		final ContainerState waitroomCS;
+		final ContainerState arenaCS;
 
 		public OldMatchContainerState(Arena arena) {
 			waitroomCS = (arena.getWaitroom()!=null) ? arena.getWaitroom().getContainerState() : null;
@@ -92,7 +91,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	}
 
 	public BattleArenaController(SignUpdateListener signUpdateListener){
-		methodController = new MethodController();
+		methodController = new MethodController("BAC");
 		methodController.addAllEvents(this);
 		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());}catch(Exception e){}
 		this.signUpdateListener = signUpdateListener;
@@ -113,9 +112,13 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	}
 
 	private void preOpenChanges(Match match) {
+		addLast(match.getArena());
 		if (match.hasWaitroom() && match.getParams().isWaitroomClosedWhenRunning()){
 			saveStates(match, match.getArena());
-			match.getArena().setContainerState(ChangeType.WAITROOM, PlayerContainerState.CLOSED);
+			match.getArena().setContainerState(ChangeType.WAITROOM,
+					new ContainerState(ContainerState.AreaContainerState.CLOSED,
+							"&cA match is already in progress in arena "+
+					match.getArena().getName()));
 		}
 	}
 
@@ -178,7 +181,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		Match m = createMatch(arena,eoo);
 		preOpenChanges(m);
 		saveStates(m,arena);
-		arena.setAllContainerState(PlayerContainerState.OPEN);
+		arena.setAllContainerState(ContainerState.OPEN);
 		m.setTimedStart(eoo.getSecTillStart(), eoo.getInterval());
 		return m;
 	}
@@ -204,7 +207,6 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 			running_matches.add(match);
 		}
 		incNumberOpenMatches(match.getParams().getType().getName());
-		addLast(match.getArena());
 		match.open();
 		if (match.isJoinablePostCreate()){
 			List<Match> matches = unfilled_matches.get(match.getParams().getType());
@@ -293,8 +295,6 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 
 	public Arena getNextArena(ArenaType arenaType){
 		LinkedList<Arena> list = nextArena.get(arenaType);
-		if (list == null){
-			return null;}
 		return list == null || list.isEmpty() ? null : list.getFirst();
 	}
 
@@ -316,23 +316,50 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		if (!tqo.getJoinOptions().hasArena()){
 			tqo.getJoinOptions().setArena(getNextArena(tqo.getMatchParams().getType()));
 		}
-		JoinResult jr = sc.join(tqo, shouldStart(tqo.getMatchParams()));
+		JoinResult jr = amq.join(tqo,shouldStart(tqo.getMatchParams()));
+		MatchParams mp = tqo.getMatchParams();
+		/// who is responsible for doing what
+		if (Defaults.DEBUG)Log.info(" Join status = " + jr.status +"    " + tqo.getTeam() + "   " + tqo.getTeam().getId() +" --"
+				+ ", haslobby="+mp.needsLobby() +"  ,wr="+(mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM))+"  "+
+				"   --- hasArena=" + tqo.getJoinOptions().hasArena());
+		if (tqo.getJoinOptions().hasArena()){
+			Arena a = tqo.getJoinOptions().getArena();
+			if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN) && BattleArena.getBAController().getMatch(a) != null){
+				throw new IllegalStateException("&cThe arena " + a.getDisplayName() +"&c is currently in use");
+			}
+		}
 		switch(jr.status){
 		case ADDED_TO_ARENA_QUEUE:
-			break;
-		case ADDED_TO_EXISTING_MATCH:
-			break;
 		case ADDED_TO_QUEUE:
-			break;
-		case ERROR:
 			break;
 		case NONE:
 			break;
+		case ERROR:
+		case ADDED_TO_EXISTING_MATCH:
 		case STARTED_NEW_GAME:
-			break;
+			return jr;
 		default:
 			break;
-
+		}
+		if (mp.needsLobby()){
+			if (!RoomController.hasLobby(mp.getType())){
+				throw new IllegalStateException("&cLobby is not set for the "+mp.getName());}
+			RoomController.getLobby(mp.getType()).teamJoining(tqo.getTeam());
+		}
+		if (tqo.getJoinOptions().hasArena()){
+			Arena a = tqo.getJoinOptions().getArena();
+			if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM) ||
+					mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTMAINWAITROOM)){
+				if (a.getWaitroom()== null){
+					throw new IllegalStateException("&cWaitroom is not set for this arena");}
+				a.getWaitroom().teamJoining(tqo.getTeam());
+			} else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTSPECTATE)){
+				if (a.getSpectate()== null){
+					throw new IllegalStateException("&cSpectate is not set for this arena");}
+				a.getSpectate().teamJoining(tqo.getTeam());
+			} else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)){
+				tqo.getJoinOptions().getArena().teamJoining(tqo.getTeam());
+			}
 		}
 		return jr;
 	}

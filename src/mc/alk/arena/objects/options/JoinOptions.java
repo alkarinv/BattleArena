@@ -185,8 +185,9 @@ public class JoinOptions {
 			ops.put(jo, obj);
 		}
 		if (arena != null && !arena.matchesIgnoreSize(mp, jos)){
-			String msg = "&cThe arena &6" +arena.getName() +"&c doesn't match your join requirements";
-			throw new InvalidOptionException(msg);
+			throw new InvalidOptionException("&cThe arena &6" +arena.getName() +
+					"&c doesn't match your join requirements. "  +
+					StringUtils.join( arena.getInvalidMatchReasons(mp, jos), '\n'));
 		} else if (arena == null){
 			arena = BattleArena.getBAController().getNextArena(mp.getType());
 			jos.setArena(arena);
@@ -197,7 +198,8 @@ public class JoinOptions {
 			mp.setParent(old);
 			if (!arena.matchesIgnoreSize(mp, jos)){
 				throw new InvalidOptionException("&cThe arena &6" +arena.getName() +
-						"&c isn't valid. " + StringUtils.join( arena.getInvalidMatchReasons(mp, jos), '\n'));
+						"&c doesn't match your join requirements. "  +
+						StringUtils.join( arena.getInvalidMatchReasons(mp, jos), '\n'));
 			}
 		}
 		MinMax mm = null;

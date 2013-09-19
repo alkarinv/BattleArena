@@ -156,7 +156,9 @@ public class ParamAlterController {
 				new HashSet<TransitionOption>(Arrays.asList(
 						TransitionOption.TELEPORTIN,TransitionOption.TELEPORTWAITROOM ,
 						TransitionOption.TELEPORTCOURTYARD, TransitionOption.TELEPORTLOBBY,
-						TransitionOption.TELEPORTMAINLOBBY, TransitionOption.TELEPORTMAINWAITROOM));
+						TransitionOption.TELEPORTMAINLOBBY, TransitionOption.TELEPORTMAINWAITROOM,
+						TransitionOption.TELEPORTSPECTATE
+						));
 		if ((state == MatchState.ONPRESTART || state == MatchState.ONSTART || state == MatchState.ONJOIN) &&
 				tpOps.contains(to)){
 			tops.removeTransitionOption(MatchState.ONPRESTART, to);

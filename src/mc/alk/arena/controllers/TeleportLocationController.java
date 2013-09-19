@@ -25,6 +25,7 @@ public class TeleportLocationController {
 
 	public static void teleport(PlayerHolder am, ArenaTeam team,
 			ArenaPlayer player, TransitionOptions mo, int teamIndex) {
+		player.markOldLocation();
 		MatchParams mp = am.getParams();
 
 		/// EnterWaitRoom is supposed to happen before the teleport in event, but it depends on the result of a teleport
@@ -32,10 +33,9 @@ public class TeleportLocationController {
 		ArenaLocation dest = getArenaLocation(am,team,player,mo,teamIndex);
 		ArenaLocation src = player.getCurLocation();
 		src.setLocation(player.getLocation());
-//		Log.debug(" ########### @@ " + player.getCurLocation()  +"  -->  " + am.getTeam(player) );
+		if (Defaults.DEBUG_TRACE)Log.info(" ########### @@ " + player.getCurLocation()  +"  -->  " + am.getTeam(player) );
 
 		TeleportDirection td = calcTeleportDirection(player, src,dest);
-		player.markOldLocation();
 		ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(mp.getType(),player,team,src,dest,td);
 
 		movePlayer(player, apte, mp);
@@ -46,6 +46,7 @@ public class TeleportLocationController {
 			boolean insideArena, boolean onlyInMatch, boolean wipeInventory) {
 		MatchParams mp = am.getParams();
 		Location loc = null;
+		ArenaLocation src = player.getCurLocation();
 		final LocationType type;
 		if (mo.hasOption(TransitionOption.TELEPORTTO)){
 			loc = mo.getTeleportToLoc();
@@ -53,13 +54,18 @@ public class TeleportLocationController {
 		} else {
 			type = LocationType.HOME;
 			loc = player.getOldLocation();
+			/// TODO
+			/// This is a bit of a kludge, sometimes we are "teleporting them out"
+			/// when they are already out... so need to rethink how this can happen and should it
+			if (loc == null && src.getType()==LocationType.HOME){
+				loc = src.getLocation();
+			}
 		}
 		player.clearOldLocation();
 		if (loc == null){
 			Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
 		}
 
-		ArenaLocation src = player.getCurLocation();
 		ArenaLocation dest = new ArenaLocation(AbstractAreaContainer.HOMECONTAINER, loc,type);
 		ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
 				player,team,src,dest,TeleportDirection.OUT);
@@ -70,8 +76,8 @@ public class TeleportLocationController {
 		PlayerHolder src = apte.getSrcLocation().getPlayerHolder();
 		PlayerHolder dest = apte.getDestLocation().getPlayerHolder();
 		TeleportDirection td = apte.getDirection();
-//		Log.debug(" ###########  " + player.getCurLocation()  +"  -->  " + dest.getLocationType() );
-//		Log.debug(" ---- << -- " + player.getName() +"   src=" + src +"   dest="+dest +"    td=" + td);
+		if (Defaults.DEBUG_TRACE)Log.info(" ###########  " + player.getCurLocation()  +"  -->  " + dest.getLocationType() );
+		if (Defaults.DEBUG_TRACE)Log.info(" ---- << -- " + player.getName() +"   src=" + src +"   dest="+dest +"    td=" + td);
 
 		switch (td){
 		case RESPAWN:
@@ -92,7 +98,10 @@ public class TeleportLocationController {
 			break;
 		}
 		dest.callEvent(apte);
-		TeleportController.teleportPlayer(player.getPlayer(), apte.getDestLocation().getLocation(), false, true);
+		if (!TeleportController.teleport(player.getPlayer(), apte.getDestLocation().getLocation(), true) &&
+				player.isOnline() && !player.isDead()){
+			Log.err("[BA Warning] couldn't teleport "+player.getName()+" srcLoc="+apte.getSrcLocation() +" destLoc=" + apte.getDestLocation());
+		}
 		player.setCurLocation(apte.getDestLocation());
 		switch (td){
 		case RESPAWN:
@@ -130,18 +139,15 @@ public class TeleportLocationController {
 		Location l;
 		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
 		final boolean teleportLobby = mo.shouldTeleportLobby();
+		final boolean teleportSpectate = mo.shouldTeleportSpectate();
 		final LocationType type;
 		final PlayerHolder ph;
-//		Log.debug(" teamindex = " + teamIndex +"   " + am.getClass().getSimpleName()  +"  " +am);
+		if (Defaults.DEBUG_TRACE)Log.info(" teamindex = " + teamIndex +"   " + am.getClass().getSimpleName()  +"  " +am);
+
 		if (teleportWaitRoom){
 			if (mo.hasOption(TransitionOption.TELEPORTMAINWAITROOM)){
 				teamIndex = Defaults.MAIN_SPAWN;}
-			if (am instanceof Match){
-				Match m = (Match) am;
-				ph = m.getArena().getWaitroom();
-			} else {
-				ph = am;
-			}
+			ph = (am instanceof Match) ? ((Match)am).getArena().getWaitroom() : am;
 			type = LocationType.WAITROOM;
 			l = jitter(ph.getSpawn(teamIndex, randomRespawn),teamIndex);
 		} else if (teleportLobby){
@@ -150,15 +156,19 @@ public class TeleportLocationController {
 			ph = RoomController.getLobby(mp.getType());
 			type = LocationType.LOBBY;
 			l = jitter(RoomController.getLobbySpawn(teamIndex,mp.getType(),randomRespawn),0);
+		} else if (teleportSpectate){
+			ph = (am instanceof Match) ? ((Match)am).getArena().getSpectate() : am;
+			type = LocationType.SPECTATE;
+			l = jitter(ph.getSpawn(teamIndex, randomRespawn),teamIndex);
 		} else { // They should teleportIn, aka to the Arena
-			Arena arena = null;
+			final Arena arena;
 			if (am instanceof Arena){
 				arena = (Arena) am;
 			} else if (am instanceof Match){
 				Match m = (Match) am;
 				arena = m.getArena();
 			} else {
-				Log.err("[BA Error instance is " + am.getClass().getSimpleName());
+				throw new IllegalStateException("[BA Error instance is " + am.getClass().getSimpleName());
 			}
 			ph = am;
 			type = LocationType.ARENA;

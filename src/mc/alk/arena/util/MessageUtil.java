@@ -68,8 +68,12 @@ public class MessageUtil {
 		return true;
 	}
 
-	public static void sendMessage(Set<ArenaPlayer> players, String message) {
-		final String msg = colorChat(message);
+	public static void sendMessage(Collection<ArenaPlayer> players, String message) {
+		if (message == null)
+			return;
+		final String msg = colorChat(message.trim());
+		if (msg.isEmpty())
+			return;
 		for (ArenaPlayer p: players){
 			p.getPlayer().sendMessage(msg);
 		}

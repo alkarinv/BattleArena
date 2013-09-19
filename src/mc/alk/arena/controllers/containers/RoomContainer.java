@@ -46,4 +46,5 @@ public class RoomContainer extends AreaContainer{
 	public void onPlayerTeleport(PlayerTeleportEvent event){
 		event.setCancelled(true);
 	}
+
 }

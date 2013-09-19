@@ -106,9 +106,6 @@ import org.bukkit.plugin.Plugin;
 /// TODO once I have GameLogic, split this into two matches, one for always open, one for normal
 public abstract class Match extends Competition implements Runnable, ArenaController {
 	public enum PlayerState{OUTOFMATCH,INMATCH};
-	static int count =0;
-
-	final int id = count++;
 	final MatchParams params; /// Our parameters for this match
 	final Arena arena; /// The arena we are using
 	final ArenaControllerInterface arenaInterface; /// Our interface to access arena methods w/o reflection
@@ -167,10 +164,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public Match(Arena arena, MatchParams params) {
 		if (Defaults.DEBUG) System.out.println("ArenaMatch::" + params);
 		this.params = params;
-		this.params.setName(params.getType().getName());
+		params.setName(params.getType().getName());
 		params.flatten();
 		this.tops = params.getTransitionOptions();
-
 		/// Assign variables
 		this.plugin = BattleArena.getSelf();
 		this.gameManager = GameManager.getGameManager(params);
@@ -275,6 +271,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	 */
 	public void open(){
 		transitionTo(MatchState.ONOPEN);
+
 		MatchOpenEvent event = new MatchOpenEvent(this);
 
 		callEvent(event);
@@ -284,6 +281,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		}
 		updateBukkitEvents(MatchState.ONOPEN);
 		arenaInterface.onOpen();
+		onJoin(originalTeams);
 	}
 
 	public void run() {
@@ -894,6 +892,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	}
 
 	public void onJoin(Collection<ArenaTeam> teams){
+		if (teams == null)
+			return;
 		for (ArenaTeam t: teams){
 			onJoin(t);}
 	}
@@ -1430,7 +1430,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	}
 
 	public boolean hasWaitroom() {
-		return waitRoomStates != null;
+		return arena.getWaitroom() != null;
 	}
 
 	public boolean isJoinablePostCreate(){

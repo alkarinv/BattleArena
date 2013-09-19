@@ -7,7 +7,6 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.messaging.MessageHandler;
-import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerEnterQueueEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveQueueEvent;
@@ -35,29 +34,17 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class QueueController extends ArenaMatchQueue implements ArenaListener, Listener{
-	final MethodController methodController = new MethodController();
 	private static HashSet<String> disabledCommands = new HashSet<String>();
 
 	public QueueController(){
 		super();
-		methodController.addAllEvents(this);
 		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());} catch(Exception e){}
-	}
-
-	private void callEvent(BAEvent event){
-		methodController.callEvent(event);
-	}
-
-	private void leftQueue(ArenaPlayer player, final ArenaTeam team, MatchParams params, ParamTeamPair ptp){
-		if (InArenaListener.inQueue(player.getName())){
-			methodController.updateEvents(MatchState.ONLEAVE, player);
-			callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params,ptp));
-		}
 	}
 
 	@Override
 	protected void leaveQueue(ArenaPlayer player, final ArenaTeam team, MatchParams params, ParamTeamPair ptp){
 		if (InArenaListener.inQueue(player.getName())){
+			super.leaveQueue(player, team, params, ptp);
 			methodController.updateEvents(MatchState.ONLEAVE, player);
 			callEvent(new ArenaPlayerLeaveQueueEvent(player,team, params,ptp));
 		}
@@ -67,7 +54,7 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 	public synchronized ParamTeamPair removeFromQue(ArenaPlayer player) {
 		ParamTeamPair ptp = super.removeFromQue(player);
 		if (ptp != null){
-			leftQueue(player,ptp.team,ptp.params,ptp);
+			leaveQueue(player,ptp.team,ptp.params,ptp);
 		}
 		return ptp;
 	}

@@ -1,10 +1,10 @@
 package mc.alk.arena.controllers.containers;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.ArenaMatch;
@@ -29,7 +29,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class AreaContainer extends AbstractAreaContainer{
 //	Map<String, Long> userTime = new ConcurrentHashMap<String, Long>();
 //	Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
-	Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
+	Map<String, Integer> respawnTimer = null;
 	final LocationType type;
 
 	public AreaContainer(String name, LocationType type){
@@ -99,6 +99,8 @@ public class AreaContainer extends AbstractAreaContainer{
 				event.getClickedBlock().getType().equals(Material.WALL_SIGN)){ /// Only checking for signs
 			ArenaMatch.signClick(event,this);
 		} else if (event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)) {
+			if (respawnTimer == null)
+				new HashMap<String, Integer>();
 			if (respawnTimer.containsKey(event.getPlayer().getName())){
 				ArenaMatch.respawnClick(event,this, respawnTimer);
 			} else {

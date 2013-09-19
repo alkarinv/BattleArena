@@ -23,6 +23,8 @@ public class Countdown implements Runnable{
 	CountdownCallback callback;
 	Integer timerId;
 	Plugin plugin;
+	boolean cancelOnExpire = true;
+	boolean stop = false;
 
 	public Countdown(final Plugin plugin, Integer seconds, Integer interval, CountdownCallback callback){
 		this.interval = interval == null || interval <= 0 ? seconds : interval;
@@ -39,25 +41,33 @@ public class Countdown implements Runnable{
 				(long)(time * Defaults.TICK_MULT));
 	}
 
+	public void setCancelOnExpire(boolean cancel){
+		this.cancelOnExpire = cancel;
+	}
+
 	public void run() {
+		if (stop)
+			return;
 		timerId = null;
 		final boolean continueOn = callback.intervalTick(seconds);
-		if (!continueOn || seconds <=0)
+		if (!continueOn)
 			return;
 		TimeUtil.testClock();
-
-		if (seconds > 0){
+		if (!stop && (seconds > 0 || !cancelOnExpire)){
 			timerId  = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this,
 					(long) (interval*20L * Defaults.TICK_MULT));
 		}
 		seconds -= interval;
 	}
+
 	public void stop(){
+		stop = true;
 		if (timerId != null){
 			Bukkit.getScheduler().cancelTask(timerId);
 			timerId = null;
 		}
 	}
+
 	@Override
 	public String toString(){
 		return "[Countdown " + seconds+":"+interval+"]";

@@ -1,6 +1,5 @@
 package mc.alk.arena.competition;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.events.BAEvent;
@@ -28,13 +28,11 @@ import mc.alk.arena.objects.teams.TeamHandler;
 public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/** Our teams */
-	protected final List<ArenaTeam> teams = Collections.synchronizedList(new ArrayList<ArenaTeam>());
+	protected final List<ArenaTeam> teams = new CopyOnWriteArrayList<ArenaTeam>();
 
 	/** Players that have left the match */
 	protected final Set<String> leftPlayers = Collections.synchronizedSet(new HashSet<String>());
 
-	/** Our Method Controller that will handle anyone listening to this competition*/
-	protected final MethodController methodController = new MethodController();
 
 	/** a list of team indexes.  Teams can come and go, so the List of teams isnt always reflective
 	 * of the real index.*/
@@ -42,6 +40,13 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/** Which team indexes are currently used */
 	protected final Set<Integer> usedIndexes = new HashSet<Integer>();
+
+	static int count =0;
+
+	final protected int id = count++;
+
+	/** Our Method Controller that will handle anyone listening to this competition*/
+	protected final MethodController methodController = new MethodController("id ="+id);
 
 	/**
 	 * Get the time of when the competition did the given state
@@ -53,7 +58,9 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 	 * Get the unique ID for this competition
 	 * @return
 	 */
-	public abstract int getID();
+	public int getID(){
+		return id;
+	}
 
 	/**
 	 * Get the Name for this competition

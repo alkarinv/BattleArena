@@ -32,21 +32,11 @@ public class TeleportController implements Listener{
 	static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
 	private final int TELEPORT_FIX_DELAY = 15; // ticks
 
-	public static boolean teleportPlayer(final Player player, final Location location, final boolean wipe, boolean giveBypassPerms){
-//		if (!player.isOnline() || player.isDead()){
-//			BAPlayerListener.teleportOnReenter(player.getName(),location, player.getLocation());
-//			if (wipe){
-//				InventoryUtil.clearInventory(player);}
-//			return false;
-//		}
-		return teleport(player,location,giveBypassPerms);
-	}
-
 	public static boolean teleport(final Player player, final Location location){
 		return teleport(player,location,false);
 	}
 
-	private static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
+	public static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
 		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
 		try {
 			player.setVelocity(new Vector(0,0,0));
@@ -73,8 +63,8 @@ public class TeleportController implements Listener{
 			/// or game states ... lets not let this happen
 			PermissionsUtil.givePlayerInventoryPerms(player);
 			/// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
-			if (giveBypassPerms && BattleArena.getSelf().isEnabled())
-				player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);
+			if (giveBypassPerms && BattleArena.getSelf().isEnabled() && !Defaults.DEBUG_STRESS){
+				player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);}
 
 			if (!player.teleport(loc) || (Defaults.DEBUG_VIRTUAL && !player.isOnline())){
 				BAPlayerListener.teleportOnReenter(player.getName(),loc, player.getLocation());
@@ -86,6 +76,7 @@ public class TeleportController implements Listener{
 		} catch (Exception e){
 			Log.err("[BA Error] teleporting player=" + player.getName() +" to " + location +" " + giveBypassPerms);
 			Log.printStackTrace(e);
+			return false;
 		}
 		return true;
 	}

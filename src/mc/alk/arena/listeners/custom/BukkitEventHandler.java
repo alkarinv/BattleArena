@@ -1,9 +1,11 @@
 package mc.alk.arena.listeners.custom;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Set;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.objects.arenas.ArenaListener;
+import mc.alk.arena.objects.events.ArenaEventMethod;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.event.Event;
@@ -25,12 +27,17 @@ public class BukkitEventHandler {
 	 * @param bukkitEvent : which event we will listen for
 	 * @param getPlayerMethod : a method which when not null and invoked will return a Player
 	 */
-	public BukkitEventHandler(final Class<? extends Event> bukkitEvent,
-			org.bukkit.event.EventPriority bukkitPriority, Method getPlayerMethod) {
-		ael = new ArenaEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
-		spl = new SpecificPlayerEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
-		sapl = new SpecificArenaPlayerEventListener(bukkitEvent,bukkitPriority, getPlayerMethod);
-		if (Defaults.DEBUG_EVENTS) Log.info("Registering BukkitEventListener for type " + bukkitEvent +" pm="+getPlayerMethod);
+	public BukkitEventHandler(final Class<? extends Event> bukkitEvent, ArenaEventMethod aem) {
+		if (aem.getPlayerMethod() != null){
+			if (aem.isSpecificArenaPlayerMethod()){
+				sapl = new SpecificArenaPlayerEventListener(bukkitEvent,aem.getBukkitPriority(), aem.getPlayerMethod());
+			} else {
+				spl = new SpecificPlayerEventListener(bukkitEvent,aem.getBukkitPriority(), aem.getPlayerMethod());
+			}
+		} else {
+			ael = new ArenaEventListener(bukkitEvent,aem.getBukkitPriority(), aem.getPlayerMethod());
+		}
+		if (Defaults.DEBUG_EVENTS) Log.info("Registering BukkitEventListener for type " + bukkitEvent +" pm="+aem.getPlayerMethod());
 	}
 
 	/**
@@ -38,7 +45,8 @@ public class BukkitEventHandler {
 	 * @return
 	 */
 	public boolean hasListeners(){
-		return ael.hasListeners() || spl.hasListeners() || sapl.hasListeners();
+		return (ael != null && ael.hasListeners()) || (spl != null && spl.hasListeners()) ||
+				(sapl != null && sapl.hasListeners());
 	}
 
 	/**
@@ -84,9 +92,9 @@ public class BukkitEventHandler {
 	 * @param rl
 	 */
 	public void removeAllListener(RListener rl) {
-		spl.removeAllListeners(rl);
-		ael.removeAllListeners(rl);
-		sapl.removeAllListeners(rl);
+		if (spl != null) spl.removeAllListeners(rl);
+		if (ael != null) ael.removeAllListeners(rl);
+		if (sapl != null) sapl.removeAllListeners(rl);
 	}
 
 	public ArenaEventListener getMatchListener(){
@@ -101,8 +109,8 @@ public class BukkitEventHandler {
 		return sapl;
 	}
 
-	public void invokeArenaEvent(Event event) {
-		ael.invokeEvent(event);
+	public void invokeArenaEvent(Set<ArenaListener> listeners, Event event) {
+		if (ael != null) ael.invokeEvent(listeners, event);
 	}
 
 }

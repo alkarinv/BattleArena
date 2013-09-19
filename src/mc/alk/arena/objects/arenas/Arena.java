@@ -14,12 +14,12 @@ import mc.alk.arena.controllers.SpawnController;
 import mc.alk.arena.controllers.containers.AreaContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.PlayerContainerState;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.regions.PylamoRegion;
@@ -42,6 +42,8 @@ public class Arena extends AreaContainer {
 	protected SpawnController spawnController = null;
 
 	protected Match match = null;
+
+	protected RoomContainer spectate;
 
 	protected RoomContainer waitroom;
 
@@ -154,6 +156,13 @@ public class Arena extends AreaContainer {
 	}
 
 	/**
+	 * private Arena onEnterWaitRoom events, calls onEnterWaitRoom for subclasses to be able to override
+	 */
+	void privateOnEnterSpectate(ArenaPlayer player, ArenaTeam team){
+		try{onEnterSpectate(player,team);}catch(Exception e){Log.printStackTrace(e);}
+	}
+
+	/**
 	 * private Arena onJoin events, calls onJoin for subclasses to be able to override
 	 * Happens when a player joins a team
 	 */
@@ -262,6 +271,13 @@ public class Arena extends AreaContainer {
 	 * @param team: the team they are in
 	 */
 	protected void onEnterWaitRoom(ArenaPlayer p, ArenaTeam team) {}
+
+	/**
+	 * Called if a player is teleported into a spectator room before a match
+	 * @param Player p
+	 * @param team: the team they are in
+	 */
+	protected void onEnterSpectate(ArenaPlayer p, ArenaTeam team) {}
 
 	/**
 	 * Called when a player is exiting the match (usually through a death)
@@ -605,6 +621,8 @@ public class Arena extends AreaContainer {
 			return true;
 		if ((waitroom == null || !waitroom.hasSpawns()) && matchParams.needsWaitroom())
 			return false;
+		if ((spectate == null || !spectate.hasSpawns()) && matchParams.needsSpectate())
+			return false;
 		if (jp == null)
 			return true;
 		if (!jp.matches(this))
@@ -646,6 +664,8 @@ public class Arena extends AreaContainer {
 		if (tops != null){
 			if (matchParams.needsWaitroom() && (waitroom == null || !waitroom.hasSpawns()))
 				reasons.add("Needs a waitroom but none has been provided");
+			if (matchParams.needsSpectate() && (spectate == null || !spectate.hasSpawns()))
+				reasons.add("Needs a spectator room but none has been provided");
 			if (matchParams.needsLobby() && (!RoomController.hasLobby(matchParams.getType())))
 				reasons.add("Needs a lobby but none has been provided");
 		}
@@ -686,6 +706,7 @@ public class Arena extends AreaContainer {
 		sb.append("&e, #spawns:&6" +spawns.size() +"\n");
 		sb.append("&eteamSpawnLocs=&b"+getSpawnLocationString()+"\n");
 		if (waitroom != null) sb.append("&ewrSpawnLocs=&b"+waitroom.getSpawnLocationString()+"\n");
+		if (spectate != null) sb.append("&espectateSpawnLocs=&b"+spectate.getSpawnLocationString()+"\n");
 		if (timedSpawns != null){sb.append("&e#item/mob spawns:&6" +timedSpawns.size() +"\n");}
 		return sb.toString();
 	}
@@ -730,8 +751,16 @@ public class Arena extends AreaContainer {
 		this.waitroom = waitroom;
 	}
 
+	public void setSpectate(RoomContainer spectate) {
+		this.spectate = spectate;
+	}
+
 	public RoomContainer getWaitroom() {
 		return waitroom;
+	}
+
+	public RoomContainer getSpectate() {
+		return spectate;
 	}
 
 	public RoomContainer getLobby() {
@@ -752,6 +781,8 @@ public class Arena extends AreaContainer {
 			return false;
 		else if ( mp.needsWaitroom() && (waitroom == null || !waitroom.isOpen() || waitroom.getSpawns().isEmpty()) )
 			return false;
+		else if ( mp.needsSpectate() && (spectate== null || !spectate.isOpen() || spectate.getSpawns().isEmpty()) )
+			return false;
 		else if ( mp.needsLobby()){
 			RoomContainer lobby = RoomController.getLobby(getArenaType());
 			if (lobby == null || !lobby.isOpen() || lobby.getSpawns().isEmpty())
@@ -766,9 +797,15 @@ public class Arena extends AreaContainer {
 		else if ( mp.needsWaitroom() && waitroom == null )
 			return "&cYou need to create a waitroom!";
 		else if ( mp.needsWaitroom() && !waitroom.isOpen() )
-			return "&cWaitroom is not open!";
+			return waitroom.getContainerMessage()!= null ?
+					waitroom.getContainerMessage() :
+					"&cWaitroom is not open!";
 		else if ( mp.needsWaitroom() && waitroom.getSpawns().isEmpty() )
 			return "&cYou need to set a spawn point for the waitroom!";
+		else if ( mp.needsSpectate() && spectate == null )
+			return "&cYou need to create a spectator area!";
+		else if ( mp.needsSpectate() && spectate.getSpawns().isEmpty() )
+			return "&cYou need to set a spawn point for the spectate area!";
 		else if ( mp.needsLobby() && getLobby()==null )
 			return "&cYou need to create a lobby!";
 		else if ( mp.needsLobby() ){
@@ -781,7 +818,7 @@ public class Arena extends AreaContainer {
 		return "";
 	}
 
-	public void setAllContainerState(PlayerContainerState state) {
+	public void setAllContainerState(ContainerState state) {
 		setContainerState(state);
 		if (waitroom != null)
 			waitroom.setContainerState(state);
@@ -790,7 +827,7 @@ public class Arena extends AreaContainer {
 			lobby.setContainerState(state);
 	}
 
-	public void setContainerState(ChangeType cs, PlayerContainerState state) throws IllegalStateException{
+	public void setContainerState(ChangeType cs, ContainerState state) throws IllegalStateException{
 		switch (cs){
 		case LOBBY:
 			RoomContainer lobby = getLobby();

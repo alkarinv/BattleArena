@@ -457,7 +457,8 @@ public class ArenaMatch extends Match {
 		MatchState state = am.getMatchState();
 		boolean armorTeams = mp.hasAnyOption(TransitionOption.ARMORTEAMS);
 		ArenaTeam team = am.getTeam(ap);
-		Color color = armorTeams && team != null ? TeamUtil.getTeamColor(am.indexOf(team)) : null;
+		int teamIndex = team == null ? -1 : am.indexOf(team);
+		Color color = armorTeams && teamIndex != -1 ? TeamUtil.getTeamColor(teamIndex) : null;
 		ap.despawnMobs();
 		/// Regive class/items
 		ArenaClassController.giveClass(ap, ac);

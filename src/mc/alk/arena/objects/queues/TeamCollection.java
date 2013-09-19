@@ -1,5 +1,8 @@
 package mc.alk.arena.objects.queues;
 
+import java.util.Collection;
+
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 
 public interface TeamCollection extends Iterable<QueueObject>{
@@ -22,5 +25,7 @@ public interface TeamCollection extends Iterable<QueueObject>{
 	boolean isEmpty();
 
 	boolean add(QueueObject to);
+
+	Collection<? extends ArenaPlayer> getArenaPlayers();
 
 }

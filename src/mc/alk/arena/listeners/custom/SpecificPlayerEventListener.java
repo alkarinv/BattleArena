@@ -83,7 +83,6 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 	public void addListener(RListener rl, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) Log.info("--adding listener   players="+players+" listener="+rl + "  " +
 				((players != null && rl.isSpecificPlayerMethod()) ? " MatchListener" : " SpecificPlayerListener" ));
-		//		if (players != null && rl.isSpecificPlayerMethod()){
 		for (String player: players){
 			addSPListener(player, rl);}
 	}
@@ -118,7 +117,7 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 	 * @param spl
 	 */
 	public void addSPListener(String p, RListener spl) {
-		if (!hasListeners()){
+		if (!isListening()){
 			startListening();}
 		listeners.add(p,spl);
 	}
@@ -131,7 +130,7 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 	 */
 	public boolean removeSPListener(String p, RListener spl) {
 		final boolean removed = listeners.remove(p,spl);
-		if (removed && !hasListeners()){
+		if (removed && !hasListeners() && isListening()){
 			stopListening();}
 		return removed;
 	}

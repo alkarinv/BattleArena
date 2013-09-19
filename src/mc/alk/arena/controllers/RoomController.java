@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import mc.alk.arena.controllers.containers.AbstractAreaContainer;
 import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -12,7 +11,6 @@ import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
-import mc.alk.arena.objects.teams.ArenaTeam;
 
 import org.bukkit.Location;
 
@@ -21,17 +19,20 @@ public enum RoomController {
 
 	Map<ArenaType,LobbyContainer> lobbies = new HashMap<ArenaType,LobbyContainer>();
 	Map<String,RoomContainer> waitrooms = new HashMap<String,RoomContainer>();
+	Map<String,RoomContainer> spectate = new HashMap<String,RoomContainer>();
 
-	public boolean joinLobby(ArenaType type, ArenaTeam team) {
-		AbstractAreaContainer lobby = lobbies.get(type);
-		if (lobby == null)
-			return false;
-		return lobby.teamJoining(team);
-	}
-
-	public boolean joinWaitroom(Arena arena, ArenaTeam team) {
-		AbstractAreaContainer wr = getOrCreate(arena);
-		return wr.teamJoining(team);
+	private RoomContainer _getOrCreateSpectate(Arena arena) {
+		RoomContainer room = spectate.get(arena.getName());
+		if (room == null){
+			if (arena.getSpectate() == null){
+				room = new RoomContainer("s_"+arena.getName()+"",
+						ParamController.copyParams(arena.getParams()), LocationType.SPECTATE);
+			} else {
+				room = arena.getSpectate();
+			}
+			spectate.put(arena.getName(), room);
+		}
+		return room;
 	}
 
 	private RoomContainer getOrCreate(Arena arena) {
@@ -62,10 +63,18 @@ public enum RoomController {
 		RoomContainer room = INSTANCE.getOrCreate(type);
 		room.setSpawnLoc(index,location);
 	}
+
 	public static void addWaitRoom(Arena arena, int index, Location location) {
 		RoomContainer room = INSTANCE.getOrCreate(arena);
 		if (arena.getWaitroom() == null)
 			arena.setWaitRoom(room);
+		room.setSpawnLoc(index,location);
+	}
+
+	public static void addSpectate(Arena arena, int index, Location location) {
+		RoomContainer room = INSTANCE._getOrCreateSpectate(arena);
+		if (arena.getSpectate() == null)
+			arena.setSpectate(room);
 		room.setSpawnLoc(index,location);
 	}
 
@@ -85,8 +94,16 @@ public enum RoomController {
 		return INSTANCE.waitrooms.get(arena.getName());
 	}
 
+	public static RoomContainer getSpectate(Arena arena) {
+		return INSTANCE.spectate.get(arena.getName());
+	}
+
 	public static RoomContainer getOrCreateWaitroom(Arena arena) {
 		return INSTANCE.getOrCreate(arena);
+	}
+
+	public static RoomContainer getOrCreateSpectate(Arena arena) {
+		return INSTANCE._getOrCreateSpectate(arena);
 	}
 
 	public static Location getLobbySpawn(int index, ArenaType type, boolean randomRespawn) {

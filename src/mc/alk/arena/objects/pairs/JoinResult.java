@@ -1,7 +1,7 @@
 package mc.alk.arena.objects.pairs;
 
-import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.queues.ArenaMatchQueue.MatchFind;
 import mc.alk.arena.objects.queues.QueueObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
@@ -14,7 +14,7 @@ public class JoinResult {
 		UNKNOWN, CANT_FORCESTART, TIME_EXPIRED, TIME_ONGOING
 	}
 
-	public Match match;
+	public MatchFind matchfind;
 	public MatchParams params;
 	public int pos;
 	public ArenaTeam team;
@@ -26,8 +26,8 @@ public class JoinResult {
 	public TimeStatus timeStatus = TimeStatus.UNKNOWN;
 	public JoinResult(){}
 
-	public JoinResult(Match match, MatchParams params, int pos, int playersInQueue, ArenaTeam t, int teamsInQueue){
-		this.match = match;
+	public JoinResult(MatchFind match, MatchParams params, int pos, int playersInQueue, ArenaTeam t, int teamsInQueue){
+		this.matchfind = match;
 		this.params=params;
 		this.pos=pos;
 		this.team =t;
@@ -36,8 +36,8 @@ public class JoinResult {
 		this.maxPlayers = params.getMaxPlayers();
 	}
 
-	public JoinResult(Match match, MatchParams params, int pos, int playersInQueue, QueueObject to, int teamsInQueue) {
-		this.match = match;
+	public JoinResult(MatchFind match, MatchParams params, int pos, int playersInQueue, QueueObject to, int teamsInQueue) {
+		this.matchfind = match;
 		this.params=params;
 		this.pos=pos;
 		this.team =null;

@@ -120,6 +120,14 @@ public class YamlFileUpdater {
 					"    cancelled_lack_of_players: '{prefix} &cThe &6{matchname} &cwas cancelled because there were not enough players'");
 			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
+		newVersion = new Version("1.6.3");
+		if (version.compareTo(newVersion) < 0){
+			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+			fu.replace("version:.*", "version: "+newVersion);
+			fu.addAfter(".*match_starts_players_or_time2:.*",
+					"    with_at_least: '&eMatch starts immediately with at least &6%s&e players'");
+			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
+		}
 
 		ms.setConfig(new File(dir+"/messages.yml"));
 	}

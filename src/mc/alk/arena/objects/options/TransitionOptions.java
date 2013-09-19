@@ -96,6 +96,11 @@ public class TransitionOptions {
 		return options.containsKey(TransitionOption.TELEPORTWAITROOM) ||
 				options.containsKey(TransitionOption.TELEPORTMAINWAITROOM);
 	}
+
+	public boolean shouldTeleportSpectate() {
+		return options.containsKey(TransitionOption.TELEPORTSPECTATE);
+	}
+
 	public boolean shouldTeleportIn() {return options.containsKey(TransitionOption.TELEPORTIN);}
 	public boolean teleportsIn() {return shouldTeleportIn() || shouldTeleportWaitRoom();}
 

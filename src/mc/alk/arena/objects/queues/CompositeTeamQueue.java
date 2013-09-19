@@ -1,7 +1,11 @@
 package mc.alk.arena.objects.queues;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 
 
@@ -98,5 +102,13 @@ public class CompositeTeamQueue implements  TeamCollection{
 		for (TeamCollection tq: this.queues){
 			size += tq.playerSize();}
 		return size;
+	}
+
+	@Override
+	public Collection<? extends ArenaPlayer> getArenaPlayers() {
+		List<ArenaPlayer> players = new ArrayList<ArenaPlayer>();
+		for (TeamCollection tq: this.queues){
+			players.addAll(tq.getArenaPlayers());}
+		return players;
 	}
 }

@@ -110,8 +110,8 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		nrounds = getNRounds(osize);
 		final int minTeams = eventParams.getMinTeams();
 		int roundteams = (int) Math.pow(minTeams, nrounds);
-		server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&e The " + eventParams.toPrettyString() +
-				oParms.getName() + " tournament is starting!"));
+		server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&e The " + oParms.getName() +
+				" tournament is starting!"));
 
 		TreeMap<Double,ArenaTeam> sortTeams = new TreeMap<Double,ArenaTeam>(Collections.reverseOrder());
 		StatController sc = new StatController(eventParams);

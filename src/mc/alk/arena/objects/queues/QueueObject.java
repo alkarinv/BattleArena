@@ -15,6 +15,8 @@ public abstract class QueueObject {
 
 	final protected JoinOptions jp;
 
+	int numPlayers;
+
 	public QueueObject(JoinOptions jp){
 		this.jp = jp;
 	}
@@ -39,6 +41,10 @@ public abstract class QueueObject {
 
 	public JoinOptions getJoinOptions() {
 		return jp;
+	}
+
+	public int getNumPlayers() {
+		return numPlayers;
 	}
 
 }

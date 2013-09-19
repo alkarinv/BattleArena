@@ -57,9 +57,6 @@ import org.bukkit.event.EventHandler;
 
 
 public abstract class Event extends Competition implements CountdownCallback, ArenaListener {
-	static int eventCount = 0;
-	final int id = eventCount++;
-
 	final String name; /// Name of this event
 
 	BattleArenaController ac; /// The BattleArenaController for adding removing matches

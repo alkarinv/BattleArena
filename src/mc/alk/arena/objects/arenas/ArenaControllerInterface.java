@@ -27,6 +27,7 @@ public class ArenaControllerInterface {
 	public void onCancel(){arena.privateOnCancel();}
 	public void onEnter(ArenaPlayer p, ArenaTeam t) {arena.privateOnEnter(p,t);}
 	public void onEnterWaitRoom(ArenaPlayer p, ArenaTeam t) {arena.privateOnEnterWaitRoom(p,t);}
+	public void onEnterSpectate(ArenaPlayer p, ArenaTeam t) {arena.privateOnEnterSpectate(p,t);}
 	public void onLeave(ArenaPlayer p, ArenaTeam t) {arena.privateOnLeave(p,t);}
 	public void onJoin(ArenaPlayer p, ArenaTeam t) {arena.privateOnJoin(p,t);}
 	public void create() {arena.privateCreate();}

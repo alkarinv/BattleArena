@@ -178,6 +178,8 @@ public class ArenaType implements Comparable<ArenaType>{
 			arena.setParams(arenaParams);
 			if (RoomController.hasWaitroom(arena))
 				arena.setWaitRoom(RoomController.getWaitroom(arena));
+			if (RoomController.getSpectate(arena) != null)
+				arena.setSpectate(RoomController.getSpectate(arena));
 			if (init)
 				arena.privateInit();
 			return arena;

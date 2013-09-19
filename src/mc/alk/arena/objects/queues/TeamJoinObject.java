@@ -16,6 +16,7 @@ public class TeamJoinObject extends QueueObject{
 		this.matchParams = params;
 		this.team = team;
 		priority = team.getPriority();
+		numPlayers += team.size();
 	}
 
 	public ArenaTeam getTeam() {

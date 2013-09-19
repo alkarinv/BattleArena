@@ -112,10 +112,9 @@ public class PerformTransition {
 				am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
 
 		final boolean teleportIn = mo.shouldTeleportIn();
-		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
-		final boolean teleportLobby = mo.shouldTeleportLobby();
+		final boolean teleportRoom = mo.shouldTeleportWaitRoom() || mo.shouldTeleportLobby() || mo.shouldTeleportSpectate();
 		/// If the flag onlyInMatch is set, we should leave if the player isnt inside.  disregard if we are teleporting people in
-		if (onlyInMatch && !insideArena && !(teleportIn || teleportWaitRoom || teleportLobby)){
+		if (onlyInMatch && !insideArena && !(teleportIn || teleportRoom)){
 			return true;}
 		final boolean teleportOut = mo.shouldTeleportOut();
 		final boolean wipeInventory = mo.clearInventory();
@@ -135,16 +134,8 @@ public class PerformTransition {
 		final boolean dead = !player.isOnline() || player.isDead();
 		final Player p = player.getPlayer();
 
-		if (teleportWaitRoom || teleportLobby){ /// Teleport waiting room
-			if ( (insideArena || am.checkReady(player, team, mo, true)) && !dead){
-				TeleportLocationController.teleport(am, team, player,mo, teamIndex);
-			} else {
-				playerReady = false;
-			}
-		}
-
-		/// Teleport In
-		if (teleportIn && transition != MatchState.ONSPAWN){ /// only tpin, respawn tps happen elsewhere
+		/// Teleport In. only tpin, respawn tps happen elsewhere
+		if ((teleportIn && transition != MatchState.ONSPAWN) || teleportRoom){
 			if ((insideArena || am.checkReady(player, team, mo, true)) && !dead){
 				TeleportLocationController.teleport(am, team, player,mo, teamIndex);
 			} else {

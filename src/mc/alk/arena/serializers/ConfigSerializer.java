@@ -124,7 +124,7 @@ public class ConfigSerializer extends BaseConfig{
 		if (cs.contains("nConcurrentCompetitions"))
 			mp.setNConcurrentCompetitions(ArenaSize.toInt(cs.getString("nConcurrentCompetitions","infinite")));
 		if (cs.contains("waitroomClosedWhileRunning"))
-			mp.setWaitroomClosedWhileRunning(cs.getBoolean("waitroomClosedWhileRunning",false));
+			mp.setWaitroomClosedWhileRunning(cs.getBoolean("waitroomClosedWhileRunning",true));
 		if (cs.contains("cancelIfNotEnoughPlayers"))
 			mp.setCancelIfNotEnoughPlayers(cs.getBoolean("cancelIfNotEnoughPlayers",false));
 
@@ -699,7 +699,6 @@ public class ConfigSerializer extends BaseConfig{
 				main.set("arenaClass", params.getType().getClass().getSimpleName());
 			}
 		}
-
 		if (params.getNConcurrentCompetitions() != null)  main.set("nConcurrentCompetitions", ArenaSize.toString(params.getNConcurrentCompetitions()));
 
 		if (params.isWaitroomClosedWhenRunning() != null)  main.set("waitroomClosedWhileRunning", params.isWaitroomClosedWhenRunning());

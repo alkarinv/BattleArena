@@ -15,6 +15,9 @@ public class MatchTeamQObject extends QueueObject{
 		matchParams = matchup.getMatchParams();
 		this.matchup = matchup;
 		this.priority = matchup.getPriority();
+		for (ArenaTeam t: matchup.getTeams()){
+			numPlayers += t.size();
+		}
 	}
 
 	@Override

@@ -53,6 +53,7 @@ public enum TransitionOption{
 	TELEPORTWAITROOM("teleportWaitRoom",false), 	/// Teleport players to the waitroom
 	TELEPORTMAINLOBBY("teleportMainLobby",false), 	/// Teleport players to the main lobby
 	TELEPORTLOBBY("teleportLobby",false), 			/// Teleport players to the lobby
+	TELEPORTSPECTATE("teleportSpectate",false), 	/// Teleport players to the spectate spawns
 	TELEPORTCOURTYARD("teleportCourtyard",false), 	/// Teleport players to the courtyard
 	TELEPORTIN ("teleportIn",false),  				/// Teleport players into the arena
 	TELEPORTOUT("teleportOut",false),				/// Teleport players out of the arena, back to their old location

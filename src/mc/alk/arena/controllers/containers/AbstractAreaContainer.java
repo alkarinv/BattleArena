@@ -20,10 +20,10 @@ import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.competition.InArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
+import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.PlayerContainerState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -53,16 +53,16 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
 	protected MatchParams params;
 
-	PlayerContainerState state = PlayerContainerState.OPEN;
+	ContainerState state = ContainerState.OPEN;
 
-	HashSet<String> disabledCommands = new HashSet<String>();
+	Set<String> disabledCommands;
 
-	private final MethodController methodController = new MethodController();
+	private final MethodController methodController;
 
 	protected Set<String> players = new HashSet<String>();
 
 	/** Spawn points */
-	protected ArrayList<Location> spawns = new ArrayList<Location>();
+	protected List<Location> spawns = new ArrayList<Location>();
 
 	/** Main Spawn is different than the normal spawns.  It is specified by Defaults.MAIN_SPAWN */
 	Location mainSpawn = null;
@@ -73,9 +73,10 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 	/** our values for the team index, only used if the Team.getIndex is null*/
 	final Map<ArenaTeam,Integer> teamIndexes = new ConcurrentHashMap<ArenaTeam,Integer>();
 
-	Random r = new Random();
+	static Random r = new Random();
 
 	public AbstractAreaContainer(String name){
+		methodController = new MethodController("AAC " + name);
 		methodController.addAllEvents(this);
 		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());}catch(Exception e){}
 		this.name = name;
@@ -116,7 +117,8 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
 	@EventHandler
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
-		// TODO
+		if (disabledCommands == null)
+			return;
 		if (!event.isCancelled() && InArenaListener.inQueue(event.getPlayer().getName()) &&
 				CommandUtil.shouldCancel(event, disabledCommands)){
 			event.setCancelled(true);
@@ -127,6 +129,8 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 	}
 
 	public void setDisabledCommands(List<String> commands) {
+		if (disabledCommands == null)
+			disabledCommands = new HashSet<String>();
 		for (String s: commands){
 			disabledCommands.add("/" + s.toLowerCase());}
 	}
@@ -272,16 +276,24 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 	@Override
 	public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
 
-	public void setContainerState(PlayerContainerState state) {
+	public void setContainerState(ContainerState state) {
 		this.state = state;
 	}
 
-	public PlayerContainerState getContainerState() {
+	public ContainerState getContainerState() {
 		return this.state;
 	}
 
 	public boolean isOpen() {
-		return state == PlayerContainerState.OPEN;
+		return state.isOpen();
 	}
 
+	public boolean isClosed() {
+		return state.isClosed();
+	}
+
+
+	public String getContainerMessage() {
+		return state.getMsg();
+	}
 }

@@ -15,23 +15,23 @@ import org.bukkit.potion.PotionEffect;
 
 
 public class ArenaParams {
-	ArenaType arenaType;
+	ArenaType arenaType = null;
 	Rating rating = Rating.ANY;
 
-	String name;
-	String cmd;
+	String name = null;
+	String cmd = null;
 
-	Integer timeBetweenRounds;
-	Integer secondsTillMatch;
-	Integer secondsToLoot;
+	Integer timeBetweenRounds = null;
+	Integer secondsTillMatch = null;
+	Integer secondsToLoot = null;
 
-	MatchTransitions allTops;
-	String dbName;
+	MatchTransitions allTops = null;
+	String dbName = null;
 
-	ArenaParams parent;
-	ArenaSize size;
-	Boolean closeWaitroomWhileRunning;
-	Boolean cancelIfNotEnoughPlayers;
+	ArenaParams parent = null;
+	ArenaSize size = null;
+	Boolean closeWaitroomWhileRunning = null;
+	Boolean cancelIfNotEnoughPlayers = null;
 
 	public ArenaParams(ArenaType at) {
 		this.arenaType = at;
@@ -382,24 +382,29 @@ public class ArenaParams {
 	public boolean needsWaitroom() {
 		return ( (allTops != null &&
 				getTransitionOptions().hasAnyOption(
-						TransitionOption.TELEPORTMAINWAITROOM,TransitionOption.TELEPORTWAITROOM)
-				) ||
+						TransitionOption.TELEPORTMAINWAITROOM,TransitionOption.TELEPORTWAITROOM)) ||
 				(parent != null && parent.needsWaitroom())
+				);
+	}
+
+	public boolean needsSpectate() {
+		return ( (allTops != null &&
+				getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTSPECTATE)) ||
+				(parent != null && parent.needsSpectate())
 				);
 	}
 
 	public boolean needsLobby() {
 		return ( (allTops != null &&
 				getTransitionOptions().hasAnyOption(
-						TransitionOption.TELEPORTMAINLOBBY,TransitionOption.TELEPORTLOBBY)
-				) ||
+						TransitionOption.TELEPORTMAINLOBBY,TransitionOption.TELEPORTLOBBY)) ||
 				(parent != null && parent.needsLobby())
 				);
 	}
 
 	public Boolean isWaitroomClosedWhenRunning(){
 		return closeWaitroomWhileRunning != null ? closeWaitroomWhileRunning :
-			(parent != null ? parent.isWaitroomClosedWhenRunning() : false);
+			(parent != null ? parent.isWaitroomClosedWhenRunning() : null);
 	}
 
 	public void setWaitroomClosedWhileRunning(Boolean value) {
@@ -408,7 +413,7 @@ public class ArenaParams {
 
 	public Boolean isCancelIfNotEnoughPlayers(){
 		return cancelIfNotEnoughPlayers != null ? cancelIfNotEnoughPlayers :
-			(parent != null ? parent.isCancelIfNotEnoughPlayers() : false);
+			(parent != null ? parent.isCancelIfNotEnoughPlayers() : null);
 	}
 
 	public void setCancelIfNotEnoughPlayers(Boolean value) {

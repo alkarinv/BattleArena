@@ -32,7 +32,7 @@ public class TimeUtil {
                 }  else if (mult < 0.2){
                 	mult = 0.2;
                 }
-                Defaults.TICK_MULT = mult;
+                Defaults.TICK_MULT = Math.min(mult,1);
 //                MatchMessageImpl.sendMessage(null, ChatColor.GRAY + "[BattleArena] multiplier: " + mult + "x");
             }
         };

@@ -8,7 +8,7 @@ import java.util.Map;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
-import mc.alk.arena.objects.PlayerContainerState;
+import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.util.Log;
 
@@ -38,8 +38,9 @@ public class StateFlagSerializer extends BaseConfig{
 				try{
 					String s = cs.getString(name,null);
 					if (s != null){
-						PlayerContainerState pst = PlayerContainerState.valueOf(s);
-						rc.setContainerState(pst);
+						ContainerState.AreaContainerState pst = ContainerState.AreaContainerState.valueOf(s);
+
+						rc.setContainerState(ContainerState.toState(pst));
 					}
 				} catch (Exception e){
 					Log.printStackTrace(e);
@@ -59,13 +60,13 @@ public class StateFlagSerializer extends BaseConfig{
 			try{
 				String s = cs2.getString("arena", null);
 				if (s != null){
-					PlayerContainerState pst = PlayerContainerState.valueOf(s);
-					a.setContainerState(pst);
+					ContainerState.AreaContainerState pst = ContainerState.AreaContainerState.valueOf(s);
+					a.setContainerState(ContainerState.toState(pst));
 				}
 				s = cs2.getString("waitroom", null);
 				if (s != null){
-					PlayerContainerState pst = PlayerContainerState.valueOf(s);
-					a.setContainerState(ChangeType.WAITROOM, pst);
+					ContainerState.AreaContainerState pst = ContainerState.AreaContainerState.valueOf(s);
+					a.setContainerState(ChangeType.WAITROOM, ContainerState.toState(pst));
 				}
 			} catch (Exception e){
 				Log.printStackTrace(e);
@@ -85,7 +86,7 @@ public class StateFlagSerializer extends BaseConfig{
 			for (RoomContainer rc: collection){
 				if (rc.isOpen() || rc.getParams().getType()==null)
 					continue;
-				cs.set(rc.getParams().getType().getName(), rc.getContainerState().name());
+				cs.set(rc.getParams().getType().getName(), rc.getContainerState().getState().name());
 			}
 		}
 		cs = config.createSection("closedContainers");
@@ -93,9 +94,9 @@ public class StateFlagSerializer extends BaseConfig{
 			for (Arena a : arenaContainer.values()){
 				ConfigurationSection cs2 = cs.createSection(a.getName());
 				if (!a.isOpen()){
-					cs2.set("arena", a.getContainerState().toString());}
+					cs2.set("arena", a.getContainerState().getState().name());}
 				if (a.getWaitroom() != null && !a.getWaitroom().isOpen()){
-					cs2.set("waitroom", a.getWaitroom().getContainerState().toString());}
+					cs2.set("waitroom", a.getWaitroom().getContainerState().getState().name());}
 			}
 		}
 		save();

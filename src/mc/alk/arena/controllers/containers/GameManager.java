@@ -38,7 +38,7 @@ public class GameManager implements PlayerHolder{
 
 	final MatchParams params;
 	final Set<ArenaPlayer> handled = new HashSet<ArenaPlayer>(); /// which players are now being handled
-	final MethodController methodController = new MethodController();
+	MethodController methodController;
 
 	public static GameManager getGameManager(MatchParams mp) {
 		if (map.containsKey(mp.getType()))
@@ -54,6 +54,7 @@ public class GameManager implements PlayerHolder{
 
 	private GameManager(MatchParams params){
 		this.params = params;
+		methodController = new MethodController("GM "+params.getName());
 		methodController.addAllEvents(this);
 		if (Defaults.TESTSERVER) {Log.info("GameManager Testing"); return;}
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());

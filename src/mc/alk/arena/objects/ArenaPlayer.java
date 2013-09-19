@@ -189,7 +189,8 @@ public class ArenaPlayer {
 	}
 
 	public void addCompetition(Competition competition) {
-		competitions.push(competition);
+		if (!competitions.contains(competition))
+			competitions.push(competition);
 	}
 
 	public boolean removeCompetition(Competition competition) {

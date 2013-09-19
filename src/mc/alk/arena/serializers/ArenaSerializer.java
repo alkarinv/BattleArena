@@ -250,8 +250,15 @@ public class ArenaSerializer extends BaseConfig{
 		locs = SerializerUtil.parseLocations(loccs);
 		if (locs != null){
 			for (Integer i: locs.keySet()){
-				RoomController.addWaitRoom(arena, i, locs.get(i));
-			}
+				RoomController.addWaitRoom(arena, i, locs.get(i));}
+		}
+
+		/// Wait room spawns
+		loccs = cs.getConfigurationSection("spectateLocations");
+		locs = SerializerUtil.parseLocations(loccs);
+		if (locs != null){
+			for (Integer i: locs.keySet()){
+				RoomController.addSpectate(arena, i, locs.get(i));}
 		}
 
 		/// Item/mob/group spawns
@@ -356,6 +363,17 @@ public class ArenaSerializer extends BaseConfig{
 
 					amap.put("waitRoomLocations", locations);
 				}
+				/// spectate locations
+				llocs = arena.getSpectate() != null ? arena.getSpectate().getSpawns() : null;
+				if (llocs!= null){
+					mlocs = new HashMap<Integer,Location>();
+					for (int i=0;i<llocs.size();i++){
+						if (llocs.get(i) != null)
+							mlocs.put(i, llocs.get(i));
+					}
+					HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
+					amap.put("spectateLocations", locations);
+				}
 
 				/// Timed spawns
 				Map<Long, TimedSpawn> timedSpawns = arena.getTimedSpawns();
@@ -406,7 +424,7 @@ public class ArenaSerializer extends BaseConfig{
 			Log.info(plugin.getName() + " Saving arenas " + StringUtils.join(saved,",") +" to " +
 					f.getPath() + " configSection="+config.getCurrentPath()+"." + config.getName());
 
-//		SerializerUtil.expandMapIntoConfig(maincs, map);
+		//		SerializerUtil.expandMapIntoConfig(maincs, map);
 	}
 
 	private static Map<Integer, Location> toMap(List<Location> spawns) {

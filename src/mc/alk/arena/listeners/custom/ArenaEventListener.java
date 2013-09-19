@@ -7,9 +7,11 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.util.Log;
 
@@ -154,6 +156,20 @@ public class ArenaEventListener extends BukkitEventListener{
 		RListener[] handlers;
 		while ((handlers = this.handlers) == null) bake(); // This prevents fringe cases of returning null
 		return handlers;
+	}
+
+	public void invokeEvent(final Set<ArenaListener> listeners, final Event event){
+		/// For each ArenaListener class that is listening
+		final RListener[] rls = getRegisteredListeners();
+		for (RListener rl: rls){
+			if (!listeners.contains(rl.al))
+				continue;
+			try {
+				rl.getMethod().getMethod().invoke(rl.getListener(), event); /// Invoke the listening arenalisteners method
+			} catch (Exception e){
+				Log.printStackTrace(e);
+			}
+		}
 	}
 
 	@Override

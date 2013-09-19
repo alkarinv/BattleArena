@@ -14,6 +14,7 @@ import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -25,6 +26,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.PermissionsUtil;
+import mc.alk.arena.util.SerializerUtil;
 import mc.alk.arena.util.TeamUtil;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
@@ -51,6 +53,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			Defaults.DEBUG_STORAGE = on;
 		} else if(section.equalsIgnoreCase("damage")){
 			//			Defaults.DEBUG_DAMAGE = on;
+//		} else if(section.equalsIgnoreCase("q")){
+//						Defaults.DEBUGQ = on;
 		} else if(section.equalsIgnoreCase("commands")){
 			Defaults.DEBUG_COMMANDS = on;
 		} else if(section.equalsIgnoreCase("debug")){
@@ -315,13 +319,50 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 	@MCCommand(cmds={"tp"}, admin=true)
 	public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, Integer spawnIndex) {
+		return teleportToSpawn(sender,arena,LocationType.ARENA, spawnIndex);
+	}
+
+	@MCCommand(cmds={"tp"}, admin=true)
+	public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, String type, Integer spawnIndex) {
+		try{
+			return teleportToSpawn(sender,arena,LocationType.valueOf(type.toUpperCase()), spawnIndex);
+		} catch (IllegalArgumentException e){
+			return sendMessage(sender,"&c" + e.getMessage());
+		}
+	}
+
+	public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, LocationType type, Integer spawnIndex) {
 		if (spawnIndex < 1)
 			spawnIndex=1;
-		Location loc = arena.getSpawn(spawnIndex-1, false);
+		final Location loc;
+		switch(type){
+		case ANY:
+		case ARENA:
+			loc = arena.getSpawn(spawnIndex-1, false);
+			break;
+		case WAITROOM:
+			loc = arena.getWaitroom()!= null ? arena.getWaitroom().getSpawn(spawnIndex-1, false) : null;
+			break;
+		case HOME:
+			loc = sender.getOldLocation();
+			break;
+		case LOBBY:
+			loc = arena.getLobby()!= null ? arena.getLobby().getSpawn(spawnIndex-1, false) : null;
+			break;
+		case SPECTATE:
+			loc = arena.getSpectate()!= null ? arena.getSpectate().getSpawn(spawnIndex-1, false) : null;
+			break;
+		case NONE:
+		case COURTYARD:
+		case CUSTOM:
+		default:
+			loc = null;
+			break;
+		}
 		if (loc ==null){
-			return sendMessage(sender,"&2Spawn " + spawnIndex +" doesn't exist");}
+			return sendMessage(sender,"&2Spawn " + spawnIndex +" doesn't exist for " + type);}
 		TeleportController.teleport(sender.getPlayer(), loc);
-		return sendMessage(sender,"&2Teleported to &6"+ spawnIndex +" &2loc=&6"+loc);
+		return sendMessage(sender,"&2Teleported to &6"+ type +" " + spawnIndex +" &2loc=&6"+SerializerUtil.getBlockLocString(loc));
 	}
 
 	@MCCommand(cmds={"giveArenaClass"}, admin=true)
@@ -383,16 +424,16 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		if (p == null){
 			sendMessage(sender, "&5Lobbies");
 			for (RoomContainer c : RoomController.getLobbies()){
-				sendMessage(sender," &2" + c.getName() +" : &6" + c.getContainerState());
+				sendMessage(sender," &2" + c.getName() +" : &6" + c.getContainerState().getState());
 			}
 		}
 		sendMessage(sender, "&5Arenas");
 		for (Arena a: BattleArena.getBAController().getArenas().values()){
 			if (p != null && a.getArenaType() != p.getType())
 				continue;
-			sendMessage(sender," &2" + a.getName() +" - &6" + a.getContainerState());
+			sendMessage(sender," &2" + a.getName() +" - &6" + a.getContainerState().getState());
 			if (a.getWaitroom() != null)
-				sendMessage(sender,"   &2   - &6" + a.getWaitroom().getName() +" : &6"+a.getWaitroom().getContainerState());
+				sendMessage(sender,"   &2   - &6" + a.getWaitroom().getName() +" : &6"+a.getWaitroom().getContainerState().getState());
 		}
 		return true;
 	}

@@ -39,15 +39,16 @@ import mc.alk.arena.events.arenas.ArenaCreateEvent;
 import mc.alk.arena.events.arenas.ArenaDeleteEvent;
 import mc.alk.arena.events.players.ArenaPlayerJoinEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.listeners.competition.InArenaListener;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.CompetitionSize;
+import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.PlayerContainerState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -288,8 +289,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			/// Add them to the queue
 			jr = ac.wantsToJoin(tqo);
 		} catch (IllegalStateException e){
-			return sendMessage(player,
-					"&c"+e.getMessage());
+			return sendMessage(player,"&c"+e.getMessage());
 		}
 
 		/// Annouce to the server if they have the option set
@@ -306,7 +306,6 @@ public class BAExecutor extends CustomCommandExecutor {
 				vars, "server_joined_the_queue", mp.getPrefix(),
 				player.getDisplayName(), jr.playersInQueue, neededPlayers));
 		switch (jr.status) {
-
 		case ADDED_TO_EXISTING_MATCH:
 			if (t.size() == 1) {
 				t.sendMessage(MessageHandler.getSystemMessage(
@@ -331,42 +330,8 @@ public class BAExecutor extends CustomCommandExecutor {
 				msg.append(posmsg != null ? posmsg : "");
 			}
 			if (jr.time != null) {
-				switch (jr.timeStatus) {
-				case CANT_FORCESTART:
-					break;
-				case TIME_ONGOING:
-					Long time = jr.time - System.currentTimeMillis();
-					if (jr.maxPlayers - jr.pos <=0){
-						msg.append("\n"
-								+ MessageHandler.getSystemMessage("you_start_when_free"));
-					} else if (jr.maxPlayers != CompetitionSize.MAX) {
-						msg.append("\n"
-								+ MessageHandler.getSystemMessage(
-										"match_starts_players_or_time",
-										jr.maxPlayers - jr.pos,
-										TimeUtil.convertMillisToString(time),
-										jr.params.getMinPlayers()));
-					} else if (jr.params.getMinPlayers() != CompetitionSize.MAX) {
-						msg.append("\n"
-								+ MessageHandler.getSystemMessage(
-										"match_starts_players_or_time2",
-										TimeUtil.convertMillisToString(time),
-										jr.params.getMinPlayers()));
-					} else {
-						msg.append("\n"
-								+ MessageHandler.getSystemMessage(
-										"match_starts_when_time",
-										TimeUtil.convertMillisToString(time)));
-					}
-					break;
-				case TIME_EXPIRED:
-					msg.append("\n"
-							+ MessageHandler.getSystemMessage(
-									"you_start_when_free_pos", jr.pos));
-					break;
-				default:
-					break;
-				}
+				Long time = jr.time - System.currentTimeMillis();
+				msg.append(constructMessage(jr.params, time, jr.playersInQueue, jr.pos));
 			}
 
 			t.sendMessage(msg.toString());
@@ -376,6 +341,42 @@ public class BAExecutor extends CustomCommandExecutor {
 		}
 
 		return true;
+	}
+
+	public static String constructMessage(MatchParams mp, long millisRemaining, int playersInQ, Integer position) {
+		StringBuilder msg = new StringBuilder();
+		if (mp.getMinPlayers() <=playersInQ){
+			if (position == null){
+				msg.append("\n"+ MessageHandler.getSystemMessage("you_start_when_free"));
+			} else {
+				msg.append("\n"+ MessageHandler.getSystemMessage("you_start_when_free_pos",position));
+			}
+		} else if (millisRemaining <= 0){
+			msg.append("\n"+ MessageHandler.getSystemMessage("match_starts_immediately",
+					mp.getMaxPlayers() - playersInQ, playersInQ, mp.getMaxPlayers()  ));
+		} else {
+			if (mp.getMaxPlayers() != CompetitionSize.MAX) {
+				msg.append("\n"
+						+ MessageHandler.getSystemMessage(
+								"match_starts_players_or_time",
+								mp.getMaxPlayers() - playersInQ,
+								TimeUtil.convertMillisToString(millisRemaining),
+								mp.getMinPlayers()));
+			} else if (mp.getMinPlayers() != CompetitionSize.MAX) {
+				msg.append("\n"
+						+ MessageHandler.getSystemMessage(
+								"match_starts_players_or_time2",
+								TimeUtil.convertMillisToString(millisRemaining),
+								mp.getMinPlayers()));
+			} else {
+				msg.append("\n"
+						+ MessageHandler.getSystemMessage(
+								"match_starts_when_time",
+								TimeUtil.convertMillisToString(millisRemaining)));
+			}
+		}
+
+		return msg.toString();
 	}
 
 	protected boolean isDisabled(ArenaPlayer player, MatchParams mp) {
@@ -663,7 +664,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			String arenaName) {
 		if (arenaName.equalsIgnoreCase("all")) {
 			for (Arena arena : ac.getArenas(mp)) {
-				arena.setAllContainerState(PlayerContainerState.OPEN);
+				arena.setAllContainerState(ContainerState.OPEN);
 			}
 			return sendMessage(sender, "&6Arenas for " + mp.getName()
 					+ ChatColor.YELLOW + " are now &2open");
@@ -673,7 +674,7 @@ public class BAExecutor extends CustomCommandExecutor {
 				return sendMessage(sender, "&cYou need to set a lobby for "
 						+ mp.getName());
 			}
-			lc.setContainerState(PlayerContainerState.OPEN);
+			lc.setContainerState(ContainerState.OPEN);
 			return sendMessage(sender, "&6 Lobby for " + mp.getName()
 					+ ChatColor.YELLOW + " is now &2open");
 		} else {
@@ -683,7 +684,7 @@ public class BAExecutor extends CustomCommandExecutor {
 						+ " could not be found");
 			}
 
-			arena.setAllContainerState(PlayerContainerState.OPEN);
+			arena.setAllContainerState(ContainerState.OPEN);
 			return sendMessage(sender, "&6" + arena.getName()
 					+ ChatColor.YELLOW + " is now &2open");
 		}
@@ -700,9 +701,9 @@ public class BAExecutor extends CustomCommandExecutor {
 					return sendMessage(sender, "&cYou need to set a lobby for "
 							+ arena.getArenaType().getName());
 				}
-				lc.setContainerState(PlayerContainerState.OPEN);
+				lc.setContainerState(ContainerState.OPEN);
 			} else {
-				arena.setContainerState(type, PlayerContainerState.OPEN);
+				arena.setContainerState(type, ContainerState.OPEN);
 			}
 		} catch (IllegalStateException e) {
 			return sendMessage(sender, "&c" + e.getMessage());
@@ -716,7 +717,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			String arenaName) {
 		if (arenaName.equals("all")) {
 			for (Arena arena : ac.getArenas(mp)) {
-				arena.setAllContainerState(PlayerContainerState.CLOSED);
+				arena.setAllContainerState(ContainerState.CLOSED);
 			}
 			return sendMessage(sender, "&6Arenas for " + mp.getName()
 					+ ChatColor.YELLOW + " are now &4closed");
@@ -726,7 +727,7 @@ public class BAExecutor extends CustomCommandExecutor {
 				return sendMessage(sender, "&cYou need to set a lobby for "
 						+ mp.getName());
 			}
-			lc.setContainerState(PlayerContainerState.CLOSED);
+			lc.setContainerState(ContainerState.CLOSED);
 			return sendMessage(sender, "&6 Lobby for " + mp.getName()
 					+ ChatColor.YELLOW + " is now &4closed");
 		} else {
@@ -735,7 +736,7 @@ public class BAExecutor extends CustomCommandExecutor {
 				return sendMessage(sender, "&cArena " + arenaName
 						+ " could not be found");
 			}
-			arena.setAllContainerState(PlayerContainerState.CLOSED);
+			arena.setAllContainerState(ContainerState.CLOSED);
 			return sendMessage(sender, "&6" + arena.getName()
 					+ ChatColor.YELLOW + " is now &4closed");
 		}
@@ -745,7 +746,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	public boolean arenaCloseContainer(CommandSender sender, Arena arena,
 			ChangeType closeLocation) {
 		try {
-			arena.setContainerState(closeLocation, PlayerContainerState.CLOSED);
+			arena.setContainerState(closeLocation, ContainerState.CLOSED);
 		} catch (IllegalStateException e) {
 			return sendMessage(sender, "&c" + e.getMessage());
 		}
@@ -939,6 +940,26 @@ public class BAExecutor extends CustomCommandExecutor {
 		ParamAlterController pac = new ParamAlterController(params);
 		pac.deleteOption(sender, args);
 		return true;
+	}
+
+	@MCCommand(cmds = { "restoreDefaultOptions" }, admin = true, perm = "arena.alter")
+	public boolean restoreDefaultOptions(CommandSender sender, MatchParams params, Arena arena) {
+		try {
+			ArenaAlterController.restoreDefaultArenaOptions(arena);
+		} catch (IllegalStateException e) {
+			return sendMessage(sender, "&c" + e.getMessage());
+		}
+		return sendMessage(sender,"&2Arena &6"+arena.getName()+"set back to default game options");
+	}
+
+	@MCCommand(cmds = { "restoreDefaultArenaOptions" }, admin = true, perm = "arena.alter")
+	public boolean restoreDefaultOptions(CommandSender sender, MatchParams params, String[] args) {
+		try {
+			ArenaAlterController.restoreDefaultArenaOptions(params);
+		} catch (IllegalStateException e) {
+			return sendMessage(sender, "&c" + e.getMessage());
+		}
+		return sendMessage(sender,"&2Game type &6"+params.getType()+" set back to default game options");
 	}
 
 	@MCCommand(cmds = { "addLobby", "al" }, admin = true, perm = "arena.alter")
@@ -1345,6 +1366,23 @@ public class BAExecutor extends CustomCommandExecutor {
 						+ ". &6/arena leave");
 			return false;
 		}
+		// / Inside the queue waiting for a match?
+		if (InArenaListener.inQueue(player.getName())){
+			sendMessage(player, "&eYou are in the queue.");
+			if (showMessages)
+				sendMessage(player, "&eType &6/arena leave");
+			return false;
+		}
+//		JoinResult qpp = ac.getCurrentQuePos(player);
+//		if (qpp != null && qpp.pos != -1) {
+//			if (showMessages)
+//				sendMessage(player, "&eYou are in the " + qpp.params.getName()
+//						+ " queue.");
+//			String cmd = qpp.params.getCommand();
+//			if (showMessages)
+//				sendMessage(player, "&eType &6/" + cmd + " leave");
+//			return false;
+//		}
 		// / Inside MobArena?
 		if (MobArenaInterface.hasMobArena()
 				&& MobArenaInterface.insideMobArena(player)) {
@@ -1367,17 +1405,7 @@ public class BAExecutor extends CustomCommandExecutor {
 						+ ae.getCommand() + " leave");
 			return false;
 		}
-		// / Inside the queue waiting for a match?
-		JoinResult qpp = ac.getCurrentQuePos(player);
-		if (qpp != null && qpp.pos != -1) {
-			if (showMessages)
-				sendMessage(player, "&eYou are in the " + qpp.params.getName()
-						+ " queue.");
-			String cmd = qpp.params.getCommand();
-			if (showMessages)
-				sendMessage(player, "&eType &6/" + cmd + " leave");
-			return false;
-		}
+
 		// / Inside a match?
 		Match am = ac.getMatch(player);
 		if (am != null) {
