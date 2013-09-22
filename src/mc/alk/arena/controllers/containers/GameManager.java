@@ -84,6 +84,7 @@ public class GameManager implements PlayerHolder{
 			PerformTransition.transition(this, MatchState.ONLEAVE, player, null, false);
 			updateBukkitEvents(MatchState.ONLEAVE, player);
 			handled.remove(player);
+			player.reset(); /// reset their isReady status, chosen class, etc.
 		}
 	}
 

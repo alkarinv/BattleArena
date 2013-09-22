@@ -164,7 +164,8 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 				msg = match.getParams().getPrefix()+"&e ends in &4" +timeStr+"&e. Tied between " + teamStr;
 			}
 		}
-		MatchMessageEvent event = new MatchIntervalMessageEvent(match,MatchState.ONMATCHINTERVAL, serverChannel,"", msg,remaining);
+		MatchMessageEvent event = new MatchIntervalMessageEvent(match,MatchState.ONMATCHINTERVAL,
+				serverChannel,"", msg,remaining);
 		match.callEvent(event);
 		String message = event.getMatchMessage();
 		if (message != null && !message.isEmpty())

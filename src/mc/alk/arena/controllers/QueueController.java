@@ -64,7 +64,6 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 		ArenaPlayer player = event.getPlayer();
 		ParamTeamPair ptp = removeFromQue(player);
 		if (ptp != null){
-			player.reset();
 			event.addMessage(MessageHandler.getSystemMessage("you_left_queue",ptp.params.getName()));
 		}
 	}

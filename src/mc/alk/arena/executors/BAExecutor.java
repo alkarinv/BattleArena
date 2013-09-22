@@ -345,16 +345,18 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	public static String constructMessage(MatchParams mp, long millisRemaining, int playersInQ, Integer position) {
 		StringBuilder msg = new StringBuilder();
-		if (mp.getMinPlayers() <=playersInQ){
-			if (position == null){
-				msg.append("\n"+ MessageHandler.getSystemMessage("you_start_when_free"));
-			} else {
-				msg.append("\n"+ MessageHandler.getSystemMessage("you_start_when_free_pos",position));
-			}
-		} else if (millisRemaining <= 0){
+		if (millisRemaining <= 0){
+			String max = mp.getMaxPlayers() == ArenaSize.MAX ? "\u221E" : mp.getMaxPlayers()+"";
 			msg.append("\n"+ MessageHandler.getSystemMessage("match_starts_immediately",
-					mp.getMaxPlayers() - playersInQ, playersInQ, mp.getMaxPlayers()  ));
+					mp.getMinPlayers() - playersInQ, playersInQ, max ));
 		} else {
+			if (mp.getMinPlayers() <=playersInQ){
+				if (position == null){
+					msg.append("\n"+ MessageHandler.getSystemMessage("you_start_when_free"));
+				} else {
+					msg.append("\n"+ MessageHandler.getSystemMessage("you_start_when_free_pos",position));
+				}
+			}
 			if (mp.getMaxPlayers() != CompetitionSize.MAX) {
 				msg.append("\n"
 						+ MessageHandler.getSystemMessage(

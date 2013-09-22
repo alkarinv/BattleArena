@@ -75,6 +75,7 @@ public class Defaults {
 	public static int NUM_INV_SAVES = 5; /// number of inventory saves
 
 	public static double TELEPORT_Y_OFFSET = 1.0; /// offset for teleportation
+	public static double TELEPORT_Y_VELOCITY = 0.0;
 
 	public static Material READY_BLOCK = Material.IRON_BLOCK;
 

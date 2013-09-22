@@ -28,6 +28,7 @@ public class MessageOptions {
 		NTEAMS("{nteams}"),
 		PLAYERORTEAM("{playerorteam}"),
 		LIFELEFT("{lifeleft}"),
+		WINPOINTSFOR("{winnerpointsfor}"), LOSEPOINTSFOR("{loserpointsfor}"),
 		TEAMS("{teams}");
 		private String replaceString;
 

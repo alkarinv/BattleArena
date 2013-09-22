@@ -2,6 +2,7 @@ package mc.alk.arena.controllers;
 
 import java.util.Random;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.containers.AbstractAreaContainer;
@@ -63,7 +64,7 @@ public class TeleportLocationController {
 		}
 		player.clearOldLocation();
 		if (loc == null){
-			Log.err("[BA Error] Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
+			Log.err(BattleArena.getNameAndVersion()+" Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
 		}
 
 		ArenaLocation dest = new ArenaLocation(AbstractAreaContainer.HOMECONTAINER, loc,type);

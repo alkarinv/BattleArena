@@ -735,7 +735,7 @@ public class ArenaMatchQueue implements ArenaListener{
 						continue;
 					t = tq.remove(player);
 					if (t != null){
-						ParamTeamPair ptp = new ParamTeamPair(tq.getMatchParams(),t, QueueType.GAME, null, tq.playerSize());
+						ParamTeamPair ptp = new ParamTeamPair(tq.getMatchParams(),t, QueueType.GAME, entry.getKey(), tq.playerSize());
 						leaveQueue(player, t, tq.getMatchParams(),ptp);
 						return ptp;
 					}

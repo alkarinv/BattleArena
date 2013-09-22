@@ -18,7 +18,6 @@ import mc.alk.arena.events.players.ArenaPlayerClassSelectedEvent;
 import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
 import mc.alk.arena.events.players.ArenaPlayerKillEvent;
 import mc.alk.arena.events.players.ArenaPlayerReadyEvent;
-import mc.alk.arena.events.teams.TeamDeathEvent;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -157,8 +156,7 @@ public class ArenaMatch extends Match {
 				@Override
 				public void run() {
 					PerformTransition.transition(am, MatchState.ONCOMPLETE, target, t, true);
-					if (t.isDead()){
-						callEvent(new TeamDeathEvent(t));}
+					checkAndHandleIfTeamDead(t);
 				}
 			}, 15*20L);
 			deathTimer.put(target.getName(), timer);

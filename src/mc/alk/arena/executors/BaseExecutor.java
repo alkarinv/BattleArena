@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,7 +29,7 @@ import org.bukkit.entity.Player;
 public abstract class BaseExecutor implements ArenaExecutor{
 	public static final String version = "2.0.1";
 	static final boolean DEBUG = false;
-
+	private HashMap<String,MethodWrapper> aliases = new HashMap<String,MethodWrapper>();
 	private HashMap<String,TreeMap<Integer,MethodWrapper>> methods =
 			new HashMap<String,TreeMap<Integer,MethodWrapper>>();
 	private HashMap<String,Map<String,TreeMap<Integer,MethodWrapper>>> subCmdMethods =
@@ -108,7 +109,8 @@ public abstract class BaseExecutor implements ArenaExecutor{
 			} else {
 				/// For each of the cmds, store them with the method
 				for (String cmd : mc.cmds()){
-					addMethod(obj, method, mc, cmd.toLowerCase());}
+					addMethod(obj, method, mc, cmd.toLowerCase());
+				}
 			}
 		}
 	}
@@ -149,6 +151,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		}
 	}
 	private void addUsage(MethodWrapper method, MCCommand mc) {
+
 		/// save the usages, for showing help messages
 		if (!mc.usage().isEmpty()){
 			method.usage = mc.usage();
@@ -480,8 +483,10 @@ public abstract class BaseExecutor implements ArenaExecutor{
 		List<String> available = new ArrayList<String>();
 		List<String> unavailable = new ArrayList<String>();
 		List<String> onlyop = new ArrayList<String>();
-
+		Set<Method> dups = new HashSet<Method>();
 		for (MethodWrapper mw : usage){
+			if (!dups.add(mw.method))
+				continue;
 			MCCommand cmd = mw.getCommand();
 			final String use = "&6/" + command.getName() +" " + mw.usage;
 			if (cmd.op() && !sender.isOp())

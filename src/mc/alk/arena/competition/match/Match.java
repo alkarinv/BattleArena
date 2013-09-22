@@ -1042,7 +1042,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		PerformTransition.transition(this, MatchState.ONLEAVEARENA, player, t, false);
 
 		updateBukkitEvents(MatchState.ONLEAVE,player);
-		player.reset(); /// reset their isReady status, chosen class, etc.
 		if (WorldGuardController.hasWorldGuard() && arena.hasRegion())
 			psc.removeMember(player, arena.getWorldGuardRegion());
 		if (this.woolTeams)

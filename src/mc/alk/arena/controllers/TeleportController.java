@@ -39,7 +39,7 @@ public class TeleportController implements Listener{
 	public static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
 		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
 		try {
-			player.setVelocity(new Vector(0,0,0));
+			player.setVelocity(new Vector(0,Defaults.TELEPORT_Y_VELOCITY,0));
 			player.setFallDistance(0);
 			Location loc = location.clone();
 			loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);

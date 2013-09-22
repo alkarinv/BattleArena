@@ -18,6 +18,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -36,6 +37,10 @@ public class BASignListener implements Listener{
 				  event.getClickedBlock().getType().equals(Material.WALL_SIGN))) {
 			return;
 		}
+
+		if (PermissionsUtil.isAdmin(event.getPlayer()) && (event.getAction() ==Action.LEFT_CLICK_BLOCK)){
+			return;}
+
 		if (event.getClickedBlock().getState() instanceof Sign){
 			String[] lines = ((Sign)event.getClickedBlock().getState()).getLines();
 			if (!lines[0].matches("^.[0-9a-fA-F]\\*.*$") && !lines[0].matches("^\\[.*$")){
@@ -44,6 +49,7 @@ public class BASignListener implements Listener{
 					((Sign)event.getClickedBlock().getState()).getLines());
 			if (acs == null){
 				return;}
+			event.setCancelled(true);
 			sul.addSign(acs);
 			ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
 			acs.performAction(ap);

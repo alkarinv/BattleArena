@@ -1,4 +1,4 @@
-configVersion: 2.2.8
+configVersion: 2.2.9
 
 # For help the wiki is a good source of information
 # Wiki: # http://battleplugins.com/w/index.php/BattleArena
@@ -13,6 +13,7 @@ moneyName: Gold
 # some servers like to teleport people into the floor, you can adjust the Y offset of the teleport
 # to make them teleport higher by default, 1.0 = 1 block
 teleportYOffset: 0.0
+teleportYVelocity: 0
 
 # When a player joins an arena and their inventory is stored
 # how many old inventories should be saved
@@ -34,12 +35,7 @@ ignoreMaxStackSize: false
 
 # if set to true, given enchanted items will not be limited to 'normal' safe enchantment levels
 # Example, most weapons are limited to sharpness 5.  if unsafeItemEnchants: true, this can be any level
-unsafeItemEnchants: false
-
-# If true if a player joins a match which has 2 arenas. 1v1 and 1v1v1v1. Then 1v1 will happen first
-# afterwards the 1v1v1v1 is guaranteed to be the next arena used.
-# if false.  if after the 1v1 is used, and the match ends, the 1v1 can be used again before the 1v1v1v1
-useArenasOnlyInOrder: false
+unsafeItemEnchants: true
 
 # Bukkit or Minecraft had a bug that sometimes caused players to be invisible after teleporting
 # If this is happening on your server set this to true.  
@@ -76,11 +72,7 @@ defaultOptions:
     secondsToLoot: 5 ## Time after winning to run around and collect loot
     matchUpdateInterval: 30 ## For timed matched, how long between sending players match updates
 
-    ## when set to true when a player joins a queue the match will attempt to 
-    ## start after the forceStartTime regardless if the minimum amount of people
-    ## have joined.  Example: say 2 teams of 4 people each is needed, if after
-    ## the forceStartTime is exceeded only 2 teams of 1 person is needed to start.
-    matchEnableForceStart: true
+    ## Default time before a match is started with the minimum amount of players
     matchForceStartTime: 60
 
     ## Enable ready block (a block players can click to signify they are ready)

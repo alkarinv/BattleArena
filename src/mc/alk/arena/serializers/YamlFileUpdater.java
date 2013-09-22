@@ -124,8 +124,8 @@ public class YamlFileUpdater {
 		if (version.compareTo(newVersion) < 0){
 			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
 			fu.replace("version:.*", "version: "+newVersion);
-			fu.addAfter(".*match_starts_players_or_time2:.*",
-					"    with_at_least: '&eMatch starts immediately with at least &6%s&e players'");
+			fu.addAfter(".*match_starts_players_or_time2.*",
+					"    match_starts_immediately: '&eMatch starts immediately with at least &6%s&e players'");
 			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
 
@@ -175,6 +175,9 @@ public class YamlFileUpdater {
 			newVersion = new Version("2.2.8");
 			if (version.compareTo(newVersion) < 0){
 				version = to2Point28(version, yfu, configFile, newVersion);}
+			newVersion = new Version("2.2.9");
+			if (version.compareTo(newVersion) < 0){
+				version = to2Point29(version, yfu, configFile, newVersion);}
 
 		} catch (IOException e){
 			Log.printStackTrace(e);
@@ -481,6 +484,25 @@ public class YamlFileUpdater {
 		fu.replace("configVersion:.*", "configVersion: "+newVersion);
 		fu.addAfter(".*announceTimeTillNextEvent.*", "",
 				"    announceGivenItemsOrClass: true ## When players are given items or a class tell them the items");
+		return fu.update();
+	}
+
+	private static Version to2Point29(Version version, YamlFileUpdater yfu, File configFile, Version newVersion) throws IOException {
+		FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+		fu.replace("configVersion:.*", "configVersion: "+newVersion);
+		fu.addAfter("teleportYOffset.*", "teleportYVelocity: 0");
+		fu.delete("# If true if a player joins a.*");
+		fu.delete("# afterwards the 1v1v1v1.*");
+		fu.delete("# if false.  if after the 1v1.*");
+		fu.delete(".*useArenasOnlyInOrder.*");
+		fu.replace("## when set to true when a player .*");
+		fu.replace("## start after the forceStartTime.*");
+		fu.replace("## have joined.  Example: say .*");
+		fu.replace("## the forceStartTime is exceeded *");
+		fu.replace("matchEnableForceStart: true.*");
+
+		fu.addBefore(".*matchForceStartTime.*", "",
+				"    ## Default time before a match is started with the minimum amount of players");
 		return fu.update();
 	}
 
