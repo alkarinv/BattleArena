@@ -2,8 +2,10 @@ Duel:
     enabled: true
     prefix: "&a[Duel]&e"
     victoryCondition: LastManStanding
-    nTeams: 2+
-    teamSize: 1+
+    gameSize:
+      nTeams: 2+
+      teamSize: 1+
+    nLives: '1'
     defaults:
         options: [woolTeams, duelOnly]
     preReqs:
