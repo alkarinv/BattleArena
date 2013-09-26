@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -289,11 +290,15 @@ public class ArenaParams {
 			size.setNTeams(mm);
 		}
 	}
+
 	public MinMax getNTeams(){
-		return size == null ? null : new MinMax(size.getMinTeams(), size.getMaxTeams());
+		return size != null ? new MinMax(size.getMinTeams(),size.getMaxTeams()) :
+			(parent != null ? parent.getNTeams() : null);
 	}
+
 	public MinMax getTeamSizes(){
-		return size == null ? null : new MinMax(size.getMinTeamSize(), size.getMaxTeamSize());
+		return size != null ? new MinMax(size.getMinTeamSize(),size.getMaxTeamSize()) :
+			(parent != null ? parent.getNTeams() : null);
 	}
 
 	public void setTeamSizes(MinMax mm) {
@@ -419,5 +424,10 @@ public class ArenaParams {
 	public void setCancelIfNotEnoughPlayers(Boolean value) {
 		this.cancelIfNotEnoughPlayers = value;
 	}
-
+	public String getDisplayName() {
+		return this.getName();
+	}
+	public int getQueueCount() {
+		return BattleArena.getBAController().getArenaMatchQueue().getAllQueueCount(this);
+	}
 }

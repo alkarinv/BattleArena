@@ -1,6 +1,5 @@
 Colosseum:
     enabled: true
-    joinType: Queue
     database: col
     rated: true
     victoryCondition: LastManStanding

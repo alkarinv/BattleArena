@@ -920,15 +920,15 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-//	@MCCommand(cmds = {"dao", "deleteArenaOption" }, admin = true, perm = "arena.alter")
-//	public boolean arenaDeleteOption(CommandSender sender, MatchParams params, Arena arena, String[] args) {
-//		try {
-//			ArenaAlterController.deleteArenaOption(sender, params, arena, args);
-//		} catch (IllegalStateException e) {
-//			return sendMessage(sender, "&c" + e.getMessage());
-//		}
-//		return true;
-//	}
+	//	@MCCommand(cmds = {"dao", "deleteArenaOption" }, admin = true, perm = "arena.alter")
+	//	public boolean arenaDeleteOption(CommandSender sender, MatchParams params, Arena arena, String[] args) {
+	//		try {
+	//			ArenaAlterController.deleteArenaOption(sender, params, arena, args);
+	//		} catch (IllegalStateException e) {
+	//			return sendMessage(sender, "&c" + e.getMessage());
+	//		}
+	//		return true;
+	//	}
 
 	@MCCommand(cmds = { "setOption", "setGameOption" }, admin = true, perm = "arena.alter")
 	public boolean setOption(CommandSender sender, MatchParams params,String[] args) {
@@ -1072,8 +1072,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		if (!hasMPPerm(player, mp, "duel")) {
 			return sendMessage(
 					player,
-					"&cYou don't have permission to duel in a &6"
-							+ mp.getCommand());
+					"&cYou don't have permission to duel in a &6"+ mp.getCommand());
 		}
 		if (isDisabled(player, mp)) {
 			return true;
@@ -1220,8 +1219,15 @@ public class BAExecutor extends CustomCommandExecutor {
 		// / Check to make sure at least one arena can be joined at some time
 		Arena arena = ac.getArenaByMatchParams(mp, jp);
 		if (arena == null) {
-			return sendMessage(player,
-					"&cA valid arena has not been built for a " + mp.getName());
+			Map<Arena, List<String>> reasons = ac.getNotMachingArenaReasons(mp, jp);
+			if (!reasons.isEmpty()) {
+				for (Arena a : reasons.keySet()) {
+					List<String> rs = reasons.get(a);
+					if (!rs.isEmpty())
+						return sendMessage(player, "&c" + rs.get(0));
+				}
+			}
+			return sendSystemMessage(player, "valid_arena_not_built", mp.getName());
 		}
 		final MatchTransitions ops = mp.getTransitionOptions();
 		if (ops == null) {
@@ -1375,16 +1381,16 @@ public class BAExecutor extends CustomCommandExecutor {
 				sendMessage(player, "&eType &6/arena leave");
 			return false;
 		}
-//		JoinResult qpp = ac.getCurrentQuePos(player);
-//		if (qpp != null && qpp.pos != -1) {
-//			if (showMessages)
-//				sendMessage(player, "&eYou are in the " + qpp.params.getName()
-//						+ " queue.");
-//			String cmd = qpp.params.getCommand();
-//			if (showMessages)
-//				sendMessage(player, "&eType &6/" + cmd + " leave");
-//			return false;
-//		}
+		//		JoinResult qpp = ac.getCurrentQuePos(player);
+		//		if (qpp != null && qpp.pos != -1) {
+		//			if (showMessages)
+		//				sendMessage(player, "&eYou are in the " + qpp.params.getName()
+		//						+ " queue.");
+		//			String cmd = qpp.params.getCommand();
+		//			if (showMessages)
+		//				sendMessage(player, "&eType &6/" + cmd + " leave");
+		//			return false;
+		//		}
 		// / Inside MobArena?
 		if (MobArenaInterface.hasMobArena()
 				&& MobArenaInterface.insideMobArena(player)) {

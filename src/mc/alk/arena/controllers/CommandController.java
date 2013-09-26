@@ -3,6 +3,8 @@ package mc.alk.arena.controllers;
 import java.lang.reflect.Field;
 
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.Util;
+import mc.alk.plugin.updater.v1r2.Version;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -11,14 +13,13 @@ import org.bukkit.command.CommandMap;
 public class CommandController {
 
 	public static CommandMap getCommandMap(){
-		final String pkg = Bukkit.getServer().getClass().getPackage().getName();
-		String version = pkg.substring(pkg.lastIndexOf('.') + 1);
+		Version version = Util.getCraftBukkitVersion();
 		final Class<?> clazz;
 		try {
-			if (version.equalsIgnoreCase("craftbukkit")){
+			if (version.getVersion().equalsIgnoreCase("craftbukkit")){
 				clazz = Class.forName("org.bukkit.craftbukkit.CraftServer");
 			} else{
-				clazz = Class.forName("org.bukkit.craftbukkit." + version + ".CraftServer");
+				clazz = Class.forName("org.bukkit.craftbukkit." + version.getVersion() + ".CraftServer");
 			}
 		} catch (ClassNotFoundException e) {
 			Log.printStackTrace(e);

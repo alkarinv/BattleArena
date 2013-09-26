@@ -1,6 +1,5 @@
 DeathMatch:
     enabled: true
-    joinType: JoinPhase
     victoryCondition: highestKills
     database: dm
     rated: true

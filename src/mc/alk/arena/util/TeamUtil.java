@@ -60,7 +60,7 @@ public class TeamUtil {
 			ItemStack is = p.getInventory().getHelmet();
 			p.getInventory().setHelmet(item);
 			if (is != null && is.getType() != Material.AIR && is.getType()!= Material.WOOL){
-				InventoryUtil.addItemToInventory(p, is.clone(), is.getAmount(), false);}
+				InventoryUtil.addItemToInventory(p, is.clone(), is.getAmount(),true, true);}
 			try{
 				p.updateInventory();
 			}catch (Exception e){}

@@ -1,4 +1,4 @@
-version: 1.6.3
+version: 1.6.4
 
 system:
     type_enabled: "&2 type &6%s&2 enabled"
@@ -116,7 +116,7 @@ match:
     leading_row: "&6{rank} : {name}({wins}{losses})" ## rank/wins/losses are all per match
     server_onjoin: '{prefix} &e&6%s&e has &2joined&e. There are &6{nplayers}&e inside'
     interval_update: '{prefix} Game ends in {time}.'
-    interval_update_winning: '&6{winner}&e leads with &6{winnerpointsfor}'
+    interval_update_winning: '&6{winner}&e leads with &6{winnerpointsfor} &ekills and &6{winnerpointsagainst} deaths'
     interval_update_tied: 'Is tied between &6{teams}'
     oneTeam: ### 1 team matches
         prestart: '&eYour {matchname}&e starts in {time}.'

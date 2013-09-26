@@ -36,7 +36,8 @@ public class MessageFormatter{
 	final MessageSerializer impl;
 	int commonIndex = 0, teamIndex = 0, curIndex = 0;
 
-	public MessageFormatter(MessageSerializer impl, MatchParams mp, int size, int nTeams, Message message, Set<MessageOption> ops){
+	public MessageFormatter(MessageSerializer impl, MatchParams mp, int nTeams, Message message, Set<MessageOption> ops){
+		final int size = ops.size();
 		searchList = new String[size];
 		replaceList = new String[size];
 		this.msg = message;
@@ -164,6 +165,8 @@ public class MessageFormatter{
 			if (mop == null)
 				continue;
 			switch(mop){
+			case WINNER: replaceList[i] = isWinner ? team.getDisplayName() : ""; break;
+			case LOSER: replaceList[i] = !isWinner ? team.getDisplayName() : ""; break;
 			case NAME: replaceList[i] = team.getDisplayName(); break;
 			case TEAM: replaceList[i] = tn.name;break;
 			case TEAMSHORT: replaceList[i] = tn.shortName;break;

@@ -154,7 +154,7 @@ public class MessageSerializer extends BaseConfig {
 		}
 
 		String msg = losermessage.getMessage();
-		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), size, losermessage, ops);
+		MessageFormatter msgf = new MessageFormatter(this, mp, size, losermessage, ops);
 		List<ArenaTeam> teams = new ArrayList<ArenaTeam>(losers);
 		if (victors != null){
 			teams.addAll(victors);
@@ -176,7 +176,7 @@ public class MessageSerializer extends BaseConfig {
 
 		if (victors != null){
 			for (ArenaTeam victor: victors){
-				msgf = new MessageFormatter(this, mp, ops.size(), size, winnermessage, ops);
+				msgf = new MessageFormatter(this, mp, size, winnermessage, ops);
 				msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
 				msgf.formatTeamOptions(victor,true);
 				msgf.formatTwoTeamsOptions(victor, teams);
@@ -199,7 +199,7 @@ public class MessageSerializer extends BaseConfig {
 	public void sendAddedToTeam(ArenaTeam team, ArenaPlayer player) {
 		Message message = getNodeMessage("common.added_to_team");
 		Set<MessageOption> ops = message.getOptions();
-		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), 1, message, ops);
+		MessageFormatter msgf = new MessageFormatter(this, mp, 1, message, ops);
 		msgf.formatTeamOptions(team, false);
 		msgf.formatPlayerOptions(player);
 		team.sendToOtherMembers(player,msgf.getFormattedMessage(message));
@@ -216,7 +216,7 @@ public class MessageSerializer extends BaseConfig {
 		String msg = message.getMessage();
 		List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 		teams.add(team);
-		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), teams.size(), message, ops);
+		MessageFormatter msgf = new MessageFormatter(this, mp, teams.size(), message, ops);
 		msgf.formatCommonOptions(teams);
 		for (ArenaTeam t: teams){
 			msgf.formatTeamOptions(t,false);

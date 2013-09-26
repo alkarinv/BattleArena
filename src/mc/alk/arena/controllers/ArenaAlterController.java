@@ -34,6 +34,7 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class ArenaAlterController {
 	public enum ChangeType{
+		NLIVES(true,false),
 		NTEAMS(true,false),
 		TEAMSIZE(true,false),
 		WAITROOM(true,false),
@@ -138,6 +139,7 @@ public class ArenaAlterController {
 		}
 
 		switch(ct){
+		case NLIVES: success = changeNLives(sender, arena, ac, value); break;
 		case TEAMSIZE: success = changeTeamSize(sender, arena, ac, value); break;
 		case NTEAMS: success = changeNTeams(sender, arena, ac, value); break;
 		case TYPE: success = changeType(sender, arena, ac, value); break;
@@ -379,6 +381,18 @@ public class ArenaAlterController {
 		arena.getParams().setType(t);
 		ac.updateArena(arena);
 		return sendMessage(sender,"&2Altered arena type to &6" + value);
+	}
+
+	private static boolean changeNLives(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
+		try{
+			Integer nlives = Integer.valueOf(value);
+			arena.getParams().setNLives(nlives);
+			ac.updateArena(arena);
+			return sendMessage(sender,"&2Altered arena number of lives to &6" + value);
+		} catch (Exception e){
+			sendMessage(sender,"size "+ value + " not found");
+			return false;
+		}
 	}
 
 	private static boolean changeNTeams(CommandSender sender, Arena arena, BattleArenaController ac, String value) {

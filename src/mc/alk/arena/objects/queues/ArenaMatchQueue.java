@@ -33,6 +33,7 @@ import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.executors.BAExecutor;
+import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -65,6 +66,7 @@ public class ArenaMatchQueue implements ArenaListener{
 	final Lock lock = new ReentrantLock();
 	final Condition empty = lock.newCondition();
 	final protected MethodController methodController = new MethodController("QC");
+
 	public ArenaMatchQueue(){
 		methodController.addAllEvents(this);
 	}
@@ -165,7 +167,6 @@ public class ArenaMatchQueue implements ArenaListener{
 				final ArenaMatchQueue amq = this;
 				final Countdown c = new Countdown(BattleArena.getSelf(), (int)Defaults.MATCH_FORCESTART_TIME, 30,
 						new CountdownCallback(){
-//				final Countdown c = new Countdown(BattleArena.getSelf(), 10, 1,new CountdownCallback(){
 					@Override
 					public boolean intervalTick(int secondsRemaining) {
 						if (secondsRemaining > 0 || secondsRemaining < 0){
@@ -345,7 +346,7 @@ public class ArenaMatchQueue implements ArenaListener{
 			}
 			qr.params = gameParams;
 
-			qr.teamsInQueue = tq.size();
+			qr.teamsInQueue = tq.teamSize();
 			IdTime idt =  getTime(specificArena, tq.getMatchParams());
 			if (idt != null){
 				qr.time = idt.time;
@@ -376,7 +377,7 @@ public class ArenaMatchQueue implements ArenaListener{
 						continue;
 					if (specificArena != null && !specificArena.equals(a))
 						continue;
-					if (specificArena != null && specificArena.equals(a)){
+					else if (specificArena != null && specificArena.equals(a)){
 						qr.params = a.getParams();
 					}
 					MatchParams newParams = a.getParams();
@@ -402,15 +403,17 @@ public class ArenaMatchQueue implements ArenaListener{
 							t1 = tq;
 						}
 					}
-					if ( (!forceStart && newParams.getMaxPlayers() > iterate.playerSize() ||
-							(forceStart && gameParams.getMinPlayers() > iterate.playerSize())))
-						continue;
+//					Log.debug(a.getName()+  " ####  &4 "+forceStart + "   &6: "+  newParams.getMaxPlayers() +" > "+ iterate.playerSize() +
+//							"  ----------  " + gameParams.getMinPlayers() +" > " + iterate.playerSize());
+//					if ( (qo instanceof MatchTeamQObject) && ((!forceStart && newParams.getMaxPlayers() > iterate.playerSize() ||
+//							(forceStart && gameParams.getMinPlayers() > iterate.playerSize()))))
+//						continue;
 					if (Defaults.DEBUGQ) Log.info("----- finding appropriate Match arena = " + MatchMessageImpl.decolorChat(a.toString())+
 							"   tq=" + tq +" --- ap="+a.getParams().toPrettyString() +"    baseP="+gameParams.toPrettyString() +
 							" newP="+newParams.toPrettyString() +"  " + newParams.getMaxPlayers() +
 							" tqparams="+tq.getMatchParams().toPrettyString());
-					//													System.out.println(a.getName()+  " ####  " + a.getParams().getParent().getName() +"  ##############  " +
-					//															newParams.getMinPlayers() +" <---- " + iterate.playerSize() +"  " + newParams.getParent().getParent().getName());
+//					System.out.println(a.getName()+  " ####  " + a.getParams().getParent().getName() +"  ##############  " +
+//							newParams.getMinPlayers() +" <---- " + iterate.playerSize() +"  " + newParams.getParent().getParent().getName());
 					synchronized(t1){
 						if (t2 != null){
 							synchronized(t2){
@@ -524,8 +527,13 @@ public class ArenaMatchQueue implements ArenaListener{
 		}
 		result.teamsInQueue = teamsInQueue;
 		result.playersInQueue = playersInQueue;
+//		if ( (!forceStart && newParams.getMaxPlayers() > iterate.playerSize()) ||
+//		(forceStart && gameParams.getMinPlayers() > iterate.playerSize())))
+//	continue;
+
 		if (!hasPrematched &&
-				(playersInQueue < params.getMinPlayers() || (!forceStart && playersInQueue < params.getMinPlayers()))) /// we don't have enough players to match these params
+				((forceStart && playersInQueue < params.getMinPlayers()) ||
+						(!forceStart && playersInQueue < params.getMaxPlayers()))) /// we don't have enough players to match these params
 			return;
 
 		newList.addAll(delayed);
@@ -678,7 +686,7 @@ public class ArenaMatchQueue implements ArenaListener{
 		}
 	}
 
-	private TeamQueue getOrCreateGameQ(MatchParams mp) {
+	private TeamQueue getOrCreateGameQ(ArenaParams mp) {
 		if (tqs.containsKey(mp.getType())){
 			return tqs.get(mp.getType());
 		} else {
@@ -1040,6 +1048,32 @@ public class ArenaMatchQueue implements ArenaListener{
 
 	protected void callEvent(BAEvent event){
 		methodController.callEvent(event);
+	}
+
+	public int getQueueCount(Arena arena) {
+		Map<Arena,TeamQueue> map = aqs.get(arena.getArenaType());
+		if (map == null || !map.containsKey(arena))
+			return 0;
+		return map.get(arena).playerSize();
+	}
+
+	public int getQueueCount(MatchParams params) {
+		TeamQueue tq = getOrCreateGameQ(params);
+		return tq == null ? 0 : tq.playerSize;
+	}
+
+	public int getAllQueueCount(ArenaParams params) {
+		TeamQueue tq = getOrCreateGameQ(params);
+		int size = tq == null ? 0 : tq.playerSize;
+		Map<Arena,TeamQueue> map = aqs.get(params.getType());
+		if (map == null)
+			return size;
+		synchronized(aqs){
+			for (TeamQueue tq2: map.values()){
+				size += tq2.playerSize();
+			}
+		}
+		return size;
 	}
 
 }

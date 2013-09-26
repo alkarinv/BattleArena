@@ -25,7 +25,10 @@ public abstract class BukkitEventListener implements Listener  {
 	static long total = 0;
 	static long count=0;
 	AtomicBoolean listening = new AtomicBoolean();
+	AtomicBoolean registered = new AtomicBoolean();
 	Integer timerid = null;
+	EventExecutor executor = null;
+
 
 	public BukkitEventListener(final Class<? extends Event> bukkitEvent, EventPriority bukkitPriority) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("Registering BAEventListener for type " + bukkitEvent.getSimpleName());
@@ -39,6 +42,7 @@ public abstract class BukkitEventListener implements Listener  {
 
 	public void stopListening(){
 		listening.set(false);
+
 		if (BattleArena.getSelf().isEnabled()){
 			final BukkitEventListener bel = this;
 			if (timerid != null){
@@ -46,10 +50,12 @@ public abstract class BukkitEventListener implements Listener  {
 			timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
 				@Override
 				public void run() {
-					HandlerList.unregisterAll(bel);
+					if (registered.getAndSet(false)){
+						HandlerList.unregisterAll(bel);
+					}
 					timerid = null;
 				}
-			},30000L);
+			},600L);
 		}
 	}
 
@@ -66,15 +72,22 @@ public abstract class BukkitEventListener implements Listener  {
 			Bukkit.getScheduler().cancelTask(timerid);
 			timerid= null;
 		}
-		EventExecutor executor = new EventExecutor() {
-			public void execute(final Listener listener, final Event event) throws EventException {
-				if (!isListening() || event.getClass() != bukkitEvent && !bukkitEvent.isAssignableFrom(event.getClass())){
-					return;}
-				invokeEvent(event);
-			}
-		};
+		if (executor == null){
+			executor = new EventExecutor() {
+				public void execute(final Listener listener, final Event event) throws EventException {
+					if (!isListening() || event.getClass() != bukkitEvent && !bukkitEvent.isAssignableFrom(event.getClass())){
+						return;}
+
+					invokeEvent(event);
+				}
+			};
+		}
+
 		if (Defaults.TESTSERVER) return;
-		Bukkit.getPluginManager().registerEvent(bukkitEvent, this, bukkitPriority, executor,BattleArena.getSelf());
+
+		if (!registered.getAndSet(true)){
+			Bukkit.getPluginManager().registerEvent(bukkitEvent, this, bukkitPriority, executor,BattleArena.getSelf());
+		}
 	}
 
 	public abstract void invokeEvent(Event event);

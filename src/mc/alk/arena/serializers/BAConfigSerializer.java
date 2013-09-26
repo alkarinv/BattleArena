@@ -16,6 +16,8 @@ import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.QueueController;
+import mc.alk.arena.executors.CustomCommandExecutor;
+import mc.alk.arena.executors.DuelExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.executors.TournamentExecutor;
 import mc.alk.arena.objects.ArenaSize;
@@ -107,8 +109,8 @@ public class BAConfigSerializer extends BaseConfig{
 			FileUtil.load(BattleArena.getSelf().getClass(),dir.getPath()+"/competitions/"+comp+"Config.yml",
 					"/default_files/competitions/"+comp+"Config.yml");
 			String capComp = StringUtils.capitalize(comp);
-
-			api.registerCompetition(plugin, capComp, capComp, Arena.class, null,
+			CustomCommandExecutor executor = comp.equalsIgnoreCase("duel") ? new DuelExecutor() : null;
+			api.registerCompetition(plugin, capComp, capComp, Arena.class, executor,
 					new File(compDir+"/"+capComp+"Config.yml"),
 					new File(compDir+"/"+capComp+"Messages.yml"),
 					new File("/default_files/competitions/"+capComp+"Config.yml"),

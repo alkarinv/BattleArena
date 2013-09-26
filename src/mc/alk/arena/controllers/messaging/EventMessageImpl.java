@@ -39,7 +39,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 			ops.addAll(serverMessage.getOptions());
 		}
 		String msg = message.getMessage();
-		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), ops.size(), 0, message, ops);
+		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), 0, message, ops);
 		msgf.formatCommonOptions(null,seconds);
 
 		if (serverChannel != Channel.NullChannel){
@@ -76,7 +76,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 			serverMessage = getNodeMessage("event."+nTeamPath+".server_open");
 		Set<MessageOption> ops = serverMessage.getOptions();
 		String msg = serverMessage.getMessage();
-		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), ops.size(), 0, serverMessage, ops);
+		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), 0, serverMessage, ops);
 		msgf.formatCommonOptions(null);
 		msg = msgf.getFormattedMessage(serverMessage);
 		serverChannel.broadcast(msg);
@@ -102,7 +102,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		}
 
 		String msg = message.getMessage();
-		MessageFormatter msgf = new MessageFormatter(this, mp, ops.size(), teams.size(), message, ops);
+		MessageFormatter msgf = new MessageFormatter(this, mp, teams.size(), message, ops);
 		msgf.formatCommonOptions(teams);
 		for (ArenaTeam t: teams){
 			msgf.formatTeamOptions(t,false);

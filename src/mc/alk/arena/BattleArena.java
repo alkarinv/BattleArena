@@ -483,4 +483,5 @@ public class BattleArena extends JavaPlugin {
 	public File getModuleDirectory() {
 		return new File(this.getDataFolder()+"/modules");
 	}
+
 }

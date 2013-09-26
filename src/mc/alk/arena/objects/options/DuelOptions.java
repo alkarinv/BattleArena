@@ -155,7 +155,8 @@ public class DuelOptions {
 	}
 
 	public String optionsString(MatchParams mp) {
-		StringBuilder sb = new StringBuilder(mp.toPrettyString()+" ");
+		StringBuilder sb = new StringBuilder();
+		sb.append("rated=" +mp.isRated()+" ");
 		for (DuelOption op: options.keySet()){
 			sb.append(op.getName());
 			if (op.needsValue){

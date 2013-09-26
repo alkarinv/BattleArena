@@ -36,6 +36,7 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.EventOpenOptions;
+import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.JoinResult;
@@ -46,8 +47,11 @@ import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.PlayerUtil;
+import mc.alk.arena.util.ServerUtil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
 public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaListener, Listener{
@@ -183,7 +187,18 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		saveStates(m,arena);
 		arena.setAllContainerState(ContainerState.OPEN);
 		m.setTimedStart(eoo.getSecTillStart(), eoo.getInterval());
+		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
+			addAllOnline(m.getParams(), arena);
+		}
 		return m;
+	}
+
+	private void addAllOnline(MatchParams mp, Arena arena) {
+		Player[] online = ServerUtil.getOnlinePlayers();
+		String cmd = mp.getCommand() +" join "+arena.getName();
+		for (Player p: online){
+			PlayerUtil.doCommand(p, cmd);
+		}
 	}
 
 	private void saveStates(Match m, Arena arena) {

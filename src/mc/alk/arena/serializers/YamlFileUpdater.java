@@ -128,6 +128,17 @@ public class YamlFileUpdater {
 					"    match_starts_immediately: '&eMatch starts immediately with at least &6%s&e players'");
 			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
+		newVersion = new Version("1.6.4");
+		if (version.compareTo(newVersion) < 0){
+			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+			fu.replace("version:.*", "version: "+newVersion);
+			fu.addAfter(".*server_onjoin.*",
+					"    interval_update: '{prefix} Game ends in {time}.'",
+					"    interval_update_winning: '&6{winner}&e leads with &6{winnerpointsfor} &ekills and &6{winnerpointsagainst} deaths'",
+					"    interval_update_tied: 'Is tied between &6{teams}'"
+				);
+			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
+		}
 
 		ms.setConfig(new File(dir+"/messages.yml"));
 	}

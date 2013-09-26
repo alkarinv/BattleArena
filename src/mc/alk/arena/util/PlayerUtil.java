@@ -8,6 +8,7 @@ import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.util.compat.IPlayerHelper;
+import mc.alk.plugin.updater.v1r2.Version;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -21,7 +22,8 @@ public class PlayerUtil {
 		Class<?>[] args = {};
 		try {
 			Method m = Player.class.getMethod("getHealth", new Class<?>[]{});
-			if (m.getReturnType() == double.class){
+			Version version = Util.getCraftBukkitVersion();
+			if (m.getReturnType() == double.class || version.compareTo("v1_6_1") >= 0){
 				final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_6_1.PlayerHelper");
 				handler = (IPlayerHelper) clazz.getConstructor(args).newInstance((Object[])args);
 			} else {
@@ -89,7 +91,7 @@ public class PlayerUtil {
 			try{
 				CommandSender cs = cls.isConsoleSender() ? Bukkit.getConsoleSender() : p;
 				if (Defaults.DEBUG_TRANSITIONS) {Log.info("BattleArena doing command '"+cls.getCommand(name)+"' as "+cs.getName());}
-				Bukkit.getServer().dispatchCommand(cs, cls.getCommand(name));
+				doCommand(p,cls.getCommand(name));
 			} catch (Exception e){
 				Log.err("[BattleArena] Error executing command as console or player");
 				Log.printStackTrace(e);
@@ -98,11 +100,16 @@ public class PlayerUtil {
 		}
 	}
 
+	public static void doCommand(CommandSender cs, String cmd){
+		Bukkit.getServer().dispatchCommand(cs, cmd);
+	}
+
 	public static void setFlight(Player player, boolean enable) {
-		if (player.getAllowFlight() != enable){
-			player.setAllowFlight(enable);}
 		if (player.isFlying() != enable){
-			player.setFlying(enable);}
+			if (player.getAllowFlight() != enable){
+				player.setAllowFlight(enable);}
+			player.setFlying(enable);
+		}
 		/* Essentials (v2.10) fly just goes through bukkit, no need to call Essentials setFlight */
 	}
 

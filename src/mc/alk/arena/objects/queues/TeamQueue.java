@@ -23,6 +23,7 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 	final Lock lock = new ReentrantLock();
 	final Condition modifiying  = lock.newCondition();
 	int playerSize = 0;
+	int teamSize = 0;
 
 	public TeamQueue(MatchParams mp, TeamQueueComparator teamQueueComparator) {
 		super(10,teamQueueComparator);
@@ -34,6 +35,7 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 		if (to == null)
 			return false;
 		playerSize += to.getNumPlayers();
+		teamSize += to.getTeams().size();
 		return super.add(to);
 	}
 
@@ -60,6 +62,7 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 			if (qo.hasMember(p)){
 				iter.remove();
 				playerSize--;
+				teamSize -= qo.getTeams().size();
 				return qo.getTeam(p);
 			}
 		}
@@ -73,6 +76,7 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 			if (qo.hasTeam(team)){
 				iter.remove();
 				playerSize -= qo.getNumPlayers();
+				teamSize -= qo.getTeams().size();
 				return team;
 			}
 		}
@@ -85,6 +89,7 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 
 		if (super.remove(queueObject)){
 			playerSize -= queueObject.getNumPlayers();
+			teamSize -= queueObject.getTeams().size();
 			return true;
 		}
 		return false;
@@ -149,6 +154,11 @@ public class TeamQueue extends PriorityQueue<QueueObject> implements TeamCollect
 	@Override
 	public synchronized int playerSize() {
 		return playerSize;
+	}
+
+	@Override
+	public int teamSize() {
+		return teamSize;
 	}
 
 }

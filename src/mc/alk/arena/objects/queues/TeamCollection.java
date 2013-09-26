@@ -18,6 +18,12 @@ public interface TeamCollection extends Iterable<QueueObject>{
 	 */
 	int playerSize();
 
+	/**
+	 * Returns the number of teams in the collection
+	 * @return
+	 */
+	int teamSize();
+
 	MatchParams getMatchParams();
 
 	boolean remove(QueueObject queueObject);
@@ -27,5 +33,6 @@ public interface TeamCollection extends Iterable<QueueObject>{
 	boolean add(QueueObject to);
 
 	Collection<? extends ArenaPlayer> getArenaPlayers();
+
 
 }

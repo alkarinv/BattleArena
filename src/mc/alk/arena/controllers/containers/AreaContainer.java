@@ -100,7 +100,7 @@ public class AreaContainer extends AbstractAreaContainer{
 			ArenaMatch.signClick(event,this);
 		} else if (event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)) {
 			if (respawnTimer == null)
-				new HashMap<String, Integer>();
+				respawnTimer = new HashMap<String, Integer>();
 			if (respawnTimer.containsKey(event.getPlayer().getName())){
 				ArenaMatch.respawnClick(event,this, respawnTimer);
 			} else {

@@ -74,8 +74,13 @@ public class MoneyController {
 		useVault = true;
 		/// Certain economy plugins don't implement this method correctly due to a NPE (I'm looking at you BOSEconomy! -_-)
 		try{
-			Defaults.MONEY_STR = economy.currencyNameSingular();
-			Defaults.MONEY_SET = true;
+			String cur = economy.currencyNameSingular();
+			if (cur == null || cur.isEmpty()){
+				Log.warn("[BattleArena] Warning currency was empty, using name from config.yml");
+			} else {
+				Defaults.MONEY_STR = cur;
+				Defaults.MONEY_SET = true;
+			}
 		} catch (Throwable e){
 			Log.err("[BattleArena] Error setting currency name through vault. Defaulting to BattleArena/config.yml");
 			Log.err("[BattleArena] Error was '" + e.getMessage()+"'");

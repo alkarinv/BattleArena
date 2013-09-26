@@ -105,10 +105,19 @@ public class CompositeTeamQueue implements  TeamCollection{
 	}
 
 	@Override
+	public int teamSize() {
+		int size = 0;
+		for (TeamCollection tq: this.queues){
+			size += tq.teamSize();}
+		return size;
+	}
+
+	@Override
 	public Collection<? extends ArenaPlayer> getArenaPlayers() {
 		List<ArenaPlayer> players = new ArrayList<ArenaPlayer>();
 		for (TeamCollection tq: this.queues){
 			players.addAll(tq.getArenaPlayers());}
 		return players;
 	}
+
 }

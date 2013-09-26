@@ -153,7 +153,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 	int neededTeams; /// How many teams do we need to properly start this match
 	final Plugin plugin;
-	int nLivesPerPlayer = Integer.MAX_VALUE; /// This will change as victory conditions are added
+	int nLivesPerPlayer = 1; /// This will change as victory conditions are added
 	ArenaScoreboard scoreboard;
 	Random rand = new Random(); /// Our randomizer
 	MatchMessager mc; /// Our message instance
@@ -1133,7 +1133,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (vc instanceof DefinesNumTeams){
 			neededTeams = Math.max(neededTeams, ((DefinesNumTeams)vc).getNeededNumberOfTeams().max);}
 		if (vc instanceof DefinesNumLivesPerPlayer){
-			if (nLivesPerPlayer== Integer.MAX_VALUE) nLivesPerPlayer = 1;
+//			if (nLivesPerPlayer== Integer.MAX_VALUE) nLivesPerPlayer = 1;
 			nLivesPerPlayer = Math.max(nLivesPerPlayer, ((DefinesNumLivesPerPlayer)vc).getLivesPerPlayer());}
 		if (vc instanceof ScoreTracker){
 			if (params.getMaxTeamSize() <= 2){

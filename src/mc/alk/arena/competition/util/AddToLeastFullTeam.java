@@ -29,6 +29,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 			ArenaTeam team = TeamFactory.createTeam(clazz);
 			team.setCurrentParams(params);
 			addTeam(team);
+
 		}
 	}
 
@@ -53,20 +54,19 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 					return tjr;
 			}
 		}
-		/// Try to fit them with an existing team
-		List<ArenaTeam> sortedBySize = new ArrayList<ArenaTeam>(teams);
-		Collections.sort(sortedBySize, new TeamSizeComparator());
-		for (ArenaTeam baseTeam : sortedBySize){
-			TeamJoinResult tjr = teamFits(baseTeam, team);
-			if (tjr != CANTFIT)
-				return tjr;
+		boolean hasZero = false;
+		for (ArenaTeam t : teams){
+			if (t.size() == 0){
+				hasZero = true;
+				break;
+			}
 		}
 		/// Since this is nearly the same as BinPack add... can we merge somehow easily?
-		if (teams.size() < maxTeams){
+		if (!hasZero && teams.size() < maxTeams){
 			ArenaTeam ct = TeamFactory.createTeam(clazz);
 			ct.setCurrentParams(tqo.getMatchParams());
 			ct.addPlayers(team.getPlayers());
-			if (ct.size() == maxTeamSize){
+			if (ct.size() >= minTeamSize){
 				addTeam(ct);
 				return new TeamJoinResult(TeamJoinStatus.ADDED, minTeamSize - ct.size(),ct);
 			} else {
@@ -75,6 +75,14 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 				return ar;
 			}
 		} else {
+			/// Try to fit them with an existing team
+			List<ArenaTeam> sortedBySize = new ArrayList<ArenaTeam>(teams);
+			Collections.sort(sortedBySize, new TeamSizeComparator());
+			for (ArenaTeam baseTeam : sortedBySize){
+				TeamJoinResult tjr = teamFits(baseTeam, team);
+				if (tjr != CANTFIT)
+					return tjr;
+			}
 			/// sorry peeps.. full up
 			return CANTFIT;
 		}

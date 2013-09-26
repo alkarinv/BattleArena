@@ -13,7 +13,7 @@ import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 public class PlayerHelper implements IPlayerHelper{
 
 	@Override
-	public void setHealth(Player player, Double health, boolean skipHeroes) {
+	public void setHealth(Player player, double health, boolean skipHeroes) {
 		if (!skipHeroes && HeroesController.enabled()){
 			HeroesController.setHealth(player,health);
 			return;
@@ -41,5 +41,10 @@ public class PlayerHelper implements IPlayerHelper{
 	@Override
 	public double getHealth(Player player) {
 		return player.getHealth();
+	}
+
+	@Override
+	public double getMaxHealth(Player player) {
+		return player.getMaxHealth();
 	}
 }

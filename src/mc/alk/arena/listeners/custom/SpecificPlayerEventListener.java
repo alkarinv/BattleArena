@@ -173,6 +173,7 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 
 	private void doMethods(Event event, final Player p, Collection<RListener> lmethods) {
 		/// For each of the splisteners methods that deal with this BukkitEvent
+
 		ArenaPlayer arenaPlayer = null;
 		for(RListener lmethod: lmethods){
 			final Method method = lmethod.getMethod().getMethod();

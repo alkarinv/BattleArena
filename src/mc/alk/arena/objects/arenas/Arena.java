@@ -849,4 +849,8 @@ public class Arena extends AreaContainer {
 			throw new IllegalStateException(cs +" can not be set to "+state);
 		}
 	}
+
+	public int getQueueCount() {
+		return BattleArena.getBAController().getArenaMatchQueue().getQueueCount(this);
+	}
 }

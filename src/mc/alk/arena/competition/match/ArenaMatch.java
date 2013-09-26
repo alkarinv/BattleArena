@@ -403,7 +403,6 @@ public class ArenaMatch extends Match {
 	public static void changeClass(Player p, PlayerHolder am, final ArenaClass ac) {
 		if (ac == null || !ac.valid()) /// Not a valid class sign
 			return;
-
 		if (!p.hasPermission("arena.class.use."+ac.getName().toLowerCase())){
 			MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
 			return;
