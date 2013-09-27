@@ -78,12 +78,16 @@
       <version>[1.5.0,)</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
+    <repository>
+      <id>plugin-repo</id>
+      <url>http://bukkit.jacekk.co.uk/plugin_repo/repo/</url>
+    </repository>
+    <!-- <dependency>
       <groupId>com.sk89q</groupId>
       <artifactId>worldguard</artifactId>
       <version>5.8.1-SNAPSHOT</version>
       <scope>provided</scope>
-    </dependency>
+    </dependency> -->
     <!-- unknown plugins that I had to add to the repo -->
     <dependency>
       <groupId>unknown.plugins</groupId>
