@@ -218,4 +218,5 @@
       <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven/repository</url>
     </repository>
   </distributionManagement>
+
 </project>
