@@ -14,7 +14,10 @@ import org.bukkit.entity.Player;
 public class MessageUtil {
 
 	public static String colorChat(String msg) {return msg.replace('&', (char) 167);}
-	public static String decolorChat(String msg) { return ChatColor.stripColor(msg);}
+	public static String decolorChat(String msg) {
+		return msg.contains("§") || msg.contains("&") ?
+				ChatColor.stripColor(msg).replaceAll("&.", "")
+				: msg;}
 
 	public static boolean sendMessage(CommandSender p, String message){
 		if (message ==null || message.isEmpty()) return true;

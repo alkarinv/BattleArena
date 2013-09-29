@@ -4,7 +4,7 @@
   <groupId>mc.alk</groupId>
   <artifactId>BattleArena</artifactId>
   <packaging>jar</packaging>
-  <version>3.9.4.9.1</version>
+  <version>3.9.4.9.3</version>
   <name>BattleArena</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -142,6 +142,7 @@
   </dependencies>
   <!-- How we will compile the plugin -->
   <build>
+    <finalName>${project.name}</finalName>
     <extensions>
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
@@ -187,6 +188,8 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <!-- <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>jar-with-dependencies</shadedClassifierName> -->
               <artifactSet>
                 <includes>
                   <include>mc.alk:BattleScoreboardAPI</include>
@@ -194,7 +197,7 @@
                 </includes>
               </artifactSet>
               <!-- Specify to remove all unneeded classes -->
-              <!-- <minimizeJar>true</minimizeJar> -->
+              <minimizeJar>true</minimizeJar>
             </configuration>
           </execution>
         </executions>
@@ -202,9 +205,13 @@
     </plugins>
   </build>
   <distributionManagement>
+    <site>
+        <id>jd.bukkit.org</id>
+        <url>file:///home/javadocs/public_html/</url>
+    </site>
     <repository>
       <id>battleplugins-repo</id>
-      <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven</url>
+      <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven/repository</url>
     </repository>
   </distributionManagement>
 </project>

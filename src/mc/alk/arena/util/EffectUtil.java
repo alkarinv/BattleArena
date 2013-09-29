@@ -20,6 +20,7 @@ public class EffectUtil {
 		effectToName.put(PotionEffectType.REGENERATION, "REGEN");
 		effectToName.put(PotionEffectType.DAMAGE_RESISTANCE, "RESISTANCE");
 		effectToName.put(PotionEffectType.DAMAGE_RESISTANCE, "PROT");
+		effectToName.put(PotionEffectType.CONFUSION, "NAUSEA");
 		nameToEffect.put("HASTE", PotionEffectType.FAST_DIGGING);
 		nameToEffect.put("SLOW", PotionEffectType.SLOW);
 		nameToEffect.put("SLOWNESS", PotionEffectType.SLOW);
@@ -29,6 +30,7 @@ public class EffectUtil {
 		nameToEffect.put("REGEN", PotionEffectType.REGENERATION);
 		nameToEffect.put("RESISTANCE", PotionEffectType.DAMAGE_RESISTANCE);
 		nameToEffect.put("PROT", PotionEffectType.DAMAGE_RESISTANCE);
+		nameToEffect.put("NAUSEA", PotionEffectType.CONFUSION);
 	}
 
 	public static PotionEffectType getEffect(String buffName){

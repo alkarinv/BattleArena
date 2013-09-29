@@ -169,7 +169,7 @@ public class TeleportLocationController {
 				Match m = (Match) am;
 				arena = m.getArena();
 			} else {
-				throw new IllegalStateException("[BA Error instance is " + am.getClass().getSimpleName());
+				throw new IllegalStateException("[BA Error] Instance is " + am.getClass().getSimpleName());
 			}
 			ph = am;
 			type = LocationType.ARENA;

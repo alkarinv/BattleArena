@@ -8,6 +8,8 @@ import mc.alk.arena.objects.events.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -30,6 +32,13 @@ public class RoomContainer extends AreaContainer{
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerBlockPlace(BlockPlaceEvent event){
 		event.setCancelled(true);
+	}
+
+	@ArenaEventHandler(priority=EventPriority.HIGH)
+	public void onInventoryOpenEvent(InventoryOpenEvent event){
+		if (event.getInventory().getType() == InventoryType.ENDER_CHEST){
+			event.setCancelled(true);
+		}
 	}
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)

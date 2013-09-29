@@ -216,6 +216,7 @@ public class BAConfigSerializer extends BaseConfig{
 		defaults.setNLives(1);
 		defaults.setTeamSizes(new MinMax(1,ArenaSize.MAX));
 		defaults.setNTeams(new MinMax(2,ArenaSize.MAX));
+		defaults.setArenaCooldown(5);
 		defaults.setNConcurrentCompetitions(ArenaSize.toInt(cs.getString("nConcurrentCompetitions","infinite")));
 
 		List<String> list = cs.getStringList("defaultDuelOptions");

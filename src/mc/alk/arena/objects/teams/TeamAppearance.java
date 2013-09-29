@@ -19,15 +19,19 @@ public class TeamAppearance {
 		this.chatColor = MessageUtil.getFirstColor(name);
 		this.color = color;
 	}
+
 	public String getName(){
 		return name;
 	}
+
 	public ItemStack getItem(){
 		return headItem;
 	}
+
 	public ChatColor getChatColor(){
 		return chatColor;
 	}
+
 	public Color getColor(){
 		return color;
 	}

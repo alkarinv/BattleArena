@@ -13,6 +13,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.TeamUtil;
 
@@ -135,6 +136,7 @@ public class JoinOptions {
 			if (op.isEmpty())
 				continue;
 			Object obj = null;
+			op = MessageUtil.decolorChat(op);
 			Arena a = BattleArena.getBAController().getArena(op);
 			if (a != null){
 				if (arena != null){

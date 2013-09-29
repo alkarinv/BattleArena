@@ -33,6 +33,7 @@ public class ArenaParams {
 	ArenaSize size = null;
 	Boolean closeWaitroomWhileRunning = null;
 	Boolean cancelIfNotEnoughPlayers = null;
+	Integer arenaCooldown = null;
 
 	public ArenaParams(ArenaType at) {
 		this.arenaType = at;
@@ -51,6 +52,7 @@ public class ArenaParams {
 		this.dbName = ap.dbName;
 		this.closeWaitroomWhileRunning = ap.closeWaitroomWhileRunning;
 		this.cancelIfNotEnoughPlayers= ap.cancelIfNotEnoughPlayers;
+		this.arenaCooldown = ap.arenaCooldown;
 		this.setParent(ap.parent);
 		if (ap.allTops != null)
 			this.allTops = new MatchTransitions(ap.allTops);
@@ -61,7 +63,6 @@ public class ArenaParams {
 	public void flatten() {
 		if (parent == null){
 			return;}
-//		parent = new ArenaParams(parent);
 		parent = ParamController.copy(parent);
 		parent.flatten();
 		if (this.arenaType == null) this.arenaType = parent.arenaType;
@@ -74,6 +75,7 @@ public class ArenaParams {
 		if (this.dbName == null) this.dbName = parent.dbName;
 		if (this.closeWaitroomWhileRunning == null) this.closeWaitroomWhileRunning = parent.closeWaitroomWhileRunning;
 		if (this.cancelIfNotEnoughPlayers == null) this.cancelIfNotEnoughPlayers = parent.cancelIfNotEnoughPlayers;
+		if (this.arenaCooldown== null) this.arenaCooldown = parent.arenaCooldown;
 		this.allTops = MatchTransitions.mergeChildWithParent(this.allTops, parent.allTops);
 		if (this.size == null) this.size = parent.size;
 		this.parent = null;
@@ -427,7 +429,17 @@ public class ArenaParams {
 	public String getDisplayName() {
 		return this.getName();
 	}
+
 	public int getQueueCount() {
 		return BattleArena.getBAController().getArenaMatchQueue().getAllQueueCount(this);
 	}
+
+	public void setArenaCooldown(int cooldown) {
+		this.arenaCooldown = cooldown;
+	}
+
+	public Integer getArenaCooldown() {
+		return this.arenaCooldown;
+	}
+
 }

@@ -28,6 +28,10 @@ public class TeamUtil {
 		}
 	}
 
+	public static String getTeamName(int index) {
+		return index < teamHeads.size() ? teamHeads.get(index).getName() : "Team" + index;
+	}
+
 	public static void setTeamHead(final int color, ArenaTeam team) {
 		for (ArenaPlayer p: team.getPlayers()){
 			setTeamHead(color,p);
@@ -66,12 +70,15 @@ public class TeamUtil {
 			}catch (Exception e){}
 		}
 	}
-	public static String createTeamName(int index) {
-		return index < teamHeads.size() ? teamHeads.get(index).getName() : "Team" + index;
-	}
 
 	public static Integer getTeamIndex(String op) {
-		return map.get(op.toUpperCase());
+		if (map.containsKey(op.toUpperCase())){
+			return map.get(op.toUpperCase());}
+		try{
+			return Integer.valueOf(op);
+		} catch(Exception e){
+			return null;
+		}
 	}
 
 	public static void addTeamHead(String name, TeamAppearance th) {

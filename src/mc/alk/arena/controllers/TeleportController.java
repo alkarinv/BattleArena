@@ -19,6 +19,7 @@ import mc.alk.arena.util.ServerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -65,10 +66,11 @@ public class TeleportController implements Listener{
 			/// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
 			if (giveBypassPerms && BattleArena.getSelf().isEnabled() && !Defaults.DEBUG_STRESS){
 				player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);}
-
-			if (!player.teleport(loc) || (Defaults.DEBUG_VIRTUAL && !player.isOnline())){
-				BAPlayerListener.teleportOnReenter(player.getName(),loc, player.getLocation());
-				if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + loc);
+			World w = Bukkit.getWorld(loc.getWorld().getName());
+			Location nl = new Location(w, loc.getX(),loc.getY(),loc.getZ(),loc.getYaw(),loc.getPitch());
+			if (!player.teleport(nl) || (Defaults.DEBUG_VIRTUAL && !player.isOnline())){
+				BAPlayerListener.teleportOnReenter(player.getName(),nl, player.getLocation());
+				if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + nl);
 				return false;
 			}
 

@@ -81,7 +81,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			return sendMessage(p, "&2Removing Team. &6/bad giveTeam <index> &2 to give a team name");
 		}
 		TeamUtil.setTeamHead(index, p);
-		String tname = TeamUtil.createTeamName(index);
+		String tname = TeamUtil.getTeamName(index);
 		p.getPlayer().setDisplayName(tname);
 		return sendMessage(p, "&2Giving team " +index);
 	}

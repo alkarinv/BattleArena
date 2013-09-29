@@ -273,6 +273,8 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 				BattleArena.getBAExecutor().join(ap, mp, args);
 			}
 		}
+		Long cooldownSec = (am.getParams().getArenaCooldown() != null ?
+				am.getParams().getArenaCooldown() : 10) * 20L;
 		/// isEnabled to check to see if we are shutting down
 		if (arena != null && BattleArena.getSelf().isEnabled()){
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
@@ -280,7 +282,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 				public void run() {
 					amq.add(arena,shouldStart(arena)); /// add it back into the queue
 				}
-			}, 100);
+			}, cooldownSec);
 		}
 	}
 

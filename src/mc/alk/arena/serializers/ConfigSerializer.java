@@ -127,6 +127,8 @@ public class ConfigSerializer extends BaseConfig{
 			mp.setWaitroomClosedWhileRunning(cs.getBoolean("waitroomClosedWhileRunning",true));
 		if (cs.contains("cancelIfNotEnoughPlayers"))
 			mp.setCancelIfNotEnoughPlayers(cs.getBoolean("cancelIfNotEnoughPlayers",false));
+		if (cs.contains("arenaCooldown"))
+			mp.setArenaCooldown(cs.getInt("arenaCooldown"));
 
 		loadAnnouncementsOptions(cs, mp); /// Load announcement options
 
@@ -704,6 +706,9 @@ public class ConfigSerializer extends BaseConfig{
 		if (params.isWaitroomClosedWhenRunning() != null)  main.set("waitroomClosedWhileRunning", params.isWaitroomClosedWhenRunning());
 
 		if (params.isCancelIfNotEnoughPlayers() != null)  main.set("cancelIfNotEnoughPlayers", params.isCancelIfNotEnoughPlayers());
+
+		if (params.getArenaCooldown() != null)  main.set("arenaCooldown", params.getArenaCooldown());
+
 
 		Collection<ArenaModule> modules = params.getModules();
 		if (modules != null && !modules.isEmpty()){ main.set("modules", getModuleList(modules));}

@@ -750,7 +750,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
 		if (woolTeams)
 			team.setHeadItem(TeamUtil.getTeamHead(index));
-		String name = TeamUtil.createTeamName(index);
+		String name = TeamUtil.getTeamName(index);
 		if ( alwaysTeamNames ||
 				(!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
 			team.setDisplayName(name);
@@ -808,7 +808,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			Log.info(getID()+" addedToTeam("+team.getName()+":"+team.getId()+", " + player.getName()+") inside="+inMatch.contains(player.getName()));
 
 		if (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND){
-			team.setDisplayName(TeamUtil.createTeamName(indexOf(team)));}
+			team.setDisplayName(TeamUtil.getTeamName(indexOf(team)));}
 		privateAddedToTeam(team,player);
 		defaultObjective.setPoints(player, 0);
 		scoreboard.addedToTeam(team, player);
