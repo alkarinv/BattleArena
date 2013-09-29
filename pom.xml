@@ -24,7 +24,6 @@
       <id>plugin-repo</id>
       <url>http://bukkit.jacekk.co.uk/plugin_repo/repo/</url>
     </repository>
-    
     <!-- <repository>
       <id>sk89q-repo</id>
       <url>http://maven.sk89q.com/repo/</url>
@@ -198,6 +197,11 @@
               </artifactSet>
               <!-- Specify to remove all unneeded classes -->
               <minimizeJar>true</minimizeJar>
+              <tasks>
+                <delete>
+                  <fileset dir="target/" includes="original-BattleArena.jar"/>
+                </delete>
+              </tasks>
             </configuration>
           </execution>
         </executions>
@@ -206,8 +210,8 @@
   </build>
   <distributionManagement>
     <site>
-        <id>jd.bukkit.org</id>
-        <url>file:///home/javadocs/public_html/</url>
+      <id>jd.bukkit.org</id>
+      <url>file:///home/javadocs/public_html/</url>
     </site>
     <repository>
       <id>battleplugins-repo</id>
