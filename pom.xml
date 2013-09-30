@@ -4,7 +4,7 @@
   <groupId>mc.alk</groupId>
   <artifactId>BattleArena</artifactId>
   <packaging>jar</packaging>
-  <version>3.9.4.9.3.4</version>
+  <version>3.9.4.9.4</version>
   <name>BattleArena</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -206,17 +206,28 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>javadoc</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <distributionManagement>
     <site>
-      <id>jd.bukkit.org</id>
-      <url>file:///home/javadocs/public_html/</url>
+      <id>battleplugins-repo</id>
+      <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/docs</url>
     </site>
     <repository>
       <id>battleplugins-repo</id>
       <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven/repository</url>
     </repository>
   </distributionManagement>
-
 </project>
