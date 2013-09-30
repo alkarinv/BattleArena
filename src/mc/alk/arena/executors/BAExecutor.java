@@ -68,6 +68,7 @@ import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
+import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
 
@@ -184,7 +185,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			return true;}
 
 		/// Check Perms
-		if (!adminJoin && !hasMPPerm(player, mp, "join")) {
+		if (!adminJoin && !PermissionsUtil.hasMatchPerm(player, mp, "join")) {
 			return sendSystemMessage(player, "no_join_perms", mp.getCommand());}
 
 		/// Can the player join this match/event at this moment?
@@ -1069,7 +1070,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds = { "duel", "d" }, helpOrder = 10)
 	public boolean duel(ArenaPlayer player, MatchParams mp, String args[]) {
-		if (!hasMPPerm(player, mp, "duel")) {
+		if (!PermissionsUtil.hasMatchPerm(player, mp, "duel")) {
 			return sendMessage(
 					player,
 					"&cYou don't have permission to duel in a &6"+ mp.getCommand());
@@ -1147,7 +1148,7 @@ public class BAExecutor extends CustomCommandExecutor {
 				return sendMessage(player, "&4[Duel] &6" + ap.getDisplayName()
 						+ "&c already has been challenged!");
 			}
-			if (!hasMPPerm(ap, mp, "duel")) {
+			if (!PermissionsUtil.hasMatchPerm(ap, mp, "duel")) {
 				return sendMessage(player,
 						"&6" + ap.getDisplayName()
 						+ "&c doesn't have permission to duel in a &6"

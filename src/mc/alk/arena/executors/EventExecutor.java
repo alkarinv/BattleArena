@@ -170,7 +170,7 @@ public class EventExecutor extends BAExecutor{
 	}
 
 	public boolean eventJoin(ArenaPlayer p, EventParams eventParams, String[] args, boolean adminCommand) {
-		if (!adminCommand && !hasMPPerm(p, eventParams, "join")){
+		if (!adminCommand && !PermissionsUtil.hasMatchPerm(p, eventParams, "join")){
 			sendSystemMessage(p,"no_join_perms", eventParams.getCommand());
 			return false;
 		}

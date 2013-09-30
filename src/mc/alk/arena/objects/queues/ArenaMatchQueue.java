@@ -173,7 +173,10 @@ public class ArenaMatchQueue implements ArenaListener{
 							MatchParams mp = tq.getMatchParams();
 							Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
 							if (a!=null){
-								players.addAll(amq.getArenaTeamQ(tq.getMatchParams(), a).getArenaPlayers());
+								TeamQueue tq2 = amq.getArenaTeamQ(tq.getMatchParams(), a);
+								if (tq2!=null){
+									players.addAll(tq2.getArenaPlayers());
+								}
 							}
 							players.addAll(amq.getTeamQ(tq.getMatchParams(), null).getArenaPlayers());
 							String msg = BAExecutor.constructMessage(mp, secondsRemaining*1000L, players.size(), null);

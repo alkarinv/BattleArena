@@ -1,12 +1,13 @@
 package mc.alk.arena.executors;
 
 import mc.alk.arena.controllers.BattleArenaController;
-import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.util.PermissionsUtil;
 
 public class VoteExecutor extends CustomCommandExecutor{
 	BattleArenaController bac;
@@ -22,7 +23,7 @@ public class VoteExecutor extends CustomCommandExecutor{
 		if (!pc.isHandled(ap)){
 			return sendMessage(ap, "&cYou aren't inside the lobby for "+arena.getArenaType());}
 		MatchParams mp = ParamController.getMatchParamCopy(arena.getArenaType());
-		if (!hasMPPerm(ap, mp,"join")){
+		if (!PermissionsUtil.hasMatchPerm(ap, mp,"join")){
 			return sendMessage(ap, "&cYou don't have permission to vote in a &6" + mp.getCommand());}
 		pc.castVote(ap,mp,arena);
 		return true;

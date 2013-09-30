@@ -4,6 +4,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -54,6 +55,19 @@ public class PermissionsUtil {
 
 	public static boolean giveWGPerms(Player player, Boolean enable) {
 		return !hasVaultPerms ? false : VaultPermUtil.giveWorldGuardPerms(player,enable);
+	}
+
+	public static boolean hasTeamPerm(ArenaPlayer player, MatchParams mp, Integer teamIndex) {
+		return player.hasPermission("arena.join.team.all") ||
+				player.hasPermission("arena.join."+mp.getName().toLowerCase()+".team.all") ||
+				player.hasPermission("arena.join."+mp.getCommand().toLowerCase()+".team."+(teamIndex+1));
+	}
+
+	public static boolean hasMatchPerm(ArenaPlayer player , MatchParams mp, String perm) {
+		return player.hasPermission("arena."+mp.getName().toLowerCase()+"."+perm) ||
+				player.hasPermission("arena."+mp.getCommand().toLowerCase()+"."+perm) ||
+				player.hasPermission("arena."+perm+"."+mp.getName().toLowerCase()) ||
+				player.hasPermission("arena."+perm+"."+mp.getCommand().toLowerCase());
 	}
 
 }

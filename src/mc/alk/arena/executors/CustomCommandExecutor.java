@@ -169,11 +169,6 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
 		return MessageUtil.sendMessage(player, msg);
 	}
 
-	protected boolean hasMPPerm(ArenaPlayer player , MatchParams mp, String perm) {
-		return player.hasPermission("arena."+mp.getName().toLowerCase()+"."+perm) ||
-				player.hasPermission("arena."+mp.getCommand().toLowerCase()+"."+perm) ||
-				player.hasPermission("arena."+perm+"."+mp.getName().toLowerCase()) ||
-				player.hasPermission("arena."+perm+"."+mp.getCommand().toLowerCase());
-	}
+
 }
 

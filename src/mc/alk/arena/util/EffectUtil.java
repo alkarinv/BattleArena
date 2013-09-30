@@ -8,7 +8,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class EffectUtil {
-	static final String version = "2.1.1";
+	static final String version = "2.1.2";
 	static final HashMap<PotionEffectType,String> effectToName = new HashMap<PotionEffectType,String>();
 	static final HashMap<String,PotionEffectType> nameToEffect= new HashMap<String,PotionEffectType>();
 	static{

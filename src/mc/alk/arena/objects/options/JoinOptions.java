@@ -15,6 +15,7 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
+import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -150,6 +151,8 @@ public class JoinOptions {
 
 			Integer teamIndex = TeamUtil.getTeamIndex(op);
 			if (teamIndex != null){
+				if (!PermissionsUtil.hasTeamPerm(player, mp,teamIndex)){
+					throw new InvalidOptionException("&cYou don't have permissions to join this team");}
 				ops.put(JoinOption.TEAM, teamIndex);
 				continue;
 			}
