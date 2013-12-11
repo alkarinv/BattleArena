@@ -16,14 +16,14 @@ public class SignSerializer extends BaseConfig {
 		Set<String> arenas = config.getKeys(false);
 
 		for (String arenastr: arenas){
-			ConfigurationSection cs = config.getConfigurationSection(arenastr);
-			if (cs == null)
+			ConfigurationSection maincs = config.getConfigurationSection(arenastr);
+			if (maincs == null)
 				continue;
-			Set<String> signLocations = cs.getKeys(false);
+			Set<String> signLocations = maincs.getKeys(false);
 			if (signLocations == null || signLocations.isEmpty())
 				continue;
 			for (String strloc : signLocations){
-				cs = cs.getConfigurationSection(strloc);
+				ConfigurationSection cs = maincs.getConfigurationSection(strloc);
 				if (cs == null)
 					continue;
 				ArenaCommandSign acs = null;

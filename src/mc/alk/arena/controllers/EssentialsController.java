@@ -3,6 +3,7 @@ package mc.alk.arena.controllers;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.EssentialsUtil;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -46,6 +47,14 @@ public class EssentialsController {
 	public static Boolean isFlying(ArenaPlayer player) {
 		if (!hasEssentials) return false;
 		return EssentialsUtil.isFlying(player.getName());
+	}
+
+	public static Location getBackLocation(String playerName) {
+		return EssentialsUtil.getBackLocation(playerName);
+	}
+
+	public static void setBackLocation(String playerName, Location loc) {
+		EssentialsUtil.setBackLocation(playerName,loc);
 	}
 
 }

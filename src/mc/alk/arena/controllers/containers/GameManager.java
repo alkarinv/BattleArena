@@ -14,6 +14,7 @@ import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
+import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
@@ -155,6 +156,9 @@ public class GameManager implements PlayerHolder{
 		if (handled.add(player)){
 			PerformTransition.transition(this, MatchState.ONENTER, player, null, false);
 			updateBukkitEvents(MatchState.ONENTER, player);
+			if (EssentialsController.enabled())
+				BAPlayerListener.setBackLocation(player.getName(),
+						EssentialsController.getBackLocation(player.getName()));
 			// When teleporting in for the first time defaults
 			PlayerUtil.setGameMode(player.getPlayer(), GameMode.SURVIVAL);
 			EssentialsController.setGod(player.getPlayer(), false);
@@ -175,6 +179,9 @@ public class GameManager implements PlayerHolder{
 	@Override
 	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
 		this.quitting(player);
+		if (EssentialsController.enabled())
+			BAPlayerListener.setBackLocation(player.getName(), null);
+
 	}
 
 	@Override

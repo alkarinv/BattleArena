@@ -158,7 +158,7 @@ public class TeleportLocationController {
 			type = LocationType.LOBBY;
 			l = jitter(RoomController.getLobbySpawn(teamIndex,mp.getType(),randomRespawn),0);
 		} else if (teleportSpectate){
-			ph = (am instanceof Match) ? ((Match)am).getArena().getSpectate() : am;
+			ph = (am instanceof Match) ? ((Match)am).getArena().getSpectatorRoom() : am;
 			type = LocationType.SPECTATE;
 			l = jitter(ph.getSpawn(teamIndex, randomRespawn),teamIndex);
 		} else { // They should teleportIn, aka to the Arena

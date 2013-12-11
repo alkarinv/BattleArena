@@ -47,6 +47,7 @@ public enum TransitionOption{
 	ALWAYSWOOLTEAMS("alwaysWoolTeams", false),		/// Always use team Heads (found in teamColors.yml)
 	ALWAYSTEAMNAMES("alwaysTeamNames", false),		/// Always use team Names (found in teamColors.yml)
 	NOTEAMNAMECOLOR("noTeamNameColor", false),		/// Dont use team name color
+	DROPITEMS("dropItems", false),					/// Drop Items when a player dies or quits
 
 	/// Teleport Options
 	TELEPORTMAINWAITROOM("teleportMainWaitRoom",false), /// Teleport players to the main waitroom
@@ -66,7 +67,7 @@ public enum TransitionOption{
 	CLEARINVENTORY ("clearInventory",false), 		/// Clear the players inventory
 	CLEAREXPERIENCE("clearExperience",false), 		/// Clear the players experience
 	GIVEITEMS("giveItems",false), 					/// Give the player the items specified in items:
-	GIVECLASS("giveClass",false),					/// Give the player the specified class in classes:
+	GIVECLASS("giveClass",false),					/// Give the player the specified class(if they don't already have one):
 	GIVEDISGUISE("giveDisguise",false),				/// Give the player the specified class in classes:
 	HEALTH("health",true),							/// =<int> : set the players health to the given amount
 	HEALTHP("healthp",true),						/// =<int> : set the players health to the given percent
@@ -158,6 +159,7 @@ public enum TransitionOption{
 		case HEALTHP:
 		case HEALTH:
 		case POOLMONEY:
+		case WITHINDISTANCE:
 		case MONEY:
 			return Double.valueOf(value);
 		case LEVELRANGE:
@@ -167,8 +169,6 @@ public enum TransitionOption{
 		case MAGIC: case MAGICP:
 		case HUNGER:
 		case EXPERIENCE:
-		case WITHINDISTANCE:
-			return Integer.valueOf(value);
 		case INVULNERABLE:
 			return Integer.valueOf(value);
 		case FLIGHTSPEED:

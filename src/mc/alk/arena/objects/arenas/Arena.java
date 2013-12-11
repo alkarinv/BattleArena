@@ -627,7 +627,6 @@ public class Arena extends AreaContainer {
 			return true;
 		if (!jp.matches(this))
 			return false;
-
 		if (matchParams.hasOptionAt(MatchState.PREREQS,TransitionOption.WITHINDISTANCE)){
 			if (!jp.nearby(this,matchParams.getDoubleOption(MatchState.PREREQS, TransitionOption.WITHINDISTANCE))){
 				return false;}
@@ -759,7 +758,7 @@ public class Arena extends AreaContainer {
 		return waitroom;
 	}
 
-	public RoomContainer getSpectate() {
+	public RoomContainer getSpectatorRoom() {
 		return spectate;
 	}
 

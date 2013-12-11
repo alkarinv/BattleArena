@@ -10,12 +10,14 @@ public enum GameOption{
 	NTEAMS("nTeams",true, false),
 	PREFIX("prefix",true, false),
 	PRESTARTTIME("secondsTillMatch",true, false),
+	FORCESTARTTIME("forceStartTime",true, false),
 	MATCHTIME("matchTime",true, false),
 	VICTORYTIME("secondsToLoot",true, false),
 	VICTORYCONDITION("victoryCondition",true, false),
 	COMMAND("command",true, false),
 	RATED("rated",true, false),
 	GIVEITEMS("giveItems",true, false),
+	ALLOWEDTEAMSIZEDIFFERENCE("allowedTeamSizeDifference",true,false),
 	CLOSEWAITROOMWHILERUNNING("closeWaitroomWhileRunning", true,false),
 	CANCELIFNOTENOUGHPLAYERS("cancelIfNotEnoughPlayers", true,false)
 	;
@@ -64,7 +66,9 @@ public enum GameOption{
 		case VICTORYTIME:
 		case PRESTARTTIME:
 		case MATCHTIME:
+		case FORCESTARTTIME:
 		case NLIVES:
+		case ALLOWEDTEAMSIZEDIFFERENCE:
 			return ConfigSerializer.parseSize(value,-1);
 		case PREFIX:
 		case COMMAND:

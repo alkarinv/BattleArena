@@ -129,6 +129,10 @@ public class ConfigSerializer extends BaseConfig{
 			mp.setCancelIfNotEnoughPlayers(cs.getBoolean("cancelIfNotEnoughPlayers",false));
 		if (cs.contains("arenaCooldown"))
 			mp.setArenaCooldown(cs.getInt("arenaCooldown"));
+		if (cs.contains("allowedTeamSizeDifference"))
+			mp.setAllowedTeamSizeDifference(cs.getInt("allowedTeamSizeDifference"));
+		if (cs.contains("forceStartTime"))
+			mp.setForceStartTime(cs.getLong("forceStartTime"));
 
 		loadAnnouncementsOptions(cs, mp); /// Load announcement options
 
@@ -458,9 +462,9 @@ public class ConfigSerializer extends BaseConfig{
 		}
 		try{
 			/// Convert from old to new style aka ("needItems" and items: list, to needItems:)
-			List<ItemStack> items = getItemList(cs,"needItems");
+			List<ItemStack> items = InventoryUtil.getItemList(cs,"needItems");
 			if (items == null && options.containsKey(TransitionOption.NEEDITEMS)){
-				items = getItemList(cs, "items");
+				items = InventoryUtil.getItemList(cs, "items");
 				if (items!=null && !items.isEmpty())
 					tops.addOption(TransitionOption.NEEDITEMS,items);
 				else
@@ -475,9 +479,9 @@ public class ConfigSerializer extends BaseConfig{
 			Log.printStackTrace(e);
 		}
 		try{
-			List<ItemStack> items = getItemList(cs,"giveItems");
+			List<ItemStack> items = InventoryUtil.getItemList(cs,"giveItems");
 			if (items == null)
-				items = getItemList(cs,"items");
+				items = InventoryUtil.getItemList(cs,"items");
 
 			if (items!=null && !items.isEmpty()) {
 				tops.addOption(TransitionOption.GIVEITEMS,items);
@@ -604,33 +608,7 @@ public class ConfigSerializer extends BaseConfig{
 		return effects;
 	}
 
-	public static ArrayList<ItemStack> getItemList(ConfigurationSection cs, String nodeString) {
-		if (cs == null || cs.getList(nodeString) == null)
-			return null;
-		ArrayList<ItemStack> items = new ArrayList<ItemStack>();
-		try {
-			String str = null;
-			for (Object o : cs.getList(nodeString)){
-				try {
-					str = o.toString();
-					ItemStack is = InventoryUtil.parseItem(str);
-					if (is != null){
-						items.add(is);
-					} else {
-						Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
-					}
-				} catch (IllegalArgumentException e) {
-					Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
-				} catch (Exception e){
-					Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
-				}
-			}
-		} catch (Exception e){
-			Log.err(cs.getCurrentPath() +"."+nodeString + " could not be parsed in config.yml");
-			Log.printStackTrace(e);
-		}
-		return items;
-	}
+
 
 	public static JoinType getJoinType(ConfigurationSection cs) {
 		if (cs == null || cs.getName() == null)
@@ -709,6 +687,9 @@ public class ConfigSerializer extends BaseConfig{
 
 		if (params.getArenaCooldown() != null)  main.set("arenaCooldown", params.getArenaCooldown());
 
+		if (params.getAllowedTeamSizeDifference() != null)  main.set("allowedTeamSizeDifference", params.getAllowedTeamSizeDifference());
+
+		if (params.getForceStartTime() != null ) main.set("forceStartTime", params.getForceStartTime());
 
 		Collection<ArenaModule> modules = params.getModules();
 		if (modules != null && !modules.isEmpty()){ main.set("modules", getModuleList(modules));}

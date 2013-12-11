@@ -2,6 +2,8 @@ package mc.alk.arena.executors;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -12,6 +14,8 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.containers.RoomContainer;
+import mc.alk.arena.listeners.custom.BukkitEventListener;
+import mc.alk.arena.listeners.custom.TimingStat;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.LocationType;
@@ -53,8 +57,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			Defaults.DEBUG_STORAGE = on;
 		} else if(section.equalsIgnoreCase("damage")){
 			//			Defaults.DEBUG_DAMAGE = on;
-//		} else if(section.equalsIgnoreCase("q")){
-//						Defaults.DEBUGQ = on;
+			//		} else if(section.equalsIgnoreCase("q")){
+			//						Defaults.DEBUGQ = on;
 		} else if(section.equalsIgnoreCase("commands")){
 			Defaults.DEBUG_COMMANDS = on;
 		} else if(section.equalsIgnoreCase("debug")){
@@ -155,6 +159,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	public boolean showArenaVars(CommandSender sender, Arena arena, String[] args) {
 		if (args.length > 3 && args[3].equals("parent")){
 			return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams().getParent(), ToStringStyle.MULTI_LINE_STYLE)+"");
+		} else if (args.length > 3 && args[3].equals("transitions")){
+			return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams().getTransitionOptions(), ToStringStyle.MULTI_LINE_STYLE)+"");
 		} else if (args.length > 2 && args[2].equals("waitroom")){
 			return sendMessage(sender, new ReflectionToStringBuilder(arena.getWaitroom(), ToStringStyle.MULTI_LINE_STYLE)+"");
 		}  else if (args.length > 2 && args[2].equals("params")){
@@ -169,6 +175,10 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		Match m = BattleArena.getBAController().getMatch(arena);
 		if (m == null){
 			return sendMessage(sender, "&cMatch not currently running in arena " + arena.getName());}
+		if (vars.length > 2 && vars[2].equals("transitions")){
+			return sendMessage(sender, m.getParams().getTransitionOptions().getOptionString());
+		}
+
 		if (vars.length > 2){
 			String param = vars[2];
 			boolean sb = vars.length > 3 && Boolean.valueOf(vars[3]);
@@ -350,7 +360,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			loc = arena.getLobby()!= null ? arena.getLobby().getSpawn(spawnIndex-1, false) : null;
 			break;
 		case SPECTATE:
-			loc = arena.getSpectate()!= null ? arena.getSpectate().getSpawn(spawnIndex-1, false) : null;
+			loc = arena.getSpectatorRoom()!= null ? arena.getSpectatorRoom().getSpawn(spawnIndex-1, false) : null;
 			break;
 		case NONE:
 		case COURTYARD:
@@ -435,6 +445,30 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 			if (a.getWaitroom() != null)
 				sendMessage(sender,"   &2   - &6" + a.getWaitroom().getName() +" : &6"+a.getWaitroom().getContainerState().getState());
 		}
+		return true;
+	}
+
+	@MCCommand(cmds={"setTimings"}, admin=true)
+	public boolean setTimings(CommandSender sender, boolean set) {
+		BukkitEventListener.setTimings(set);
+		sendMessage(sender, "&2Timings now " +set);
+		return true;
+	}
+
+	@MCCommand(cmds={"timings"}, admin=true)
+	public boolean showTimings(CommandSender sender, String[] args) {
+		boolean useMs = args.length >1 && args[1].equalsIgnoreCase("ms");
+		Map<String,TimingStat> timings = BukkitEventListener.getTimings();
+		sendMessage(sender, BattleArena.getNameAndVersion() +" "+(useMs ? "time(ms)" : "time(ns)"));
+		long gtotal = 0;
+		for (Entry<String,TimingStat> entry : timings.entrySet()){
+			TimingStat t = entry.getValue();
+			long total = useMs ? t.totalTime/1000000 : t.totalTime;
+			gtotal += total;
+			long avg = useMs ? t.getAverage()/1000000 : t.getAverage();
+			sendMessage(sender, "    " +entry.getKey() +" Time: "+total +" Count: "+t.count +" Avg: " +avg);
+		}
+		sendMessage(sender, "    Total time "+gtotal + (useMs ? " time(ms)" : " time(ns)"));
 		return true;
 	}
 }

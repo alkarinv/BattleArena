@@ -178,6 +178,8 @@ public class APIRegistrationController {
 			Class<? extends Arena> arenaClass, CustomCommandExecutor executor,
 			File configFile, File messageFile, File defaultPluginConfigFile, File defaultArenaFile)
 					throws Exception{
+		Log.info("&5------- "+plugin.getName() +"  &8ac= " +arenaClass);
+
 		/// Create our plugin folder if its not there
 		File dir = plugin.getDataFolder();
 		FileUpdater.makeIfNotExists(dir);
@@ -221,6 +223,7 @@ public class APIRegistrationController {
 		} else {
 			at = ArenaType.register(name, arenaClass, plugin);
 		}
+		Log.info("  &5"+plugin.getName() +"  &eac= " +arenaClass+"   plugin="+at.getPlugin() +"  " + at);
 
 		/// Load our Match Params for this type
 		MatchParams mp = config.loadMatchParams();

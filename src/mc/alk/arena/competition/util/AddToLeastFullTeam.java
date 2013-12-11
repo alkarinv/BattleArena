@@ -29,7 +29,6 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 			ArenaTeam team = TeamFactory.createTeam(clazz);
 			team.setCurrentParams(params);
 			addTeam(team);
-
 		}
 	}
 

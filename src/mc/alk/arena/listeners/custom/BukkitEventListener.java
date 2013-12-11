@@ -1,5 +1,7 @@
 package mc.alk.arena.listeners.custom;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import mc.alk.arena.BattleArena;
@@ -28,7 +30,8 @@ public abstract class BukkitEventListener implements Listener  {
 	AtomicBoolean registered = new AtomicBoolean();
 	Integer timerid = null;
 	EventExecutor executor = null;
-
+	static Map<String,TimingStat> timings = new HashMap<String,TimingStat>();
+	static boolean useTimings = false;
 
 	public BukkitEventListener(final Class<? extends Event> bukkitEvent, EventPriority bukkitPriority) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("Registering BAEventListener for type " + bukkitEvent.getSimpleName());
@@ -73,14 +76,38 @@ public abstract class BukkitEventListener implements Listener  {
 			timerid= null;
 		}
 		if (executor == null){
-			executor = new EventExecutor() {
-				public void execute(final Listener listener, final Event event) throws EventException {
-					if (!isListening() || event.getClass() != bukkitEvent && !bukkitEvent.isAssignableFrom(event.getClass())){
-						return;}
+			if (Bukkit.getPluginManager().useTimings() || useTimings){
+				executor = new EventExecutor() {
+					public void execute(final Listener listener, final Event event) throws EventException {
+						long startTime = System.nanoTime();
+						if (!isListening() ||
+								(event.getClass() != bukkitEvent &&
+								!bukkitEvent.isAssignableFrom(event.getClass()))){
+							return;}
+						TimingStat t = timings.get(event.getClass().getSimpleName());
+						if (t == null){
+							t = new TimingStat();
+							timings.put(event.getClass().getSimpleName(),t);
+						}
+						invokeEvent(event);
+						t.count+=1;
+						t.totalTime += System.nanoTime() - startTime;
+					}
+				};
+			} else {
+				executor = new EventExecutor() {
+					public void execute(final Listener listener, final Event event) throws EventException {
+						if (!isListening() ||
+								(event.getClass() != bukkitEvent &&
+								!bukkitEvent.isAssignableFrom(event.getClass()))){
+							return;}
 
-					invokeEvent(event);
-				}
-			};
+						invokeEvent(event);
+					}
+				};
+
+			}
+
 		}
 
 		if (Defaults.TESTSERVER) return;
@@ -96,4 +123,11 @@ public abstract class BukkitEventListener implements Listener  {
 
 	public abstract void removeAllListeners(RListener rl);
 
+	public static Map<String,TimingStat> getTimings(){
+		return timings;
+	}
+
+	public static void setTimings(boolean set){
+		useTimings = set;
+	}
 }

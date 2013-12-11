@@ -187,7 +187,6 @@ public class BAExecutor extends CustomCommandExecutor {
 		/// Check Perms
 		if (!adminJoin && !PermissionsUtil.hasMatchPerm(player, mp, "join")) {
 			return sendSystemMessage(player, "no_join_perms", mp.getCommand());}
-
 		/// Can the player join this match/event at this moment?
 		if (!canJoin(player)) {
 			return true;}
@@ -292,7 +291,8 @@ public class BAExecutor extends CustomCommandExecutor {
 		} catch (IllegalStateException e){
 			return sendMessage(player,"&c"+e.getMessage());
 		}
-
+		/// switch over to the joined params
+		mp = jr.params;
 		/// Annouce to the server if they have the option set
 		ao = mp.getAnnouncementOptions();
 		channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE)
@@ -357,8 +357,7 @@ public class BAExecutor extends CustomCommandExecutor {
 				} else {
 					msg.append("\n"+ MessageHandler.getSystemMessage("you_start_when_free_pos",position));
 				}
-			}
-			if (mp.getMaxPlayers() != CompetitionSize.MAX) {
+			} else if (mp.getMaxPlayers() != CompetitionSize.MAX) {
 				msg.append("\n"
 						+ MessageHandler.getSystemMessage(
 								"match_starts_players_or_time",
@@ -633,11 +632,10 @@ public class BAExecutor extends CustomCommandExecutor {
 	}
 
 	@MCCommand(cmds = { "auto" }, admin = true, perm = "arena.auto")
-	public boolean arenaAuto(CommandSender sender, MatchParams params,
-			String args[]) {
+	public boolean arenaAuto(CommandSender sender, MatchParams params,String args[]) {
 		try {
-			EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null,
-					params);
+			EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null,params);
+
 			Arena arena = eoo.getArena(params, null);
 
 			ac.createAndAutoMatch(arena, eoo);
@@ -914,7 +912,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds = { "sao", "edit", "alter", "setArenaOption" }, admin = true, perm = "arena.alter")
 	public boolean arenaSetOption(CommandSender sender, MatchParams params, Arena arena, String[] args) {
 		try {
-			ArenaAlterController.setArenaOption(sender, params, arena, args);
+			ArenaAlterController.setArenaOption(sender, arena, args);
 		} catch (IllegalStateException e) {
 			return sendMessage(sender, "&c" + e.getMessage());
 		}
@@ -1365,8 +1363,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		return _canJoin(player, showMessages, false);
 	}
 
-	private boolean _canJoin(ArenaPlayer player, boolean showMessages,
-			boolean teammate) {
+	private boolean _canJoin(ArenaPlayer player, boolean showMessages, boolean teammate) {
 		// / Check for any competition
 		if (player.getCompetition() != null) {
 			if (showMessages)
@@ -1382,16 +1379,6 @@ public class BAExecutor extends CustomCommandExecutor {
 				sendMessage(player, "&eType &6/arena leave");
 			return false;
 		}
-		//		JoinResult qpp = ac.getCurrentQuePos(player);
-		//		if (qpp != null && qpp.pos != -1) {
-		//			if (showMessages)
-		//				sendMessage(player, "&eYou are in the " + qpp.params.getName()
-		//						+ " queue.");
-		//			String cmd = qpp.params.getCommand();
-		//			if (showMessages)
-		//				sendMessage(player, "&eType &6/" + cmd + " leave");
-		//			return false;
-		//		}
 		// / Inside MobArena?
 		if (MobArenaInterface.hasMobArena()
 				&& MobArenaInterface.insideMobArena(player)) {

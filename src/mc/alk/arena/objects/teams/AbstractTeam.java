@@ -81,11 +81,11 @@ public abstract class AbstractTeam implements ArenaTeam{
 		deaths.clear();
 		kills.clear();
 		setAlive();
-		for (ArenaPlayer ap: players){
-			if (leftplayers.contains(ap))
-				continue;
-			ap.reset();
-		}
+//		for (ArenaPlayer ap: players){
+//			if (leftplayers.contains(ap))
+//				continue;
+//			ap.reset();
+//		}
 	}
 
 	protected String createName() {

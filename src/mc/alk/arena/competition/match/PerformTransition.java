@@ -180,7 +180,11 @@ public class PerformTransition {
 			if (mo.hasOption(TransitionOption.POOLMONEY) && am instanceof Match) {
 				prizeMoney = ((Match)am).prizePoolMoney * mo.getDouble(TransitionOption.POOLMONEY) /
 						team.size();
-				MoneyController.add(player.getName(), prizeMoney);
+				if (prizeMoney >= 0){
+					MoneyController.add(player.getName(), prizeMoney);
+				} else {
+					MoneyController.subtract(player.getName(), prizeMoney);
+				}
 			}
 			if (mo.getExperience() != null) {ExpUtil.giveExperience(p, mo.getExperience());}
 			if (mo.hasOption(TransitionOption.REMOVEPERMS)){ removePerms(player, mo.getRemovePerms());}

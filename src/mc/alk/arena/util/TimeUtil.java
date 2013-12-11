@@ -14,10 +14,10 @@ public class TimeUtil {
 
 	public static void testClock() {
         final long start = System.currentTimeMillis();
-		if (start - lastCheck < 30000)
+		if (start - lastCheck < 10000)
 			return;
 		lastCheck = start;
-        int seconds = 3;
+        final int seconds = 2;
 
         final double millis = seconds * 1000;
         final int nTicks = 20 * seconds;
@@ -27,11 +27,8 @@ public class TimeUtil {
 
                 long elapsedTime = now - start;
                 double mult = millis/elapsedTime;
-                if (mult > 5){
-                	mult = 5;
-                }  else if (mult < 0.2){
-                	mult = 0.2;
-                }
+                if (mult < 0.2){
+                	mult = 0.2;}
                 Defaults.TICK_MULT = Math.min(mult,1);
 //                MatchMessageImpl.sendMessage(null, ChatColor.GRAY + "[BattleArena] multiplier: " + mult + "x");
             }

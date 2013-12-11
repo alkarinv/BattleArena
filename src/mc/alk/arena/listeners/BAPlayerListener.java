@@ -7,6 +7,7 @@ import java.util.Set;
 
 import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerRestoreController;
 import mc.alk.arena.controllers.WorldGuardController;
@@ -21,6 +22,7 @@ import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -55,6 +57,22 @@ public class BAPlayerListener implements Listener  {
 		}
 	}
 
+	/**
+	 * This method is just used to handle essentials and the /back command
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void onPlayerDeath(PlayerDeathEvent event){
+		if (!EssentialsController.enabled() || !PlayerController.hasArenaPlayer(event.getEntity())||
+				!restore.containsKey(event.getEntity().getName()))
+			return;
+		PlayerRestoreController prc = getOrCreateRestorer(event.getEntity().getName());
+		Location loc = prc.getBackLocation();
+		if (loc != null){
+			EssentialsController.setBackLocation(event.getEntity().getName(), loc);
+		}
+	}
+
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerQuit(PlayerQuitEvent event){
 		if (!PlayerController.hasArenaPlayer(event.getPlayer()))
@@ -63,7 +81,6 @@ public class BAPlayerListener implements Listener  {
 		ArenaPlayerLeaveEvent aple = new ArenaPlayerLeaveEvent(p, p.getTeam(),
 				ArenaPlayerLeaveEvent.QuitReason.QUITMC);
 		aple.callEvent();
-
 	}
 	private static PlayerRestoreController getOrCreateRestorer(final String name){
 		if (restore.containsKey(name))
@@ -171,5 +188,12 @@ public class BAPlayerListener implements Listener  {
 		return restore;
 	}
 
+	public static void setBackLocation(String playerName, Location location) {
+		getOrCreateRestorer(playerName).setBackLocation(location);
+	}
+
+	public static Location getBackLocation(String playerName) {
+		return restore.containsKey(playerName) ? restore.get(playerName).getBackLocation() : null;
+	}
 
 }

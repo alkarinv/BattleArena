@@ -14,6 +14,7 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.regions.PylamoRegion;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
+import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.PlayerContainerSerializer;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
@@ -34,6 +35,7 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class ArenaAlterController {
 	public enum ChangeType{
+		MATCHTIME(true,false),
 		NLIVES(true,false),
 		NTEAMS(true,false),
 		TEAMSIZE(true,false),
@@ -41,6 +43,7 @@ public class ArenaAlterController {
 		SPECTATE(true,false),
 		LOBBY(true,false),
 		SPAWNLOC(true,false),
+		FORCESTARTTIME(true,false),
 		VLOC(true,true),
 		TYPE(true,false),
 		GIVEITEMS(false,true),
@@ -106,7 +109,7 @@ public class ArenaAlterController {
 		return true;
 	}
 
-	public static boolean setArenaOption(CommandSender sender, MatchParams params, Arena arena, String[] args)
+	public static boolean setArenaOption(CommandSender sender, Arena arena, String[] args)
 		throws IllegalStateException
 	{
 		if (args.length < 3){
@@ -114,7 +117,7 @@ public class ArenaAlterController {
 			return false;
 		}
 		BattleArenaController ac = BattleArena.getBAController();
-
+		MatchParams params = arena.getParams();
 		String changetype = args[2];
 		String value = "1";
 		if (args.length > 3)
@@ -139,9 +142,11 @@ public class ArenaAlterController {
 		}
 
 		switch(ct){
+		case MATCHTIME: success = changeMatchTime(sender, arena, ac, value); break;
 		case NLIVES: success = changeNLives(sender, arena, ac, value); break;
 		case TEAMSIZE: success = changeTeamSize(sender, arena, ac, value); break;
 		case NTEAMS: success = changeNTeams(sender, arena, ac, value); break;
+		case FORCESTARTTIME: success = changeForceStartTime(sender, arena, ac, value); break;
 		case TYPE: success = changeType(sender, arena, ac, value); break;
 		case SPAWNLOC: success = changeSpawn(sender, arena, ac, changetype, value, otherOptions); break;
 		case VLOC: success = changeVisitorSpawn(sender,arena,ac,changetype,value,otherOptions); break;
@@ -155,7 +160,7 @@ public class ArenaAlterController {
 			break;
 		}
 		if (success)
-			BattleArena.saveArenas(params.getType().getPlugin());
+			ArenaSerializer.saveArenas(params.getType().getPlugin());
 		return success;
 	}
 
@@ -323,11 +328,11 @@ public class ArenaAlterController {
 		MatchParams mp = ParamController.getMatchParams(arena.getArenaType());
 		if (mp == null){
 			throw new IllegalStateException("MatchParams for " + arena.getArenaType() +" could not be found");}
-		if (arena.getSpectate() == null){
+		if (arena.getSpectatorRoom() == null){
 			RoomContainer room = RoomController.getOrCreateSpectate(arena);
 			arena.setSpectate(room);
 		}
-		arena.getSpectate().setSpawnLoc(locindex,loc);
+		arena.getSpectatorRoom().setSpawnLoc(locindex,loc);
 		ac.updateArena(arena);
 		return sendMessage(sender,"&spectator room &6" + locstr +"&2 set to location=&6" + Util.getLocString(loc));
 	}
@@ -383,6 +388,18 @@ public class ArenaAlterController {
 		return sendMessage(sender,"&2Altered arena type to &6" + value);
 	}
 
+	private static boolean changeMatchTime(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
+		try{
+			Integer matchTime = Integer.valueOf(value);
+			arena.getParams().setMatchTime(matchTime);
+			ac.updateArena(arena);
+			return sendMessage(sender,"&2Altered arena matchTime to &6" + value);
+		} catch (Exception e){
+			sendMessage(sender,"Integer "+ value + " not valid");
+			return false;
+		}
+	}
+
 	private static boolean changeNLives(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
 		try{
 			Integer nlives = Integer.valueOf(value);
@@ -403,6 +420,18 @@ public class ArenaAlterController {
 			return sendMessage(sender,"&2Altered arena number of teams to &6" + value);
 		} catch (Exception e){
 			sendMessage(sender,"size "+ value + " not found");
+			return false;
+		}
+	}
+
+	private static boolean changeForceStartTime(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
+		try{
+			final Long v = Long.valueOf(value);
+			arena.getParams().setForceStartTime(v);
+			ac.updateArena(arena);
+			return sendMessage(sender,"&2Altered arena to have a forcestart time of &6" + value);
+		} catch (Exception e){
+			sendMessage(sender,"Value "+ value + " not an integer");
 			return false;
 		}
 	}

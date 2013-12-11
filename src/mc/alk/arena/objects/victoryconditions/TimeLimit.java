@@ -14,6 +14,8 @@ import mc.alk.arena.util.Countdown.CountdownCallback;
 public class TimeLimit extends VictoryCondition implements DefinesTimeLimit, CountdownCallback {
 
 	Countdown timer = null; /// Timer for when victory condition is time based
+	int announceInterval;
+
 	public TimeLimit(Match match) {
 		super(match);
 	}
@@ -21,7 +23,8 @@ public class TimeLimit extends VictoryCondition implements DefinesTimeLimit, Cou
 	@ArenaEventHandler(priority=EventPriority.LOW)
 	public void onStart(MatchStartEvent event){
 		cancelTimers();
-		timer = new Countdown(BattleArena.getSelf(),match.getParams().getMatchTime(), match.getParams().getIntervalTime(), this);
+		announceInterval =match.getParams().getIntervalTime();
+		timer = new Countdown(BattleArena.getSelf(),match.getParams().getMatchTime(), 1, this);
 	}
 
 	@ArenaEventHandler(priority=EventPriority.LOW)
@@ -47,7 +50,9 @@ public class TimeLimit extends VictoryCondition implements DefinesTimeLimit, Cou
 		if (remaining <= 0){
 			match.timeExpired();
 		} else {
-			match.intervalTick(remaining);
+			if (remaining % announceInterval ==0)
+				match.intervalTick(remaining);
+			match.secondTick(remaining);
 		}
 		return true;
 	}

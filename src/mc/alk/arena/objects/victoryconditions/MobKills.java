@@ -23,7 +23,7 @@ public class MobKills extends VictoryCondition implements ScoreTracker{
 
 	public MobKills(Match match) {
 		super(match);
-		this.mkills = new ArenaObjective("mobkills","Kill Mobs",5);
+		this.mkills = new ArenaObjective("mobkills","Kill Mobs",60);
 		this.mkills.setDisplayName(MessageUtil.colorChat("&4Mob Kills"));
 	}
 

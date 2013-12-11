@@ -99,8 +99,7 @@ public class ExpUtil {
 		player.setTotalExperience(0);
 		player.setLevel(0);
 		player.setExp(0);
-		if (level > 0)
-			player.giveExp(getExpToLevel(level));
+		player.setLevel(level);
 	}
 
 	/**

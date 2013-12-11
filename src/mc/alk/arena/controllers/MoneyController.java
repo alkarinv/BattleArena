@@ -12,9 +12,16 @@ public class MoneyController {
 	public static boolean hasEconomy(){
 		return initialized;
 	}
+
 	public static boolean hasAccount(String name) {
 		if (!initialized) return true;
-		return useVault? economy.hasAccount(name) : true;
+		try{
+			return useVault? economy.hasAccount(name) : true;
+		} catch (Exception e){
+			Log.printStackTrace(e);
+			return true;
+		}
+
 	}
 	public static boolean hasEnough(String name, double fee) {
 		if (!initialized) return true;
@@ -22,7 +29,13 @@ public class MoneyController {
 	}
 	public static boolean hasEnough(String name, float amount) {
 		if (!initialized) return true;
-		return useVault? economy.getBalance(name) >= amount : true;
+		try{
+			return useVault? economy.getBalance(name) >= amount : true;
+		} catch (Exception e){
+			Log.printStackTrace(e);
+			return true;
+		}
+
 	}
 
 	public static boolean hasEnough(String name, float amount, String world) {
@@ -39,7 +52,11 @@ public class MoneyController {
 
 	public static void subtract(String name, float amount) {
 		if (!initialized) return;
-		if (useVault) economy.withdrawPlayer(name, amount);
+		try{
+			if (useVault) economy.withdrawPlayer(name, amount);
+		} catch (Exception e){
+			Log.printStackTrace(e);
+		}
 	}
 
 
@@ -54,7 +71,11 @@ public class MoneyController {
 
 	public static void add(String name, float amount) {
 		if (!initialized) return;
-		if (useVault) economy.depositPlayer(name, amount) ;
+		try{
+			if (useVault) economy.depositPlayer(name, amount) ;
+		} catch (Exception e){
+			Log.printStackTrace(e);
+		}
 	}
 
 	public static Double balance(String name, String world) {
@@ -63,7 +84,12 @@ public class MoneyController {
 
 	public static Double balance(String name) {
 		if (!initialized) return 0.0;
-		return useVault ? economy.getBalance(name) : 0;
+		try{
+			return useVault ? economy.getBalance(name) : 0;
+		} catch (Exception e){
+			Log.printStackTrace(e);
+			return 0.0;
+		}
 	}
 
 

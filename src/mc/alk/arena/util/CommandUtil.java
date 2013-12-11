@@ -24,7 +24,7 @@ public class CommandUtil {
 			cmd = cmd.substring(0, index);
 		}
 		cmd = cmd.toLowerCase();
-		if(disabledCommands.contains(cmd)){
+		if(disabledCommands.contains(cmd) && !cmd.equals("/bad")){
 			event.setCancelled(true);
 			return true;
 		}

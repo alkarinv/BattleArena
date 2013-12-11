@@ -31,6 +31,12 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 		this(name,criteria,null, SAPIDisplaySlot.SIDEBAR,50);
 	}
 
+	/**
+	 *
+	 * @param name
+	 * @param criteria
+	 * @param priority: lower priority means it has precedence
+	 */
 	public ArenaObjective(String name, String criteria, int priority) {
 		this(name,criteria,null,SAPIDisplaySlot.SIDEBAR,priority);
 	}
@@ -39,8 +45,12 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 		this(name,criteria,displayName,slot, 50);
 	}
 
+	public ArenaObjective(String name, String criteria, String displayName, SAPIDisplaySlot slot, int priority) {
+		this(name,criteria,displayName,slot, priority,0);
+	}
+
 	public ArenaObjective(String name, String criteria, String displayName,
-			SAPIDisplaySlot slot, int priority) {
+			SAPIDisplaySlot slot, int priority, int points) {
 		o = SAPIFactory.createObjective(name,criteria,slot, priority);
 		if (displayName != null){
 			setDisplayName(displayName);}
@@ -182,6 +192,11 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 	}
 
 	@Override
+	public void setDisplayNameSuffix(String suffix) {
+		o.setDisplayNameSuffix(suffix);
+	}
+
+	@Override
 	public boolean setPoints(SEntry entry, int points) {
 		return o.setPoints(entry, points);
 	}
@@ -301,6 +316,8 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 	public boolean addTeam(STeam entry, int points) {
 		return o.addTeam(entry, points);
 	}
+
+
 
 
 }

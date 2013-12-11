@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class PermissionsUtil {
-	static final int ticks = 2;
+	static final int ticks = 0;
 	static boolean hasVaultPerms = false;
 
 	public static void setPermission(Plugin plugin){

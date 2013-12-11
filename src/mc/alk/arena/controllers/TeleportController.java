@@ -66,12 +66,21 @@ public class TeleportController implements Listener{
 			/// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
 			if (giveBypassPerms && BattleArena.getSelf().isEnabled() && !Defaults.DEBUG_STRESS){
 				player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);}
+			/// Some worlds "regenerate" which means they have the same name, but are different worlds
+			/// To deal with this, reget the world
 			World w = Bukkit.getWorld(loc.getWorld().getName());
 			Location nl = new Location(w, loc.getX(),loc.getY(),loc.getZ(),loc.getYaw(),loc.getPitch());
 			if (!player.teleport(nl) || (Defaults.DEBUG_VIRTUAL && !player.isOnline())){
 				BAPlayerListener.teleportOnReenter(player.getName(),nl, player.getLocation());
 				if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + nl);
 				return false;
+			}
+
+			/// Handle the /back command from Essentials
+			if (EssentialsController.enabled()){
+				Location l = BAPlayerListener.getBackLocation(player.getName());
+				if (l != null){
+					EssentialsController.setBackLocation(player.getName(), l);}
 			}
 
 			if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());

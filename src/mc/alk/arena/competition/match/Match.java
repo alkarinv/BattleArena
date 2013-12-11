@@ -87,9 +87,11 @@ import mc.alk.arena.objects.victoryconditions.interfaces.DefinesTimeLimit;
 import mc.alk.arena.objects.victoryconditions.interfaces.ScoreTracker;
 import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Countdown.CountdownCallback;
+import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
+import mc.alk.scoreboardapi.api.SObjective;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
 
 import org.bukkit.Bukkit;
@@ -142,7 +144,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	/// These get used enough or are useful enough that i'm making variables even though they can be found in match options
 	final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
 	final boolean keepsInventory;
-	final boolean respawns, noLeave, noEnter;
+	final boolean respawns;
 	final boolean spawnsRandom;
 	final boolean woolTeams, armorTeams;
 	final boolean alwaysTeamNames;
@@ -187,10 +189,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			}
 		}
 		/// placed anywhere options
-		noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
+		boolean noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
 		if (noEnter && arena.hasRegion())
 			WorldGuardController.setFlag(arena.getWorldGuardRegion(), "entry", !noEnter);
-		this.noLeave = tops.hasAnyOption(TransitionOption.WGNOLEAVE);
+		boolean noLeave = tops.hasAnyOption(TransitionOption.WGNOLEAVE);
+
 		this.woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() >1 ||
 				tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS);
 		this.armorTeams = tops.hasAnyOption(TransitionOption.ARMORTEAMS);
@@ -359,13 +362,23 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 		preStartTeams(teams,true);
 		arenaInterface.onPrestart();
-
+		new Countdown(plugin, params.getSecondsTillMatch(), 1,
+				new CountdownCallback(){
+					@Override
+					public boolean intervalTick(int remaining) {
+						SObjective obj = scoreboard.getObjective(SAPIDisplaySlot.SIDEBAR);
+						if (obj != null){
+							obj.setDisplayNameSuffix(" &e("+remaining+")");}
+						return (currentTimer!=null);
+					}
+		});
 		/// Schedule the start of the match
 		currentTimer = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
 				startMatch();
 			}
 		}, (long) (params.getSecondsTillMatch() * 20L * Defaults.TICK_MULT));
+
 		if (waitRoomStates != null){
 			joinCutoffTime = System.currentTimeMillis() + (params.getSecondsTillMatch()- Defaults.JOIN_CUTOFF_TIME)*1000;}
 	}
@@ -840,8 +853,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			/// This is a bit strange.. but in instances where people have teleported in
 			/// before the match was created, we need to add them in as if they were teleporting
 			/// These are the 2 methods called from the teleport in events
-//			player.setCurLocation(this.getLocationType());
-//			ArenaLocation l = player.getCurLocation();
+			//			player.setCurLocation(this.getLocationType());
+			//			ArenaLocation l = player.getCurLocation();
 			ArenaLocation nl = new ArenaLocation(this,
 					player.getCurLocation().getLocation(), this.getLocationType());
 			player.setCurLocation(nl);
@@ -942,7 +955,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			return false;
 		privateQuitting(p,t);
 		/// Should this be a removePlayer or killMember... really depends on what we should do with them on the team
-//			t.removePlayer(p);
+		//			t.removePlayer(p);
 		t.killMember(p);
 		Competition comp;
 		while ((comp = p.getCompetition()) != null){
@@ -1028,6 +1041,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
 		ArenaPlayer player = event.getPlayer();
 		event.addMessage(MessageHandler.getSystemMessage("you_left_competition",this.params.getName()));
+		//		Log.debug(" ##### onArenaPlayerLeaveEvent !!!!!!!### " + event.getPlayer().getName() +
+		//				"  ---- " +(params.hasOptionAt(MatchState.DEFAULTS, TransitionOption.DROPITEMS)));
+		if (params.hasOptionAt(MatchState.DEFAULTS, TransitionOption.DROPITEMS)){
+			InventoryUtil.dropItems(player.getPlayer());
+			InventoryUtil.clearInventory(player.getPlayer());
+		}
 		quitting(player);
 	}
 
@@ -1040,7 +1059,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
 		ArenaTeam t = getTeam(player);
 		PerformTransition.transition(this, MatchState.ONLEAVEARENA, player, t, false);
-
+		//		Log.debug(" onPostQuit !!!!!!! " + player.getName() +"   " + apte.getArenaType());
 		updateBukkitEvents(MatchState.ONLEAVE,player);
 		if (WorldGuardController.hasWorldGuard() && arena.hasRegion())
 			psc.removeMember(player, arena.getWorldGuardRegion());
@@ -1051,6 +1070,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			checkAndHandleIfTeamDead(t);
 		inMatch.remove(player.getName());
 		player.removeCompetition(this);
+		player.reset(); /// reset the players
 		scoreboard.setDead(t,player);
 		if (!params.getUseTrackerPvP()){
 			StatController.resumeTracking(player);
@@ -1082,6 +1102,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 	@Override
 	public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+		//		Log.debug(" onPreLeave !!!!!!! " + player.getName() +"   " + apte.getArenaType());
 		inMatch.remove(player.getName());
 	}
 
@@ -1133,7 +1154,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (vc instanceof DefinesNumTeams){
 			neededTeams = Math.max(neededTeams, ((DefinesNumTeams)vc).getNeededNumberOfTeams().max);}
 		if (vc instanceof DefinesNumLivesPerPlayer){
-//			if (nLivesPerPlayer== Integer.MAX_VALUE) nLivesPerPlayer = 1;
+			//			if (nLivesPerPlayer== Integer.MAX_VALUE) nLivesPerPlayer = 1;
 			nLivesPerPlayer = Math.max(nLivesPerPlayer, ((DefinesNumLivesPerPlayer)vc).getLivesPerPlayer());}
 		if (vc instanceof ScoreTracker){
 			if (params.getMaxTeamSize() <= 2){
@@ -1420,6 +1441,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		try{mc.sendOnIntervalMsg(remaining, event.getCurrentLeaders());}catch(Exception e){Log.printStackTrace(e);}
 	}
 
+	public void secondTick(int remaining) {
+		SObjective obj = scoreboard.getObjective(SAPIDisplaySlot.SIDEBAR);
+		if (obj != null){
+			obj.setDisplayNameSuffix(" &e("+remaining+")");}
+	}
+
 	public TeamJoinHandler getTeamJoinHandler() {
 		return joinHandler;
 	}
@@ -1432,6 +1459,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		return arena.getWaitroom() != null;
 	}
 
+	public boolean hasSpectatorRoom() {
+		return arena.getSpectatorRoom()!= null;
+	}
+
 	public boolean isJoinablePostCreate(){
 		return joinHandler != null &&
 				(alwaysOpen || tops.hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN) ||
@@ -1442,7 +1473,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (joinHandler == null)
 			return false;
 		return alwaysOpen || tops.hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN) ||
-				( hasWaitroom() && !joinHandler.isFull() &&
+				( (hasWaitroom() || hasSpectatorRoom())  && !joinHandler.isFull() &&
 						(isInWaitRoomState() && (joinCutoffTime == null || System.currentTimeMillis() < joinCutoffTime)));
 	}
 

@@ -113,6 +113,16 @@ public class MatchTransitions {
 		return tops == null ? false : tops.hasOption(option);
 	}
 
+	public boolean hasOptionIn(MatchState beginState, MatchState endState, TransitionOption option) {
+		List<MatchState> states = MatchState.getStates(beginState, endState);
+		for (MatchState state : states){
+			TransitionOptions tops = ops.get(state);
+			if (tops != null && tops.hasOption(option))
+				return true;
+		}
+		return false;
+	}
+
 	public boolean needsClearInventory() {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).clearInventory() : false;
 	}

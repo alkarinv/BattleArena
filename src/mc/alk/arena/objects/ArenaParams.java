@@ -34,6 +34,7 @@ public class ArenaParams {
 	Boolean closeWaitroomWhileRunning = null;
 	Boolean cancelIfNotEnoughPlayers = null;
 	Integer arenaCooldown = null;
+	Integer allowedTeamSizeDifference = null;
 
 	public ArenaParams(ArenaType at) {
 		this.arenaType = at;
@@ -53,6 +54,7 @@ public class ArenaParams {
 		this.closeWaitroomWhileRunning = ap.closeWaitroomWhileRunning;
 		this.cancelIfNotEnoughPlayers= ap.cancelIfNotEnoughPlayers;
 		this.arenaCooldown = ap.arenaCooldown;
+		this.allowedTeamSizeDifference = ap.allowedTeamSizeDifference;
 		this.setParent(ap.parent);
 		if (ap.allTops != null)
 			this.allTops = new MatchTransitions(ap.allTops);
@@ -76,6 +78,7 @@ public class ArenaParams {
 		if (this.closeWaitroomWhileRunning == null) this.closeWaitroomWhileRunning = parent.closeWaitroomWhileRunning;
 		if (this.cancelIfNotEnoughPlayers == null) this.cancelIfNotEnoughPlayers = parent.cancelIfNotEnoughPlayers;
 		if (this.arenaCooldown== null) this.arenaCooldown = parent.arenaCooldown;
+		if (this.allowedTeamSizeDifference== null) this.allowedTeamSizeDifference= parent.allowedTeamSizeDifference;
 		this.allTops = MatchTransitions.mergeChildWithParent(this.allTops, parent.allTops);
 		if (this.size == null) this.size = parent.size;
 		this.parent = null;
@@ -90,11 +93,20 @@ public class ArenaParams {
 	}
 
 	public String getTeamSizeRange() {
-		return size != null ? ArenaSize.rangeString(size.minTeamSize,size.maxTeamSize) : "";
+		return size != null ? ArenaSize.rangeString(size.minTeamSize,size.maxTeamSize) :
+			(parent != null ? parent.getTeamSizeRange() : "");
 	}
+
 	public String getNTeamRange() {
-		return size != null ? ArenaSize.rangeString(size.minTeams,size.maxTeams) : "";
+		return size != null ? ArenaSize.rangeString(size.minTeams,size.maxTeams) :
+			(parent != null ? parent.getNTeamRange() : "");
 	}
+
+	public String getPlayerRange() {
+		return size != null ? ArenaSize.rangeString(size.getMinPlayers(),size.getMaxPlayers()) :
+			(parent != null ? parent.getPlayerRange() : "");
+	}
+
 	public ArenaType getType() {return arenaType;}
 
 	public void setType(ArenaType type) {this.arenaType = type;}
@@ -237,6 +249,7 @@ public class ArenaParams {
 	public void setParent(ArenaParams parent) {
 		this.parent=parent;
 	}
+
 	public ArenaParams getParent() {
 		return parent;
 	}
@@ -439,7 +452,17 @@ public class ArenaParams {
 	}
 
 	public Integer getArenaCooldown() {
-		return this.arenaCooldown;
+		return arenaCooldown != null ? arenaCooldown :
+			(parent != null ? parent.getArenaCooldown(): null);
+	}
+
+	public void setAllowedTeamSizeDifference(int difference) {
+		this.allowedTeamSizeDifference = difference;
+	}
+
+	public Integer getAllowedTeamSizeDifference() {
+		return allowedTeamSizeDifference != null ? allowedTeamSizeDifference :
+			(parent != null ? parent.getAllowedTeamSizeDifference(): null);
 	}
 
 }

@@ -24,7 +24,7 @@ public class AllKills extends VictoryCondition implements ScoreTracker {
 
 	public AllKills(Match match) {
 		super(match);
-		kills = new ArenaObjective("allkills","All Kills",5);
+		kills = new ArenaObjective("allkills","All Kills",60);
 		kills.setDisplayName(MessageUtil.colorChat("&4All Kills"));
 		boolean isRated = match.getParams().isRated();
 		boolean soloRating = !match.getParams().isTeamRating();

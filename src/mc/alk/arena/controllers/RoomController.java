@@ -24,11 +24,11 @@ public enum RoomController {
 	private RoomContainer _getOrCreateSpectate(Arena arena) {
 		RoomContainer room = spectate.get(arena.getName());
 		if (room == null){
-			if (arena.getSpectate() == null){
+			if (arena.getSpectatorRoom() == null){
 				room = new RoomContainer("s_"+arena.getName()+"",
 						ParamController.copyParams(arena.getParams()), LocationType.SPECTATE);
 			} else {
-				room = arena.getSpectate();
+				room = arena.getSpectatorRoom();
 			}
 			spectate.put(arena.getName(), room);
 		}
@@ -73,7 +73,7 @@ public enum RoomController {
 
 	public static void addSpectate(Arena arena, int index, Location location) {
 		RoomContainer room = INSTANCE._getOrCreateSpectate(arena);
-		if (arena.getSpectate() == null)
+		if (arena.getSpectatorRoom() == null)
 			arena.setSpectate(room);
 		room.setSpawnLoc(index,location);
 	}

@@ -1,5 +1,6 @@
 package mc.alk.arena.util;
 
+import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;
 
 import com.earth2me.essentials.Essentials;
@@ -63,6 +64,7 @@ public class EssentialsUtil {
 			return false;
 		}
 	}
+
 	public static Boolean isFlying(String playerName) {
 		try{
 			User user = getUser(playerName);
@@ -73,4 +75,22 @@ public class EssentialsUtil {
 		}
 	}
 
+	public static void setBackLocation(String playerName, Location loc){
+		try{
+			User user = getUser(playerName);
+			user.setLastLocation(loc);
+		} catch(Exception e){
+			Log.printStackTrace(e);
+		}
+	}
+
+	public static Location getBackLocation(String playerName){
+		try{
+			User user = getUser(playerName);
+			return user.getLastLocation();
+		} catch(Exception e){
+			Log.printStackTrace(e);
+			return null;
+		}
+	}
 }

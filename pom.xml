@@ -4,7 +4,7 @@
   <groupId>mc.alk</groupId>
   <artifactId>BattleArena</artifactId>
   <packaging>jar</packaging>
-  <version>3.9.4.9.5</version>
+  <version>3.9.5</version>
   <name>BattleArena</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -43,7 +43,7 @@
     <dependency>
       <groupId>mc.alk</groupId>
       <artifactId>BattleScoreboardAPI</artifactId>
-      <version>[1.0.1,)</version>
+      <version>[1.0.3,)</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -151,7 +151,7 @@
     </extensions>
     <defaultGoal>install</defaultGoal>
     <!-- Where our source directory is -->
-    <sourceDirectory>${basedir}/src/mc</sourceDirectory>
+    <sourceDirectory>${basedir}/src</sourceDirectory>
     <!-- Include all the resources we need -->
     <resources>
       <resource>
@@ -206,7 +206,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
+      <!-- <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <executions>
@@ -217,17 +217,13 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
     </plugins>
   </build>
   <distributionManagement>
-    <site>
-      <id>battleplugins-repo</id>
-      <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/docs</url>
-    </site>
     <repository>
       <id>battleplugins-repo</id>
-      <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven/repository</url>
+      <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven</url>
     </repository>
   </distributionManagement>
 </project>

@@ -109,12 +109,14 @@ public class ParamAlterController {
 		switch(option){
 		case NLIVES: params.setNLives((Integer)value); break;
 		case NTEAMS: params.setNTeams((MinMax) value);  break;
+		case FORCESTARTTIME: params.setForceStartTime(new Long((Integer)value));  break;
 		case TEAMSIZE: params.setTeamSizes((MinMax) value);  break;
 		case PREFIX: params.setPrefix((String)value); break;
 		case COMMAND: params.setCommand((String)value); break;
 		case MATCHTIME: params.setMatchTime((Integer)value);break;
 		case CLOSEWAITROOMWHILERUNNING: params.setWaitroomClosedWhileRunning((Boolean)value); break;
 		case CANCELIFNOTENOUGHPLAYERS: params.setCancelIfNotEnoughPlayers((Boolean)value); break;
+		case ALLOWEDTEAMSIZEDIFFERENCE: params.setAllowedTeamSizeDifference((Integer)value); break;
 		case PRESTARTTIME:
 			iv = ((Integer)value).intValue();
 			checkGreater(iv,0, true);

@@ -220,7 +220,6 @@ public class ArenaMatch extends Match {
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerRespawn(PlayerRespawnEvent event, final ArenaPlayer p){
-		p.setCurrentClass(null);
 		if (isWon()){
 			return;}
 		final TransitionOptions mo = tops.getOptions(MatchState.ONDEATH);
@@ -278,10 +277,13 @@ public class ArenaMatch extends Match {
 					} catch(Exception e){}
 					if (respawnsWithClass){
 						try{
+							ArenaClass ac = null;
 							if (p.getPreferredClass() != null){
-								ArenaClass ac = p.getPreferredClass();
-								ArenaClassController.giveClass(p, ac);
-							}
+								ac = p.getPreferredClass();}
+							else if (p.getCurrentClass() != null){
+								ac = p.getCurrentClass();}
+							if (ac!=null){
+								ArenaClassController.giveClass(p, ac);}
 						} catch(Exception e){}
 					}
 					if (keepsInventory){
@@ -304,7 +306,8 @@ public class ArenaMatch extends Match {
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerMove(PlayerMoveEvent event){
 		if (!event.isCancelled() && arena.hasRegion() &&
-				tops.hasInArenaOrOptionAt(state,TransitionOption.WGNOLEAVE) && WorldGuardController.hasWorldGuard()){
+				tops.hasInArenaOrOptionAt(state,TransitionOption.WGNOLEAVE) &&
+				WorldGuardController.hasWorldGuard()){
 			/// Did we actually even move
 			if (event.getFrom().getBlockX() != event.getTo().getBlockX()
 					|| event.getFrom().getBlockY() != event.getTo().getBlockY()
@@ -364,7 +367,7 @@ public class ArenaMatch extends Match {
 		/// Check to see if it's a sign
 		if (event.getClickedBlock().getType().equals(Material.SIGN) ||
 				event.getClickedBlock().getType().equals(Material.WALL_SIGN)){ /// Only checking for signs
-//			signClick(event,this);
+			//			signClick(event,this);
 		} else { /// its a ready block
 			if (respawnTimer.containsKey(event.getPlayer().getName())){
 				respawnClick(event,this,respawnTimer);
@@ -421,14 +424,9 @@ public class ArenaMatch extends Match {
 				return;
 			}
 		}
-//		MatchTransitions tops = am.getParams().getTransitionOptions();
 		MatchParams mp = am.getParams();
 		userTime.put(playerName, System.currentTimeMillis());
 
-//		final TransitionOptions mo = tops.getOptions(am.getMatchState());
-//		final TransitionOptions ro = tops.getOptions(MatchState.ONSPAWN);
-//		if (mo == null && ro == null)
-//			return;
 		boolean woolTeams = mp.hasAnyOption(TransitionOption.WOOLTEAMS);
 		/// Have They have already selected a class this match, have they changed their inventory since then?
 		/// If so, make sure they can't just select a class, drop the items, then choose another

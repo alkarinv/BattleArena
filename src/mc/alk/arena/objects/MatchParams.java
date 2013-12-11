@@ -36,6 +36,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	MatchParams mparent=null;
 
+	Long forceStartTime = null;
+
 	public MatchParams(ArenaType at) {
 		super(at);
 		this.setRating(rating);
@@ -55,6 +57,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.useBTMessages = mp.useBTMessages;
 		this.useBTPvP = mp.useBTPvP;
 		this.useBTTeamRating  = mp.useBTTeamRating;
+		this.forceStartTime  = mp.forceStartTime;
 		if (mp.modules != null)
 			this.modules = new HashSet<ArenaModule>(mp.modules);
 	}
@@ -74,6 +77,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 			if (this.useBTMessages == null) this.useBTMessages = mparent.useBTMessages;
 			if (this.useBTPvP == null) this.useBTPvP = mparent.useBTPvP;
 			if (this.useBTTeamRating == null) this.useBTTeamRating = mparent.useBTTeamRating;
+			if (this.forceStartTime== null) this.forceStartTime = mparent.forceStartTime;
 			if (this.modules != null && mparent.modules != null){
 				this.modules.addAll(mparent.modules);
 			} else if (mparent.modules != null){
@@ -209,9 +213,14 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		useBTMessages = enable;
 	}
 
-	public void setForceStartTime(long forceStartTime) {
-
+	public void setForceStartTime(Long forceStartTime) {
+		this.forceStartTime = forceStartTime;
 	}
+
+	public Long getForceStartTime() {
+		return forceStartTime != null ? forceStartTime : (mparent!= null ? mparent.getForceStartTime() : null);
+	}
+
 	@Override
 	public boolean valid() {
 		return super.valid() && (getTransitionOptions() != null ?
@@ -259,4 +268,19 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		return useBTTeamRating != null ? useBTTeamRating : (mparent!= null ? mparent.isTeamRating() : null);
 	}
 
+	public boolean isAutoable() {
+//		if (allTops.hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN) ||
+//				allTops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN) ||
+//				allTops.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN) ||
+//				allTops.hasAnyOption(options)
+//
+//				)
+//			return true;
+		return false;
+	}
+
+	public String getNotAutoableReasons() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -86,6 +86,7 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 	public JoinResult join(TeamJoinObject tqo, boolean shouldStart) {
 		JoinResult jr = super.join(tqo, shouldStart);
 		switch(jr.status){
+		case NONE:
 		case ADDED_TO_ARENA_QUEUE:
 		case ADDED_TO_QUEUE:
 			for (ArenaTeam t: tqo.getTeams()){
@@ -95,8 +96,6 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 				}
 				methodController.updateEvents(MatchState.ONENTER, t.getPlayers());
 			}
-			break;
-		case NONE:
 			break;
 		case ERROR:
 		case ADDED_TO_EXISTING_MATCH:

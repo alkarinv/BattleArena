@@ -7,6 +7,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.EffectUtil;
+import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
@@ -33,6 +34,9 @@ public class PlayerRestoreController {
 	Location teleportLocation = null; /// Location to teleport to
 	Location tp2 = null;
 	Location lastLoc = null;
+	/// For essentials, need to keep resetting the back location
+	/// so that players can't /back, into the arena
+	Location backLocation = null;
 
 	Integer exp = null;
 	Double health = null;
@@ -61,7 +65,6 @@ public class PlayerRestoreController {
 			handleKill(p);
 			return stillHandling();
 		}
-
 		/// Teleport players, or set respawn point
 //		if (tp2 != null && lastLoc != null){
 //			handleEnsureTeleport(p, event);}
@@ -108,6 +111,7 @@ public class PlayerRestoreController {
 			try{ EffectUtil.deEnchantAll(p);} catch (Exception e){}
 			HeroesController.deEnchant(p);
 		}
+
 		return stillHandling();
 	}
 
@@ -197,7 +201,7 @@ public class PlayerRestoreController {
 			public void run() {
 				Player pl = ServerUtil.findPlayerExact(name);
 				if (pl != null){
-					pl.giveExp(val);}
+					ExpUtil.setTotalExperience(pl, val);}
 			}
 		});
 	}
@@ -311,7 +315,7 @@ public class PlayerRestoreController {
 	private boolean stillHandling() {
 		return clearInventory || kill ||clearWool!=-1||teleportLocation!=null || tp2 != null || lastLoc!=null||
 				exp != null || health!=null || hunger!=null || magic !=null || gamemode!=null || item!=null ||
-				matchItems!=null||removeItems!=null||message!=null;
+				matchItems!=null||removeItems!=null||message!=null || backLocation!=null;
 	}
 
 	private void handleKill(Player p) {
@@ -479,6 +483,14 @@ public class PlayerRestoreController {
 
 	public String getMessage() {
 		return message;
+	}
+
+	public void setBackLocation(Location location) {
+		backLocation = location;
+	}
+
+	public Location getBackLocation() {
+		return backLocation;
 	}
 
 }

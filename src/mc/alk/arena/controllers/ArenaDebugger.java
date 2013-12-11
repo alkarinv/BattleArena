@@ -77,7 +77,7 @@ public class ArenaDebugger {
 			for (int i=0;i<locs.size();i++){
 				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));}
 		}
-		locs = arena.getSpectate() != null ? arena.getSpectate().getSpawns() : null;
+		locs = arena.getSpectatorRoom() != null ? arena.getSpectatorRoom().getSpawns() : null;
 		if (locs != null){
 			for (int i=0;i<locs.size();i++){
 				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));}

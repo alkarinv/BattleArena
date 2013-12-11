@@ -12,7 +12,7 @@ commands:
     team:
         aliases: [arenateam]
         description: Team commands
-        usage: /team <create|join|leave|decline> [arguments]
+        usage: Problem loading plugin, please send errors on startup to alkarin_v
     arena:
         aliases: [a]
         description: Arena commands

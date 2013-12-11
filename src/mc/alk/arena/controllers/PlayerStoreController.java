@@ -55,7 +55,7 @@ public class PlayerStoreController {
 			return;
 		Integer exp = expmap.remove(p.getName());
 		if (p.isOnline() && !p.isDead()){
-			ExpUtil.giveExperience(p.getPlayer(), exp);
+			ExpUtil.setTotalExperience(p.getPlayer(), exp);
 		} else {
 			BAPlayerListener.restoreExpOnReenter(p.getName(), exp);
 		}

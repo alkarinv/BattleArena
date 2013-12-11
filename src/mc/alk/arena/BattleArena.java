@@ -178,19 +178,6 @@ public class BattleArena extends JavaPlugin {
 		ts.setConfig(FileUtil.load(clazz,dir.getPath() +"/teamConfig.yml","/default_files/teamConfig.yml")); /// Load team Colors
 		ts.loadAll();
 
-		baConfigSerializer.loadCompetitions(); /// Load our competitions, has to happen after classes and teams
-
-		/// persist our disabled arena types
-		StateFlagSerializer sfs = new StateFlagSerializer();
-		sfs.setConfig(dir.getPath() +"/saves/state.yml");
-		commandExecutor.setDisabled(sfs.loadEnabled());
-		ArenaSerializer.setBAC(arenaController);
-
-		sfs.loadLobbyStates(RoomController.getLobbies());
-		sfs.loadContainerStates(arenaController.getArenas());
-
-		arenaControllerSerializer.load();
-
 		/// Set our commands
 		getCommand("watch").setExecutor(commandExecutor);
 		getCommand("team").setExecutor(new TeamExecutor(commandExecutor));
@@ -206,14 +193,29 @@ public class BattleArena extends JavaPlugin {
 
 		createMessageSerializers();
 		FileLogger.init(); /// shrink down log size
-		/// Start listening for players queuing into matches
-		new Thread(arenaController).start();
 
+		/// Load Competitions and Arenas after everything is loaded (plugins and worlds)
 		/// Other plugins using BattleArena are going to be registering
 		/// Lets hold off on loading the scheduled events until those plugins have registered
 		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
 			@Override
 			public void run() {
+				baConfigSerializer.loadCompetitions(); /// Load our competitions, has to happen after classes and teams
+
+				/// persist our disabled arena types
+				StateFlagSerializer sfs = new StateFlagSerializer();
+				sfs.setConfig(dir.getPath() +"/saves/state.yml");
+				commandExecutor.setDisabled(sfs.loadEnabled());
+				ArenaSerializer.setBAC(arenaController);
+
+				sfs.loadLobbyStates(RoomController.getLobbies());
+				sfs.loadContainerStates(arenaController.getArenas());
+
+				arenaControllerSerializer.load();
+
+				/// Start listening for players queuing into matches
+				new Thread(arenaController).start();
+
 				/// Load up our signs
 				signSerializer.setConfig(dir.getPath()+"/saves/signs.yml");
 				signSerializer.loadAll(signUpdateListener);

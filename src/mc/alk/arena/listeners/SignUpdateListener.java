@@ -39,20 +39,26 @@ public class SignUpdateListener implements Listener{
 		}
 	}
 
-	private void setPeopleInQueue(Arena arena, int playersInQueue, int neededPlayers) {
+	private void setPeopleInQueue(Arena arena, int playersInQueue,
+			int neededPlayers, int maxPlayers) {
 		Set<ArenaCommandSign> signLocs = arenaSigns.getSafer(arena.getName());
 		if (signLocs == null || signLocs.isEmpty()){
 			return;
 		}
-		final String strcount = (neededPlayers == ArenaSize.MAX) ?
-				playersInQueue +"&6/\u221E" : playersInQueue+"&6/"+neededPlayers;
+		final String strcount;
+		if (neededPlayers == maxPlayers){
+			strcount = (neededPlayers == ArenaSize.MAX) ?
+					playersInQueue +"&6/\u221E" : playersInQueue+"&6/"+neededPlayers;
+		} else {
+			strcount =(maxPlayers == ArenaSize.MAX) ?
+					playersInQueue +"&6/"+neededPlayers+"/\u221E" : playersInQueue+"&6/"+neededPlayers+"/"+maxPlayers;
+		}
 		for (ArenaCommandSign l : signLocs){
 			Sign s = l.getSign();
 			if (s == null)
 				continue;
 			s.setLine(3, MessageUtil.colorChat(getMatchState(s.getLine(3))+" " + strcount));
 			s.update();
-//			Log.debug("  line now " + s.getLine(3));
 		}
 	}
 
@@ -67,39 +73,35 @@ public class SignUpdateListener implements Listener{
 				continue;
 			s.setLine(3, MessageUtil.colorChat(state + " "+ getQCount(s.getLine(3))));
 			s.update();
-//			Log.debug("  line now " + s.getLine(3));
-
 		}
 	}
 
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void onMatchStartEvent(MatchStartEvent event){
-		setMatchState(event.getMatch().getArena(), "Active&4");
+		setMatchState(event.getMatch().getArena(), "Active");
 	}
 
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void onMatchFinishedEvent(MatchFinishedEvent event){
-		setMatchState(event.getMatch().getArena(), "Open&2");
+		setMatchState(event.getMatch().getArena(), "Open");
 	}
 
 	@EventHandler
 	public void onArenaPlayerEnterQueueEvent(ArenaPlayerEnterQueueEvent event){
-//		Log.debug("onArenaPlayerEnterQueueEvent === "+ event.getPlayer().getName() +"   " +
-//				event.getQueueResult().playersInQueue +" / " + event.getQueueResult().maxPlayers
-//				+"  arena="+ event.getArena());
 		if (event.getArena() == null) return;
 		int size = event.getQueueResult().playersInQueue;
-		setPeopleInQueue(event.getArena(), size, event.getQueueResult().maxPlayers);
+		setPeopleInQueue(event.getArena(), size,
+				event.getQueueResult().params.getMinPlayers(),
+				event.getQueueResult().maxPlayers);
 	}
 
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void onArenaPlayerLeaveQueueEvent(ArenaPlayerLeaveQueueEvent event){
-//		Log.debug("onArenaPlayerLeaveQueueEvent === "+ event.getPlayer().getName() +"   " +
-//				event.getNPlayers() +" / " + event.getParams().getMinPlayers() +"  " + event.getParams().getMaxPlayers());
-
 		if (event.getArena() == null) return;
 		int size = event.getNPlayers();
-		setPeopleInQueue(event.getArena(), size,event.getParams().getMaxPlayers());
+		setPeopleInQueue(event.getArena(), size,
+				event.getParams().getMinPlayers(),
+				event.getParams().getMaxPlayers());
 	}
 
 	public void addSign(ArenaCommandSign acs) {

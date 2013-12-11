@@ -1,5 +1,8 @@
 package mc.alk.arena.objects;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author alkarin
  *
@@ -44,5 +47,19 @@ public enum MatchState implements CompetitionState{
 
 	public boolean isRunning() {
 		return this == MatchState.ONSTART;
+	}
+
+	public static List<MatchState> getStates(MatchState beginState, MatchState endState) {
+		List<MatchState> list = new ArrayList<MatchState>();
+		boolean start = false;
+		for (MatchState state : MatchState.values()){
+			if (state == endState){
+				break;}
+			if (state == beginState){
+				start = true;}
+			if (start){
+				list.add(state);}
+		}
+		return list;
 	}
 }

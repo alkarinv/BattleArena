@@ -25,7 +25,9 @@ import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.listeners.SignUpdateListener;
+import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -47,6 +49,7 @@ import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.ServerUtil;
 
@@ -61,7 +64,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 
 	final private Set<Match> running_matches = Collections.synchronizedSet(new CopyOnWriteArraySet<Match>());
 	final private Map<String, Integer> runningMatchTypes = Collections.synchronizedMap(new HashMap<String,Integer>());
-	final private Map<ArenaType,List<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,List<Match>>());
+	final private Map<ArenaType,LinkedList<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,LinkedList<Match>>());
 	private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
 	private Map<ArenaType, ArenaQueue> nextArena = new ConcurrentHashMap<ArenaType, ArenaQueue>();
 	private final MethodController methodController;
@@ -81,6 +84,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	public class OldMatchContainerState{
 		final ContainerState waitroomCS;
 		final ContainerState arenaCS;
+		MatchParams params = null;
 
 		public OldMatchContainerState(Arena arena) {
 			waitroomCS = (arena.getWaitroom()!=null) ? arena.getWaitroom().getContainerState() : null;
@@ -88,6 +92,8 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		}
 
 		public void revert(Arena arena) {
+			if(params != null)
+				arena.setParams(params);
 			arena.setContainerState(arenaCS);
 			if (waitroomCS != null && arena.getWaitroom()!=null){
 				arena.getWaitroom().setContainerState(waitroomCS);}
@@ -181,15 +187,42 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 	}
 
 
-	public Match createAndAutoMatch(Arena arena, EventOpenOptions eoo) throws NeverWouldJoinException {
+	public Match createAndAutoMatch(Arena arena, EventOpenOptions eoo)
+			throws NeverWouldJoinException, IllegalStateException {
+		/// eoo
+		MatchParams mp = eoo.getParams();
+		OldMatchContainerState old = new OldMatchContainerState(arena);
+		old.params = arena.getParams();
+
+		mp.setForceStartTime((long) eoo.getSecTillStart());
+		ArenaParams parent = mp.getParent();
+		mp.setParent(null);
+
+		MinMax nTeams = mp.getNTeams();
+		MinMax teamSize = mp.getTeamSizes();
+		if( nTeams == null){
+			mp.setNTeams(new MinMax(ArenaSize.MAX));}
+		if( teamSize == null){
+			mp.setTeamSizes(new MinMax(1));}
+		mp.setParent(parent);
+		nTeams = mp.getNTeams();
+		teamSize = mp.getTeamSizes();
+		amq.setForcestartTime(arena, mp, mp.getForceStartTime());
+
+		arena.setParams(mp);
 		Match m = createMatch(arena,eoo);
+		oldArenaStates.put(m, old);
 		preOpenChanges(m);
 		saveStates(m,arena);
 		arena.setAllContainerState(ContainerState.OPEN);
 		m.setTimedStart(eoo.getSecTillStart(), eoo.getInterval());
+
+//		/// Since we want people to join this event, add this arena as the next
+		nextArena.get(arena.getArenaType()).addFirst(arena);
+
 		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
-			addAllOnline(m.getParams(), arena);
-		}
+			addAllOnline(m.getParams(), arena);}
+
 		return m;
 	}
 
@@ -201,9 +234,17 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		}
 	}
 
+	private OldMatchContainerState getOrCreateSavedState(Match m, Arena arena) {
+		OldMatchContainerState old = oldArenaStates.get(m);
+		if(old == null){
+			old = new OldMatchContainerState(arena);
+			oldArenaStates.put(m,old);
+		}
+		return old;
+	}
 	private void saveStates(Match m, Arena arena) {
 		/// save the old states to put back after the match
-		oldArenaStates.put(m,new OldMatchContainerState(arena));
+		OldMatchContainerState old = getOrCreateSavedState(m, arena);
 		if (RoomController.hasLobby(arena.getArenaType())){
 			RoomContainer pc = RoomController.getLobby(arena.getArenaType());
 			OldLobbyState ols = oldLobbyState.get(arena.getArenaType());
@@ -224,12 +265,12 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		incNumberOpenMatches(match.getParams().getType().getName());
 		match.open();
 		if (match.isJoinablePostCreate()){
-			List<Match> matches = unfilled_matches.get(match.getParams().getType());
+			LinkedList<Match> matches = unfilled_matches.get(match.getParams().getType());
 			if (matches == null){
 				matches = new LinkedList<Match>();
 				unfilled_matches.put(match.getParams().getType(), matches);
 			}
-			((LinkedList<Match>)matches).addFirst(match);
+			matches.addFirst(match);
 		}
 	}
 
@@ -273,8 +314,6 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 				BattleArena.getBAExecutor().join(ap, mp, args);
 			}
 		}
-		Long cooldownSec = (am.getParams().getArenaCooldown() != null ?
-				am.getParams().getArenaCooldown() : 10) * 20L;
 		/// isEnabled to check to see if we are shutting down
 		if (arena != null && BattleArena.getSelf().isEnabled()){
 			Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
@@ -282,7 +321,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 				public void run() {
 					amq.add(arena,shouldStart(arena)); /// add it back into the queue
 				}
-			}, cooldownSec);
+			}, am.getParams().getArenaCooldown()*20L);
 		}
 	}
 
@@ -371,9 +410,9 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 					throw new IllegalStateException("&cWaitroom is not set for this arena");}
 				a.getWaitroom().teamJoining(tqo.getTeam());
 			} else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTSPECTATE)){
-				if (a.getSpectate()== null){
+				if (a.getSpectatorRoom()== null){
 					throw new IllegalStateException("&cSpectate is not set for this arena");}
-				a.getSpectate().teamJoining(tqo.getTeam());
+				a.getSpectatorRoom().teamJoining(tqo.getTeam());
 			} else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)){
 				tqo.getJoinOptions().getArena().teamJoining(tqo.getTeam());
 			}
@@ -490,10 +529,10 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
 		int sizeDif = Integer.MAX_VALUE;
 		int m1 = mp.getMinTeamSize();
 		for (Arena a : allarenas.values()){
-			if (a.valid() && a.matches(mp,jp)){
-				return a;}
-			if (a.getArenaType() != mp.getType())
+			if (!a.valid() || a.getArenaType() != mp.getType())
 				continue;
+			if (a.matchesIgnoreSize(mp,jp)){
+				return a;}
 			int m2 = a.getParams().getMinTeamSize();
 			if (m2 > m1 && m2 -m1 < sizeDif){
 				sizeDif = m2 - m1;

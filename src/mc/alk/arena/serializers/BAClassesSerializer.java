@@ -9,6 +9,7 @@ import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.spawns.SpawnInstance;
+import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -56,7 +57,7 @@ public class BAClassesSerializer extends BaseConfig{
 		List<SpawnInstance> mobs = null;
 		List<CommandLineString> commands = null;
 
-		if (cs.contains("items")){ items = ConfigSerializer.getItemList(cs,"items");}
+		if (cs.contains("items")){ items = InventoryUtil.getItemList(cs,"items");}
 		if (cs.contains("enchants")){ effects = ConfigSerializer.getEffectList(cs,"enchants");}
 		if (cs.contains("mobs")){ mobs = SpawnSerializer.getSpawnList(cs.getConfigurationSection("mobs"));}
 		if (cs.contains("doCommands")){

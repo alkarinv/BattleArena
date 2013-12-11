@@ -126,15 +126,15 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		while(iter.hasNext()){
 			ArenaTeam t = iter.next();
 			if (t.size() < minTeamSize || t.size() > maxTeamSize){
-				iter.remove();
 				TeamController.removeTeamHandler(t, this);
 				improper.add(t);
 			}
 		}
+		teams.removeAll(improper);
 		return improper;
 	}
 
-	public boolean hasEnough(boolean allowDifferentTeamSizes){
+	public boolean hasEnough(int allowedTeamSizeDifference){
 		if (teams ==null)
 			return false;
 		final int teamssize = teams.size();
@@ -145,14 +145,16 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		int valid = 0;
 		for (ArenaTeam t: teams){
 			final int tsize = t.size();
+			if (tsize ==0)
+				continue;
+			if (tsize < min) min = tsize;
+			if (tsize > max) max = tsize;
+
+			if (max - min > allowedTeamSizeDifference)
+				return false;
+
 			if (tsize < minTeamSize || tsize > maxTeamSize)
 				continue;
-			if (!allowDifferentTeamSizes){
-				min = Math.min(min, tsize);
-				max = Math.max(max, tsize);
-				if (min != tsize || max != tsize)
-					continue;
-			}
 			valid++;
 		}
 		return valid >= minTeams && valid <= maxTeams;

@@ -8,7 +8,6 @@ import java.util.Set;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
-import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
@@ -65,8 +64,13 @@ public class EventOpenOptions {
 	public static EventOpenOptions parseOptions(String[] args, Set<Integer> ignoreArgs, MatchParams params)
 			throws InvalidOptionException{
 		EventOpenOptions eoo = new EventOpenOptions();
+//		eoo.params = ParamController.copyParams(params);
+		eoo.params = new MatchParams(params.getType());
 		Map<EventOpenOption,Object> ops = eoo.options;
 
+		MinMax nTeams = eoo.params.getNTeams();
+		MinMax teamSize = eoo.params.getTeamSizes();
+		eoo.params.setParent(params);
 		int i =0;
 		for (String op: args){
 			if ( ignoreArgs != null && ignoreArgs.contains(i++) || op == null || op.isEmpty())
@@ -138,7 +142,6 @@ public class EventOpenOptions {
 //			params.setNTeams(new MinMax(2));
 //			ops.put(EventOpenOption.NTEAMS, new MinMax(2));
 //		}
-		eoo.params = ParamController.copyParams(params);
 		eoo.updateParams(eoo.params);
 		return eoo;
 	}

@@ -491,7 +491,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	}
 
 	public boolean hasEnough() {
-		return joinHandler != null ? joinHandler.hasEnough(true) : false;
+		return joinHandler != null ? joinHandler.hasEnough(Integer.MAX_VALUE) : false;
 	}
 
 	@Override

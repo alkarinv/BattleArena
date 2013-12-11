@@ -5,6 +5,7 @@ import java.util.List;
 
 import mc.alk.arena.util.compat.IInventoryHelper;
 
+import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -56,7 +57,7 @@ public class InventoryHelper implements IInventoryHelper{
 	public void setDisplayName(ItemStack itemStack, String displayName) {
 		ItemMeta meta = itemStack.getItemMeta();
 		if(meta != null){
-			meta.setDisplayName(displayName);
+			meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',displayName));
 			itemStack.setItemMeta(meta);
 		}
 	}

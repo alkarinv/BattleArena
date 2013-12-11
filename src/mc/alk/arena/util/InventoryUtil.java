@@ -18,7 +18,10 @@ import mc.alk.arena.util.compat.IInventoryHelper;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -649,6 +652,8 @@ public class InventoryUtil {
 			Pattern.compile("displayName= ?\"([^\"]*)\"",Pattern.CASE_INSENSITIVE); //The pattern for Display name
 	private static final Pattern PATTERN_COLOR =
 			Pattern.compile("color= ?([0-9]+),([0-9]+),([0-9]+)",Pattern.CASE_INSENSITIVE); //The pattern for matching lore
+	private static final Pattern PATTERN_POSITION =
+			Pattern.compile("position= ?\"([^\"]*)\"",Pattern.CASE_INSENSITIVE); //The pattern for matching position
 
 	public static ItemStack parseItem(String str) throws Exception{
 		/// items in yaml get stored like this {leather_chest=fireprot:5 1}
@@ -672,6 +677,9 @@ public class InventoryUtil {
 		Color c = parseColor(str);
 		if (c != null){ /// we have color, so strip it
 			str = PATTERN_COLOR.matcher(str).replaceFirst("");}
+		Integer pos = parsePosition(str);
+		if (pos != null){ /// we have position, so strip it
+			str = PATTERN_POSITION.matcher(str).replaceFirst("");}
 		ItemStack is =null;
 		String split[] = str.split(" +");
 		is = InventoryUtil.getItemStack(split[0].trim());
@@ -711,6 +719,13 @@ public class InventoryUtil {
 		return is;
 	}
 
+	public static Integer parsePosition(String str){
+		Matcher m = PATTERN_POSITION.matcher(str);
+		if (!m.find())
+			return null;
+		return Integer.valueOf(m.group(1));
+	}
+
 	public static Color parseColor(String str){
 		Matcher m = PATTERN_COLOR.matcher(str);
 		if (!m.find())
@@ -729,7 +744,7 @@ public class InventoryUtil {
 		Matcher matcher = PATTERN_DISPLAY_NAME.matcher(str);
 		if(!matcher.find()){
 			return null;}
-		return matcher.group(1);
+		return MessageUtil.colorChat(matcher.group(1));
 	}
 
 	public static LinkedList<String> parseLore(String str){
@@ -1112,6 +1127,50 @@ public class InventoryUtil {
 		for (ItemStack item: player.getInventory().getContents()){
 			if (item != null && item.getType() != Material.AIR){
 				items.add(item);}
+		}
+		return items;
+	}
+
+	public static void dropItems(Player player) {
+		Location loc = player.getLocation();
+		World w = loc.getWorld();
+		PlayerInventory inv = player.getInventory();
+		for (ItemStack is: inv.getArmorContents()){
+			if (is == null || is.getType() == Material.AIR)
+				continue;
+			w.dropItemNaturally(loc, is);
+		}
+		for (ItemStack is: inv.getContents()){
+			if (is == null || is.getType() == Material.AIR)
+				continue;
+			w.dropItemNaturally(loc, is);
+		}
+	}
+
+	public static ArrayList<ItemStack> getItemList(ConfigurationSection cs, String nodeString) {
+		if (cs == null || cs.getList(nodeString) == null)
+			return null;
+		ArrayList<ItemStack> items = new ArrayList<ItemStack>();
+		try {
+			String str = null;
+			for (Object o : cs.getList(nodeString)){
+				try {
+					str = o.toString();
+					ItemStack is = InventoryUtil.parseItem(str);
+					if (is != null){
+						items.add(is);
+					} else {
+						Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
+					}
+				} catch (IllegalArgumentException e) {
+					Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
+				} catch (Exception e){
+					Log.err(cs.getCurrentPath() +"."+nodeString + " couldnt parse item " + str);
+				}
+			}
+		} catch (Exception e){
+			Log.err(cs.getCurrentPath() +"."+nodeString + " could not be parsed in config.yml");
+			Log.printStackTrace(e);
 		}
 		return items;
 	}

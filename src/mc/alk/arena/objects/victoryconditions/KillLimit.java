@@ -23,7 +23,7 @@ public class KillLimit extends VictoryCondition implements ScoreTracker{
 
 	public KillLimit(Match match) {
 		super(match);
-		kills = new ArenaObjective("playerkills","Player Kills",5);
+		kills = new ArenaObjective("playerkills","Player Kills",60);
 		kills.setDisplayName(MessageUtil.colorChat("&4First to 50"));
 		boolean isRated = match.getParams().isRated();
 		boolean soloRating = !match.getParams().isTeamRating();

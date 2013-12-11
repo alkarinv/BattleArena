@@ -364,7 +364,7 @@ public class ArenaSerializer extends BaseConfig{
 					amap.put("waitRoomLocations", locations);
 				}
 				/// spectate locations
-				llocs = arena.getSpectate() != null ? arena.getSpectate().getSpawns() : null;
+				llocs = arena.getSpectatorRoom() != null ? arena.getSpectatorRoom().getSpawns() : null;
 				if (llocs!= null){
 					mlocs = new HashMap<Integer,Location>();
 					for (int i=0;i<llocs.size();i++){
@@ -455,8 +455,9 @@ public class ArenaSerializer extends BaseConfig{
 	public static void saveArenas(Plugin plugin){
 		if (!configs.containsKey(plugin))
 			return;
+		Log.debug("   plugin==="+plugin);
 		for (ArenaSerializer serializer: configs.get(plugin)){
-			serializer.saveArenas(false);
+			serializer.saveArenas(true);
 		}
 	}
 
