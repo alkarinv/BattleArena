@@ -20,14 +20,14 @@
       <id>bukkit-repo</id>
       <url>http://repo.bukkit.org/content/groups/public</url>
     </repository>
-    <repository>
+    <!-- <repository>
       <id>plugin-repo</id>
       <url>http://bukkit.jacekk.co.uk/plugin_repo/repo/</url>
-    </repository>
-    <!-- <repository>
+    </repository> -->
+    <repository>
       <id>sk89q-repo</id>
       <url>http://maven.sk89q.com/repo/</url>
-    </repository> -->
+    </repository>
     <repository>
       <id>vault-repo</id>
       <url>http://ci.herocraftonline.com/plugin/repository/everything</url>
