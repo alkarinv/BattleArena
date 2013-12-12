@@ -151,7 +151,7 @@
     </extensions>
     <defaultGoal>install</defaultGoal>
     <!-- Where our source directory is -->
-    <sourceDirectory>${basedir}/src</sourceDirectory>
+    <sourceDirectory>${basedir}/src/mc</sourceDirectory>
     <!-- Include all the resources we need -->
     <resources>
       <resource>
