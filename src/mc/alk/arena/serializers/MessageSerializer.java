@@ -72,7 +72,7 @@ public class MessageSerializer extends BaseConfig {
 			Object obj = config.get(key);
 			if (obj == null || obj instanceof MemorySection)
 				continue;
-			msgOptions.put(key, new MessageOptions((String)obj));
+			msgOptions.put(key, new MessageOptions(String.valueOf(obj)));
 		}
 	}
 
