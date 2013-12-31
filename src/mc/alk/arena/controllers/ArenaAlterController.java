@@ -455,12 +455,14 @@ public class ArenaAlterController {
 	private static boolean restoreDefaultArenaOptions(Arena arena, boolean save) {
 		MatchParams ap = arena.getParams();
 		MatchParams p = new MatchParams(ap.getType());
-		p.setRating(ap.getRated());
-		arena.setParams(p);
+        MatchParams parent = ParamController.getMatchParams(ap.getType());
+        p.setRating(ap.getRated());
+        p.setParent(parent);
+        arena.setParams(p);
 		BattleArenaController ac = BattleArena.getBAController();
-		ac.updateArena(arena);
 		if (save)
 			BattleArena.saveArenas(arena.getArenaType().getPlugin());
+        ac.updateArena(arena);
 		return true;
 	}
 

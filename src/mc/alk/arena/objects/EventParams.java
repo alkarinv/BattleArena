@@ -8,22 +8,28 @@ import mc.alk.arena.objects.arenas.ArenaType;
 
 
 public class EventParams extends MatchParams{
-	Integer secondsTillStart = null;
-	Integer announcementInterval = null;
-	List<String> openOptions = null;
-	EventParams eparent = null;
+	Integer secondsTillStart;
+	Integer announcementInterval;
+	List<String> openOptions;
+	EventParams eparent;
 
 	public EventParams(MatchParams mp) {
 		super(mp);
-		if (mp instanceof EventParams){
-			EventParams ep = (EventParams) mp;
-			this.secondsTillStart = ep.secondsTillStart;
-			this.announcementInterval = ep.announcementInterval;
-			this.eparent = ep.eparent;
-			if (ep.openOptions != null)
-				this.openOptions = new ArrayList<String>(ep.openOptions);
-		}
 	}
+
+    public void copy(ArenaParams ap){
+        if (this == ap)
+            return;
+        super.copy(ap);
+        if (ap instanceof EventParams){
+            EventParams ep = (EventParams) ap;
+            this.secondsTillStart = ep.secondsTillStart;
+            this.announcementInterval = ep.announcementInterval;
+            this.eparent = ep.eparent;
+            if (ep.openOptions != null)
+                this.openOptions = new ArrayList<String>(ep.openOptions);
+        }
+    }
 	@Override
 	public void flatten() {
 		if (eparent != null){

@@ -69,7 +69,7 @@ public enum GameOption{
 		case FORCESTARTTIME:
 		case NLIVES:
 		case ALLOWEDTEAMSIZEDIFFERENCE:
-			return ConfigSerializer.parseSize(value,-1);
+			return ConfigSerializer.toPositiveSize(value, -1);
 		case PREFIX:
 		case COMMAND:
 			return value;

@@ -210,14 +210,14 @@ public class BAExecutor extends CustomCommandExecutor {
 			return sendMessage(player, "&6/team leave: &cto leave the team");
 		}
 
-		JoinOptions jp = null;
+		JoinOptions jp;
 		try {
 			jp = JoinOptions.parseOptions(mp, t, player,Arrays.copyOfRange(args, 1, args.length));
 		} catch (InvalidOptionException e) {
 			return sendMessage(player, e.getMessage());
 		} catch (Exception e) {
 			Log.printStackTrace(e);
-			jp = null;
+            return sendMessage(player, e.getMessage());
 		}
 		/// Check to make sure at least one arena can be joined at some time
 		Arena arena = ac.getArenaByMatchParams(mp, jp);
@@ -242,7 +242,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			}
 		}
 
-		if (arena != null && !arena.isJoinable(mp)) {
+		if (!arena.isJoinable(mp)) {
 			return MessageUtil.sendMessage(player,
 					"&c" + arena.getName() + " can't be joined at this time.\n"
 							+ arena.getNotJoinableReasons(mp));
@@ -273,9 +273,9 @@ public class BAExecutor extends CustomCommandExecutor {
 		}
 
 		TeamJoinObject tqo = new TeamJoinObject(t, mp, jp);
-		AnnouncementOptions ao = mp.getAnnouncementOptions();
-		Channel channel = null;
-		String sysmsg = null;
+        AnnouncementOptions ao = mp.getAnnouncementOptions();
+		Channel channel;
+		String sysmsg;
 		{
 			ao = mp.getAnnouncementOptions();
 			channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE)
@@ -485,7 +485,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds = { "status" }, admin = true, min = 2, usage = "status <arena or player>")
 	public boolean arenaStatus(CommandSender sender, String[] args) {
-		Match am = null;
+		Match am;
 		String pormatch = args[1];
 		Arena a = ac.getArena(pormatch);
 		Player player;
@@ -618,18 +618,18 @@ public class BAExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds = { "check" }, usage = "check")
-	public boolean arenaCheck(ArenaPlayer p) {
-		if (ac.isInQue(p)) {
-			JoinResult qpp = ac.getCurrentQuePos(p);
-			if (qpp != null) {
-				return sendMessage(p, "&e" + qpp.params.getName()
-						+ "&e Queue Position: " + " &6" + (qpp.pos + 1)
-						+ "&e. &6" + qpp.playersInQueue + " &eplayers in queue");
-			}
-		}
-		return sendMessage(p, "&eYou are currently not in any arena queues.");
-	}
+//	@MCCommand(cmds = { "check" }, usage = "check")
+//	public boolean arenaCheck(ArenaPlayer p) {
+//		if (ac.isInQue(p)) {
+//			JoinResult qpp = ac.getCurrentQuePos(p);
+//			if (qpp != null) {
+//				return sendMessage(p, "&e" + qpp.params.getName()
+//						+ "&e Queue Position: " + " &6" + (qpp.pos + 1)
+//						+ "&e. &6" + qpp.playersInQueue + " &eplayers in queue");
+//			}
+//		}
+//		return sendMessage(p, "&eYou are currently not in any arena queues.");
+//	}
 
 	@MCCommand(cmds = { "auto" }, admin = true, perm = "arena.auto")
 	public boolean arenaAuto(CommandSender sender, MatchParams params,String args[]) {
@@ -664,12 +664,10 @@ public class BAExecutor extends CustomCommandExecutor {
 	public boolean arenaOpen(CommandSender sender, MatchParams mp,
 			String arenaName) {
 		if (arenaName.equalsIgnoreCase("all")) {
-			for (Arena arena : ac.getArenas(mp)) {
-				arena.setAllContainerState(ContainerState.OPEN);
-			}
-			return sendMessage(sender, "&6Arenas for " + mp.getName()
-					+ ChatColor.YELLOW + " are now &2open");
-		} else if (arenaName.equalsIgnoreCase("lobby")) {
+            ac.openAll(mp);
+            return sendMessage(sender, "&6Arenas for " + mp.getName()
+                    + ChatColor.YELLOW + " are now &2open");
+        } else if (arenaName.equalsIgnoreCase("lobby")) {
 			LobbyContainer lc = RoomController.getLobby(mp.getType());
 			if (lc == null) {
 				return sendMessage(sender, "&cYou need to set a lobby for "
@@ -910,7 +908,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	}
 
 	@MCCommand(cmds = { "sao", "edit", "alter", "setArenaOption" }, admin = true, perm = "arena.alter")
-	public boolean arenaSetOption(CommandSender sender, MatchParams params, Arena arena, String[] args) {
+	public boolean arenaSetOption(CommandSender sender, Arena arena, String[] args) {
 		try {
 			ArenaAlterController.setArenaOption(sender, arena, args);
 		} catch (IllegalStateException e) {
@@ -944,7 +942,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	}
 
 	@MCCommand(cmds = { "restoreDefaultOptions" }, admin = true, perm = "arena.alter")
-	public boolean restoreDefaultOptions(CommandSender sender, MatchParams params, Arena arena) {
+	public boolean restoreDefaultOptions(CommandSender sender, Arena arena) {
 		try {
 			ArenaAlterController.restoreDefaultArenaOptions(arena);
 		} catch (IllegalStateException e) {
@@ -954,7 +952,7 @@ public class BAExecutor extends CustomCommandExecutor {
 	}
 
 	@MCCommand(cmds = { "restoreDefaultArenaOptions" }, admin = true, perm = "arena.alter")
-	public boolean restoreDefaultOptions(CommandSender sender, MatchParams params, String[] args) {
+	public boolean restoreDefaultOptions(CommandSender sender, MatchParams params) {
 		try {
 			ArenaAlterController.restoreDefaultArenaOptions(params);
 		} catch (IllegalStateException e) {
@@ -1094,7 +1092,7 @@ public class BAExecutor extends CustomCommandExecutor {
 		}
 
 		// / Parse the duel options
-		DuelOptions duelOptions = null;
+		DuelOptions duelOptions;
 		try {
 			duelOptions = DuelOptions.parseOptions(mp, player,
 					Arrays.copyOfRange(args, 1, args.length));
@@ -1213,12 +1211,11 @@ public class BAExecutor extends CustomCommandExecutor {
 			mp.setRated(true);
 		else if (duelOptions.hasOption(DuelOption.UNRATED))
 			mp.setRated(false);
-		JoinOptions jp = null;
 
 		// / Check to make sure at least one arena can be joined at some time
-		Arena arena = ac.getArenaByMatchParams(mp, jp);
+		Arena arena = ac.getArenaByMatchParams(mp, null);
 		if (arena == null) {
-			Map<Arena, List<String>> reasons = ac.getNotMachingArenaReasons(mp, jp);
+			Map<Arena, List<String>> reasons = ac.getNotMachingArenaReasons(mp, null);
 			if (!reasons.isEmpty()) {
 				for (Arena a : reasons.keySet()) {
 					List<String> rs = reasons.get(a);
@@ -1443,7 +1440,7 @@ public class BAExecutor extends CustomCommandExecutor {
 			}
 			// / Make a team for the new Player
 			ArenaTeam t = teamc.getSelfFormedTeam(player);
-			if (t != null && !teammate) {
+			if (t != null) {
 				for (ArenaPlayer p : t.getPlayers()) {
 					if (p == player) {
 						continue;

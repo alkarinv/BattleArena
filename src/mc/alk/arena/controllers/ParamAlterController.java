@@ -26,7 +26,7 @@ public class ParamAlterController {
 	MatchParams params;
 
 	public ParamAlterController(MatchParams params){
-		this.params = params;
+		this.params = ParamController.getMatchParams(params.getType());
 	}
 
 	public boolean setOption(CommandSender sender, String[] args) {
@@ -84,7 +84,7 @@ public class ParamAlterController {
 		String opString = go != null ? go.name() : to.name();
 
 		rc.saveParams(params);
-		ParamController.addMatchParams(params);
+//		ParamController.addMatchParams(params);
 		if (to != null){
 			ParamController.setTransitionOptions(params, params.getTransitionOptions());
 		}
@@ -194,7 +194,7 @@ public class ParamAlterController {
 				deleteGameOption(go);
 				params.getTransitionOptions();
 				rc.saveParams(params);
-				ParamController.addMatchParams(params);
+//				ParamController.addMatchParams(params);
 				sendMessage(sender, "&2Game option &6"+go.toString()+"&2 removed");
 				switch(go){
 				case COMMAND:
@@ -217,7 +217,7 @@ public class ParamAlterController {
 			try{
 				deleteTransitionOption(state, key);
 				rc.saveParams(params);
-				ParamController.addMatchParams(params);
+//				ParamController.addMatchParams(params);
 				ParamController.setTransitionOptions(params, params.getTransitionOptions());
 				return sendMessage(sender, "&2Game option &6"+state +"&2 removed");
 			} catch (Exception e) {

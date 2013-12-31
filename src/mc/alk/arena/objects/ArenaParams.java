@@ -1,68 +1,79 @@
 package mc.alk.arena.objects;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.options.TransitionOption;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
-
+import mc.alk.arena.util.Util;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 
 public class ArenaParams {
-	ArenaType arenaType = null;
-	Rating rating = Rating.ANY;
+	ArenaType arenaType;
+	Rating rating;
 
-	String name = null;
-	String cmd = null;
+	String name;
+	String cmd;
 
-	Integer timeBetweenRounds = null;
-	Integer secondsTillMatch = null;
-	Integer secondsToLoot = null;
+	Integer timeBetweenRounds;
+	Integer secondsTillMatch;
+	Integer secondsToLoot;
 
-	MatchTransitions allTops = null;
-	String dbName = null;
+	MatchTransitions allTops;
+	String dbName;
 
-	ArenaParams parent = null;
-	ArenaSize size = null;
-	Boolean closeWaitroomWhileRunning = null;
-	Boolean cancelIfNotEnoughPlayers = null;
-	Integer arenaCooldown = null;
-	Integer allowedTeamSizeDifference = null;
+	ArenaParams parent;
+//	ArenaSize size = null;
+    MinMax nTeams;
+    MinMax teamSize;
+	Boolean closeWaitroomWhileRunning;
+	Boolean cancelIfNotEnoughPlayers;
+	Integer arenaCooldown;
+	Integer allowedTeamSizeDifference;
 
 	public ArenaParams(ArenaType at) {
 		this.arenaType = at;
+        rating = Rating.ANY;
 	}
 
 	public ArenaParams(ArenaParams ap) {
-		if (this == ap)
-			return;
-		this.arenaType = ap.arenaType;
-		this.rating = ap.rating;
-		this.cmd = ap.cmd;
-		this.name = ap.name;
-		this.timeBetweenRounds = ap.timeBetweenRounds;
-		this.secondsTillMatch = ap.secondsTillMatch;
-		this.secondsToLoot = ap.secondsToLoot;
-		this.dbName = ap.dbName;
-		this.closeWaitroomWhileRunning = ap.closeWaitroomWhileRunning;
-		this.cancelIfNotEnoughPlayers= ap.cancelIfNotEnoughPlayers;
-		this.arenaCooldown = ap.arenaCooldown;
-		this.allowedTeamSizeDifference = ap.allowedTeamSizeDifference;
-		this.setParent(ap.parent);
-		if (ap.allTops != null)
-			this.allTops = new MatchTransitions(ap.allTops);
-		if (ap.size != null)
-			this.size = new ArenaSize(ap.size);
-	}
+        this(ap.getType());
+        this.copy(ap);
+    }
+    public void copy(ArenaParams ap){
+        if (this == ap)
+            return;
+        this.arenaType = ap.arenaType;
+        this.rating = ap.rating;
+        this.cmd = ap.cmd;
+        this.name = ap.name;
+        this.timeBetweenRounds = ap.timeBetweenRounds;
+        this.secondsTillMatch = ap.secondsTillMatch;
+        this.secondsToLoot = ap.secondsToLoot;
+        this.dbName = ap.dbName;
+        this.closeWaitroomWhileRunning = ap.closeWaitroomWhileRunning;
+        this.cancelIfNotEnoughPlayers= ap.cancelIfNotEnoughPlayers;
+        this.arenaCooldown = ap.arenaCooldown;
+        this.allowedTeamSizeDifference = ap.allowedTeamSizeDifference;
+        if (ap.allTops != null)
+            this.allTops = new MatchTransitions(ap.allTops);
+        if (ap.nTeams != null)
+            this.nTeams = new MinMax(ap.nTeams);
+        if (ap.teamSize != null)
+            this.teamSize = new MinMax(ap.teamSize);
+        this.parent = ap.parent;
+    }
 
-	public void flatten() {
+	@SuppressWarnings("ConstantConditions")
+    public void flatten() {
 		if (parent == null){
 			return;}
 		parent = ParamController.copy(parent);
@@ -80,7 +91,8 @@ public class ArenaParams {
 		if (this.arenaCooldown== null) this.arenaCooldown = parent.arenaCooldown;
 		if (this.allowedTeamSizeDifference== null) this.allowedTeamSizeDifference= parent.allowedTeamSizeDifference;
 		this.allTops = MatchTransitions.mergeChildWithParent(this.allTops, parent.allTops);
-		if (this.size == null) this.size = parent.size;
+        if (this.nTeams == null && parent.getNTeams()!=null) this.nTeams = new MinMax(parent.getNTeams());
+        if (this.teamSize == null && parent.getTeamSizes() !=null) this.teamSize = new MinMax(parent.getTeamSizes());
 		this.parent = null;
 	}
 
@@ -93,77 +105,89 @@ public class ArenaParams {
 	}
 
 	public String getTeamSizeRange() {
-		return size != null ? ArenaSize.rangeString(size.minTeamSize,size.maxTeamSize) :
-			(parent != null ? parent.getTeamSizeRange() : "");
+		return teamSize != null ? teamSize.toString() : (parent != null ? parent.getTeamSizeRange() : "");
 	}
 
 	public String getNTeamRange() {
-		return size != null ? ArenaSize.rangeString(size.minTeams,size.maxTeams) :
-			(parent != null ? parent.getNTeamRange() : "");
+        return nTeams != null ? nTeams.toString() : (parent != null ? parent.getNTeamRange() : "");
 	}
 
 	public String getPlayerRange() {
-		return size != null ? ArenaSize.rangeString(size.getMinPlayers(),size.getMaxPlayers()) :
-			(parent != null ? parent.getPlayerRange() : "");
+		return ArenaSize.rangeString(getMinPlayers(),getMaxPlayers());
 	}
 
 	public ArenaType getType() {return arenaType;}
 
 	public void setType(ArenaType type) {this.arenaType = type;}
 
+    @SuppressWarnings("SimplifiableIfStatement")
 	public boolean intersect(ArenaParams params) {
 		if (!getType().matches(params.getType()))
 			return false;
-
-		if (getSize() != null && params.getSize() != null){
-			if(this.size == null){
-				size = new ArenaSize(getSize());}
-			return size.intersect(params.getSize());
-		}
-
-		return true;
-	}
-
-	public boolean intersectMax(ArenaParams params) {
-		if (!getType().matches(params.getType()))
-			return false;
-		if (getSize() != null && params.getSize() != null){
-			if(this.size == null){
-				size = new ArenaSize(getSize());}
-			return size.intersectMax(params.getSize());
-		}
-		return true;
-	}
+        if (getNTeams() != null && params.getNTeams() != null && !getNTeams().intersect(params.getNTeams())) {
+            return false;}
+        return (this.getTeamSizes() != null && params.getTeamSizes() != null &&
+                !getTeamSizes().intersect(params.getTeamSizes()));
+    }
 
 	public boolean matches(final ArenaParams ap) {
-		return (arenaType != null && ap.arenaType != null &&
-				arenaType.matches(ap.arenaType) && (
-						ArenaSize.matchesTeamSize(getSize(), ap.getSize()) &&
-						ArenaSize.matchesNTeams(getSize(),ap.getSize())));
+		if (arenaType != null && ap.arenaType != null &&
+				arenaType.matches(ap.arenaType)){
+            MinMax nt = getNTeams();
+            MinMax ts = getTeamSizes();
+            if (nt == null || ts == null)
+                return true;
+            MinMax nt2 = ap.getNTeams();
+            MinMax ts2 = ap.getTeamSizes();
+            return nt2 == null || ts2 == null || nt.intersect(nt2) && ts.intersect(ts2);
+        }
+        return false;
 	}
+    public boolean matchesIgnoreNTeams(final ArenaParams ap) {
+        if (arenaType != null && ap.arenaType != null &&
+                arenaType.matches(ap.arenaType)){
+            MinMax ts = getTeamSizes();
+            if (ts == null)
+                return true;
+            MinMax ts2 = ap.getTeamSizes();
+            return ts2 == null ||  ts.intersect(ts2);
+        }
+        return false;
+    }
+
+    public boolean matchesIgnoreSizes(final ArenaParams ap) {
+        return arenaType != null && ap.arenaType != null &&
+                arenaType.matches(ap.arenaType);
+    }
 
 
-	public Collection<String> getInvalidMatchReasons(ArenaParams ap) {
+    public Collection<String> getInvalidMatchReasons(ArenaParams ap) {
 		List<String> reasons = new ArrayList<String>();
 		if (arenaType == null) reasons.add("ArenaType is null");
 		if (ap.arenaType == null) reasons.add("Passed params have an arenaType of null");
 		else reasons.addAll(arenaType.getInvalidMatchReasons(ap.getType()));
-		if (!ArenaSize.matchesNTeams(getSize(), ap.getSize()))
-			reasons.add("Arena accepts nteams="+getNTeamRange()+". you requested "+ap.getNTeamRange());
-		if (!ArenaSize.matchesTeamSize(getSize(), ap.getSize())) reasons.add("Arena accepts teamSize="+getTeamSizeRange()+
-				". you requested "+ap.getTeamSizeRange());
+        if (getNTeams() != null && ap.getNTeams() != null && !getNTeams().intersect(ap.getNTeams())){
+            reasons.add("Arena accepts nteams="+getNTeamRange()+". you requested "+ap.getNTeamRange());
+        }
+        if (getTeamSizes() != null && ap.getTeamSizes() != null && !getTeamSizes().intersect(ap.getTeamSizes())){
+            reasons.add("Arena accepts teamSize="+getNTeamRange()+". you requested "+ap.getNTeamRange());
+        }
 		return reasons;
 	}
 
 	public boolean valid() {
-		return (arenaType != null && (size == null || size.valid()));
+		return (arenaType != null &&
+                (nTeams == null || nTeams.valid()) && (teamSize == null || teamSize.valid()));
 	}
 
 	public Collection<String> getInvalidReasons() {
 		List<String> reasons = new ArrayList<String>();
 		if (arenaType == null) reasons.add("ArenaType is null");
-		if (size != null){ reasons.addAll(size.getInvalidReasons());}
-		return reasons;
+        if (nTeams != null && !nTeams.valid()){
+            reasons.add("Min Teams is greater than Max Teams " + nTeams.min + ":" + nTeams.max);}
+        if (teamSize != null && !teamSize.valid()){
+            reasons.add("Min Team Size is greater than Max Team Size " + teamSize.min + ":" + teamSize.max);}
+        return reasons;
 	}
 
 	public String getCommand() {
@@ -226,8 +250,6 @@ public class ArenaParams {
 	}
 
 	public String toPrettyString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("&e"+arenaType.getName());
 		return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
 	}
 
@@ -254,97 +276,119 @@ public class ArenaParams {
 		return parent;
 	}
 
-	public Integer getMinTeamSize() {
-		return size != null ? size.getMinTeamSize() :
-			(parent != null ? parent.getMinTeamSize() : null);
+	@SuppressWarnings("ConstantConditions")
+    public Integer getMinTeamSize() {
+		return teamSize != null ? teamSize.min : (parent != null ? parent.getMinTeamSize() : null);
 	}
 
+    @SuppressWarnings("ConstantConditions")
 	public Integer getMaxTeamSize() {
-		return size != null ? size.getMaxTeamSize() :
-			(parent != null ? parent.getMaxTeamSize() : null);
+        return teamSize != null ? teamSize.max : (parent != null ? parent.getMaxTeamSize() : null);
 	}
 
+    @SuppressWarnings("ConstantConditions")
 	public Integer getMinTeams() {
-		return size != null ? size.getMinTeams() :
-			(parent != null ? parent.getMinTeams() : null);
+        return nTeams != null ? nTeams.min : (parent != null ? parent.getMinTeams() : null);
 	}
 
+    @SuppressWarnings("ConstantConditions")
 	public Integer getMaxTeams() {
-		return size != null ? size.getMaxTeams() :
-			(parent != null ? parent.getMaxTeams() : null);
+        return nTeams != null ? nTeams.max : (parent != null ? parent.getMaxTeams() : null);
 	}
-	public ArenaSize getSize(){
-		return size != null ? size :
-			(parent != null ? parent.getSize() : null);
-	}
+
+//	public ArenaSize getSize(){
+//		return size != null ? size :
+//			(parent != null ? parent.getSize() : null);
+//	}
 
 	public Integer getMaxPlayers() {
-		return size != null ? size.getMaxPlayers() :
-			(parent != null ? parent.getMaxPlayers() : null);
+        MinMax nt = getNTeams();
+        MinMax ts = getTeamSizes();
+        if (nt==null || ts == null)
+            return null;
+        return nt.max == ArenaSize.MAX || ts.max == ArenaSize.MAX ? ArenaSize.MAX : nt.max * ts.max;
 	}
+
 	public Integer getMinPlayers() {
-		return size != null ? size.getMinPlayers() :
-			(parent != null ? parent.getMinPlayers() : null);
+        MinMax nt = getNTeams();
+        MinMax ts = getTeamSizes();
+        if (nt==null || ts == null)
+            return null;
+        return nt.min == ArenaSize.MAX || ts.min == ArenaSize.MAX ? ArenaSize.MAX : nt.min * ts.min;
 	}
 
 	public void setTeamSize(Integer n) {
 		if (n == null){
-			size = null;
-			return;
-		}
-		if (size == null){ size = new ArenaSize();}
-		size.setMinTeams(n);
-		size.setMaxTeams(n);
-	}
+			teamSize = null;
+		} else {
+            if (teamSize == null){
+                teamSize = new MinMax(n);
+            } else {
+                teamSize.min = n;
+                teamSize.max = n;
+            }
+        }
+    }
 
 	public void setNTeams(MinMax mm) {
-		if (mm == null){
-			size = null;
-		} else {
-			if (size == null){ size = new ArenaSize();}
-			size.setNTeams(mm);
-		}
-	}
+        if (mm == null){
+            nTeams = null;
+        } else {
+            if (nTeams == null){
+                nTeams = new MinMax(mm);
+            } else {
+                nTeams.min = mm.min;
+                nTeams.max = mm.max;
+            }
+        }
+    }
 
+    /**
+     * @return MinMax representing the number of teams
+     */
 	public MinMax getNTeams(){
-		return size != null ? new MinMax(size.getMinTeams(),size.getMaxTeams()) :
-			(parent != null ? parent.getNTeams() : null);
+        return nTeams != null ? nTeams : (parent != null ? parent.getNTeams() : null);
 	}
 
+    /**
+     * @return MinMax representing the team sizes
+     */
 	public MinMax getTeamSizes(){
-		return size != null ? new MinMax(size.getMinTeamSize(),size.getMaxTeamSize()) :
-			(parent != null ? parent.getNTeams() : null);
+        return teamSize != null ? teamSize : (parent != null ? parent.getTeamSizes() : null);
 	}
 
 	public void setTeamSizes(MinMax mm) {
-		if (mm == null){
-			size = null;
-		} else {
-			if (size == null){ size = new ArenaSize();}
-			size.setTeamSizes(mm);
-		}
+        if (mm == null){
+            teamSize = null;
+        } else {
+            if (teamSize == null){
+                teamSize = new MinMax(mm);
+            } else {
+                teamSize.min = mm.min;
+                teamSize.max = mm.max;
+            }
+        }
 	}
 
 	public void setMinTeamSize(int n) {
-		if (size == null){ size = new ArenaSize();}
-		size.setMinTeamSize(n);
+		if (teamSize == null){ teamSize = new MinMax(n);}
+        else teamSize.min = n;
 	}
 	public void setMaxTeamSize(int n) {
-		if (size == null){ size = new ArenaSize();}
-		size.setMaxTeamSize(n);
-	}
-	public void setMaxTeams(int n) {
-		if (size == null){ size = new ArenaSize();}
-		size.setMaxTeams(n);
+        if (teamSize == null){ teamSize = new MinMax(n);}
+        else teamSize.max = n;
 	}
 	public void setMinTeams(int n) {
-		if (size == null){ size = new ArenaSize();}
-		size.setMinTeams(n);
+        if (nTeams == null){ nTeams = new MinMax(n);}
+        else nTeams.min = n;
 	}
+    public void setMaxTeams(int n) {
+        if (nTeams == null){ nTeams = new MinMax(n);}
+        else nTeams.max = n;
+    }
 
 	public boolean matchesTeamSize(int i) {
-		return size != null ? size.matchesTeamSize(i) :
-			(parent != null ? parent.matchesTeamSize(i) : false);
+		return teamSize != null ? teamSize.contains(i) : (parent != null && parent.matchesTeamSize(i));
 	}
 
 	public boolean hasOptionAt(MatchState state, TransitionOption op) {
@@ -452,8 +496,7 @@ public class ArenaParams {
 	}
 
 	public Integer getArenaCooldown() {
-		return arenaCooldown != null ? arenaCooldown :
-			(parent != null ? parent.getArenaCooldown(): null);
+		return arenaCooldown != null ? arenaCooldown : (parent != null ? parent.getArenaCooldown(): null);
 	}
 
 	public void setAllowedTeamSizeDifference(int difference) {

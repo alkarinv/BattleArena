@@ -106,10 +106,9 @@ public class PlayerUtil {
 
 	public static void setFlight(Player player, boolean enable) {
 		if (player.isFlying() != enable){
-			if (player.getAllowFlight() != enable){
-				player.setAllowFlight(enable);}
-			player.setFlying(enable);
-		}
+			player.setFlying(enable);}
+        if (player.getAllowFlight() != enable){
+            player.setAllowFlight(enable);}
 		/* Essentials (v2.10) fly just goes through bukkit, no need to call Essentials setFlight */
 	}
 

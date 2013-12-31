@@ -178,14 +178,6 @@ public class Arena extends AreaContainer {
 		try{onLeave(player,team);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
-
-	/**
-	 * private Arena onFinish events, calls onFinish for subclasses to be able to override
-	 */
-	void privateOnFinish(ArenaPlayer player, ArenaTeam team){
-		try{onFinish();}catch(Exception e){Log.printStackTrace(e);}
-	}
-
 	/**
 	 * Subclasses can override to initialize their own values right after construction
 	 * Or subclasses can override the default constructor
@@ -209,18 +201,20 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Called when a player joins the Event
-	 * @param p the player
-	 * @param t the team they are on
+	 * @param player the player
+	 * @param team the team they are on
 	 */
-	protected void onJoin(ArenaPlayer p, ArenaTeam t){}
+    @SuppressWarnings("unused")
+	protected void onJoin(ArenaPlayer player, ArenaTeam team){}
 
 	/**
 	 * Called when a player is leaving the match ( via typing a command usually) ,
 	 * but its still acceptable to leave(usually before the match starts)
-	 * @param p the player
-	 * @param t the team they were on
+	 * @param player the player
+	 * @param team the team they were on
 	 */
-	protected void onLeave(ArenaPlayer p, ArenaTeam t) {}
+    @SuppressWarnings("unused")
+    protected void onLeave(ArenaPlayer player, ArenaTeam team) {}
 
 	/**
 	 * Called when the match is first called upon to begin starting
@@ -239,9 +233,10 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Called after the victor team has won the match
-	 * @param victor
+	 * @param result Result of the Match
 	 */
-	protected void onVictory(MatchResult result){}
+    @SuppressWarnings("unused")
+    protected void onVictory(MatchResult result){}
 
 	/**
 	 * Called when the match is complete
@@ -260,36 +255,40 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Called after a player first gets teleported into a match ( does not include a waitroom )
-	 * @param Player p
+	 * @param player ArenaPlayer
 	 * @param team : the team they were in
 	 */
-	protected void onEnter(ArenaPlayer p, ArenaTeam team) {}
+    @SuppressWarnings("unused")
+    protected void onEnter(ArenaPlayer player, ArenaTeam team) {}
 
 	/**
 	 * Called if a player is teleported into a waiting room before a match
-	 * @param Player p
+	 * @param player ArenaPlayer
 	 * @param team: the team they are in
 	 */
-	protected void onEnterWaitRoom(ArenaPlayer p, ArenaTeam team) {}
+    @SuppressWarnings("unused")
+    protected void onEnterWaitRoom(ArenaPlayer player, ArenaTeam team) {}
 
 	/**
 	 * Called if a player is teleported into a spectator room before a match
-	 * @param Player p
+	 * @param player ArenaPlayer
 	 * @param team: the team they are in
 	 */
-	protected void onEnterSpectate(ArenaPlayer p, ArenaTeam team) {}
+    @SuppressWarnings("unused")
+    protected void onEnterSpectate(ArenaPlayer player, ArenaTeam team) {}
 
 	/**
 	 * Called when a player is exiting the match (usually through a death)
-	 * @param p
+	 * @param player ArenaPlayer
 	 * @param team : the team they were in
 	 */
-	protected void onExit(ArenaPlayer p, ArenaTeam team) {}
+    @SuppressWarnings("unused")
+    protected void onExit(ArenaPlayer player, ArenaTeam team) {}
 
 	/**
 	 * Returns the spawns
 	 * Deprecated use getSpawns()
-	 * @return
+	 * @return Map
 	 */
 	@Deprecated
 	public Map<Integer, Location> getSpawnLocs(){
@@ -303,8 +302,8 @@ public class Arena extends AreaContainer {
 	/**
 	 * Returns the spawn location of this index.
 	 * Deprecated, use getSpawn(index, random)
-	 * @param index
-	 * @return
+	 * @param index index
+	 * @return location
 	 */
 	@Deprecated
 	public Location getSpawnLoc(int index){
@@ -313,8 +312,8 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Returns the spawn location of this index
-	 * @param index
-	 * @return
+	 * @param index index
+	 * @return location
 	 */
 	public Location getWaitRoomSpawnLoc(int index){
 		return waitroom.getSpawn(index,false);
@@ -322,7 +321,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * returns a random spawn location
-	 * @return
+	 * @return location
 	 */
 	public Location getRandomWaitRoomSpawnLoc(){
 		return waitroom.getSpawn(-1,true);
@@ -330,15 +329,15 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Return the visitor location (if any)
-	 * @return
+	 * @return location
 	 */
 	public Location getVisitorLoc(int index, boolean random) {
 		return visitorRoom != null ? visitorRoom.getSpawn(index, random) : null;}
 
 	/**
 	 * Set the wait room spawn location
-	 * @param index
-	 * @param loc
+	 * @param index index of spawn
+	 * @param loc location
 	 */
 	public void setWaitRoomSpawnLoc(int index, Location loc) {
 		waitroom.setSpawnLoc(index, loc);
@@ -346,7 +345,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Return the spot where players need to join close to
-	 * @return
+	 * @return location
 	 */
 	public Location getJoinLocation() {
 		return joinloc;
@@ -365,21 +364,21 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Set the name of this arena
-	 * @param arenaName
+	 * @param arenaName name
 	 */
 	@Override
 	public void setName(String arenaName) {this.name = arenaName;}
 
 	/**
 	 * Get the name of this arena
-	 * @return
+	 * @return name
 	 */
 	@Override
 	public String getName() {return name;}
 
 	/**
 	 * Return the waitroom spawn locations
-	 * @return
+	 * @return list of location
 	 */
 	public List<Location> getWaitRoomSpawnLocs(){return waitroom != null ? waitroom.getSpawns() : null;}
 
@@ -395,7 +394,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Does this arena have a name, at least one spawn, and valid arena parameters
-	 * @return
+	 * @return true if the arena is valid
 	 */
 	public boolean valid() {
 		return (!(name == null || spawns.size() <1 || spawns.get(0) == null || !params.valid() ));
@@ -413,7 +412,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Set the worldguard region for this arena (only available with worldguard)
-	 * @param wgRegionName
+	 * @param regionWorld World name
 	 * Deprecated: use setWorldGuardRegion instead
 	 */
 	@Deprecated
@@ -423,8 +422,8 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Set the worldguard region for this arena (only available with worldguard)
-	 * @param regionWorld
-	 * @param regionName
+	 * @param regionWorld World name
+	 * @param regionName region name
 	 */
 	public void setWorldGuardRegion(String regionWorld, String regionName) {
 		wgRegion = new WorldGuardRegion(regionWorld, regionName);
@@ -432,15 +431,15 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Set the worldguard region for this arena (only available with worldguard)
-	 * @param wgRegionName
+	 * @param region WorldGuardRegion
 	 */
 	public void setWorldGuardRegion(WorldGuardRegion region) {
 		wgRegion = region;
 	}
 
 	/**
-	 * does this arena have a worlguard wgRegionName attached
-	 * @returns
+	 * does this arena have a worldguard wgRegionName attached
+	 * @return true or false if region is found and valid
 	 */
 	public boolean hasRegion() {
 		return wgRegion != null && wgRegion.valid();
@@ -448,7 +447,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Get the worldguard wgRegionName for this arena
-	 * @return
+	 * @return region
 	 */
 	public WorldGuardRegion getWorldGuardRegion() {
 		return wgRegion;
@@ -456,7 +455,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Return the timed spawns for this arena
-	 * @return
+	 * @return the timed spawns
 	 */
 	public Map<Long, TimedSpawn> getTimedSpawns() {
 		return timedSpawns;
@@ -504,7 +503,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * set the winning player, this will also cause the match to be ended
-	 * @param team
+	 * @param player ArenaPlayer that will win
 	 */
 	protected void setWinner(ArenaPlayer player) {
 		match.setVictor(player);
@@ -595,21 +594,21 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Checks to see whether this arena has paramaters that match the given matchparams
-	 * @param eventParams
-	 * @param jp
-	 * @return
+	 * @param matchParams params
+	 * @param joinOptions JoinOptions
+	 * @return true if arena matches the params && joinOptions
 	 */
-	public boolean matches(final MatchParams matchParams, final JoinOptions jp) {
+	public boolean matches(final MatchParams matchParams, final JoinOptions joinOptions) {
 		if (!getParams().matches(matchParams))
 			return false;
-		return matchesIgnoreSize(matchParams,jp);
+		return matchesIgnoreSize(matchParams,joinOptions);
 	}
 
 	/**
 	 * Checks to see whether this arena has paramaters that match the given matchparams
-	 * @param eventParams
-	 * @param jp
-	 * @return
+	 * @param matchParams MatchParams
+	 * @param jp JoinOptions
+	 * @return bool
 	 */
 	public boolean matchesIgnoreSize(final MatchParams matchParams, final JoinOptions jp) {
 		if (this.getArenaType() != matchParams.getType())

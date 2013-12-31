@@ -149,14 +149,22 @@ public class ArenaSize implements CompetitionSize{
 	public static String toString(int size){
 		return size == ArenaSize.MAX ? "infinite" : String.valueOf(size);
 	}
-	@Override
+
+    public static int toInt(String size) {
+        return size.equalsIgnoreCase("infinite") ? MAX : Integer.valueOf(size);
+    }
+
+    public static int toInt(String size, int defValue) {
+        if (size == null || size.isEmpty())
+            return defValue;
+        return size.equalsIgnoreCase("infinite") ? MAX : Integer.valueOf(size);
+    }
+
+    @Override
 	public String toString(){
 		return "["+rangeString(minTeamSize,maxTeamSize)+" <-> "+rangeString(minTeams,maxTeams)+"]";
 	}
 
-	public static int toInt(String size) {
-		return size.equalsIgnoreCase("infinite") ? MAX : Integer.valueOf(size);
-	}
 
 	public static String rangeString(final int min,final int max){
 		if (max == MAX){ return min+"+";} /// Example: 2+

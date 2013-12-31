@@ -78,10 +78,8 @@ public class APIRegistrationController {
 		if (fullFile.exists())
 			return true;
 		InputStream inputStream = FileUtil.getInputStream(plugin.getClass(), new File(fileName));
-		if (inputStream == null)
-			return false;
-		return createFile(fullFile, name, cmd, inputStream);
-	}
+        return inputStream != null && createFile(fullFile, name, cmd, inputStream);
+    }
 
 	private boolean loadFile(Plugin plugin, File defaultFile, File defaultPluginFile, File pluginFile,
 			String fullFileName, String name, String cmd){
@@ -90,12 +88,9 @@ public class APIRegistrationController {
 		InputStream inputStream = FileUtil.getInputStream(plugin.getClass(), new File(fullFileName));
 		if (inputStream == null && defaultFile!=null && defaultPluginFile!= null){
 			inputStream = FileUtil.getInputStream(plugin.getClass(), defaultFile, defaultPluginFile);}
-		if (inputStream == null){
-			return false;
-		}
+        return inputStream != null && createFile(pluginFile, name, cmd, inputStream);
 
-		return createFile(pluginFile, name, cmd, inputStream);
-	}
+    }
 
 	private boolean createFile(File pluginFile, String name, String cmd, InputStream inputStream) {
 		String line =null;
@@ -178,8 +173,6 @@ public class APIRegistrationController {
 			Class<? extends Arena> arenaClass, CustomCommandExecutor executor,
 			File configFile, File messageFile, File defaultPluginConfigFile, File defaultArenaFile)
 					throws Exception{
-		Log.info("&5------- "+plugin.getName() +"  &8ac= " +arenaClass);
-
 		/// Create our plugin folder if its not there
 		File dir = plugin.getDataFolder();
 		FileUpdater.makeIfNotExists(dir);
@@ -203,9 +196,9 @@ public class APIRegistrationController {
 		if (!loadFile(plugin, defaultFile, defaultPluginConfigFile, pluginFile,
 				name+"Config.yml",name,cmd)){
 			Log.err(plugin.getName() + " " + pluginFile.getName() + " could not be loaded!");
-			Log.err("defaultFile="+defaultFile != null ? defaultFile.getAbsolutePath() : "null");
-			Log.err("defaultPluginFile="+defaultPluginConfigFile != null ? defaultPluginConfigFile.getAbsolutePath() : "null");
-			Log.err("pluginFile="+pluginFile != null ? pluginFile.getAbsolutePath() : "null");
+			Log.err("defaultFile="+(defaultFile != null ? defaultFile.getAbsolutePath() : "null"));
+			Log.err("defaultPluginFile="+(defaultPluginConfigFile != null ? defaultPluginConfigFile.getAbsolutePath() : "null"));
+			Log.err("pluginFile="+(pluginFile != null ? pluginFile.getAbsolutePath() : "null"));
 			return false;
 		}
 
@@ -223,9 +216,8 @@ public class APIRegistrationController {
 		} else {
 			at = ArenaType.register(name, arenaClass, plugin);
 		}
-		Log.info("  &5"+plugin.getName() +"  &eac= " +arenaClass+"   plugin="+at.getPlugin() +"  " + at);
 
-		/// Load our Match Params for this type
+		/// Load our Match Params for this types
 		MatchParams mp = config.loadMatchParams();
 
 		ArenaType gameType = ConfigSerializer.getArenaGameType(plugin,config.getConfigurationSection(name));
@@ -269,7 +261,7 @@ public class APIRegistrationController {
 	}
 
 	private static void createExecutor(JavaPlugin plugin, String cmd, CustomCommandExecutor executor, MatchParams mp) {
-		CustomCommandExecutor exe = null;
+		CustomCommandExecutor exe;
 
 		if (mp.isDuelOnly()){
 			exe = new DuelExecutor();

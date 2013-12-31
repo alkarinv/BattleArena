@@ -91,7 +91,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	}
 
 	@MCCommand( cmds = {"giveHelm"}, op=true, exact=2, usage="giveHelm <item>")
-	public boolean giveHelm(Player sender, Command command, String label, String[] args) {
+	public boolean giveHelm(Player sender, String[] args) {
 		ItemStack is;
 		try {
 			is = InventoryUtil.parseItem(args[1]);
@@ -134,8 +134,10 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 		if (mp == null)
 			return true;
 		sendMessage(sender, mp.toString());
-		if (args.length > 2 && args[2].equals("parent")){
-			return sendMessage(sender, new ReflectionToStringBuilder(mp.getParent(), ToStringStyle.MULTI_LINE_STYLE)+"");
+        if (args.length > 3 && args[3].equals("parent")){
+            return sendMessage(sender, new ReflectionToStringBuilder(mp.getParent().getParent(), ToStringStyle.MULTI_LINE_STYLE)+"");
+        } else if (args.length > 2 && args[2].equals("parent")){
+                return sendMessage(sender, new ReflectionToStringBuilder(mp.getParent(), ToStringStyle.MULTI_LINE_STYLE)+"");
 		} else {
 			return sendMessage(sender, new ReflectionToStringBuilder(mp, ToStringStyle.MULTI_LINE_STYLE)+"");
 		}
@@ -144,10 +146,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 	@MCCommand(cmds={"showTransitions"}, admin=true)
 	public boolean showTransitions(CommandSender sender, String paramName) {
 		MatchParams mp = findMatchParam(sender, paramName);
-		if (mp == null)
-			return true;
-		return sendMessage(sender, mp.toString());
-	}
+        return mp == null || sendMessage(sender, mp.toString());
+    }
 
 	@MCCommand(cmds={"showPlayerVars"}, admin=true)
 	public boolean showPlayerVars(CommandSender sender, ArenaPlayer player) {
@@ -157,7 +157,9 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
 	@MCCommand(cmds={"showArenaVars"}, admin=true)
 	public boolean showArenaVars(CommandSender sender, Arena arena, String[] args) {
-		if (args.length > 3 && args[3].equals("parent")){
+        if (args.length > 4 && args[4].equals("parent")){
+            return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams().getParent().getParent(), ToStringStyle.MULTI_LINE_STYLE)+"");
+        } else if (args.length > 3 && args[3].equals("parent")){
 			return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams().getParent(), ToStringStyle.MULTI_LINE_STYLE)+"");
 		} else if (args.length > 3 && args[3].equals("transitions")){
 			return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams().getTransitionOptions(), ToStringStyle.MULTI_LINE_STYLE)+"");

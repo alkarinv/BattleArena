@@ -122,22 +122,23 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 		}
 	}
 
-	@ArenaEventHandler
-	public void onPlayerInteract(PlayerInteractEvent event){
-		if (event.isCancelled() || !Defaults.ENABLE_PLAYER_READY_BLOCK)
-			return;
-		if (event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)) {
-			final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
-			if (ap.isReady()) /// they are already ready
-				return;
-			JoinResult qtp = getQueuePos(ap);
-			if (qtp == null){
-				return;}
-			final Action action = event.getAction();
-			if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the block
-				event.setCancelled(true);}
-			MessageUtil.sendMessage(ap, "&2You ready yourself for the arena");
-			this.forceStart(qtp.params, true);
-		}
-	}
+    // TODO
+//	@ArenaEventHandler
+//	public void onPlayerInteract(PlayerInteractEvent event){
+//		if (event.isCancelled() || !Defaults.ENABLE_PLAYER_READY_BLOCK)
+//			return;
+//		if (event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)) {
+//			final ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
+//			if (ap.isReady()) /// they are already ready
+//				return;
+//			JoinResult qtp = getQueuePos(ap);
+//			if (qtp == null){
+//				return;}
+//			final Action action = event.getAction();
+//			if (action == Action.LEFT_CLICK_BLOCK){ /// Dont let them break the block
+//				event.setCancelled(true);}
+//			MessageUtil.sendMessage(ap, "&2You ready yourself for the arena");
+//			this.forceStart(qtp.params, true);
+//		}
+//	}
 }

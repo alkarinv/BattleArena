@@ -1,20 +1,5 @@
 package mc.alk.arena.competition.match;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
@@ -93,7 +78,6 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.scoreboardapi.api.SObjective;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -105,6 +89,19 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /// TODO once I have GameLogic, split this into two matches, one for always open, one for normal
 public abstract class Match extends Competition implements Runnable, ArenaController {
 	public enum PlayerState{OUTOFMATCH,INMATCH};
@@ -112,8 +109,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	final Arena arena; /// The arena we are using
 	final ArenaControllerInterface arenaInterface; /// Our interface to access arena methods w/o reflection
 
-	List<ArenaTeam> playingTeams = new LinkedList<ArenaTeam>();
-	Set<String> visitors = new HashSet<String>(); /// Who is watching
 	MatchState state = MatchState.NONE;/// State of the match
 
 	/// When did each transition occur
@@ -157,7 +152,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	final Plugin plugin;
 	int nLivesPerPlayer = 1; /// This will change as victory conditions are added
 	ArenaScoreboard scoreboard;
-	Random rand = new Random(); /// Our randomizer
 	MatchMessager mc; /// Our message instance
 	TeamJoinHandler joinHandler = null;
 	ArenaObjective defaultObjective = null;
@@ -190,7 +184,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		}
 		/// placed anywhere options
 		boolean noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
-		if (noEnter && arena.hasRegion())
+		if (arena.hasRegion())
 			WorldGuardController.setFlag(arena.getWorldGuardRegion(), "entry", !noEnter);
 		boolean noLeave = tops.hasAnyOption(TransitionOption.WGNOLEAVE);
 
@@ -343,13 +337,13 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 				checkReady(t,tops.getOptions(MatchState.PREREQS));	}
 		}
 		PerformTransition.transition(this, MatchState.ONPRESTART, teams, true);
-		/// Send messages to teams and server, or just to the teams
-		if (matchPrestarting){
-			mc.sendOnPreStartMsg(teams);
-		} else {
-			mc.sendOnPreStartMsg(teams, ServerChannel.NullChannel);
-		}
-	}
+        /// Send messages to teams and server, or just to the teams
+        if (matchPrestarting) {
+            mc.sendOnPreStartMsg(teams);
+        } else {
+            mc.sendOnPreStartMsg(teams, ServerChannel.NullChannel);
+        }
+    }
 
 	private void preStartMatch() {
 		if (state == MatchState.ONCANCEL || state.ordinal() >= MatchState.ONPRESTART.ordinal())
@@ -587,12 +581,13 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		final List<ArenaTeam> teams;
 
 		NonEndingMatchCompleted(Match am, MatchResult result, List<ArenaTeam> teams){
-			this.am = am;this.result = result;
+			this.am = am;
+            this.result = result;
 			this.teams = teams;
-		}
+        }
+
 		public void run() {
 			final Collection<ArenaTeam> victors = result.getVictors();
-
 			if (Defaults.DEBUG) System.out.println("Match::NonEndingMatchCompleted(): " + victors);
 			/// ONCOMPLETE can teleport people out of the arena,
 			/// So the order of events is usually
@@ -625,7 +620,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 				}
 			});
 			for (ArenaTeam t: teams)
-				individualTeamTimers.put(t, timerid);
+                individualTeamTimers.put(t, timerid);
 		}
 	}
 
@@ -810,8 +805,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 	/**
 	 * Add to an already existing team
-	 * @param p
-	 * @param t
+	 * @param team
+	 * @param player
 	 */
 	@Override
 	public boolean addedToTeam(final ArenaTeam team, final ArenaPlayer player) {
@@ -884,8 +879,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 	/**
 	 * Add to an already existing team
-	 * @param p
-	 * @param t
+	 * @param team
+     * @param players
 	 */
 	@Override
 	public void addedToTeam(ArenaTeam team, Collection<ArenaPlayer> players) {

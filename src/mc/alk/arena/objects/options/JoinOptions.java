@@ -199,7 +199,8 @@ public class JoinOptions {
 			jos.setArena(arena);
 		}
 		if (arena != null){
-			MatchParams old = ParamController.copyParams(mp);
+//			MatchParams old = ParamController.copyParams(mp);
+            MatchParams old = mp;
 			mp = arena.getParams();
 			mp.setParent(old);
 			if (!arena.matchesIgnoreSize(mp, jos)){
@@ -219,7 +220,7 @@ public class JoinOptions {
 		if (mm != null)
 			ops.put(JoinOption.WANTEDTEAMSIZE, mm);
 //		mp.flatten();
-		jos.params=mp;
+		jos.params= mp;
 		return jos;
 	}
 

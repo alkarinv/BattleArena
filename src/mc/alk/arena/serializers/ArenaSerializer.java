@@ -455,7 +455,6 @@ public class ArenaSerializer extends BaseConfig{
 	public static void saveArenas(Plugin plugin){
 		if (!configs.containsKey(plugin))
 			return;
-		Log.debug("   plugin==="+plugin);
 		for (ArenaSerializer serializer: configs.get(plugin)){
 			serializer.saveArenas(true);
 		}

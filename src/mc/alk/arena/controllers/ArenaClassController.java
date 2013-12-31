@@ -72,7 +72,7 @@ public class ArenaClassController {
 					return ac2;
 			}
 		}
-		/// Set them to the appropriate heros class if one exists with this name
+		/// Set them to the appropriate heroes class if one exists with this name
 		if (HeroesController.hasHeroClass(ac.getName())){
 			HeroesController.setHeroClass(player.getPlayer(), ac.getName());
 		}

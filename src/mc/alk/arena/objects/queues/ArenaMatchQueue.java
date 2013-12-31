@@ -72,7 +72,7 @@ public class ArenaMatchQueue implements ArenaListener{
 		methodController.addAllEvents(this);
 	}
 	public enum QueueType{
-		GAME,ARENA;
+		GAME,ARENA
 	}
 
 	public static class IdTime{
@@ -118,8 +118,8 @@ public class ArenaMatchQueue implements ArenaListener{
 
 	/**
 	 * Add a matchup of teams.  They already have all required teams, so just need to wait for an open arena
-	 * @param matchup
-	 * @return
+	 * @param matchup Matchup
+	 * @return JoinResult
 	 */
 	public JoinResult addMatchup(Matchup matchup, boolean checkStart) {
 		return addToQueue(new MatchTeamQObject(matchup), checkStart);
@@ -193,9 +193,9 @@ public class ArenaMatchQueue implements ArenaListener{
 	/**
 	 * Update the forceJoin timer for the following TeamQueue and the given QueueObject
 	 * The time will not be updated if an older timer is ongoing
-	 * @param tq
-	 * @param to
-	 * @return
+	 * @param tq TeamCollection
+	 * @param to QueueObject
+	 * @return IdTime
 	 */
 	private IdTime updateTimer(final Arena a, final TeamCollection tq, final QueueObject to) {
 		JoinOptions jo = to.getJoinOptions();
@@ -241,7 +241,7 @@ public class ArenaMatchQueue implements ArenaListener{
 	}
 
 	private void removeTimer(Arena a, MatchParams p){
-		IdTime idt = null;
+		IdTime idt;
 		if (a == null){
 			idt = forceTimers.remove(p.getType());
 		} else {
@@ -302,15 +302,15 @@ public class ArenaMatchQueue implements ArenaListener{
 	private JoinResult joinQueue(TeamCollection tq, QueueObject qo) {
 		if (tq==null || arenaqueue.isEmpty() || tq.isEmpty()){
 			JoinResult jr = new JoinResult();
-			jr.params = tq.getMatchParams();
-			jr.maxPlayers = tq.getMatchParams().getMaxPlayers();
+            if (tq != null){
+                jr.params = tq.getMatchParams();
+                jr.maxPlayers = tq.getMatchParams().getMaxPlayers();
+            }
 			return jr;
 		}
 
-		JoinResult qr = qo == null ?  findMatch(tq, false, true,null)
-				: findMatch(tq, false, true,qo.getJoinOptions().getArena());
-
-		return qr;
+        return qo == null ?  findMatch(tq, false, true,null)
+                : findMatch(tq, false, true,qo.getJoinOptions().getArena());
 	}
 
 	private void addToReadyMatches(Match match){
@@ -343,10 +343,11 @@ public class ArenaMatchQueue implements ArenaListener{
 	}
 
 	/**
-	 * @param TeamQueue : Queue we are searching for matches
+	 * @param tq : Queue we are searching for matches
 	 * @param forceStart : whether we are trying to start a match that usually would need more players
-	 * @param qo2
-	 * @return Match if one can be created from the specified TeamQueue
+     * @param forceStartRespectGameSize	 * @param forceStartRespectGameSize
+     * @param specificArena finding for a specific arena
+     * @return Match if one can be created from the specified TeamQueue
 	 */
 	private JoinResult findMatch(final TeamCollection tq, boolean forceStart,
 			boolean forceStartRespectGameSize, Arena specificArena) {
@@ -442,10 +443,10 @@ public class ArenaMatchQueue implements ArenaListener{
 					synchronized(t1){
 						if (t2 != null){
 							synchronized(t2){
-								qr = finding(tq, forceStart, forceStartRespectGameSize,gameParams, qr, skipNonMatched, a, newParams, iterate);
+								qr = finding(forceStart, forceStartRespectGameSize,gameParams, qr, skipNonMatched, a, newParams, iterate);
 							}
 						} else {
-							qr = finding(tq, forceStart, forceStartRespectGameSize,gameParams, qr, skipNonMatched, a, newParams, iterate);
+							qr = finding(forceStart, forceStartRespectGameSize,gameParams, qr, skipNonMatched, a, newParams, iterate);
 						}
 					}
 
@@ -470,7 +471,7 @@ public class ArenaMatchQueue implements ArenaListener{
 		return qr;
 	}
 
-	private JoinResult finding(final TeamCollection tq, boolean forceStart,
+	private JoinResult finding(boolean forceStart,
 			boolean forceStartRespectGameSize, final MatchParams gameParams, JoinResult qr,
 			boolean skipNonMatched, Arena a, MatchParams newParams,
 			final TeamCollection iterate) {
@@ -491,7 +492,7 @@ public class ArenaMatchQueue implements ArenaListener{
 					playerMatchAndArenaParams.setTeamSizes(gameParams.getTeamSizes());
 				}
 				qr.maxPlayers = playerMatchAndArenaParams.getMaxPlayers();
-				findMatch(qr, playerMatchAndArenaParams,a,iterate, forceStart);
+				findMatch(qr, playerMatchAndArenaParams,a,iterate, forceStartRespectGameSize, forceStart);
 			} catch (NeverWouldJoinException e) {
 				Log.printStackTrace(e);
 				continue;
@@ -522,15 +523,15 @@ public class ArenaMatchQueue implements ArenaListener{
 	}
 	/**
 	 * For these parameters, go through each team to see if we can create a viable match
-	 * @param MatchParams
-	 * @param Arena
-	 * @param TeamQueue
-	 * @param forceStart
-	 * @return
+	 * @param result JoinResult
+	 * @param params MatchParams
+     * @param arena Arena
+     * @param tq TeamCollection
+	 * @param forceStart force start
 	 * @throws NeverWouldJoinException
 	 */
 	private void findMatch(JoinResult result, final MatchParams params, Arena arena, final TeamCollection tq,
-			boolean forceStart) throws NeverWouldJoinException {
+			boolean forceStartRespectGameSize, boolean forceStart) throws NeverWouldJoinException {
 		/// Move all teams with the same team size together
 		List<QueueObject> newList = new LinkedList<QueueObject>();
 		List<QueueObject> delayed = new LinkedList<QueueObject>();
@@ -540,8 +541,11 @@ public class ArenaMatchQueue implements ArenaListener{
 			if (qo instanceof MatchTeamQObject)
 				hasPrematched = true;
 			MatchParams mp = qo.getMatchParams();
-			if (!mp.matches(params))
+            if (forceStart && !mp.matchesIgnoreSizes(params)) {
+                continue;
+            } else if (!mp.matchesIgnoreNTeams(params)){
 				continue;
+            }
 			if (!mp.getMinTeamSize().equals(params.getMinTeamSize())){
 				delayed.add(qo);
 			} else {
@@ -585,7 +589,13 @@ public class ArenaMatchQueue implements ArenaListener{
 				TeamJoinObject to = (TeamJoinObject) qo;
 				ArenaTeam t = to.getTeam();
 				JoinOptions jp = qo.getJoinOptions();
-				if (jp != null && !(jp.matches(arena) && jp.matches(params) && arena.matches(params, jp))){
+//                if (forceStart && !mp.matchesIgnoreSizes(params)) {
+//                    continue;
+//                } else if (!mp.matchesIgnoreNTeams(params)){
+//                    continue;
+//                }
+
+                if (jp != null && !(jp.matches(arena) && jp.matches(params) && arena.matchesIgnoreSize(params, jp))){
 					continue;}
 
 				TeamJoinResult tjr = tjh.joiningTeam(to);
@@ -623,18 +633,13 @@ public class ArenaMatchQueue implements ArenaListener{
 		}
 
 		tjh.deconstruct();
-		return;
 	}
 
 	private MatchFind getMatchAndRemove(TeamCollection tq, TeamJoinHandler tjh, List<ArenaTeam> teams,
 			Map<ArenaPlayer, QueueObject> qteams, Arena arena, MatchParams params) {
-		Set<ArenaTeam> originalTeams = new HashSet<ArenaTeam>();
 		final Match m = new ArenaMatch(arena, params);
 		for (ArenaTeam t: teams){
-			originalTeams.add(t);
 			for (ArenaPlayer ap :t.getPlayers()){
-				//				ArenaTeam originalTeam = qteams.get(ap).getTeam(ap);
-				//				originalTeams.add(originalTeam);
 				tq.remove(qteams.get(ap));
 				ap.addCompetition(m);
 			}
@@ -690,7 +695,7 @@ public class ArenaMatchQueue implements ArenaListener{
 
 	private TeamCollection getTeamQ(MatchParams mp, Arena arena) {
 		if (arena != null){
-			TeamQueue tq = getOrCreateArenaTeamQ(mp, arena);
+			TeamQueue tq = getOrCreateArenaTeamQ(arena);
 			return new CompositeTeamQueue(tq,getOrCreateGameQ(mp));
 		} else {
 			return getOrCreateGameQ(mp);
@@ -701,7 +706,7 @@ public class ArenaMatchQueue implements ArenaListener{
 		return aqs.containsKey(arena.getArenaType()) ? aqs.get(arena.getArenaType()).get(arena) : null;
 	}
 
-	private TeamQueue getOrCreateArenaTeamQ(MatchParams mp, Arena arena) {
+	private TeamQueue getOrCreateArenaTeamQ(Arena arena) {
 		if (aqs.containsKey(arena.getArenaType())){
 			if (aqs.get(arena.getArenaType()).containsKey(arena)){
 				return aqs.get(arena.getArenaType()).get(arena);
@@ -751,7 +756,7 @@ public class ArenaMatchQueue implements ArenaListener{
 
 	/**
 	 * Remove the player from the queue
-	 * @param player
+	 * @param player ArenaPlayer
 	 * @return The ParamTeamPair object if the player was found.  Otherwise returns null
 	 */
 	public  ParamTeamPair removeFromQue(ArenaPlayer player) {
@@ -787,29 +792,6 @@ public class ArenaMatchQueue implements ArenaListener{
 				}
 			}
 		}
-		return null;
-	}
-
-	public JoinResult getQueuePos(ArenaPlayer p) {
-		//		synchronized(tqs){
-		//			List<TeamQueue> qs = new ArrayList<TeamQueue>(tqs.values());
-		//			for (TeamQueue tq : qs){
-		//				JoinResult qtp = tq.getPos(p);
-		//				if (qtp != null)
-		//					return qtp;
-		//			}
-		//		}
-		//		synchronized(aqs){
-		//			List<Map<Arena,TeamQueue>> mapqs = new ArrayList<Map<Arena,TeamQueue>>(aqs.values());
-		//			for (Map<Arena,TeamQueue> map : mapqs){
-		//				List<TeamQueue> qs = new ArrayList<TeamQueue>(map.values());
-		//				for (TeamQueue tq : qs){
-		//					JoinResult qtp = tq.getPos(p);
-		//					if (qtp != null)
-		//						return qtp;
-		//				}
-		//			}
-		//		}
 		return null;
 	}
 
@@ -919,11 +901,7 @@ public class ArenaMatchQueue implements ArenaListener{
 
 	@Override
 	public String toString(){
-		StringBuilder sb = new StringBuilder();
-		sb.append(queuesToString());
-		sb.append(toStringArenas());
-		sb.append(toStringReadyMatches());
-		return sb.toString();
+        return queuesToString() + toStringArenas() + toStringReadyMatches();
 	}
 
 	public String toStringReadyMatches(){
@@ -931,7 +909,7 @@ public class ArenaMatchQueue implements ArenaListener{
 		sb.append("------ ready matches ------- \n");
 		synchronized(ready_matches){
 			for (Match am : ready_matches){
-				sb.append(am +"\n");}
+				sb.append(am).append("\n");}
 		}
 		return sb.toString();
 	}
@@ -942,7 +920,7 @@ public class ArenaMatchQueue implements ArenaListener{
 		synchronized(arenaqueue){
 
 			for (Arena arena : arenaqueue){
-				sb.append(arena +"\n");}
+				sb.append(arena).append("\n");}
 		}
 		return sb.toString();
 	}
@@ -955,7 +933,7 @@ public class ArenaMatchQueue implements ArenaListener{
 			String time = (value != null && value.time != null) ?
 					((value.time - System.currentTimeMillis())/1000)+"" : "";
 			for (QueueObject qo: entry.getValue()){
-				sb.append(entry.getKey().getName() + " : fs="+time+" "+ qo +"\n");}}
+				sb.append(entry.getKey().getName()).append(" : fs=").append(time).append(" ").append(qo).append("\n");}}
 		sb.append("------arena queues------- \n");
 		for (Entry<ArenaType,Map<Arena,TeamQueue>> entry : aqs.entrySet()){
 			for (Entry<Arena,TeamQueue> entry2: entry.getValue().entrySet()){
@@ -963,7 +941,9 @@ public class ArenaMatchQueue implements ArenaListener{
 				String time = (value != null && value.time != null) ?
 						((value.time - System.currentTimeMillis())/1000)+"" : "";
 				for (QueueObject qo : entry2.getValue()){
-					sb.append(entry.getKey().getName() + " : fs="+time+" " + entry2.getKey().getName() +" : " + qo+"\n");
+					sb.append(entry.getKey().getName()).append(" : fs=").
+                            append(time).append(" ").append(entry2.getKey().getName()).
+                            append(" : ").append(qo).append("\n");
 				}
 			}
 		}
@@ -1007,8 +987,8 @@ public class ArenaMatchQueue implements ArenaListener{
 		synchronized(arenaqueue){
 
 			Iterator<Arena> iter = arenaqueue.iterator();
-			Arena a = null;
-			while (iter.hasNext()){
+            Arena a;
+            while (iter.hasNext()){
 				a = iter.next();
 				if (a.getArenaType() == arenaType)
 					iter.remove();
@@ -1038,13 +1018,13 @@ public class ArenaMatchQueue implements ArenaListener{
 		arenaForceTimers.clear();
 	}
 
-	public boolean forceStart(MatchParams mp, boolean force) {
+	public boolean forceStart(MatchParams mp, boolean respectMinimumPlayers) {
 		TeamQueue tq = getOrCreateGameQ(mp);
 		if (tq == null)
 			return false;
 		JoinResult qr = null;
 		/// try to find it without forcing first
-		if (force){
+		if (respectMinimumPlayers){
 			qr = findMatch(tq, true, true,null);}
 		/// Try to find it with force option
 		if (qr == null)

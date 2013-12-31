@@ -85,8 +85,7 @@ public class ConfigSerializer extends BaseConfig{
 		if (at == null && !name.equalsIgnoreCase("tourney"))
 			throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
 
-		MatchParams mp = loadMatchParams(plugin, at, name, cs);
-		return mp;
+		return loadMatchParams(plugin, at, name, cs);
 	}
 
 	public static MatchParams loadMatchParams(Plugin plugin, ArenaType at, String name, ConfigurationSection cs)
@@ -117,7 +116,7 @@ public class ConfigSerializer extends BaseConfig{
 
 		loadTimes(cs, mp); /// Set the game times
 		if (!isArena || cs.contains("nLives"))
-			mp.setNLives(parseSize(cs.getString("nLives"),1)); /// Number of lives
+			mp.setNLives(toPositiveSize(cs.getString("nLives"), 1)); /// Number of lives
 		loadBTOptions(cs, mp, isArena); /// Load battle tracker options
 
 		/// number of concurrently running matches of this type
@@ -152,7 +151,9 @@ public class ConfigSerializer extends BaseConfig{
 			PlayerContainerSerializer pcs = new PlayerContainerSerializer();
 			pcs.setConfig(BattleArena.getSelf().getDataFolder()+"/saves/containers.yml");
 			pcs.load(mp);
-		} catch (Exception e){}
+		} catch (Exception e){
+            Log.err("Error loading Player Containers");
+        }
 
 		String mods = modules.isEmpty() ? "" : " mods=" + StringUtils.join(modules,", ");
 		if (!isArena)
@@ -185,7 +186,7 @@ public class ConfigSerializer extends BaseConfig{
 			/// OnCancel gets taken from onComplete and modified
 			if (transition == MatchState.ONCANCEL)
 				continue;
-			TransitionOptions tops = null;
+			TransitionOptions tops;
 			try{
 				tops = getTransitionOptions(cs.getConfigurationSection(transition.toString()));
 				/// check for the most common alternate spelling of onPrestart
@@ -338,27 +339,23 @@ public class ConfigSerializer extends BaseConfig{
 			mp.setSecondsTillMatch( cs.getInt("secondsTillMatch",Defaults.SECONDS_TILL_MATCH));
 
 		if (cs.contains("matchTime"))
-			mp.setMatchTime(parseSize(cs.getString("matchTime"),Defaults.MATCH_TIME));
+			mp.setMatchTime(toPositiveSize(cs.getString("matchTime"), Defaults.MATCH_TIME));
 		if (cs.contains("matchUpdateInterval"))
 			mp.setIntervalTime(cs.getInt("matchUpdateInterval",Defaults.MATCH_UPDATE_INTERVAL));
 	}
 
-	public static int parseSize(String value, int defValue) {
-		if (value == null)
-			return defValue;
-		if (value.equalsIgnoreCase("infinite")){
-			return Integer.MAX_VALUE;
-		} else {
-			int lives = Integer.valueOf(value);
-			return lives <= 0 ? Integer.MAX_VALUE : lives;
-		}
-	}
+	public static int toPositiveSize(String value, int defValue) {
+        int s = ArenaSize.toInt(value, defValue);
+        return s <= 0 ? Integer.MAX_VALUE : s;
+    }
+
+
 
 	/**
 	 * Get and create the ArenaType for this plugin given the Configuration section
-	 * @param plugin
-	 * @param cs
-	 * @return
+	 * @param plugin the plugin
+	 * @param cs section containing the "type"
+	 * @return The ArenaType
 	 * @throws ConfigException
 	 */
 	public static ArenaType getArenaType(Plugin plugin, ConfigurationSection cs) throws ConfigException {
@@ -403,7 +400,6 @@ public class ConfigSerializer extends BaseConfig{
 			/// Our key for this option
 			final String key = split[0].trim().toUpperCase();
 			final String value = split.length > 1 ? split[1].trim() : null;
-			Object ovalue = null;
 
 			/// Check first to see if this option is actually a set of options
 			TransitionOptions optionSet = OptionSetController.getOptionSet(key);
@@ -412,7 +408,8 @@ public class ConfigSerializer extends BaseConfig{
 				continue;
 			}
 
-			TransitionOption to = null;
+			TransitionOption to;
+            Object ovalue;
 			try{
 				to = TransitionOption.fromString(key);
 				if (to == TransitionOption.ENCHANTS) /// we deal with these later
@@ -534,7 +531,7 @@ public class ConfigSerializer extends BaseConfig{
 		HashMap<Integer,ArenaClass> classes = new HashMap<Integer,ArenaClass>();
 		Set<String> keys = cs.getKeys(false);
 		for (String whichTeam: keys){
-			int team = -1;
+			int team;
 			final String className = cs.getString(whichTeam);
 			ArenaClass ac = ArenaClassController.getClass(className);
 			if (whichTeam.equalsIgnoreCase("default")){
@@ -564,7 +561,7 @@ public class ConfigSerializer extends BaseConfig{
 		HashMap<Integer,String> disguises = new HashMap<Integer,String>();
 		Set<String> keys = cs.getKeys(false);
 		for (String whichTeam: keys){
-			int team = -1;
+			int team;
 			final String disguiseName = cs.getString(whichTeam);
 			if (whichTeam.equalsIgnoreCase("default")){
 				team = DisguiseInterface.DEFAULT;
@@ -592,7 +589,7 @@ public class ConfigSerializer extends BaseConfig{
 		final int timeDefault = 60;
 		ArrayList<PotionEffect> effects = new ArrayList<PotionEffect>();
 		try {
-			String str = null;
+			String str;
 			for (Object o : cs.getList(nodeString)){
 				str = o.toString();
 				try{
@@ -651,25 +648,31 @@ public class ConfigSerializer extends BaseConfig{
 
 		main.set("prefix", params.getPrefix());
 
-		ConfigurationSection cs = main.createSection("gameSize");
-		if (params.getSize() != null) cs.set("nTeams", params.getNTeamRange());
-		if (params.getSize() != null) cs.set("teamSize", params.getTeamSizeRange());
+        if (params.getNTeams() != null || params.getTeamSizes() != null) {
+            ConfigurationSection cs = main.createSection("gameSize");
+            if (params.getNTeams() != null) cs.set("nTeams", params.getNTeamRange());
+            if (params.getTeamSizes() != null) cs.set("teamSize", params.getTeamSizeRange());
+        }
 
 		if (params.getNLives() != null) main.set("nLives", ArenaSize.toString(params.getNLives()));
 		if (params.getVictoryType()!= null) main.set("victoryCondition", params.getVictoryType().getName());
 
-		cs = main.createSection("times");
-		if (params.getSecondsTillMatch() != null) cs.set("secondsTillMatch", params.getSecondsTillMatch());
-		if (params.getMatchTime() != null) cs.set("matchTime", params.getMatchTime());
-		if (params.getSecondsToLoot() != null) cs.set("secondsToLoot", params.getSecondsToLoot());
+        if (params.getSecondsTillMatch() != null || params.getMatchTime() != null || params.getSecondsToLoot() != null ||
+                params.getTimeBetweenRounds() != null || params.getIntervalTime() != null){
+            ConfigurationSection cs = main.createSection("times");
+            if (params.getSecondsTillMatch() != null) cs.set("secondsTillMatch", params.getSecondsTillMatch());
+            if (params.getMatchTime() != null) cs.set("matchTime", params.getMatchTime());
+            if (params.getSecondsToLoot() != null) cs.set("secondsToLoot", params.getSecondsToLoot());
 
-		if (params.getTimeBetweenRounds() != null) cs.set("timeBetweenRounds", params.getTimeBetweenRounds());
-		if (params.getIntervalTime() != null) cs.set("matchUpdateInterval", params.getIntervalTime());
-
-		cs = main.createSection("tracking");
-		if (params.getDBName() != null) cs.set("database", params.getDBName());
-		if (params.getRated() != Rating.ANY) cs.set("rated", params.isRated());
-		if (params.getUseTrackerMessages() != null) cs.set("useTrackerMessages", params.getUseTrackerMessages());
+            if (params.getTimeBetweenRounds() != null) cs.set("timeBetweenRounds", params.getTimeBetweenRounds());
+            if (params.getIntervalTime() != null) cs.set("matchUpdateInterval", params.getIntervalTime());
+        }
+        if (params.getDBName() != null || params.getRated() != Rating.ANY || params.getUseTrackerMessages() != null) {
+            ConfigurationSection cs = main.createSection("tracking");
+            if (params.getDBName() != null) cs.set("database", params.getDBName());
+            if (params.getRated() != Rating.ANY) cs.set("rated", params.isRated());
+            if (params.getUseTrackerMessages() != null) cs.set("useTrackerMessages", params.getUseTrackerMessages());
+        }
 
 		if (!isArena){
 			main.set("arenaType", params.getType().getName());
@@ -699,7 +702,7 @@ public class ConfigSerializer extends BaseConfig{
 		if (ao != null){
 			Map<MatchState, Map<AnnouncementOption, Object>> map = ao.getMatchOptions();
 			if (map != null){
-				cs = main.createSection("announcements");
+                ConfigurationSection cs = main.createSection("announcements");
 				for (Entry<MatchState, Map<AnnouncementOption, Object>> entry : map.entrySet()){
 					List<String> ops = new ArrayList<String>();
 					for (Entry<AnnouncementOption,Object> entry2 : entry.getValue().entrySet()){
@@ -712,7 +715,7 @@ public class ConfigSerializer extends BaseConfig{
 
 			map = ao.getEventOptions();
 			if (map != null){
-				cs = main.createSection("eventAnnouncements");
+                ConfigurationSection cs = main.createSection("eventAnnouncements");
 				for (Entry<MatchState, Map<AnnouncementOption, Object>> entry : map.entrySet()){
 					List<String> ops = new ArrayList<String>();
 					for (Entry<AnnouncementOption,Object> entry2 : entry.getValue().entrySet()){

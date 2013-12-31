@@ -21,22 +21,22 @@ import org.bukkit.ChatColor;
 
 public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
-	String prefix = null;
-	VictoryType vc = null;
-	Integer matchTime = null;
-	Integer intervalTime = null;
-	AnnouncementOptions ao = null;
+	String prefix;
+	VictoryType vc;
+	Integer matchTime;
+	Integer intervalTime;
+	AnnouncementOptions ao;
 
-	Integer nLives = null;
-	Integer numConcurrentCompetitions = null;
-	Set<ArenaModule> modules = null;
-	Boolean useBTPvP = null;
-	Boolean useBTMessages = null;
-	Boolean useBTTeamRating = null;
+	Integer nLives;
+	Integer numConcurrentCompetitions;
+	Set<ArenaModule> modules;
+	Boolean useBTPvP;
+	Boolean useBTMessages;
+	Boolean useBTTeamRating;
 
-	MatchParams mparent=null;
+	MatchParams mparent;
 
-	Long forceStartTime = null;
+	Long forceStartTime;
 
 	public MatchParams(ArenaType at) {
 		super(at);
@@ -45,23 +45,31 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
 	public MatchParams(MatchParams mp) {
 		super(mp);
-		this.prefix = mp.prefix;
-		this.vc = mp.vc;
+    }
 
-		this.matchTime = mp.matchTime;
-		this.intervalTime = mp.intervalTime;
-		this.ao = mp.ao;
-		this.nLives = mp.nLives;
-		this.numConcurrentCompetitions = mp.numConcurrentCompetitions;
-		this.mparent = mp.mparent;
-		this.useBTMessages = mp.useBTMessages;
-		this.useBTPvP = mp.useBTPvP;
-		this.useBTTeamRating  = mp.useBTTeamRating;
-		this.forceStartTime  = mp.forceStartTime;
-		if (mp.modules != null)
-			this.modules = new HashSet<ArenaModule>(mp.modules);
-	}
+    public void copy(ArenaParams ap){
+        if (this==ap)
+            return;
+        super.copy(ap);
+        if (ap instanceof MatchParams){
+            MatchParams mp = (MatchParams)ap;
+            this.prefix = mp.prefix;
+            this.vc = mp.vc;
 
+            this.matchTime = mp.matchTime;
+            this.intervalTime = mp.intervalTime;
+            this.ao = mp.ao;
+            this.nLives = mp.nLives;
+            this.numConcurrentCompetitions = mp.numConcurrentCompetitions;
+            this.mparent = mp.mparent;
+            this.useBTMessages = mp.useBTMessages;
+            this.useBTPvP = mp.useBTPvP;
+            this.useBTTeamRating  = mp.useBTTeamRating;
+            this.forceStartTime  = mp.forceStartTime;
+            if (mp.modules != null)
+                this.modules = new HashSet<ArenaModule>(mp.modules);
+        }
+    }
 	@Override
 	public void flatten() {
 		if (mparent != null){
@@ -145,7 +153,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	public boolean equals(Object other) {
 		if (this == other) return true;
 		if (!(other instanceof MatchParams)) return false;
-		return this.hashCode() == ((MatchParams) other).hashCode();
+		return this.hashCode() == other.hashCode();
 	}
 
 	public void setAnnouncementOptions(AnnouncementOptions announcementOptions) {
@@ -170,7 +178,8 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 	}
 
 	public Integer getNConcurrentCompetitions(){
-		return numConcurrentCompetitions ==null && mparent!=null ? mparent.getNConcurrentCompetitions() : numConcurrentCompetitions;
+		return numConcurrentCompetitions != null ? numConcurrentCompetitions :
+                (mparent!=null ? mparent.getNConcurrentCompetitions() : null);
 	}
 
 	public JoinType getJoinType() {

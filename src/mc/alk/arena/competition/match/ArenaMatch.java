@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
@@ -70,9 +71,9 @@ public class ArenaMatch extends Match {
 		super(arena, mp);
 	}
 	@ArenaEventHandler(priority=EventPriority.LOW, begin=MatchState.ONPRESTART, end=MatchState.ONSTART)
-	public void onPlayerMove2(PlayerMoveEvent e){
-		e.setCancelled(true);
-	}
+	public void onPlayerMove2(PlayerMoveEvent e) {
+        e.setCancelled(true);
+    }
 
 	@ArenaEventHandler(suppressCastWarnings=true,bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
 	public void onPlayerDeath(PlayerDeathEvent event, final ArenaPlayer target){
@@ -86,8 +87,8 @@ public class ArenaMatch extends Match {
 		ArenaPlayerDeathEvent apde = new ArenaPlayerDeathEvent(target,t);
 		apde.setPlayerDeathEvent(event);
 		callEvent(apde);
-		ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
-		if (killer != null){
+        ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
+        if (killer != null){
 			ArenaTeam killT = getTeam(killer);
 			if (killT != null){ /// they must be in the same match for this to count
 				killT.addKill(killer);
@@ -434,7 +435,8 @@ public class ArenaMatch extends Match {
 			List<ItemStack> items = new ArrayList<ItemStack>();
 			if (chosen.getItems()!=null)
 				items.addAll(chosen.getItems());
-			if (mp.hasOptionAt(MatchState.ONSPAWN, TransitionOption.GIVEITEMS)){
+			if (mp.hasOptionAt(MatchState.ONSPAWN, TransitionOption.GIVEITEMS) &&
+                    mp.getGiveItems(MatchState.ONSPAWN) != null){
 				items.addAll(mp.getGiveItems(MatchState.ONSPAWN));
 			}
 			if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
