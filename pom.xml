@@ -43,7 +43,7 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattleScoreboardAPI</artifactId>
-            <version>[1.0.4,)</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -225,7 +225,7 @@
     <distributionManagement>
         <repository>
             <id>battleplugins-repo</id>
-            <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven</url>
+            <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven/repository</url>
         </repository>
     </distributionManagement>
 </project>
