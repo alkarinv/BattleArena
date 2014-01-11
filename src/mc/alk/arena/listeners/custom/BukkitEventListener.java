@@ -1,12 +1,7 @@
 package mc.alk.arena.listeners.custom;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
@@ -14,6 +9,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.EventExecutor;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -67,7 +66,7 @@ public abstract class BukkitEventListener implements Listener  {
 	}
 
 	public void startListening(){
-		if (isListening())
+		if (isListening() || Defaults.TESTSERVER)
 			return;
 
 		listening.set(true);

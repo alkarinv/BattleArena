@@ -1,21 +1,5 @@
 package mc.alk.arena.objects.queues;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.BlankCompetition;
@@ -55,6 +39,22 @@ import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Countdown.CountdownCallback;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class ArenaMatchQueue implements ArenaListener{
@@ -589,12 +589,6 @@ public class ArenaMatchQueue implements ArenaListener{
 				TeamJoinObject to = (TeamJoinObject) qo;
 				ArenaTeam t = to.getTeam();
 				JoinOptions jp = qo.getJoinOptions();
-//                if (forceStart && !mp.matchesIgnoreSizes(params)) {
-//                    continue;
-//                } else if (!mp.matchesIgnoreNTeams(params)){
-//                    continue;
-//                }
-
                 if (jp != null && !(jp.matches(arena) && jp.matches(params) && arena.matchesIgnoreSize(params, jp))){
 					continue;}
 

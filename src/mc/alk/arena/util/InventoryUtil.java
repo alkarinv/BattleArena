@@ -1,21 +1,7 @@
 package mc.alk.arena.util;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import mc.alk.arena.Defaults;
 import mc.alk.arena.util.compat.IInventoryHelper;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -27,6 +13,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class InventoryUtil {
 	static final String version = "BA InventoryUtil 2.1.7";
@@ -51,9 +50,9 @@ public class InventoryUtil {
 				final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.pre.InventoryHelper");
 				handler = (IInventoryHelper) clazz.getConstructor(args).newInstance((Object[])args);
 			} catch (Exception e2){
-				e2.printStackTrace();
+                if (!Defaults.TESTSERVER && !Defaults.TESTSERVER_DEBUG) Log.printStackTrace(e2);
 			}
-			Log.printStackTrace(e);
+            if (!Defaults.TESTSERVER && !Defaults.TESTSERVER_DEBUG) Log.printStackTrace(e);
 		}
 	}
 

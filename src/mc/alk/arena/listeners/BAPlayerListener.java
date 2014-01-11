@@ -1,10 +1,5 @@
 package mc.alk.arena.listeners;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.EssentialsController;
@@ -16,7 +11,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.MessageUtil;
-
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -27,6 +21,11 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -46,7 +45,7 @@ public class BAPlayerListener implements Listener  {
 	 * Why priority highest, some other plugins try to force respawn the player in spawn(or some other loc)
 	 * problem is if they have come from the creative world, their game mode gets reset to creative
 	 * but the other plugin force spawns them at spawn... so they now have creative in an area they shouldnt
-	 * @param event
+	 * @param event PlayerRespawnEvent
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerRespawn(PlayerRespawnEvent event){
@@ -59,7 +58,7 @@ public class BAPlayerListener implements Listener  {
 
 	/**
 	 * This method is just used to handle essentials and the /back command
-	 * @param event
+	 * @param event PlayerDeathEvent
 	 */
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerDeath(PlayerDeathEvent event){
@@ -100,7 +99,6 @@ public class BAPlayerListener implements Listener  {
 		if (region != null && !WorldGuardController.hasPlayer(event.getPlayer().getName(), region)){
 			MessageUtil.sendMessage(event.getPlayer(), "&cYou can't enter the arena through teleports");
 			event.setCancelled(true);
-			return;
 		}
 	}
 

@@ -16,22 +16,15 @@ public class ScoreboardFactory {
 		}
 	}
 
-	public static ArenaScoreboard createScoreboard(Match match, MatchParams params) {
-		if (!Defaults.USE_SCOREBOARD || Defaults.TESTSERVER)
-			return new ArenaScoreboard(match, params);
-		return hasBukkitScoreboard ? new ArenaBukkitScoreboard(match, params) :  new ArenaScoreboard(match, params);
-	}
-
-//	public static ArenaObjective createObjective(String name, String criteria, int priority) {
-//		if (!Defaults.USE_SCOREBOARD || Defaults.TESTSERVER)
-//			return new ArenaObjective(match, params);
-//		return hasBukkitScoreboard ? new ArenaObjective(name,criteria,priority) :
-//			new BAObjective(name,criteria,priority);
-//	}
+    public static ArenaScoreboard createScoreboard(Match match, MatchParams params) {
+        // Intellij warning suppression
+        // noinspection PointlessBooleanExpression,ConstantConditions
+        return (Defaults.USE_SCOREBOARD && hasBukkitScoreboard && !Defaults.TESTSERVER) ?
+                new ArenaBukkitScoreboard(match, params) : new ArenaScoreboard(match, params);
+    }
 
 	public static boolean hasBukkitScoreboard(){
 		return hasBukkitScoreboard;
 	}
-
 
 }

@@ -1,9 +1,5 @@
 package mc.alk.arena.controllers.messaging;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
-
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -15,6 +11,10 @@ import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Set;
 
 
 /**
@@ -106,25 +106,27 @@ public class MessageFormatter{
 				case NTEAMS: replaceList[i] = teams != null ? teams.size()+"" : "0"; break;
 				case PLAYERORTEAM: replaceList[i] = teams!=null? MessageUtil.getTeamsOrPlayers(mp.getMaxTeamSize()) : "teams"; break;
 				case PARTICIPANTS:{
-					StringBuilder sb = new StringBuilder();
-					boolean first = true;
-					for (ArenaTeam t: teams){
-						if (!first) sb.append(", ");
-						TeamNames tn = getTeamNames(t);
-						if (tn == null){
-							sb.append(t.getDisplayName());
-						} else if (tn.longName != null){
-							sb.append(tn.longName);
-						} else if (tn.shortName != null){
-							sb.append(tn.shortName);
-						} else if (tn.name != null){
-							sb.append(tn.name);
-						} else {
-							sb.append(t.getDisplayName());
-						}
-						first = false;
-					}
-					replaceList[i] = sb.toString();
+                    if (teams != null){
+                        StringBuilder sb = new StringBuilder();
+                        boolean first = true;
+                        for (ArenaTeam t: teams){
+                            if (!first) sb.append(", ");
+                            TeamNames tn = getTeamNames(t);
+                            if (tn == null){
+                                sb.append(t.getDisplayName());
+                            } else if (tn.longName != null){
+                                sb.append(tn.longName);
+                            } else if (tn.shortName != null){
+                                sb.append(tn.shortName);
+                            } else if (tn.name != null){
+                                sb.append(tn.name);
+                            } else {
+                                sb.append(t.getDisplayName());
+                            }
+                            first = false;
+                        }
+                        replaceList[i] = sb.toString();
+                    }
 				}
 				break;
 
@@ -186,7 +188,7 @@ public class MessageFormatter{
 	}
 
 	public void formatTwoTeamsOptions(ArenaTeam t, Collection<ArenaTeam> teams){
-		ArenaTeam oteam = null;
+		ArenaTeam oteam;
 		ArenaStat st1 = t.getStat();
 		int i = teamIndex;
 		for (MessageOption mop : ops){
@@ -300,12 +302,12 @@ public class MessageFormatter{
 
 					for (ArenaPlayer ap: team.getLivingPlayers()){
 						if (!first) sb.append(", ");
-						sb.append("&6" + ap.getDisplayName()+"&e(&4" + ap.getHealth()+"&e)");
+						sb.append("&6").append(ap.getDisplayName()).append("&e(&4").append(ap.getHealth()).append("&e)");
 						first = false;
 					}
 					for (ArenaPlayer ap: team.getDeadPlayers()){
 						if (!first) sb.append(", ");
-						sb.append("&6" + ap.getDisplayName()+"&e(&8Dead&e)");
+						sb.append("&6").append(ap.getDisplayName()).append("&e(&8Dead&e)");
 						first = false;
 					}
 					replaceList[i] = sb.toString();
@@ -359,7 +361,7 @@ public class MessageFormatter{
 			if (mop == null)
 				continue;
 
-			String repl = null;
+			String repl;
 			switch(mop){
 			case NAME: repl = t.getDisplayName(); break;
 			case WINS: repl = t.getStat().getWins()+""; break;
@@ -479,7 +481,7 @@ public class MessageFormatter{
 		// index on index that the match was found
 		int textIndex = -1;
 		int replaceIndex = -1;
-		int tempIndex = -1;
+		int tempIndex;
 
 		// index of replace array that will replace the search string found
 		// NOTE: logic duplicated below START
@@ -526,7 +528,7 @@ public class MessageFormatter{
 		// have upper-bound at 20% increase, then let Java take over
 		increase = Math.min(increase, text.length() / 5);
 
-		StringBuffer buf = new StringBuffer(text.length() + increase);
+		StringBuilder buf = new StringBuilder(text.length() + increase);
 
 		while (textIndex != -1) {
 
@@ -539,7 +541,6 @@ public class MessageFormatter{
 
 			textIndex = -1;
 			replaceIndex = -1;
-			tempIndex = -1;
 			// find the next earliest match
 			// NOTE: logic mostly duplicated above START
 			for (int i = 0; i < searchLength; i++) {
@@ -572,7 +573,7 @@ public class MessageFormatter{
 			return result;
 		}
 
-		return replaceEach(result, searchList, replacementList, repeat, timeToLive - 1);
+		return replaceEach(result, searchList, replacementList, true, timeToLive - 1);
 	}
 
 	public void printMap(){

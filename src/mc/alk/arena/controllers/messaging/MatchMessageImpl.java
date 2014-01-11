@@ -1,10 +1,5 @@
 package mc.alk.arena.controllers.messaging;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchMessageEvent;
 import mc.alk.arena.events.matches.messages.MatchIntervalMessageEvent;
@@ -21,6 +16,11 @@ import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.TimeUtil;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -62,7 +62,6 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		if (serverChannel != Channel.NullChannel){
 			ops.addAll(serverMessage.getOptions());
 		}
-		String msg = message.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), teams.size(), message, ops);
 
 		msgf.formatCommonOptions(teams,seconds);
@@ -75,7 +74,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		}
 
 		if (serverChannel != Channel.NullChannel){
-			msg = msgf.getFormattedMessage(serverMessage);
+			String msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}
 	}
@@ -92,7 +91,8 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 				int max = Math.min(leaders.size(), 4);
 				StringBuilder sb = new StringBuilder();
 				for (int i = 0;i<max;i++){
-					sb.append("&6"+(i+1) +"&e : "+TeamUtil.formatName(leaders.get(i))+"\n");
+					sb.append("&6").append(i + 1).append("&e : ").
+                            append(TeamUtil.formatName(leaders.get(i))).append("\n");
 				}
 				String leaderStr = sb.toString();
 				if (victors != null){
@@ -210,7 +210,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	@Override
 	public String getMessage(String node, Map<String, String> params) {
 		String text = this.getNodeText(node);
-		return text == null ? text : format(text,params);
+		return text == null ? null : format(text,params);
 	}
 
 	@Override
@@ -248,11 +248,10 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		if (serverChannel != Channel.NullChannel){
 			ops.addAll(serverMessage.getOptions());
 		}
-		String msg = message.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), 0, message, ops);
 		msgf.formatCommonOptions(null,seconds);
 		if (serverChannel != Channel.NullChannel){
-			msg = msgf.getFormattedMessage(serverMessage);
+			String msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}
 	}

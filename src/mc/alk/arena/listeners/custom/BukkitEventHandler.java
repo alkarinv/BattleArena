@@ -1,14 +1,13 @@
 package mc.alk.arena.listeners.custom;
 
-import java.util.Collection;
-import java.util.Set;
-
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventMethod;
 import mc.alk.arena.util.Log;
-
 import org.bukkit.event.Event;
+
+import java.util.Collection;
+import java.util.Set;
 
 
 
@@ -25,7 +24,7 @@ public class BukkitEventHandler {
 	/**
 	 * Construct a listener to listen for the given bukkit event
 	 * @param bukkitEvent : which event we will listen for
-	 * @param getPlayerMethod : a method which when not null and invoked will return a Player
+	 * @param aem : a method which when not null and invoked will return a Player
 	 */
 	public BukkitEventHandler(final Class<? extends Event> bukkitEvent, ArenaEventMethod aem) {
 		if (aem.getPlayerMethod() != null){
@@ -42,7 +41,7 @@ public class BukkitEventHandler {
 
 	/**
 	 * Does this event even have any listeners
-	 * @return
+	 * @return true if there are listeners
 	 */
 	public boolean hasListeners(){
 		return (ael != null && ael.hasListeners()) || (spl != null && spl.hasListeners()) ||
@@ -51,10 +50,8 @@ public class BukkitEventHandler {
 
 	/**
 	 * Add a player listener to this bukkit event
-	 * @param rl
-	 * @param matchState
-	 * @param mem
-	 * @param players
+	 * @param rl RListener
+	 * @param players the players
 	 */
 	public void addListener(RListener rl, Collection<String> players) {
 		if (players != null && rl.isSpecificPlayerMethod()){
@@ -70,10 +67,8 @@ public class BukkitEventHandler {
 
 	/**
 	 * remove a player listener from this bukkit event
-	 * @param arenaListener
-	 * @param matchState
-	 * @param mem
-	 * @param players
+	 * @param rl RListener
+	 * @param players the players
 	 */
 	public void removeListener(RListener rl, Collection<String> players) {
 		if (players != null && rl.isSpecificPlayerMethod()){
@@ -89,7 +84,7 @@ public class BukkitEventHandler {
 
 	/**
 	 * Remove all listeners for this bukkit event
-	 * @param rl
+	 * @param rl RListener
 	 */
 	public void removeAllListener(RListener rl) {
 		if (spl != null) spl.removeAllListeners(rl);

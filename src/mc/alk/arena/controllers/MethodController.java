@@ -1,21 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-
 import mc.alk.arena.Defaults;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.listeners.custom.BukkitEventHandler;
@@ -31,7 +15,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfTreeSet;
 import mc.alk.arena.util.MessageUtil;
-
+import mc.alk.arena.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -41,6 +25,22 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 
 
 @SuppressWarnings("deprecation")
@@ -565,7 +565,9 @@ public class MethodController {
                             continue;
                         TreeSet<RListener> rls = lists2.get(p);
                         for (RListener rl : rls){
-                            MessageUtil.sendMessage(sender, "!! " + rl.getPriority() + "  " + p + "  Listener  " + rl.getListener().getClass().getSimpleName());
+                            MessageUtil.sendMessage(sender, "!! " + rl.getPriority() + "  " + p +
+                                    "  Listener  " + rl.getListener().getClass().getSimpleName() +
+                                    " hash=" + Util.toString(rl.getListener()));
                         }
                     }
                 }
@@ -580,8 +582,9 @@ public class MethodController {
                             continue;
                         TreeSet<RListener> rls = lists2.get(p);
                         for (RListener rl : rls){
-                            MessageUtil.sendMessage(sender, "!!! " + rl.getPriority() + "  " + p + "  Listener  " +
-                                    rl.getListener().getClass().getSimpleName());
+                            MessageUtil.sendMessage(sender, "!!! " + rl.getPriority() + "  " + p +
+                                    "  Listener  " + rl.getListener().getClass().getSimpleName() +
+                                    " hash=" + Util.toString(rl.getListener()));
                         }
                     }
                 }

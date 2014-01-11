@@ -2,7 +2,6 @@ package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
 import mc.alk.plugin.updater.v1r2.Version;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
@@ -32,4 +31,13 @@ public class Util {
 		}
 		return new Version(version);
 	}
+
+    /**
+     * Mimic the Object toString Method
+     * @param o Object
+     * @return Object toString
+     */
+    public static String toString(Object o) {
+        return o == null ? null : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
+    }
 }

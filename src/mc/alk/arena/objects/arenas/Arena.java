@@ -1,11 +1,5 @@
 package mc.alk.arena.objects.arenas;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
@@ -28,9 +22,14 @@ import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.Persist;
 import mc.alk.arena.util.Log;
-
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Arena extends AreaContainer {
 
@@ -473,7 +472,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * add a timed spawn to this arena
-	 * @return
+	 * @return TimedSpawn
 	 */
 	public TimedSpawn deleteTimedSpawn(Long num) {
 		return timedSpawns == null ? null : timedSpawns.remove(num);
@@ -495,7 +494,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * set the winning team, this will also cause the match to be ended
-	 * @param team
+	 * @param team ArenaTeam
 	 */
 	protected void setWinner(ArenaTeam team) {
 		match.setVictor(team);
@@ -511,7 +510,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Get the current state of the match
-	 * @return
+	 * @return current match state
 	 */
 	@Override
 	public MatchState getMatchState(){
@@ -520,7 +519,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * return a list of teams inside this match
-	 * @return
+	 * @return list of teams
 	 */
 	public List<ArenaTeam> getTeams(){
 		return match == null ? null : match.getTeams();
@@ -528,7 +527,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Return a list of live teams inside this match
-	 * @return
+	 * @return List of alive teams
 	 */
 	public List<ArenaTeam> getAliveTeams(){
 		return match == null ? null : match.getAliveTeams();
@@ -536,7 +535,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Return a list of living arena players inside this match
-	 * @return
+	 * @return list of alive players
 	 */
 	public Set<ArenaPlayer> getAlivePlayers(){
 		return match == null ? null : match.getAlivePlayers();
@@ -544,7 +543,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Return a list of alive bukkit players inside this match
-	 * @return
+	 * @return list of alive bukkit players
 	 */
 	public Set<Player> getAliveBukkitPlayers(){
 		return match == null ? null : BattleArena.toPlayerSet(match.getAlivePlayers());
@@ -552,7 +551,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Return the team of this player
-	 * @return
+	 * @return the team or null if player isn't in match
 	 */
 	@Override
 	public ArenaTeam getTeam(ArenaPlayer p){
@@ -561,7 +560,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Return the team of this player
-	 * @return
+     * @return the team or null if player isn't in match
 	 */
 	public ArenaTeam getTeam(Player p){
 		return match == null ? null : match.getTeam(BattleArena.toArenaPlayer(p));
@@ -569,7 +568,7 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * Return the team with this index
-	 * @return
+     * @return the team or null if index isn't valid
 	 */
 	public ArenaTeam getTeam(int teamIndex){
 		return match == null ? null : match.getTeam(teamIndex);
@@ -599,10 +598,8 @@ public class Arena extends AreaContainer {
 	 * @return true if arena matches the params && joinOptions
 	 */
 	public boolean matches(final MatchParams matchParams, final JoinOptions joinOptions) {
-		if (!getParams().matches(matchParams))
-			return false;
-		return matchesIgnoreSize(matchParams,joinOptions);
-	}
+        return getParams().matches(matchParams) && matchesIgnoreSize(matchParams, joinOptions);
+    }
 
 	/**
 	 * Checks to see whether this arena has paramaters that match the given matchparams
@@ -636,7 +633,9 @@ public class Arena extends AreaContainer {
 		}
 		return true;
 	}
-	public boolean matches(Arena arena) {
+
+    @SuppressWarnings("SimplifiableIfStatement")
+    public boolean matches(Arena arena) {
 		if (arena == null)
 			return false;
 		if (this == arena)
@@ -695,8 +694,9 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * return detailed arena details (includes bukkit coloring)
-	 * @return
+	 * @return detailed info
 	 */
+    @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
 	public String toDetailedString(){
 		StringBuilder sb = new StringBuilder("&6" + name+" &e");
 		sb.append("&eTeamSizes=&6"+params.getTeamSizeRange() + " &eTypes=&6" +params.getType());
@@ -711,9 +711,10 @@ public class Arena extends AreaContainer {
 
 	/**
 	 * return arena summary string (includes bukkit coloring)
-	 * @return
+	 * @return summary
 	 */
-	public String toSummaryString(){
+    @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
+    public String toSummaryString(){
 		StringBuilder sb = new StringBuilder("&4" + name);
 		if (params != null){
 			sb.append("&e type=&6"+params.getType());

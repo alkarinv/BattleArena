@@ -1,21 +1,20 @@
 package mc.alk.arena.util;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 public class NotifierUtil {
 	public static Map<String,Set<String>> listeners = new ConcurrentHashMap<String,Set<String>>();
 
 	public static void notify(String type, String msg) {
-		Set<String> players = listeners.get(type);
-		if (players == null)
-			return;
-		for (String name: players){
+        if (listeners.get(type)== null)
+            return;
+		for (String name: listeners.get(type)){
 			Player p = Bukkit.getPlayerExact(name);
 			if (p== null || !p.isOnline())
 				continue;
@@ -24,15 +23,14 @@ public class NotifierUtil {
 	}
 
 	public static void notify(String type, Throwable exception) {
-		Set<String> players = listeners.get(type);
-		if (players == null)
+        if (listeners.get(type)== null)
 			return;
 		StringBuilder sb = new StringBuilder();
 		for (StackTraceElement e: exception.getStackTrace()){
 			sb.append(e.toString());
 		}
 		String msg = sb.toString();
-		for (String name: players){
+        for (String name: listeners.get(type)){
 			Player p = Bukkit.getPlayerExact(name);
 			if (p== null || !p.isOnline())
 				continue;

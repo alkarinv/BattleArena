@@ -1,8 +1,6 @@
 package mc.alk.arena.objects.scoreboard;
 
-import java.util.Collection;
-import java.util.List;
-
+import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -13,16 +11,21 @@ import mc.alk.scoreboardapi.api.SObjective;
 import mc.alk.scoreboardapi.api.SScoreboard;
 import mc.alk.scoreboardapi.api.STeam;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
-
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
+
+import java.util.Collection;
+import java.util.List;
 
 public class ArenaScoreboard implements SScoreboard {
 	final Match match;
-	protected SScoreboard board;
+	final protected SScoreboard board;
 
+    @SuppressWarnings({"unused"})
 	public ArenaScoreboard(Match match, MatchParams params) {
 		this.match = match;
-		board = ScoreboardAPI.createScoreboard(match.getName());
+        this.board = Defaults.TESTSERVER ? ScoreboardAPI.createSAPIScoreboard(match.getName()) :
+                ScoreboardAPI.createScoreboard(match.getName());
 	}
 
 	public ArenaObjective createObjective(String id, String criteria, String displayName) {
@@ -177,7 +180,17 @@ public class ArenaScoreboard implements SScoreboard {
 		return board.getEntries();
 	}
 
-	public void setObjectiveScoreboard(ArenaObjective arenaObjective) {
+    @Override
+    public void removeScoreboard(Player player) {
+        board.removeScoreboard(player);
+    }
+
+    @Override
+    public void setScoreboard(Player player) {
+        board.setScoreboard(player);
+    }
+
+    public void setObjectiveScoreboard(ArenaObjective arenaObjective) {
 		arenaObjective.setScoreBoard(board);
 	}
 

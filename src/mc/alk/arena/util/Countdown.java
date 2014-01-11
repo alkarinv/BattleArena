@@ -2,6 +2,7 @@ package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
 
+import mc.alk.arena.controllers.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
@@ -12,7 +13,7 @@ public class Countdown implements Runnable{
 	public static interface CountdownCallback{
 		/**
 		 *
-		 * @param secondsRemaining
+		 * @param secondsRemaining how many seconds are still left
 		 * @return whether to cancel
 		 */
 		public boolean intervalTick(int secondsRemaining);
@@ -37,8 +38,7 @@ public class Countdown implements Runnable{
 		this.seconds = seconds - (rem != 0? rem : this.interval);
 		startTime = System.currentTimeMillis();
 		expectedEndTime = startTime + seconds*1000;
-		this.timerId  = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this,
-				(long)(time * Defaults.TICK_MULT));
+        this.timerId  = Scheduler.scheduleSynchrounousTask(plugin, this, (int)(time * Defaults.TICK_MULT));
 	}
 
 	public void setCancelOnExpire(boolean cancel){

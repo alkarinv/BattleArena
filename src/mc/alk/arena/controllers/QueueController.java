@@ -1,8 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.util.HashSet;
-import java.util.List;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
@@ -22,23 +19,27 @@ import mc.alk.arena.objects.queues.ArenaMatchQueue;
 import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.CommandUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+
+import java.util.HashSet;
+import java.util.List;
 
 public class QueueController extends ArenaMatchQueue implements ArenaListener, Listener{
 	private static HashSet<String> disabledCommands = new HashSet<String>();
 
 	public QueueController(){
 		super();
-		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());} catch(Exception e){}
+		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());} catch(Exception e){
+            /* usually only from offline testing, don't need to report */
+            if (!Defaults.TESTSERVER && !Defaults.TESTSERVER_DEBUG) Log.printStackTrace(e);
+        }
 	}
 
 	@Override

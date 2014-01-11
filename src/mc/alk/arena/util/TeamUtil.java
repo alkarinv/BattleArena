@@ -1,19 +1,19 @@
 package mc.alk.arena.util;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamAppearance;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class TeamUtil {
 	static final int NTEAMS = 35;
@@ -62,12 +62,15 @@ public class TeamUtil {
 	public static void setTeamHead(ItemStack item, Player p) {
 		if (p.isOnline() && !p.isDead()){
 			ItemStack is = p.getInventory().getHelmet();
+            try{
 			p.getInventory().setHelmet(item);
 			if (is != null && is.getType() != Material.AIR && is.getType()!= Material.WOOL){
 				InventoryUtil.addItemToInventory(p, is.clone(), is.getAmount(),true, true);}
-			try{
 				p.updateInventory();
-			}catch (Exception e){}
+			}catch (Exception e){
+                if (!Defaults.DEBUG_VIRTUAL)
+                    Log.printStackTrace(e);
+            }
 		}
 	}
 
@@ -94,7 +97,7 @@ public class TeamUtil {
 			Integer d = t.getNDeaths(p);
 			if (k==null) k=0;
 			if (d==null) d=0;
-			sb.append("&e(&c"+k+"&e,&7"+d+"&e)");
+			sb.append("&e(&c").append(k).append("&e,&7").append(d).append("&e)");
 		}
 		return sb.toString();
 	}

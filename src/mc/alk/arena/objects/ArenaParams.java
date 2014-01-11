@@ -4,9 +4,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
-import mc.alk.arena.util.Util;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
@@ -31,7 +29,6 @@ public class ArenaParams {
 	String dbName;
 
 	ArenaParams parent;
-//	ArenaSize size = null;
     MinMax nTeams;
     MinMax teamSize;
 	Boolean closeWaitroomWhileRunning;

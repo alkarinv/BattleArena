@@ -1,14 +1,5 @@
 package mc.alk.arena.controllers.containers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
@@ -30,14 +21,23 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.CommandUtil;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler{
 	public static final AbstractAreaContainer HOMECONTAINER = new AbstractAreaContainer("home"){
@@ -78,7 +78,9 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 	public AbstractAreaContainer(String name){
 		methodController = new MethodController("AAC " + name);
 		methodController.addAllEvents(this);
-		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());}catch(Exception e){}
+		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());}catch(Exception e){
+            if (!Defaults.TESTSERVER && !Defaults.TESTSERVER_DEBUG) Log.printStackTrace(e);
+        }
 		this.name = name;
 	}
 
@@ -210,8 +212,8 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
 	/**
 	 * Set the spawn location for the team with the given index
-	 * @param index
-	 * @param loc
+	 * @param index index of spawn
+	 * @param loc location
 	 */
 	public void setSpawnLoc(int index, Location loc) throws IllegalStateException{
 		if (index == Defaults.MAIN_SPAWN){

@@ -6,9 +6,8 @@ import net.milkbowl.vault.economy.Economy;
 
 public class MoneyController {
 	static boolean initialized = false;
-	static boolean hasVault = false;
-	static boolean useVault = false;
 	public static Economy economy = null;
+
 	public static boolean hasEconomy(){
 		return initialized;
 	}
@@ -16,32 +15,33 @@ public class MoneyController {
 	public static boolean hasAccount(String name) {
 		if (!initialized) return true;
 		try{
-			return useVault? economy.hasAccount(name) : true;
-		} catch (Exception e){
+			return economy.hasAccount(name);
+		} catch (Throwable e){
 			Log.printStackTrace(e);
 			return true;
 		}
 
 	}
 	public static boolean hasEnough(String name, double fee) {
-		if (!initialized) return true;
-		return hasEnough(name, (float) fee);
-	}
+        return !initialized || hasEnough(name, (float) fee);
+    }
 	public static boolean hasEnough(String name, float amount) {
 		if (!initialized) return true;
 		try{
-			return useVault? economy.getBalance(name) >= amount : true;
-		} catch (Exception e){
+			return economy.getBalance(name) >= amount;
+		} catch (Throwable e){
 			Log.printStackTrace(e);
 			return true;
 		}
 
 	}
 
+    @SuppressWarnings({"unused"})
 	public static boolean hasEnough(String name, float amount, String world) {
 		return hasEnough(name,amount);
 	}
 
+    @SuppressWarnings({"unused"})
 	public static void subtract(String name, float amount, String world) {
 		subtract(name,amount);
 	}
@@ -53,14 +53,15 @@ public class MoneyController {
 	public static void subtract(String name, float amount) {
 		if (!initialized) return;
 		try{
-			if (useVault) economy.withdrawPlayer(name, amount);
-		} catch (Exception e){
+			economy.withdrawPlayer(name, amount);
+		} catch (Throwable e){
 			Log.printStackTrace(e);
 		}
 	}
 
 
-	public static void add(String name, float amount, String world) {
+    @SuppressWarnings({"unused"})
+    public static void add(String name, float amount, String world) {
 		add(name,amount);
 	}
 
@@ -72,12 +73,13 @@ public class MoneyController {
 	public static void add(String name, float amount) {
 		if (!initialized) return;
 		try{
-			if (useVault) economy.depositPlayer(name, amount) ;
-		} catch (Exception e){
+			economy.depositPlayer(name, amount) ;
+		} catch (Throwable e){
 			Log.printStackTrace(e);
 		}
 	}
 
+    @SuppressWarnings({"unused"})
 	public static Double balance(String name, String world) {
 		return balance(name);
 	}
@@ -85,8 +87,8 @@ public class MoneyController {
 	public static Double balance(String name) {
 		if (!initialized) return 0.0;
 		try{
-			return useVault ? economy.getBalance(name) : 0;
-		} catch (Exception e){
+			return economy.getBalance(name);
+		} catch (Throwable e){
 			Log.printStackTrace(e);
 			return 0.0;
 		}
@@ -96,8 +98,6 @@ public class MoneyController {
 	public static void setEconomy(Economy economy) {
 		MoneyController.economy = economy;
 		initialized = true;
-		hasVault = true;
-		useVault = true;
 		/// Certain economy plugins don't implement this method correctly due to a NPE (I'm looking at you BOSEconomy! -_-)
 		try{
 			String cur = economy.currencyNameSingular();

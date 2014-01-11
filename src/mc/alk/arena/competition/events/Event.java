@@ -1,15 +1,5 @@
 package mc.alk.arena.competition.events;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
@@ -51,9 +41,19 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public abstract class Event extends Competition implements CountdownCallback, ArenaListener {
@@ -78,7 +78,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
 	/**
 	 * Create our event from the specified paramaters
-	 * @param params
+	 * @param params EventParams
 	 */
 	public Event(EventParams params) {
 		transitionTo(EventState.CLOSED);
@@ -197,13 +197,15 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		joinHandler.deconstruct();
 		joinHandler = null;
 		callEvent(new EventFinishedEvent(this));
-	}
+        HandlerList.unregisterAll(this);
+    }
 
 	public boolean canJoin(){
 		return isOpen();
 	}
 
-	public boolean canJoin(ArenaTeam t){
+    @SuppressWarnings("unused")
+    public boolean canJoin(ArenaTeam t){
 		return isOpen();
 	}
 
@@ -218,7 +220,8 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		times.put(this.state, System.currentTimeMillis());
 	}
 
-	@Override
+	@SuppressWarnings("SuspiciousMethodCalls")
+    @Override
 	public Long getTime(CompetitionState state){
 		return times.get(state);
 	}
@@ -282,11 +285,11 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
 	/**
 	 * Called when a team wants to join
-	 * @param team that is joining
+	 * @param tqo TeamJoinObject that is joining
 	 * @return where the team ended up
 	 */
 	public TeamJoinResult joining(TeamJoinObject tqo){
-		TeamJoinResult tjr = null;
+		TeamJoinResult tjr;
 		ArenaTeam team = tqo.getTeam();
 		if (joinHandler == null)
 			tjr = TeamJoinHandler.NOTOPEN;
@@ -347,7 +350,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
 	/**
 	 * Set a Message handler to override default Event messages
-	 * @param mc
+	 * @param handler EventMessageHandler
 	 */
 	public void setMessageHandler(EventMessageHandler handler){
 		this.mc.setMessageHandler(handler);
@@ -355,7 +358,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
 	/**
 	 * Return the Message Handler for this Event
-	 * @return
+	 * @return EventMessageHandler
 	 */
 	public EventMessageHandler getMessageHandler(){
 		return mc.getMessageHandler();
@@ -378,13 +381,13 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 		StringBuilder sb = new StringBuilder();
 		if (eventParams != null){
 			boolean rated = eventParams.isRated();
-			sb.append((rated? "&4Rated" : "&aUnrated") +"&e "+name+". " );
-			sb.append("&e(&6" + state+"&e)");
-			sb.append("&eTeam size=" + eventParams.getTeamSizeRange() );
-			sb.append("&e Teams=&6 " + teams.size());
+			sb.append(rated ? "&4Rated" : "&aUnrated").append("&e ").append(name).append(". ");
+			sb.append("&e(&6").append(state).append("&e)");
+			sb.append("&eTeam size=").append(eventParams.getTeamSizeRange());
+			sb.append("&e Teams=&6 ").append(teams.size());
 		}
 		if (state == EventState.OPEN && joinHandler != null){
-			sb.append("\n&eJoiningTeams: " + MessageUtil.joinPlayers(joinHandler.getExcludedPlayers(), ", "));
+			sb.append("\n&eJoiningTeams: ").append(MessageUtil.joinPlayers(joinHandler.getExcludedPlayers(), ", "));
 		}
 		return sb.toString();
 	}
@@ -395,22 +398,22 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
 	/**
 	 * Show Results from the previous Event
-	 * @return
+	 * @return result
 	 */
 	public String getResultString() {
 		StringBuilder sb = new StringBuilder();
-		if (rounds == null){
-			return "&eThere are no results from the previous Event";
+		if (rounds.isEmpty()){
+			return "&eThere are no results yet";
 		}
 		if (!isFinished() && !isClosed()){
-			sb.append("&eEvent is still &6" + state + "\n");
+			sb.append("&eEvent is still &6").append(state).append("\n");
 		}
 
 		//		boolean useRounds = rounds.size() > 1 || isTourney;
 		boolean useRounds = rounds.size() > 1;
 		for (int r = 0;r<rounds.size();r++){
 			Round round = rounds.get(r);
-			if (useRounds) sb.append("&5***&4 Round "+(r+1)+"&5 ***\n");
+			if (useRounds) sb.append("&5***&4 Round ").append(r + 1).append("&5 ***\n");
 			//			boolean useMatchups = round.getMatchups().size() > 1 || isTourney;
 			boolean useMatchups = round.getMatchups().size() > 1;
 			for (Matchup m: round.getMatchups()){
@@ -418,10 +421,10 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 				MatchResult result = m.getResult();
 				if (result == null || result.getVictors() == null){
 					for (ArenaTeam t: m.getTeams()){
-						sb.append(t.getTeamSummary()+" "); }
+						sb.append(t.getTeamSummary()).append(" "); }
 					sb.append("\n");
 				} else {
-					sb.append(result.toPrettyString()+"\n");}
+					sb.append(result.toPrettyString()).append("\n");}
 			}
 		}
 
@@ -460,7 +463,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	/**
 	 * Get all players in the Event
 	 * if Event is open will return those players still waiting for a team as well
-	 * @return
+	 * @return players
 	 */
 	@Override
 	public Set<ArenaPlayer> getPlayers() {
@@ -483,7 +486,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	}
 
 	public boolean waitingToJoin(ArenaPlayer p) {
-		return joinHandler == null ? false : joinHandler.getExcludedPlayers().contains(p);
+		return joinHandler != null && joinHandler.getExcludedPlayers().contains(p);
 	}
 
 	public boolean hasEnoughTeams() {
@@ -491,7 +494,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 	}
 
 	public boolean hasEnough() {
-		return joinHandler != null ? joinHandler.hasEnough(Integer.MAX_VALUE) : false;
+		return joinHandler != null && joinHandler.hasEnough(Integer.MAX_VALUE);
 	}
 
 	@Override

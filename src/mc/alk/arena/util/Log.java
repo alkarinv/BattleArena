@@ -1,15 +1,17 @@
 package mc.alk.arena.util;
 
-import java.util.logging.Logger;
-
 import mc.alk.arena.Defaults;
-
 import org.bukkit.Bukkit;
 
-public class Log {
-	private static Logger log = Logger.getLogger("Arena");
+import java.util.logging.Logger;
 
-	public static void info(String msg){
+public class Log {
+	private static Logger log;
+    public static void setLogger(Logger log) {
+        Log.log = log;
+    }
+
+    public static void info(String msg){
 		if (msg == null) return;
 		try{
 			MessageUtil.sendMessage(Bukkit.getConsoleSender(),colorChat(msg));
@@ -18,9 +20,9 @@ public class Log {
 				log.info(colorChat(msg));
 			else
 				System.out.println(colorChat(msg));
-
 		}
 	}
+
 	public static void warn(String msg){
 		if (msg == null) return;
 		if (log != null)
@@ -28,6 +30,7 @@ public class Log {
 		else
 			System.err.println(colorChat(msg));
 	}
+
 	public static void err(String msg){
 		if (msg == null) return;
 		if (log != null)

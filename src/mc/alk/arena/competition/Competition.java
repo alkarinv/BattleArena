@@ -1,14 +1,5 @@
 package mc.alk.arena.competition;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.CompetitionEvent;
@@ -20,6 +11,15 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 /**
  * Base class for Matches and Events
  * @author alkarin
@@ -30,9 +30,8 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 	/** Our teams */
 	protected final List<ArenaTeam> teams = new CopyOnWriteArrayList<ArenaTeam>();
 
-	/** Players that have left the match */
+//	/** Players that have left the match */
 	protected final Set<String> leftPlayers = Collections.synchronizedSet(new HashSet<String>());
-
 
 	/** a list of team indexes.  Teams can come and go, so the List of teams isnt always reflective
 	 * of the real index.*/
@@ -112,30 +111,30 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Signify that the set of players were added to the team
-	 * @param t
-	 * @param players
+	 * @param team ArenaTeam
+	 * @param players ArenaPlayers
 	 */
 	public abstract void addedToTeam(ArenaTeam team, Collection<ArenaPlayer> players);
 
 	/**
 	 * Signify that the set of players were added to the team
-	 * @param t
-	 * @param inArena
+	 * @param team ArenaTeam
+	 * @param player ArenaPlayer
 	 * @return true if the player could be added to the team, false otherwise
 	 */
 	public abstract boolean addedToTeam(ArenaTeam team, ArenaPlayer player);
 
 	/**
 	 * Signify that the set of players were removed from the team
-	 * @param t
-	 * @param players
+	 * @param team ArenaTeam
+	 * @param players ArenaPlayers
 	 */
 	public abstract void removedFromTeam(ArenaTeam team, Collection<ArenaPlayer> players);
 
 	/**
 	 * Signify that the set of players were added to the team
-	 * @param t
-	 * @param inArena
+	 * @param team ArenaTeam
+	 * @param player ArenaPlayer
 	 */
 	public abstract void removedFromTeam(ArenaTeam team, ArenaPlayer player);
 
@@ -164,7 +163,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Notify Bukkit Listeners and specific listeners to this match
-	 * @param BAevent event
+	 * @param event BAevent
 	 */
 	public void callEvent(BAEvent event) {
 		if (event instanceof CompetitionEvent && ((CompetitionEvent)event).getCompetition()==null){

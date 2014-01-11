@@ -1,8 +1,5 @@
 package mc.alk.arena.controllers.messaging;
 
-import java.util.Collection;
-import java.util.Set;
-
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -12,6 +9,9 @@ import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.MessageUtil;
+
+import java.util.Collection;
+import java.util.Set;
 
 
 /**
@@ -38,12 +38,11 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		if (serverChannel != Channel.NullChannel){
 			ops.addAll(serverMessage.getOptions());
 		}
-		String msg = message.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), 0, message, ops);
 		msgf.formatCommonOptions(null,seconds);
 
 		if (serverChannel != Channel.NullChannel){
-			msg = msgf.getFormattedMessage(serverMessage);
+			String msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}
 	}
@@ -75,10 +74,9 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		else
 			serverMessage = getNodeMessage("event."+nTeamPath+".server_open");
 		Set<MessageOption> ops = serverMessage.getOptions();
-		String msg = serverMessage.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), 0, serverMessage, ops);
 		msgf.formatCommonOptions(null);
-		msg = msgf.getFormattedMessage(serverMessage);
+		String msg = msgf.getFormattedMessage(serverMessage);
 		serverChannel.broadcast(msg);
 	}
 
@@ -101,7 +99,6 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 			ops.addAll(serverMessage.getOptions());
 		}
 
-		String msg = message.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, mp, teams.size(), message, ops);
 		msgf.formatCommonOptions(teams);
 		for (ArenaTeam t: teams){
@@ -112,7 +109,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		}
 
 		if (serverChannel != Channel.NullChannel){
-			msg = msgf.getFormattedMessage(serverMessage);
+			String msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}
 	}

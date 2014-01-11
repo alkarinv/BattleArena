@@ -1,12 +1,12 @@
 package mc.alk.arena.controllers.messaging;
 
-import java.util.List;
-
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.Log;
+
+import java.util.List;
 
 public class MessageHandler extends MessageSerializer {
 
@@ -72,7 +72,7 @@ public class MessageHandler extends MessageSerializer {
 				final String message = msg.getMessage();
 				return message != null ? String.format(message,varArgs) : null;
 			} catch (Exception e){
-				final String err = "&c[BA Message Error] system.+"+string;
+				final String err = "&c[BA Message Error] system."+string;
 				Log.err(err);
 				for (Object o: varArgs){
 					Log.err("Message Option: " + o);}

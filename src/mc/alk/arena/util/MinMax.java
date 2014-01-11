@@ -55,7 +55,7 @@ public class MinMax {
 
 
     public boolean intersect(MinMax mm) {
-        return Math.min(mm.max, max) <= Math.max(mm.min, min);
+        return  Math.max(mm.min, min) <= Math.min(mm.max, max);
     }
 
     public boolean valid() {

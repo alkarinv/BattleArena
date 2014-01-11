@@ -1,16 +1,15 @@
 package mc.alk.arena.objects.teams;
 
-import java.util.Collection;
-import java.util.Set;
-
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.stats.ArenaStat;
-
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Collection;
+import java.util.Set;
 
 public interface ArenaTeam {
 
@@ -68,7 +67,7 @@ public interface ArenaTeam {
 
 	/**
 	 *
-	 * @param teamMemberWhoKilled
+	 * @param teamMemberWhoKilled player
 	 * @return the number of kills they have
 	 */
 	public int addKill(ArenaPlayer teamMemberWhoKilled);
@@ -79,14 +78,14 @@ public interface ArenaTeam {
 
 	/**
 	 * Get the number of deaths of the specified player
-	 * @param player
+	 * @param player player
 	 * @return number of deaths, null if player doesn't exist or has no deaths
 	 */
 	public Integer getNDeaths(ArenaPlayer player);
 
 	/**
 	 * Get the number of kills of the specified player
-	 * @param player
+	 * @param player player
 	 * @return number of kills, null if player doesn't exist or has no kills
 	 */
 	public Integer getNKills(ArenaPlayer player);
@@ -100,7 +99,7 @@ public interface ArenaTeam {
 
 	/**
 	 * Call when a player has left the team
-	 * @param player
+	 * @param player player
 	 */
 	public void playerLeft(ArenaPlayer player);
 

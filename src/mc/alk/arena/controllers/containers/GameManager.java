@@ -1,11 +1,5 @@
 package mc.alk.arena.controllers.containers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
@@ -29,13 +23,18 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PlayerUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class GameManager implements PlayerHolder{
-	static HashMap<ArenaType, GameManager> map = new HashMap<ArenaType, GameManager>();
+	static final HashMap<ArenaType, GameManager> map = new HashMap<ArenaType, GameManager>();
 
 	final MatchParams params;
 	final Set<ArenaPlayer> handled = new HashSet<ArenaPlayer>(); /// which players are now being handled
@@ -59,10 +58,6 @@ public class GameManager implements PlayerHolder{
 		methodController.addAllEvents(this);
 		if (Defaults.TESTSERVER) {Log.info("GameManager Testing"); return;}
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
-	}
-
-	private GameManager(MatchParams mp, GameManager gameManager) {
-		this.params = mp;
 	}
 
 	@Override

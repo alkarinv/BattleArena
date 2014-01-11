@@ -1,15 +1,14 @@
 package mc.alk.arena.listeners.custom;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.TreeSet;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.Log;
-
 import org.bukkit.event.Event;
+
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.TreeSet;
 
 
 /**
@@ -31,7 +30,7 @@ public class SpecificArenaPlayerEventListener extends SpecificPlayerEventListene
 
 	/**
 	 * do the bukkit event for players
-	 * @param event
+	 * @param event Event
 	 */
 	@Override
 	public void invokeEvent(Event event){

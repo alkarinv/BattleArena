@@ -1,11 +1,5 @@
 package mc.alk.arena.competition.match;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
@@ -33,11 +27,16 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
-
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.potion.PotionEffect;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 public class PerformTransition {
@@ -46,7 +45,7 @@ public class PerformTransition {
 
 	/**
 	 * Perform a transition
-	 * @param Match, which match to perform the transition on
+	 * @param am Match, which match to perform the transition on
 	 * @param transition: which transition are we doing
 	 * @param teams: which teams to affect
 	 * @param onlyInMatch: only perform the actions on people still in the arena match
@@ -100,7 +99,8 @@ public class PerformTransition {
 		return transition(am,transition,player,team,onlyInMatch,insideArena,am.getParams().getTransitionOptions());
 	}
 
-	public static boolean transition(final PlayerHolder am, final MatchState transition,
+	@SuppressWarnings("ConstantConditions")
+    public static boolean transition(final PlayerHolder am, final MatchState transition,
 			final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch,
 			final boolean insideArena, MatchTransitions tops) {
 		final TransitionOptions mo = tops.getOptions(transition);
@@ -216,7 +216,11 @@ public class PerformTransition {
 			}
 
 			try{if (effects != null)
-				EffectUtil.enchantPlayer(p, effects);} catch (Exception e){}
+				EffectUtil.enchantPlayer(p, effects);
+            } catch (Exception e){
+                if (!Defaults.DEBUG_VIRTUAL)
+                    Log.warn("BattleArena "+p.getName()+" was not enchanted");
+            }
 			if (Defaults.ANNOUNCE_GIVEN_ITEMS){
 				String prizeMsg = mo.getPrizeMsg(null, prizeMoney);
 				if (prizeMsg != null){
@@ -269,9 +273,10 @@ public class PerformTransition {
 	private static void setMagicLevelP(Player p, Integer magic) {
 		HeroesController.setMagicLevelP(p, magic);
 	}
+
 	private static void removePerms(ArenaPlayer p, List<String> perms) {
-		if (perms == null || perms.isEmpty())
-			return;
+//		if (perms == null || perms.isEmpty()) {
+//        }
 		/// TODO complete
 	}
 

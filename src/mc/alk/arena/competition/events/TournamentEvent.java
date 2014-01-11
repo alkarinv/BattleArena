@@ -1,17 +1,5 @@
 package mc.alk.arena.competition.events;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeMap;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
@@ -40,7 +28,6 @@ import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -49,6 +36,18 @@ import org.bukkit.Server;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.ChatPaginator;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
 
 public class TournamentEvent extends Event implements Listener, MatchCreationCallback{
 	public long timeBetweenRounds;
@@ -117,9 +116,8 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		StatController sc = new StatController(eventParams);
 
 		for (ArenaTeam t: teams){
-			Double elo = Defaults.DEFAULT_ELO;
 			ArenaStat stat = sc.loadRecord(t);
-			elo = (double) stat.getRating();
+            Double elo = (double) stat.getRating();
 			while (sortTeams.containsKey(elo)){elo+= 0.0001;}
 			sortTeams.put(elo, t);
 		}
@@ -433,12 +431,12 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		sb.append(super.getStatus());
 		if (round <0){
 			return sb.toString();}
-		sb.append("&e Alive Teams=&6 " + aliveTeams.size()+"\n");
+		sb.append("&e Alive Teams=&6 ").append(aliveTeams.size()).append("\n");
 		Round tr = rounds.get(round);
 		int ncomplete = tr.getCompleteMatchups().size();
 		final int total = tr.getMatchups().size();
 		sb.append(preliminary_round && round==0 ? "&ePreliminaryRound" : "&eRound");
-		sb.append("&4 " + (round+1)+" &eComplete Matches: &6 " + ncomplete +"/" +total);
+		sb.append("&4 ").append(round + 1).append(" &eComplete Matches: &6 ").append(ncomplete).append("/").append(total);
 		return sb.toString();
 	}
 

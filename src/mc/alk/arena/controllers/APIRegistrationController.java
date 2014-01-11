@@ -1,19 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.CustomCommandExecutor;
@@ -29,11 +15,24 @@ import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.plugin.updater.v1r2.FileUpdater;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class APIRegistrationController {
 	static Set<String> delayedInits = Collections.synchronizedSet(new HashSet<String>());
@@ -93,9 +92,9 @@ public class APIRegistrationController {
     }
 
 	private boolean createFile(File pluginFile, String name, String cmd, InputStream inputStream) {
-		String line =null;
+		String line;
 		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-		BufferedWriter fw =null;
+		BufferedWriter fw;
 		try {
 			fw = new BufferedWriter(new FileWriter(pluginFile));
 		} catch (IOException e) {
@@ -111,8 +110,8 @@ public class APIRegistrationController {
 			Log.printStackTrace(e);
 			return false;
 		} finally {
-			if (fw !=null) try {fw.close(); } catch (Exception e){}
-			if (br !=null) try {br.close(); } catch (Exception e){}
+			try {fw.close(); } catch (Exception e){Log.printStackTrace(e);}
+			try {br.close(); } catch (Exception e){Log.printStackTrace(e);}
 		}
 		return true;
 	}
@@ -196,9 +195,9 @@ public class APIRegistrationController {
 		if (!loadFile(plugin, defaultFile, defaultPluginConfigFile, pluginFile,
 				name+"Config.yml",name,cmd)){
 			Log.err(plugin.getName() + " " + pluginFile.getName() + " could not be loaded!");
-			Log.err("defaultFile="+(defaultFile != null ? defaultFile.getAbsolutePath() : "null"));
+			Log.err("defaultFile="+defaultFile.getAbsolutePath());
 			Log.err("defaultPluginFile="+(defaultPluginConfigFile != null ? defaultPluginConfigFile.getAbsolutePath() : "null"));
-			Log.err("pluginFile="+(pluginFile != null ? pluginFile.getAbsolutePath() : "null"));
+			Log.err("pluginFile="+pluginFile.getAbsolutePath());
 			return false;
 		}
 

@@ -1,11 +1,5 @@
 package mc.alk.arena.controllers.containers;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.controllers.messaging.MessageHandler;
@@ -19,11 +13,16 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Util;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 
 public class AreaContainer extends AbstractAreaContainer{
@@ -151,13 +150,14 @@ public class AreaContainer extends AbstractAreaContainer{
 
 	/**
 	 * Return a string of appended spawn locations
-	 * @return
+	 * @return String
 	 */
 	public String getSpawnLocationString(){
 		StringBuilder sb = new StringBuilder();
 		List<Location> locs = getSpawns();
 		for (int i=0;i<locs.size(); i++ ){
-			if (locs.get(i) != null) sb.append("["+(i+1)+":"+Util.getLocString(locs.get(i))+"] ");
+			if (locs.get(i) != null) sb.append("[").append(i + 1).append(":").
+                    append(Util.getLocString(locs.get(i))).append("] ");
 		}
 		return sb.toString();
 	}

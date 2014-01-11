@@ -1,13 +1,13 @@
 package mc.alk.arena.controllers.messaging;
 
-import java.util.Collection;
-import java.util.Set;
-
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
+
+import java.util.Collection;
+import java.util.Set;
 
 
 public class ReservedArenaEventMessager extends EventMessager{
@@ -28,7 +28,7 @@ public class ReservedArenaEventMessager extends EventMessager{
 	}
 
 	public void sendTeamJoinedEvent(ArenaTeam t) {
-
+        try{impl.sendTeamJoinedEvent(getChannel(MatchState.ONJOIN), t);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 

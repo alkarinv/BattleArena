@@ -1,8 +1,8 @@
 package mc.alk.arena;
 
-import java.io.File;
-
 import org.bukkit.Material;
+
+import java.io.File;
 
 public class Defaults {
 
@@ -93,7 +93,8 @@ public class Defaults {
 	public static final boolean DEBUG_TEVENTS = false;
 	public static final boolean DEBUG_DAMAGE = false;
 	public static final boolean DEBUG_SCHEDULER = false;
-	public static final boolean TESTSERVER = false;
+    public static final boolean TESTSERVER = false;
+    public static final boolean TESTSERVER_DEBUG = false;
 	public static final String DEFAULT_CONFIG_NAME = "Default";
 	public static boolean DEBUG_STRESS = false;
 	public static boolean DEBUG_MSGS = false;
@@ -117,4 +118,5 @@ public class Defaults {
 
 	public static final int MAIN_SPAWN = Integer.MAX_VALUE;
 	public static final int MAX_TEAMS = 1000;
+
 }

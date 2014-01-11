@@ -1,8 +1,5 @@
 package mc.alk.arena.executors;
 
-import java.util.Arrays;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.BAEventController;
@@ -24,8 +21,10 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TimeUtil;
-
 import org.bukkit.command.CommandSender;
+
+import java.util.Arrays;
+import java.util.Set;
 
 
 public class EventExecutor extends BAExecutor{
@@ -36,26 +35,17 @@ public class EventExecutor extends BAExecutor{
 		controller = BattleArena.getBAEventController();
 	}
 
-	@Deprecated
-	public EventExecutor(Event event){
-		super();
-		controller = BattleArena.getBAEventController();
-	}
-
 	@MCCommand(cmds={"options"},admin=true, usage="options", order=2)
 	public boolean eventOptions(CommandSender sender,EventParams eventParams) {
 		MatchTransitions tops = eventParams.getTransitionOptions();
-		StringBuilder sb = new StringBuilder(tops.getOptionString());
-		return sendMessage(sender,sb.toString());
+        return sendMessage(sender, tops.getOptionString());
 	}
 
 	@MCCommand(cmds={"cancel"},admin=true, order=2)
 	public boolean eventCancel(CommandSender sender, EventParams eventParams) {
 		Event event = findUnique(sender, eventParams);
-		if (event == null){
-			return true;}
-		return cancelEvent(sender,eventParams,event);
-	}
+        return event == null || cancelEvent(sender, event);
+    }
 
 	protected Event findUnique(CommandSender sender, EventParams eventParams) {
 		SizeEventPair result = controller.getUniqueEvent(eventParams);
@@ -68,14 +58,14 @@ public class EventExecutor extends BAExecutor{
 	}
 
 	@MCCommand(cmds={"cancel"},admin=true, order=4)
-	public boolean eventCancel(CommandSender sender, EventParams eventParams, ArenaPlayer player) {
+	public boolean eventCancel(CommandSender sender, ArenaPlayer player) {
 		Event event = controller.getEvent(player);
 		if (event == null){
 			return sendMessage(sender, "&cThere was no event with " + player.getName() +" inside");}
-		return cancelEvent(sender,eventParams,event);
+		return cancelEvent(sender,event);
 	}
 
-	public boolean cancelEvent(CommandSender sender, EventParams eventParams, Event event){
+	public boolean cancelEvent(CommandSender sender, Event event){
 		if (!event.isRunning() && !event.isOpen()){
 			return sendMessage(sender,"&eA "+event.getCommand()+" is not running");}
 		controller.cancelEvent(event);

@@ -1,9 +1,5 @@
 package mc.alk.arena.listeners.custom;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.TreeSet;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerController;
@@ -13,7 +9,6 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfTreeSet;
-
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -21,6 +16,10 @@ import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.TreeSet;
 
 
 /**
@@ -50,7 +49,7 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 
 	/**
 	 * Does this event even have any listeners
-	 * @return
+	 * @return true if has listeners
 	 */
 	@Override
 	public boolean hasListeners(){
@@ -59,7 +58,7 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 
 	/**
 	 * Get the map of players to listeners
-	 * @return
+	 * @return players
 	 */
 	public MapOfTreeSet<String,RListener> getListeners(){
 		return listeners;
@@ -67,7 +66,7 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 
 	/**
 	 * Returns the players being listened for in this event
-	 * @return
+	 * @return players
 	 */
 	public Collection<String> getPlayers(){
 		return listeners.keySet();
@@ -75,10 +74,8 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 
 	/**
 	 * Add a player listener to this bukkit event
-	 * @param rl
-	 * @param matchState
-	 * @param mem
-	 * @param players
+	 * @param rl RListener
+	 * @param players the players
 	 */
 	public void addListener(RListener rl, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) Log.info("--adding listener   players="+players+" listener="+rl + "  " +
@@ -89,10 +86,8 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 
 	/**
 	 * remove a player listener from this bukkit event
-	 * @param arenaListener
-	 * @param matchState
-	 * @param mem
-	 * @param players
+	 * @param rl RListener
+	 * @param players the players
 	 */
 	public synchronized void removeListener(RListener rl, Collection<String> players) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("    removing listener  player="+players+"   listener="+rl);
@@ -113,8 +108,8 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 
 	/**
 	 * Add a listener for a specific player
-	 * @param player
-	 * @param spl
+	 * @param p player
+	 * @param spl RListener
 	 */
 	public void addSPListener(String p, RListener spl) {
 		if (!isListening()){
@@ -124,9 +119,9 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 
 	/**
 	 * Remove a listener for a specific player
-	 * @param player
-	 * @param spl
-	 * @return
+	 * @param p the player
+	 * @param spl RListener
+	 * @return player was removed from collection
 	 */
 	public boolean removeSPListener(String p, RListener spl) {
 		final boolean removed = listeners.remove(p,spl);
@@ -138,7 +133,7 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 
 	/**
 	 * do the bukkit event for players
-	 * @param event
+	 * @param event Event
 	 */
 	@Override
 	public void invokeEvent(Event event){
@@ -240,7 +235,6 @@ public class SpecificPlayerEventListener extends BukkitEventListener{
 		}
 		if (player != null){
 			callListeners(event, player);
-			return;
 		}
 		/// Else the target wasnt a player, and the shooter wasnt a player.. nothing to do
 	}

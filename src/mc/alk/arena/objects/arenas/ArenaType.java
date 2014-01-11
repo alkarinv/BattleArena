@@ -1,19 +1,18 @@
 package mc.alk.arena.objects.arenas;
 
+import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.RoomController;
+import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.util.CaseInsensitiveMap;
+import mc.alk.arena.util.Log;
+import org.bukkit.plugin.Plugin;
+
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.controllers.RoomController;
-import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.util.CaseInsensitiveMap;
-import mc.alk.arena.util.Log;
-
-import org.bukkit.plugin.Plugin;
 
 
 public class ArenaType implements Comparable<ArenaType>{
@@ -40,9 +39,8 @@ public class ArenaType implements Comparable<ArenaType>{
 	}
 
 	public boolean matches(ArenaType arenaType) {
-		if (this == arenaType) return true;
-		return (compatibleTypes==null) ? false : compatibleTypes.contains(arenaType);
-	}
+        return this == arenaType || ((compatibleTypes != null) && compatibleTypes.contains(arenaType));
+    }
 
 	public Collection<String> getInvalidMatchReasons(ArenaType arenaType) {
 		List<String> reasons = new ArrayList<String>();
@@ -63,7 +61,7 @@ public class ArenaType implements Comparable<ArenaType>{
 			return name;
 		StringBuilder sb = new StringBuilder(name);
 		for (ArenaType at: compatibleTypes){
-			sb.append(", " +at.name);}
+			sb.append(", ").append(at.name);}
 		return sb.toString();
 	}
 
@@ -82,13 +80,15 @@ public class ArenaType implements Comparable<ArenaType>{
 		compatibleTypes.add(at);
 	}
 
-	@Override
-	public int compareTo(ArenaType arg0) {
+	@SuppressWarnings("NullableProblems")
+    @Override
+    public int compareTo(ArenaType type) {
 		Integer ord = ordinal();
-		return ord.compareTo(arg0.ordinal());
+		return ord.compareTo(type.ordinal());
 	}
 
 	@Override
+    @SuppressWarnings("SimplifiableIfStatement")
 	public boolean equals(Object obj){
 		if(this == obj)
 			return true;
@@ -137,9 +137,9 @@ public class ArenaType implements Comparable<ArenaType>{
 	/**
 	 * Create an arena from a name and parameters
 	 * This will not load persistable objects, which must be done by the caller
-	 * @param arenaName
-	 * @param arenaParams
-	 * @return
+	 * @param arenaName name of the arena
+	 * @param arenaParams parameters for the arena
+	 * @return Arena
 	 */
 	public static Arena createArena(String arenaName, MatchParams arenaParams) {
 		ArenaType arenaType = arenaParams.getType();
@@ -149,14 +149,14 @@ public class ArenaType implements Comparable<ArenaType>{
 	/**
 	 * Create an arena from a name and parameters
 	 * This will not load persistable objects, which must be done by the caller
-	 * @param arenaName
-	 * @param arenaParams
+     * @param arenaName name of the arena
+     * @param arenaParams parameters for the arena
 	 * @param init : whether we should call init directly after arena creation
-	 * @return
+	 * @return Arena
 	 */
 	public static Arena createArena(String arenaName, MatchParams arenaParams, boolean init) {
 		ArenaType arenaType = arenaParams.getType();
-		return createArena(arenaType, arenaName, arenaParams, true);
+		return createArena(arenaType, arenaName, arenaParams, init);
 	}
 
 	private static Arena createArena(ArenaType arenaType, String arenaName, MatchParams arenaParams, boolean init){
@@ -246,6 +246,6 @@ public class ArenaType implements Comparable<ArenaType>{
 	}
 	public static boolean isSame(String checkType, ArenaType arenaType) {
 		ArenaType at = types.get(checkType);
-		return at == null ? false : at.equals(arenaType);
+		return at != null && at.equals(arenaType);
 	}
 }

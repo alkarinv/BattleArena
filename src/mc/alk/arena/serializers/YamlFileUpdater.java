@@ -1,5 +1,13 @@
 package mc.alk.arena.serializers;
 
+import mc.alk.arena.BattleArena;
+import mc.alk.arena.util.Log;
+import mc.alk.plugin.updater.v1r2.FileUpdater;
+import mc.alk.plugin.updater.v1r2.Version;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.Plugin;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,15 +20,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
-
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.util.Log;
-import mc.alk.plugin.updater.v1r2.FileUpdater;
-import mc.alk.plugin.updater.v1r2.Version;
-
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.Plugin;
 
 public class YamlFileUpdater {
 	BufferedReader br = null;
@@ -99,7 +98,7 @@ public class YamlFileUpdater {
 					"    onjoin: '&eYou have joined the &6{compname}'",
 					"    onjoin_server: '{prefix} &e&6%s&e has &2joined&e. There are &6{nplayers}&e inside'");
 			fu.replaceAll("matchprefix","prefix");
-			fu.replaceAll("eventprefix","prefix");
+			fu.replaceAll("eventprefix", "prefix");
 			fu.replace(".*match_starts_when_time.*",
 					"    match_starts_when_time: '&eMatch starts in %s'");
 			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
@@ -107,9 +106,9 @@ public class YamlFileUpdater {
 		newVersion = new Version("1.6.1");
 		if (version.compareTo(newVersion) < 0){
 			FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
-			fu.replace("version:.*", "version: "+newVersion);
+			fu.replace("version:.*", "version: " + newVersion);
 			fu.addAfter(".*match_starts_players_or_time:.*",
-					"    match_starts_players_or_time2: '&eMatch starts in %s &ewith at least &6%s&e players'");
+                    "    match_starts_players_or_time2: '&eMatch starts in %s &ewith at least &6%s&e players'");
 			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
 		newVersion = new Version("1.6.2");
@@ -139,6 +138,17 @@ public class YamlFileUpdater {
 				);
 			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
+        newVersion = new Version("1.6.5");
+        if (version.compareTo(newVersion) < 0){
+            FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+            fu.replace("version:.*", "version: "+newVersion);
+            fu.replace(".*match_starts_plyers_or_time:.*",
+                    "    match_starts_players_or_time: '&eMatch starts when &6%s&e more players join or in %s &ewith at least &6%s&e players'");
+            fu.addAfter(".*match_starts_players_or_time2.*",
+                    "    match_starts_players_or_time3: '&eMatch starts when &6%s&e more players join or in %s'"
+            );
+            try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
+        }
 
 		ms.setConfig(new File(dir+"/messages.yml"));
 	}

@@ -1,18 +1,5 @@
 package mc.alk.arena.serializers;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
@@ -48,12 +35,24 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.SerializerUtil;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  *
@@ -540,16 +539,16 @@ public class ConfigSerializer extends BaseConfig{
 				try {
 					team = Integer.valueOf(whichTeam.replaceAll("team", "")) - 1;
 				} catch(Exception e){
-					Log.err("Couldnt find which team this class belongs to '" + whichTeam+"'");
+					Log.err("Couldn't find which team this class belongs to '" + whichTeam+"'");
 					continue;
 				}
 			}
 			if (team ==-1){
-				Log.err("Couldnt find which team this class belongs to '" + whichTeam+"'");
+				Log.err("Couldn't find which team this class belongs to '" + whichTeam+"'");
 				continue;
 			}
 			if (ac == null){
-				Log.err("Couldnt find arenaClass " + className);
+				Log.err("Couldn't find arenaClass " + className);
 				ac = new ArenaClass(className);
 			}
 			classes.put(team, ac);
@@ -634,32 +633,32 @@ public class ConfigSerializer extends BaseConfig{
 	/**
 	 * Not sure how best to not save particular values if its an arena or not
 	 * so for now, its a variable
-	 * @param params
-	 * @param main
-	 * @param isArena
+	 * @param params MatchParams
+	 * @param maincs ConfigurationSection to use
+	 * @param isArena isArena
 	 */
-	public static void saveParams(MatchParams params, ConfigurationSection main, boolean isArena){
+	public static void saveParams(MatchParams params, ConfigurationSection maincs, boolean isArena){
 		ArenaParams parent = params.getParent();
 		params.setParent(null); /// set the parent to null so we aren't grabbing options from the parent
 		if (!isArena){
-			main.set("name", params.getName());
-			main.set("command", params.getCommand());
+			maincs.set("name", params.getName());
+			maincs.set("command", params.getCommand());
 		}
 
-		main.set("prefix", params.getPrefix());
+		maincs.set("prefix", params.getPrefix());
 
         if (params.getNTeams() != null || params.getTeamSizes() != null) {
-            ConfigurationSection cs = main.createSection("gameSize");
+            ConfigurationSection cs = maincs.createSection("gameSize");
             if (params.getNTeams() != null) cs.set("nTeams", params.getNTeamRange());
             if (params.getTeamSizes() != null) cs.set("teamSize", params.getTeamSizeRange());
         }
 
-		if (params.getNLives() != null) main.set("nLives", ArenaSize.toString(params.getNLives()));
-		if (params.getVictoryType()!= null) main.set("victoryCondition", params.getVictoryType().getName());
+		if (params.getNLives() != null) maincs.set("nLives", ArenaSize.toString(params.getNLives()));
+		if (params.getVictoryType()!= null) maincs.set("victoryCondition", params.getVictoryType().getName());
 
         if (params.getSecondsTillMatch() != null || params.getMatchTime() != null || params.getSecondsToLoot() != null ||
                 params.getTimeBetweenRounds() != null || params.getIntervalTime() != null){
-            ConfigurationSection cs = main.createSection("times");
+            ConfigurationSection cs = maincs.createSection("times");
             if (params.getSecondsTillMatch() != null) cs.set("secondsTillMatch", params.getSecondsTillMatch());
             if (params.getMatchTime() != null) cs.set("matchTime", params.getMatchTime());
             if (params.getSecondsToLoot() != null) cs.set("secondsToLoot", params.getSecondsToLoot());
@@ -668,41 +667,41 @@ public class ConfigSerializer extends BaseConfig{
             if (params.getIntervalTime() != null) cs.set("matchUpdateInterval", params.getIntervalTime());
         }
         if (params.getDBName() != null || params.getRated() != Rating.ANY || params.getUseTrackerMessages() != null) {
-            ConfigurationSection cs = main.createSection("tracking");
+            ConfigurationSection cs = maincs.createSection("tracking");
             if (params.getDBName() != null) cs.set("database", params.getDBName());
             if (params.getRated() != Rating.ANY) cs.set("rated", params.isRated());
             if (params.getUseTrackerMessages() != null) cs.set("useTrackerMessages", params.getUseTrackerMessages());
         }
 
 		if (!isArena){
-			main.set("arenaType", params.getType().getName());
+			maincs.set("arenaType", params.getType().getName());
 			try{
-				main.set("arenaClass", ArenaType.getArenaClass(params.getType()).getSimpleName());
+				maincs.set("arenaClass", ArenaType.getArenaClass(params.getType()).getSimpleName());
 			} catch(Exception e){
-				main.set("arenaClass", params.getType().getClass().getSimpleName());
+				maincs.set("arenaClass", params.getType().getClass().getSimpleName());
 			}
 		}
-		if (params.getNConcurrentCompetitions() != null)  main.set("nConcurrentCompetitions", ArenaSize.toString(params.getNConcurrentCompetitions()));
+		if (params.getNConcurrentCompetitions() != null)  maincs.set("nConcurrentCompetitions", ArenaSize.toString(params.getNConcurrentCompetitions()));
 
-		if (params.isWaitroomClosedWhenRunning() != null)  main.set("waitroomClosedWhileRunning", params.isWaitroomClosedWhenRunning());
+		if (params.isWaitroomClosedWhenRunning() != null)  maincs.set("waitroomClosedWhileRunning", params.isWaitroomClosedWhenRunning());
 
-		if (params.isCancelIfNotEnoughPlayers() != null)  main.set("cancelIfNotEnoughPlayers", params.isCancelIfNotEnoughPlayers());
+		if (params.isCancelIfNotEnoughPlayers() != null)  maincs.set("cancelIfNotEnoughPlayers", params.isCancelIfNotEnoughPlayers());
 
-		if (params.getArenaCooldown() != null)  main.set("arenaCooldown", params.getArenaCooldown());
+		if (params.getArenaCooldown() != null)  maincs.set("arenaCooldown", params.getArenaCooldown());
 
-		if (params.getAllowedTeamSizeDifference() != null)  main.set("allowedTeamSizeDifference", params.getAllowedTeamSizeDifference());
+		if (params.getAllowedTeamSizeDifference() != null)  maincs.set("allowedTeamSizeDifference", params.getAllowedTeamSizeDifference());
 
-		if (params.getForceStartTime() != null ) main.set("forceStartTime", params.getForceStartTime());
+		if (params.getForceStartTime() != null ) maincs.set("forceStartTime", params.getForceStartTime());
 
 		Collection<ArenaModule> modules = params.getModules();
-		if (modules != null && !modules.isEmpty()){ main.set("modules", getModuleList(modules));}
+		if (modules != null && !modules.isEmpty()){ maincs.set("modules", getModuleList(modules));}
 
 		/// Announcements
 		AnnouncementOptions ao = params.getAnnouncementOptions();
 		if (ao != null){
 			Map<MatchState, Map<AnnouncementOption, Object>> map = ao.getMatchOptions();
 			if (map != null){
-                ConfigurationSection cs = main.createSection("announcements");
+                ConfigurationSection cs = maincs.createSection("announcements");
 				for (Entry<MatchState, Map<AnnouncementOption, Object>> entry : map.entrySet()){
 					List<String> ops = new ArrayList<String>();
 					for (Entry<AnnouncementOption,Object> entry2 : entry.getValue().entrySet()){
@@ -715,7 +714,7 @@ public class ConfigSerializer extends BaseConfig{
 
 			map = ao.getEventOptions();
 			if (map != null){
-                ConfigurationSection cs = main.createSection("eventAnnouncements");
+                ConfigurationSection cs = maincs.createSection("eventAnnouncements");
 				for (Entry<MatchState, Map<AnnouncementOption, Object>> entry : map.entrySet()){
 					List<String> ops = new ArrayList<String>();
 					for (Entry<AnnouncementOption,Object> entry2 : entry.getValue().entrySet()){
@@ -754,12 +753,10 @@ public class ConfigSerializer extends BaseConfig{
 					}
 					/// transition map
 					Map<String,Object> tmap = new LinkedHashMap<String,Object>();
-					HashSet<TransitionOption> possibleOptionSet = new HashSet<TransitionOption>();
 					ops = new TreeMap<TransitionOption,Object>(ops); /// try to maintain some ordering
 					for (TransitionOption to: ops.keySet()){
 						try{
 							String s;
-							possibleOptionSet.add(to);
 							switch(to){
 							case NEEDITEMS:
 								tmap.put(to.toString(), getItems(tops.getNeedItems()));
@@ -794,10 +791,8 @@ public class ConfigSerializer extends BaseConfig{
 							Log.printStackTrace(e);
 						}
 					}
-//					list = getOptionSets(possibleOptionSet);
 					tmap.put("options", list);
-					//			main.put(ms.toString(), tmap);
-					main.set(ms.toString(), tmap);
+					maincs.set(ms.toString(), tmap);
 				} catch(Exception e){
 					Log.printStackTrace(e);
 				}
