@@ -215,11 +215,10 @@ public class APIRegistrationController {
 		} else {
 			at = ArenaType.register(name, arenaClass, plugin);
 		}
-
 		/// Load our Match Params for this types
 		MatchParams mp = config.loadMatchParams();
 
-		ArenaType gameType = ConfigSerializer.getArenaGameType(plugin,config.getConfigurationSection(name));
+		final ArenaType gameType = ConfigSerializer.getArenaGameType(plugin,config.getConfigurationSection(name));
 		MessageSerializer ms = null;
 		/// load messages
 		if (loadFile(plugin, messageFile, name+"Messages.yml",name,cmd)){

@@ -1,15 +1,5 @@
 package mc.alk.arena.serializers;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
@@ -35,12 +25,21 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.SerializerUtil;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ArenaSerializer extends BaseConfig{
 	static BattleArenaController arenaController;
@@ -118,7 +117,7 @@ public class ArenaSerializer extends BaseConfig{
 		ConfigurationSection as = cs.getConfigurationSection("arenas");
 		ConfigurationSection bks = cs.getConfigurationSection("brokenArenas");
 		if (as == null && bks == null){
-			Log.info(pname+"has no arenas, cs section =" + cs.getCurrentPath());
+			Log.info(pname+"has no arenas, configSectionPath=" + cs.getCurrentPath());
 			return;
 		}
 

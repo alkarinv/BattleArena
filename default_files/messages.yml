@@ -1,4 +1,4 @@
-version: 1.6.4
+version: 1.6.5
 
 system:
     type_enabled: "&2 type &6%s&2 enabled"
@@ -25,8 +25,9 @@ system:
     no_arena_for_size: "&cAn arena has not been built yet for that size of team"
     joined_the_queue: '&eYou joined the &6%s&e queue.'
     position_in_queue: 'Position: &6%s/%s'
-    match_starts_players_or_time: '&eMatch start when &6%s&e more players join or in %s &ewith at least &6%s&e players'
+    match_starts_players_or_time: '&eMatch starts when &6%s&e more players join or in %s &ewith at least &6%s&e players'
     match_starts_players_or_time2: '&eMatch starts in %s &ewith at least &6%s&e players'
+    match_starts_players_or_time3: '&eMatch starts when &6%s&e more players join or in %s'
     match_starts_immediately: '&eMatch starts immediately when &6%s&e more players join. &6%s/%s'
     match_starts_when_time: '&eMatch starts in %s'
     you_start_when_free_pos: "&ePosition: &6%s&e. your match will start when an arena is free"
@@ -111,7 +112,7 @@ event:
         draw: ""
         server_victory: "{prefix}&e Congratulations to &6{winnerlong}&e for winning!!"
         server_draw: "{prefix}&e ended in a draw!"
-match:    
+match:
     leading_header: "&6 O---[{==========> &fCurrent Leaders &6<==========}]---O"
     leading_row: "&6{rank} : {name}({wins}{losses})" ## rank/wins/losses are all per match
     server_onjoin: '{prefix} &e&6%s&e has &2joined&e. There are &6{nplayers}&e inside'

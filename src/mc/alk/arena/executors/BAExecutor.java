@@ -919,7 +919,7 @@ public class BAExecutor extends CustomCommandExecutor {
         return true;
     }
 
-    @MCCommand(cmds = { "sao", "edit", "alter", "setArenaOption" }, admin = true, perm = "arena.alter")
+    @MCCommand(cmds = { "setArenaOption", "setOption", "alter" }, admin = true, perm = "arena.alter")
     public boolean arenaSetOption(CommandSender sender, Arena arena, String[] args) {
         try {
             ArenaAlterController.setArenaOption(sender, arena, args);
