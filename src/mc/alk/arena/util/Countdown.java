@@ -38,7 +38,7 @@ public class Countdown implements Runnable{
 		this.seconds = seconds - (rem != 0? rem : this.interval);
 		startTime = System.currentTimeMillis();
 		expectedEndTime = startTime + seconds*1000;
-        this.timerId  = Scheduler.scheduleSynchrounousTask(plugin, this, (int)(time * Defaults.TICK_MULT));
+        this.timerId  = Scheduler.scheduleSynchronousTask(plugin, this, (int)(time * Defaults.TICK_MULT));
 	}
 
 	public void setCancelOnExpire(boolean cancel){

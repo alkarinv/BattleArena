@@ -1,23 +1,21 @@
 package mc.alk.arena.util;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.ArenaTeam;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 public class MessageUtil {
 
 	public static String colorChat(String msg) {return msg.replace('&', (char) 167);}
+
 	public static String decolorChat(String msg) {
-		return msg.contains("§") || msg.contains("&") ?
-				ChatColor.stripColor(msg).replaceAll("&.", "")
-				: msg;}
+		return msg.contains("§") || msg.contains("&") ? ChatColor.stripColor(msg).replaceAll("&.", "") : msg;}
 
 	public static boolean sendMessage(CommandSender p, String message){
 		if (message ==null || message.isEmpty()) return true;
@@ -89,7 +87,7 @@ public class MessageUtil {
 		boolean first = true;
 		for (String s : strs){
 			if (!first) sb.append("\n");
-			sb.append(s+"\n");
+			sb.append(s).append("\n");
 			first = false;
 		}
 		return sb.toString();
@@ -116,6 +114,7 @@ public class MessageUtil {
 		}
 		return sb.toString();
 	}
+
 	public static String joinPlayers(Collection<ArenaPlayer> players, String joinStr){
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;

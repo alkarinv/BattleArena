@@ -117,7 +117,7 @@ public class InventoryUtil {
 		if (iname.contains("knockback")) return Enchantment.KNOCKBACK;
 		if (iname.contains("loot")) return Enchantment.LOOT_BONUS_MOBS;
 		if (iname.contains("lootmobs")) return Enchantment.LOOT_BONUS_MOBS;
-		if (iname.contains("fortune")) return Enchantment.LOOT_BONUS_BLOCKS;;
+		if (iname.contains("fortune")) return Enchantment.LOOT_BONUS_BLOCKS;
 		if (iname.contains("lootblocks")) return Enchantment.LOOT_BONUS_BLOCKS;
 		if (iname.contains("dig")) return Enchantment.DIG_SPEED;
 		if (iname.contains("eff")) return Enchantment.DIG_SPEED;
@@ -161,7 +161,9 @@ public class InventoryUtil {
 	static final Map<Material,Armor> armor;
 	static {
 		armor = new EnumMap<Material,Armor>(Material.class);
-		try{armor.put(Material.SKULL_ITEM,new Armor(ArmorType.HELM, ArmorLevel.DISGUISE));} catch(Throwable e){}
+		try{armor.put(Material.SKULL_ITEM,new Armor(ArmorType.HELM, ArmorLevel.DISGUISE));} catch(Throwable e){
+            /* no errors as it's just an old bukkit that doesn't have this Material*/
+        }
 		armor.put(Material.WOOL,new Armor(ArmorType.HELM, ArmorLevel.WOOL));
 		armor.put(Material.LEATHER_HELMET,new Armor(ArmorType.HELM, ArmorLevel.LEATHER));
 		armor.put(Material.IRON_HELMET,new Armor(ArmorType.HELM, ArmorLevel.IRON));
@@ -248,8 +250,8 @@ public class InventoryUtil {
 
 	/**
 	 * Return a item stack from a given string
-	 * @param itemStr
-	 * @return
+	 * @param itemStr ItemStack
+	 * @return ItemStack
 	 */
 	public static ItemStack getItemStack(String itemStr) {
 		if (itemStr == null || itemStr.isEmpty())
@@ -290,7 +292,9 @@ public class InventoryUtil {
 		return null;
 	}
 
-	public static boolean isInt(String i) {try {Integer.parseInt(i);return true;} catch (Exception e) {return false;}}
+	@SuppressWarnings("ResultOfMethodCallIgnored")
+    public static boolean isInt(String i) {try {Integer.parseInt(i);return true;} catch (Exception e) {return false;}}
+    @SuppressWarnings("ResultOfMethodCallIgnored")
 	public static boolean isFloat(String i){try{Float.parseFloat(i);return true;} catch (Exception e){return false;}}
 
 	/// Get the Material
@@ -369,7 +373,10 @@ public class InventoryUtil {
 		for (ItemStack is : items){
 			InventoryUtil.addItemToInventory(p, is.clone(), is.getAmount(), false, ignoreCustomHelmet, color);
 		}
-		try { p.updateInventory(); } catch (Exception e){}
+		try { p.updateInventory(); } catch (Exception e){
+            if (!Defaults.DEBUG_VIRTUAL)
+                Log.printStackTrace(e);
+        }
 	}
 
 	public static void addItemToInventory(Player player, ItemStack itemStack, int stockAmount,
@@ -388,7 +395,10 @@ public class InventoryUtil {
 			addItemToInventory(inv, itemStack,stockAmount);
 		}
 		if (update)
-			try { player.updateInventory(); } catch (Exception e){}
+			try { player.updateInventory(); } catch (Exception e){
+                if (!Defaults.DEBUG_VIRTUAL)
+                    Log.printStackTrace(e);
+            }
 	}
 
 
@@ -402,7 +412,7 @@ public class InventoryUtil {
 		Armor a = armor.get(itemType);
 		final ItemStack oldArmor = getArmorSlot(inv,a.type);
 		boolean empty = (oldArmor == null || oldArmor.getType() == Material.AIR);
-		boolean better = empty ? true : armorSlotBetter(armor.get(oldArmor.getType()),a);
+		boolean better = empty || armorSlotBetter(armor.get(oldArmor.getType()), a);
 
 		if (color != null && a.level == ArmorLevel.LEATHER){
 			handler.setColor(itemStack,color);
@@ -410,7 +420,7 @@ public class InventoryUtil {
 		if (empty || better){
 			switch (armor.get(itemType).type){
 			case HELM:
-				if (empty || (better && !ignoreCustomHelmet))
+				if (empty || !ignoreCustomHelmet)
 					inv.setHelmet(itemStack);
 				break;
 			case CHEST: inv.setChestplate(itemStack); break;
@@ -481,9 +491,9 @@ public class InventoryUtil {
 	 * The difference is my ItemStack == ItemStack comparison (found in first())
 	 * there I change it to go by itemid and datavalue
 	 * as opposed to itemid and quantity
-	 * @param inv
-	 * @param items
-	 * @return
+	 * @param inv the inventory
+	 * @param items array of items
+	 * @return HashMap Integer ItemStack
 	 */
 	public static HashMap<Integer, ItemStack> removeItem(Inventory inv, ItemStack... items) {
 		HashMap<Integer, ItemStack> leftover = new HashMap<Integer, ItemStack>();
@@ -679,7 +689,7 @@ public class InventoryUtil {
 		Integer pos = parsePosition(str);
 		if (pos != null){ /// we have position, so strip it
 			str = PATTERN_POSITION.matcher(str).replaceFirst("");}
-		ItemStack is =null;
+		ItemStack is;
 		String split[] = str.split(" +");
 		is = InventoryUtil.getItemStack(split[0].trim());
 		if (is == null)
@@ -838,38 +848,39 @@ public class InventoryUtil {
 
 	/**
 	 * For Serializing an item or printing
-	 * @param is
-	 * @return
+	 * @param is ItemStack
+	 * @return String
 	 */
 	public static String getItemString(ItemStack is) {
 		StringBuilder sb = new StringBuilder();
 		if (is.getDurability() > 0){
-			sb.append(is.getType().toString() +":"+is.getDurability()+" ");
+			sb.append(is.getType().toString()).append(":").append(is.getDurability()).append(" ");
 		} else {
-			sb.append(is.getType().toString() +" ");
+			sb.append(is.getType().toString()).append(" ");
 		}
 
 		Map<Enchantment,Integer> encs = is.getEnchantments();
 		for (Enchantment enc : encs.keySet()){
-			sb.append(enc.getName() + ":" + encs.get(enc)+" ");
+			sb.append(enc.getName()).append(":").append(encs.get(enc)).append(" ");
 		}
 		List<String> lore = handler.getLore(is);
 		if (lore != null && !lore.isEmpty()){
 			StringBuilder sb2 = new StringBuilder();
 			for (String s : lore){
-				sb2.append(s +"\n");}
-			sb.append("lore=\""+sb2.toString()+"\"");
+				sb2.append(s).append("\n");}
+			sb.append("lore=\"").append(sb2.toString()).append("\"");
 		}
 
 		Color color = handler.getColor(is);
 		if (color!=null)
-			sb.append("color=\""+color.getRed()+","+color.getGreen()+","+color.getBlue()+"\"");
+			sb.append("color=\"").append(color.getRed()).append(",").
+                    append(color.getGreen()).append(",").append(color.getBlue()).append("\"");
 		String op = handler.getDisplayName(is);
 		if (op != null && !op.isEmpty())
-			sb.append("displayName=\""+op+"\"");
+			sb.append("displayName=\"").append(op).append("\"");
 		op = handler.getOwnerName(is);
 		if (op != null && !op.isEmpty())
-			sb.append("ownerName=\""+op+"\"");
+			sb.append("ownerName=\"").append(op).append("\"");
 		sb.append(is.getAmount());
 		return sb.toString();
 	}
@@ -900,10 +911,8 @@ public class InventoryUtil {
 
 	public static boolean sameMaterial(ArmorLevel lvl, ItemStack is) {
 		Armor a = armor.get(is.getType());
-		if (a == null)
-			return false;
-		return a.level == lvl;
-	}
+        return a != null && a.level == lvl;
+    }
 
 	public static ItemStack getWool(int color) {
 		return new ItemStack(Material.WOOL,1,(short) color);

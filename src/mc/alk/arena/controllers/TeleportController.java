@@ -1,12 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
@@ -15,7 +8,6 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
@@ -28,16 +20,24 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 
 public class TeleportController implements Listener{
 	static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
-	private final int TELEPORT_FIX_DELAY = 15; // ticks
+    private final int TELEPORT_FIX_DELAY = 15; // ticks
 
-	public static boolean teleport(final Player player, final Location location){
+    public static boolean teleport(final Player player, final Location location){
 		return teleport(player,location,false);
 	}
 
-	public static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
+	@SuppressWarnings("EmptyCatchBlock")
+    public static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
 		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
 		try {
 			player.setVelocity(new Vector(0,Defaults.TELEPORT_Y_VELOCITY,0));
@@ -95,7 +95,7 @@ public class TeleportController implements Listener{
 	/**
 	 * This prevents other plugins from cancelling the teleport
 	 * removes the player from the set after allowing the tp
-	 * @param event
+	 * @param event PlayerTeleportEvent
 	 */
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void onPlayerTeleport(PlayerTeleportEvent event){

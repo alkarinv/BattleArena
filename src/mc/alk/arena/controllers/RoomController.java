@@ -1,9 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -11,15 +7,18 @@ import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
-
 import org.bukkit.Location;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum RoomController {
 	INSTANCE;
 
-	Map<ArenaType,LobbyContainer> lobbies = new HashMap<ArenaType,LobbyContainer>();
-	Map<String,RoomContainer> waitrooms = new HashMap<String,RoomContainer>();
-	Map<String,RoomContainer> spectate = new HashMap<String,RoomContainer>();
+	final Map<ArenaType,LobbyContainer> lobbies = new HashMap<ArenaType,LobbyContainer>();
+	final Map<String,RoomContainer> waitrooms = new HashMap<String,RoomContainer>();
+	final Map<String,RoomContainer> spectate = new HashMap<String,RoomContainer>();
 
 	private RoomContainer _getOrCreateSpectate(Arena arena) {
 		RoomContainer room = spectate.get(arena.getName());

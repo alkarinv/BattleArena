@@ -1,26 +1,23 @@
 package mc.alk.arena.objects.options;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.UUID;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
+
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class JoinOptions {
 	public static enum JoinOption{
@@ -266,7 +263,11 @@ public class JoinOptions {
 		return options.get(option);
 	}
 
-	public boolean hasArena() {
+    public Object setOption(JoinOption option, Object value) {
+        return options.put(option, value);
+    }
+
+    public boolean hasArena() {
 		return options.containsKey(JoinOption.ARENA);
 	}
 

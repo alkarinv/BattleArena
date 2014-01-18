@@ -1,11 +1,5 @@
 package mc.alk.arena.competition.util;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -16,12 +10,17 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public abstract class TeamJoinHandler implements TeamHandler {
 
 	public static final TeamJoinResult CANTFIT = new TeamJoinResult(TeamJoinStatus.CANT_FIT,-1,null);
 	public static final TeamJoinResult NOTOPEN = new TeamJoinResult(TeamJoinStatus.NOT_OPEN,-1,null);
 
-	public static enum TeamJoinStatus{
+    public static enum TeamJoinStatus{
 		ADDED, CANT_FIT, ADDED_TO_EXISTING, WAITING_FOR_PLAYERS, NOT_OPEN
 	}
 
@@ -122,14 +121,12 @@ public abstract class TeamJoinHandler implements TeamHandler {
 
 	public List<ArenaTeam> removeImproperTeams(){
 		List<ArenaTeam> improper = new ArrayList<ArenaTeam>();
-		Iterator<ArenaTeam> iter = teams.iterator();
-		while(iter.hasNext()){
-			ArenaTeam t = iter.next();
-			if (t.size() < minTeamSize || t.size() > maxTeamSize){
-				TeamController.removeTeamHandler(t, this);
-				improper.add(t);
-			}
-		}
+        for (ArenaTeam t : teams) {
+            if (t.size() < minTeamSize || t.size() > maxTeamSize) {
+                TeamController.removeTeamHandler(t, this);
+                improper.add(t);
+            }
+        }
 		teams.removeAll(improper);
 		return improper;
 	}
@@ -178,5 +175,6 @@ public abstract class TeamJoinHandler implements TeamHandler {
 		return teams;
 	}
 
+//    public abstract void switchTeams(ArenaPlayer p, Integer index);
 
 }

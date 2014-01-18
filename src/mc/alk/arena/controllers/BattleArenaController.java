@@ -1,18 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.ArenaMatch;
@@ -52,10 +39,22 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.ServerUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaListener, Listener{
 
@@ -412,6 +411,11 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
                 a.getSpectatorRoom().teamJoining(tqo.getTeam());
             } else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)){
                 tqo.getJoinOptions().getArena().teamJoining(tqo.getTeam());
+            }
+        }
+        for (ArenaTeam at : tqo.getTeams()) {
+            for (ArenaPlayer ap : at.getPlayers()) {
+                ap.getMetaData().setJoinOptions(tqo.getJoinOptions());
             }
         }
         return jr;

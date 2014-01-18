@@ -731,63 +731,65 @@ public class ArenaMatchQueue implements ArenaListener{
 		}
 	}
 
-	public  boolean isInQue(ArenaPlayer p) {
-		synchronized(tqs){
+    public boolean isInQue(ArenaPlayer p) {
+        synchronized (tqs) {
+            for (TeamQueue tq : tqs.values()) {
+                if (tq != null && tq.contains(p)) return true;
+            }
+        }
+        synchronized (aqs) {
+            for (Map<Arena, TeamQueue> map : aqs.values()) {
+                for (TeamQueue tq : map.values()) {
+                    if (tq != null && tq.contains(p)) return true;
+                }
+            }
+        }
+        return false;
+    }
 
-			for (TeamQueue tq : tqs.values()){
-				if (tq != null && tq.contains(p)) return true;
-			}
-		}
-		synchronized(aqs){
-
-			for (Map<Arena,TeamQueue> map : aqs.values()){
-				for (TeamQueue tq : map.values()){
-					if (tq != null && tq.contains(p)) return true;}
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Remove the player from the queue
-	 * @param player ArenaPlayer
-	 * @return The ParamTeamPair object if the player was found.  Otherwise returns null
-	 */
-	public  ParamTeamPair removeFromQue(ArenaPlayer player) {
-		ArenaTeam t;
-		synchronized(tqs){
-			for (TeamQueue tq : tqs.values()){
-				if (tq == null)
-					continue;
-				t = tq.remove(player);
-				if (t != null){
-					ParamTeamPair ptp = new ParamTeamPair(tq.getMatchParams(),t, QueueType.GAME, null, tq.playerSize());
-					leaveQueue(player, t, tq.getMatchParams(),ptp);
-					if (tq.isEmpty()){
-						removeTimer(null, tq.getMatchParams());}
-					return ptp;
-				}
-			}
-		}
-		synchronized(aqs){
-			for (Map<Arena,TeamQueue> map : aqs.values()){
-				for (Entry<Arena,TeamQueue> entry: map.entrySet()){
-					TeamQueue tq = entry.getValue();
-					if (tq == null)
-						continue;
-					t = tq.remove(player);
-					if (t != null){
-						ParamTeamPair ptp = new ParamTeamPair(tq.getMatchParams(),t, QueueType.GAME, entry.getKey(), tq.playerSize());
-						leaveQueue(player, t, tq.getMatchParams(),ptp);
-						if (tq.isEmpty()){
-							removeTimer(entry.getKey(), tq.getMatchParams());}
-						return ptp;
-					}
-				}
-			}
-		}
-		return null;
-	}
+    /**
+     * Remove the player from the queue
+     *
+     * @param player ArenaPlayer
+     * @return The ParamTeamPair object if the player was found.  Otherwise returns null
+     */
+    public ParamTeamPair removeFromQue(ArenaPlayer player) {
+        ArenaTeam t;
+        synchronized (tqs) {
+            for (TeamQueue tq : tqs.values()) {
+                if (tq == null)
+                    continue;
+                t = tq.remove(player);
+                if (t != null) {
+                    ParamTeamPair ptp = new ParamTeamPair(tq.getMatchParams(), t, QueueType.GAME, null, tq.playerSize());
+                    leaveQueue(player, t, tq.getMatchParams(), ptp);
+                    if (tq.isEmpty()) {
+                        removeTimer(null, tq.getMatchParams());
+                    }
+                    return ptp;
+                }
+            }
+        }
+        synchronized (aqs) {
+            for (Map<Arena, TeamQueue> map : aqs.values()) {
+                for (Entry<Arena, TeamQueue> entry : map.entrySet()) {
+                    TeamQueue tq = entry.getValue();
+                    if (tq == null)
+                        continue;
+                    t = tq.remove(player);
+                    if (t != null) {
+                        ParamTeamPair ptp = new ParamTeamPair(tq.getMatchParams(), t, QueueType.GAME, entry.getKey(), tq.playerSize());
+                        leaveQueue(player, t, tq.getMatchParams(), ptp);
+                        if (tq.isEmpty()) {
+                            removeTimer(entry.getKey(), tq.getMatchParams());
+                        }
+                        return ptp;
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
 	public QueueObject getQueueObject(ArenaPlayer p) {
 		synchronized(tqs){

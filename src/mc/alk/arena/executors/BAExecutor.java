@@ -3,9 +3,11 @@ package mc.alk.arena.executors;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
+import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.ArenaClassController;
@@ -25,18 +27,22 @@ import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.containers.LobbyContainer;
+import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.arenas.ArenaCreateEvent;
 import mc.alk.arena.events.arenas.ArenaDeleteEvent;
 import mc.alk.arena.events.players.ArenaPlayerJoinEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.competition.InArenaListener;
 import mc.alk.arena.objects.ArenaClass;
+import mc.alk.arena.objects.ArenaLocation;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.Duel;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
@@ -61,6 +67,7 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
+import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.TimeUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
@@ -289,8 +296,7 @@ public class BAExecutor extends CustomCommandExecutor {
         Channel channel = ao != null ? ao.getChannel(true, MatchState.ONENTERQUEUE)
                 : AnnouncementOptions.getDefaultChannel(true,
                 MatchState.ONENTERQUEUE);
-        String neededPlayers = jr.maxPlayers == CompetitionSize.MAX ? "inf"
-                : jr.maxPlayers + "";
+        String neededPlayers = jr.maxPlayers == CompetitionSize.MAX ? "inf" : jr.maxPlayers + "";
         List<Object> vars = new ArrayList<Object>();
         vars.add(mp);
         vars.add(t);
@@ -411,6 +417,44 @@ public class BAExecutor extends CustomCommandExecutor {
         return leave(p, mp, false);
     }
 
+    @MCCommand(cmds = { "switch"}, perm = "arena.switch")
+    public boolean switchTeam(ArenaPlayer p, MatchParams mp, String teamStr) {
+        Integer index = TeamUtil.getTeamIndex(teamStr);
+        if (index == null){
+            return MessageUtil.sendMessage(p, "&cBad team index");}
+        ArenaLocation loc = p.getCurLocation();
+        PlayerHolder ph = loc.getPlayerHolder();
+        Competition c = p.getCompetition();
+        if (c == null && (ph == null || loc.getType() == LocationType.HOME)){
+            if (ac.isInQue(p)) {
+                JoinOptions jo = p.getMetaData().getJoinOptions();
+                if (jo != null) {
+                    jo.setOption(JoinOptions.JoinOption.TEAM, index);
+                    return MessageUtil.sendMessage(p, "&eSwitched to team &6" + index);
+                }
+            }
+        } else if (c == null){
+            if (ph instanceof RoomContainer){
+                /// they are not in a match, but are in the waitroom beforehand
+
+            } else {
+                /// They aren't in anywhere
+            }
+        } else { /// they are in a competition
+            if (c instanceof Match) {
+                TeamJoinHandler tjh = ((Match) c).getTeamJoinHandler();
+//                tjh.switchTeams(p, index);
+                if (ph instanceof RoomContainer) {
+                    RoomContainer rc = (RoomContainer) ph;
+                }
+            } else {
+                /// Not a match (like a tournament), they can't switch
+            }
+        }
+        return true;
+    }
+
+
     public boolean leave(ArenaPlayer p, MatchParams mp, boolean adminLeave) {
         if (!canLeave(p)) {
             return true;
@@ -420,6 +464,8 @@ public class BAExecutor extends CustomCommandExecutor {
         event.callEvent();
         if (event.getMessages() != null && !event.getMessages().isEmpty()) {
             MessageUtil.sendMessage(event.getPlayer(), event.getMessages());
+        } else {
+            sendSystemMessage(p, "you_not_in_queue");
         }
         return true;
     }

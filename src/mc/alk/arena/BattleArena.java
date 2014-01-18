@@ -12,7 +12,6 @@ import mc.alk.arena.controllers.EventScheduler;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.RoomController;
-import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.executors.ArenaEditorExecutor;
@@ -58,10 +57,8 @@ import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.plugin.updater.v1r2.FileUpdater;
-import mc.alk.plugin.updater.v1r2.PluginUpdater;
-import mc.alk.plugin.updater.v1r2.Version;
-import net.gravitydevelopment.updater.Updater;
+import mc.alk.plugin.updater.v1r4.FileUpdater;
+import mc.alk.plugin.updater.v1r4.PluginUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -234,24 +231,8 @@ public class BattleArena extends JavaPlugin {
                     es.start();
             }
         });
-        final File file =this.getFile();
 
-        Scheduler.scheduleAsynchrounousTask(new Runnable(){
-            @Override
-            public void run() {
-                Updater up = new Updater(plugin, bukkitId, file, Updater.UpdateType.NO_DOWNLOAD, false);
-                Version curVersion = new Version(version);
-                Version remoteVersion = new Version(up.getLatestName().split("_v")[1]);
-                if (curVersion.compareTo(remoteVersion) < 0) {
-                    Log.info("&4"+getNameAndVersion()+" &ehas a newer version &f" + remoteVersion);
-                    if (Defaults.AUTO_UPDATE){
-                        up = new Updater(plugin, bukkitId, file, Updater.UpdateType.DEFAULT, false);
-                        if (up.getResult() == Updater.UpdateResult.SUCCESS)
-                            Log.info("&4"+getNameAndVersion()+" &ehas downloaded &f" + up.getLatestName().split("_v")[1]);
-                    }
-                }
-            }
-        });
+        PluginUpdater.announceNewerAndDownloadIfNeeded(this, bukkitId, this.getFile(), mc.alk.arena.Defaults.AUTO_UPDATE);
         Log.info("&4[" + pluginname + "] &6v" + BattleArena.version + "&f enabled!");
     }
 
@@ -288,9 +269,6 @@ public class BattleArena extends JavaPlugin {
         sfs.save(commandExecutor.getDisabled(),
                 RoomController.getLobbies(),
                 arenaController.getArenas());
-
-        if (mc.alk.arena.Defaults.AUTO_UPDATE)
-            PluginUpdater.updatePlugin(this);
         FileLogger.saveAll();
     }
 

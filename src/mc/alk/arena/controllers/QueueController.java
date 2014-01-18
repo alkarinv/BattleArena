@@ -38,6 +38,7 @@ public class QueueController extends ArenaMatchQueue implements ArenaListener, L
 		super();
 		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());} catch(Exception e){
             /* usually only from offline testing, don't need to report */
+            //noinspection PointlessBooleanExpression,ConstantConditions
             if (!Defaults.TESTSERVER && !Defaults.TESTSERVER_DEBUG) Log.printStackTrace(e);
         }
 	}

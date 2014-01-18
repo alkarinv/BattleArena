@@ -1,8 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
@@ -21,10 +18,13 @@ import mc.alk.arena.objects.pairs.EventPair;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class EventScheduler implements Runnable, ArenaListener{
 
@@ -71,7 +71,8 @@ public class EventScheduler implements Runnable, ArenaListener{
 						event.addArenaListener(scheduler);
 						success = true;
 					}
-					if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] Running event ee=" + ee  +"  event" + event +"  args=" + args);
+					if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] Running event ee=" + ee  +
+                            "  event" + event +"  args=" + Arrays.toString(args));
 				} else { /// normal match
 					EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null, params);
 					Arena arena = eoo.getArena(params, null);
@@ -87,8 +88,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 			}
 
 			if (!success){ /// wait then start up the scheduler again in x seconds
-				currentTimer = Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(),
-						scheduler, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
+				currentTimer = Scheduler.scheduleAsynchronousTask(scheduler, 20L * Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			}
 		}
 	}
@@ -98,10 +98,11 @@ public class EventScheduler implements Runnable, ArenaListener{
 		Event e = event.getEvent();
 		e.removeArenaListener(this);
 		if (continuous){
-			if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] finished event "+ e+"  scheduling next event in "+ 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS + " ticks");
+			if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] finished event "+ e+
+                    "  scheduling next event in "+ 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS + " ticks");
 
 			/// Wait x sec then start the next event
-			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
+			Scheduler.scheduleAsynchronousTask(this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
 				Bukkit.getServer().broadcastMessage(
 						MessageUtil.colorChat(
@@ -118,7 +119,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 			if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] finished event "+ event.getEventName()+"  scheduling next event in "+ 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS + " ticks");
 
 			/// Wait x sec then start the next event
-			Bukkit.getScheduler().scheduleAsyncDelayedTask(BattleArena.getSelf(), this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
+            Scheduler.scheduleAsynchronousTask(this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
 				Bukkit.getServer().broadcastMessage(
 						MessageUtil.colorChat(

@@ -1,10 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.PriorityQueue;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.spawns.SpawnInstance;
@@ -12,9 +7,12 @@ import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.util.CaseInsensitiveMap;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.TimeUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+
+import java.util.Comparator;
+import java.util.Map;
+import java.util.PriorityQueue;
 
 
 
@@ -51,7 +49,9 @@ public class SpawnController {
 			for (NextSpawn ns: spawnQ){
 				try{
 					ns.is.despawn();
-				} catch (Exception e){}
+				} catch (Exception e){
+                    Log.printStackTrace(e);
+                }
 			}
 		}
 	}
@@ -67,7 +67,6 @@ public class SpawnController {
 				}
 			});
 			/// TeamJoinResult our items into the Q
-			ArrayList<NextSpawn> nextspawns = new ArrayList<NextSpawn>();
 			for (TimedSpawn is: timedSpawns.values()){
 //				System.out.println("itemSpawns = " + timedSpawns.size() + " " + is.getFirstSpawnTime()+ "  ts=" + is);
 				long tts = is.getFirstSpawnTime();
@@ -75,7 +74,6 @@ public class SpawnController {
 					is.spawn();
 				NextSpawn ns = new NextSpawn(is, tts);
 				spawnQ.add(ns);
-				nextspawns.add(ns);
 			}
 
 			timerId = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new SpawnNextEvent(0L));
@@ -98,10 +96,9 @@ public class SpawnController {
 				if (DEBUG_SPAWNS) Log.info("     " + next.timeToNext +"  " + next.is +"   ");
 			}
 			/// Find all the elements that should spawn at this time
-			NextSpawn ns = null;
+			NextSpawn ns;
 			boolean stop = false;
 			while (!spawnQ.isEmpty() && !stop){ /// Keep iterating until we have times that dont match
-				ns = spawnQ.peek();
 				stop = spawnQ.peek().timeToNext != 0;
 				if (!stop){
 					ns = spawnQ.remove();

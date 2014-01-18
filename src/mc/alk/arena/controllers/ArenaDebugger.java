@@ -1,15 +1,14 @@
 package mc.alk.arena.controllers;
 
-import java.util.HashMap;
-import java.util.List;
-
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.util.TeamUtil;
-
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.HashMap;
+import java.util.List;
 
 
 public class ArenaDebugger {
@@ -45,8 +44,7 @@ public class ArenaDebugger {
 	}
 
 	static public Location getLocKey(Location l){
-		Location rloc = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
-		return rloc;
+        return new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
 	}
 
 	public void hideSpawns(Player player) {

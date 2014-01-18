@@ -1,7 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.util.Set;
-
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult.WinLossDraw;
@@ -9,10 +7,11 @@ import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.stats.BlankArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.BTInterface;
-
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
+
+import java.util.Set;
 
 public class StatController {
 	static boolean enabled = false;
@@ -33,9 +32,8 @@ public class StatController {
 	}
 
 	public static boolean hasInterface(MatchParams mp) {
-		if (!enabled) return false;
-		return BTInterface.hasInterface(mp);
-	}
+        return enabled && BTInterface.hasInterface(mp);
+    }
 
 	public static void resumeTracking(ArenaPlayer p) {
 		if (enabled)
@@ -98,7 +96,7 @@ public class StatController {
 
 	public boolean setRating(OfflinePlayer player, int rating) {
 		BTInterface bti = new BTInterface(mp);
-		return bti.isValid() ? bti.setRating(player, rating) : false;
+		return bti.isValid() && bti.setRating(player, rating);
 	}
 
 	public String getRankMessage(OfflinePlayer player) {

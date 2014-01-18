@@ -1,15 +1,14 @@
 package mc.alk.arena.objects.messaging;
 
-import java.util.EnumMap;
-import java.util.Map;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.util.Log;
 import net.milkbowl.vault.chat.Chat;
-
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 public class AnnouncementOptions {
 
@@ -64,7 +63,7 @@ public class AnnouncementOptions {
 			Channel channel = chatPlugin.getChannel(value);
 			if (channel == null){
 				Log.err(BattleArena.getPluginName()+"config.yml Announcement option channel="+value+
-						", will be ignored as HeroChat channel " + value +" can not be found. Defaulting to Server Announcement");
+						", will be ignored as channel " + value +" can not be found. Defaulting to Server Announcement");
 				ops.put(AnnouncementOption.SERVER, null);
 				return;
 			}

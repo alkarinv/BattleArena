@@ -207,5 +207,4 @@ public class GameManager implements PlayerHolder{
 		}
 	}
 
-
 }

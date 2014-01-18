@@ -374,7 +374,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		});
 		/// Schedule the start of the match
 
-		currentTimer = Scheduler.scheduleSynchrounousTask(plugin, new Runnable() {
+		currentTimer = Scheduler.scheduleSynchronousTask(plugin, new Runnable() {
             public void run() {
                 startMatch();
             }
@@ -392,7 +392,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			return;
 		if (currentTimer != null){
 			Bukkit.getScheduler().cancelTask(currentTimer);}
-		currentTimer = Scheduler.scheduleSynchrounousTask(plugin, new Runnable() {
+		currentTimer = Scheduler.scheduleSynchronousTask(plugin, new Runnable() {
 			public void run() {
 				startMatch();
 			}
@@ -483,7 +483,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		if (event.isCancelled()){
 			return;
 		}
-		int timerid = Scheduler.scheduleSynchrounousTask(plugin,
+		int timerid = Scheduler.scheduleSynchronousTask(plugin,
 				new NonEndingMatchVictory(this,result),(int)2L);
 		for (ArenaTeam t: teams)
 			individualTeamTimers.put(t, timerid);
@@ -504,7 +504,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		arenaInterface.onVictory(result);
 		/// Call the rest after a 2 tick wait to ensure the calling transitionMethods complete before the
 		/// victory conditions start rolling in
-		currentTimer = Scheduler.scheduleSynchrounousTask(plugin, new MatchVictory(this),(int)2L);
+		currentTimer = Scheduler.scheduleSynchronousTask(plugin, new MatchVictory(this),(int)2L);
 	}
 
 	class NonEndingMatchVictory implements Runnable{
@@ -533,7 +533,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			}
 
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
-			int timerid = Scheduler.scheduleSynchrounousTask(plugin,
+			int timerid = Scheduler.scheduleSynchronousTask(plugin,
 					new NonEndingMatchCompleted(am, result, teams),
 					(int) (params.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
 			for (ArenaTeam t: teams)
@@ -563,7 +563,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 			updateBukkitEvents(MatchState.ONVICTORY);
 			PerformTransition.transition(am, MatchState.ONVICTORY,teams, true);
-			currentTimer = Scheduler.scheduleSynchrounousTask(plugin,
+			currentTimer = Scheduler.scheduleSynchronousTask(plugin,
 					new MatchCompleted(am), (int) (params.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
 		}
 	}
@@ -587,7 +587,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			PerformTransition.transition(am, MatchState.ONCOMPLETE, teams, true);
 			/// Once again, lets delay this final bit so that transitions have time to finish before
 			/// Other splisteners get a chance to handle
-			int timerid = Scheduler.scheduleSynchrounousTask(plugin, new Runnable(){
+			int timerid = Scheduler.scheduleSynchronousTask(plugin, new Runnable(){
 				public void run() {
 					/// Losers and winners get handled after the match is complete
 					if (result.getLosers() != null){
@@ -629,7 +629,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			PerformTransition.transition(am, MatchState.ONCOMPLETE, teams, true);
 			/// Once again, lets delay this final bit so that transitions have time to finish before
 			/// Other splisteners get a chance to handle
-			currentTimer = Scheduler.scheduleSynchrounousTask(plugin, new Runnable(){
+			currentTimer = Scheduler.scheduleSynchronousTask(plugin, new Runnable(){
 				public void run() {
 					callEvent(new MatchCompletedEvent(am));
 					arenaInterface.onComplete();
@@ -780,7 +780,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 			prizePoolMoney += params.getEntranceFee();}
 		arenaInterface.onJoin(player,team);
 		if (state == MatchState.ONOPEN && joinHandler != null && joinHandler.isFull()){
-			Scheduler.scheduleSynchrounousTask(BattleArena.getSelf(), this);
+			Scheduler.scheduleSynchronousTask(BattleArena.getSelf(), this);
 		}
 	}
 
@@ -855,7 +855,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 			/// onStart Them
 			if (state.ordinal() >= MatchState.ONSTART.ordinal()){
-				int timerid = Scheduler.scheduleSynchrounousTask(plugin, new Runnable() {
+				int timerid = Scheduler.scheduleSynchronousTask(plugin, new Runnable() {
 					public void run() {
 						doTransition(match, MatchState.ONSTART, player,team, true);
 					}
