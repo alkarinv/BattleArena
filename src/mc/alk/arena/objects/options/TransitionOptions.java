@@ -405,7 +405,9 @@ public class TransitionOptions {
 	public boolean containsAll(TransitionOptions tops) {
 		if (tops.options==null && options != null)
 			return false;
-		for (TransitionOption op: tops.options.keySet()){
+        if (tops.options == null)
+            return true;
+        for (TransitionOption op: tops.options.keySet()){
 			if (!options.containsKey(op)){
 				return false;
 			}

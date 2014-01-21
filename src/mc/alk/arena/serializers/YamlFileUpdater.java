@@ -149,7 +149,6 @@ public class YamlFileUpdater {
             );
             try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
         }
-
 		ms.setConfig(new File(dir+"/messages.yml"));
 	}
 

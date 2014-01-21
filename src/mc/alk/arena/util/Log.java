@@ -25,18 +25,26 @@ public class Log {
 
 	public static void warn(String msg){
 		if (msg == null) return;
-		if (log != null)
-			log.warning(colorChat(msg));
-		else
-			System.err.println(colorChat(msg));
+        try{
+            MessageUtil.sendMessage(Bukkit.getConsoleSender(),colorChat(msg));
+        } catch (Exception e){
+            if (log != null)
+                log.warning(colorChat(msg));
+            else
+                System.out.println(colorChat(msg));
+        }
 	}
 
 	public static void err(String msg){
 		if (msg == null) return;
-		if (log != null)
-			log.severe(colorChat(msg));
-		else
-			System.err.println(colorChat(msg));
+        try{
+            MessageUtil.sendMessage(Bukkit.getConsoleSender(),colorChat(msg));
+        } catch (Exception e){
+            if (log != null)
+                log.severe(colorChat(msg));
+            else
+                System.err.println(colorChat(msg));
+        }
 		NotifierUtil.notify("errors", msg);
 	}
 

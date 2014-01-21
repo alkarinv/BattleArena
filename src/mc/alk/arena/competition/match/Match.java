@@ -154,8 +154,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	final boolean individualWins;
 	final boolean alwaysOpen;
 
+    final Plugin plugin; /// Convenience variable for scheduling and countdowns
+
 	int neededTeams; /// How many teams do we need to properly start this match
-	final Plugin plugin;
 	int nLivesPerPlayer = 1; /// This will change as victory conditions are added
 	ArenaScoreboard scoreboard;
 	MatchMessager mc; /// Our message instance
@@ -217,8 +218,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 		/// onSpawn options
 		this.respawnsWithClass = tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWNWITHCLASS);
 		this.alwaysOpen = params.getAlwaysOpen();
+        this.neededTeams = alwaysOpen ? 0 : params.getMinTeams();
 
-		/// Set waitroom variables
+        /// Set waitroom variables
 		if (tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTLOBBY,
 				TransitionOption.TELEPORTMAINWAITROOM, TransitionOption.TELEPORTMAINLOBBY,
 				TransitionOption.TELEPORTCOURTYARD)){
@@ -294,24 +296,28 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public void setTimedStart(int seconds, Integer interval){
 		if (currentCountdown != null){
 			this.currentCountdown.stop();
-		}
-		mc.sendCountdownTillPrestart(seconds);
-		this.currentCountdown = new Countdown(BattleArena.getSelf(), seconds, interval,
-				new CountdownCallback(){
-			@Override
-			public boolean intervalTick(int remaining) {
-				if (state != MatchState.ONOPEN)
-					return false;
-				if (remaining == 0){
-					if (checkEnoughTeams(getTeams(), neededTeams))
-						preStartMatch();
-				} else {
-					mc.sendCountdownTillPrestart(remaining);
-				}
-				return true;
-			}
-		});
-	}
+            currentCountdown = null;
+        }
+        if (seconds > 0){
+            mc.sendCountdownTillPrestart(seconds);
+            this.currentCountdown = new Countdown(BattleArena.getSelf(), seconds, interval, new CountdownCallback(){
+                @Override
+                public boolean intervalTick(int remaining) {
+                    if (state != MatchState.ONOPEN)
+                        return false;
+                    if (remaining == 0){
+                        if (checkEnoughTeams(getTeams(), neededTeams))
+                            preStartMatch();
+                    } else {
+                        mc.sendCountdownTillPrestart(remaining);
+                    }
+                    return true;
+                }
+            });
+        } else {
+            preStartMatch();
+        }
+    }
 
 	public void setTeamJoinHandler(TeamJoinHandler teamJoinHandler){
 		this.joinHandler = teamJoinHandler;
@@ -1163,7 +1169,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public void addVictoryCondition(VictoryCondition victoryCondition){
 		vcs.add(victoryCondition);
 		addArenaListener(victoryCondition);
-		if (victoryCondition instanceof DefinesNumTeams){
+		if (!alwaysOpen && victoryCondition instanceof DefinesNumTeams){
 			neededTeams = Math.max(neededTeams, ((DefinesNumTeams)victoryCondition).getNeededNumberOfTeams().max);}
 		if (victoryCondition instanceof DefinesNumLivesPerPlayer){
 			//			if (nLivesPerPlayer== Integer.MAX_VALUE) nLivesPerPlayer = 1;

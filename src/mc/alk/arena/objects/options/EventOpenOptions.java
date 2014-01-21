@@ -1,10 +1,5 @@
 package mc.alk.arena.objects.options;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
@@ -15,8 +10,12 @@ import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.MinMax;
-
 import org.apache.commons.lang.StringUtils;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class EventOpenOptions {
 	public static enum EventOpenOption{
@@ -50,7 +49,7 @@ public class EventOpenOptions {
 				default:
 					break;
 				}
-				sb.append(r+val);
+				sb.append(r).append(val);
 			}
 			return sb.toString();
 		}
@@ -59,17 +58,14 @@ public class EventOpenOptions {
 	Map<EventOpenOption,Object> options = new EnumMap<EventOpenOption,Object>(EventOpenOption.class);
 	MatchParams params;
 
-	int announceInterval = 0, secTillStart = 0;
+	int announceInterval = 0, secTillStart = -1;
 
 	public static EventOpenOptions parseOptions(String[] args, Set<Integer> ignoreArgs, MatchParams params)
 			throws InvalidOptionException{
 		EventOpenOptions eoo = new EventOpenOptions();
-//		eoo.params = ParamController.copyParams(params);
 		eoo.params = new MatchParams(params.getType());
 		Map<EventOpenOption,Object> ops = eoo.options;
 
-		MinMax nTeams = eoo.params.getNTeams();
-		MinMax teamSize = eoo.params.getTeamSizes();
 		eoo.params.setParent(params);
 		int i =0;
 		for (String op: args){
@@ -83,7 +79,7 @@ public class EventOpenOptions {
 				ops.put(EventOpenOption.ARENA, arena);
 				continue;
 			}
-			EventOpenOption to = null;
+			EventOpenOption to;
 			try{
 				to = EventOpenOption.valueOf(split[0]);
 			} catch(IllegalArgumentException e){
@@ -197,7 +193,7 @@ public class EventOpenOptions {
 				for (Arena a : reasons.keySet()){
 					for (String reason: reasons.get(a)){
 						if (!first) sb.append(", ");
-						sb.append("&f"+a.getName()+":&e "+reason);
+						sb.append("&e").append(a.getName()).append(":&e ").append(reason);
 						first = false;
 					}
 				}
@@ -231,8 +227,12 @@ public class EventOpenOptions {
 	}
 
 	public int getSecTillStart() {
-		return secTillStart == 0 ? Defaults.AUTO_EVENT_COUNTDOWN_TIME : secTillStart;
+		return secTillStart == -1 ? Defaults.AUTO_EVENT_COUNTDOWN_TIME : secTillStart;
 	}
+
+    public void setSecTillStart(int secs) {
+        this.secTillStart = secs;
+    }
 
 	public String getOpenCmd() {
 		if (hasOption(EventOpenOption.AUTO)){

@@ -1,13 +1,12 @@
 package mc.alk.arena.objects.victoryconditions;
 
-import java.lang.reflect.Constructor;
-import java.util.LinkedHashMap;
-
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.util.CaseInsensitiveMap;
 import mc.alk.arena.util.Log;
-
 import org.bukkit.plugin.Plugin;
+
+import java.lang.reflect.Constructor;
+import java.util.LinkedHashMap;
 
 
 public class VictoryType {
@@ -28,11 +27,12 @@ public class VictoryType {
 	}
 
 	public static VictoryType fromString(final String type) {
-		return type == null ? null : types.get(type);
+        if (type.equalsIgnoreCase("none")) {return types.get("custom");}
+        return type == null ? null : types.get(type);
 	}
 
 	public static VictoryType getType(VictoryCondition vc) {
-		return vc == null ? null : types.get(vc.getClass());
+		return vc == null ? null : types.get(vc.getClass().getSimpleName());
 	}
 
 	public static VictoryType getType(Class<? extends VictoryCondition> vc) {

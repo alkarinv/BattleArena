@@ -313,9 +313,6 @@ public class BAExecutor extends CustomCommandExecutor {
                     t.sendMessage(MessageHandler
                             .getSystemMessage("you_added_to_team"));
                 }
-                sysmsg = MessageHandler.getSystemMessage("match_starts_when_time",
-                        mp.getSecondsTillMatch());
-                t.sendMessage(sysmsg);
                 break;
             case ADDED_TO_QUEUE:
                 sysmsg = MessageHandler.getSystemMessage("joined_the_queue",

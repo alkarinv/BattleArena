@@ -52,8 +52,8 @@ public class ErrLogger {
 //	public static synchronized void saveAll() {
 //		BufferedWriter out = null;
 //		try {
-//			File f = new File(BattleArena.getSelf().getDataFolder()+"/log.txt");
-//			out = new BufferedWriter(new FileWriter(f,true));
+//			File sendLeaveQueueMessages = new File(BattleArena.getSelf().getDataFolder()+"/log.txt");
+//			out = new BufferedWriter(new FileWriter(sendLeaveQueueMessages,true));
 //			for (String msg : msgs){
 //				out.write(msg);
 //			}
@@ -67,13 +67,13 @@ public class ErrLogger {
 //		}
 //	}
 //
-//	private static File trimFile(File f, int lineCount) {
+//	private static File trimFile(File sendLeaveQueueMessages, int lineCount) {
 //		File f2 = new File(BattleArena.getSelf().getDataFolder()+"/log2.txt");
 //		BufferedWriter out = null;
 //		BufferedReader br = null;
 //		try {
 //			out = new BufferedWriter(new FileWriter(f2,true));
-//			br = new BufferedReader(new FileReader(f));
+//			br = new BufferedReader(new FileReader(sendLeaveQueueMessages));
 //			int count = 0;
 //			String line;
 //			while (count < maxFileSize - lineCount){
@@ -82,7 +82,7 @@ public class ErrLogger {
 //			while ((line = br.readLine()) != null){
 //				out.write(line+"\n");
 //			}
-//			f2.renameTo(f);
+//			f2.renameTo(sendLeaveQueueMessages);
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		} finally{
@@ -103,8 +103,8 @@ public class ErrLogger {
 //	 * @throws IOException
 //	 */
 //	public static int count(String filename) throws IOException {
-//		File f = new File(filename);
-//		if (!f.exists())
+//		File sendLeaveQueueMessages = new File(filename);
+//		if (!sendLeaveQueueMessages.exists())
 //			return 0;
 //	    InputStream is = new BufferedInputStream(new FileInputStream(filename));
 //	    try {

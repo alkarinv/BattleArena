@@ -202,8 +202,11 @@ public class APIRegistrationController {
 		}
 
 		ConfigSerializer config = new ConfigSerializer(plugin, pluginFile,name);
-
-		/// load or register our arena type
+        if (config.getConfigurationSection(name) == null) {
+            Log.err(plugin.getName() + " " + pluginFile.getName() + " config file could not be loaded!");
+            return false;
+        }
+        /// load or register our arena type
 		ArenaType at;
 		if (arenaClass == null){
 			try{

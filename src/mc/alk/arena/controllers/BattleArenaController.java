@@ -238,6 +238,7 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
         }
         return old;
     }
+
     private void saveStates(Match m, Arena arena) {
         /// save the old states to put back after the match
         getOrCreateSavedState(m, arena);
@@ -357,30 +358,34 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
      * @param tqo the TeamQueueing object to the queue
      * @return JoinResult
      */
-    public JoinResult wantsToJoin(TeamJoinObject tqo) throws IllegalStateException{
+    public JoinResult wantsToJoin(TeamJoinObject tqo) throws IllegalStateException {
         /// Can they join an existing Game
-        if (joinExistingMatch(tqo)){
-            JoinResult qr = new JoinResult();
-            qr.status = JoinResult.JoinStatus.ADDED_TO_EXISTING_MATCH;
-            return qr;
+        JoinResult jr = joinExistingMatch(tqo);
+        if (jr.status == JoinResult.JoinStatus.ADDED_TO_EXISTING_MATCH) {
+            return jr;
         }
         /// Add a default arena if they havent specified
-        if (!tqo.getJoinOptions().hasArena()){
+        if (!tqo.getJoinOptions().hasArena()) {
             tqo.getJoinOptions().setArena(getNextArena(tqo.getMatchParams().getType()));
         }
-        JoinResult jr = amq.join(tqo,shouldStart(tqo.getMatchParams()));
+        jr = amq.join(tqo, shouldStart(tqo.getMatchParams()));
+
         MatchParams mp = tqo.getMatchParams();
+        if (jr.params == null)
+            jr.params = mp;
+
         /// who is responsible for doing what
-        if (Defaults.DEBUG)Log.info(" Join status = " + jr.status +"    " + tqo.getTeam() + "   " + tqo.getTeam().getId() +" --"
-                + ", haslobby="+mp.needsLobby() +"  ,wr="+(mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM))+"  "+
-                "   --- hasArena=" + tqo.getJoinOptions().hasArena());
-        if (tqo.getJoinOptions().hasArena()){
+        if (Defaults.DEBUG)
+            Log.info(" Join status = " + jr.status + "    " + tqo.getTeam() + "   " + tqo.getTeam().getId() + " --"
+                    + ", haslobby=" + mp.needsLobby() + "  ,wr=" + (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM)) + "  " +
+                    "   --- hasArena=" + tqo.getJoinOptions().hasArena());
+        if (tqo.getJoinOptions().hasArena()) {
             Arena a = tqo.getJoinOptions().getArena();
-            if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN) && BattleArena.getBAController().getMatch(a) != null){
-                throw new IllegalStateException("&cThe arena " + a.getDisplayName() +"&c is currently in use");
+            if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN) && BattleArena.getBAController().getMatch(a) != null) {
+                throw new IllegalStateException("&cThe arena " + a.getDisplayName() + "&c is currently in use");
             }
         }
-        switch(jr.status){
+        switch (jr.status) {
             case ADDED_TO_ARENA_QUEUE:
             case ADDED_TO_QUEUE:
                 break;
@@ -393,23 +398,26 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
             default:
                 break;
         }
-        if (mp.needsLobby()){
-            if (!RoomController.hasLobby(mp.getType())){
-                throw new IllegalStateException("&cLobby is not set for the "+mp.getName());}
+        if (mp.needsLobby()) {
+            if (!RoomController.hasLobby(mp.getType())) {
+                throw new IllegalStateException("&cLobby is not set for the " + mp.getName());
+            }
             RoomController.getLobby(mp.getType()).teamJoining(tqo.getTeam());
         }
-        if (tqo.getJoinOptions().hasArena()){
+        if (tqo.getJoinOptions().hasArena()) {
             Arena a = tqo.getJoinOptions().getArena();
             if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM) ||
-                    mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTMAINWAITROOM)){
-                if (a.getWaitroom()== null){
-                    throw new IllegalStateException("&cWaitroom is not set for this arena");}
+                    mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTMAINWAITROOM)) {
+                if (a.getWaitroom() == null) {
+                    throw new IllegalStateException("&cWaitroom is not set for this arena");
+                }
                 a.getWaitroom().teamJoining(tqo.getTeam());
-            } else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTSPECTATE)){
-                if (a.getSpectatorRoom()== null){
-                    throw new IllegalStateException("&cSpectate is not set for this arena");}
+            } else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTSPECTATE)) {
+                if (a.getSpectatorRoom() == null) {
+                    throw new IllegalStateException("&cSpectate is not set for this arena");
+                }
                 a.getSpectatorRoom().teamJoining(tqo.getTeam());
-            } else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)){
+            } else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)) {
                 tqo.getJoinOptions().getArena().teamJoining(tqo.getTeam());
             }
         }
@@ -435,14 +443,17 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
     }
 
 
-    private boolean joinExistingMatch(TeamJoinObject tqo) {
-        if (unfilled_matches.isEmpty()){
-            return false;}
+    private JoinResult joinExistingMatch(TeamJoinObject tqo) {
+        JoinResult jr = new JoinResult();
+        jr.params = tqo.getMatchParams();
+        if (unfilled_matches.isEmpty()) {
+            return jr;
+        }
         MatchParams params = tqo.getMatchParams();
-        synchronized(unfilled_matches){
+        synchronized (unfilled_matches) {
             List<Match> matches = unfilled_matches.get(params.getType());
             if (matches == null)
-                return false;
+                return jr;
             for (Match match : matches) {
                 /// We dont want people joining in a non waitroom state
                 if (!match.canStillJoin()) {
@@ -454,20 +465,22 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
                         continue;
                     if (!JoinOptions.matches(tqo.getJoinOptions(), match))
                         continue;
-                    boolean result = false;
                     TeamJoinResult tjr = tjh.joiningTeam(tqo);
                     switch (tjr.status) {
                         case ADDED_TO_EXISTING:
                         case ADDED:
-                            result = true;
+                            jr.status = JoinResult.JoinStatus.ADDED_TO_EXISTING_MATCH;
+//                            jr.matchfind = new ArenaMatchQueue.MatchFind();
+//                            jr.matchfind.setMatch(match);
+                            break;
                         default:
                             break;
                     }
-                    return result;
+                    return jr;
                 }
             }
         }
-        return false;
+        return jr;
     }
 
     public boolean isInQue(ArenaPlayer p) {return amq.isInQue(p);}

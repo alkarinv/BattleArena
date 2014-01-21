@@ -530,13 +530,13 @@ public class MethodController {
     }
 
     public static boolean showAllListeners(CommandSender sender, String limitToPlayer) {
-        Log.info("&2# &f-!! controller=&5"+controllers.size()+"&f : &5" + controllerCount+"&f !!- &2#");
+        Log.info("&2# &e-!! controller=&5"+controllers.size()+"&e : &5" + controllerCount+"&e !!- &2#");
         for (MethodController mc: controllers){
             StringBuilder sb = new StringBuilder();
             for (ArenaListener al: mc.listeners){
                 sb.append(al.getClass().getSimpleName()).append(", ");
             }
-            MessageUtil.sendMessage(sender, "&c###### &f----!! controller=&5" + mc.owner + " : " + mc.hashCode() + "&f !!---- &c######  listeners=" + sb.toString());
+            MessageUtil.sendMessage(sender, "&c###### &e----!! controller=&5" + mc.owner + " : " + mc.hashCode() + "&e !!---- &c######  listeners=" + sb.toString());
 
         }
 //		for (MethodController mc: controllers){
@@ -548,10 +548,10 @@ public class MethodController {
 //			for (ArenaListener al: mc.listeners){
 //				sb.append(al.getClass().getSimpleName() +", ");
 //			}
-//			Log.info("&c###### &f----!! controller=&5"+mc.owner+" : " + mc.hashCode()+"&f !!---- &c######  listeners="+sb.toString());
+//			Log.info("&c###### &e----!! controller=&5"+mc.owner+" : " + mc.hashCode()+"&e !!---- &c######  listeners="+sb.toString());
 
         for (org.bukkit.event.EventPriority bp: gels.keySet()){
-            MessageUtil.sendMessage(sender, "&4#### &f----!! Bukkit Priority=&5" + bp + "&f !!---- &4####");
+            MessageUtil.sendMessage(sender, "&4#### &e----!! Bukkit Priority=&5" + bp + "&e !!---- &4####");
             HashMap<Type, BukkitEventHandler> types = gels.get(bp);
             for (BukkitEventHandler bel: types.values()){
                 if (bel.getSpecificPlayerListener() != null){
@@ -559,7 +559,7 @@ public class MethodController {
                     String str = MessageUtil.joinBukkitPlayers(bel.getSpecificPlayerListener().getPlayers(),", ");
                     String has = bel.hasListeners() ? "&2true" : "&cfalse";
                     if (!lists2.isEmpty())
-                        MessageUtil.sendMessage(sender, "---- Event &e" + bel.getSpecificPlayerListener().getEvent().getSimpleName() + "&f:" + has + "&f, players=" + str);
+                        MessageUtil.sendMessage(sender, "---- Event &e" + bel.getSpecificPlayerListener().getEvent().getSimpleName() + "&e:" + has + "&e, players=" + str);
                     for (String p : lists2.keySet()){
                         if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
                             continue;
@@ -576,7 +576,7 @@ public class MethodController {
                     String str = MessageUtil.joinBukkitPlayers(bel.getSpecificArenaPlayerListener().getPlayers(),", ");
                     String has = bel.hasListeners() ? "&2true" : "&cfalse";
                     if (!lists2.isEmpty())
-                        MessageUtil.sendMessage(sender, "---- ArenaPlayerEvent &e" + bel.getSpecificArenaPlayerListener().getEvent().getSimpleName() + "&f:" + has + "&f, players=" + str);
+                        MessageUtil.sendMessage(sender, "---- ArenaPlayerEvent &e" + bel.getSpecificArenaPlayerListener().getEvent().getSimpleName() + "&e:" + has + "&e, players=" + str);
                     for (String p : lists2.keySet()){
                         if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
                             continue;

@@ -55,7 +55,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Get the unique ID for this competition
-	 * @return
+	 * @return id
 	 */
 	public int getID(){
 		return id;
@@ -63,27 +63,27 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Get the Name for this competition
-	 * @return
+	 * @return Name
 	 */
 	public abstract String getName();
 
 	/**
 	 * Returns the current state of the competition
-	 * @return
+	 * @return CompetitionState
 	 */
 	public abstract CompetitionState getState();
 
 	/**
 	 * Transition from one state to another
 	 * onStart -> onVictory
-	 * @param state
+	 * @param state CompetitionState
 	 */
 	protected abstract void transitionTo(CompetitionState state);
 
 	/**
 	 * Signify that a player has left the competition
-	 * @param player
-	 * @return
+	 * @param player ArenaPlayer
+	 * @return whether the player has left or not
 	 */
 	public boolean playerLeft(ArenaPlayer player) {
 		return leftPlayers.contains(player.getName());
@@ -91,20 +91,20 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Returns either the MatchParams or EventParams of the match/event
-	 * @return
+	 * @return MatchParams
 	 */
 	public abstract MatchParams getParams();
 
 	/**
 	 * Add a team to this competition
-	 * @param team
+	 * @param team ArenaTeam
 	 * @return true if the team was added, false if not
 	 */
 	public abstract boolean addTeam(ArenaTeam team);
 
 	/**
 	 * Remove the team from the competition
-	 * @param team
+	 * @param team ArenaTeam
 	 * @return whether or not the team was removed
 	 */
 	public abstract boolean removeTeam(ArenaTeam team);
@@ -140,7 +140,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Set our teams
-	 * @param teams
+	 * @param teams list of ArenaTeam
 	 */
 	public void setTeams(List<ArenaTeam> teams){
 		this.teams.clear();
@@ -155,7 +155,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * return the teams for this competition
-	 * @return
+	 * @return list of ArenaTeam
 	 */
 	public List<ArenaTeam> getTeams() {
 		return teams;
@@ -174,7 +174,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Add a collection of listeners for this competition
-	 * @param transitionListeners
+	 * @param transitionListeners collection of ArenaListener
 	 */
 	public void addArenaListeners(Collection<ArenaListener> transitionListeners){
 		for (ArenaListener tl: transitionListeners){
@@ -183,7 +183,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Add an arena listener for this competition
-	 * @param arenaListener
+	 * @param arenaListener ArenaListener
 	 */
 	public void addArenaListener(ArenaListener arenaListener){
 		methodController.addListener(arenaListener);
@@ -191,7 +191,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Remove an arena listener for this competition
-	 * @param arenaListener
+	 * @param arenaListener ArenaListener
 	 */
 	public boolean removeArenaListener(ArenaListener arenaListener){
 		return methodController.removeListener(arenaListener);
@@ -199,7 +199,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Get the team that this player is inside of
-	 * @param player
+	 * @param player ArenaPlayer
 	 * @return ArenaPlayer, or null if no team contains this player
 	 */
 	public ArenaTeam getTeam(ArenaPlayer player) {
@@ -210,7 +210,7 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/**
 	 * Get the team with this index
-	 * @param teamIndex
+	 * @param teamIndex index of the team
 	 * @return ArenaPlayer, or null if no team exists
 	 */
 	public ArenaTeam getTeam(int teamIndex) {
@@ -249,4 +249,5 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 			players.addAll(t.getPlayers());}
 		return players;
 	}
+
 }

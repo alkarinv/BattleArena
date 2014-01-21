@@ -464,7 +464,7 @@ public class ArenaMatchQueue implements ArenaListener{
 		}}
 		if (qr.matchfind != null && qr.matchfind.match != null){
 			addToReadyMatches(qr.matchfind.match);
-			qr.matchfind.f();
+			qr.matchfind.sendLeaveQueueMessages();
 			qr.playersInQueue = tq.playerSize();
 		}
 		///Found nothing matching
@@ -505,14 +505,13 @@ public class ArenaMatchQueue implements ArenaListener{
 	}
 
 	public class MatchFind{
-		Match match;
+        Match match;
 		Collection<ArenaTeam> teams;
 		int tqPlayerSize;
 
-		public void f(){
+		public void sendLeaveQueueMessages(){
 			/// send out queue events now that the queue has been resized
 			for (ArenaTeam t: teams){
-				//				int playerSize = tq.playerSize();
 				for (ArenaPlayer ap :t.getPlayers()){
 					ParamTeamPair ptp = new ParamTeamPair(match.getParams(),t,
 							QueueType.GAME, match.getArena(), tqPlayerSize);
@@ -520,7 +519,10 @@ public class ArenaMatchQueue implements ArenaListener{
 				}
 			}
 		}
-	}
+        public Match getMatch() {return match;}
+        public void setMatch(Match match) {this.match = match;}
+    }
+
 	/**
 	 * For these parameters, go through each team to see if we can create a viable match
 	 * @param result JoinResult

@@ -1,5 +1,13 @@
 package mc.alk.arena.objects;
 
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.options.TransitionOption;
+import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.InventoryUtil;
+import org.bukkit.World;
+import org.bukkit.inventory.ItemStack;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,15 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import mc.alk.arena.objects.exceptions.InvalidOptionException;
-import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.util.InventoryUtil;
-
-import org.bukkit.World;
-import org.bukkit.inventory.ItemStack;
 
 public class MatchTransitions {
 	final Map<MatchState,TransitionOptions> ops = new EnumMap<MatchState,TransitionOptions>(MatchState.class);
@@ -62,7 +61,7 @@ public class MatchTransitions {
 
 	public boolean removeTransitionOption(MatchState state, TransitionOption option) {
 		TransitionOptions tops = ops.get(state);
-		return tops == null ? false : tops.removeOption(option) != null;
+		return tops != null && tops.removeOption(option) != null;
 	}
 
 	public void removeTransitionOptions(MatchState ms) {
@@ -110,7 +109,7 @@ public class MatchTransitions {
 
 	public boolean hasOptionAt(MatchState state, TransitionOption option) {
 		TransitionOptions tops = ops.get(state);
-		return tops == null ? false : tops.hasOption(option);
+		return tops != null && tops.hasOption(option);
 	}
 
 	public boolean hasOptionIn(MatchState beginState, MatchState endState, TransitionOption option) {
@@ -123,7 +122,8 @@ public class MatchTransitions {
 		return false;
 	}
 
-	public boolean needsClearInventory() {
+	@SuppressWarnings("SimplifiableConditionalExpression")
+    public boolean needsClearInventory() {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).clearInventory() : false;
 	}
 
@@ -147,10 +147,12 @@ public class MatchTransitions {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).getMoney() : null;
 	}
 
-	public boolean hasEntranceFee() {
+    @SuppressWarnings("SimplifiableConditionalExpression")
+    public boolean hasEntranceFee() {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).hasMoney() : false;
 	}
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
 	public boolean playerReady(ArenaPlayer p, World w) {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).playerReady(p,w): true;
 	}
@@ -187,26 +189,26 @@ public class MatchTransitions {
 		Collections.sort(states);
 		for (MatchState ms : states){
 			TransitionOptions to = ops.get(ms);
-			sb.append(ms +" -- " + to+"\n");
+			sb.append(ms).append(" -- ").append(to).append("\n");
 			Map<Integer, ArenaClass> classes = to.getClasses();
 			if (classes != null){
 				sb.append("             classes - ");
 				for (ArenaClass ac : classes.values()){
-					sb.append(" " + ac.getDisplayName());}
+					sb.append(" ").append(ac.getDisplayName());}
 				sb.append("\n");
 			}
 			List<ItemStack> items = to.getGiveItems();
 			if (items != null){
 				sb.append("             items - ");
 				for (ItemStack item: items){
-					sb.append(" " + InventoryUtil.getItemString(item));}
+					sb.append(" ").append(InventoryUtil.getItemString(item));}
 				sb.append("\n");
 			}
 			items = to.getNeedItems();
 			if (items != null){
 				sb.append("             needitems - ");
 				for (ItemStack item: items){
-					sb.append(" " + InventoryUtil.getItemString(item));}
+					sb.append(" ").append(InventoryUtil.getItemString(item));}
 				sb.append("\n");
 			}
 		}

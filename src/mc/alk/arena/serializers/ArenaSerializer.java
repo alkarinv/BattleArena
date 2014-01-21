@@ -13,7 +13,10 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.arenas.Persistable;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.exceptions.RegionNotFound;
+import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.spawns.EntitySpawn;
 import mc.alk.arena.objects.spawns.ItemSpawn;
@@ -128,7 +131,7 @@ public class ArenaSerializer extends BaseConfig{
 		keys.addAll(brokenKeys);
 
 		Set<String> brokenArenas = new HashSet<String>();
-		Set<String> loadedArenas = new HashSet<String>();
+        Set<String> loadedArenas = new HashSet<String>();
 		for (String name : keys){
 			if (loadedArenas.contains(name) || brokenArenas.contains(name)) /// We already tried to load this arena
 				continue;
@@ -147,11 +150,11 @@ public class ArenaSerializer extends BaseConfig{
 					continue;
 				}
 			}
-			boolean success = false;
-			try{
-				success = loadArena(plugin, bac,cs.getConfigurationSection(section+"."+name));
-				if (success){
-					loadedArenas.add(name);
+            Arena arena = null;
+            try{
+				arena = loadArena(plugin, bac,cs.getConfigurationSection(section+"."+name));
+				if (arena != null){
+                    loadedArenas.add(arena.getName());
 					if (broken){
 						transfer(cs,"brokenArenas."+name, "arenas."+name);}
 				}
@@ -160,7 +163,7 @@ public class ArenaSerializer extends BaseConfig{
 			} catch(Exception e){
 				Log.printStackTrace(e);
 			}
-			if (!success){
+			if (arena == null){
 				brokenArenas.add(name);
 				if (!broken){
 					transfer(cs,"arenas."+name, "brokenArenas."+name);}
@@ -181,7 +184,7 @@ public class ArenaSerializer extends BaseConfig{
 				Log.printStackTrace(e);
 			}
 		}
-	}
+    }
 
 	private static void transfer(ConfigurationSection cs, String string, String string2) {
 		try{
@@ -193,13 +196,13 @@ public class ArenaSerializer extends BaseConfig{
 		}
 	}
 
-	public static boolean loadArena(Plugin plugin, BattleArenaController bac, ConfigurationSection cs) {
+	public static Arena loadArena(Plugin plugin, BattleArenaController bac, ConfigurationSection cs) {
 		String name = cs.getName().toLowerCase();
 
 		ArenaType atype = ArenaType.fromString(cs.getString("type"));
 		if (atype==null){
 			Log.err(" Arena type not found for " + name);
-			return false;
+			return null;
 		}
 		MatchParams mp = new MatchParams(atype);
 
@@ -221,13 +224,13 @@ public class ArenaSerializer extends BaseConfig{
 
 		if (!mp.valid()){
 			Log.err( name + " This arena is not valid arenaq=" + mp.toString());
-			return false;
+			return null;
 		}
 
 		Arena arena = ArenaType.createArena(name, mp,false);
 		if (arena == null){
 			Log.err("Couldnt load the Arena " + name);
-			return false;
+			return null;
 		}
 		ParamController.addArenaParams(name, mp);
 
@@ -283,7 +286,22 @@ public class ArenaSerializer extends BaseConfig{
 		ArenaControllerInterface aci = new ArenaControllerInterface(arena);
 		aci.init();
 		bac.addArena(arena);
-		return true;
+
+        if (arena.getParams().hasAnyOption(TransitionOption.ALWAYSOPEN)) {
+            try {
+                mp = arena.getParams();
+
+                EventOpenOptions eoo = EventOpenOptions.parseOptions(new String[0], null, mp);
+                eoo.setSecTillStart(0);
+                bac.createAndAutoMatch(arena, eoo);
+            } catch (NeverWouldJoinException e) {
+                e.printStackTrace();
+            } catch (InvalidOptionException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return arena;
 	}
 
 	private static void updateRegions(Arena arena) {
@@ -317,7 +335,8 @@ public class ArenaSerializer extends BaseConfig{
 		}
 	}
 
-	private static void saveArenas(Collection<Arena> arenas, File f, ConfigurationSection config, Plugin plugin, boolean log){
+	@SuppressWarnings("ConstantConditions")
+    private static void saveArenas(Collection<Arena> arenas, File f, ConfigurationSection config, Plugin plugin, boolean log){
 		ConfigurationSection maincs = config.createSection("arenas");
 		config.createSection("brokenArenas");
 		List<String> saved = new ArrayList<String>();
@@ -474,8 +493,7 @@ public class ArenaSerializer extends BaseConfig{
 			return null;
 
 		spawns.get(0).setLocation(loc);
-		TimedSpawn ts = new TimedSpawn(st.i1,st.i2, st.i3,spawns.get(0));
-		return ts;
+        return new TimedSpawn(st.i1,st.i2, st.i3,spawns.get(0));
 	}
 
 	public static SpawnTime parseSpawnTime(String str){
@@ -484,12 +502,11 @@ public class ArenaSerializer extends BaseConfig{
 		for (int i=0;i<strs.length;i++){
 			is[i] = Integer.valueOf(strs[i]);
 		}
-		SpawnTime st = new SpawnTime(is[0],is[1],is[2]);
-		return st;
+        return new SpawnTime(is[0],is[1],is[2]);
 	}
 
 	private static HashMap<String, Object> saveSpawnable(Long i, TimedSpawn ts) {
-		HashMap<String, Object> spawnmap = new HashMap<String,Object>();
+		HashMap<String, Object> spawnMap = new HashMap<String,Object>();
 		SpawnInstance si = ts.getSpawn();
 		String key = null;
 		String value =null;
@@ -505,16 +522,14 @@ public class ArenaSerializer extends BaseConfig{
 			EntitySpawn in = (EntitySpawn) si;
 			key = in.getEntityString() + " " + in.getNumber();
 			//			value = in.getNumber() +"";
-		} else {
-
 		}
 		if (value == null)
-			spawnmap.put("spawn", key);
+			spawnMap.put("spawn", key);
 		else
-			spawnmap.put("spawn", key+":" + value);
-		spawnmap.put("loc", SerializerUtil.getLocString(si.getLocation()));
-		spawnmap.put("time", ts.getFirstSpawnTime()+" " + ts.getRespawnTime()+" " + ts.getTimeToDespawn());
-		return spawnmap;
+			spawnMap.put("spawn", key+":" + value);
+		spawnMap.put("loc", SerializerUtil.getLocString(si.getLocation()));
+		spawnMap.put("time", ts.getFirstSpawnTime() + " " + ts.getRespawnTime() + " " + ts.getTimeToDespawn());
+		return spawnMap;
 	}
 
 
