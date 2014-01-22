@@ -81,6 +81,7 @@ public class BAPlayerListener implements Listener  {
 				ArenaPlayerLeaveEvent.QuitReason.QUITMC);
 		aple.callEvent();
 	}
+
 	private static PlayerRestoreController getOrCreateRestorer(final String name){
 		if (restore.containsKey(name))
 			return restore.get(name);

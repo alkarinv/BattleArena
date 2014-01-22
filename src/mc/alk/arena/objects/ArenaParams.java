@@ -45,6 +45,7 @@ public class ArenaParams {
         this(ap.getType());
         this.copy(ap);
     }
+
     public void copy(ArenaParams ap){
         if (this == ap)
             return;

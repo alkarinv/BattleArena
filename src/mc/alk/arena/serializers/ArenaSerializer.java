@@ -290,8 +290,7 @@ public class ArenaSerializer extends BaseConfig{
         if (arena.getParams().hasAnyOption(TransitionOption.ALWAYSOPEN)) {
             try {
                 mp = arena.getParams();
-
-                EventOpenOptions eoo = EventOpenOptions.parseOptions(new String[0], null, mp);
+                EventOpenOptions eoo = EventOpenOptions.parseOptions(new String[]{"COPYPARAMS"}, null, mp);
                 eoo.setSecTillStart(0);
                 bac.createAndAutoMatch(arena, eoo);
             } catch (NeverWouldJoinException e) {

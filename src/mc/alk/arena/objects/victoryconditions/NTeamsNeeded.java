@@ -1,10 +1,5 @@
 package mc.alk.arena.objects.victoryconditions;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.teams.TeamDeathEvent;
 import mc.alk.arena.objects.MatchResult;
@@ -13,8 +8,14 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesNumTeams;
 import mc.alk.arena.util.MinMax;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class NTeamsNeeded extends VictoryCondition implements DefinesNumTeams{
 	MinMax neededTeams;
+
 	public NTeamsNeeded(Match match, int nTeams) {
 		super(match);
 		this.neededTeams = new MinMax(nTeams);
@@ -24,7 +25,8 @@ public class NTeamsNeeded extends VictoryCondition implements DefinesNumTeams{
 		return neededTeams;
 	}
 
-	@ArenaEventHandler
+	@SuppressWarnings("UnusedParameters")
+    @ArenaEventHandler
 	public void onTeamDeathEvent(TeamDeathEvent event) {
 		/// Killing this player killed the team
 		List<ArenaTeam> leftAlive = new ArrayList<ArenaTeam>(neededTeams.min+1);
@@ -49,4 +51,9 @@ public class NTeamsNeeded extends VictoryCondition implements DefinesNumTeams{
 			match.endMatchWithResult(mr);
 		}
 	}
+
+    @Override
+    public String toString(){
+        return "[VC "+this.getClass().getSimpleName()+" : " + id+" nTeams="+neededTeams+"]";
+    }
 }

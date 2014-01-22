@@ -1,12 +1,5 @@
 package mc.alk.arena.objects.teams;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -15,10 +8,16 @@ import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
-
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class AbstractTeam implements ArenaTeam{
 	static int count = 0;
@@ -210,8 +209,8 @@ public abstract class AbstractTeam implements ArenaTeam{
 			d = 0;}
 		kills.put(teamMemberWhoKilled, ++d);
 		if (objective != null){
-			objective.addPoints(teamMemberWhoKilled, d);
-			objective.addPoints(this, d);
+			objective.setPoints(teamMemberWhoKilled, d);
+			objective.setPoints(this, d);
 		}
 		return d;
 	}
@@ -238,7 +237,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 
 	/**
 	 *
-	 * @param p
+	 * @param p ArenaPlayer
 	 * @return whether all players are dead
 	 */
 	public boolean killMember(ArenaPlayer p) {
@@ -269,11 +268,12 @@ public abstract class AbstractTeam implements ArenaTeam{
 	public String getDisplayName(){return displayName == null ? getName() : displayName;}
 	public void setDisplayName(String teamName){displayName = teamName;}
 
-	@Override
+	@SuppressWarnings("SimplifiableIfStatement")
+    @Override
 	public boolean equals(Object other) {
 		if (this == other) return true;
 		if (!(other instanceof AbstractTeam)) return false;
-		return this.hashCode() == ((AbstractTeam) other).hashCode();
+		return this.hashCode() == other.hashCode();
 	}
 
 	@Override
@@ -294,21 +294,21 @@ public abstract class AbstractTeam implements ArenaTeam{
 		}
 	}
 
-	public String getTeamInfo(Set<String> insideMatch){
+    public String getTeamInfo(Set<String> insideMatch){
 		StringBuilder sb = new StringBuilder("&eTeam: ");
 		if (displayName != null) sb.append(displayName);
-		sb.append( " " + (isDead() ? "&4dead" : "&aalive")+"&e, ");
+		sb.append(" ").append(isDead() ? "&4dead" : "&aalive").append("&e, ");
 
 		for (ArenaPlayer p: players){
-			sb.append("&6"+p.getName());
+			sb.append("&6").append(p.getName());
 			boolean isAlive = hasAliveMember(p);
 			boolean online = p.isOnline();
 			final String inmatch = insideMatch == null? "": ((insideMatch.contains(p.getName())) ? "&e(in)" : "&4(out)");
 			final int k = kills.containsKey(p) ? kills.get(p) : 0;
 			final int d = deaths.containsKey(p) ? deaths.get(p) : 0;
-			sb.append("&e(&c"+k+"&e,&7"+d+"&e)");
-			sb.append("&e:" + (isAlive ? "&ah="+p.getHealth() : "&40") +
-					((!online) ? "&4(O)" : "")+inmatch+"&e ");
+			sb.append("&e(&c").append(k).append("&e,&7").append(d).append("&e)");
+			sb.append("&e:").append(isAlive ? "&ah=" + p.getHealth() : "&40").
+                    append((!online) ? "&4(O)" : "").append(inmatch).append("&e ");
 		}
 		return sb.toString();
 	}
@@ -318,7 +318,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 		for (ArenaPlayer p: players){
 			final int k = kills.containsKey(p) ? kills.get(p) : 0;
 			final int d = deaths.containsKey(p) ? deaths.get(p) : 0;
-			sb.append("&e(&c"+k+"&e,&7"+d+"&e)");
+			sb.append("&e(&c").append(k).append("&e,&7").append(d).append("&e)");
 		}
 		return sb.toString();
 	}

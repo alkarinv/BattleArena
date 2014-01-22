@@ -2,6 +2,7 @@ package mc.alk.arena.listeners;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.CombatTagInterface;
 import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.FactionsController;
 import mc.alk.arena.controllers.HeroesController;
@@ -18,7 +19,6 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
-
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,8 +36,10 @@ public class BAPluginListener implements Listener {
 
 	@EventHandler
 	public void onPluginEnable(PluginEnableEvent event) {
-		if (event.getPlugin().getName().equalsIgnoreCase("BattleTracker"))
-			loadBattleTracker();
+        if (event.getPlugin().getName().equalsIgnoreCase("BattleTracker"))
+            loadBattleTracker();
+        if (event.getPlugin().getName().equalsIgnoreCase("CombatTag"))
+            loadCombatTag();
 		else if (event.getPlugin().getName().equalsIgnoreCase("Essentials"))
 			loadEssentials();
 		else if (event.getPlugin().getName().equalsIgnoreCase("Factions"))
@@ -70,6 +72,7 @@ public class BAPluginListener implements Listener {
 
 	public void loadAll(){
 		loadBattleTracker();
+        loadCombatTag();
 		loadDisguiseCraft();
 		loadEssentials();
 		loadFactions();
@@ -97,12 +100,21 @@ public class BAPluginListener implements Listener {
 			}
 		}
 	}
+    public void loadCombatTag(){
+        if (!CombatTagInterface.enabled()){
+            Plugin plugin = Bukkit.getPluginManager().getPlugin("CombatTag");
+            if (plugin != null) {
+                CombatTagInterface.setPlugin(plugin);
+                Log.info("[BattleArena] CombatTag detected, enabling limited tag support");
+            }
+        }
+    }
 
 	public void loadDisguiseCraft(){
 		if (!DisguiseInterface.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("DisguiseCraft");
 			if (plugin != null) {
-				DisguiseInterface.setDisguiseCraft(plugin);
+				DisguiseInterface.setPlugin(plugin);
 				Log.info("[BattleArena] DisguiseCraft detected, enabling disguises");
 			}
 		}
@@ -112,7 +124,7 @@ public class BAPluginListener implements Listener {
 		if (!EssentialsController.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("Essentials");
 			if (plugin != null) {
-				if (EssentialsController.enableEssentials(plugin)){
+				if (EssentialsController.setPlugin(plugin)){
 					Log.info("[BattleArena] Essentials detected. God mode handling activated");
 				} else {
 					Log.info("[BattleArena] Essentials detected but could not hook properly");
@@ -125,7 +137,7 @@ public class BAPluginListener implements Listener {
 		if (!FactionsController.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("Factions");
 			if (plugin != null) {
-				if (FactionsController.enableFactions(true)){
+				if (FactionsController.setPlugin(true)){
 					Log.info("[BattleArena] Factions detected. Configurable power loss enabled (default no powerloss)");
 				} else {
 					Log.info("[BattleArena] Old Factions detected that does not have a PowerLossEvent");
@@ -138,7 +150,7 @@ public class BAPluginListener implements Listener {
 		if (AnnouncementOptions.chatPlugin == null){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("Herochat");
 			if (plugin != null) {
-				AnnouncementOptions.setChatPlugin(new HerochatPlugin());
+				AnnouncementOptions.setPlugin(new HerochatPlugin());
 				Log.info("[BattleArena] Herochat detected, adding channel options");
 			}
 		}
@@ -148,7 +160,7 @@ public class BAPluginListener implements Listener {
 		if (!HeroesController.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("Heroes");
 			if (plugin != null) {
-				HeroesController.setHeroes(plugin);
+				HeroesController.setPlugin(plugin);
 				Log.info("[BattleArena] Heroes detected. Implementing heroes class options");
 			}
 		}
@@ -158,7 +170,7 @@ public class BAPluginListener implements Listener {
 		if (!MobArenaInterface.hasMobArena()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("MobArena");
 			if (plugin != null) {
-				MobArenaInterface.init(plugin);
+				MobArenaInterface.setPlugin(plugin);
 				Log.info("[BattleArena] MobArena detected.  Implementing no join when in MobArena");
 			}
 		}
@@ -198,7 +210,7 @@ public class BAPluginListener implements Listener {
 		if (!PylamoController.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("PylamoRestorationSystem");
 			if (plugin != null){
-				PylamoController.setPylamo(plugin);
+				PylamoController.setPlugin(plugin);
 				Log.info(BattleArena.getPluginName() +" found PylamoRestorationSystem");
 			}
 		}

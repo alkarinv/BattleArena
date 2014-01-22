@@ -38,7 +38,7 @@ public class AnnouncementOptions {
 	Map<MatchState, Map<AnnouncementOption,Object>> eventOptions =
 			new EnumMap<MatchState, Map<AnnouncementOption,Object>>(MatchState.class);
 
-	public static void setChatPlugin(ChatPlugin plugin) {
+	public static void setPlugin(ChatPlugin plugin) {
 		AnnouncementOptions.chatPlugin = plugin;
 	}
 	public static void setVaultChat(Chat chat) {

@@ -36,7 +36,6 @@ public class TeleportController implements Listener{
 		return teleport(player,location,false);
 	}
 
-	@SuppressWarnings("EmptyCatchBlock")
     public static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
 		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
 		try {
@@ -51,21 +50,27 @@ public class TeleportController implements Listener{
 
 			/// Deal with vehicles
 			if (player.isInsideVehicle()){
-				try{ player.leaveVehicle(); } catch(Exception e){}
+				try{ player.leaveVehicle(); } catch(Exception e){/*ignore*/}
 			}
 
 			/// Load the chunk if its not already loaded
 			try {
 				if(!loc.getWorld().isChunkLoaded(loc.getBlock().getChunk())){
 					loc.getWorld().loadChunk(loc.getBlock().getChunk());}
-			} catch (Exception e){}
+			} catch (Exception e){/*ignore*/}
 
 			/// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
 			/// or game states ... lets not let this happen
 			PermissionsUtil.givePlayerInventoryPerms(player);
+
+            /// CombatTag will prevent teleports
+            if (CombatTagInterface.enabled())
+                CombatTagInterface.untag(player);
+
 			/// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
 			if (giveBypassPerms && BattleArena.getSelf().isEnabled() && !Defaults.DEBUG_STRESS){
 				player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);}
+
 			/// Some worlds "regenerate" which means they have the same name, but are different worlds
 			/// To deal with this, reget the world
 			World w = Bukkit.getWorld(loc.getWorld().getName());

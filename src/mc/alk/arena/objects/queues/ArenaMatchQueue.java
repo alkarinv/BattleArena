@@ -112,7 +112,7 @@ public class ArenaMatchQueue implements ArenaListener{
 			notifyIfNeeded();
 	}
 
-	public JoinResult addToGameQueue(final QueueObject queueObject, boolean checkStart) {
+    private JoinResult addToGameQueue(final QueueObject queueObject, boolean checkStart) {
 		return addToQueue(queueObject,checkStart);
 	}
 
@@ -269,7 +269,7 @@ public class ArenaMatchQueue implements ArenaListener{
 	public void setForcestartTime(Arena arena, MatchParams p, Long forceStartTime) {
 		removeTimer(arena,p);
 		TeamCollection tq = getTeamQ(p, arena);
-		new AnnounceInterval(p, this, tq, arena, forceStartTime);
+        new AnnounceInterval(p, this, tq, arena, forceStartTime);
 	}
 
 	/**
@@ -1047,8 +1047,7 @@ public class ArenaMatchQueue implements ArenaListener{
 		JoinOptions jo = tqo.getJoinOptions();
 		/// can they join a specific arena queue
 		if (jo.hasArena() && hasArenaQueue(jo.getArena())){
-			return addToGameQueue(tqo, shouldStart);
-		}
+			return addToGameQueue(tqo, shouldStart);}
 
 		/// Can they start a new game
 		if (jo.hasArena() && tqo.hasStartPerms()){
@@ -1056,8 +1055,8 @@ public class ArenaMatchQueue implements ArenaListener{
 
 		/// Can they join the game queue
 		if (hasGameQueue(tqo.getMatchParams())){
-			return addToGameQueue(tqo, shouldStart);
-		}
+			return addToGameQueue(tqo, shouldStart);}
+
 		return new JoinResult();
 	}
 

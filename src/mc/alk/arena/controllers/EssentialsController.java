@@ -14,7 +14,7 @@ public class EssentialsController {
 		return hasEssentials;
 	}
 
-	public static boolean enableEssentials(Plugin plugin) {
+	public static boolean setPlugin(Plugin plugin) {
 		hasEssentials = EssentialsUtil.enableEssentials(plugin);
 		return hasEssentials;
 	}

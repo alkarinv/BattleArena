@@ -1,10 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
@@ -17,10 +12,14 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 public class ParamAlterController {
 	MatchParams params;
@@ -43,7 +42,7 @@ public class ParamAlterController {
 		GameOption go = null;
 		TransitionOption to = null;
 		Object value = null;
-		try{
+        try{
 			if (stage != null){
 				if (args.length < 3){
 					return sendMessage(sender, help2);}
@@ -88,10 +87,11 @@ public class ParamAlterController {
 		if (to != null){
 			ParamController.setTransitionOptions(params, params.getTransitionOptions());
 		}
-		if (value != null)
-			sendMessage(sender, "&2Game options &6"+opString+"&2 changed to &6"+value);
-		else
+		if (value != null){
+            sendMessage(sender, "&2Game options &6"+opString+"&2 changed to &6"+value );
+        } else {
 			sendMessage(sender, "&2Game options &6"+opString+"&2 changed");
+        }
 		if (go != null){
 			switch(go){
 			case COMMAND:
@@ -109,7 +109,7 @@ public class ParamAlterController {
 		switch(option){
 		case NLIVES: params.setNLives((Integer)value); break;
 		case NTEAMS: params.setNTeams((MinMax) value);  break;
-		case FORCESTARTTIME: params.setForceStartTime(new Long((Integer)value));  break;
+		case FORCESTARTTIME: params.setForceStartTime((long) (Integer) value);  break;
 		case TEAMSIZE: params.setTeamSizes((MinMax) value);  break;
 		case PREFIX: params.setPrefix((String)value); break;
 		case COMMAND: params.setCommand((String)value); break;
@@ -118,12 +118,12 @@ public class ParamAlterController {
 		case CANCELIFNOTENOUGHPLAYERS: params.setCancelIfNotEnoughPlayers((Boolean)value); break;
 		case ALLOWEDTEAMSIZEDIFFERENCE: params.setAllowedTeamSizeDifference((Integer)value); break;
 		case PRESTARTTIME:
-			iv = ((Integer)value).intValue();
+			iv = (Integer) value;
 			checkGreater(iv,0, true);
 			params.setSecondsTillMatch(iv);
 			break;
 		case VICTORYTIME:
-			iv = ((Integer)value).intValue();
+			iv = (Integer) value;
 			checkGreater(iv,1, true);
 			params.setSecondsToLoot(iv); break;
 		case VICTORYCONDITION:
@@ -231,8 +231,7 @@ public class ParamAlterController {
 	}
 
 	private boolean deleteTransitionOption(MatchState state, String key) throws Exception{
-		TransitionOption to = null;
-		to = TransitionOption.fromString(key);
+		TransitionOption to = TransitionOption.fromString(key);
 		MatchTransitions tops = params.getTransitionOptions();
 		return tops.removeTransitionOption(state,to);
 	}

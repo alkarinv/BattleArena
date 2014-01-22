@@ -25,7 +25,8 @@ public class EventOpenOptions {
 		FORCEJOIN,
 		OPEN,AUTO,
 		TIME, INTERVAL,
-		ARENA;
+		ARENA,
+        COPYPARAMS;
 
 		public static String getValidList() {
 			StringBuilder sb = new StringBuilder();
@@ -63,7 +64,15 @@ public class EventOpenOptions {
 	public static EventOpenOptions parseOptions(String[] args, Set<Integer> ignoreArgs, MatchParams params)
 			throws InvalidOptionException{
 		EventOpenOptions eoo = new EventOpenOptions();
-		eoo.params = new MatchParams(params.getType());
+        MatchParams mp = null;
+        for (String op: args){
+            if (op.equalsIgnoreCase("COPYPARAMS")) {
+                mp = new MatchParams(params);
+                mp.flatten();
+                break;
+            }
+        }
+		eoo.params = mp != null ? new MatchParams(mp) : new MatchParams(params.getType());
 		Map<EventOpenOption,Object> ops = eoo.options;
 
 		eoo.params.setParent(params);

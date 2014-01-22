@@ -26,7 +26,7 @@ public class HeroesController {
 		try{HeroesUtil.setHeroClass(player, className);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
-	public static void setHeroes(Plugin plugin){
+	public static void setPlugin(Plugin plugin){
 		HeroesUtil.setHeroes(plugin);
 		hasHeroes = true;
 		HeroesListener.enable();

@@ -9,7 +9,7 @@ public class FactionsController {
 		return hasFactions;
 	}
 
-	public static boolean enableFactions(boolean enable) {
+	public static boolean setPlugin(boolean enable) {
 		hasFactions = FactionsListener.enable();
 		return hasFactions;
 	}

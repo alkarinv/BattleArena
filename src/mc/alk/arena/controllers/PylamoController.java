@@ -12,7 +12,7 @@ public class PylamoController {
 		return enabled;
 	}
 
-	public static void setPylamo(Plugin plugin) {
+	public static void setPlugin(Plugin plugin) {
 		PylamoUtil.setPylamo(plugin);
 		enabled = true;
 	}

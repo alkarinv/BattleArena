@@ -12,6 +12,7 @@ import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.BAEventController;
+import mc.alk.arena.controllers.CombatTagInterface;
 import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EssentialsController;
@@ -1414,7 +1415,7 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     private boolean _canJoin(ArenaPlayer player, boolean showMessages, boolean teammate) {
-        // / Check for any competition
+        /// Check for any competition
         if (player.getCompetition() != null) {
             if (showMessages)
                 sendMessage(player, "&cYou are still in the "
@@ -1422,28 +1423,30 @@ public class BAExecutor extends CustomCommandExecutor {
                         + ". &6/arena leave");
             return false;
         }
-        // / Inside the queue waiting for a match?
+        /// Inside the queue waiting for a match?
         if (InArenaListener.inQueue(player.getName())){
             sendMessage(player, "&eYou are in the queue.");
             if (showMessages)
                 sendMessage(player, "&eType &6/arena leave");
             return false;
         }
-        // / Inside MobArena?
+        /// Inside MobArena?
         if (MobArenaInterface.hasMobArena()
                 && MobArenaInterface.insideMobArena(player)) {
             if (showMessages)
                 sendMessage(player, "&cYou need to finish with MobArena first!");
             return false;
         }
-        // / Check for Heroes player in combat
-        if (HeroesController.enabled()
-                && HeroesController.isInCombat(player.getPlayer())) {
+
+        /// Check for player in combat
+        if (CombatTagInterface.isTagged(player.getPlayer()) ||
+                (HeroesController.enabled() && HeroesController.isInCombat(player.getPlayer()))) {
             if (showMessages)
                 sendMessage(player, "&cYou are in combat!");
             return false;
         }
-        // / Inside an Event?
+        
+        /// Inside an Event?
         Event ae = insideEvent(player);
         if (ae != null) {
             if (showMessages)

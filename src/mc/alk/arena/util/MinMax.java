@@ -2,10 +2,6 @@ package mc.alk.arena.util;
 
 import mc.alk.arena.objects.ArenaSize;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 public class MinMax {
     public int min;
 
@@ -32,9 +28,8 @@ public class MinMax {
 
     public static MinMax valueOf(String s) throws NumberFormatException{
         if (s == null) throw new NumberFormatException("Number can not be null");
-        if (s.contains("+")){
-            s = s.replaceAll("\\+", "");
-            Integer i = Integer.valueOf(s);
+        if (s.indexOf('+')!=-1){
+            Integer i = Integer.valueOf(s.substring(0,s.indexOf('+')));
             return new MinMax(i,ArenaSize.MAX);
         }
         if (s.contains("-")){
@@ -44,7 +39,7 @@ public class MinMax {
             return new MinMax(i,j);
         }
 
-        Integer i = null;
+        Integer i;
         if (s.contains("v")){
             i = Integer.valueOf(s.split("v")[0]);
         } else {

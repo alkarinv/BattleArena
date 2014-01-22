@@ -10,7 +10,7 @@ public class MobArenaInterface {
 	static MobArenaInterface mai = null;
 	MobArenaUtil ma = null;
 
-	public static void init(Plugin plugin){
+	public static void setPlugin(Plugin plugin){
 		try {
 			mai = new MobArenaInterface();
 			mai.ma = new MobArenaUtil(plugin);

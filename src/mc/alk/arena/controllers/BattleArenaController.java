@@ -203,7 +203,10 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
         if( teamSize == null){
             mp.setTeamSizes(new MinMax(1));}
         mp.setParent(parent);
-        amq.setForcestartTime(arena, mp, mp.getForceStartTime());
+        if (mp.getForceStartTime() > 0)
+            amq.setForcestartTime(arena, mp, mp.getForceStartTime());
+        else
+            amq.reserveArena(arena);
 
         arena.setParams(mp);
         Match m = createMatch(arena,eoo);
@@ -367,6 +370,12 @@ public class BattleArenaController implements Runnable, /*TeamHandler, */ ArenaL
         /// Add a default arena if they havent specified
         if (!tqo.getJoinOptions().hasArena()) {
             tqo.getJoinOptions().setArena(getNextArena(tqo.getMatchParams().getType()));
+        }
+
+        /// We don't want them to join a queue if they can't fit
+        /// Here or inside AMQ?? // TODO kpvp with limited teams shouldn't join if it's full
+        if (tqo.getJoinOptions().getArena() != null &&
+                tqo.getJoinOptions().getArena().getParams().hasOptionAt(MatchState.DEFAULTS,TransitionOption.ALWAYSOPEN)){
         }
         jr = amq.join(tqo, shouldStart(tqo.getMatchParams()));
 

@@ -8,7 +8,7 @@ public class DisguiseInterface {
 
 	private static boolean enabled = false;
 
-	public static void setDisguiseCraft(Plugin plugin){
+	public static void setPlugin(Plugin plugin){
 		DisguiseUtil.setDisguiseCraft(plugin);
 		enabled = true;
 	}
