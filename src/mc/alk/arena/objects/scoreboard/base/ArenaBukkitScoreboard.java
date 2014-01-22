@@ -1,9 +1,5 @@
 package mc.alk.arena.objects.scoreboard.base;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -17,9 +13,12 @@ import mc.alk.scoreboardapi.api.SObjective;
 import mc.alk.scoreboardapi.api.STeam;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
 import mc.alk.scoreboardapi.scoreboard.bukkit.BScoreboard;
-
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class ArenaBukkitScoreboard extends ArenaScoreboard{
@@ -103,6 +102,7 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
 		team.addPlayer(player.getPlayer());
 		bboard.setScoreboard(player.getPlayer());
 	}
+
 	private void removeFromTeam(STeam team, ArenaPlayer player){
 		team.removePlayer(player.getPlayer());
 		bboard.removeScoreboard(player.getPlayer());
@@ -120,7 +120,7 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
 	public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {
 		STeam t = teams.get(team);
 		if (t == null)
-			throw new IllegalStateException("Removing to a team that doesn't exist");
+			throw new IllegalStateException("Removing from a team that doesn't exist");
 		removeFromTeam(t,player);
 	}
 

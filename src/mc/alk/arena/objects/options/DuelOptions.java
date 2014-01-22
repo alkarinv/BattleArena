@@ -1,10 +1,5 @@
 package mc.alk.arena.objects.options;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
@@ -17,8 +12,12 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
-
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 public class DuelOptions {
 	public static enum DuelOption{
@@ -195,7 +194,7 @@ public class DuelOptions {
 
 	public boolean matches(ArenaPlayer player, MatchParams mp) {
 		if (mp.getTransitionOptions().hasOptionAt(MatchState.PREREQS, TransitionOption.WITHINDISTANCE)){
-			Integer distance = mp.getTransitionOptions().getOptions(MatchState.PREREQS).getWithinDistance();
+			Double distance = mp.getTransitionOptions().getOptions(MatchState.PREREQS).getWithinDistance();
 			if (options.containsKey(DuelOption.ARENA) ){
 				Arena arena = (Arena) options.get(DuelOption.ARENA);
 				return arena.withinDistance(player.getLocation(), distance);

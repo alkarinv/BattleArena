@@ -1445,7 +1445,7 @@ public class BAExecutor extends CustomCommandExecutor {
                 sendMessage(player, "&cYou are in combat!");
             return false;
         }
-        
+
         /// Inside an Event?
         Event ae = insideEvent(player);
         if (ae != null) {

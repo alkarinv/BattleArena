@@ -1039,8 +1039,13 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         player.removeCompetition(this);
         player.reset(); /// reset the players
         ArenaTeam t = getTeam(player);
-
-        scoreboard.setDead(t,player);
+        try {
+            scoreboard.setDead(t,player);
+        } catch (Exception e){
+            /// something bad happened, but lets not crash b/c of it
+            /// Possibly scoreboard set wrong? player removed after team?
+            Log.printStackTrace(e);
+        }
         t.killMember(player);
         if (t.isDead()) {
             originalTeams.remove(t);

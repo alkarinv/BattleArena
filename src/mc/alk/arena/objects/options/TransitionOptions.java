@@ -117,7 +117,7 @@ public class TransitionOptions {
 	public Integer getHunger() {return getInt(TransitionOption.HUNGER);}
 	public Integer getMagic() { return getInt(TransitionOption.MAGIC);}
 	public Integer getMagicP() { return getInt(TransitionOption.MAGICP);}
-	public Integer getWithinDistance() {return getInt(TransitionOption.WITHINDISTANCE);}
+	public Double getWithinDistance() {return getDouble(TransitionOption.WITHINDISTANCE);}
 	public GameMode getGameMode() {return getGameMode(TransitionOption.GAMEMODE);}
 	public List<CommandLineString> getDoCommands() {
 		final Object o = options.get(TransitionOption.DOCOMMANDS);
