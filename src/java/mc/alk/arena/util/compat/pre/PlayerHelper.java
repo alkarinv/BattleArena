@@ -1,11 +1,8 @@
 package mc.alk.arena.util.compat.pre;
 
-import java.lang.reflect.Method;
-
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.compat.IPlayerHelper;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -13,6 +10,9 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 
+import java.lang.reflect.Method;
+
+@SuppressWarnings({"UnnecessaryBoxing", "BoxingBoxedValue"})
 public class PlayerHelper implements IPlayerHelper{
 	Method getHealth;
 	Method setHealth;
@@ -21,10 +21,10 @@ public class PlayerHelper implements IPlayerHelper{
 	final Object blankArgs[] = {};
 	public PlayerHelper(){
 		try {
-			setHealth = Player.class.getMethod("setHealth", new Class<?>[]{int.class});
-			getHealth = Player.class.getMethod("getHealth", new Class<?>[]{});
-			getMaxHealth = Player.class.getMethod("getMaxHealth", new Class<?>[]{});
-			getAmount = EntityRegainHealthEvent.class.getMethod("getAmount", new Class<?>[]{});
+			setHealth = Player.class.getMethod("setHealth", int.class);
+			getHealth = Player.class.getMethod("getHealth");
+			getMaxHealth = Player.class.getMethod("getMaxHealth");
+			getAmount = EntityRegainHealthEvent.class.getMethod("getAmount");
 		} catch (Exception e) {
 			Log.printStackTrace(e);
 		}
@@ -52,7 +52,7 @@ public class PlayerHelper implements IPlayerHelper{
 			Bukkit.getPluginManager().callEvent(event);
 			if (!event.isCancelled()){
 				final Integer regen = Math.min(oldHealth + getAmount(event),(int)getMaxHealth(player));
-				setHealth(player, regen != null ? regen : new Integer((int) (health-0)));
+				setHealth(player, regen);
 			}
 		}
 	}
@@ -66,6 +66,7 @@ public class PlayerHelper implements IPlayerHelper{
 			return 20;
 		}
 	}
+
 	@Override
 	public double getMaxHealth(Player player) {
 		try {
@@ -84,6 +85,7 @@ public class PlayerHelper implements IPlayerHelper{
 			return null;
 		}
 	}
+
 	public void setHealth(Player player, Integer health){
 		try {
 			setHealth.invoke(player, health);

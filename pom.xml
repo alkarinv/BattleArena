@@ -153,7 +153,7 @@
         </extensions>
         <defaultGoal>install</defaultGoal>
         <!-- Where our source directory is -->
-        <sourceDirectory>${basedir}/src/mc</sourceDirectory>
+        <sourceDirectory>${basedir}/src/java</sourceDirectory>
         <!-- Include all the resources we need -->
         <resources>
             <resource>
@@ -180,7 +180,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>1.4</version>
+                <version>1.6</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

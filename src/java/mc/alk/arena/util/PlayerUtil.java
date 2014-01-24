@@ -20,7 +20,7 @@ public class PlayerUtil {
 	static {
 		Class<?>[] args = {};
 		try {
-			Method m = Player.class.getMethod("getHealth", new Class<?>[]{});
+			Method m = Player.class.getMethod("getHealth");
 			Version version = Util.getCraftBukkitVersion();
 			if (m.getReturnType() == double.class || version.compareTo("v1_6_1") >= 0){
 				final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_6_1.PlayerHelper");

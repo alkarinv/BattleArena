@@ -12,7 +12,10 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.DmgDeathUtil;
-
+import mc.alk.arena.util.Log;
+import mc.alk.arena.util.Util;
+import mc.alk.arena.util.compat.IEventHelper;
+import mc.alk.plugin.updater.v1r2.Version;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -22,8 +25,25 @@ import org.bukkit.event.entity.EntityDamageEvent;
 public class DamageListener implements ArenaListener{
 	MatchTransitions transitionOptions;
 	PlayerHolder match;
+    static IEventHelper handler;
 
-	public DamageListener(PlayerHolder match){
+    static {
+        Class<?>[] args = {};
+        try {
+            Version version = Util.getCraftBukkitVersion();
+            if (version.compareTo("v1_6_1") >= 0){
+                final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_6_1.EventHelper");
+                handler = (IEventHelper) clazz.getConstructor(args).newInstance((Object[])args);
+            } else {
+                final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.pre.EventHelper");
+                handler = (IEventHelper) clazz.getConstructor(args).newInstance((Object[])args);
+            }
+        } catch (Exception e) {
+            Log.printStackTrace(e);
+        }
+    }
+
+    public DamageListener(PlayerHolder match){
 		this.transitionOptions = match.getParams().getTransitionOptions();
 		this.match = match;
 	}
@@ -51,7 +71,7 @@ public class DamageListener implements ArenaListener{
 		if (pvp == PVPState.INVINCIBLE){
 			/// all damage is cancelled
 			target.setFireTicks(0);
-			event.setDamage((int)0);
+            handler.setDamage(event,0);
 			event.setCancelled(true);
 			return;
 		}
@@ -78,7 +98,7 @@ public class DamageListener implements ArenaListener{
 		case OFF:
 			damager = DmgDeathUtil.getPlayerCause(damagerEntity);
 			if (damager != null){ /// damage done from a player
-				event.setDamage(0);
+                handler.setDamage(event,0);
 				event.setCancelled(true);
 			}
 			break;
