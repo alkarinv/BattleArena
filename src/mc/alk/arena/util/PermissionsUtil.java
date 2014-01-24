@@ -50,11 +50,11 @@ public class PermissionsUtil {
 	}
 
 	public static boolean giveAdminPerms(Player player, Boolean enable) {
-		return !hasVaultPerms ? false : VaultPermUtil.giveAdminPerms(player,enable);
+		return hasVaultPerms && VaultPermUtil.giveAdminPerms(player, enable);
 	}
 
 	public static boolean giveWGPerms(Player player, Boolean enable) {
-		return !hasVaultPerms ? false : VaultPermUtil.giveWorldGuardPerms(player,enable);
+		return hasVaultPerms && VaultPermUtil.giveWorldGuardPerms(player, enable);
 	}
 
 	public static boolean hasTeamPerm(ArenaPlayer player, MatchParams mp, Integer teamIndex) {

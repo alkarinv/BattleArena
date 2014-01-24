@@ -51,7 +51,7 @@ public class DamageListener implements ArenaListener{
 		if (pvp == PVPState.INVINCIBLE){
 			/// all damage is cancelled
 			target.setFireTicks(0);
-			event.setDamage(0);
+			event.setDamage((int)0);
 			event.setCancelled(true);
 			return;
 		}
@@ -59,7 +59,7 @@ public class DamageListener implements ArenaListener{
 			return;}
 
 		final Entity damagerEntity = ((EntityDamageByEntityEvent)event).getDamager();
-		ArenaPlayer damager=null;
+		ArenaPlayer damager;
 		switch(pvp){
 		case ON:
 			ArenaTeam targetTeam = match.getTeam(target);

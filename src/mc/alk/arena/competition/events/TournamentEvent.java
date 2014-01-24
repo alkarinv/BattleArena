@@ -410,7 +410,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		int nrounds = getNRounds(size);
 		int idealteam = (int) Math.pow(eventParams.getMinTeams(), nrounds);
 		if (nrounds > 1 && size % idealteam == 0){
-			Bukkit.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&6" + size +" "+MessageUtil.getTeamsOrPlayers(teams.size())+
+			MessageUtil.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&6" + size +" "+MessageUtil.getTeamsOrPlayers(teams.size())+
 					"&e have joined, Current tournament will have &6" + nrounds+"&e rounds"));
 		}
 	}

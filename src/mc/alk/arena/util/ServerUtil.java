@@ -1,17 +1,16 @@
 package mc.alk.arena.util;
 
-import java.io.File;
-import java.util.Set;
-
 import mc.alk.arena.Defaults;
 import mc.alk.plugin.updater.v1r2.Version;
 import mc.alk.virtualPlayer.VirtualPlayers;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+
+import java.io.File;
+import java.util.Set;
 
 
 public class ServerUtil {
@@ -19,9 +18,9 @@ public class ServerUtil {
 	public static Player findPlayerExact(String name) {
 		if (name == null)
 			return null;
-		Player lastPlayer = Bukkit.getPlayerExact(name);
-		if (lastPlayer != null)
-			return lastPlayer;
+		Player player = Bukkit.getPlayerExact(name);
+		if (player != null)
+			return player;
 		if (Defaults.DEBUG_VIRTUAL){return VirtualPlayers.getPlayer(name);}
 		return null;
 	}
@@ -43,8 +42,7 @@ public class ServerUtil {
 				foundPlayer = player;
 				break;
 			}
-
-			if (playerName.toLowerCase().indexOf(name.toLowerCase()) != -1) {
+			if (playerName.toLowerCase().indexOf(name.toLowerCase(),0) != -1) {
 				if (foundPlayer != null) {
 					return null;}
 
@@ -92,7 +90,7 @@ public class ServerUtil {
 					break;
 				}
 
-				if (playerName.toLowerCase().indexOf(name.toLowerCase()) != -1) { /// many names match the one given
+				if (playerName.toLowerCase().indexOf(name.toLowerCase(),0) != -1) { /// many names match the one given
 					if (lastPlayer != null) {
 						lastPlayer = null;
 						break;

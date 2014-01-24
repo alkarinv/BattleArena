@@ -2,6 +2,7 @@ package mc.alk.arena.util;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -136,4 +137,8 @@ public class MessageUtil {
 		}
 		return sb.toString();
 	}
+
+    public static void broadcastMessage(String message) {
+        Bukkit.broadcastMessage(message);
+    }
 }

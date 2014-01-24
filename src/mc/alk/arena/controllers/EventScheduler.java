@@ -104,7 +104,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 			/// Wait x sec then start the next event
 			Scheduler.scheduleAsynchronousTask(this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
-				Bukkit.getServer().broadcastMessage(
+                MessageUtil.broadcastMessage(
 						MessageUtil.colorChat(
 								ChatColor.YELLOW+"Next event will start in "+
 										TimeUtil.convertSecondsToString(Defaults.TIME_BETWEEN_SCHEDULED_EVENTS)));}
@@ -121,7 +121,7 @@ public class EventScheduler implements Runnable, ArenaListener{
 			/// Wait x sec then start the next event
             Scheduler.scheduleAsynchronousTask(this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
-				Bukkit.getServer().broadcastMessage(
+                MessageUtil.broadcastMessage(
 						MessageUtil.colorChat(
 								ChatColor.YELLOW+"Next event will start in "+
 										TimeUtil.convertSecondsToString(Defaults.TIME_BETWEEN_SCHEDULED_EVENTS)));}

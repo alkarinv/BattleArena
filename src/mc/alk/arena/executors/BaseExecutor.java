@@ -2,17 +2,16 @@ package mc.alk.arena.executors;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.ServerUtil;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -435,12 +434,14 @@ public abstract class BaseExecutor implements ArenaExecutor{
         return p;
     }
 
+
     private Player verifyPlayer(String name) throws IllegalArgumentException {
         Player p = findPlayer(name);
         if (p == null || !p.isOnline())
             throw new IllegalArgumentException(name+" is not online ");
         return p;
     }
+
 
     private Integer verifyInteger(Object object) throws IllegalArgumentException {
         try {
@@ -472,6 +473,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
 
 
     static final int LINES_PER_PAGE = 8;
+    @SuppressWarnings("UnnecessaryContinue")
     public void help(CommandSender sender, Command command, String[] args){
         Integer page = 1;
 
@@ -544,77 +546,22 @@ public abstract class BaseExecutor implements ArenaExecutor{
     }
 
     public static boolean sendMessage(CommandSender p, String message){
-        if (message ==null || message.isEmpty()) return true;
-        if (message.contains("\n"))
-            return sendMultilineMessage(p,message);
-        if (p instanceof Player){
-            if (((Player) p).isOnline())
-                p.sendMessage(colorChat(message));
-        } else {
-            p.sendMessage(colorChat(message));
-        }
-        return true;
+        return MessageUtil.sendMessage(p,message);
     }
 
     public static boolean sendMultilineMessage(CommandSender p, String message){
-        if (message ==null || message.isEmpty()) return true;
-        String[] msgs = message.split("\n");
-        for (String msg: msgs){
-            if (p instanceof Player){
-                if (((Player) p).isOnline())
-                    p.sendMessage(colorChat(msg));
-            } else {
-                p.sendMessage(colorChat(msg));
-            }
-        }
-        return true;
+        return MessageUtil.sendMultilineMessage(p, message);
     }
 
     public static String colorChat(String msg) {return msg.replace('&', (char) 167);}
 
-
-    public static Player findPlayer(String name) {
-        if (name == null)
-            return null;
-        Player foundPlayer = Bukkit.getPlayer(name);
-        if (foundPlayer != null)
-            return foundPlayer;
-
-        Player[] online = Bukkit.getOnlinePlayers();
-
-        for (Player player : online) {
-            String playerName = player.getName();
-
-            if (playerName.equalsIgnoreCase(name)) {
-                foundPlayer = player;
-                break;
-            }
-
-            if (playerName.toLowerCase().contains(name.toLowerCase())) {
-                if (foundPlayer != null) {
-                    return null;}
-
-                foundPlayer = player;
-            }
-        }
-
-        return foundPlayer;
+    private OfflinePlayer findOfflinePlayer(String name) {
+        return ServerUtil.findOfflinePlayer(name);
     }
 
-    public static OfflinePlayer findOfflinePlayer(String name) {
-        OfflinePlayer p = findPlayer(name);
-        if (p != null){
-            return p;
-        } else{
-            /// Iterate over the worlds to see if a player.dat file exists
-            for (World w : Bukkit.getWorlds()){
-                File f = new File(w.getName()+"/players/"+name+".dat");
-                if (f.exists()){
-                    return Bukkit.getOfflinePlayer(name);
-                }
-            }
-            return null;
-        }
+    private Player findPlayer(String name) {
+        return ServerUtil.findPlayer(name);
     }
+
 }
 

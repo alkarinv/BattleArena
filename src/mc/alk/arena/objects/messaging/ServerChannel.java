@@ -4,8 +4,6 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 
-import org.bukkit.Bukkit;
-
 public class ServerChannel implements Channel {
 	ServerChannel(){}
 
@@ -14,7 +12,7 @@ public class ServerChannel implements Channel {
 		if (msg == null || msg.isEmpty())
 			return;
 		try {
-			Bukkit.getServer().broadcastMessage(MessageUtil.colorChat(msg));
+            MessageUtil.broadcastMessage(MessageUtil.colorChat(msg));
 		} catch (Throwable e){
 			/// getting this a lot of concurrency and null pointer errors from bukkit when stress testing...
 			/// so ignore errors from bukkit

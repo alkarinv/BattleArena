@@ -1,6 +1,5 @@
 package mc.alk.arena.util;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -15,7 +14,7 @@ public class NotifierUtil {
         if (listeners.get(type)== null)
             return;
 		for (String name: listeners.get(type)){
-			Player p = Bukkit.getPlayerExact(name);
+			Player p = ServerUtil.findPlayerExact(name);
 			if (p== null || !p.isOnline())
 				continue;
 			MessageUtil.sendMessage(p, msg);
@@ -31,7 +30,7 @@ public class NotifierUtil {
 		}
 		String msg = sb.toString();
         for (String name: listeners.get(type)){
-			Player p = Bukkit.getPlayerExact(name);
+			Player p = ServerUtil.findPlayerExact(name);
 			if (p== null || !p.isOnline())
 				continue;
 			MessageUtil.sendMessage(p, msg);

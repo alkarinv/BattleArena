@@ -1,8 +1,5 @@
 package mc.alk.arena.objects;
 
-import java.util.List;
-import java.util.Stack;
-
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.controllers.StatController;
@@ -14,12 +11,14 @@ import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
-
-import org.bukkit.Bukkit;
+import mc.alk.arena.util.ServerUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.PlayerInventory;
+
+import java.util.List;
+import java.util.Stack;
 
 
 public class ArenaPlayer {
@@ -259,7 +258,7 @@ public class ArenaPlayer {
 	}
 
 	public Player regetPlayer() {
-		return Bukkit.getPlayerExact(this.getName());
+		return ServerUtil.findPlayerExact(this.getName());
 	}
 
 }

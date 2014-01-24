@@ -1,14 +1,13 @@
 package mc.alk.arena.controllers;
 
-import java.lang.reflect.Field;
-
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.Util;
 import mc.alk.plugin.updater.v1r2.Version;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
+
+import java.lang.reflect.Field;
 
 public class CommandController {
 
@@ -16,7 +15,7 @@ public class CommandController {
 		Version version = Util.getCraftBukkitVersion();
 		final Class<?> clazz;
 		try {
-			if (version.getVersion().equalsIgnoreCase("craftbukkit")){
+			if (version.compareTo("0") == 0 || version.getVersion().equalsIgnoreCase("craftbukkit")){
 				clazz = Class.forName("org.bukkit.craftbukkit.CraftServer");
 			} else{
 				clazz = Class.forName("org.bukkit.craftbukkit." + version.getVersion() + ".CraftServer");

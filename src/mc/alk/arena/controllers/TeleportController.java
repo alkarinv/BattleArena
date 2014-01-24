@@ -162,7 +162,7 @@ public class TeleportController implements Listener{
 		List<Player> res = new ArrayList<Player>();
 		final int d2 = distance * distance;
 		final UUID uid = player.getWorld().getUID();
-		for (Player p : Bukkit.getOnlinePlayers()) {
+		for (Player p : ServerUtil.getOnlinePlayers()) {
 			try{
 				if (p.getWorld().getUID() == uid &&
 						p != player && p.getLocation().distanceSquared(player.getLocation()) <= d2) {

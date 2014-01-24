@@ -1,19 +1,18 @@
 package mc.alk.arena.util;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.EssentialsController;
 import mc.alk.arena.controllers.HeroesController;
 import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.util.compat.IPlayerHelper;
 import mc.alk.plugin.updater.v1r2.Version;
-
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.lang.reflect.Method;
+import java.util.List;
 
 public class PlayerUtil {
 	static IPlayerHelper handler = null;
@@ -91,7 +90,7 @@ public class PlayerUtil {
 			try{
 				CommandSender cs = cls.isConsoleSender() ? Bukkit.getConsoleSender() : p;
 				if (Defaults.DEBUG_TRANSITIONS) {Log.info("BattleArena doing command '"+cls.getCommand(name)+"' as "+cs.getName());}
-				doCommand(p,cls.getCommand(name));
+				doCommand(cs,cls.getCommand(name));
 			} catch (Exception e){
 				Log.err("[BattleArena] Error executing command as console or player");
 				Log.printStackTrace(e);

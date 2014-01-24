@@ -1,23 +1,22 @@
 package mc.alk.arena.listeners.competition;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
+import com.herocraftonline.heroes.api.events.ExperienceChangeEvent;
+import com.herocraftonline.heroes.api.events.SkillUseEvent;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
 import mc.alk.arena.util.HeroesUtil;
 import mc.alk.arena.util.MessageUtil;
-
+import mc.alk.arena.util.ServerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import com.herocraftonline.heroes.api.events.ExperienceChangeEvent;
-import com.herocraftonline.heroes.api.events.SkillUseEvent;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public enum HeroesListener implements Listener {
 	INSTANCE;
@@ -56,7 +55,7 @@ public enum HeroesListener implements Listener {
 		if (!InArenaListener.inArena(event.getPlayer().getName())){
 			return;}
 		if (event.getSkill().getName().equals("Revive")){
-			Player p = event.getArgs().length > 0 ? Bukkit.getPlayer(event.getArgs()[0]) : null;
+			Player p = event.getArgs().length > 0 ? ServerUtil.findPlayer(event.getArgs()[0]) : null;
 			if (p != null && !InArenaListener.inArena(p.getName())){
 				MessageUtil.sendMessage(event.getPlayer(), "&cYou can't revive a player who is not in the arena!");
 				event.setCancelled(true);
