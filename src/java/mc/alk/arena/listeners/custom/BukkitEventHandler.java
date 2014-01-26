@@ -36,8 +36,9 @@ public class BukkitEventHandler {
 		} else {
 			ael = new ArenaEventListener(bukkitEvent,aem.getBukkitPriority(), aem.getPlayerMethod());
 		}
-		if (Defaults.DEBUG_EVENTS) Log.info("Registering BukkitEventListener for type " + bukkitEvent +" pm="+aem.getPlayerMethod());
-	}
+		if (Defaults.DEBUG_EVENTS) Log.info("Registering BukkitEventListener for type &6" +
+                bukkitEvent.getSimpleName() + " &fpm=" + (aem.getPlayerMethod() == null ? "null" : aem.getPlayerMethod().getName()));
+    }
 
 	/**
 	 * Does this event even have any listeners

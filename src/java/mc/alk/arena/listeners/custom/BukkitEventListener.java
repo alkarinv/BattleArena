@@ -2,6 +2,7 @@ package mc.alk.arena.listeners.custom;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.util.Log;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
@@ -33,7 +34,7 @@ public abstract class BukkitEventListener implements Listener  {
 	static boolean useTimings = false;
 
 	public BukkitEventListener(final Class<? extends Event> bukkitEvent, EventPriority bukkitPriority) {
-		if (Defaults.DEBUG_EVENTS) System.out.println("Registering BAEventListener for type " + bukkitEvent.getSimpleName());
+		if (Defaults.DEBUG_EVENTS) Log.info("Registering BAEventListener for type &5" + bukkitEvent.getSimpleName());
 		this.bukkitEvent = bukkitEvent;
 		this.bukkitPriority = bukkitPriority;
 	}
@@ -66,7 +67,8 @@ public abstract class BukkitEventListener implements Listener  {
 	}
 
 	public void startListening(){
-		if (isListening() || Defaults.TESTSERVER)
+        //noinspection PointlessBooleanExpression
+        if (isListening() || Defaults.TESTSERVER)
 			return;
 
 		listening.set(true);
@@ -96,7 +98,7 @@ public abstract class BukkitEventListener implements Listener  {
 			} else {
 				executor = new EventExecutor() {
 					public void execute(final Listener listener, final Event event) throws EventException {
-						if (!isListening() ||
+                        if (!isListening() ||
 								(event.getClass() != bukkitEvent &&
 								!bukkitEvent.isAssignableFrom(event.getClass()))){
 							return;}

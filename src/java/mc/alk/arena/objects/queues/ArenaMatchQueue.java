@@ -952,8 +952,6 @@ public class ArenaMatchQueue implements ArenaListener{
 	public Collection<ArenaPlayer> getPlayersInAllQueues() {
 		Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
 		synchronized(tqs){
-
-
 			for (TeamQueue tq: tqs.values()){
 				players.addAll(tq.getArenaPlayers());}
 		}

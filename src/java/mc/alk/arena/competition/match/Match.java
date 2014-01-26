@@ -1351,9 +1351,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 	public Map<String,Location> getOldLocations() {return oldlocs;}
 	public int indexOf(ArenaTeam t){return teams.indexOf(t);}
 
-	public boolean isHandled(ArenaPlayer player){
-		return inMatch.contains(player.getName());
-	}
+	public boolean isHandled(ArenaPlayer player) {
+        GameManager gm = GameManager.getGameManager(params);
+        boolean b = gm.isHandled(player);
+        return inMatch.contains(player.getName()) || b;
+    }
 
 	@Deprecated
     /**

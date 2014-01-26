@@ -206,10 +206,10 @@ public class MethodController {
             bukkitListeners.put(mem.getBukkitPriority(), gels);
         }
         BukkitEventHandler gel = gels.get(event);
-        if (Defaults.DEBUG_EVENTS) System.out.println("***************************** checking for " + event);
+        if (Defaults.DEBUG_EVENTS) System.out.println("***************************** checking for " + event.getSimpleName());
 
         if (gel == null){
-            if (Defaults.DEBUG_EVENTS) System.out.println("***************************** making new gel for type " + event);
+            if (Defaults.DEBUG_EVENTS) System.out.println("***************************** making new gel for type " + event.getSimpleName());
             gel = new BukkitEventHandler(event,mem);
             gels.put(event, gel);
         }
@@ -531,14 +531,13 @@ public class MethodController {
 
     public static boolean showAllListeners(CommandSender sender, String limitToPlayer) {
         Log.info("&2# &e-!! controller=&5"+controllers.size()+"&e : &5" + controllerCount+"&e !!- &2#");
-        for (MethodController mc: controllers){
-            StringBuilder sb = new StringBuilder();
-            for (ArenaListener al: mc.listeners){
-                sb.append(al.getClass().getSimpleName()).append(", ");
-            }
-            MessageUtil.sendMessage(sender, "&c###### &e----!! controller=&5" + mc.owner + " : " + mc.hashCode() + "&e !!---- &c######  listeners=" + sb.toString());
-
-        }
+//        for (MethodController mc: controllers){
+//            StringBuilder sb = new StringBuilder();
+//            for (ArenaListener al: mc.listeners){
+//                sb.append(al.getClass().getSimpleName()).append(", ");
+//            }
+//            MessageUtil.sendMessage(sender, "&c###### &e----!! controller=&5" + mc.owner + " : " + mc.hashCode() + "&e !!---- &c######  listeners=" + sb.toString());
+//        }
 //		for (MethodController mc: controllers){
         EnumMap<org.bukkit.event.EventPriority, HashMap<Type, BukkitEventHandler>> gels = MethodController.getEventListeners();
 //			EnumMap<org.bukkit.event.EventPriority, HashMap<Type, BukkitEventHandler>> gels = mc.getEventListeners();
@@ -559,7 +558,8 @@ public class MethodController {
                     String str = MessageUtil.joinBukkitPlayers(bel.getSpecificPlayerListener().getPlayers(),", ");
                     String has = bel.hasListeners() ? "&2true" : "&cfalse";
                     if (!lists2.isEmpty())
-                        MessageUtil.sendMessage(sender, "---- Event &e" + bel.getSpecificPlayerListener().getEvent().getSimpleName() + "&e:" + has + "&e, players=" + str);
+                        MessageUtil.sendMessage(sender, "---- Event &e" +
+                                bel.getSpecificPlayerListener().getEvent().getSimpleName() + "&e:" + has + "&e, players=" + str);
                     for (String p : lists2.keySet()){
                         if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
                             continue;
@@ -576,7 +576,8 @@ public class MethodController {
                     String str = MessageUtil.joinBukkitPlayers(bel.getSpecificArenaPlayerListener().getPlayers(),", ");
                     String has = bel.hasListeners() ? "&2true" : "&cfalse";
                     if (!lists2.isEmpty())
-                        MessageUtil.sendMessage(sender, "---- ArenaPlayerEvent &e" + bel.getSpecificArenaPlayerListener().getEvent().getSimpleName() + "&e:" + has + "&e, players=" + str);
+                        MessageUtil.sendMessage(sender, "---- ArenaPlayerEvent &e" +
+                                bel.getSpecificArenaPlayerListener().getEvent().getSimpleName() + "&e:" + has + "&e, players=" + str);
                     for (String p : lists2.keySet()){
                         if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
                             continue;

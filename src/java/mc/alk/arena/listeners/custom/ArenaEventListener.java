@@ -1,5 +1,11 @@
 package mc.alk.arena.listeners.custom;
 
+import mc.alk.arena.Defaults;
+import mc.alk.arena.objects.arenas.ArenaListener;
+import mc.alk.arena.objects.events.EventPriority;
+import mc.alk.arena.util.Log;
+import org.bukkit.event.Event;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -9,13 +15,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-
-import mc.alk.arena.Defaults;
-import mc.alk.arena.objects.arenas.ArenaListener;
-import mc.alk.arena.objects.events.EventPriority;
-import mc.alk.arena.util.Log;
-
-import org.bukkit.event.Event;
 
 
 /**
@@ -39,12 +38,13 @@ public class ArenaEventListener extends BukkitEventListener{
 	public ArenaEventListener(final Class<? extends Event> bukkitEvent,
 			org.bukkit.event.EventPriority bukkitPriority, Method getPlayerMethod) {
 		super(bukkitEvent, bukkitPriority);
-		if (Defaults.DEBUG_EVENTS) Log.info("Registering GenericPlayerEventListener for type " + bukkitEvent +" pm="+getPlayerMethod);
+		if (Defaults.DEBUG_EVENTS) Log.info("Registering GenericPlayerEventListener for type " +
+                bukkitEvent.getSimpleName() +" pm="+(getPlayerMethod == null ? "null" : getPlayerMethod.getName()));
 	}
 
 	/**
 	 * Does this event even have any listeners
-	 * @return
+	 * @return true if there are listeners, false otherwise
 	 */
 	@Override
 	public boolean hasListeners(){
@@ -53,7 +53,7 @@ public class ArenaEventListener extends BukkitEventListener{
 
 	/**
 	 * Get the set of arena listeners
-	 * @return
+	 * @return map of listeners
 	 */
 	public EnumMap<EventPriority, Map<RListener,Integer>> getListeners(){
 		return listeners;
@@ -61,10 +61,7 @@ public class ArenaEventListener extends BukkitEventListener{
 
 	/**
 	 * Add a player listener to this bukkit event
-	 * @param rl
-	 * @param matchState
-	 * @param mem
-	 * @param players
+	 * @param rl RListener
 	 */
 	public void addListener(RListener rl) {
 		addMatchListener(rl);
@@ -72,10 +69,7 @@ public class ArenaEventListener extends BukkitEventListener{
 
 	/**
 	 * remove a player listener from this bukkit event
-	 * @param arenaListener
-	 * @param matchState
-	 * @param mem
-	 * @param players
+	 * @param rl RListener
 	 */
 	public synchronized void removeListener(RListener rl) {
 		if (Defaults.DEBUG_EVENTS) System.out.println("    removing listener listener="+rl);
@@ -90,13 +84,13 @@ public class ArenaEventListener extends BukkitEventListener{
 
 	/**
 	 * add an arena listener to this bukkit event
-	 * @param rl
-	 * @return
+	 * @param rl RListener
 	 */
-	public synchronized void addMatchListener(RListener rl) {
-//		if (!hasListeners()){
-//			startListening();}
-		Map<RListener,Integer> l = listeners.get(rl.getPriority());
+	private synchronized void addMatchListener(RListener rl) {
+        if (!isListening()){
+            startListening();}
+
+        Map<RListener,Integer> l = listeners.get(rl.getPriority());
 		if (l == null){
 			l = new TreeMap<RListener,Integer>(new Comparator<RListener>(){
 				@Override
@@ -120,25 +114,27 @@ public class ArenaEventListener extends BukkitEventListener{
 
 	/**
 	 * remove an arena listener to this bukkit event
-	 * @param spl
-	 * @return
+	 * @param listener RListener
+	 * @return whether listener was found and removed
 	 */
 	private boolean removeMatchListener(RListener listener) {
 		final Map<RListener,Integer> map = listeners.get(listener.getPriority());
 		if (map==null)
 			return false;
 		Integer count = map.get(listener);
-		if (count == null || count == 1){
+        boolean removed;
+        if (count == null || count == 1){
 			map.remove(listener);
 			handlers = null;
-//			if (!hasListeners()){
-//				stopListening();}
-			return true;
+			removed = true;
 		} else {
 			map.put(listener, count-1);
-			return false;
+            removed = false;
 		}
-	}
+        if (removed && !hasListeners() && isListening()){
+            stopListening();}
+        return removed;
+    }
 
 	private synchronized void bake() {
 		if (handlers != null) return;
@@ -150,7 +146,7 @@ public class ArenaEventListener extends BukkitEventListener{
 
 	/**
 	 * Bake code from Bukkit
-	 * @return
+	 * @return array of listeners
 	 */
 	public RListener[] getRegisteredListeners() {
 		RListener[] handlers;

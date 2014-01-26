@@ -83,7 +83,7 @@ public class Defaults {
 	public static final String SIGN_PREFIX = "*";
 
 	public static boolean ITEMS_IGNORE_STACKSIZE = true;
-	public static boolean ITEMS_UNSAFE_ENCHANTMENTS = false;
+	public static boolean ITEMS_UNSAFE_ENCHANTMENTS = true;
 
     /// DEBUG OPTIONS
 	public static final boolean DEBUG = false;

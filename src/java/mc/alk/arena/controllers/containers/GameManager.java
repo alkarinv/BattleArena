@@ -108,7 +108,7 @@ public class GameManager implements PlayerHolder{
 
 	@Override
 	public boolean isHandled(ArenaPlayer player) {
-		return false;
+		return handled.contains(player);
 	}
 
 	@Override
