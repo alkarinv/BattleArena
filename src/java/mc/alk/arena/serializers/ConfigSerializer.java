@@ -134,7 +134,8 @@ public class ConfigSerializer extends BaseConfig{
 
 		loadAnnouncementsOptions(cs, mp); /// Load announcement options
 
-		List<String> modules = loadModules(cs, mp); /// load modules
+        //noinspection UnusedAssignment
+        List<String> modules = loadModules(cs, mp); /// load modules
 
 		MatchTransitions tops = loadTransitionOptions(cs, mp, isArena); /// load transition options
 		mp.setTransitionOptions(tops);
@@ -154,9 +155,12 @@ public class ConfigSerializer extends BaseConfig{
             Log.err("Error loading Player Containers");
         }
 
-		String mods = modules.isEmpty() ? "" : " mods=" + StringUtils.join(modules,", ");
-		if (!isArena)
-			Log.info("["+plugin.getName()+"] Loaded "+mp.getName()+" params" +mods);
+        //noinspection PointlessBooleanExpression,ConstantConditions
+        if (!isArena && Defaults.DEBUG){
+            String mods = modules.isEmpty() ? "" : " mods=" + StringUtils.join(modules,", ");
+            Log.info("[" + plugin.getName() + "] Loaded " + mp.getName() + " params" + mods);
+        }
+
 		return mp;
 	}
 

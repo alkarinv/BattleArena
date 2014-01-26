@@ -1,9 +1,11 @@
 package mc.alk.arena.util.compat;
 
-import java.awt.Color;
-import java.util.List;
-
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
+
+import java.awt.*;
+import java.util.List;
 
 public interface IInventoryHelper {
 
@@ -23,4 +25,9 @@ public interface IInventoryHelper {
 
 	String getOwnerName(ItemStack itemStack);
 
+    String getCommonNameByEnchantment(Enchantment enchantment);
+
+    Enchantment getEnchantmentByCommonName(String itemName);
+
+    boolean isEnderChest(InventoryType type);
 }

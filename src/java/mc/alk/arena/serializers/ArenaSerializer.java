@@ -172,7 +172,7 @@ public class ArenaSerializer extends BaseConfig{
 		if (!loadedArenas.isEmpty()) {
 			Log.info(pname+"Loaded "+arenaType+" arenas: " + StringUtils.join(loadedArenas,", "));
 		} else {
-			Log.info(pname+"No arenas found for " + cs.getCurrentPath() +"  arenatype="+arenaType +"  cs="+cs.getName());
+			if (Defaults.DEBUG) Log.info(pname+"No arenas found for " + cs.getCurrentPath() +"  arenatype="+arenaType +"  cs="+cs.getName());
 		}
 		if (!brokenArenas.isEmpty()){
 			Log.info(pname+"Failed loading arenas: " + StringUtils.join(brokenArenas, ", ") + " arenatype="+arenaType +" cs="+cs.getName());

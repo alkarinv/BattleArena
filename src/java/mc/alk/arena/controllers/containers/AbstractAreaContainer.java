@@ -5,7 +5,10 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.TeamController;
+import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.BAEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeaveLobbyEvent;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.competition.InArenaListener;
@@ -16,6 +19,7 @@ import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
+import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
@@ -79,6 +83,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 		methodController = new MethodController("AAC " + name);
 		methodController.addAllEvents(this);
 		try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());}catch(Exception e){
+            //noinspection PointlessBooleanExpression,ConstantConditions
             if (!Defaults.TESTSERVER && !Defaults.TESTSERVER_DEBUG) Log.printStackTrace(e);
         }
 		this.name = name;
@@ -117,8 +122,38 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 		return true;
 	}
 
-	@EventHandler
-	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
+    /**
+     * Tekkit Servers don't get the @EventHandler methods (reason unknown) so have this method be
+     * redundant.  Possibly can now simplify to just the @ArenaEventHandler
+     * @param event ArenaPlayerLeaveEvent
+     */
+    @ArenaEventHandler
+    public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event) {
+        _onArenaPlayerLeaveEvent(event);
+    }
+
+    @EventHandler
+    public void _onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
+        if (players.remove(event.getPlayer().getName())){
+            updateBukkitEvents(MatchState.ONLEAVE, event.getPlayer());
+            callEvent(new ArenaPlayerLeaveLobbyEvent(event.getPlayer(),event.getTeam()));
+            event.addMessage(MessageHandler.getSystemMessage("you_left_competition", this.params.getName()));
+            event.getPlayer().reset();
+        }
+    }
+
+    /**
+     * Tekkit Servers don't get the @EventHandler methods (reason unknown) so have this method be
+     * redundant.  Possibly can now simplify to just the @ArenaEventHandler
+     * @param event PlayerCommandPreprocessEvent
+     */
+    @ArenaEventHandler
+    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+        _onPlayerCommandPreprocess(event);
+    }
+
+    @EventHandler
+	public void _onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
 		if (disabledCommands == null)
 			return;
 		if (!event.isCancelled() && InArenaListener.inQueue(event.getPlayer().getName()) &&

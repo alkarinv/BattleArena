@@ -530,7 +530,7 @@ public class MethodController {
     }
 
     public static boolean showAllListeners(CommandSender sender, String limitToPlayer) {
-        Log.info("&2# &e-!! controller=&5"+controllers.size()+"&e : &5" + controllerCount+"&e !!- &2#");
+        MessageUtil.sendMessage(sender, "&2# &e-!! controller=&5"+controllers.size()+"&e : &5" + controllerCount+"&e !!- &2#");
 //        for (MethodController mc: controllers){
 //            StringBuilder sb = new StringBuilder();
 //            for (ArenaListener al: mc.listeners){

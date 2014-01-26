@@ -2,9 +2,6 @@ package mc.alk.arena.controllers.containers;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.ArenaMatch;
-import mc.alk.arena.controllers.messaging.MessageHandler;
-import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
-import mc.alk.arena.events.players.ArenaPlayerLeaveLobbyEvent;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.LocationType;
@@ -15,7 +12,6 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Util;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.Collection;
@@ -61,15 +57,6 @@ public class AreaContainer extends AbstractAreaContainer{
 
 	}
 
-	@EventHandler
-	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
-		if (players.remove(event.getPlayer().getName())){
-			updateBukkitEvents(MatchState.ONLEAVE, event.getPlayer());
-			callEvent(new ArenaPlayerLeaveLobbyEvent(event.getPlayer(),event.getTeam()));
-			event.addMessage(MessageHandler.getSystemMessage("you_left_competition",this.params.getName()));
-			event.getPlayer().reset();
-		}
-	}
 
 	@Override
 	public LocationType getLocationType() {

@@ -10,6 +10,7 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -56,7 +57,7 @@ public class InventoryUtil {
 		}
 	}
 
-	public static class Armor{
+    public static class Armor{
 		final public ArmorLevel level;
 		final public ArmorType type;
 		Armor(ArmorType at, ArmorLevel al){this.level = al; this.type = at;}
@@ -128,8 +129,7 @@ public class InventoryUtil {
 		if (iname.contains("inf")) return Enchantment.ARROW_INFINITE;
 		if (iname.contains("unbreaking")) return Enchantment.DURABILITY;
 		if (iname.contains("dura")) return Enchantment.DURABILITY;
-		if (iname.contains("thorn")) return Enchantment.THORNS;
-		return null;
+        return handler.getEnchantmentByCommonName(iname);
 	}
 
 	public static String getCommonNameByEnchantment(Enchantment enc){
@@ -154,8 +154,7 @@ public class InventoryUtil {
 		else if (enc.getId() == Enchantment.ARROW_KNOCKBACK.getId()){return "Punch";}
 		else if (enc.getId() == Enchantment.ARROW_FIRE.getId()){return "Flame";}
 		else if (enc.getId() == Enchantment.ARROW_INFINITE.getId()){return "Infinity";}
-		else if (enc.getId() == Enchantment.THORNS.getId()){return "Thorns";}
-		else return enc.getName();
+        else return (handler.getCommonNameByEnchantment(enc));
 	}
 
 	static final Map<Material,Armor> armor;
@@ -193,6 +192,16 @@ public class InventoryUtil {
 	public static int arrowCount(Player p) {
 		return getItemAmount(p.getInventory().getContents(), new ItemStack(Material.ARROW,1));
 	}
+
+    /**
+     * If I have to do too many specific items b/c of 1.2.5 problems should make a more robust method
+     * such as itType along with my own enum
+     * @param type InventoryType
+     * @return whether its an ender chest
+     */
+    public static boolean isEnderChest(InventoryType type) {
+        return handler.isEnderChest(type);
+    }
 
 	public static int getItemAmountFromInventory(Inventory inv, ItemStack is) {
 		return getItemAmount(inv.getContents(), is);

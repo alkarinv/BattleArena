@@ -1,9 +1,5 @@
 package mc.alk.arena.objects.victoryconditions;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.TreeMap;
-
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -15,8 +11,11 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.ScoreTracker;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.MessageUtil;
-
 import org.bukkit.event.entity.EntityDeathEvent;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.TreeMap;
 
 public class MobKills extends VictoryCondition implements ScoreTracker{
 	final ArenaObjective mkills;
@@ -40,8 +39,8 @@ public class MobKills extends VictoryCondition implements ScoreTracker{
 	@ArenaEventHandler(priority=EventPriority.LOW)
 	public void mobDeathEvent(EntityDeathEvent event) {
 		switch(event.getEntityType()){
-		case BAT:
-			break;
+//		case BAT:
+//			break;
 		case BLAZE:
 			break;
 		case CAVE_SPIDER:
@@ -88,8 +87,8 @@ public class MobKills extends VictoryCondition implements ScoreTracker{
 			break;
 		case VILLAGER:
 			break;
-		case WITHER:
-			break;
+//		case WITHER:
+//			break;
 		case WOLF:
 			break;
 		case ZOMBIE:
