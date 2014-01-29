@@ -13,7 +13,7 @@ public class TagAPIController {
 
 	public static void setEnable(boolean enable) {
 		hasTagAPI = enable;
-		TagAPIListener.enable(enable);
+		TagAPIListener.enable();
 	}
 
 	public static ArenaListener getNewListener() {
