@@ -15,7 +15,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.kitteh.tag.AsyncPlayerReceiveNameTagEvent;
 import org.kitteh.tag.TagAPI;
-import org.kitteh.tag.api.TagAPIException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,6 +57,7 @@ public enum TagAPIListener implements Listener, ArenaListener {
 		} catch (NoClassDefFoundError e){
 			/* TagAPI has changed things around, Let them know of the problem
 			 * But lets not crash BattleArena b/c of it */
+            Log.err("TagAPI has made class changes");
 			Log.printStackTrace(e);
 		}
 	}
@@ -73,7 +73,7 @@ public enum TagAPIListener implements Listener, ArenaListener {
 			} catch (ClassCastException e){
 				/* For the plugin CommandSigns which use a "ProxyPlayer" which can't be cast to
 				 * a CraftPlayer, ignore the error */
-			} catch (TagAPIException e){
+			} catch (Exception e){
 				/* Do nothing.
 				 * Bukkit can sometimes have OfflinePlayers that are not caught by isOnline()*/
 			}
