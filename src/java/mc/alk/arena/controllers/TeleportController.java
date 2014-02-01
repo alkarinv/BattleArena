@@ -3,6 +3,7 @@ package mc.alk.arena.controllers;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
+import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;

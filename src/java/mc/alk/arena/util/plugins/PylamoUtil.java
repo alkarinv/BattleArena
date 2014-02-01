@@ -1,4 +1,4 @@
-package mc.alk.arena.util;
+package mc.alk.arena.util.plugins;
 
 import mc.alk.arena.objects.regions.PylamoRegion;
 

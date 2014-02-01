@@ -1,7 +1,7 @@
 package mc.alk.arena.objects;
 
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.containers.AreaContainer;
 import mc.alk.arena.objects.arenas.Arena;

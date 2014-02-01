@@ -1,0 +1,9 @@
+configVersion: 1.0
+
+# When using WorldGuard when you select an area with the worldguard wand and perform the action
+# /<game type> alter <arena name> addregion
+# what are the default WG flags that will be used
+# These can be changed by the region name, which are called, ba-<arena name> inside of WG
+defaultWGFlags:
+  build: false
+  mob-spawning: false

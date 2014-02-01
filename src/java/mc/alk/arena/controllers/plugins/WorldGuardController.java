@@ -1,9 +1,9 @@
-package mc.alk.arena.controllers;
+package mc.alk.arena.controllers.plugins;
 
 import mc.alk.arena.objects.exceptions.RegionNotFound;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
-import mc.alk.arena.util.WorldEditUtil;
-import mc.alk.arena.util.WorldGuardUtil;
+import mc.alk.arena.util.plugins.WorldEditUtil;
+import mc.alk.arena.util.plugins.WorldGuardUtil;
 
 import org.bukkit.Location;
 import org.bukkit.World;

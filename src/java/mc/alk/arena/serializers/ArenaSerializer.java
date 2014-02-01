@@ -5,7 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
-import mc.alk.arena.controllers.WorldGuardController;
+import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
@@ -171,11 +171,11 @@ public class ArenaSerializer extends BaseConfig{
 		}
 		if (!loadedArenas.isEmpty()) {
 			Log.info(pname+"Loaded "+arenaType+" arenas: " + StringUtils.join(loadedArenas,", "));
-		} else {
-			if (Defaults.DEBUG) Log.info(pname+"No arenas found for " + cs.getCurrentPath() +"  arenatype="+arenaType +"  cs="+cs.getName());
+		} else if (Defaults.DEBUG){
+			Log.info(pname+"No arenas found for " + cs.getCurrentPath() +"  arenatype="+arenaType +"  cs="+cs.getName());
 		}
 		if (!brokenArenas.isEmpty()){
-			Log.info(pname+"Failed loading arenas: " + StringUtils.join(brokenArenas, ", ") + " arenatype="+arenaType +" cs="+cs.getName());
+			Log.warn("&c"+pname+"&eFailed loading arenas: " + StringUtils.join(brokenArenas, ", ") + " arenatype="+arenaType +" cs="+cs.getName());
 		}
 		if (oldGoodSize != loadedArenas.size() || oldBrokenSize != brokenArenas.size()){
 			try {

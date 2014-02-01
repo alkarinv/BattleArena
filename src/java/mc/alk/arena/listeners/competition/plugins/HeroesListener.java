@@ -1,10 +1,11 @@
-package mc.alk.arena.listeners.competition;
+package mc.alk.arena.listeners.competition.plugins;
 
 import com.herocraftonline.heroes.api.events.ExperienceChangeEvent;
 import com.herocraftonline.heroes.api.events.SkillUseEvent;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
-import mc.alk.arena.util.HeroesUtil;
+import mc.alk.arena.listeners.competition.InArenaListener;
+import mc.alk.arena.util.plugins.HeroesUtil;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
 import org.bukkit.Bukkit;
@@ -36,7 +37,7 @@ public enum HeroesListener implements Listener {
 
 	/**
 	 * Need to be highest to override the standard renames
-	 * @param event
+	 * @param event ExperienceChangeEvent
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void cancelExperienceLoss(ExperienceChangeEvent event) {

@@ -1,10 +1,10 @@
 package mc.alk.arena.events.events;
 
 import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.events.CancellableEvent;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import org.bukkit.event.Cancellable;
 
-public class TeamJoinedEvent extends EventEvent implements CancellableEvent {
+public class TeamJoinedEvent extends EventEvent implements Cancellable {
 	final ArenaTeam team;
 	/// Cancel status
 	boolean cancelled = false;

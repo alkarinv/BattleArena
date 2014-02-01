@@ -1,4 +1,4 @@
-package mc.alk.arena.util;
+package mc.alk.arena.util.plugins;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;

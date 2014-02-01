@@ -1,4 +1,4 @@
-package mc.alk.arena.util;
+package mc.alk.arena.util.plugins;
 
 public class BungeeCordUtil {
     BungeeCordUtil() {

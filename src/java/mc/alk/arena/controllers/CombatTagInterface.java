@@ -1,6 +1,6 @@
 package mc.alk.arena.controllers;
 
-import mc.alk.arena.util.CombatTagUtil;
+import mc.alk.arena.util.plugins.CombatTagUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 

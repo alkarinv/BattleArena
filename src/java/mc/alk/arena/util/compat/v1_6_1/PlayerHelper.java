@@ -1,6 +1,6 @@
 package mc.alk.arena.util.compat.v1_6_1;
 
-import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.util.compat.IPlayerHelper;
 
 import org.bukkit.Bukkit;

@@ -1,6 +1,6 @@
-package mc.alk.arena.controllers;
+package mc.alk.arena.controllers.plugins;
 
-import mc.alk.arena.listeners.competition.FactionsListener;
+import mc.alk.arena.listeners.competition.plugins.FactionsListener;
 
 public class FactionsController {
 	static boolean hasFactions = false;

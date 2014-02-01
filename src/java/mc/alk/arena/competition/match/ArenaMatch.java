@@ -5,7 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeleportController;
-import mc.alk.arena.controllers.WorldGuardController;
+import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
 import mc.alk.arena.events.players.ArenaPlayerClassSelectedEvent;
 import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
@@ -434,7 +434,7 @@ public class ArenaMatch extends Match {
                     mp.getGiveItems(MatchState.ONSPAWN) != null){
                 items.addAll(mp.getGiveItems(MatchState.ONSPAWN));
             }
-            if (!InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
+            if (Defaults.NEED_SAME_ITEMS_TO_CHANGE_CLASS && !InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
                 MessageUtil.sendMessage(p,"&cYou can't switch classes after changing items!");
                 return;
             }

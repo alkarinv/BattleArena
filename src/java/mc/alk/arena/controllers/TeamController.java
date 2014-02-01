@@ -1,5 +1,16 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.controllers.plugins.HeroesController;
+import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.objects.teams.FormingTeam;
+import mc.alk.arena.objects.teams.TeamFactory;
+import mc.alk.arena.objects.teams.TeamHandler;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,17 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.teams.FormingTeam;
-import mc.alk.arena.objects.teams.TeamFactory;
-import mc.alk.arena.objects.teams.TeamHandler;
-
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 
 
 public enum TeamController implements Listener, TeamHandler {
@@ -105,7 +105,7 @@ public enum TeamController implements Listener, TeamHandler {
 			if (t.hasMember(pl))
 				return t;
 		}
-		if (HeroesController.hasHeroes)
+		if (HeroesController.enabled())
 			return HeroesController.getTeam(pl.getPlayer());
 		return null;
 	}

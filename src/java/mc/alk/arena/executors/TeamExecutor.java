@@ -10,7 +10,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.EventController;
-import mc.alk.arena.controllers.HeroesController;
+import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;

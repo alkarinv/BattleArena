@@ -1,5 +1,6 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.controllers.plugins.TagAPIController;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.competition.BlockBreakListener;
 import mc.alk.arena.listeners.competition.BlockPlaceListener;

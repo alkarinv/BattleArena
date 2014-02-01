@@ -1,9 +1,9 @@
 package mc.alk.arena.events.matches;
 
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.events.CancellableEvent;
+import org.bukkit.event.Cancellable;
 
-public class MatchOpenEvent extends MatchEvent implements CancellableEvent {
+public class MatchOpenEvent extends MatchEvent implements Cancellable {
 	/// Cancel status
 	boolean cancelled = false;
 

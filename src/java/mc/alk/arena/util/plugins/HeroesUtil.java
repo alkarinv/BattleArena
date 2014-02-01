@@ -1,20 +1,4 @@
-package mc.alk.arena.util;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.teams.TeamFactory;
-import mc.alk.arena.util.heroes.Heroes_1_5_2;
-import mc.alk.arena.util.heroes.Heroes_pre1_5_2;
-import mc.alk.plugin.updater.v1r2.Version;
-
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
+package mc.alk.arena.util.plugins;
 
 import com.herocraftonline.heroes.Heroes;
 import com.herocraftonline.heroes.characters.CharacterManager;
@@ -23,6 +7,20 @@ import com.herocraftonline.heroes.characters.classes.HeroClass;
 import com.herocraftonline.heroes.characters.classes.HeroClassManager;
 import com.herocraftonline.heroes.characters.effects.Effect;
 import com.herocraftonline.heroes.characters.party.HeroParty;
+import mc.alk.arena.BattleArena;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.objects.teams.TeamFactory;
+import mc.alk.arena.util.heroes.Heroes_1_5_2;
+import mc.alk.arena.util.heroes.Heroes_pre1_5_2;
+import mc.alk.plugin.updater.v1r4.Version;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class HeroesUtil {
 	static Heroes heroes = null;
@@ -83,7 +81,7 @@ public abstract class HeroesUtil {
 
 	public static boolean isInCombat(Player player) {
 		Hero hero = getHero(player);
-		return hero == null ? false : hero.isInCombat();
+		return hero != null && hero.isInCombat();
 	}
 
 	public static void deEnchant(Player player) {

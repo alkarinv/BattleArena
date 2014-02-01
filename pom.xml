@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.9.5.7.6</version>
+    <version>3.9.5.7.8</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -57,7 +57,7 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>PluginUpdater</artifactId>
-            <version>1.2.5</version>
+            <version>1.2.5.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -125,6 +125,13 @@
             <groupId>unknown.plugins</groupId>
             <artifactId>Heroes</artifactId>
             <version>[1.5.1,)</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <!-- Annoyingly mcMMO has a maven repo but it only contains the most recent version-->
+            <groupId>unknown.plugins</groupId>
+            <artifactId>mcMMO</artifactId>
+            <version>1.4.7</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -1,15 +1,14 @@
-package mc.alk.arena.controllers;
+package mc.alk.arena.controllers.plugins;
 
-import java.util.List;
-
-import mc.alk.arena.listeners.competition.HeroesListener;
+import mc.alk.arena.listeners.competition.plugins.HeroesListener;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.util.HeroesUtil;
+import mc.alk.arena.util.plugins.HeroesUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PlayerUtil;
-
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+
+import java.util.List;
 
 public class HeroesController {
 	static boolean hasHeroes = false;

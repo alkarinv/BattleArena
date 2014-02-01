@@ -1,4 +1,4 @@
-configVersion: 2.2.9
+configVersion: 2.3.0
 
 # For help the wiki is a good source of information
 # Wiki: # http://battleplugins.com/w/index.php/BattleArena
@@ -13,7 +13,7 @@ moneyName: Gold
 # some servers like to teleport people into the floor, you can adjust the Y offset of the teleport
 # to make them teleport higher by default, 1.0 = 1 block
 teleportYOffset: 0.0
-teleportYVelocity: 0
+teleportYVelocity: 0.0
 
 # When a player joins an arena and their inventory is stored
 # how many old inventories should be saved
@@ -25,9 +25,6 @@ disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma, f, factions]
 
 # What commands should be disabled when the player is inside of a queue, but not in a match
 disabledQueueCommands: []
-
-# which heroes skills should be disabled when they enter an arena
-disabledHeroesSkills: []
 
 # If set to true, items that are usually not stackable will be stacked when
 # a player is given items.  Examples: 64 mushroom soup, or 64 snow_ball, instead of 1 or 16
@@ -42,13 +39,8 @@ unsafeItemEnchants: true
 # This option will be taken away once I have confirmed bukkit has fixed the problem
 enableInvisibleTeleportFix: true
 
-# When using WorldGuard when you select an area with the worldguard wand and perform the action
-# /<game type> alter <arena name> addregion
-# what are the default WG flags that will be used
-# These can be changed by the region name, which are called, ba-<arena name> inside of WG
-defaultWGFlags:
-  build: false
-  mob-spawning: false
+# Check to make sure players have not used or dropped any items before letting them change classes
+needSameItemsToChangeClass: true
 
 ### Option sets allow you to give an easy to remember name for a group of options
 # you can add as many of your own as you want

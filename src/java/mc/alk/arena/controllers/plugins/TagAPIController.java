@@ -1,6 +1,6 @@
-package mc.alk.arena.controllers;
+package mc.alk.arena.controllers.plugins;
 
-import mc.alk.arena.listeners.competition.TagAPIListener;
+import mc.alk.arena.listeners.competition.plugins.TagAPIListener;
 import mc.alk.arena.objects.arenas.ArenaListener;
 
 

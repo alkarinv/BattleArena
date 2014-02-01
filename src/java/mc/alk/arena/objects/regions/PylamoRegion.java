@@ -2,7 +2,7 @@ package mc.alk.arena.objects.regions;
 
 import java.util.Map;
 
-import mc.alk.arena.controllers.PylamoController;
+import mc.alk.arena.controllers.plugins.PylamoController;
 
 public class PylamoRegion implements ArenaRegion{
 	String regionName;

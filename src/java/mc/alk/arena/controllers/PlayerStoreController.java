@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.plugins.EssentialsController;
+import mc.alk.arena.controllers.plugins.HeroesController;
+import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.regions.WorldGuardRegion;

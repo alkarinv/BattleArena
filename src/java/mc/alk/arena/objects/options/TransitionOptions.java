@@ -1,7 +1,7 @@
 package mc.alk.arena.objects.options;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.MobArenaInterface;
+import mc.alk.arena.controllers.plugins.MobArenaInterface;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaSize;

@@ -1,4 +1,4 @@
-package mc.alk.arena.util;
+package mc.alk.arena.util.plugins;
 
 import com.trc202.CombatTag.CombatTag;
 import org.bukkit.entity.Player;

@@ -1,4 +1,4 @@
-package mc.alk.arena.listeners.competition;
+package mc.alk.arena.listeners.competition.plugins;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;

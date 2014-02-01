@@ -29,7 +29,7 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.BTInterface;
-import mc.alk.arena.util.DisguiseInterface;
+import mc.alk.arena.util.plugins.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;

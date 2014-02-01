@@ -1,14 +1,13 @@
 package mc.alk.arena.serializers;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 import mc.alk.arena.util.Log;
-
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public class BaseConfig implements FileConfig{
 	FileConfiguration config;
@@ -50,7 +49,10 @@ public class BaseConfig implements FileConfig{
 		this.file = file;
 		if (!file.exists()){
 			try {
-				file.createNewFile();
+				if (!file.createNewFile()){
+                    Log.err("Couldn't create the config file=" + file);
+                    return false;
+                }
 			} catch (IOException e) {
 				Log.err("Couldn't create the config file=" + file);
 				Log.printStackTrace(e);

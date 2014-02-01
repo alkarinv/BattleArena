@@ -1,6 +1,7 @@
-package mc.alk.arena.listeners.competition;
+package mc.alk.arena.listeners.competition.plugins;
 
 
+import mc.alk.arena.listeners.competition.InArenaListener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;

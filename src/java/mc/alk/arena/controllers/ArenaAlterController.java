@@ -1,11 +1,12 @@
 package mc.alk.arena.controllers;
 
-import java.util.Arrays;
-import java.util.Set;
-
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.bukkit.selections.Selection;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.containers.RoomContainer;
+import mc.alk.arena.controllers.plugins.PylamoController;
+import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -21,8 +22,7 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.Util;
-import mc.alk.arena.util.WorldEditUtil;
-
+import mc.alk.arena.util.plugins.WorldEditUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -30,8 +30,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import java.util.Arrays;
+import java.util.Set;
 
 public class ArenaAlterController {
 	public enum ChangeType{
@@ -224,15 +224,16 @@ public class ArenaAlterController {
 				}
 			}
 
-			ConfigurationSection cs = BattleArena.getSelf().getConfig().getConfigurationSection("defaultWGFlags");
-			if (cs != null){
-				Set<String> set = cs.getKeys(false);
-				if (set != null){
-					for (String key: set){
-						WorldGuardController.setFlag(region, key, cs.getBoolean(key, false));
-					}
-				}
-			}
+            ConfigurationSection cs = BattleArena.getSelf().getBAConfigSerializer().getWorldGuardConfig();
+            if (cs != null && cs.contains("defaultWGFlags")) {
+                cs = cs.getConfigurationSection("defaultWGFlags");
+                Set<String> set = cs.getKeys(false);
+                if (set != null) {
+                    for (String key : set) {
+                        WorldGuardController.setFlag(region, key, cs.getBoolean(key, false));
+                    }
+                }
+            }
 
 			arena.setWorldGuardRegion(region);
 			WorldGuardController.saveSchematic(sender, id);

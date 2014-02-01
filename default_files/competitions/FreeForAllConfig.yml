@@ -1,6 +1,5 @@
 FreeForAll:
     enabled: true
-    joinType: JoinPhase
     database: ffa
     rated: true
     prefix: "&c[FFA]&e"
@@ -9,7 +8,7 @@ FreeForAll:
     teamSize: 1
     nLives: 1
     announcements: ### Override the match victory announcement as the event has one too
-        onVictory:  [ dontannounce ] 
+        onVictory:  [ dontannounce ]
     defaults:
         options: [woolTeams]
     preReqs:
@@ -24,7 +23,7 @@ FreeForAll:
         options: [pvpOff]
     onPrestart:
         options: [pvpOff, giveItems]
-        items: 
+        items:
             - iron_sword: 1
             - bow: 1
             - tnt: 3

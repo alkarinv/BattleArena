@@ -3,18 +3,19 @@ package mc.alk.arena.listeners;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.CombatTagInterface;
-import mc.alk.arena.controllers.EssentialsController;
-import mc.alk.arena.controllers.FactionsController;
-import mc.alk.arena.controllers.HeroesController;
-import mc.alk.arena.controllers.MobArenaInterface;
+import mc.alk.arena.controllers.plugins.EssentialsController;
+import mc.alk.arena.controllers.plugins.FactionsController;
+import mc.alk.arena.controllers.plugins.HeroesController;
+import mc.alk.arena.controllers.plugins.McMMOController;
+import mc.alk.arena.controllers.plugins.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
-import mc.alk.arena.controllers.PylamoController;
+import mc.alk.arena.controllers.plugins.PylamoController;
 import mc.alk.arena.controllers.StatController;
-import mc.alk.arena.controllers.TagAPIController;
-import mc.alk.arena.controllers.WorldGuardController;
+import mc.alk.arena.controllers.plugins.TagAPIController;
+import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.plugins.HerochatPlugin;
-import mc.alk.arena.util.DisguiseInterface;
+import mc.alk.arena.util.plugins.DisguiseInterface;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
 import net.milkbowl.vault.chat.Chat;
@@ -166,7 +167,17 @@ public class BAPluginListener implements Listener {
 		}
 	}
 
-	public void loadMobArena(){
+    public void loadMcMMO(){
+        if (!McMMOController.enabled()){
+            Plugin plugin = Bukkit.getPluginManager().getPlugin("mcMMO");
+            if (plugin != null) {
+                McMMOController.setEnable(true);
+                Log.info("[BattleArena] mcMMO detected. Implementing disabled skills options");
+            }
+        }
+    }
+
+    public void loadMobArena(){
 		if (!MobArenaInterface.hasMobArena()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("MobArena");
 			if (plugin != null) {

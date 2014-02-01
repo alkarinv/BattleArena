@@ -1,6 +1,6 @@
 package mc.alk.arena.util.heroes;
 
-import mc.alk.arena.util.HeroesUtil;
+import mc.alk.arena.util.plugins.HeroesUtil;
 
 import org.bukkit.entity.Player;
 

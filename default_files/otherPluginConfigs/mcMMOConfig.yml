@@ -1,0 +1,5 @@
+configVersion: 1.0
+
+# which skills should be disabled when they enter an arena
+disabledSkills: []
+

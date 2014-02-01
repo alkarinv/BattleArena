@@ -118,6 +118,7 @@ public class BattleArena extends JavaPlugin {
         FileUpdater.makeIfNotExists(new File(dir + "/messages"));
         FileUpdater.makeIfNotExists(new File(dir + "/saves"));
         FileUpdater.makeIfNotExists(new File(dir + "/modules"));
+        FileUpdater.makeIfNotExists(new File(dir + "/otherPluginConfigs"));
 
         /// For potential updates to default yml files
         YamlFileUpdater yfu = new YamlFileUpdater(this);
@@ -399,6 +400,14 @@ public class BattleArena extends JavaPlugin {
         baConfigSerializer.loadDefaults();
         classesSerializer.loadAll();
         MessageSerializer.loadDefaults();
+    }
+
+    /**
+     * The main serializer for the config.yml
+     * @return BAConfigSerializer
+     */
+    public BAConfigSerializer getBAConfigSerializer() {
+        return baConfigSerializer;
     }
 
     /**

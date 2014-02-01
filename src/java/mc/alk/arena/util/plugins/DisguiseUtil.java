@@ -1,5 +1,6 @@
-package mc.alk.arena.util;
+package mc.alk.arena.util.plugins;
 
+import mc.alk.arena.util.Log;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 

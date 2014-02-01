@@ -15,10 +15,10 @@ import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.CombatTagInterface;
 import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
-import mc.alk.arena.controllers.EssentialsController;
+import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.EventController;
-import mc.alk.arena.controllers.HeroesController;
-import mc.alk.arena.controllers.MobArenaInterface;
+import mc.alk.arena.controllers.plugins.HeroesController;
+import mc.alk.arena.controllers.plugins.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamAlterController;
 import mc.alk.arena.controllers.ParamController;
@@ -150,19 +150,16 @@ public class BAExecutor extends CustomCommandExecutor {
         return sendSystemMessage(sender, "type_disabled", mp.getName());
     }
 
-    public static boolean sendSystemMessage(CommandSender sender, String node,
-                                            Object... args) {
+    public static boolean sendSystemMessage(CommandSender sender, String node, Object... args) {
         return sendMessage(sender, MessageHandler.getSystemMessage(node, args));
     }
 
-    public static boolean sendSystemMessage(ArenaTeam team, String node,
-                                            Object... args) {
+    public static boolean sendSystemMessage(ArenaTeam team, String node, Object... args) {
         team.sendMessage(MessageHandler.getSystemMessage(node, args));
         return true;
     }
 
-    public static boolean sendSystemMessage(ArenaPlayer sender, String node,
-                                            Object... args) {
+    public static boolean sendSystemMessage(ArenaPlayer sender, String node, Object... args) {
         return sendMessage(sender, MessageHandler.getSystemMessage(node, args));
     }
 
@@ -963,7 +960,7 @@ public class BAExecutor extends CustomCommandExecutor {
         return true;
     }
 
-    @MCCommand(cmds = { "setArenaOption", "setOption", "alter" }, admin = true, perm = "arena.alter")
+    @MCCommand(cmds = { "setArenaOption", "setOption", "alter", "edit" }, admin = true, perm = "arena.alter")
     public boolean arenaSetOption(CommandSender sender, Arena arena, String[] args) {
         try {
             ArenaAlterController.setArenaOption(sender, arena, args);

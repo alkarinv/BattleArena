@@ -3,7 +3,7 @@ package mc.alk.arena.controllers.containers;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
-import mc.alk.arena.controllers.EssentialsController;
+import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;

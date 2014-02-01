@@ -6,6 +6,7 @@ import mc.alk.arena.Permissions;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 
+import mc.alk.arena.util.plugins.VaultPermUtil;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;

@@ -2,8 +2,8 @@ package mc.alk.arena.serializers;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.Log;
-import mc.alk.plugin.updater.v1r2.FileUpdater;
-import mc.alk.plugin.updater.v1r2.Version;
+import mc.alk.plugin.updater.v1r4.FileUpdater;
+import mc.alk.plugin.updater.v1r4.Version;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -179,7 +179,6 @@ public class YamlFileUpdater {
 			newVersion = new Version("2.1.4");
 			if (version.compareTo(newVersion) < 0){
 				version = to2Point14(version, yfu, configFile, newVersion);}
-
 			newVersion = new Version("2.2");
 			if (version.compareTo(newVersion) < 0){
 				version = to2Point2(version, yfu, configFile, newVersion);}
@@ -195,9 +194,12 @@ public class YamlFileUpdater {
 			newVersion = new Version("2.2.8");
 			if (version.compareTo(newVersion) < 0){
 				version = to2Point28(version, yfu, configFile, newVersion);}
-			newVersion = new Version("2.2.9");
-			if (version.compareTo(newVersion) < 0){
-				version = to2Point29(version, yfu, configFile, newVersion);}
+            newVersion = new Version("2.2.9");
+            if (version.compareTo(newVersion) < 0){
+                version = to2Point29(version, yfu, configFile, newVersion);}
+            newVersion = new Version("2.3.0");
+            if (version.compareTo(newVersion) < 0){
+                version = to2Point30(version, yfu, configFile, newVersion);}
 
 		} catch (IOException e){
 			Log.printStackTrace(e);
@@ -408,7 +410,7 @@ public class YamlFileUpdater {
 		fu.update();
 
 		File dir = new File(configFile.getParentFile().getAbsolutePath());
-		FileUpdater.makeIfNotExists(new File(dir +"/competitions"));
+		FileUpdater.makeIfNotExists(new File(dir + "/competitions"));
 		FileUpdater.makeIfNotExists(new File(dir +"/saves"));
 		FileUpdater.makeIfNotExists(new File(dir +"/saves/backups"));
 		FileUpdater.makeIfNotExists(new File(dir +"/saves/inventories"));
@@ -525,6 +527,15 @@ public class YamlFileUpdater {
 				"    ## Default time before a match is started with the minimum amount of players");
 		return fu.update();
 	}
+
+    private static Version to2Point30(Version version, YamlFileUpdater yfu, File configFile, Version newVersion) throws IOException {
+        FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+        fu.replace("configVersion:.*", "configVersion: "+newVersion);
+        fu.addAfter("enableInvisibleTeleportFix: true.*", "",
+                "# Check to make sure players have not used or dropped any items before letting them change classes",
+                "needSameItemsToChangeClass: true");
+        return fu.update();
+    }
 
 	private void messageTo1Point51(FileConfiguration fc, Version version, Version newVersion) {
 		Log.warn("BattleArena updating messages.yml to "+newVersion.getVersion());

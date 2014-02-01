@@ -7,10 +7,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.spawns.SpawnInstance;
-import mc.alk.arena.util.DisguiseInterface;
+import mc.alk.arena.util.plugins.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;

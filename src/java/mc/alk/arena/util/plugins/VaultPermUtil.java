@@ -1,8 +1,9 @@
-package mc.alk.arena.util;
+package mc.alk.arena.util.plugins;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
+import mc.alk.arena.util.Log;
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;

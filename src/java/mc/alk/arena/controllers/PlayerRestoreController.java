@@ -5,6 +5,7 @@ import java.util.List;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.ExpUtil;

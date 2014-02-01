@@ -1,11 +1,5 @@
 package mc.alk.arena.objects;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.containers.GameManager;
@@ -15,8 +9,13 @@ import mc.alk.arena.objects.modules.ArenaModule;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.MessageUtil;
-
 import org.bukkit.ChatColor;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
@@ -120,9 +119,9 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 		this.vc = victoryCondition;
 	}
 
-	public Integer getMatchTime() {
-		return matchTime == null && mparent!=null ? mparent.getMatchTime() : matchTime;
-	}
+    public Integer getMatchTime() {
+        return matchTime == null && mparent!=null ? mparent.getMatchTime() : matchTime;
+    }
 
 	public void setMatchTime(Integer matchTime) {
 		this.matchTime = matchTime;

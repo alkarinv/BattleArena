@@ -2,7 +2,7 @@ package mc.alk.arena.objects.regions;
 
 import java.util.Map;
 
-import mc.alk.arena.controllers.WorldGuardController;
+import mc.alk.arena.controllers.plugins.WorldGuardController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;

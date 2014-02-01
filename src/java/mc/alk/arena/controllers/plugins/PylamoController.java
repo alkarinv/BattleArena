@@ -1,7 +1,7 @@
-package mc.alk.arena.controllers;
+package mc.alk.arena.controllers.plugins;
 
 import mc.alk.arena.objects.regions.PylamoRegion;
-import mc.alk.arena.util.PylamoUtil;
+import mc.alk.arena.util.plugins.PylamoUtil;
 
 import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;

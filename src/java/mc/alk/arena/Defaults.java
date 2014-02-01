@@ -7,7 +7,7 @@ import java.io.File;
 public class Defaults {
 
 	/// Use auto updating
-	public static boolean AUTO_UPDATE = false;
+	public static boolean AUTO_UPDATE = true;
 	public static boolean REPORT_ERRORS = false;
 
 	public static double TICK_MULT = 1.0;
@@ -40,6 +40,8 @@ public class Defaults {
 	public static boolean USE_COLORNAMES = true;
 
 	public static boolean ANNOUNCE_GIVEN_ITEMS = true;
+
+    public static boolean NEED_SAME_ITEMS_TO_CHANGE_CLASS = true;
 
 	/// EVENT OPTIONS
 	public static int AUTO_EVENT_COUNTDOWN_TIME = 120;
