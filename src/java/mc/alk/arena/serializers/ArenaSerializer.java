@@ -113,14 +113,14 @@ public class ArenaSerializer extends BaseConfig{
 			ConfigurationSection cs, ArenaType arenaType){
 		final String pname = "["+plugin.getName()+"] ";
 		if (cs == null){
-			Log.info(pname+" has no arenas, cs is null");
+			Log.info(pname+" " + arenaType + " has no arenas, cs is null");
 			return;
 		}
 
 		ConfigurationSection as = cs.getConfigurationSection("arenas");
 		ConfigurationSection bks = cs.getConfigurationSection("brokenArenas");
 		if (as == null && bks == null){
-			Log.info(pname+"has no arenas, configSectionPath=" + cs.getCurrentPath());
+			if (Defaults.DEBUG) Log.info(pname+" " + arenaType + " has no arenas, configSectionPath=" + cs.getCurrentPath());
 			return;
 		}
 

@@ -46,6 +46,7 @@ import mc.alk.arena.serializers.ArenaControllerSerializer;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.BAClassesSerializer;
 import mc.alk.arena.serializers.BAConfigSerializer;
+import mc.alk.arena.serializers.BaseConfig;
 import mc.alk.arena.serializers.EventScheduleSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.serializers.SignSerializer;
@@ -57,8 +58,8 @@ import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.plugin.updater.v1r4.FileUpdater;
-import mc.alk.plugin.updater.v1r4.PluginUpdater;
+import mc.alk.plugin.updater.v1r5.FileUpdater;
+import mc.alk.plugin.updater.v1r5.PluginUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -119,12 +120,13 @@ public class BattleArena extends JavaPlugin {
         FileUpdater.makeIfNotExists(new File(dir + "/saves"));
         FileUpdater.makeIfNotExists(new File(dir + "/modules"));
         FileUpdater.makeIfNotExists(new File(dir + "/otherPluginConfigs"));
-        FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/HeroesConfig.yml",
-                "/default_files/otherPluginConfigs/HeroesConfig.yml");
-        FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/McMMOConfig.yml",
-                "/default_files/otherPluginConfigs/McMMOConfig.yml");
-        FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/WorldGuardConfig.yml",
-                "/default_files/otherPluginConfigs/WorldGuardConfig.yml");
+
+        new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/HeroesConfig.yml",
+                "/default_files/otherPluginConfigs/HeroesConfig.yml"));
+        new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/McMMOConfig.yml",
+                "/default_files/otherPluginConfigs/McMMOConfig.yml"));
+        new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/WorldGuardConfig.yml",
+                "/default_files/otherPluginConfigs/WorldGuardConfig.yml"));
 
         /// For potential updates to default yml files
         YamlFileUpdater yfu = new YamlFileUpdater(this);
@@ -241,6 +243,11 @@ public class BattleArena extends JavaPlugin {
 
         PluginUpdater.announceNewerAndDownloadIfNeeded(this, bukkitId, this.getFile(), mc.alk.arena.Defaults.AUTO_UPDATE);
         Log.info("&4[" + pluginname + "] &6v" + BattleArena.version + "&f enabled!");
+    }
+
+    public static void update(final Plugin plugin, final int bukkitId,
+                                        final File file, final boolean onlyAnnounceNewVersion) {
+        new APIRegistrationController().autoUpdate(plugin, bukkitId, file, onlyAnnounceNewVersion);
     }
 
     private void createMessageSerializers() {

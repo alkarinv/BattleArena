@@ -2,8 +2,8 @@ package mc.alk.arena.serializers;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.Log;
-import mc.alk.plugin.updater.v1r4.FileUpdater;
-import mc.alk.plugin.updater.v1r4.Version;
+import mc.alk.plugin.updater.v1r5.FileUpdater;
+import mc.alk.plugin.updater.v1r5.Version;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;

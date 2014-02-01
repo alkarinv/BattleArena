@@ -13,7 +13,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.util.heroes.Heroes_1_5_2;
 import mc.alk.arena.util.heroes.Heroes_pre1_5_2;
-import mc.alk.plugin.updater.v1r4.Version;
+import mc.alk.plugin.updater.v1r5.Version;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 

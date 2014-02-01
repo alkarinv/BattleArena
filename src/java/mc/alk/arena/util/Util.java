@@ -1,7 +1,7 @@
 package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
-import mc.alk.plugin.updater.v1r4.Version;
+import mc.alk.plugin.updater.v1r5.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 

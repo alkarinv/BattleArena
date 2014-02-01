@@ -5,7 +5,7 @@ import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.util.compat.IPlayerHelper;
-import mc.alk.plugin.updater.v1r4.Version;
+import mc.alk.plugin.updater.v1r5.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;

@@ -332,7 +332,7 @@ public class BAConfigSerializer extends BaseConfig{
         File f = new File(file);
         if (!f.exists()) /// File not found, get outta here
             return null;
-        BaseConfig cs = new BaseConfig(f);
+        BaseConfig cs = new BaseConfig();
         return cs.getConfig();
     }
 

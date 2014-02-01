@@ -87,8 +87,8 @@ public class FileUtil {
 			} catch (Exception e){
 				Log.printStackTrace(e);
 			} finally {
-				if (out != null) try {out.close();} catch (Exception e){}
-				if (inputStream != null) try {inputStream.close();} catch (Exception e){}
+				if (out != null) try {out.close();} catch (Exception e){/* ignore*/}
+				if (inputStream != null) try {inputStream.close();} catch (Exception e){/* ignore*/}
 			}
 		}
 		return file;
