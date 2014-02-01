@@ -21,6 +21,10 @@
             <url>http://repo.bukkit.org/content/groups/public</url>
         </repository>
         <repository>
+            <id>md_5-snapshots</id>
+            <url>http://repo.md-5.net/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
             <id>sk89q-repo</id>
             <url>http://maven.sk89q.com/repo/</url>
         </repository>
@@ -52,6 +56,12 @@
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
             <version>1.6.4-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gmail.nossr50.mcMMO</groupId>
+            <artifactId>mcMMO</artifactId>
+            <version>1.4.08-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -125,13 +135,6 @@
             <groupId>unknown.plugins</groupId>
             <artifactId>Heroes</artifactId>
             <version>[1.5.1,)</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <!-- Annoyingly mcMMO has a maven repo but it only contains the most recent version-->
-            <groupId>unknown.plugins</groupId>
-            <artifactId>mcMMO</artifactId>
-            <version>1.4.7</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
