@@ -30,7 +30,7 @@ import java.util.UUID;
 
 
 public class TeleportController implements Listener{
-	static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
+    static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
     private final int TELEPORT_FIX_DELAY = 15; // ticks
 
     public static boolean teleport(final Player player, final Location location){
@@ -40,11 +40,11 @@ public class TeleportController implements Listener{
     public static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
 		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
 		try {
+            teleporting.add(player.getName());
 			player.setVelocity(new Vector(0,Defaults.TELEPORT_Y_VELOCITY,0));
 			player.setFallDistance(0);
 			Location loc = location.clone();
 			loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
-			teleporting.add(player.getName());
 			/// Close their inventory so they arent taking things in/out
 			InventoryUtil.closeInventory(player);
 			player.setFireTicks(0);
@@ -76,7 +76,8 @@ public class TeleportController implements Listener{
 			/// To deal with this, reget the world
 			World w = Bukkit.getWorld(loc.getWorld().getName());
 			Location nl = new Location(w, loc.getX(),loc.getY(),loc.getZ(),loc.getYaw(),loc.getPitch());
-			if (!player.teleport(nl) || (Defaults.DEBUG_VIRTUAL && !player.isOnline())){
+			if (!player.teleport(nl, PlayerTeleportEvent.TeleportCause.PLUGIN) ||
+                    (Defaults.DEBUG_VIRTUAL && !player.isOnline())){
 				BAPlayerListener.teleportOnReenter(player.getName(),nl, player.getLocation());
 				if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + nl);
 				return false;
@@ -100,14 +101,21 @@ public class TeleportController implements Listener{
 
 	/**
 	 * This prevents other plugins from cancelling the teleport
-	 * removes the player from the set after allowing the tp
+	 * removes the player from the set after allowing the tp.
+     * Additionally as a
 	 * @param event PlayerTeleportEvent
 	 */
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void onPlayerTeleport(PlayerTeleportEvent event){
 		if (teleporting.remove(event.getPlayer().getName())){
 			event.setCancelled(false);
-			if (Defaults.ENABLE_TELEPORT_FIX){
+            Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+                @Override
+                public void run() {
+
+                }
+            });
+            if (Defaults.ENABLE_TELEPORT_FIX){
 				invisbleTeleportWorkaround(event.getPlayer().getName());
 			}
 		}

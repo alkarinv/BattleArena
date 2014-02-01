@@ -430,7 +430,9 @@ public class WorldGuardUtil {
 	}
 
 	public static int regionCount() {
-		int count = 0;
+        if (trackedRegions.isEmpty())
+            return 0;
+        int count = 0;
 		for (String world : trackedRegions.keySet()){
 			Set<String> sets = trackedRegions.get(world);
 			if (sets != null)
