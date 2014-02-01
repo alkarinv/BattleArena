@@ -26,7 +26,7 @@ public class WorldGuardUtil {
     public static boolean hasWorldGuard = false;
 
     public static boolean hasWorldGuard() {
-        return mc.alk.arena.util.plugins.WorldEditUtil.hasWorldEdit() && mc.alk.arena.util.plugins.WorldGuardUtil.hasWorldGuard();
+        return hasWorldGuard;
     }
 
     public static ProtectedRegion getRegion(String world, String id) {
