@@ -119,6 +119,12 @@ public class BattleArena extends JavaPlugin {
         FileUpdater.makeIfNotExists(new File(dir + "/saves"));
         FileUpdater.makeIfNotExists(new File(dir + "/modules"));
         FileUpdater.makeIfNotExists(new File(dir + "/otherPluginConfigs"));
+        FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/HeroesConfig.yml",
+                "/default_files/otherPluginConfigs/HeroesConfig.yml");
+        FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/McMMOConfig.yml",
+                "/default_files/otherPluginConfigs/McMMOConfig.yml");
+        FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/WorldGuardConfig.yml",
+                "/default_files/otherPluginConfigs/WorldGuardConfig.yml");
 
         /// For potential updates to default yml files
         YamlFileUpdater yfu = new YamlFileUpdater(this);
@@ -554,6 +560,10 @@ public class BattleArena extends JavaPlugin {
         new APIRegistrationController().registerCompetition(plugin, name, cmd, arenaClass, executor);
     }
 
+    /**
+     * Get the module directory
+     * @return File: Module Directory
+     */
     public File getModuleDirectory() {
         return new File(this.getDataFolder() + "/modules");
     }

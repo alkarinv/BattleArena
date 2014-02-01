@@ -64,7 +64,7 @@ public class ArenaAlterController {
 		public static ChangeType fromName(String str){
 			str = str.toUpperCase();
 			ChangeType ct = null;
-			try {ct = ChangeType.valueOf(str);} catch (Exception e){}
+			try {ct = ChangeType.valueOf(str);} catch (Exception e){/* say nothing */}
 			if (ct != null)
 				return ct;
 			if (str.equalsIgnoreCase("wr")) return WAITROOM;
@@ -74,7 +74,7 @@ public class ArenaAlterController {
 			try{
 				if (Integer.valueOf(str) != null)
 					return SPAWNLOC;
-			} catch (Exception e){}
+			} catch (Exception e){/* say nothing */}
 			if (str.equalsIgnoreCase("main"))
 				return SPAWNLOC;
 			if (TeamUtil.getTeamIndex(str) != null){
@@ -257,7 +257,7 @@ public class ArenaAlterController {
 			sendMessage(sender,"&cYou need to be in game to use this command");
 			return -1;
 		}
-		try{return Integer.parseInt(value) -1;}catch(Exception e){}
+		try{return Integer.parseInt(value) -1;}catch(Exception e){/* do nothing */}
 		if (value.equalsIgnoreCase("main"))
 			return Integer.MAX_VALUE;
 		Integer locindex = TeamUtil.getTeamIndex(value);
@@ -297,7 +297,7 @@ public class ArenaAlterController {
 			return false;
 		String locstr = locindex == Integer.MAX_VALUE ? "main" : locindex+"";
 		Player p = (Player) sender;
-		Location loc = null;
+		Location loc;
 		loc = parseLocation(p,value);
 		if (loc == null){
 			loc = p.getLocation();}

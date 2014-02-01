@@ -329,7 +329,7 @@ public class BAConfigSerializer extends BaseConfig{
     }
 
     private ConfigurationSection loadOtherConfig(String file){
-        File f = new File(BattleArena.getSelf().getDataFolder() + "/messages.yml");
+        File f = new File(file);
         if (!f.exists()) /// File not found, get outta here
             return null;
         BaseConfig cs = new BaseConfig(f);
@@ -369,7 +369,7 @@ public class BAConfigSerializer extends BaseConfig{
         if (McMMOController.enabled()){
             /// Look for it in the old location first, config.yml
             ConfigurationSection cs = loadOtherConfig(BattleArena.getSelf().getDataFolder() +
-                    "/otherPluginConfigs/HeroesConfig.yml");
+                    "/otherPluginConfigs/McMMOConfig.yml");
             if (cs == null)
                 return;
             List<String> disabled = cs.getStringList("disabledSkills");

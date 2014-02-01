@@ -51,6 +51,8 @@ public class BAPluginListener implements Listener {
 			loadHeroes();
 		else if (event.getPlugin().getName().equalsIgnoreCase("DisguiseCraft"))
 			loadDisguiseCraft();
+        else if (event.getPlugin().getName().equalsIgnoreCase("MobArena"))
+            loadMcMMO();
 		else if (event.getPlugin().getName().equalsIgnoreCase("MobArena"))
 			loadMobArena();
 		else if (event.getPlugin().getName().equalsIgnoreCase("MultiInv"))
@@ -79,6 +81,7 @@ public class BAPluginListener implements Listener {
 		loadFactions();
 		loadHeroChat();
 		loadHeroes();
+        loadMcMMO();
 		loadMobArena();
 		loadMultiInv();
 		loadMultiverseCore();

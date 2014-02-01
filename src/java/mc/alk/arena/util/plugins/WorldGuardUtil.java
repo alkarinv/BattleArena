@@ -60,6 +60,12 @@ public class WorldGuardUtil {
 
 	static Map<String,Set<String>> trackedRegions = new ConcurrentHashMap<String,Set<String>>();
 
+    public static boolean setWorldGuard(Plugin plugin) {
+        wgp = (WorldGuardPlugin) plugin;
+        hasWorldGuard = true;
+        return hasWorldGuard();
+    }
+
 	public static boolean hasWorldGuard() {
 		return WorldEditUtil.hasWorldEdit() && hasWorldGuard;
 	}
@@ -192,12 +198,6 @@ public class WorldGuardUtil {
 		if (state == null || state != newState){
 			pr.setFlag(f, newState);}
 		return true;
-	}
-
-	public static boolean setWorldGuard(Plugin plugin) {
-		wgp = (WorldGuardPlugin) plugin;
-		hasWorldGuard = true;
-		return hasWorldGuard();
 	}
 
 	public static boolean allowEntry(Player player, String regionWorld, String id) {

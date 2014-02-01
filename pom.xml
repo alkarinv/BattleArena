@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.9.5.7.8</version>
+    <version>3.9.5.7.9</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -175,6 +175,8 @@
                     <include>default_files/*</include>
                     <include>default_files/competitions</include>
                     <include>default_files/competitions/*</include>
+                    <include>default_files/otherPluginConfigs</include>
+                    <include>default_files/otherPluginConfigs/*</include>
                 </includes>
             </resource>
             <!-- Exclude JUnit test directory -->

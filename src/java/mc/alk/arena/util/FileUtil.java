@@ -1,13 +1,13 @@
 package mc.alk.arena.util;
 
+import mc.alk.arena.BattleArena;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import mc.alk.arena.BattleArena;
 
 public class FileUtil {
 
@@ -76,7 +76,7 @@ public class FileUtil {
 			OutputStream out = null;
 			try{
 				inputStream = clazz.getResourceAsStream(default_file);
-				if (inputStream == null){ /// will this work to fix the problems in windows??
+				if (inputStream == null){
 					inputStream = clazz.getClassLoader().getResourceAsStream(default_file);}
 
 				out=new FileOutputStream(config_file);
