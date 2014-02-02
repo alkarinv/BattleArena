@@ -1,9 +1,7 @@
 package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
-
 import mc.alk.arena.controllers.Scheduler;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 public class Countdown implements Runnable{
@@ -48,29 +46,29 @@ public class Countdown implements Runnable{
 	public void run() {
 		if (stop)
 			return;
-		timerId = null;
 		final boolean continueOn = callback.intervalTick(seconds);
-		if (!continueOn)
+        timerId = null;
+        if (!continueOn)
 			return;
 		TimeUtil.testClock();
 		if (!stop && (seconds > 0 || !cancelOnExpire)){
-			timerId  = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this,
-					(long) (interval*20L * Defaults.TICK_MULT));
+			timerId  = Scheduler.scheduleSynchronousTask(plugin, this,
+                    (long) (interval * 20L * Defaults.TICK_MULT));
 		}
 		seconds -= interval;
 	}
 
 	public void stop(){
 		stop = true;
-		if (timerId != null){
-			Bukkit.getScheduler().cancelTask(timerId);
+        if (timerId != null){
+			Scheduler.cancelTask(timerId);
 			timerId = null;
 		}
 	}
 
 	@Override
 	public String toString(){
-		return "[Countdown " + seconds+":"+interval+"]";
+		return "[Countdown id="+ this.getID()+" "+seconds+":"+interval+" timerid="+timerId+"]";
 	}
 
 	public Long getTimeRemaining(){

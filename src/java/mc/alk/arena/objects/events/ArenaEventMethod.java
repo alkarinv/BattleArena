@@ -1,11 +1,10 @@
 package mc.alk.arena.objects.events;
 
-import java.lang.reflect.Method;
-
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
-
 import org.bukkit.event.Event;
+
+import java.lang.reflect.Method;
 
 public class ArenaEventMethod {
 	final Method callMethod;
@@ -15,16 +14,17 @@ public class ArenaEventMethod {
 	final EventPriority priority;
 	final org.bukkit.event.EventPriority bukkitPriority;
 	final boolean specificArenaPlayer;
+    final boolean isBAEvent; /// Whether this is a BAevent or a normal bukkit event
 
 	public ArenaEventMethod(Method callMethod, Class<? extends Event> event,
 			MatchState begin, MatchState end, MatchState cancel, EventPriority priority,
-			org.bukkit.event.EventPriority bukkitPriority) {
-		this(callMethod,event,null,begin,end,cancel,priority, bukkitPriority);
+			org.bukkit.event.EventPriority bukkitPriority, boolean isBAEvent) {
+		this(callMethod,event,null,begin,end,cancel,priority, bukkitPriority,isBAEvent);
 	}
 
 	public ArenaEventMethod(Method callMethod, Class<? extends Event> event,Method getPlayerMethod,
 			MatchState begin, MatchState end, MatchState cancel, EventPriority priority,
-			org.bukkit.event.EventPriority bukkitPriority) {
+			org.bukkit.event.EventPriority bukkitPriority, boolean isBAEvent) {
 		this.callMethod = callMethod;
 		this.bukkitEvent = event;
 		this.getPlayerMethod = getPlayerMethod;
@@ -34,8 +34,8 @@ public class ArenaEventMethod {
 		this.bukkitPriority = bukkitPriority;
 		this.specificArenaPlayer = 	getPlayerMethod != null &&
 				ArenaPlayer.class.isAssignableFrom(getPlayerMethod().getReturnType());
-
-	}
+        this.isBAEvent = isBAEvent;
+    }
 
 	public boolean isSpecificPlayerMethod() {
 		return getPlayerMethod != null;
@@ -57,7 +57,7 @@ public class ArenaEventMethod {
 		return getPlayerMethod;
 	}
 
-	public Class<? extends Event> getBukkitEvent(){
+	public Class<? extends Event> getBAEvent(){
 		return bukkitEvent;
 	}
 
@@ -69,7 +69,11 @@ public class ArenaEventMethod {
 		return endState;
 	}
 
-	@Override
+    public boolean isBAEvent() {
+        return isBAEvent;
+    }
+
+    @Override
 	public String toString(){
 		return "[MEM "+callMethod.getName()+", " + (bukkitEvent != null ? bukkitEvent.getSimpleName():"null")+
 				" p="+bukkitPriority+" "  + beginState+":"+endState+"   playerMethod=" + getPlayerMethod+"]";

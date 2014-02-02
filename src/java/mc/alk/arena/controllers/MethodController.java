@@ -128,6 +128,7 @@ public class MethodController {
             Log.printStackTrace(e);
         }
     }
+
     private void updateEvent(ArenaListener listener, MatchState matchState,
                              Collection<String> players, final Class<? extends Event> event) {
         final List<RListener> rls = bukkitMethods.get(event);
@@ -387,13 +388,13 @@ public class MethodController {
                 if (endState == MatchState.NONE) endState = MatchState.ONLEAVE;
                 if (cancelState == MatchState.NONE) cancelState = MatchState.ONCANCEL;
                 mths.add(new ArenaEventMethod(method, bukkitEvent,getPlayerMethod,
-                        beginState, endState,cancelState, priority, bukkitPriority ));
+                        beginState, endState,cancelState, priority, bukkitPriority, baEvent ));
             } else {
                 if (beginState == MatchState.NONE) beginState = MatchState.ONOPEN;
                 if (endState == MatchState.NONE) endState = MatchState.ONFINISH;
                 if (cancelState == MatchState.NONE) cancelState = MatchState.ONCANCEL;
                 mths.add(new ArenaEventMethod(method, bukkitEvent,beginState,
-                        endState,cancelState, priority, bukkitPriority));
+                        endState,cancelState, priority, bukkitPriority, baEvent));
             }
             Collections.sort(mths, new Comparator<ArenaEventMethod>(){
                 @Override
@@ -416,7 +417,7 @@ public class MethodController {
                     if (rl.getListener() == listener){
                         iter.remove();
                         for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
-                            BukkitEventHandler bel = ls.get(rl.getMethod().getBukkitEvent());
+                            BukkitEventHandler bel = ls.get(rl.getMethod().getBAEvent());
                             if (bel != null){
                                 bel.removeAllListener(rl);
                             }
@@ -611,8 +612,9 @@ public class MethodController {
             BukkitEventHandler beh = ls.get(clazz);
             if (beh == null)
                 continue;
-            beh.invokeArenaEvent(listeners,event);
+            beh.invokeArenaEvent(listeners, event);
         }
+
         event.callEvent();
     }
 }

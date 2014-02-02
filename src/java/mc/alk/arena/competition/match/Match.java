@@ -5,7 +5,6 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.controllers.ArenaController;
-import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.ListenerAdder;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.RewardController;
@@ -13,12 +12,13 @@ import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
 import mc.alk.arena.controllers.messaging.MatchMessager;
 import mc.alk.arena.controllers.messaging.MessageHandler;
+import mc.alk.arena.controllers.plugins.HeroesController;
+import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.events.EventManager;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
@@ -42,6 +42,7 @@ import mc.alk.arena.events.prizes.ArenaWinnersPrizeEvent;
 import mc.alk.arena.events.teams.TeamDeathEvent;
 import mc.alk.arena.objects.ArenaLocation;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
@@ -374,7 +375,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 					public boolean intervalTick(int remaining) {
 						SObjective obj = scoreboard.getObjective(SAPIDisplaySlot.SIDEBAR);
 						if (obj != null){
-							obj.setDisplayNameSuffix(" &e("+remaining+")");}
+                            if (remaining == 0 && params.getMatchTime()== CompetitionSize.MAX){
+                                obj.setDisplayNameSuffix("");
+                            } else {
+                                obj.setDisplayNameSuffix(" &e("+remaining+")");
+                            }
+                        }
 						return (currentTimer!=null);
 					}
 		});

@@ -9,7 +9,7 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.containers.RoomContainer;
-import mc.alk.arena.listeners.custom.BukkitEventListener;
+import mc.alk.arena.listeners.custom.BaseEventListener;
 import mc.alk.arena.listeners.custom.TimingStat;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -454,7 +454,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
     @MCCommand(cmds={"setTimings"}, admin=true)
     public boolean setTimings(CommandSender sender, boolean set) {
-        BukkitEventListener.setTimings(set);
+        BaseEventListener.setTimings(set);
         sendMessage(sender, "&2Timings now " +set);
         return true;
     }
@@ -462,7 +462,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
     @MCCommand(cmds={"timings"}, admin=true)
     public boolean showTimings(CommandSender sender, String[] args) {
         boolean useMs = args.length >1 && args[1].equalsIgnoreCase("ms");
-        Map<String,TimingStat> timings = BukkitEventListener.getTimings();
+        Map<String,TimingStat> timings = BaseEventListener.getTimings();
         sendMessage(sender, BattleArena.getNameAndVersion() +" "+(useMs ? "time(ms)" : "time(ns)"));
         long gtotal = 0;
         for (Entry<String,TimingStat> entry : timings.entrySet()){

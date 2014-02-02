@@ -13,54 +13,54 @@ import mc.alk.arena.util.Countdown.CountdownCallback;
 
 public class TimeLimit extends VictoryCondition implements DefinesTimeLimit, CountdownCallback {
 
-	Countdown timer = null; /// Timer for when victory condition is time based
-	int announceInterval;
+    Countdown timer; /// Timer for when victory condition is time based
+    int announceInterval;
 
-	public TimeLimit(Match match) {
-		super(match);
-	}
+    public TimeLimit(Match match) {
+        super(match);
+    }
 
-	@SuppressWarnings("UnusedParameters")
+    @SuppressWarnings("UnusedParameters")
     @ArenaEventHandler(priority=EventPriority.LOW)
-	public void onStart(MatchStartEvent event){
-		cancelTimers();
-		announceInterval =match.getParams().getIntervalTime();
-		timer = new Countdown(BattleArena.getSelf(),match.getParams().getMatchTime(), 1, this);
-	}
+    public void onStart(MatchStartEvent event){
+        cancelTimers();
+        announceInterval =match.getParams().getIntervalTime();
+        timer = new Countdown(BattleArena.getSelf(),match.getParams().getMatchTime(), 1, this);
+    }
 
-	@ArenaEventHandler(priority=EventPriority.LOW)
-	public void onVictory(MatchResultEvent event){
-		if (event.isMatchEnding())
-			cancelTimers();
-	}
-
-	@SuppressWarnings("UnusedParameters")
     @ArenaEventHandler(priority=EventPriority.LOW)
-	public void onFinished(MatchFinishedEvent event){
-		cancelTimers();
-	}
+    public void onVictory(MatchResultEvent event){
+        if (event.isMatchEnding())
+            cancelTimers();
+    }
 
-	private void cancelTimers() {
-		if (timer != null){
-			timer.stop();
-			timer =null;
-		}
-	}
+    @SuppressWarnings("UnusedParameters")
+    @ArenaEventHandler(priority=EventPriority.LOW)
+    public void onFinished(MatchFinishedEvent event){
+        cancelTimers();
+    }
 
-	@Override
-	public boolean intervalTick(int remaining){
-		if (remaining <= 0){
-			match.timeExpired();
-		} else {
-			if (remaining % announceInterval ==0)
-				match.intervalTick(remaining);
-			match.secondTick(remaining);
-		}
-		return true;
-	}
+    private void cancelTimers() {
+        if (timer != null){
+            timer.stop();
+            timer =null;
+        }
+    }
 
-	@Override
-	public int getMatchTime() {
-		return match.getParams().getMatchTime();
-	}
+    @Override
+    public boolean intervalTick(int remaining){
+        if (remaining <= 0){
+            match.timeExpired();
+        } else {
+            if (remaining % announceInterval ==0)
+                match.intervalTick(remaining);
+            match.secondTick(remaining);
+        }
+        return true;
+    }
+
+    @Override
+    public int getMatchTime() {
+        return match.getParams().getMatchTime();
+    }
 }

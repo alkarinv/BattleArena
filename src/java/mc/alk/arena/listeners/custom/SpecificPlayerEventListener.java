@@ -27,7 +27,7 @@ import java.util.TreeSet;
  * @author alkarin
  *
  */
-public class SpecificPlayerEventListener extends BukkitEventListener{
+public class SpecificPlayerEventListener extends BaseEventListener {
 	/** map of player to listeners listening for that player */
 	final protected MapOfTreeSet<String,RListener> listeners = new MapOfTreeSet<String,RListener>(
 			new RListenerPriorityComparator());
