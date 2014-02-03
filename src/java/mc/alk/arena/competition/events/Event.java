@@ -12,6 +12,7 @@ import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.messaging.EventMessageHandler;
 import mc.alk.arena.controllers.messaging.EventMessageImpl;
 import mc.alk.arena.controllers.messaging.EventMessager;
+import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.events.EventCancelEvent;
 import mc.alk.arena.events.events.EventCompletedEvent;
 import mc.alk.arena.events.events.EventFinishedEvent;
@@ -568,9 +569,10 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
 	@EventHandler
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
-		if (hasPlayer(event.getPlayer())){
-			event.getPlayer().removeCompetition(this);
-		}
-	}
+		if (hasPlayer(event.getPlayer())) {
+            event.addMessage(MessageHandler.getSystemMessage("you_left_event", this.getName()));
+            leave(event.getPlayer());
+        }
+    }
 
 }

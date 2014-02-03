@@ -84,4 +84,4 @@ public enum GameOption{
 		}
 		return null;
 	}
-};
+}
