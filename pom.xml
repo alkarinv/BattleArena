@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.9.5.8.6</version>
+    <version>3.9.5.9</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -181,7 +181,7 @@
             </resource>
             <!-- Exclude JUnit test directory -->
             <resource>
-                <directory>src/test</directory>
+                <directory>src/tests</directory>
                 <excludes>
                     <exclude>**/*</exclude>
                 </excludes>

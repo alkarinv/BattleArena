@@ -54,7 +54,7 @@ public class Arena extends AreaContainer {
 	@Persist
 	protected PylamoRegion pylamoRegion;
 
-	/**
+    /**
 	 * Arena constructor
 	 */
 	public Arena(){
@@ -343,7 +343,7 @@ public class Arena extends AreaContainer {
 	}
 
 	/**
-	 * Return the spot where players need to join close to
+	 * Return the spot where players need to add close to
 	 * @return location
 	 */
 	public Location getJoinLocation() {
@@ -396,7 +396,7 @@ public class Arena extends AreaContainer {
 	 * @return true if the arena is valid
 	 */
 	public boolean valid() {
-		return (!(name == null || spawns.size() <1 || spawns.get(0) == null || !params.valid() ));
+		return (!(name == null || spawns.isEmpty() || spawns.get(0) == null || !params.valid() ));
 	}
 
 	public List<String> getInvalidReasons() {
@@ -645,6 +645,19 @@ public class Arena extends AreaContainer {
 		return this.name.equals(arena.name);
 	}
 
+    public List<String> getInvalidMatchReasons(Arena arena) {
+        List<String> reasons = new ArrayList<String>();
+        if (arena == null){
+            reasons.add("Arena is null");
+        } else if (this == arena) {
+            return reasons;
+        } else if (arena.name == null || this.name==null){
+            reasons.add("Arena name is null or this.name is null");
+        } else if (!this.name.equals(arena.name)){
+            reasons.add("This arena '"+this.getName()+"' isn't '" + arena.getName()+"'");
+        }
+        return reasons;
+    }
 	public boolean withinDistance(Location location, double distance){
 		for (Location l: spawns){
 			if (location.getWorld().getUID() == l.getWorld().getUID() &&
@@ -668,8 +681,8 @@ public class Arena extends AreaContainer {
 		}
 		if (jp == null)
 			return reasons;
-		if (!jp.matches(this))
-			reasons.add("You didn't specify this arena");
+        reasons.addAll(jp.getInvalidMatchReasons(this));
+
 		if (matchParams.hasOptionAt(MatchState.PREREQS,TransitionOption.WITHINDISTANCE)){
 			if (!jp.nearby(this,matchParams.getDoubleOption(MatchState.PREREQS,TransitionOption.WITHINDISTANCE))){
 				reasons.add("You aren't within " +
@@ -852,4 +865,5 @@ public class Arena extends AreaContainer {
 	public int getQueueCount() {
 		return BattleArena.getBAController().getArenaMatchQueue().getQueueCount(this);
 	}
+
 }

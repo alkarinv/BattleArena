@@ -17,7 +17,7 @@ import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
-import mc.alk.arena.objects.queues.QueueObject;
+import mc.alk.arena.objects.queues.WaitingObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
@@ -239,10 +239,10 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
     @MCCommand(cmds={"invalidQReasons"}, admin=true)
     public boolean matchQInvalidReasons(CommandSender sender, ArenaPlayer player, Arena arena) {
-        QueueObject qo = BattleArena.getBAController().getQueueObject(player);
+        WaitingObject qo = BattleArena.getBAController().getQueueObject(player);
         if (qo == null){
             return sendMessage(sender, "&cThat player is not in a queue");}
-        Collection<String> reasons = arena.getInvalidMatchReasons(qo.getMatchParams(), qo.getJoinOptions());
+        Collection<String> reasons = arena.getInvalidMatchReasons(qo.getParams(), qo.getJoinOptions());
         sendMessage(sender, "&eInvalid reasons for &6" + arena.getName());
         if (!reasons.isEmpty()){
             for (String reason: reasons){
@@ -296,6 +296,12 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
     @MCCommand(cmds={"showq"}, admin=true)
     public boolean showQueue(CommandSender sender) {
         sendMessage(sender,ac.queuesToString());
+        return true;
+    }
+
+    @MCCommand(cmds={"showaq"}, admin=true)
+    public boolean showArenaQueue(CommandSender sender) {
+        sendMessage(sender,ac.getArenaMatchQueue().toStringArenas());
         return true;
     }
 

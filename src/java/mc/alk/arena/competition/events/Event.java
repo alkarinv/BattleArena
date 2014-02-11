@@ -5,7 +5,6 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
-import mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeamController;
@@ -28,10 +27,10 @@ import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.MatchResult;
-import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -58,222 +57,223 @@ import java.util.Set;
 
 
 public abstract class Event extends Competition implements CountdownCallback, ArenaListener {
-	final String name; /// Name of this event
+    final String name; /// Name of this event
 
-	BattleArenaController ac; /// The BattleArenaController for adding removing matches
+    BattleArenaController ac; /// The BattleArenaController for adding removing matches
 
-	EventMessager mc = null; /// Our message handler
+    EventMessager mc = null; /// Our message handler
 
-	EventParams eventParams= null; /// The parameters for this event
+    EventParams eventParams= null; /// The parameters for this event
 
-	Countdown timer = null; /// Timer till Event starts, think about moving this to executor, or eventcontroller
+    Countdown timer = null; /// Timer till Event starts, think about moving this to executor, or eventcontroller
 
-	final ArrayList<Round> rounds = new ArrayList<Round>(); /// The list of matchups for each round
+    final ArrayList<Round> rounds = new ArrayList<Round>(); /// The list of matchups for each round
 
-	TeamJoinHandler joinHandler; /// Specify how teams are allocated
+    TeamJoinHandler joinHandler; /// Specify how teams are allocated
 
-	EventState state = null; /// The current state of this event
+    EventState state = null; /// The current state of this event
 
-	/// When did each transition occur
-	final Map<EventState, Long> times = Collections.synchronizedMap(new EnumMap<EventState,Long>(EventState.class));
+    /// When did each transition occur
+    final Map<EventState, Long> times = Collections.synchronizedMap(new EnumMap<EventState,Long>(EventState.class));
 
-	/**
-	 * Create our event from the specified paramaters
-	 * @param params EventParams
-	 */
-	public Event(EventParams params) {
-		transitionTo(EventState.CLOSED);
-		setParamInst(params);
-		this.ac = BattleArena.getBAController();
-		this.name = params.getName();
-	}
+    /**
+     * Create our event from the specified paramaters
+     * @param params EventParams
+     */
+    public Event(EventParams params) {
+        transitionTo(EventState.CLOSED);
+        setParamInst(params);
+        this.ac = BattleArena.getBAController();
+        this.name = params.getName();
+    }
 
-	public void openEvent() {
-		try {
-			openEvent(eventParams);
-		} catch (NeverWouldJoinException e) {
-			Log.printStackTrace(e);
-		}
-	}
+    public void openEvent() {
+        try {
+            openEvent(eventParams);
+        } catch (NeverWouldJoinException e) {
+            Log.printStackTrace(e);
+        }
+    }
 
-	public void openEvent(EventParams params) throws NeverWouldJoinException {
-		setParamInst(params);
-		teams.clear();
-		joinHandler = TeamJoinFactory.createTeamJoinHandler(params, this);
-		EventOpenEvent event = new EventOpenEvent(this);
-		callEvent(event);
-		if (event.isCancelled())
-			return;
+    public void openEvent(EventParams params) throws NeverWouldJoinException {
+        setParamInst(params);
+        teams.clear();
+        joinHandler = TeamJoinFactory.createTeamJoinHandler(params, this);
+        EventOpenEvent event = new EventOpenEvent(this);
+        callEvent(event);
+        if (event.isCancelled())
+            return;
 
-		stopTimer();
-		transitionTo(EventState.OPEN);
+        stopTimer();
+        transitionTo(EventState.OPEN);
 
-		mc.sendEventOpenMsg();
-	}
+        mc.sendEventOpenMsg();
+    }
 
-	public void autoEvent(EventParams params,int secondsTillStart,int announcementInterval) throws NeverWouldJoinException {
-		openEvent(params);
-		TimeUtil.testClock();
-		mc.sendCountdownTillEvent(secondsTillStart);
-		timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);
-	}
+    public void autoEvent(EventParams params,int secondsTillStart,int announcementInterval) throws NeverWouldJoinException {
+        openEvent(params);
+        TimeUtil.testClock();
+        mc.sendCountdownTillEvent(secondsTillStart);
+        timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);
+    }
 
-	public void addAllOnline() {
-		Player[] online = ServerUtil.getOnlinePlayers();
-		for (Player p: online){
-			ArenaTeam t = TeamController.createTeam(eventParams, BattleArena.toArenaPlayer(p));
-			TeamJoinObject tqo = new TeamJoinObject(t,eventParams,null);
-			this.joining(tqo);
-		}
-	}
+    public void addAllOnline() {
+        Player[] online = ServerUtil.getOnlinePlayers();
 
-	public void setParamInst(EventParams eventParams) {
-		if (this.eventParams != eventParams)
-			this.eventParams = new EventParams(eventParams);
-		if (mc == null)
-			mc = new EventMessager(this);
-		mc.setMessageHandler(new EventMessageImpl(this));
-	}
+        for (Player p: online){
+            ArenaTeam t = TeamController.createTeam(eventParams, BattleArena.toArenaPlayer(p));
+            TeamJoinObject tqo = new TeamJoinObject(t,eventParams,null);
+            this.joining(tqo);
+        }
+    }
 
-	public void startEvent() {
-		List<ArenaTeam> improper = joinHandler.removeImproperTeams();
-		for (ArenaTeam t: improper){
-			t.sendMessage("&cYour team has been excluded to having an improper team size");
-		}
-		/// TODO rebalance teams
-		Set<ArenaPlayer> excludedPlayers = getExcludedPlayers();
-		for (ArenaPlayer p : excludedPlayers){
-			p.sendMessage(Log.colorChat(eventParams.getPrefix()+
-					"&6 &5There werent enough players to create a &6" + eventParams.getMinTeamSize() +"&5 person team"));
-		}
-		transitionTo(EventState.RUNNING);
+    public void setParamInst(EventParams eventParams) {
+        if (this.eventParams != eventParams)
+            this.eventParams = new EventParams(eventParams);
+        if (mc == null)
+            mc = new EventMessager(this);
+        mc.setMessageHandler(new EventMessageImpl(this));
+    }
 
-		callEvent(new EventStartEvent(this,teams));
-	}
+    public void startEvent() {
+        List<ArenaTeam> improper = joinHandler.removeImproperTeams();
+        for (ArenaTeam t: improper){
+            t.sendMessage("&cYour team has been excluded to having an improper team size");
+        }
+        /// TODO rebalance teams
+        Set<ArenaPlayer> excludedPlayers = getExcludedPlayers();
+        for (ArenaPlayer p : excludedPlayers){
+            p.sendMessage(Log.colorChat(eventParams.getPrefix()+
+                    "&6 &5There werent enough players to create a &6" + eventParams.getMinTeamSize() +"&5 person team"));
+        }
+        transitionTo(EventState.RUNNING);
 
-	protected void setEventResult(CompetitionResult result, boolean announce) {
-		if (announce){
-			if (result.hasVictor()){
-				mc.sendEventVictory(result.getVictors(), result.getLosers());
-			} else {
-				mc.sendEventDraw(result.getDrawers(), result.getLosers());
-			}
-		}
-		callEvent(new EventResultEvent(this,result));
-	}
+        callEvent(new EventStartEvent(this,teams));
+    }
 
-	public void stopTimer(){
-		if (timer != null){
-			timer.stop();
-			timer = null;
-		}
-	}
+    protected void setEventResult(CompetitionResult result, boolean announce) {
+        if (announce){
+            if (result.hasVictor()){
+                mc.sendEventVictory(result.getVictors(), result.getLosers());
+            } else {
+                mc.sendEventDraw(result.getDrawers(), result.getLosers());
+            }
+        }
+        callEvent(new EventResultEvent(this,result));
+    }
 
-	public void cancelEvent() {
-		eventCancelled();
-	}
+    public void stopTimer(){
+        if (timer != null){
+            timer.stop();
+            timer = null;
+        }
+    }
 
-	public void eventCompleted(){
-		callEvent(new EventCompletedEvent(this));
-		endEvent();
-	}
+    public void cancelEvent() {
+        eventCancelled();
+    }
 
-	protected void eventCancelled(){
-		stopTimer();
-		List<ArenaTeam> newTeams = new ArrayList<ArenaTeam>(teams);
-		callEvent(new EventCancelEvent(this));
-		mc.sendEventCancelled(newTeams);
-		endEvent();
-	}
+    public void eventCompleted(){
+        callEvent(new EventCompletedEvent(this));
+        endEvent();
+    }
 
-	protected void endEvent() {
-		if (state == EventState.CLOSED)
-			return;
-		transitionTo(EventState.CLOSED);
-		if (Defaults.DEBUG_TRACE) Log.info("BAEvent::endEvent");
-		stopTimer();
+    protected void eventCancelled(){
+        stopTimer();
+        List<ArenaTeam> newTeams = new ArrayList<ArenaTeam>(teams);
+        callEvent(new EventCancelEvent(this));
+        mc.sendEventCancelled(newTeams);
+        endEvent();
+    }
 
-		removeAllTeams();
-		teams.clear();
-		joinHandler.deconstruct();
-		joinHandler = null;
-		callEvent(new EventFinishedEvent(this));
+    protected void endEvent() {
+        if (state == EventState.CLOSED)
+            return;
+        transitionTo(EventState.CLOSED);
+        if (Defaults.DEBUG_TRACE) Log.info("BAEvent::endEvent");
+        stopTimer();
+
+        removeAllTeams();
+        teams.clear();
+        joinHandler.deconstruct();
+        joinHandler = null;
+        callEvent(new EventFinishedEvent(this));
         HandlerList.unregisterAll(this);
     }
 
-	public boolean canJoin(){
-		return isOpen();
-	}
+    public boolean canJoin(){
+        return isOpen();
+    }
 
     @SuppressWarnings("unused")
     public boolean canJoin(ArenaTeam t){
-		return isOpen();
-	}
+        return isOpen();
+    }
 
-	public abstract boolean canLeave(ArenaPlayer p);
+    public abstract boolean canLeave(ArenaPlayer p);
 
-	@Override
-	public EventState getState() {return state;}
-
-	@Override
-	protected void transitionTo(CompetitionState state){
-		this.state = (EventState) state;
-		times.put(this.state, System.currentTimeMillis());
-	}
-
-	@SuppressWarnings("SuspiciousMethodCalls")
     @Override
-	public Long getTime(CompetitionState state){
-		return times.get(state);
-	}
+    public EventState getState() {return state;}
 
-	/**
-	 * Called when a player leaves minecraft.. we cant stop them so deal with it
-	 */
-	public boolean leave(ArenaPlayer p) {
-		ArenaTeam t = getTeam(p);
-		p.removeCompetition(this);
-		if (eventParams.needsLobby()){
-			RoomController.leaveLobby(eventParams, p);
-		}
-		if (t==null) /// they arent in this Event
-			return false;
-		t.playerLeft(p);
-		return true;
-	}
+    @Override
+    protected void transitionTo(CompetitionState state){
+        this.state = (EventState) state;
+        times.put(this.state, System.currentTimeMillis());
+    }
 
-	public void removeAllTeams(){
+    @SuppressWarnings("SuspiciousMethodCalls")
+    @Override
+    public Long getTime(CompetitionState state){
+        return times.get(state);
+    }
 
-		for (ArenaTeam t: teams){
-			TeamController.removeTeamHandler(t,this);
-			for (ArenaPlayer p: t.getPlayers()){
-				p.removeCompetition(this);
-			}
-		}
-		teams.clear();
-	}
+    /**
+     * Called when a player leaves minecraft.. we cant stop them so deal with it
+     */
+    public boolean leave(ArenaPlayer p) {
+        ArenaTeam t = getTeam(p);
+        p.removeCompetition(this);
+        if (eventParams.needsLobby()){
+            RoomController.leaveLobby(eventParams, p);
+        }
+        if (t==null) /// they arent in this Event
+            return false;
+        t.playerLeft(p);
+        return true;
+    }
 
-	@Override
-	public boolean removeTeam(ArenaTeam team){
-		if (teams.remove(team)){
-			TeamController.removeTeamHandler(team,this);
-			for (ArenaPlayer p: team.getPlayers()){
-				p.removeCompetition(this);
-			}
-			return true;
-		}
-		return false;
-	}
+    public void removeAllTeams(){
+
+        for (ArenaTeam t: teams){
+            TeamController.removeTeamHandler(t,this);
+            for (ArenaPlayer p: t.getPlayers()){
+                p.removeCompetition(this);
+            }
+        }
+        teams.clear();
+    }
+
+    @Override
+    public boolean removeTeam(ArenaTeam team){
+        if (teams.remove(team)){
+            TeamController.removeTeamHandler(team,this);
+            for (ArenaPlayer p: team.getPlayers()){
+                p.removeCompetition(this);
+            }
+            return true;
+        }
+        return false;
+    }
 
 
-	@Override
-	public boolean addTeam(ArenaTeam team){
-		if (teams.contains(team)) /// adding a team twice is bad mmkay
-			return true;
-		TeamController.addTeamHandler(team, this);
-		callEvent(new TeamJoinedEvent(this,team));
-		return teams.add(team);
-	}
+    @Override
+    public boolean addTeam(ArenaTeam team){
+        if (teams.contains(team)) /// adding a team twice is bad mmkay
+            return true;
+        TeamController.addTeamHandler(team, this);
+        callEvent(new TeamJoinedEvent(this,team));
+        return teams.add(team);
+    }
 
 //	public void addTeam(Player p){
 //		ArenaPlayer ap = BattleArena.toArenaPlayer(p);
@@ -284,292 +284,265 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 //		addTeam(t);
 //	}
 
-	/**
-	 * Called when a team wants to join
-	 * @param tqo TeamJoinObject that is joining
-	 * @return where the team ended up
-	 */
-	public TeamJoinResult joining(TeamJoinObject tqo){
-		TeamJoinResult tjr;
-		ArenaTeam team = tqo.getTeam();
-		if (joinHandler == null)
-			tjr = TeamJoinHandler.NOTOPEN;
-		else
-			tjr = joinHandler.joiningTeam(tqo);
-		switch(tjr.status){
-		case WAITING_FOR_PLAYERS:
-			mc.sendWaitingForMorePlayers(team, tjr.remaining);
-			for (ArenaPlayer player: tqo.getTeam().getPlayers()){
-				player.addCompetition(this);}
-			break;
-		case ADDED_TO_EXISTING: /* drop down into added */
-		case ADDED:
-			for (ArenaPlayer player: tqo.getTeam().getPlayers()){
-				player.addCompetition(this);}
-			mc.sendTeamJoined(tqo.getTeam());
-			break;
-		case CANT_FIT:
-			mc.sendCantFitTeam(team);
-			break;
-		default:
-			break;
-		}
+    /**
+     * Called when a team wants to add
+     * @param tqo TeamJoinObject that is joining
+     * @return where the team ended up
+     */
+    public JoinResult.JoinStatus joining(TeamJoinObject tqo){
+        JoinResult.JoinStatus js;
+        ArenaTeam team = tqo.getTeam();
+        if (joinHandler == null) {
+            js = JoinResult.JoinStatus.NOTOPEN;
+            return js;
+        }
+        TeamJoinHandler.TeamJoinResult tjr = joinHandler.joiningTeam(tqo);
+        switch(tjr.status){
+            case ADDED_TO_EXISTING: /* drop down into added */
+            case ADDED:
+                for (ArenaPlayer player: tqo.getTeam().getPlayers()){
+                    player.addCompetition(this);}
+                mc.sendTeamJoined(tqo.getTeam());
+                break;
+            case ADDED_STILL_NEEDS_PLAYERS:
+                mc.sendWaitingForMorePlayers(team, tjr.remaining);
+                for (ArenaPlayer player: tqo.getTeam().getPlayers()){
+                    player.addCompetition(this);}
+                break;
+            case CANT_FIT:
+                mc.sendCantFitTeam(team);
+                break;
+        }
 
-		return tjr;
-	}
+        return null;
+    }
 
-	@Override
-	public String getName(){
-		return name;
-	}
+    @Override
+    public String getName(){
+        return name;
+    }
 
-	public String getCommand(){return eventParams.getCommand();}
-	public String getDisplayName() {
-		return getName();
-	}
+    public String getCommand(){return eventParams.getCommand();}
+    public String getDisplayName() {
+        return getName();
+    }
 
-	public boolean isRunning() {return state == EventState.RUNNING;}
-	public boolean isOpen() {return state == EventState.OPEN;}
-	public boolean isClosed() {return state == EventState.CLOSED;}
-	public boolean isFinished() {return state== EventState.FINISHED;}
+    public boolean isRunning() {return state == EventState.RUNNING;}
+    public boolean isOpen() {return state == EventState.OPEN;}
+    public boolean isClosed() {return state == EventState.CLOSED;}
+    public boolean isFinished() {return state== EventState.FINISHED;}
 
-	@Override
-	public EventParams getParams() {return eventParams;}
+    @Override
+    public EventParams getParams() {return eventParams;}
 
-	public int getNTeams() {
-		int size = 0;
-		for (ArenaTeam t: teams){
-			if (t.size() > 0)
-				size++;
-		}
-		return size;
-	}
+    public int getNTeams() {
+        int size = 0;
+        for (ArenaTeam t: teams){
+            if (t.size() > 0)
+                size++;
+        }
+        return size;
+    }
 
-	public void setTeamJoinHandler(TeamJoinHandler tjh){
-		this.joinHandler = tjh;
-	}
+    public void setTeamJoinHandler(TeamJoinHandler tjh){
+        this.joinHandler = tjh;
+    }
 
-	/**
-	 * Set a Message handler to override default Event messages
-	 * @param handler EventMessageHandler
-	 */
-	public void setMessageHandler(EventMessageHandler handler){
-		this.mc.setMessageHandler(handler);
-	}
+    /**
+     * Set a Message handler to override default Event messages
+     * @param handler EventMessageHandler
+     */
+    public void setMessageHandler(EventMessageHandler handler){
+        this.mc.setMessageHandler(handler);
+    }
 
-	/**
-	 * Return the Message Handler for this Event
-	 * @return EventMessageHandler
-	 */
-	public EventMessageHandler getMessageHandler(){
-		return mc.getMessageHandler();
-	}
-
-
-	public static class TeamSizeComparator implements Comparator<ArenaTeam>{
-		public int compare(ArenaTeam arg0, ArenaTeam arg1) {
-			if (arg0.size() == arg1.size() ) return 0;
-			return (arg0.size() < arg1.size()) ? -1 : 1;
-		}
-	}
+    /**
+     * Return the Message Handler for this Event
+     * @return EventMessageHandler
+     */
+    public EventMessageHandler getMessageHandler(){
+        return mc.getMessageHandler();
+    }
 
 
-	protected Set<ArenaPlayer> getExcludedPlayers() {
-		return joinHandler == null ? null :  joinHandler.getExcludedPlayers();
-	}
-
-	public String getStatus() {
-		StringBuilder sb = new StringBuilder();
-		if (eventParams != null){
-			boolean rated = eventParams.isRated();
-			sb.append(rated ? "&4Rated" : "&aUnrated").append("&e ").append(name).append(". ");
-			sb.append("&e(&6").append(state).append("&e)");
-			sb.append("&eTeam size=").append(eventParams.getTeamSizeRange());
-			sb.append("&e Teams=&6 ").append(teams.size());
-		}
-		if (state == EventState.OPEN && joinHandler != null){
-			sb.append("\n&eJoiningTeams: ").append(MessageUtil.joinPlayers(joinHandler.getExcludedPlayers(), ", "));
-		}
-		return sb.toString();
-	}
-
-	public String getInfo() {
-		return TransitionOptions.getInfo(eventParams, eventParams.getName());
-	}
-
-	/**
-	 * Show Results from the previous Event
-	 * @return result
-	 */
-	public String getResultString() {
-		StringBuilder sb = new StringBuilder();
-		if (rounds.isEmpty()){
-			return "&eThere are no results yet";
-		}
-		if (!isFinished() && !isClosed()){
-			sb.append("&eEvent is still &6").append(state).append("\n");
-		}
-
-		//		boolean useRounds = rounds.size() > 1 || isTourney;
-		boolean useRounds = rounds.size() > 1;
-		for (int r = 0;r<rounds.size();r++){
-			Round round = rounds.get(r);
-			if (useRounds) sb.append("&5***&4 Round ").append(r + 1).append("&5 ***\n");
-			//			boolean useMatchups = round.getMatchups().size() > 1 || isTourney;
-			boolean useMatchups = round.getMatchups().size() > 1;
-			for (Matchup m: round.getMatchups()){
-				if (useMatchups) sb.append("&4Matchup :");
-				MatchResult result = m.getResult();
-				if (result == null || result.getVictors() == null){
-					for (ArenaTeam t: m.getTeams()){
-						sb.append(t.getTeamSummary()).append(" "); }
-					sb.append("\n");
-				} else {
-					sb.append(result.toPrettyString()).append("\n");}
-			}
-		}
-
-		return sb.toString();
-	}
-
-	public boolean canLeaveTeam(ArenaPlayer p) {return canLeave(p);}
-
-	/**
-	 * Broadcast to all players in the Event
-	 */
-	public void broadcast(String msg){for (ArenaTeam t : teams){t.sendMessage(msg);}}
-
-	public Long getTimeTillStart() {
-		if (timer == null)
-			return null;
-		return timer.getTimeRemaining();
-	}
-
-	public boolean intervalTick(int remaining){
-		if (!isOpen())
-			return false;
-		if (remaining == 0){
-			if (this.hasEnough() ){
-				startEvent();
-			} else {
-				mc.sendEventCancelledDueToLackOfPlayers(getPlayers());
-				cancelEvent();
-			}
-		} else {
-			mc.sendCountdownTillEvent(remaining);
-		}
-		return true;
-	}
-
-	/**
-	 * Get all players in the Event
-	 * if Event is open will return those players still waiting for a team as well
-	 * @return players
-	 */
-	@Override
-	public Set<ArenaPlayer> getPlayers() {
-		Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
-		for (ArenaTeam t: getTeams()){
-			players.addAll(t.getPlayers());}
-		if (isOpen() && joinHandler != null){
-			players.addAll(joinHandler.getExcludedPlayers());
-		}
-		return players;
-	}
-
-	public void setSilent(boolean silent) {
-		mc.setSilent(silent);
-	}
-
-	@Override
-	public String toString(){
-		return "[" + getName()+":"+id+"]";
-	}
-
-	public boolean waitingToJoin(ArenaPlayer p) {
-		return joinHandler != null && joinHandler.getExcludedPlayers().contains(p);
-	}
-
-	public boolean hasEnoughTeams() {
-		return getNTeams() >= eventParams.getMinTeams();
-	}
-
-	public boolean hasEnough() {
-		return joinHandler != null && joinHandler.hasEnough(Integer.MAX_VALUE);
-	}
-
-	@Override
-	public void addedToTeam(ArenaTeam team, Collection<ArenaPlayer> players) {/* do nothing */}
-
-	@Override
-	public boolean addedToTeam(ArenaTeam team, ArenaPlayer player) {return true;/* do nothing */}
-
-	@Override
-	public void removedFromTeam(ArenaTeam team, Collection<ArenaPlayer> players) {/* do nothing */}
-
-	@Override
-	public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {/* do nothing */}
-
-	@Override
-	public int getID(){
-		return id;
-	}
+    public static class TeamSizeComparator implements Comparator<ArenaTeam>{
+        public int compare(ArenaTeam arg0, ArenaTeam arg1) {
+            if (arg0.size() == arg1.size() ) return 0;
+            return (arg0.size() < arg1.size()) ? -1 : 1;
+        }
+    }
 
 
-	@Override
-	public MatchState getMatchState() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    protected Set<ArenaPlayer> getExcludedPlayers() {
+        return joinHandler == null ? null :  joinHandler.getExcludedPlayers();
+    }
 
-	@Override
-	public boolean isHandled(ArenaPlayer player) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    public String getStatus() {
+        StringBuilder sb = new StringBuilder();
+        if (eventParams != null){
+            boolean rated = eventParams.isRated();
+            sb.append(rated ? "&4Rated" : "&aUnrated").append("&e ").append(name).append(". ");
+            sb.append("&e(&6").append(state).append("&e)");
+            sb.append("&eTeam size=").append(eventParams.getTeamSizeRange());
+            sb.append("&e Teams=&6 ").append(teams.size());
+        }
+        if (state == EventState.OPEN && joinHandler != null){
+            sb.append("\n&eJoiningTeams: ").append(MessageUtil.joinPlayers(joinHandler.getExcludedPlayers(), ", "));
+        }
+        return sb.toString();
+    }
 
-	@Override
-	public int indexOf(ArenaTeam team) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    public String getInfo() {
+        return TransitionOptions.getInfo(eventParams, eventParams.getName());
+    }
 
-	@Override
-	public boolean checkReady(ArenaPlayer player, ArenaTeam team,
-			TransitionOptions mo, boolean b) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    /**
+     * Show Results from the previous Event
+     * @return result
+     */
+    public String getResultString() {
+        StringBuilder sb = new StringBuilder();
+        if (rounds.isEmpty()){
+            return "&eThere are no results yet";
+        }
+        if (!isFinished() && !isClosed()){
+            sb.append("&eEvent is still &6").append(state).append("\n");
+        }
 
-	@Override
-	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+        //		boolean useRounds = rounds.size() > 1 || isTourney;
+        boolean useRounds = rounds.size() > 1;
+        for (int r = 0;r<rounds.size();r++){
+            Round round = rounds.get(r);
+            if (useRounds) sb.append("&5***&4 Round ").append(r + 1).append("&5 ***\n");
+            //			boolean useMatchups = round.getMatchups().size() > 1 || isTourney;
+            boolean useMatchups = round.getMatchups().size() > 1;
+            for (Matchup m: round.getMatchups()){
+                if (useMatchups) sb.append("&4Matchup :");
+                MatchResult result = m.getResult();
+                if (result == null || result.getVictors() == null){
+                    for (ArenaTeam t: m.getTeams()){
+                        sb.append(t.getTeamSummary()).append(" "); }
+                    sb.append("\n");
+                } else {
+                    sb.append(result.toPrettyString()).append("\n");}
+            }
+        }
 
-	@Override
-	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+        return sb.toString();
+    }
 
-	@Override
-	public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+    public boolean canLeaveTeam(ArenaPlayer p) {return canLeave(p);}
 
-	@Override
-	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-		player.removeCompetition(this);
-	}
+    /**
+     * Broadcast to all players in the Event
+     */
+    public void broadcast(String msg){for (ArenaTeam t : teams){t.sendMessage(msg);}}
 
-	@Override
-	public void onPreEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+    public Long getTimeTillStart() {
+        if (timer == null)
+            return null;
+        return timer.getTimeRemaining();
+    }
 
-	@Override
-	public void onPostEnter(ArenaPlayer player,ArenaPlayerTeleportEvent apte) {/* do nothing */}
+    public boolean intervalTick(int remaining){
+        if (!isOpen())
+            return false;
+        if (remaining == 0){
+            if (this.hasEnough() ){
+                startEvent();
+            } else {
+                mc.sendEventCancelledDueToLackOfPlayers(getPlayers());
+                cancelEvent();
+            }
+        } else {
+            mc.sendCountdownTillEvent(remaining);
+        }
+        return true;
+    }
 
-	@Override
-	public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+    /**
+     * Get all players in the Event
+     * if Event is open will return those players still waiting for a team as well
+     * @return players
+     */
+    @Override
+    public Set<ArenaPlayer> getPlayers() {
+        Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
+        for (ArenaTeam t: getTeams()){
+            players.addAll(t.getPlayers());}
+        if (isOpen() && joinHandler != null){
+            players.addAll(joinHandler.getExcludedPlayers());
+        }
+        return players;
+    }
 
-	@Override
-	public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+    public void setSilent(boolean silent) {
+        mc.setSilent(silent);
+    }
 
-	@EventHandler
-	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
-		if (hasPlayer(event.getPlayer())) {
+    @Override
+    public String toString(){
+        return "[" + getName()+":"+id+"]";
+    }
+
+    public boolean waitingToJoin(ArenaPlayer p) {
+        return joinHandler != null && joinHandler.getExcludedPlayers().contains(p);
+    }
+
+    public boolean hasEnoughTeams() {
+        return getNTeams() >= eventParams.getMinTeams();
+    }
+
+    public boolean hasEnough() {
+        return joinHandler != null && joinHandler.hasEnough(Integer.MAX_VALUE);
+    }
+
+    @Override
+    public void addedToTeam(ArenaTeam team, Collection<ArenaPlayer> players) {/* do nothing */}
+
+    @Override
+    public boolean addedToTeam(ArenaTeam team, ArenaPlayer player) {return true;/* do nothing */}
+
+    @Override
+    public void removedFromTeam(ArenaTeam team, Collection<ArenaPlayer> players) {/* do nothing */}
+
+    @Override
+    public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {/* do nothing */}
+
+    @Override
+    public int getID(){
+        return id;
+    }
+
+    @Override
+    public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+    @Override
+    public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+    @Override
+    public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+    @Override
+    public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+        player.removeCompetition(this);
+    }
+
+    @Override
+    public void onPreEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+    @Override
+    public void onPostEnter(ArenaPlayer player,ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+    @Override
+    public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+    @Override
+    public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
+
+    @EventHandler
+    public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
+        if (hasPlayer(event.getPlayer())) {
             event.addMessage(MessageHandler.getSystemMessage("you_left_event", this.getName()));
             leave(event.getPlayer());
         }

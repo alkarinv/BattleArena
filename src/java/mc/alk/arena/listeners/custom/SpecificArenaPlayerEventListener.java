@@ -55,7 +55,8 @@ public class SpecificArenaPlayerEventListener extends SpecificPlayerEventListene
 			try {
 				method.invoke(lmethod.getListener(), os); /// Invoke the listening arenalisteners method
 			} catch (Exception e){
-				Log.err("["+BattleArena.getNameAndVersion()+" Error] method=" + method + ",  types.length=" +types.length +",  p=" + p +",  listener="+lmethod);
+				Log.err("["+BattleArena.getNameAndVersion()+" Error] method=" + method.getName() +
+                        ",  types.length=" +types.length +",  p=" + p +",  listener="+lmethod);
 				Log.printStackTrace(e);
 			}
 		}

@@ -17,6 +17,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -48,6 +49,7 @@ import org.bukkit.potion.PotionEffect;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -65,9 +67,10 @@ public class ArenaMatch extends Match {
     Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
     Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
 
-    public ArenaMatch(Arena arena, MatchParams mp) {
-        super(arena, mp);
+    public ArenaMatch(Arena arena, MatchParams mp, Collection<ArenaListener> listeners) {
+        super(arena, mp,listeners);
     }
+
     @ArenaEventHandler(priority=EventPriority.LOW, begin=MatchState.ONPRESTART, end=MatchState.ONSTART)
     public void onPlayerMove2(PlayerMoveEvent e) {
         e.setCancelled(true);
@@ -119,15 +122,15 @@ public class ArenaMatch extends Match {
                     if (!Defaults.DEBUG_VIRTUAL)
                         Log.printStackTrace(e);
                 }
-            } else if (woolTeams){  /// Get rid of the wool from teams so it doesnt drop
-                final int index = teams.indexOf(t);
+            } else if (woolTeams) {  /// Get rid of the wool from teams so it doesnt drop
+                final int index = t.getIndex();
                 ItemStack teamHead = TeamUtil.getTeamHead(index);
                 List<ItemStack> items = pde.getDrops();
-                for (ItemStack is : items){
-                    if (is.getType() == teamHead.getType() && is.getDurability() == teamHead.getDurability()){
+                for (ItemStack is : items) {
+                    if (is.getType() == teamHead.getType() && is.getDurability() == teamHead.getDurability()) {
                         final int amt = is.getAmount();
                         if (amt > 1)
-                            is.setAmount(amt-1);
+                            is.setAmount(amt - 1);
                         else
                             is.setType(Material.AIR);
                         break;
@@ -239,7 +242,7 @@ public class ArenaMatch extends Match {
             final ArenaTeam t = getTeam(p);
             if (mo.hasAnyOption(TransitionOption.TELEPORTLOBBY,TransitionOption.TELEPORTMAINLOBBY,
                     TransitionOption.TELEPORTWAITROOM,TransitionOption.TELEPORTMAINWAITROOM)){
-                final int index = this.getTeamIndex(t);
+                final int index = t.getIndex();
                 if (mo.hasOption(TransitionOption.TELEPORTLOBBY)){
                     loc = RoomController.getLobbySpawn(index, getParams().getType(), randomRespawn);
                 } else if (mo.hasOption(TransitionOption.TELEPORTMAINLOBBY)){
@@ -288,7 +291,7 @@ public class ArenaMatch extends Match {
                         psc.restoreMatchItems(p);
                     }
                     if (woolTeams){
-                        TeamUtil.setTeamHead(teams.indexOf(t), p);
+                        TeamUtil.setTeamHead(t.getIndex(), p);
                     }
                 }
             });
@@ -377,7 +380,8 @@ public class ArenaMatch extends Match {
         ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
         Integer id = respawnTimer.remove(ap.getName());
         Bukkit.getScheduler().cancelTask(id);
-        Location loc = am.getSpawn(am.indexOf(am.getTeam(ap)), am.getParams().hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
+        Location loc = am.getSpawn(am.getTeam(ap).getIndex(),
+                am.getParams().hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
         TeleportController.teleport(ap.getPlayer(), loc);
     }
 
@@ -399,26 +403,29 @@ public class ArenaMatch extends Match {
         changeClass(event.getPlayer(), am, ac);
     }
 
-    public static void changeClass(Player p, PlayerHolder am, final ArenaClass ac) {
+    public static boolean changeClass(Player p, PlayerHolder am, final ArenaClass ac) {
         if (ac == null || !ac.valid()) /// Not a valid class sign
-            return;
+            return false;
         if (!p.hasPermission("arena.class.use."+ac.getName().toLowerCase())){
             MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
-            return;
+            return false;
         }
 
         final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
         ArenaClass chosen = ap.getCurrentClass();
         if (chosen != null && chosen.getName().equals(ac.getName())){
             MessageUtil.sendMessage(p, "&cYou already are a &6" + ac.getName());
-            return;
+            return false;
         }
         String playerName = p.getName();
-        if(userTime.containsKey(playerName)){
-            if((System.currentTimeMillis() - userTime.get(playerName)) < Defaults.TIME_BETWEEN_CLASS_CHANGE*1000){
-                MessageUtil.sendMessage(p, "&cYou must wait &6"+Defaults.TIME_BETWEEN_CLASS_CHANGE+"&c seconds between class selects");
-                return;
-            }
+        if(userTime.containsKey(playerName)) {
+            Log.debug(System.currentTimeMillis() - userTime.get(playerName) +
+                    " --- " + ((System.currentTimeMillis() - userTime.get(playerName)) < Defaults.TIME_BETWEEN_CLASS_CHANGE * 1000) +"   --- " +  Defaults.TIME_BETWEEN_CLASS_CHANGE);
+
+//            if ((System.currentTimeMillis() - userTime.get(playerName)) < Defaults.TIME_BETWEEN_CLASS_CHANGE * 1000) {
+//                MessageUtil.sendMessage(p, "&cYou must wait &6" + Defaults.TIME_BETWEEN_CLASS_CHANGE + "&c seconds between class selects");
+//                return false;
+//            }
         }
         MatchParams mp = am.getParams();
         userTime.put(playerName, System.currentTimeMillis());
@@ -436,7 +443,7 @@ public class ArenaMatch extends Match {
             }
             if (Defaults.NEED_SAME_ITEMS_TO_CHANGE_CLASS && !InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
                 MessageUtil.sendMessage(p,"&cYou can't switch classes after changing items!");
-                return;
+                return false;
             }
         }
         am.callEvent(new ArenaPlayerClassSelectedEvent(ac));
@@ -449,7 +456,7 @@ public class ArenaMatch extends Match {
         MatchState state = am.getMatchState();
         boolean armorTeams = mp.hasAnyOption(TransitionOption.ARMORTEAMS);
         ArenaTeam team = am.getTeam(ap);
-        int teamIndex = team == null ? -1 : am.indexOf(team);
+        int teamIndex = team == null ? -1 : team.getIndex();
         Color color = armorTeams && teamIndex != -1 ? TeamUtil.getTeamColor(teamIndex) : null;
         ap.despawnMobs();
         /// Regive class/items
@@ -470,7 +477,8 @@ public class ArenaMatch extends Match {
         if (effects!=null){
             EffectUtil.enchantPlayer(p, effects);}
 
-        MessageUtil.sendMessage(p, "&2You have chosen the &6"+ac.getName());
+        MessageUtil.sendMessage(p, "&2You have chosen the &6" + ac.getName());
+        return true;
     }
 
 

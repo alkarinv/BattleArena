@@ -15,9 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -28,17 +26,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public abstract class Competition implements PlayerHolder, TeamHandler {
 
 	/** Our teams */
-	protected final List<ArenaTeam> teams = new CopyOnWriteArrayList<ArenaTeam>();
+	protected List<ArenaTeam> teams = new CopyOnWriteArrayList<ArenaTeam>();
 
 //	/** Players that have left the match */
 	protected final Set<String> leftPlayers = Collections.synchronizedSet(new HashSet<String>());
-
-	/** a list of team indexes.  Teams can come and go, so the List of teams isnt always reflective
-	 * of the real index.*/
-	protected final Map<ArenaTeam,Integer> teamIndexes = new ConcurrentHashMap<ArenaTeam,Integer>();
-
-	/** Which team indexes are currently used */
-	protected final Set<Integer> usedIndexes = new HashSet<Integer>();
 
 	static int count =0;
 
@@ -145,11 +136,8 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 	public void setTeams(List<ArenaTeam> teams){
 		this.teams.clear();
 		this.teams.addAll(teams);
-		this.teamIndexes.clear();
-		this.usedIndexes.clear();
 		for (int i=0;i<teams.size();i++){
-			teamIndexes.put(teams.get(i), i);
-			usedIndexes.add(i);
+			teams.get(i).setIndex(i);
 		}
 	}
 
@@ -168,7 +156,6 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 	public void callEvent(BAEvent event) {
 		if (event instanceof CompetitionEvent && ((CompetitionEvent)event).getCompetition()==null){
 			((CompetitionEvent)event).setCompetition(this);}
-//		event.callEvent(); /// Call anyone using generic bukkit listeners
 		methodController.callEvent(event);
 	}
 

@@ -112,11 +112,6 @@ public class GameManager implements PlayerHolder{
 	}
 
 	@Override
-	public int indexOf(ArenaTeam team) {
-		return 0;
-	}
-
-	@Override
 	public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b) {
 		return false;
 	}

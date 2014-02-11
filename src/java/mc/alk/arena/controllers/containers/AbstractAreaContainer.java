@@ -220,11 +220,6 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 	}
 
 	@Override
-	public int indexOf(ArenaTeam team) {
-		return teamIndexes.containsKey(team) ? teamIndexes.get(team) : -1;
-	}
-
-	@Override
 	public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b) {
 		return params.getTransitionOptions().playerReady(player, null);
 	}

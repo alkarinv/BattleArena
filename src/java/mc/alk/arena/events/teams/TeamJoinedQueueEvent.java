@@ -8,7 +8,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 public class TeamJoinedQueueEvent extends BAEvent{
 	final ArenaTeam team;
 	final int playersInQueue;
-	final int teamsInQueue;
+//	final int teamsInQueue;
 	final int pos;
 	final Long timeToStart;
 	final ArenaParams params;
@@ -19,7 +19,7 @@ public class TeamJoinedQueueEvent extends BAEvent{
 		this.pos = qpp.pos;
 		this.timeToStart = qpp.time;
 		this.params = qpp.params;
-		this.teamsInQueue = qpp.teamsInQueue;
+//		this.teamsInQueue = qpp.teamsInQueue;
 	}
 
 
@@ -43,7 +43,7 @@ public class TeamJoinedQueueEvent extends BAEvent{
 		return params;
 	}
 
-	public int getTeamsInQueue() {
-		return teamsInQueue;
-	}
+//	public int getTeamsInQueue() {
+//		return teamsInQueue;
+//	}
 }

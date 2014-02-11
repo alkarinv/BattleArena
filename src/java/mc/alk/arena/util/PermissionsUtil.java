@@ -59,9 +59,9 @@ public class PermissionsUtil {
 	}
 
 	public static boolean hasTeamPerm(ArenaPlayer player, MatchParams mp, Integer teamIndex) {
-		return player.hasPermission("arena.join.team.all") ||
-				player.hasPermission("arena.join."+mp.getName().toLowerCase()+".team.all") ||
-				player.hasPermission("arena.join."+mp.getCommand().toLowerCase()+".team."+(teamIndex+1));
+		return player.hasPermission("arena.add.team.all") ||
+				player.hasPermission("arena.add."+mp.getName().toLowerCase()+".team.all") ||
+				player.hasPermission("arena.add."+mp.getCommand().toLowerCase()+".team."+(teamIndex+1));
 	}
 
 	public static boolean hasMatchPerm(ArenaPlayer player , MatchParams mp, String perm) {

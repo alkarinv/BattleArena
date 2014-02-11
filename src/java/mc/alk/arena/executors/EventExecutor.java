@@ -153,14 +153,14 @@ public class EventExecutor extends BAExecutor{
 		return true; /// awkward, how did they get here???
 	}
 
-	@MCCommand(cmds={"join"},usage="join", order=2)
+	@MCCommand(cmds={"join"}, order=2)
 	public boolean eventJoin(ArenaPlayer player, EventParams eventParams, String[] args) {
 		eventJoin(player, eventParams, args, false);
 		return true;
 	}
 
 	public boolean eventJoin(ArenaPlayer p, EventParams eventParams, String[] args, boolean adminCommand) {
-		if (!adminCommand && !PermissionsUtil.hasMatchPerm(p, eventParams, "join")){
+		if (!adminCommand && !PermissionsUtil.hasMatchPerm(p, eventParams, "add")){
 			sendSystemMessage(p,"no_join_perms", eventParams.getCommand());
 			return false;
 		}
@@ -168,7 +168,7 @@ public class EventExecutor extends BAExecutor{
 			return true;}
 		Event event = controller.getOpenEvent(eventParams);
 
-		/// perform join checks
+		/// perform add checks
 		if (event == null){
 			sendSystemMessage(p, "no_event_open");
 			return false;
@@ -206,7 +206,7 @@ public class EventExecutor extends BAExecutor{
 			return sendMessage(p,"&6/team leave: &cto leave the team");
 		}
 
-		/// Check any options specified in the join
+		/// Check any options specified in the add
 		JoinOptions jp;
 		try {
 			jp = JoinOptions.parseOptions(sq,t, p, Arrays.copyOfRange(args, 1, args.length));
@@ -229,7 +229,7 @@ public class EventExecutor extends BAExecutor{
 			return false;}
 		TeamJoinObject tqo = new TeamJoinObject(t,sq,jp);
 
-		/// Finally actually join the event
+		/// Finally actually add the event
 		event.joining(tqo);
 		//		sendSystemMessage(t, "you_joined_event", event.getDisplayName());
 		if (sq.getSecondsTillStart() != null){

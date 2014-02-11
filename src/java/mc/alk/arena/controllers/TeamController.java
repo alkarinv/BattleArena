@@ -205,7 +205,7 @@ public enum TeamController implements Listener, TeamHandler {
 
 	public static ArenaTeam createTeam(MatchParams mp, ArenaPlayer p) {
 		if (DEBUG) System.out.println("------- createTeam sans handler " + p.getName());
-		return TeamFactory.createTeam(mp, p);
+		return TeamFactory.createCompositeTeam(-1, mp, p);
 	}
 
 

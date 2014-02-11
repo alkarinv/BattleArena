@@ -23,7 +23,7 @@ public class VoteExecutor extends CustomCommandExecutor{
 		if (!pc.isHandled(ap)){
 			return sendMessage(ap, "&cYou aren't inside the lobby for "+arena.getArenaType());}
 		MatchParams mp = ParamController.getMatchParamCopy(arena.getArenaType());
-		if (!PermissionsUtil.hasMatchPerm(ap, mp,"join")){
+		if (!PermissionsUtil.hasMatchPerm(ap, mp,"add")){
 			return sendMessage(ap, "&cYou don't have permission to vote in a &6" + mp.getCommand());}
 		pc.castVote(ap,mp,arena);
 		return true;

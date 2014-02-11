@@ -724,8 +724,9 @@ public class InventoryUtil {
 			handler.setOwnerName(is,ownerName);
 
 		for (int i = 1; i < split.length-1;i++){
+            if (Defaults.TESTSERVER) continue;
 			EnchantmentWithLevel ewl = getEnchantment(split[i].trim());
-			if (ewl == null){
+            if (ewl == null){
 				throw new IllegalArgumentException(" enchantment " + split[i].trim() +" does not exist");
 			}
 			try {
@@ -797,7 +798,7 @@ public class InventoryUtil {
 	}
 
 	public static EnchantmentWithLevel getEnchantment(String str) {
-		if (str.equalsIgnoreCase("all")){
+        if (str.equalsIgnoreCase("all")){
 			return new EnchantmentWithLevel(true);
 		}
 		Enchantment e = null;

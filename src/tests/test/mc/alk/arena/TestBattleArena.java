@@ -1,7 +1,5 @@
 package test.mc.alk.arena;
 
-import java.io.File;
-
 import junit.framework.TestCase;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -22,13 +20,13 @@ import mc.alk.arena.serializers.BaseConfig;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.mc.MCServer;
-
 import org.bukkit.entity.Player;
-
 import test.mc.alk.arena.objects.TestPlugin;
 import test.mc.alk.testbukkit.TestBukkitPlayer;
 import test.mc.alk.testbukkit.TestBukkitServer;
 import test.mc.alk.testbukkit.TestMCBukkitServer;
+
+import java.io.File;
 
 
 public class TestBattleArena extends TestCase{
@@ -39,7 +37,9 @@ public class TestBattleArena extends TestCase{
 	protected void setUp(){
 		plugin = new TestPlugin();
 		Defaults.DEBUG_MSGS = true;
-		ArenaType.register("arena", Arena.class, plugin);
+//        Defaults.TESTSERVER = true;
+
+        ArenaType.register("arena", Arena.class, plugin);
 		BukkitInterface.setServer(new TestBukkitServer());
 		plugin.onEnable();
 

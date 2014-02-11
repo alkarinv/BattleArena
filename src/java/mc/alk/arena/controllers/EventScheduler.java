@@ -76,10 +76,15 @@ public class EventScheduler implements Runnable, ArenaListener{
 				} else { /// normal match
 					EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null, params);
 					Arena arena = eoo.getArena(params, null);
-
-					BattleArena.getBAController().createAndAutoMatch(arena, eoo);
-					arena.addArenaListener(scheduler);
-					success = true;
+                    Arena a = BattleArena.getBAController().reserveArena(arena);
+                    if (a != null){
+                        BattleArena.getBAController().createAndAutoMatch(arena, eoo);
+                        arena.addArenaListener(scheduler);
+                        success = true;
+                    } else {
+                        Log.warn("[BattleArena] scheduled command args="+Arrays.toString(args) +
+                                " can't be started. Arena "+arena+" is not there or in use");
+                    }
 				}
 			} catch (InvalidEventException e) {
 				/** do nothing */

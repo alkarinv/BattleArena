@@ -161,5 +161,17 @@ public interface ArenaTeam {
 	public MatchParams getCurrentParams();
 
 	public void setCurrentParams(MatchParams params);
+
+    public int getMinPlayers();
+
+    public int getMaxPlayers();
+
+    public void setMinPlayers(int num);
+
+    public void setMaxPlayers(int num);
+
+    public void setIndex(int index);
+
+    public int getIndex();
 }
 

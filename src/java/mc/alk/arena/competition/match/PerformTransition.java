@@ -61,7 +61,12 @@ public class PerformTransition {
     }
 
     public static boolean transition(PlayerHolder am, final MatchState transition, ArenaTeam team, boolean onlyInMatch) {
-        return transition(am,transition,team,onlyInMatch,true);
+        try {
+            return transition(am,transition,team,onlyInMatch,true);
+        } catch (Exception e){
+            Log.printStackTrace(e);
+            return false;
+        }
     }
 
     static boolean transition(PlayerHolder am, final MatchState transition, ArenaTeam team, boolean onlyInMatch,
@@ -96,11 +101,18 @@ public class PerformTransition {
     public static boolean transition(final PlayerHolder am, final MatchState transition,
                                      final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch) {
         final boolean insideArena = am.isHandled(player);
-        return transition(am,transition,player,team,onlyInMatch,insideArena,am.getParams().getTransitionOptions());
+        if (team != null && team.getIndex() != -1 && am.getParams().getTeamParams() != null &&
+                am.getParams().getTeamParams().containsKey(team.getIndex())){
+            return transition(am,transition,player,team,onlyInMatch,insideArena,am.getParams().
+                    getTeamParams().get(team.getIndex()).getTransitionOptions());
+        } else {
+            return transition(am,transition,player,team,onlyInMatch,insideArena,am.getParams().getTransitionOptions());
+        }
+
     }
 
     @SuppressWarnings("ConstantConditions")
-    public static boolean transition(final PlayerHolder am, final MatchState transition,
+    private static boolean transition(final PlayerHolder am, final MatchState transition,
                                      final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch,
                                      final boolean insideArena, MatchTransitions tops) {
         if (tops == null){
@@ -137,7 +149,7 @@ public class PerformTransition {
         final String disguiseAllAs = mo.getDisguiseAllAs();
         final Boolean undisguise = mo.undisguise();
 
-        final int teamIndex = team == null ? -1 : am.indexOf(team);
+        final int teamIndex = team == null ? -1 : team.getIndex();
         boolean playerReady = player.isOnline();
         final boolean dead = !player.isOnline() || player.isDead();
         final Player p = player.getPlayer();

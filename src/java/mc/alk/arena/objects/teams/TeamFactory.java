@@ -1,30 +1,30 @@
 package mc.alk.arena.objects.teams;
 
-import java.lang.reflect.Constructor;
-import java.util.Set;
-
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.Log;
 
+import java.lang.reflect.Constructor;
+import java.util.Set;
+
 public class TeamFactory {
 
-	public static ArenaTeam createTeam(MatchParams params, ArenaPlayer p){
-		return new CompositeTeam(p);
-	}
+	public static ArenaTeam createCompositeTeam(int index, MatchParams params, ArenaPlayer p){
+		CompositeTeam ct = new CompositeTeam(p);
+        ct.setIndex(index);
+        ct.setCurrentParams(params);
+        return ct;
+    }
 
-	//	public static Team createTeam(Set<ArenaPlayer> players){
-	//		return new CompositeTeam(players);
-	//	}
+    public static CompositeTeam createCompositeTeam(int index, MatchParams params, Set<ArenaPlayer> players) {
+        CompositeTeam ct =  new CompositeTeam(players);
+        ct.setCurrentParams(params);
+        ct.setIndex(index);
+        return ct;
+    }
 
-	public static CompositeTeam createCompositeTeam(MatchParams params, Set<ArenaPlayer> players) {
+    public static CompositeTeam createCompositeTeam(MatchParams params, Set<ArenaPlayer> players) {
 		CompositeTeam ct =  new CompositeTeam(players);
-		ct.setCurrentParams(params);
-		return ct;
-	}
-
-	public static CompositeTeam createCompositeTeam(MatchParams params) {
-		CompositeTeam ct =  new CompositeTeam();
 		ct.setCurrentParams(params);
 		return ct;
 	}
@@ -32,10 +32,6 @@ public class TeamFactory {
 	public static CompositeTeam createCompositeTeam() {
 		return new CompositeTeam();
 	}
-
-	//	public static CompositeTeam createCompositeTeam(ArenaTeam team) {
-	//		return new CompositeTeam(team);
-	//	}
 
 	public static ArenaTeam createTeam(Class<? extends ArenaTeam> clazz) {
 		Class<?>[] args = {};
@@ -51,5 +47,25 @@ public class TeamFactory {
 		}
 		return null;
 	}
+
+    public static ArenaTeam createTeam(Integer index, MatchParams params, Class<? extends ArenaTeam> clazz) {
+        ArenaTeam at = createTeam(clazz);
+        if (at == null)
+            return null;
+        if (index != null && (index == -1 || params.getTeamParams() == null || !params.getTeamParams().containsKey(index))){
+            at.setMinPlayers(params.getMinTeamSize());
+            at.setMaxPlayers(params.getMaxTeamSize());
+        } else {
+            MatchParams tp = params.getTeamParams().get(index);
+            at.setMinPlayers(tp.getMinTeamSize());
+            at.setMaxPlayers(tp.getMaxTeamSize());
+        }
+        at.setCurrentParams(params);
+        if (index != null && index != -1){
+            at.setIndex(index);
+        }
+        return at;
+    }
+
 
 }

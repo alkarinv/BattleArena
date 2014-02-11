@@ -7,6 +7,10 @@ public class MinMax {
 
     public int max;
 
+    public MinMax(){
+        this.min = -1; this.max = -1;
+    }
+
     public MinMax(int size){
         this.min = size; this.max = size;
     }

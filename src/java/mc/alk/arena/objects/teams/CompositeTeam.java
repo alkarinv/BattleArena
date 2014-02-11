@@ -1,10 +1,10 @@
 package mc.alk.arena.objects.teams;
 
+import mc.alk.arena.objects.ArenaPlayer;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import mc.alk.arena.objects.ArenaPlayer;
 
 
 /**
@@ -102,4 +102,5 @@ public class CompositeTeam extends AbstractTeam{
 			t.clear();
 		}
 	}
+
 }

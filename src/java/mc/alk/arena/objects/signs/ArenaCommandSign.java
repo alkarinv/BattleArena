@@ -49,7 +49,7 @@ public class ArenaCommandSign implements ConfigurationSerializable{
 		String args[];
 		switch (command){
 		case JOIN:
-			args = new String[]{"join", options1};
+			args = new String[]{"add", options1};
 			executor.join(player, mp, args, true);
 			break;
 		case LEAVE:
@@ -67,7 +67,7 @@ public class ArenaCommandSign implements ConfigurationSerializable{
 		String args[];
 		switch (command){
 		case JOIN:
-			args = new String[]{"join", options1};
+			args = new String[]{"add", options1};
 			executor.eventJoin(player, ep, args, true);
 			break;
 		case LEAVE:

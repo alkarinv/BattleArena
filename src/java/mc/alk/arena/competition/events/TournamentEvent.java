@@ -9,7 +9,7 @@ import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
-import mc.alk.arena.listeners.custom.MatchCreationCallback;
+import mc.alk.arena.events.matches.MatchCreatedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.CompetitionSize;
@@ -18,9 +18,12 @@ import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.queues.MatchTeamQObject;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -49,7 +52,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class TournamentEvent extends Event implements Listener, MatchCreationCallback{
+public class TournamentEvent extends Event implements Listener, ArenaListener {
 	public long timeBetweenRounds;
 
 	int round = -1;
@@ -68,10 +71,6 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
 	}
 
-	@Override
-	public void matchCreated(Match match, Matchup matchup) {
-		matchups.put(match, matchup);
-	}
 
 	@Override
 	public void openEvent(EventParams mp) throws NeverWouldJoinException {
@@ -141,6 +140,12 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		}
 		startRound();
 	}
+
+    @ArenaEventHandler(begin = MatchState.ONCREATE, end = MatchState.ONOPEN)
+    public void onMatchCreatedEvent(MatchCreatedEvent event) {
+        Matchup matchup = (((MatchTeamQObject) event.getOriginalObject().getOriginalQueuedObject()).getMatchup());
+        matchups.put(event.getMatch(), matchup);
+    }
 
 	@ArenaEventHandler
 	public void matchCompleted(MatchCompletedEvent event){
@@ -280,9 +285,11 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 				loffset--;
 				hoffset++;
 			}
-			m = new Matchup(eventParams,newTeams, new JoinOptions());
+            JoinOptions jo = new JoinOptions();
+            jo.setMatchParams(eventParams);
+
+            m = new Matchup(eventParams,newTeams, jo);
 			m.addArenaListener(this);
-			m.addMatchCreationListener(this);
 			tr.addMatchup(m);
 		}
 	}
@@ -302,9 +309,11 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 				newTeams.add(aliveTeams.get(index));
 				newTeams.add(aliveTeams.get(size-1-index));
 			}
-			m = new Matchup(eventParams,newTeams, new JoinOptions());
+            JoinOptions jo = new JoinOptions();
+            jo.setMatchParams(eventParams);
+            m = new Matchup(eventParams,newTeams, jo);
+
 			m.addArenaListener(this);
-			m.addMatchCreationListener(this);
 			tr.addMatchup(m);
 		}
 	}
@@ -330,7 +339,7 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 			public void run() {
 				Round tr = rounds.get(round);
 				for (Matchup m: tr.getMatchups()){
-					ac.addMatchup(m);
+					ac.addMatchup(new MatchTeamQObject(m));
 				}
 			}
 		}, (long) (timeBetweenRounds * 20L * Defaults.TICK_MULT));
@@ -450,7 +459,12 @@ public class TournamentEvent extends Event implements Listener, MatchCreationCal
 		return false;
 	}
 
-	@Override
+    @Override
+    public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b) {
+        return false;
+    }
+
+    @Override
 	public Location getSpawn(int index, boolean random) {
 		return null;
 	}

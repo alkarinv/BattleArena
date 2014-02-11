@@ -12,11 +12,11 @@ public enum TransitionOption{
 	INDIVIDUALWINS("individualWins", false),		/// DEFAULTS only: discrete wins and losses per team
 
 	/// preReq only Options
-	NEEDARMOR ("needArmor",false),					/// PREREQ only: player needs armor to join the match
-	NOINVENTORY("noInventory",false),				/// PREREQ only: player needs to have no inventory to join
-	NEEDITEMS ("needItems",false),					/// PREREQ only: player needs the following items to join
-	SAMEWORLD("sameWorld",false),					/// PREREQ only: player can only join from the same world
-	WITHINDISTANCE("withinDistance",true),			/// PREREQ only: player needs to be within the following distance to join
+	NEEDARMOR ("needArmor",false),					/// PREREQ only: player needs armor to add the match
+	NOINVENTORY("noInventory",false),				/// PREREQ only: player needs to have no inventory to add
+	NEEDITEMS ("needItems",false),					/// PREREQ only: player needs the following items to add
+	SAMEWORLD("sameWorld",false),					/// PREREQ only: player can only add from the same world
+	WITHINDISTANCE("withinDistance",true),			/// PREREQ only: player needs to be within the following distance to add
 	LEVELRANGE("levelRange",true),					/// =<range>: PREREQ only: player needs to be within the given range
 
 	/// Save and Restore Options, These happen when a player first enters, and when the player leaves
@@ -112,7 +112,7 @@ public enum TransitionOption{
 	KEEPINVENTORY("keepInventory", false),			/// Allow the players to keep whatever inventory they currently have when they respawn
 
 	/// onJoin only options
-	ALWAYSJOIN("alwaysJoin",false),					/// Allow players to join at any time
+	ALWAYSJOIN("alwaysJoin",false),					/// Allow players to add at any time
 	REJOIN("rejoin",false),							/// Rejoin players
 
 	/// onSpawn Only Options
@@ -147,8 +147,10 @@ public enum TransitionOption{
 		} catch (IllegalArgumentException e){
 			if (str.equals("DROPITEMOFF"))
 				return TransitionOption.ITEMDROPOFF;
-			else if (str.equals("RESETREGION"))
-				return TransitionOption.WGRESETREGION;
+            else if (str.equals("RESETREGION"))
+                return TransitionOption.WGRESETREGION;
+            else if (str.equals("DISGUISEALL"))
+                return TransitionOption.DISGUISEALLAS;
 			throw new IllegalArgumentException(e.getMessage());
 		}
 	}

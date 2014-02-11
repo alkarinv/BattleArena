@@ -84,7 +84,17 @@ public class TeamUtil {
 		}
 	}
 
-	public static void addTeamHead(String name, TeamAppearance th) {
+    public static Integer getFromHumanTeamIndex(String op) {
+        if (map.containsKey(op.toUpperCase())){
+            return map.get(op.toUpperCase());}
+        try{
+            return Integer.valueOf(op) -1;
+        } catch(Exception e){
+            return null;
+        }
+    }
+
+    public static void addTeamHead(String name, TeamAppearance th) {
 		teamHeads.add(th);
 		map.put(name.toUpperCase(), teamHeads.size()-1);
 	}

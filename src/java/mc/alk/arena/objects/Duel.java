@@ -1,14 +1,14 @@
 package mc.alk.arena.objects;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Duel {
 	final MatchParams mp;
@@ -59,7 +59,7 @@ public class Duel {
 	}
 
 	public ArenaTeam makeChallengedTeam() {
-		return TeamFactory.createCompositeTeam(mp, challengedPlayers.keySet());
+		return TeamFactory.createCompositeTeam(1, mp, challengedPlayers.keySet());
 	}
 
 	public MatchParams getMatchParams() {

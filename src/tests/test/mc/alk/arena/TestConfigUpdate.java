@@ -1,22 +1,23 @@
 package test.mc.alk.arena;
 
+import junit.framework.TestCase;
+import mc.alk.arena.serializers.YamlFileUpdater;
+import mc.alk.arena.util.Log;
+import mc.alk.plugin.updater.v1r5.FileUpdater;
+import mc.alk.plugin.updater.v1r5.Version;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import junit.framework.TestCase;
-import mc.alk.arena.serializers.YamlFileUpdater;
-import mc.alk.arena.util.Log;
-import mc.alk.plugin.updater.v1r2.FileUpdater;
-import mc.alk.plugin.updater.v1r2.Version;
-
-import org.apache.commons.lang.StringUtils;
-
 public class TestConfigUpdate extends TestCase{
 	public void testUpdates(){
-		YamlFileUpdater yfu = new YamlFileUpdater(new File("test_files/backups"));
+//        Defaults.TESTSERVER = true;
+
+        YamlFileUpdater yfu = new YamlFileUpdater(new File("test_files/backups"));
 		File configFile = new File("test_files/config.yml");
 		Version version = new Version("0");
 		try {

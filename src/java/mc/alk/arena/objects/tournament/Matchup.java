@@ -1,12 +1,7 @@
 package mc.alk.arena.objects.tournament;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.listeners.custom.MatchCreationCallback;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
@@ -14,6 +9,10 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 public class Matchup {
@@ -26,7 +25,6 @@ public class Matchup {
 	List<ArenaListener> listeners = new ArrayList<ArenaListener>();
 
 	MatchParams params = null;
-	MatchCreationCallback creationListener;
 	Match match = null;
 	final JoinOptions joinOptions;
 
@@ -121,13 +119,6 @@ public class Matchup {
 			size += t.size();
 		}
 		return size;
-	}
-	public void addMatchCreationListener(MatchCreationCallback listener) {
-		creationListener = listener;
-	}
-
-	public MatchCreationCallback getMatchCreationListener() {
-		return creationListener;
 	}
 
 	public JoinOptions getJoinOptions() {

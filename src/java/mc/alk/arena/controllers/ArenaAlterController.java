@@ -77,7 +77,7 @@ public class ArenaAlterController {
 			} catch (Exception e){/* say nothing */}
 			if (str.equalsIgnoreCase("main"))
 				return SPAWNLOC;
-			if (TeamUtil.getTeamIndex(str) != null){
+			if (TeamUtil.getFromHumanTeamIndex(str) != null){
 				return SPAWNLOC;}
 			return null;
 		}
@@ -260,12 +260,12 @@ public class ArenaAlterController {
 		try{return Integer.parseInt(value) -1;}catch(Exception e){/* do nothing */}
 		if (value.equalsIgnoreCase("main"))
 			return Integer.MAX_VALUE;
-		Integer locindex = TeamUtil.getTeamIndex(value);
+		Integer locindex = TeamUtil.getFromHumanTeamIndex(value);
 		if (locindex == null || locindex > Defaults.MAX_SPAWNS){
 			sendMessage(sender,"&cspawn number must be in the range [1-"+Defaults.MAX_SPAWNS+"] or be main");
 			return -1;
 		}
- 		return locindex-1;
+ 		return locindex;
 	}
 
 	private static boolean changeLobbySpawn(CommandSender sender, MatchParams params, BattleArenaController ac,

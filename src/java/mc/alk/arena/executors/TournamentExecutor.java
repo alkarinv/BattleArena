@@ -1,8 +1,5 @@
 package mc.alk.arena.executors;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.events.TournamentEvent;
@@ -17,9 +14,11 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.util.Log;
-
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+
+import java.util.Arrays;
+import java.util.HashSet;
 
 
 public class TournamentExecutor extends EventExecutor implements CommandExecutor {
@@ -65,7 +64,7 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 			return null;
 		}
 
-		EventOpenOptions eoo=null;
+		EventOpenOptions eoo;
 		EventParams ep = new EventParams(mp);
 		try {
 			HashSet<Integer> ignoreArgs = new HashSet<Integer>(Arrays.asList(1)); /// ignore the matchType argument
@@ -127,10 +126,7 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
 	@MCCommand(cmds={"status"}, usage="status", order=2)
 	public boolean eventStatus(CommandSender sender, EventParams eventParams, Integer round) {
 		Event event = findUnique(sender, eventParams);
-		if (event == null){
-			return true;}
-		StringBuilder sb = new StringBuilder(event.getStatus());
-		return sendMessage(sender,sb.toString());
-	}
+        return event == null || sendMessage(sender, event.getStatus());
+    }
 
 }

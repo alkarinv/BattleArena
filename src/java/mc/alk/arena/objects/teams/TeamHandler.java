@@ -14,8 +14,9 @@ public interface TeamHandler {
 
 	/**
 	 * Player is disconnect/quit/left
-	 * @param p
-	 * @return
+	 *
+     * @param p
+     * @return
 	 */
 	public boolean leave(ArenaPlayer p);
 }

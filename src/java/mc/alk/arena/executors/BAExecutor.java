@@ -63,6 +63,7 @@ import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
+import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
@@ -173,7 +174,7 @@ public class BAExecutor extends CustomCommandExecutor {
                         + ParamController.getAvaibleTypes(disabled));
     }
 
-    @MCCommand(cmds = { "join", "j" }, usage = "join [options]", helpOrder = 1)
+    @MCCommand(cmds = { "join", "j" }, usage = "add [options]", helpOrder = 1)
     public boolean join(ArenaPlayer player, MatchParams mp, String args[]) {
         return join(player, mp, args, false);
     }
@@ -189,9 +190,9 @@ public class BAExecutor extends CustomCommandExecutor {
             return true;}
 
         /// Check Perms
-        if (!adminJoin && !PermissionsUtil.hasMatchPerm(player, mp, "join")) {
+        if (!adminJoin && !PermissionsUtil.hasMatchPerm(player, mp, "add")) {
             return sendSystemMessage(player, "no_join_perms", mp.getCommand());}
-        /// Can the player join this match/event at this moment?
+        /// Can the player add this match/event at this moment?
         if (!canJoin(player)) {
             return true;}
 
@@ -407,16 +408,17 @@ public class BAExecutor extends CustomCommandExecutor {
         return false;
     }
 
-    @MCCommand(cmds = { "leave", "l" }, usage = "leave", perm = "arena.leave", helpOrder = 2)
+    @MCCommand(cmds = { "leave", "l" }, usage = "leave", helpOrder = 2)
     public boolean leave(ArenaPlayer p, MatchParams mp) {
         return leave(p, mp, false);
     }
 
     @MCCommand(cmds = { "switch"}, perm = "arena.switch")
     public boolean switchTeam(ArenaPlayer p, MatchParams mp, String teamStr) {
-        Integer index = TeamUtil.getTeamIndex(teamStr);
+        Integer index = TeamUtil.getFromHumanTeamIndex(teamStr);
         if (index == null){
             return MessageUtil.sendMessage(p, "&cBad team index");}
+
         ArenaLocation loc = p.getCurLocation();
         PlayerHolder ph = loc.getPlayerHolder();
         Competition c = p.getCompetition();
@@ -438,7 +440,7 @@ public class BAExecutor extends CustomCommandExecutor {
         } else { /// they are in a competition
             if (c instanceof Match) {
                 TeamJoinHandler tjh = ((Match) c).getTeamJoinHandler();
-//                tjh.switchTeams(p, index);
+                tjh.switchTeams(p, index);
                 if (ph instanceof RoomContainer) {
                     RoomContainer rc = (RoomContainer) ph;
                 }
@@ -451,6 +453,8 @@ public class BAExecutor extends CustomCommandExecutor {
 
 
     public boolean leave(ArenaPlayer p, MatchParams mp, boolean adminLeave) {
+        if (!adminLeave && !p.hasPermission("arena.leave") && !PermissionsUtil.hasMatchPerm(p,mp,"leave"))
+            return true;
         if (!canLeave(p)) {
             return true;
         }
@@ -690,6 +694,12 @@ public class BAExecutor extends CustomCommandExecutor {
             EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null,params);
 
             Arena arena = eoo.getArena(params, null);
+            Arena a = BattleArena.getBAController().reserveArena(arena);
+            if (a == null){
+            } else {
+                return sendMessage(sender,"[BattleArena] auto args="+Arrays.toString(args) +
+                        " can't be started. Arena "+arena+" is not there or in use");
+            }
 
             ac.createAndAutoMatch(arena, eoo);
             final int max = arena.getParams().getMaxPlayers();
@@ -925,6 +935,15 @@ public class BAExecutor extends CustomCommandExecutor {
         if (ParamController.getMatchParams(name) != null) {
             return sendMessage(sender, "&cYou can't choose an arena type as an arena name");
         }
+        try {
+            int i = Integer.valueOf(name);
+            return sendMessage(sender, "&cYou can't choose a number as the arena name! Arena name was &e"+i);
+        } catch (Exception e){
+            /* good, it's not an integer*/
+        }
+        if (ParamController.getMatchParams(name) != null) {
+            return sendMessage(sender, "&cYou can't choose an arena type as an arena name");
+        }
 
         MatchParams ap = new MatchParams(mp.getType());
         try {
@@ -1133,7 +1152,7 @@ public class BAExecutor extends CustomCommandExecutor {
                     + " reject&c to cancel the duel before starting your own");
         }
 
-        // / Can the player join this match/event at this moment?
+        // / Can the player add this match/event at this moment?
         if (!canJoin(player)) {
             return true;
         }
@@ -1227,7 +1246,9 @@ public class BAExecutor extends CustomCommandExecutor {
         // / Get our team1
         ArenaTeam t = TeamController.getTeam(player);
         if (t == null) {
-            t = TeamController.createTeam(mp, player);
+            t = TeamFactory.createCompositeTeam(0, mp, player);
+        } else {
+            t.setIndex(0);
         }
         for (ArenaPlayer ap : t.getPlayers()) {
             if (!duelOptions.matches(ap, mp)) {
@@ -1329,24 +1350,19 @@ public class BAExecutor extends CustomCommandExecutor {
     @MCCommand(cmds = { "forceStart" }, admin = true, perm = "arena.forcestart")
     public boolean arenaForceStart(CommandSender sender, MatchParams mp) {
         if (ac.forceStart(mp, false)) {
-            return sendMessage(sender, "&2" + mp.getType()
-                    + " has been started");
+            return sendMessage(sender, "&2" + mp.getType()+ " has been started");
         } else {
-            return sendMessage(sender, "&c" + mp.getType()
-                    + " could not be started");
+            return sendMessage(sender, "&c" + mp.getType()+ " could not be started");
         }
     }
 
     @MCCommand(cmds = { "choose", "class" })
-    public boolean arenaClass(ArenaPlayer sender, String arenaClass) {
+    public boolean chooseClass(ArenaPlayer sender, String arenaClass) {
         ArenaClass ac = ArenaClassController.getClass(arenaClass);
         if (ac == null) {
-            return sendMessage(sender, "&cThere is no class called &6"
-                    + arenaClass);
-        }
-        if (!BattleArena.inArena(sender) || sender.getCompetition() == null) {
-            return sendMessage(sender, "&cYou aren't in a match&6");
-        }
+            return sendMessage(sender, "&cThere is no class called &6"+ arenaClass);}
+        if (sender.getCompetition() == null) {
+            return sendMessage(sender, "&cYou aren't in a match&6");}
         ArenaMatch.changeClass(sender.getPlayer(), sender.getCompetition(), ac);
         return true;
     }
@@ -1476,7 +1492,7 @@ public class BAExecutor extends CustomCommandExecutor {
                                 "&eYou have been invited to the team. "
                                         + ft.getDisplayName());
                     if (showMessages)
-                        sendMessage(player, "&eType &6/team join|decline");
+                        sendMessage(player, "&eType &6/team add|decline");
                 } else if (!ft.hasAllPlayers()) {
                     if (showMessages)
                         sendMessage(player,

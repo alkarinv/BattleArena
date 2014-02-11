@@ -185,7 +185,7 @@ public class BAPluginListener implements Listener {
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("MobArena");
 			if (plugin != null) {
 				MobArenaInterface.setPlugin(plugin);
-				Log.info("[BattleArena] MobArena detected.  Implementing no join when in MobArena");
+				Log.info("[BattleArena] MobArena detected.  Implementing no add when in MobArena");
 			}
 		}
 	}

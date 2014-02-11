@@ -8,7 +8,6 @@ import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.controllers.QueueController;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.plugins.McMMOController;
 import mc.alk.arena.executors.CustomCommandExecutor;
@@ -27,6 +26,7 @@ import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.queues.ArenaMatchQueue;
 import mc.alk.arena.objects.victoryconditions.Custom;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.FileUtil;
@@ -72,7 +72,7 @@ public class BAConfigSerializer extends BaseConfig{
         Defaults.NEED_SAME_ITEMS_TO_CHANGE_CLASS = config.getBoolean("needSameItemsToChangeClass", Defaults.NEED_SAME_ITEMS_TO_CHANGE_CLASS);
         parseOptionSets(config.getConfigurationSection("optionSets"));
         ArenaMatch.setDisabledCommands(config.getStringList("disabledCommands"));
-        QueueController.setDisabledCommands(config.getStringList("disabledQueueCommands"));
+        ArenaMatchQueue.setDisabledCommands(config.getStringList("disabledQueueCommands"));
         loadOtherPlugins();
 
         if (Defaults.TESTSERVER)

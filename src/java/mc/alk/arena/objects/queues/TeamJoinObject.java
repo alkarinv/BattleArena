@@ -1,19 +1,18 @@
 package mc.alk.arena.objects.queues;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public class TeamJoinObject extends QueueObject{
 	final ArenaTeam team;
 
 	public TeamJoinObject(ArenaTeam team, MatchParams params, JoinOptions joinOptions) {
-		super(joinOptions);
-		this.matchParams = params;
+		super(joinOptions, params);
 		this.team = team;
 		priority = team.getPriority();
 		numPlayers += team.size();

@@ -1,9 +1,6 @@
 package test.mc.alk.arena;
 
-import java.io.File;
-
 import junit.framework.TestCase;
-
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.BukkitInterface;
 import mc.alk.arena.controllers.CompetitionController;
@@ -18,13 +15,17 @@ import mc.alk.arena.serializers.ConfigSerializer;
 import test.mc.alk.arena.objects.TestPlugin;
 import test.mc.alk.testbukkit.TestBukkitServer;
 
+import java.io.File;
+
 public class TestConfig extends TestCase{
 	TestPlugin plugin = null;
 	BattleArenaController bac;
 
 	@Override
 	protected void setUp(){
-		plugin = new TestPlugin();
+//        Defaults.TESTSERVER = true;
+
+        plugin = new TestPlugin();
 		ArenaType.register("arena", Arena.class, plugin);
 		BukkitInterface.setServer(new TestBukkitServer());
 		plugin.onEnable();

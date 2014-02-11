@@ -64,11 +64,11 @@ public class YamlFileUpdater {
 			fu.delete(".*you_left_event.*");
 			fu.replace(".*joined_the_queue:.*",
 					"    joined_the_queue: '&eYou joined the &6%s&e queue. Position: &6%s/%s'",
-					"    match_starts_players_or_time: '&eMatch start when &6%s&e more players join or in %s &ewith at least &6%s&e players'",
+					"    match_starts_players_or_time: '&eMatch start when &6%s&e more players add or in %s &ewith at least &6%s&e players'",
 					"    match_starts_when_time: '&eMatch start in %s'");
 			fu.replace(".*you_left_match:.*","    you_left_competition: '&eYou have left the %s event'");
 			fu.replace(".*you_left_queue:.*", "    you_left_queue: '&eYou have left the &6%s queue'");
-			fu.replace(".*teammate_cant_join.*", "    teammate_cant_join: \"&cOne of your teammates can't join\"");
+			fu.replace(".*teammate_cant_join.*", "    teammate_cant_join: \"&cOne of your teammates can't add\"");
 			try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
 		}
 		newVersion = new Version("1.5.5");
@@ -143,9 +143,9 @@ public class YamlFileUpdater {
             FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
             fu.replace("version:.*", "version: "+newVersion);
             fu.replace(".*match_starts_plyers_or_time:.*",
-                    "    match_starts_players_or_time: '&eMatch starts when &6%s&e more players join or in %s &ewith at least &6%s&e players'");
+                    "    match_starts_players_or_time: '&eMatch starts when &6%s&e more players add or in %s &ewith at least &6%s&e players'");
             fu.addAfter(".*match_starts_players_or_time2.*",
-                    "    match_starts_players_or_time3: '&eMatch starts when &6%s&e more players join or in %s'"
+                    "    match_starts_players_or_time3: '&eMatch starts when &6%s&e more players add or in %s'"
             );
             try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
         }

@@ -15,12 +15,18 @@ import mc.alk.arena.util.TeamUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class JoinOptions {
-	public static enum JoinOption{
+
+
+
+    public static enum JoinOption{
 		ARENA("<arena>",false), TEAM("<team>",false),
 		WANTEDTEAMSIZE("<teamSize>",false);
 
@@ -74,10 +80,23 @@ public class JoinOptions {
 	public boolean matches(Arena arena) {
 		if (options.containsKey(JoinOption.ARENA)){
 			Arena a = (Arena) options.get(JoinOption.ARENA);
-			return a != null ? arena.matches(a) : false;
+			return a == null || arena.matches(a);
 		}
 		return true;
 	}
+
+    public Collection<String> getInvalidMatchReasons(Arena arena) {
+        List<String> reasons = new ArrayList<String>();
+        if (options.containsKey(JoinOption.ARENA)) {
+            Arena a = (Arena) options.get(JoinOption.ARENA);
+            if (a == null) {
+                reasons.add(" arena " + arena + " is null");
+            } else if (!arena.matches(a)) {
+                reasons.addAll(arena.getInvalidMatchReasons(a));
+            }
+        }
+        return reasons;
+    }
 
 	public boolean matches(MatchParams params) {
 //		return ArenaSize.matchesNTeams(nTeams, params.getNTeams());
@@ -147,10 +166,10 @@ public class JoinOptions {
 				continue;
 			}
 
-			Integer teamIndex = TeamUtil.getTeamIndex(op);
+			Integer teamIndex = TeamUtil.getFromHumanTeamIndex(op);
 			if (teamIndex != null){
 				if (!PermissionsUtil.hasTeamPerm(player, mp,teamIndex)){
-					throw new InvalidOptionException("&cYou don't have permissions to join this team");}
+					throw new InvalidOptionException("&cYou don't have permissions to add this team");}
 				ops.put(JoinOption.TEAM, teamIndex);
 				continue;
 			}
@@ -189,20 +208,20 @@ public class JoinOptions {
 		}
 		if (arena != null && !arena.matchesIgnoreSize(mp, jos)){
 			throw new InvalidOptionException("&cThe arena &6" +arena.getName() +
-					"&c doesn't match your join requirements. "  +
+					"&c doesn't match your add requirements. "  +
 					StringUtils.join( arena.getInvalidMatchReasons(mp, jos), '\n'));
-		} else if (arena == null){
-			arena = BattleArena.getBAController().getNextArena(mp.getType());
+		}
+        else if (arena == null){
+			arena = BattleArena.getBAController().getNextArena(mp,jos);
 			jos.setArena(arena);
 		}
 		if (arena != null){
-//			MatchParams old = ParamController.copyParams(mp);
             MatchParams old = mp;
 			mp = arena.getParams();
 			mp.setParent(old);
 			if (!arena.matchesIgnoreSize(mp, jos)){
 				throw new InvalidOptionException("&cThe arena &6" +arena.getName() +
-						"&c doesn't match your join requirements. "  +
+						"&c doesn't match your add requirements. "  +
 						StringUtils.join( arena.getInvalidMatchReasons(mp, jos), '\n'));
 			}
 		}
@@ -283,4 +302,7 @@ public class JoinOptions {
 		return params;
 	}
 
+    public void setMatchParams(MatchParams matchParams) {
+        this.params = matchParams;
+    }
 }

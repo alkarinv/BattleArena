@@ -541,7 +541,6 @@ public class BattleArena extends JavaPlugin {
         return BattleArena.getBAController().getArena(arenaName);
     }
 
-
     /**
      * Register a competiton with BattleArena
      *

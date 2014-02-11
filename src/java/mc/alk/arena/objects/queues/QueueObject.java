@@ -1,27 +1,39 @@
 package mc.alk.arena.objects.queues;
 
-import java.util.Collection;
-
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
+
+import java.util.Collection;
+import java.util.List;
 
 public abstract class QueueObject {
 
 	protected Integer priority;
 
-	protected MatchParams matchParams;
+	final protected MatchParams matchParams;
 
 	final protected JoinOptions jp;
 
 	int numPlayers;
 
-	public QueueObject(JoinOptions jp){
-		this.jp = jp;
-	}
+    public List<ArenaListener> listeners;
 
-	public abstract Integer getPriority();
+
+    public QueueObject(JoinOptions jp){
+		this.jp = jp;
+        matchParams = jp.getMatchParams();
+    }
+
+    public QueueObject(JoinOptions jp, MatchParams params){
+        this.jp = jp;
+        matchParams = params;
+    }
+
+    public abstract Integer getPriority();
 
 	public abstract boolean hasMember(ArenaPlayer p);
 
@@ -47,4 +59,11 @@ public abstract class QueueObject {
 		return numPlayers;
 	}
 
+    public Arena getArena() {
+        return jp.getArena();
+    }
+
+    public List<ArenaListener> getListeners() {
+        return listeners;
+    }
 }

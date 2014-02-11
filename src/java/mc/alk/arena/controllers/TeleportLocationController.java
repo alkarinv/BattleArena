@@ -1,7 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.util.Random;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
@@ -18,8 +16,9 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
-
 import org.bukkit.Location;
+
+import java.util.Random;
 
 public class TeleportLocationController {
 	static Random rand = new Random();
@@ -100,7 +99,7 @@ public class TeleportLocationController {
 		}
 		dest.callEvent(apte);
 		if (!TeleportController.teleport(player.getPlayer(), apte.getDestLocation().getLocation(), true) &&
-				player.isOnline() && !player.isDead()){
+				player.isOnline() && !player.isDead() && !Defaults.DEBUG_VIRTUAL){
 			Log.err("[BA Warning] couldn't teleport "+player.getName()+" srcLoc="+apte.getSrcLocation() +" destLoc=" + apte.getDestLocation());
 		}
 		player.setCurLocation(apte.getDestLocation());

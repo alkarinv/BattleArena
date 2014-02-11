@@ -1,5 +1,25 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.events.matches.MatchCancelledEvent;
+import mc.alk.arena.events.matches.MatchCompletedEvent;
+import mc.alk.arena.events.matches.MatchCreatedEvent;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.Duel;
+import mc.alk.arena.objects.MatchResult;
+import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.arenas.ArenaListener;
+import mc.alk.arena.objects.events.ArenaEventHandler;
+import mc.alk.arena.objects.options.DuelOptions.DuelOption;
+import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.queues.MatchTeamQObject;
+import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.objects.tournament.Matchup;
+import mc.alk.arena.util.MessageUtil;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,25 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.events.matches.MatchCancelledEvent;
-import mc.alk.arena.events.matches.MatchCompletedEvent;
-import mc.alk.arena.listeners.custom.MatchCreationCallback;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.Duel;
-import mc.alk.arena.objects.MatchResult;
-import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.arenas.ArenaListener;
-import mc.alk.arena.objects.events.ArenaEventHandler;
-import mc.alk.arena.objects.options.DuelOptions.DuelOption;
-import mc.alk.arena.objects.options.JoinOptions;
-import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.tournament.Matchup;
-import mc.alk.arena.util.MessageUtil;
-
-public class DuelController implements ArenaListener, MatchCreationCallback{
+public class DuelController implements ArenaListener{
 	List<Duel> formingDuels = new CopyOnWriteArrayList<Duel>();
 	HashMap<String, Long> rejectTimers = new HashMap<String,Long>();
 	HashMap<Matchup,Duel> ongoingDuels = new HashMap<Matchup,Duel>();
@@ -52,15 +54,17 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 				teams.add(t);
 				teams.add(t2);
 				JoinOptions jo = new JoinOptions();
+                jo.setMatchParams(d.getMatchParams());
+
 				if (d.getOptions().hasOption(DuelOption.ARENA)){
 					jo.setArena((Arena) d.getOptions().getOptionValue(DuelOption.ARENA));
 				}
 				Matchup m = new Matchup(d.getMatchParams(),teams, jo);
 				m.addArenaListener(this);
-				m.addMatchCreationListener(this);
 				formingDuels.remove(d);
 				ongoingDuels.put(m, d);
-				BattleArena.getBAController().addMatchup(m);
+                MatchTeamQObject mo = new MatchTeamQObject(m);
+                BattleArena.getBAController().addMatchup(mo);
 			}
 		}
 		return d;
@@ -120,10 +124,11 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 		}
 	}
 
-	@Override
-	public void matchCreated(Match match, Matchup matchup) {
-		matchups.put(match, matchup);
-	}
+    @ArenaEventHandler(begin = MatchState.ONCREATE, end = MatchState.ONOPEN)
+    public void onMatchCreatedEvent(MatchCreatedEvent event) {
+        Matchup matchup = (((MatchTeamQObject) event.getOriginalObject().getOriginalQueuedObject()).getMatchup());
+        matchups.put(event.getMatch(), matchup);
+    }
 
 	private boolean checkWager(Duel d) {
 		Double wager = (Double) d.getDuelOptionValue(DuelOption.MONEY);
@@ -199,7 +204,7 @@ public class DuelController implements ArenaListener, MatchCreationCallback{
 	public Long getLastRejectTime(ArenaPlayer ap) {
 		Long t = rejectTimers.get(ap.getName());
 		if (t == null)
-			return t;
+			return null;
 		if (Defaults.DUEL_CHALLENGE_INTERVAL*1000 < System.currentTimeMillis() - t){
 			rejectTimers.remove(ap.getName());}
 		return t;

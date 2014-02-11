@@ -1,13 +1,13 @@
 package test.mc.alk.arena;
 
+import org.bukkit.plugin.PluginLogger;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.logging.LogRecord;
-
-import org.bukkit.plugin.PluginLogger;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class WebPluginLogger extends PluginLogger{
 	final String name;
@@ -15,7 +15,9 @@ public class WebPluginLogger extends PluginLogger{
 
 	public WebPluginLogger(JavaPlugin context) {
 		super(context);
-		name = context.getDescription().getName();
+//        Defaults.TESTSERVER = true;
+
+        name = context.getDescription().getName();
 		try {
 			Field type = context.getClass().getSuperclass().getDeclaredField("logger");
 			type.setAccessible(true);

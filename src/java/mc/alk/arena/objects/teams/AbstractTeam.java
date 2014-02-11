@@ -38,12 +38,15 @@ public abstract class AbstractTeam implements ArenaTeam{
 
 	/// Pickup teams are transient in nature, once the match end they disband
 	protected boolean isPickupTeam = false;
-
-	ArenaObjective objective;
+    int minPlayers = -1;
+    int maxPlayers = -1;
+    ArenaObjective objective;
 	protected ChatColor color = null;
 	protected ItemStack headItem = null;
 	ArenaStat stat;
 	MatchParams params;
+
+    int index = -1;
 
 	/**
 	 * Default Constructor
@@ -481,5 +484,37 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return StatController.loadRecord(params, this);
 //		return stat;
 	}
+
+    @Override
+    public int getMinPlayers() {
+        return minPlayers;
+    }
+
+    @Override
+    public int getMaxPlayers() {
+        return maxPlayers;
+    }
+
+
+    @Override
+    public void setMinPlayers(int num) {
+        this.minPlayers = num;
+    }
+
+    @Override
+    public void setMaxPlayers(int num) {
+        this.maxPlayers = num;
+    }
+
+
+    @Override
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    @Override
+    public int getIndex() {
+        return index;
+    }
 }
 

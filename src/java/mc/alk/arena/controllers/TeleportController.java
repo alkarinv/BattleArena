@@ -79,7 +79,9 @@ public class TeleportController implements Listener{
 			if (!player.teleport(nl, PlayerTeleportEvent.TeleportCause.PLUGIN) ||
                     (Defaults.DEBUG_VIRTUAL && !player.isOnline())){
 				BAPlayerListener.teleportOnReenter(player.getName(),nl, player.getLocation());
-				if (Defaults.DEBUG)Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + nl);
+                //noinspection PointlessBooleanExpression,ConstantConditions
+                if (!Defaults.DEBUG_VIRTUAL)
+                    Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + nl);
 				return false;
 			}
 
@@ -92,8 +94,10 @@ public class TeleportController implements Listener{
 
 			if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());
 		} catch (Exception e){
-			Log.err("[BA Error] teleporting player=" + player.getName() +" to " + location +" " + giveBypassPerms);
-			Log.printStackTrace(e);
+            if (!Defaults.DEBUG_VIRTUAL){
+                Log.err("[BA Error] teleporting player=" + player.getName() +" to " + location +" " + giveBypassPerms);
+                Log.printStackTrace(e);
+            }
 			return false;
 		}
 		return true;

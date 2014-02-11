@@ -1,11 +1,9 @@
 package mc.alk.arena.util;
 
-import java.util.Set;
-
 import mc.alk.arena.Defaults;
-
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+
+import java.util.Set;
 
 public class CommandUtil {
 
@@ -14,8 +12,7 @@ public class CommandUtil {
 			event.getPlayer().sendMessage("event Message=" + event.getMessage() +"   isCancelled=" + event.isCancelled());}
 		if (disabledCommands == null || disabledCommands.isEmpty())
 			return false;
-		final Player p = event.getPlayer();
-		if (PermissionsUtil.isAdmin(p) && Defaults.ALLOW_ADMIN_CMDS_IN_Q_OR_MATCH){
+		if (Defaults.ALLOW_ADMIN_CMDS_IN_Q_OR_MATCH && PermissionsUtil.isAdmin(event.getPlayer())){
 			return false;}
 
 		String cmd = event.getMessage();
@@ -24,10 +21,6 @@ public class CommandUtil {
 			cmd = cmd.substring(0, index);
 		}
 		cmd = cmd.toLowerCase();
-		if(disabledCommands.contains(cmd) && !cmd.equals("/bad")){
-			event.setCancelled(true);
-			return true;
-		}
-		return false;
-	}
+        return disabledCommands.contains(cmd) && !cmd.equals("/bad");
+    }
 }

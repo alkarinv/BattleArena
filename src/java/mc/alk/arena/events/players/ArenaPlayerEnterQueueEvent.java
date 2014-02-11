@@ -8,8 +8,8 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 
 public class ArenaPlayerEnterQueueEvent extends ArenaPlayerEvent{
 	final ArenaTeam team;
-	JoinResult result;
-	TeamJoinObject tqo;
+	final JoinResult result;
+	final TeamJoinObject tqo;
 
 	public ArenaPlayerEnterQueueEvent(ArenaPlayer player, ArenaTeam team, TeamJoinObject tqo, JoinResult queueResult) {
 		super(player);

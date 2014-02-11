@@ -14,7 +14,7 @@ public enum MatchState implements CompetitionState{
 	ONENTERARENA("onEnterArena"), ONLEAVEARENA("onLeaveArena"), //ONENTERWAITROOM("onEnterWaitRoom"),
 	INQUEUE("inQueue"),INCOURTYARD("inCourtyard"),
 	INLOBBY("inLobby"), INWAITROOM("inWaitroom"),INARENA("inArena"),INSPECTATE("inSpectate"),
-	PREREQS ("preReqs"), ONJOIN ("onJoin"), ONOPEN("onOpen"),
+    ONCREATE("onCreate"),PREREQS ("preReqs"), ONJOIN ("onJoin"), ONOPEN("onOpen"),
 	ONBEGIN("onBegin"), ONPRESTART ("onPreStart"), ONSTART ("onStart"), ONVICTORY ("onVictory"),
 	ONCOMPLETE ("onComplete"), ONCANCEL ("onCancel"), ONFINISH("onFinish"),
 	ONSPAWN ("onSpawn"), ONDEATH ("onDeath"),

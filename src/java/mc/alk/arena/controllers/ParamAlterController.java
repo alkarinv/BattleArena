@@ -12,14 +12,17 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
+import mc.alk.arena.util.TeamUtil;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public class ParamAlterController {
 	MatchParams params;
@@ -29,44 +32,67 @@ public class ParamAlterController {
 	}
 
 	public boolean setOption(CommandSender sender, String[] args) {
-		String help1 = "&6/<game> setoption <option> [value]";
-		String help2 = "&6/<game> setoption <stage> [option] [value]";
+        String help1 = "&6/<game> setoption <option> [value]";
+        String help2 = "&6/<game> setoption <stage> [option] [value]";
+        String help3 = "&6/<game> setoption <team> <option> [value]";
+        String help4 = "&6/<game> setoption <team> <stage> [option] [value]";
 		if (args.length < 2){
-			sendMessage(sender, help1);
-			return sendMessage(sender, help2);
+            sendMessage(sender, help1);
+            sendMessage(sender, help2);
+            sendMessage(sender, help3);
+            return sendMessage(sender, help4);
 		}
-		RegisteredCompetition rc = CompetitionController.getCompetition(params.getName());
+        MatchParams original = null;
+        RegisteredCompetition rc = CompetitionController.getCompetition(params.getName());
 		if (rc == null){
 			return sendMessage(sender, "&cGame &6" + params.getName() +"&c not found!");}
-		MatchState stage = MatchState.fromString(args[1]);
+        Integer teamIndex = TeamUtil.getFromHumanTeamIndex(args[1]);
+        if (teamIndex != null) {
+
+            Map<Integer, MatchParams> map = params.getTeamParams();
+            if (map == null) {
+                map = new HashMap<Integer, MatchParams>();
+                params.setTeamParams(map);
+            }
+            MatchParams mp = map.get(teamIndex);
+            if (mp == null) {
+                mp = new MatchParams();
+                map.put(teamIndex, mp);
+            }
+            mp.setParent(params);
+            original = params;
+            this.params = mp; /// overwrite our params variable
+        }
+        int baseIndex = teamIndex != null ? 1 : 0;
+        MatchState stage = MatchState.fromString(args[baseIndex+1]);
 		GameOption go = null;
 		TransitionOption to = null;
 		Object value = null;
         try{
 			if (stage != null){
-				if (args.length < 3){
+				if (args.length < baseIndex+3){
 					return sendMessage(sender, help2);}
-				to = TransitionOption.fromString(args[2]);
+				to = TransitionOption.fromString(args[baseIndex+2]);
 				if (to != null){
 					if (to.hasValue() || to == TransitionOption.ENCHANTS){
-						if (args.length < 4){
+						if (args.length < baseIndex+4){
 							sendMessage(sender, "&c"+to.name()+" needs a value");
 							return sendMessage(sender, help2);
 						} else {
-							value = to.parseValue(args[3]);
+							value = to.parseValue(args[baseIndex+3]);
 						}
 					}
 					setOption(sender,stage, to,value);
 				}
 			} else {
-				go = GameOption.fromString(args[1]);
+				go = GameOption.fromString(args[baseIndex+1]);
 				if (go != null){
 					if (go.hasValue()){
-						if (args.length < 3){
+						if (args.length < baseIndex+3){
 							sendMessage(sender, "&c"+go.name()+" needs a value");
 							return sendMessage(sender, help1);
 						} else {
-							value = GameOption.getValue(go, args[2]);
+							value = GameOption.getValue(go, args[baseIndex+2]);
 						}
 					}
 					setOption(sender,go,value);
@@ -79,10 +105,12 @@ public class ParamAlterController {
 		}
 
 		if (go==null && to == null)
-			return sendMessage(sender, "&cOption &6" + args[1] + "&c was not found");
+			return sendMessage(sender, "&cOption &6" + args[baseIndex+1] + "&c was not found");
 		String opString = go != null ? go.name() : to.name();
-
-		rc.saveParams(params);
+        if (original != null) {
+            params = original;
+        }
+        rc.saveParams(params);
 //		ParamController.addMatchParams(params);
 		if (to != null){
 			ParamController.setTransitionOptions(params, params.getTransitionOptions());
@@ -117,6 +145,7 @@ public class ParamAlterController {
 		case CLOSEWAITROOMWHILERUNNING: params.setWaitroomClosedWhileRunning((Boolean)value); break;
 		case CANCELIFNOTENOUGHPLAYERS: params.setCancelIfNotEnoughPlayers((Boolean)value); break;
 		case ALLOWEDTEAMSIZEDIFFERENCE: params.setAllowedTeamSizeDifference((Integer)value); break;
+        case NCUMONCURRENTCOMPETITIONS: params.setNConcurrentCompetitions((Integer)value); break;
 		case PRESTARTTIME:
 			iv = (Integer) value;
 			checkGreater(iv,0, true);

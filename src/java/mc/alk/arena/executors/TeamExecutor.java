@@ -65,7 +65,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return sendMessage(sender,sb.toString());
 	}
 
-	@MCCommand(cmds={"join"}, usage="join", perm="arena.team.join")
+	@MCCommand(cmds={"add"}, usage="add", perm="arena.team.add")
 	public boolean teamJoin(ArenaPlayer player) {
 
 		ArenaTeam t = teamc.getSelfFormedTeam(player);
@@ -75,7 +75,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		List<TeamHandler> handlers = teamc.getHandlers(t);
 		if (handlers != null && !handlers.isEmpty()){
 			for (TeamHandler th: handlers){
-				return sendMessage(player, "&cYou cant join until the &6"+th+"&c ends");}
+				return sendMessage(player, "&cYou cant add until the &6"+th+"&c ends");}
 		}
 		if (!teamc.inFormingTeam(player)){
 			sendMessage(player,ChatColor.RED + "You are not part of a forming team");
@@ -89,7 +89,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		sendMessage(player,ChatColor.GOLD + ft.toString());
 
 		if (ft.hasAllPlayers()){
-			ft.sendMessage("&2Your team is now complete.  you can now join an event or arena");
+			ft.sendMessage("&2Your team is now complete.  you can now add an event or arena");
 			teamc.removeFormingTeam(ft);
 			teamc.addSelfFormedTeam(ft);
 		}
@@ -149,14 +149,14 @@ public class TeamExecutor extends CustomCommandExecutor {
 		/// Finally ready to create a team
 		FormingTeam ft = new FormingTeam(player, foundArenaPlayers);
 		teamc.addFormingTeam(ft);
-		sendMessage(player,ChatColor.YELLOW + "You are now forming a team. The others must accept by using &6/team join");
+		sendMessage(player,ChatColor.YELLOW + "You are now forming a team. The others must accept by using &6/team add");
 
 		/// Send a message to the other teammates
 		for (ArenaPlayer p: ft.getPlayers()){
 			if (player.equals(p))
 				continue;
 			sendMessage(p, "&eYou have been invited to a team with &6" + ft.getOtherNames(player));
-			sendMessage(p, "&6/team join&e : to accept: &6/team decline&e to refuse ");
+			sendMessage(p, "&6/team add&e : to accept: &6/team decline&e to refuse ");
 		}
 		return true;
 	}

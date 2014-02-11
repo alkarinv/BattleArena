@@ -1,24 +1,25 @@
 package mc.alk.arena.objects.queues;
 
-import java.util.Collection;
-import java.util.List;
-
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
+
+import java.util.Collection;
+import java.util.List;
 
 public class MatchTeamQObject extends QueueObject{
 	final Matchup matchup;
 
 	public MatchTeamQObject(Matchup matchup){
 		super(matchup.getJoinOptions());
-		matchParams = matchup.getMatchParams();
+//		matchParams = matchup.getMatchParams();
 		this.matchup = matchup;
 		this.priority = matchup.getPriority();
 		for (ArenaTeam t: matchup.getTeams()){
 			numPlayers += t.size();
 		}
-	}
+        this.listeners = matchup.getArenaListeners();
+    }
 
 	@Override
 	public Integer getPriority() {

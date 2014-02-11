@@ -8,6 +8,7 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.scoreboardapi.api.SObjective;
 import mc.alk.scoreboardapi.api.STeam;
@@ -119,9 +120,11 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
 	@Override
 	public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {
 		STeam t = teams.get(team);
-		if (t == null)
-			throw new IllegalStateException("Removing from a team that doesn't exist");
-		removeFromTeam(t,player);
+		if (t == null) {
+            Log.err(teams.size() + "  Removing from a team that doesn't exist player=" + player.getName() + "   team=" + team + "  " + team.getId());
+            return;
+        }
+        removeFromTeam(t,player);
 	}
 
 	@Override

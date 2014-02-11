@@ -30,8 +30,6 @@ public interface PlayerHolder extends Listener, ArenaListener{
 
 	public boolean isHandled(ArenaPlayer player);
 
-	public int indexOf(ArenaTeam team);
-
 	public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b);
 
 	public void callEvent(BAEvent event);

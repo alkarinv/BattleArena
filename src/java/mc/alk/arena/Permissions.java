@@ -4,7 +4,7 @@ public class Permissions {
 	/// BattleArena permissions
 	/// many of these are dynamically created and aren't included here
 	/// Examples
-	///		arena.<type>.join
+	///		arena.<type>.add
 	public static final String ADMIN_NODE = "arena.admin";
 	public static final String DUEL_EXEMPT = "arena.duel.exempt";
 	public static final String TELEPORT_BYPASS_PERM = "arena.teleport.bypass";

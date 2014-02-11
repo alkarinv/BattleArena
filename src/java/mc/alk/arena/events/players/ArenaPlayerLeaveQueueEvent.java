@@ -3,35 +3,37 @@ package mc.alk.arena.events.players;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.pairs.ParamTeamPair;
-import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.objects.queues.ArenaMatchQueue;
 
-public class ArenaPlayerLeaveQueueEvent extends ArenaPlayerEvent{
-	final ArenaTeam team;
-	final MatchParams params;
-	final ParamTeamPair ptp;
+public class ArenaPlayerLeaveQueueEvent extends ArenaPlayerEvent {
+//    final ArenaTeam team;
+    final MatchParams params;
+    final Arena arena;
 
-	public ArenaPlayerLeaveQueueEvent(ArenaPlayer arenaPlayer, ArenaTeam team,
-			MatchParams params, ParamTeamPair ptp) {
-		super(arenaPlayer);
-		this.team = team;
-		this.params = params;
-		this.ptp = ptp;
-	}
 
-	public ArenaTeam getTeam() {
-		return team;
-	}
+    public ArenaPlayerLeaveQueueEvent(ArenaPlayer arenaPlayer, MatchParams params, Arena arena) {
+        super(arenaPlayer);
+        this.params = params;
+        this.arena = arena;
+    }
 
-	public MatchParams getParams(){
-		return params;
-	}
+//    public ArenaTeam getTeam() {
+//        return team;
+//    }
 
-	public Arena getArena(){
-		return ptp.getArena();
-	}
+    public MatchParams getParams() {
+        return params;
+    }
 
-	public int getNPlayers(){
-		return ptp.getNPlayersInQueue();
-	}
+	public Arena getArena() {
+        return arena;
+    }
+
+    public int getPlayersInArenaQueue(Arena arena) {
+        return ArenaMatchQueue.getPlayersInArenaQueue(arena);
+    }
+//
+//	public int getNPlayers(){
+//		return ptp.getNPlayersInQueue();
+//	}
 }
