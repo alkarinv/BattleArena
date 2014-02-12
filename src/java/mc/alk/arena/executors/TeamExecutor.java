@@ -1,28 +1,24 @@
 package mc.alk.arena.executors;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.controllers.EventController;
-import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.TeamController;
+import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
-import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.ServerUtil;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TeamExecutor extends CustomCommandExecutor {
 	TeamController teamc;
@@ -37,31 +33,10 @@ public class TeamExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"list"},admin=true,usage="list")
 	public boolean teamList(CommandSender sender) {
 		StringBuilder sb = new StringBuilder();
-		Map<ArenaTeam,CopyOnWriteArrayList<TeamHandler>> teams = teamc.getTeams();
-
-		for (ArenaTeam t: teams.keySet()){
-			sb.append(t.getTeamInfo(null)+"\n");}
-		sb.append("&e# of players = &6" + teams.size());
-		return sendMessage(sender,sb.toString());
-	}
-
-	@MCCommand(cmds={"listDetailed"},admin=true,usage="listDetailed")
-	public boolean teamListDetails(CommandSender sender) {
-		StringBuilder sb = new StringBuilder();
-		Map<ArenaTeam,CopyOnWriteArrayList<TeamHandler>> teams = teamc.getTeams();
-
-		for (ArenaTeam t: teams.keySet()){
-			sb.append(t.getTeamInfo(null) +" tid=" + t.getId());
-			sb.append(" &5Handlers:");
-			if (teams.get(t) == null){
-				sb.append("null");
-				continue;
-			}
-			for (TeamHandler th: teams.get(t)){
-				sb.append(th);}
-			sb.append("\n");
-		}
-		sb.append("&e# of players = &6" + teams.size());
+        Collection<ArenaTeam> teams = TeamController.getSelfFormedTeams();
+        for (ArenaTeam t: teams){
+			sb.append(t.getTeamInfo(null)).append("\n");}
+		sb.append("&e# of players = &6").append(teams.size());
 		return sendMessage(sender,sb.toString());
 	}
 
@@ -72,11 +47,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		if (t != null && t.size() >1){
 			return sendMessage(player, "&cYou are already part of a team with &6" + t.getOtherNames(player));
 		}
-		List<TeamHandler> handlers = teamc.getHandlers(t);
-		if (handlers != null && !handlers.isEmpty()){
-			for (TeamHandler th: handlers){
-				return sendMessage(player, "&cYou cant add until the &6"+th+"&c ends");}
-		}
+
 		if (!teamc.inFormingTeam(player)){
 			sendMessage(player,ChatColor.RED + "You are not part of a forming team");
 			return sendMessage(player,ChatColor.YELLOW + "Usage: &6/team create <player2> [player3]...");
@@ -163,30 +134,20 @@ public class TeamExecutor extends CustomCommandExecutor {
 
 	@MCCommand(cmds={"info"}, usage="info")
 	public boolean teamInfo(ArenaPlayer player) {
-		Map<TeamHandler,ArenaTeam> teams = teamc.getTeamMap(player);
-		if (teams == null || teams.isEmpty()){
-			return sendMessage(player,"&eYou are not in a team");}
-		final int size = teams.size();
-		for (TeamHandler th : teams.keySet()){
-			if (size == 1){
-				return sendMessage(player,teams.get(th).getTeamInfo(null));}
-			else {
-				sendMessage(player,teams.get(th).getTeamInfo(null));
-			}
-		}
-		return true;
-	}
+        ArenaTeam team = TeamController.getTeam(player);
+        if (team == null) {
+            return sendMessage(player, "&eYou are not in a team");
+        }
+        return sendMessage(player, team.getTeamInfo(null));
+    }
 
 	@MCCommand(cmds={"info"}, min=2, admin=true, usage="info <player>", order=1)
 	public boolean teamInfoOther(CommandSender sender,ArenaPlayer player) {
-		Map<TeamHandler,ArenaTeam> teams = teamc.getTeamMap(player);
-		if (teams == null || teams.isEmpty()){
-			return sendMessage(sender,"&ePlayer &6" + player.getName() +"&e is not in a team");}
-
-		for (TeamHandler th : teams.keySet()){
-			sendMessage(sender,th +" " + teams.get(th).getTeamInfo(null));
-		}
-		return true;
+        ArenaTeam team = TeamController.getTeam(player);
+        if (team == null) {
+            return sendMessage(sender,"&ePlayer &6" + player.getName() +"&e is not in a team");
+        }
+        return sendMessage(sender, team.getTeamInfo(null));
 	}
 
 	@MCCommand(cmds={"disband","leave"},usage="disband")
@@ -213,21 +174,6 @@ public class TeamExecutor extends CustomCommandExecutor {
 		t.sendToOtherMembers(player,"&eYour team has been disbanded by " + player.getName());
 		sendMessage(player, "&2You have disbanded your team with " + t.getName());
 
-		/// Iterate over the handlers
-		/// try and leave each one (hopefully they are only in 1)
-		List<TeamHandler> handlers = teamc.getHandlers(t);
-		if (handlers != null && !handlers.isEmpty()){
-			for (TeamHandler th: handlers){
-				for (ArenaPlayer p : t.getPlayers()){
-					if (!th.canLeave(p)){
-						sendMessage(p, "&cYou have disbanded your team but still cant leave the &6" + th);
-					} else {
-						sendMessage(p, "&2You are leaving the &6" + th);
-						th.leave(p);
-					}
-				}
-			}
-		}
 		return true;
 	}
 

@@ -1,7 +1,6 @@
 package mc.alk.arena.competition.util;
 
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.MatchParams;
@@ -123,10 +122,8 @@ public abstract class TeamJoinHandler implements TeamHandler {
     }
 
     public void deconstruct() {
-//        for (ArenaTeam t: pickupTeams){
-//            TeamController.removeTeamHandler(t, this);
-//        }
-//        pickupTeams.clear();
+        teams.clear();
+        matchParams = null;
     }
 
     public abstract TeamJoinResult joiningTeam(TeamJoinObject tqo);
@@ -162,7 +159,6 @@ public abstract class TeamJoinHandler implements TeamHandler {
         List<ArenaTeam> improper = new ArrayList<ArenaTeam>();
         for (ArenaTeam t : teams) {
             if (t.size() < t.getMinPlayers()|| t.size() > t.getMaxPlayers()) {
-                TeamController.removeTeamHandler(t, this);
                 improper.add(t);
                 nPlayers -= t.size();
             }

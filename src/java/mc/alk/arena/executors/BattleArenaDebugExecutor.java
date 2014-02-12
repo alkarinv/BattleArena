@@ -35,6 +35,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -481,4 +485,29 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
         sendMessage(sender, "    Total time "+gtotal + (useMs ? " time(ms)" : " time(ns)"));
         return true;
     }
+
+    @MCCommand(cmds={"showScoreboard"}, admin=true)
+    public boolean showScoreboard(CommandSender sender, Player player) {
+        Scoreboard sc = player.getScoreboard();
+        if (sc == null)
+            return sendMessage(sender, "&4Scoreboard for " + player.getName() +" is null");
+        sendMessage(sender, "&4Scoreboard &f" + sc.hashCode());
+        sendMessage(sender, "&e -- Teams -- ");
+        Collection<OfflinePlayer> ops = sc.getPlayers();
+        for (Team t : sc.getTeams()) {
+            sendMessage(sender, t.getName() +" - " + t.getDisplayName());
+        }
+        for (Objective o : sc.getObjectives()){
+            sendMessage(sender, "&2 -- Objective &e"+o.getName() +" - "+o.getDisplayName());
+            for (OfflinePlayer op: ops) {
+                Score score = o.getScore(op);
+                if (score == null)
+                    continue;
+                sendMessage(sender, op.getName()+" : "+score.getScore());
+            }
+        }
+        return true;
+    }
+
+
 }

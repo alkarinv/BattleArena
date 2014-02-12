@@ -99,13 +99,11 @@ public class ArenaSerializer extends BaseConfig{
 
 	public void loadArenas(Plugin plugin){
 		try {config.load(file);} catch (Exception e){Log.printStackTrace(e);}
-		//		Log.info("["+plugin.getName()+ "] Loading arenas from " + file.getPath()+" using config "+ config.getName());
 		loadArenas(plugin, BattleArena.getBAController(), config,null);
 	}
 
 	public void loadArenas(Plugin plugin, ArenaType arenaType){
 		try {config.load(file);} catch (Exception e){Log.printStackTrace(e);}
-		//		Log.info("["+plugin.getName()+ "] Loading arenas from " + file.getPath() +" using config "+ config.getName() +" at=" + arenaType);
 		loadArenas(plugin, BattleArena.getBAController(), config, arenaType);
 	}
 
@@ -291,8 +289,13 @@ public class ArenaSerializer extends BaseConfig{
             try {
                 mp = arena.getParams();
                 EventOpenOptions eoo = EventOpenOptions.parseOptions(new String[]{"COPYPARAMS"}, null, mp);
-                eoo.setSecTillStart(0);
-                bac.createAndAutoMatch(arena, eoo);
+                Arena a = bac.reserveArena(arena);
+                if (a == null){
+                    Log.warn("&cArena &6"+arena.getName()+" &cwas set to always open but could not be reserved");
+                } else{
+                    eoo.setSecTillStart(0);
+                    bac.createAndAutoMatch(arena, eoo);
+                }
             } catch (NeverWouldJoinException e) {
                 e.printStackTrace();
             } catch (InvalidOptionException e) {

@@ -6,7 +6,6 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.controllers.StatController;
-import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.events.matches.MatchCreatedEvent;
@@ -94,9 +93,6 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
 		EventParams copy = new EventParams(mp);
 		copy.setMaxTeams(CompetitionSize.MAX);
 		this.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(copy, this));
-		for (ArenaTeam t: teams){
-			TeamController.removeTeamHandler(t, this);
-		}
 		joinHandler.removeImproperTeams();
 	}
 

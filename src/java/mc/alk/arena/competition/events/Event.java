@@ -245,7 +245,6 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
     public void removeAllTeams(){
 
         for (ArenaTeam t: teams){
-            TeamController.removeTeamHandler(t,this);
             for (ArenaPlayer p: t.getPlayers()){
                 p.removeCompetition(this);
             }
@@ -256,7 +255,6 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
     @Override
     public boolean removeTeam(ArenaTeam team){
         if (teams.remove(team)){
-            TeamController.removeTeamHandler(team,this);
             for (ArenaPlayer p: team.getPlayers()){
                 p.removeCompetition(this);
             }
@@ -270,7 +268,6 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
     public boolean addTeam(ArenaTeam team){
         if (teams.contains(team)) /// adding a team twice is bad mmkay
             return true;
-        TeamController.addTeamHandler(team, this);
         callEvent(new TeamJoinedEvent(this,team));
         return teams.add(team);
     }

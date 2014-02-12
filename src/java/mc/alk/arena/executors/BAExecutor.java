@@ -190,7 +190,7 @@ public class BAExecutor extends CustomCommandExecutor {
             return true;}
 
         /// Check Perms
-        if (!adminJoin && !PermissionsUtil.hasMatchPerm(player, mp, "add")) {
+        if (!adminJoin && !PermissionsUtil.hasMatchPerm(player, mp, "join")) {
             return sendSystemMessage(player, "no_join_perms", mp.getCommand());}
         /// Can the player add this match/event at this moment?
         if (!canJoin(player)) {
@@ -535,7 +535,6 @@ public class BAExecutor extends CustomCommandExecutor {
         ac.cancelAllArenas();
         ec.cancelAll();
         RoomController.cancelAll();
-        TeamController.removeAllHandlers();
         return sendMessage(sender,
                 "&2You have cancelled all matches/events and cleared the queue");
     }
@@ -1530,13 +1529,7 @@ public class BAExecutor extends CustomCommandExecutor {
                         "&cYou need to rescind your challenge first! &6/arena rescind");
             return false;
         }
-        ArenaTeam t = TeamController.getTeamNotTeamController(player);
-        if (t != null) {
-            if (showMessages)
-                sendMessage(player,
-                        "&cYou need to leave first.  &6/arena leave");
-            return false;
-        }
+
         if (EssentialsController.enabled()
                 && EssentialsController.inJail(player)) {
             if (showMessages)

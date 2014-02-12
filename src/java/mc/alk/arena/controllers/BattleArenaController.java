@@ -178,10 +178,6 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         mp.setParent(null);
         mp.setParent(parent);
         setFixedReservedArena(arena);
-//        if (mp.getForceStartTime() > 0)
-//            amq.setForcestartTime(arena, mp, mp.getForceStartTime());
-//        else
-//            amq.reserveArena(arena);
 
         arena.setParams(mp);
         Match m = createMatch(arena,eoo);

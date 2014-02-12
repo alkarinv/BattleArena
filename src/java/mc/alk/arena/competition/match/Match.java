@@ -11,7 +11,6 @@ import mc.alk.arena.controllers.RewardController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.StatController;
-import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
@@ -698,8 +697,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     private void nonEndingDeconstruct(List<ArenaTeam> teams){
         final Match match = this;
         for (ArenaTeam t: teams){
-            TeamController.removeTeamHandler(t, match);
-
             PerformTransition.transition(this, MatchState.ONFINISH, t, true);
             for (ArenaPlayer p: t.getPlayers()){
                 p.removeCompetition(this);
@@ -719,7 +716,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         callEvent(new MatchFinishedEvent(match));
         updateBukkitEvents(MatchState.ONFINISH);
         for (ArenaTeam t: teams){
-            TeamController.removeTeamHandler(t, match);
             PerformTransition.transition(this, MatchState.ONFINISH, t, true);
             for (ArenaPlayer p: t.getPlayers()){
                 p.removeCompetition(this);
@@ -730,7 +726,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         for (Entry<ArenaTeam,Integer> entry : individualTeamTimers.entrySet()){
             Scheduler.cancelTask(entry.getValue());
             if (!teams.contains(entry.getKey())){
-                TeamController.removeTeamHandler(entry.getKey(), match);
                 PerformTransition.transition(this, MatchState.ONCANCEL, entry.getKey(), true);
                 for (ArenaPlayer p: entry.getKey().getPlayers()){
                     p.removeCompetition(this);
@@ -753,11 +748,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             return false;
         if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addTeam("+team.getName()+":"+team.getId()+")");
 
-//        teamIndexes.put(team, teams.size());
-//        teams.add(team);
         team.reset();/// reset scores, set alive
         team.setCurrentParams(params);
-        TeamController.addTeamHandler(team, this);
+
         int index = team.getIndex();
         team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
         if (woolTeams)
@@ -972,7 +965,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     private void privateRemoveTeam(ArenaTeam team){
         teams.remove(team);
         HeroesController.removeTeam(team);
-        TeamController.removeTeamHandler(team, this);
     }
 
     private void preFirstJoin(ArenaPlayer player){

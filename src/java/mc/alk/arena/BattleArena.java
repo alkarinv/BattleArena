@@ -98,6 +98,9 @@ public class BattleArena extends JavaPlugin {
     private static final int bukkitId = 43134; /// project bukkitId
 
 
+    /**
+     * enable the BattleArena plugin
+     */
     @Override
     public void onEnable() {
         BattleArena.plugin = this;
@@ -245,8 +248,37 @@ public class BattleArena extends JavaPlugin {
         Log.info("&4[" + pluginname + "] &6v" + BattleArena.version + "&f enabled!");
     }
 
+    /**
+     * Disable the BattleArena plugin
+     */
+    @Override
+    public void onDisable() {
+        arenaController.stop();
+        /// we no longer save arenas as those get saved after each alteration now
+        arenaControllerSerializer.save();
+        eventSchedulerSerializer.saveScheduledEvents();
+        signSerializer.saveAll(signUpdateListener);
+        /// Save the container states
+        StateFlagSerializer sfs = new StateFlagSerializer();
+        sfs.setConfig(getDataFolder().getPath() + "/saves/state.yml");
+        sfs.save(commandExecutor.getDisabled(),
+                RoomController.getLobbies(),
+                arenaController.getArenas());
+        FileLogger.saveAll();
+    }
+
+    /**
+     * Check for updates for a given plugin.
+     * If there are updates then it will announce the newer version to the console. It will download the newer
+     * jar if the "update" variable is true.
+     * This happens in an asynchronous manner to not lag the server while checking for the update
+     * @param plugin BattleArena extension plugin
+     * @param bukkitId the bukkit id of this plugin
+     * @param file File from the bukkit plugin, use this.getFile()
+     * @param onlyAnnounceNewVersion whether we should update the plugin or simply announce that there is a newer version
+     */
     public static void update(final Plugin plugin, final int bukkitId,
-                                        final File file, final boolean onlyAnnounceNewVersion) {
+                              final File file, final boolean onlyAnnounceNewVersion) {
         new APIRegistrationController().autoUpdate(plugin, bukkitId, file, onlyAnnounceNewVersion);
     }
 
@@ -270,24 +302,8 @@ public class BattleArena extends JavaPlugin {
         }
     }
 
-    @Override
-    public void onDisable() {
-        arenaController.stop();
-        /// we no longer save arenas as those get saved after each alteration now
-        arenaControllerSerializer.save();
-        eventSchedulerSerializer.saveScheduledEvents();
-        signSerializer.saveAll(signUpdateListener);
-        /// Save the container states
-        StateFlagSerializer sfs = new StateFlagSerializer();
-        sfs.setConfig(getDataFolder().getPath() + "/saves/state.yml");
-        sfs.save(commandExecutor.getDisabled(),
-                RoomController.getLobbies(),
-                arenaController.getArenas());
-        FileLogger.saveAll();
-    }
-
     /**
-     * Return the BattleArena plugin
+     * Return the BattleArena plugin instance
      *
      * @return BattleArena
      */
@@ -404,10 +420,10 @@ public class BattleArena extends JavaPlugin {
         return InArenaListener.inArena(player.getName());
     }
 
-    @Override
     /**
      * Reload our own config
      */
+    @Override
     public void reloadConfig() {
         super.reloadConfig();
         baConfigSerializer.loadDefaults();

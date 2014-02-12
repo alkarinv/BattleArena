@@ -10,7 +10,6 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.ArenaEventMethod;
-import mc.alk.arena.objects.events.MatchEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfTreeSet;
@@ -260,28 +259,17 @@ public class MethodController {
 
             ArenaEventHandler aeh = method.getAnnotation(ArenaEventHandler.class);
             if (aeh == null){
-                /// Support for the old style MatchEventHandler
-                MatchEventHandler meh = method.getAnnotation(MatchEventHandler.class);
-                if (meh == null){
-                    continue;}
-                beginState = meh.begin();
-                endState = meh.end();
-                cancelState=MatchState.NONE;
-                needsPlayer = meh.needsPlayer();
-                entityMethod = meh.entityMethod();
-                supressCastWarnings = meh.suppressCastWarnings();
-                bukkitPriority = meh.bukkitPriority();
-                priority = meh.priority();
-            } else {
-                beginState = aeh.begin();
-                endState = aeh.end();
-                cancelState=MatchState.NONE;
-                needsPlayer = aeh.needsPlayer();
-                entityMethod = aeh.entityMethod();
-                supressCastWarnings = aeh.suppressCastWarnings();
-                bukkitPriority = aeh.bukkitPriority();
-                priority = aeh.priority();
-            }
+                continue;}
+
+            beginState = aeh.begin();
+            endState = aeh.end();
+            cancelState=MatchState.NONE;
+            needsPlayer = aeh.needsPlayer();
+            entityMethod = aeh.entityMethod();
+            supressCastWarnings = aeh.suppressCastWarnings();
+            bukkitPriority = aeh.bukkitPriority();
+            priority = aeh.priority();
+
             /// Make sure there is some sort of bukkit bukkitEvent here
             Class<?>[] classes = method.getParameterTypes();
             if (classes.length == 0 || !(Event.class.isAssignableFrom(classes[0]))){
