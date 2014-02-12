@@ -59,9 +59,12 @@ public class BinPackAdd extends TeamJoinHandler {
     public TeamJoinResult joiningTeam(TeamJoinObject tqo) {
         ArenaTeam team = tqo.getTeam();
         if (team.size()==1){
+
             ArenaTeam oldTeam = addToPreviouslyLeftTeam(team.getPlayers().iterator().next());
-            if (oldTeam != null)
+            if (oldTeam != null){
+                team.setIndex(oldTeam.getIndex());
                 return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING,oldTeam.getMinPlayers() - oldTeam.size(), oldTeam);
+            }
         }
 
         for (ArenaTeam t: teams){
@@ -69,6 +72,7 @@ public class BinPackAdd extends TeamJoinHandler {
             if (size <= t.getMaxPlayers()){
                 t.addPlayers(team.getPlayers());
                 if ( size >= t.getMinPlayers()){ /// the new team would be a valid range, add them
+                    team.setIndex(t.getIndex());
                     addToTeam(t, team.getPlayers());
                     return new TeamJoinResult(TeamJoinStatus.ADDED, 0,t);
                 } else {
@@ -82,6 +86,7 @@ public class BinPackAdd extends TeamJoinHandler {
         if (teams.size() < maxTeams){
             ArenaTeam ct = TeamFactory.createTeam(teams.size(), matchParams, clazz);
             ct.addPlayers(team.getPlayers());
+            team.setIndex(ct.getIndex());
             if (ct.size() == ct.getMaxPlayers()){
                 addTeam(ct);
                 return new TeamJoinResult(TeamJoinStatus.ADDED, ct.getMinPlayers() - ct.size(),ct);

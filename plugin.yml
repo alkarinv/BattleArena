@@ -6,7 +6,7 @@ main: mc.alk.arena.BattleArena
 
 author: alkarin
 
-softdepend: [BattleTracker, Essentials, Herochat, Heroes, IcePvPControl, Factions, GroupManager, MultiInv, Multiworld, Multiverse-Core, Multiverse-Inventories, PvPToggle, PvPTime, PvPTimer, SimpleClans, TagAPI, Towny, WorldEdit, WorldGuard, Vault]
+softdepend: [BattleTracker, Essentials, Herochat, Heroes, IcePvPControl, Factions, GroupManager, mcMMO, MultiInv, Multiworld, Multiverse-Core, Multiverse-Inventories, PvPToggle, PvPTime, PvPTimer, SimpleClans, TagAPI, Towny, WorldEdit, WorldGuard, Vault]
 
 commands:
     team:
@@ -37,11 +37,11 @@ commands:
         usage: Problem loading plugin, please send errors on startup to alkarin_v
     freeforall:
         aliases: [ffa]
-        description: join a ffa 
+        description: join a ffa
         usage: Problem loading plugin, please send errors on startup to alkarin_v
     deathMatch:
         aliases: [dm]
-        description: join a dm 
+        description: join a dm
         usage: Problem loading plugin, please send errors on startup to alkarin_v
     arenaAlter:
         aliases: [arenaEdit,aa]

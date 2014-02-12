@@ -58,8 +58,10 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
         ArenaTeam team = tqo.getTeam();
         if (team.size()==1){
             ArenaTeam oldTeam = addToPreviouslyLeftTeam(team.getPlayers().iterator().next());
-            if (oldTeam != null)
+            if (oldTeam != null){
+                team.setIndex(oldTeam.getIndex());
                 return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING,oldTeam.getMinPlayers() - oldTeam.size(), oldTeam);
+            }
         }
         /// Try to let them join their specified team if possible
         JoinOptions jo = tqo.getJoinOptions();
@@ -84,6 +86,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
             ArenaTeam ct = TeamFactory.createTeam(teams.size(), matchParams, clazz);
             ct.setCurrentParams(tqo.getMatchParams());
             ct.addPlayers(team.getPlayers());
+            team.setIndex(ct.getIndex());
             if (ct.size() >= ct.getMinPlayers()){
                 addTeam(ct);
                 return new TeamJoinResult(TeamJoinStatus.ADDED, ct.getMinPlayers() - ct.size(),ct);
@@ -107,6 +110,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
 
     private TeamJoinResult teamFits(ArenaTeam baseTeam, ArenaTeam team) {
         if ( baseTeam.size() + team.size() <= baseTeam.getMaxPlayers()){
+            team.setIndex(baseTeam.getIndex());
             addToTeam(baseTeam, team.getPlayers());
             if (baseTeam.size() == 0){
                 return new TeamJoinResult(TeamJoinStatus.ADDED, baseTeam.getMinPlayers() - baseTeam.size(),baseTeam);
