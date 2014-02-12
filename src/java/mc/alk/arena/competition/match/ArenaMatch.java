@@ -7,7 +7,6 @@ import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
-import mc.alk.arena.events.players.ArenaPlayerClassSelectedEvent;
 import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
 import mc.alk.arena.events.players.ArenaPlayerKillEvent;
 import mc.alk.arena.events.players.ArenaPlayerReadyEvent;
@@ -25,8 +24,6 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.DmgDeathUtil;
-import mc.alk.arena.util.EffectUtil;
-import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
@@ -37,7 +34,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
-import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -45,10 +41,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
 
-import java.awt.*;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -63,7 +56,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ArenaMatch extends Match {
     static HashSet<String> disabledCommands = new HashSet<String>();
 
-    static Map<String, Long> userTime = new ConcurrentHashMap<String, Long>();
     Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
     Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
 
@@ -400,86 +392,9 @@ public class ArenaMatch extends Match {
 
         final ArenaClass ac = ArenaClassController.getClass(MessageUtil.decolorChat(
                 sign.getLine(0)).replace('*',' ').replace('[',' ').replace(']',' ').trim());
-        changeClass(event.getPlayer(), am, ac);
+        ArenaClassController.changeClass(event.getPlayer(), am, ac);
     }
 
-    public static boolean changeClass(Player p, PlayerHolder am, final ArenaClass ac) {
-        if (ac == null || !ac.valid()) /// Not a valid class sign
-            return false;
-        if (!p.hasPermission("arena.class.use."+ac.getName().toLowerCase())){
-            MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
-            return false;
-        }
-
-        final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
-        ArenaClass chosen = ap.getCurrentClass();
-        if (chosen != null && chosen.getName().equals(ac.getName())){
-            MessageUtil.sendMessage(p, "&cYou already are a &6" + ac.getName());
-            return false;
-        }
-        String playerName = p.getName();
-        if(userTime.containsKey(playerName)) {
-            Log.debug(System.currentTimeMillis() - userTime.get(playerName) +
-                    " --- " + ((System.currentTimeMillis() - userTime.get(playerName)) < Defaults.TIME_BETWEEN_CLASS_CHANGE * 1000) +"   --- " +  Defaults.TIME_BETWEEN_CLASS_CHANGE);
-
-//            if ((System.currentTimeMillis() - userTime.get(playerName)) < Defaults.TIME_BETWEEN_CLASS_CHANGE * 1000) {
-//                MessageUtil.sendMessage(p, "&cYou must wait &6" + Defaults.TIME_BETWEEN_CLASS_CHANGE + "&c seconds between class selects");
-//                return false;
-//            }
-        }
-        MatchParams mp = am.getParams();
-        userTime.put(playerName, System.currentTimeMillis());
-
-        boolean woolTeams = mp.hasAnyOption(TransitionOption.WOOLTEAMS);
-        /// Have They have already selected a class this match, have they changed their inventory since then?
-        /// If so, make sure they can't just select a class, drop the items, then choose another
-        if (chosen != null){
-            List<ItemStack> items = new ArrayList<ItemStack>();
-            if (chosen.getItems()!=null)
-                items.addAll(chosen.getItems());
-            if (mp.hasOptionAt(MatchState.ONSPAWN, TransitionOption.GIVEITEMS) &&
-                    mp.getGiveItems(MatchState.ONSPAWN) != null){
-                items.addAll(mp.getGiveItems(MatchState.ONSPAWN));
-            }
-            if (Defaults.NEED_SAME_ITEMS_TO_CHANGE_CLASS && !InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
-                MessageUtil.sendMessage(p,"&cYou can't switch classes after changing items!");
-                return false;
-            }
-        }
-        am.callEvent(new ArenaPlayerClassSelectedEvent(ac));
-
-        /// Clear their inventory first, then give them the class and whatever items were due to them from the config
-        InventoryUtil.clearInventory(p, woolTeams);
-        /// Also debuff them
-        EffectUtil.deEnchantAll(p);
-
-        MatchState state = am.getMatchState();
-        boolean armorTeams = mp.hasAnyOption(TransitionOption.ARMORTEAMS);
-        ArenaTeam team = am.getTeam(ap);
-        int teamIndex = team == null ? -1 : team.getIndex();
-        Color color = armorTeams && teamIndex != -1 ? TeamUtil.getTeamColor(teamIndex) : null;
-        ap.despawnMobs();
-        /// Regive class/items
-        ArenaClassController.giveClass(ap, ac);
-        ap.setPreferredClass(ac);
-        List<ItemStack> items =mp.getGiveItems(state);
-        if (items != null){
-            try{ InventoryUtil.addItemsToInventory(p, items, true,color);} catch(Exception e){Log.printStackTrace(e);}}
-        items =mp.getGiveItems(MatchState.ONSPAWN);
-        if (items!=null){
-            try{ InventoryUtil.addItemsToInventory(p, items, true,color);} catch(Exception e){Log.printStackTrace(e);}}
-
-        /// Deal with effects/buffs
-        List<PotionEffect> effects = mp.getEffects(state);
-        if (effects!=null){
-            EffectUtil.enchantPlayer(p, effects);}
-        effects = mp.getEffects(MatchState.ONSPAWN);
-        if (effects!=null){
-            EffectUtil.enchantPlayer(p, effects);}
-
-        MessageUtil.sendMessage(p, "&2You have chosen the &6" + ac.getName());
-        return true;
-    }
 
 
     private void readyClick(PlayerInteractEvent event) {

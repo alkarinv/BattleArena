@@ -140,7 +140,6 @@ public abstract class TeamJoinHandler implements TeamHandler {
                 if (competition!=null) {
                     competition.leave(p);
                 }
-//                pickupTeams.remove(t);
                 return true;
             }
         }

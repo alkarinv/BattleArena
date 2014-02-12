@@ -1,5 +1,6 @@
 package mc.alk.arena.util;
 
+import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import org.bukkit.Bukkit;
@@ -18,7 +19,11 @@ public class MessageUtil {
 	public static String decolorChat(String msg) {
 		return msg.contains("§") || msg.contains("&") ? ChatColor.stripColor(msg).replaceAll("&.", "") : msg;}
 
-	public static boolean sendMessage(CommandSender p, String message){
+    public static boolean sendSystemMessage(CommandSender p, String nodeString, Object... varArgs) {
+        return sendMessage(p, MessageHandler.getSystemMessage(nodeString,varArgs));
+    }
+
+    public static boolean sendMessage(CommandSender p, String message){
 		if (message ==null || message.isEmpty()) return true;
 		if (message.contains("\n"))
 			return sendMultilineMessage(p,message);

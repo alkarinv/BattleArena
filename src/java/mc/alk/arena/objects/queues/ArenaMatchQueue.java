@@ -452,10 +452,15 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
             }
             ready_matches.clear();
         }
+        Map<ArenaPlayer, WaitingObject> players = new HashMap<ArenaPlayer, WaitingObject>();
         synchronized(delayedReadyMatches){
             for (List<FoundMatch> list : delayedReadyMatches.values()){
                 for (FoundMatch fm: list) {
                     teams.addAll(fm.wo.jh.getTeams());
+                    for (ArenaPlayer ap : fm.wo.getPlayers()) {
+                        fm.wo.jh.leave(ap);
+                        players.put(ap, fm.wo);
+                    }
                 }
             }
             delayedReadyMatches.clear();
@@ -463,9 +468,18 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         synchronized(joinHandlers) {
             for (WaitingObject o : joinHandlers) {
                 teams.addAll(o.jh.getTeams());
+                for (ArenaPlayer ap : o.getPlayers()) {
+                    o.jh.leave(ap);
+                    players.put(ap, o);
+                }
             }
             joinHandlers.clear();
         }
+        for (Entry<ArenaPlayer,WaitingObject> entry : players.entrySet()) {
+            callEvent(new ArenaPlayerLeaveQueueEvent(entry.getKey(),
+                    entry.getValue().getParams(),entry.getValue().getArena()));
+        }
+
         return teams;
     }
 

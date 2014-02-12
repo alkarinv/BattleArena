@@ -1,13 +1,14 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.CaseInsensitiveMap;
-import mc.alk.arena.util.Log;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,6 +31,9 @@ public class ParamController {
                 types.put(alias, matchParams);}
         }
         addAlias(matchParams.getCommand(), matchParams);
+        for (Arena arena : BattleArena.getBAController().getArenas(matchParams)) {
+            arena.getParams().setParent(matchParams);
+        }
     }
 
     public static void addArenaParams(String arenaName, MatchParams mp) {
@@ -93,9 +97,7 @@ public class ParamController {
         MatchParams mp = types.get(type);
         if (mp == null)
             return null;
-//        return mp instanceof EventParams ? new EventParams(mp) : new MatchParams(mp);
-        MatchParams p = mp instanceof EventParams ? new EventParams(mp) : new MatchParams(mp);
-        return p;
+        return mp instanceof EventParams ? new EventParams(mp) : new MatchParams(mp);
     }
 
     /**

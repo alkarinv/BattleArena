@@ -944,49 +944,57 @@ public class InventoryUtil {
 	public static class ItemComparator implements Comparator<ItemStack>{
 		@Override
 		public int compare(ItemStack arg0, ItemStack arg1) {
-			if (arg0 == null && arg1 == null)
-				return 0;
-			if (arg0 == null)
-				return 1;
-			if (arg1 == null)
-				return -1;
-			Integer i = arg0.getTypeId();
-			Integer i2 = arg1.getTypeId();
-			if (i== Material.AIR.getId() && i2 == Material.AIR.getId()) return 0;
-			if (i == Material.AIR.getId()) return 1;
-			if (i2 == Material.AIR.getId()) return -1;
+            return compareItem(arg0,arg1);
+        }
+    }
 
-			int c = i.compareTo(i2);
-			if (c!= 0)
-				return c;
-			Short s= arg0.getDurability();
-			c = s.compareTo(arg1.getDurability());
-			if (c!= 0)
-				return c;
-			i = arg0.getAmount();
-			c = i.compareTo(arg1.getAmount());
-			if (c!= 0)
-				return c;
-			Map<Enchantment, Integer> e1 = arg0.getEnchantments();
-			Map<Enchantment, Integer> e2 = arg0.getEnchantments();
-			i = e1.size();
-			c = i.compareTo(e2.size());
-			if (c!=0)
-				return c;
-			for (Enchantment e: e1.keySet()){
-				if (!e2.containsKey(e))
-					return -1;
-				i = e1.get(e);
-				i2 = e2.get(e);
-				c = i.compareTo(i2);
-				if (c != 0)
-					return c;
-			}
-			return 0;
-		}
-	}
+    public static boolean sameItem(ItemStack item1, ItemStack item2) {
+        return compareItem(item1, item2) == 0;
+    }
 
-	public static boolean sameItems(List<ItemStack> items, PlayerInventory inv, boolean woolTeams) {
+    public static int compareItem(ItemStack item1, ItemStack item2) {
+        if (item1 == null && item2 == null)
+            return 0;
+        if (item1 == null)
+            return 1;
+        if (item2 == null)
+            return -1;
+        Integer i = item1.getTypeId();
+        Integer i2 = item2.getTypeId();
+        if (i== Material.AIR.getId() && i2 == Material.AIR.getId()) return 0;
+        if (i == Material.AIR.getId()) return 1;
+        if (i2 == Material.AIR.getId()) return -1;
+
+        int c = i.compareTo(i2);
+        if (c!= 0)
+            return c;
+        Short s= item1.getDurability();
+        c = s.compareTo(item2.getDurability());
+        if (c!= 0)
+            return c;
+        i = item1.getAmount();
+        c = i.compareTo(item2.getAmount());
+        if (c!= 0)
+            return c;
+        Map<Enchantment, Integer> e1 = item1.getEnchantments();
+        Map<Enchantment, Integer> e2 = item1.getEnchantments();
+        i = e1.size();
+        c = i.compareTo(e2.size());
+        if (c!=0)
+            return c;
+        for (Enchantment e: e1.keySet()){
+            if (!e2.containsKey(e))
+                return -1;
+            i = e1.get(e);
+            i2 = e2.get(e);
+            c = i.compareTo(i2);
+            if (c != 0)
+                return c;
+        }
+        return 0;
+    }
+
+    public static boolean sameItems(List<ItemStack> items, PlayerInventory inv, boolean woolTeams) {
 		ItemStack[] contents =inv.getContents();
 		ItemStack[] armor = inv.getArmorContents();
 		/// This is a basic check to make sure we have the same number of items, and same total durability

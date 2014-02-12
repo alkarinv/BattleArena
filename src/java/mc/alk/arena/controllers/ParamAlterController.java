@@ -110,8 +110,8 @@ public class ParamAlterController {
         if (original != null) {
             params = original;
         }
-        rc.saveParams(params);
-//		ParamController.addMatchParams(params);
+        saveParamsAndUpdate(rc, params);
+
 		if (to != null){
 			ParamController.setTransitionOptions(params, params.getTransitionOptions());
 		}
@@ -131,7 +131,13 @@ public class ParamAlterController {
 		return true;
 	}
 
-	public boolean setOption(CommandSender sender, GameOption option, Object value)
+    private void saveParamsAndUpdate(RegisteredCompetition rc, MatchParams params) {
+        rc.saveParams(params);
+        ParamController.addMatchParams(params);
+
+    }
+
+    public boolean setOption(CommandSender sender, GameOption option, Object value)
 			throws InvalidOptionException {
 		int iv;
 		switch(option){
@@ -222,8 +228,8 @@ public class ParamAlterController {
 			try {
 				deleteGameOption(go);
 				params.getTransitionOptions();
-				rc.saveParams(params);
-//				ParamController.addMatchParams(params);
+                saveParamsAndUpdate(rc, params);
+				ParamController.addMatchParams(params);
 				sendMessage(sender, "&2Game option &6"+go.toString()+"&2 removed");
 				switch(go){
 				case COMMAND:
@@ -246,7 +252,6 @@ public class ParamAlterController {
 			try{
 				deleteTransitionOption(state, key);
 				rc.saveParams(params);
-//				ParamController.addMatchParams(params);
 				ParamController.setTransitionOptions(params, params.getTransitionOptions());
 				return sendMessage(sender, "&2Game option &6"+state +"&2 removed");
 			} catch (Exception e) {
