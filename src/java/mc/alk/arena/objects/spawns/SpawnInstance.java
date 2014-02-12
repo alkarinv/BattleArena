@@ -25,4 +25,8 @@ public abstract class SpawnInstance implements Spawnable, SpawnableInstance{
 		return loc;
 	}
 
+    public int getID() {
+        return spawnId;
+    }
+
 }

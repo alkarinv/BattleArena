@@ -18,7 +18,6 @@ import org.bukkit.inventory.PlayerInventory;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -1047,67 +1046,69 @@ public class InventoryUtil {
 		if (DEBUG) Log.info("nitems1  " + nitems1 +":" + nitems2+"      " + dura1 +"  : " + dura2);
 		if (nitems1 != nitems2 || dura1 != dura2)
 			return false;
-
-		/// Now that the basic check is over, the more intensive one starts
-		//// I could check size right now if it werent for "air" and null blocks in inventories
-		List<ItemStack> pitems = new ArrayList<ItemStack>();
-		pitems.addAll(Arrays.asList(contents));
-		if (woolTeams){ /// ignore helmet maybe
-			if (inv.getHelmet() != null && InventoryUtil.isRealArmor(inv.getHelmet())) pitems.add(inv.getHelmet());
-
-			if (inv.getBoots() != null) pitems.add(inv.getBoots());
-			if (inv.getLeggings() != null) pitems.add(inv.getLeggings());
-			if (inv.getChestplate() != null) pitems.add(inv.getChestplate());
-		} else {
-			pitems.addAll(Arrays.asList(armor));
-		}
-		List<ItemStack> stacks = new ArrayList<ItemStack>();
-		for (ItemStack is: items){
-			if (is == null || is.getType() == Material.AIR)
-				continue;
-			if (DEBUG)Log.info(" iss   " + is.getAmount() +"   " + is.getMaxStackSize() +"    " + is);
-			if (is.getAmount() > is.getMaxStackSize()){
-				is = is.clone();
-				while (is.getAmount() > is.getMaxStackSize()){
-					is.setAmount(is.getAmount() - is.getMaxStackSize());
-					ItemStack is2 = new ItemStack(is);
-					is2.setAmount(is2.getMaxStackSize());
-					stacks.add(is2);
-				}
-			}
-			stacks.add(is);
-		}
-		items = stacks;
-		Collections.sort(items, new ItemComparator());
-		Collections.sort(pitems, new ItemComparator());
-		int idx = 0;
-		ItemStack is1, is2;
-
-		while (idx< items.size() && idx<pitems.size()){
-			is1 = items.get(idx);
-			is2 = pitems.get(idx);
-			if (DEBUG) Log.info(idx  +" : " + is1 +"  " + is2);
-			if ((is1==null || is1.getType() == Material.AIR) && (is2 == null || is2.getType() == Material.AIR))
-				return true;
-			if ((is1==null || is1.getType() == Material.AIR) || (is2 == null || is2.getType() == Material.AIR))
-				return false;
-			/// Alright, now that we dont have to worry about null or air
-			if (!is1.equals(is2))
-				return false;
-			idx++;
-		}
-		/// Arrays are similar up until the smallest array
-		/// If any array has more elements that are not null, then they are not equal
-		for (int i=idx;i<items.size();i++){
-			is1 = items.get(i);
-			if (is1 != null && is1.getType() != Material.AIR)
-				return false;
-		}
-		for (int i=idx;i<pitems.size();i++){
-			is2 = pitems.get(i);
-			if (is2 != null && is2.getType() != Material.AIR)
-				return false;
-		}
+//        List<ItemStack> pitems = new ArrayList<ItemStack>();
+//
+//		/// Now that the basic check is over, the more intensive one starts
+//		//// I could check size right now if it werent for "air" and null blocks in inventories
+//		List<ItemStack> pitems = new ArrayList<ItemStack>();
+//		pitems.addAll(Arrays.asList(contents));
+//		if (woolTeams){ /// ignore helmet maybe
+//			if (inv.getHelmet() != null && InventoryUtil.isRealArmor(inv.getHelmet())) pitems.add(inv.getHelmet());
+//
+//			if (inv.getBoots() != null) pitems.add(inv.getBoots());
+//			if (inv.getLeggings() != null) pitems.add(inv.getLeggings());
+//			if (inv.getChestplate() != null) pitems.add(inv.getChestplate());
+//		} else {
+//			pitems.addAll(Arrays.asList(armor));
+//		}
+//		List<ItemStack> stacks = new ArrayList<ItemStack>();
+//		for (ItemStack is: items){
+//			if (is == null || is.getType() == Material.AIR)
+//				continue;
+//            final int max = 64;
+//			if (DEBUG)Log.info(" iss   " + is.getAmount() +"   " + is.getMaxStackSize() +"    " + is +" max="+max);
+//            if (is.getAmount() > max){
+//				is = is.clone();
+//				while (is.getAmount() > max){
+//					is.setAmount(is.getAmount() - max);
+//					ItemStack is2 = new ItemStack(is);
+//					is2.setAmount(max);
+//					stacks.add(is2);
+//				}
+//			}
+//			stacks.add(is);
+//		}
+//		items = stacks;
+//		Collections.sort(items, new ItemComparator());
+//		Collections.sort(pitems, new ItemComparator());
+//		int idx = 0;
+//		ItemStack is1, is2;
+//
+//		while (idx< items.size() && idx<pitems.size()){
+//			is1 = items.get(idx);
+//			is2 = pitems.get(idx);
+//			if (DEBUG) Log.info(idx  +" : " + is1 +"  " + is2);
+//			if ((is1==null || is1.getType() == Material.AIR) && (is2 == null || is2.getType() == Material.AIR))
+//				return true;
+//			if ((is1==null || is1.getType() == Material.AIR) || (is2 == null || is2.getType() == Material.AIR))
+//				return false;
+//			/// Alright, now that we dont have to worry about null or air
+//			if (!is1.equals(is2))
+//				return false;
+//			idx++;
+//		}
+//		/// Arrays are similar up until the smallest array
+//		/// If any array has more elements that are not null, then they are not equal
+//		for (int i=idx;i<items.size();i++){
+//			is1 = items.get(i);
+//			if (is1 != null && is1.getType() != Material.AIR)
+//				return false;
+//		}
+//		for (int i=idx;i<pitems.size();i++){
+//			is2 = pitems.get(i);
+//			if (is2 != null && is2.getType() != Material.AIR)
+//				return false;
+//		}
 		return true;
 	}
 

@@ -18,6 +18,8 @@ import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.exceptions.RegionNotFound;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.TransitionOption;
+import mc.alk.arena.objects.spawns.BlockSpawn;
+import mc.alk.arena.objects.spawns.ChestSpawn;
 import mc.alk.arena.objects.spawns.EntitySpawn;
 import mc.alk.arena.objects.spawns.ItemSpawn;
 import mc.alk.arena.objects.spawns.SpawnGroup;
@@ -520,11 +522,17 @@ public class ArenaSerializer extends BaseConfig{
 			ItemSpawn in = (ItemSpawn) si;
 			key = InventoryUtil.getItemString(in.getItemStack());
 
-		} else if (si instanceof EntitySpawn){
-			EntitySpawn in = (EntitySpawn) si;
-			key = in.getEntityString() + " " + in.getNumber();
-			//			value = in.getNumber() +"";
-		}
+        } else if (si instanceof EntitySpawn){
+            EntitySpawn in = (EntitySpawn) si;
+            key = in.getEntityString() + " " + in.getNumber();
+        } else if (si instanceof ChestSpawn){
+            ChestSpawn bs = (ChestSpawn) si;
+            key = bs.getBlock().getType().name();
+        } else if (si instanceof BlockSpawn){
+            BlockSpawn bs = (BlockSpawn) si;
+            key = bs.getBlock().getType().name();
+        }
+
 		if (value == null)
 			spawnMap.put("spawn", key);
 		else

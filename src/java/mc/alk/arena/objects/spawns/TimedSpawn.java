@@ -3,7 +3,7 @@ package mc.alk.arena.objects.spawns;
 import mc.alk.arena.util.SerializerUtil;
 
 
-public class TimedSpawn{
+public class TimedSpawn implements Spawnable{
 	static int count=0;
 	SpawnInstance sg;
 	final int id = count++;
@@ -34,14 +34,6 @@ public class TimedSpawn{
 		this.firstSpawnTime = timeToStart;
 	}
 
-	public void despawn() {
-		sg.despawn();
-	}
-
-	public int spawn() {
-		return sg.spawn();
-	}
-
 	public int getId(){
 		return id;
 	}
@@ -54,7 +46,17 @@ public class TimedSpawn{
 		return timeToDespawn;
 	}
 
-	@Override
+    @Override
+    public void despawn() {
+        sg.despawn();
+    }
+
+    @Override
+    public void spawn() {
+        sg.spawn();
+    }
+
+    @Override
 	public String toString(){
 		return "[TimedSpawn "+id+" loc="+SerializerUtil.getLocString(sg.getLocation()) + " sg=" + sg+"]";
 	}

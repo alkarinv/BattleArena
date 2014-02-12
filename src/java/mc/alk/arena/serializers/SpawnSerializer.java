@@ -1,11 +1,5 @@
 package mc.alk.arena.serializers;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.SpawnController;
 import mc.alk.arena.objects.spawns.EntitySpawn;
@@ -15,11 +9,16 @@ import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.util.EntityUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
-
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 
 public class SpawnSerializer {
@@ -113,7 +112,7 @@ public class SpawnSerializer {
 			try{number = Integer.parseInt(value);} catch(Exception e){}
 //			System.out.println(InventoryUtil.isItem(key)+" is item " + InventoryUtil.isItem(key+":" + value) +"     key=" + key+" value=" + value);
 			ItemStack is = InventoryUtil.parseItem(value);
-			EntityType et = EntityUtil.parseEntityType(key);
+            EntityType et = EntityUtil.parseEntityType(key);
 //						System.out.println("is = " + InventoryUtil.getItemString(is) +"   et=" + et);
 			if (is != null && et != null){
 				int keysize = key.length();

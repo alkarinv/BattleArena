@@ -5,7 +5,6 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.controllers.ArenaAlterController;
@@ -15,10 +14,7 @@ import mc.alk.arena.controllers.BAEventController;
 import mc.alk.arena.controllers.CombatTagInterface;
 import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
-import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.EventController;
-import mc.alk.arena.controllers.plugins.HeroesController;
-import mc.alk.arena.controllers.plugins.MobArenaInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.ParamAlterController;
 import mc.alk.arena.controllers.ParamController;
@@ -30,6 +26,9 @@ import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.controllers.messaging.MessageHandler;
+import mc.alk.arena.controllers.plugins.EssentialsController;
+import mc.alk.arena.controllers.plugins.HeroesController;
+import mc.alk.arena.controllers.plugins.MobArenaInterface;
 import mc.alk.arena.events.arenas.ArenaCreateEvent;
 import mc.alk.arena.events.arenas.ArenaDeleteEvent;
 import mc.alk.arena.events.players.ArenaPlayerJoinEvent;
@@ -981,7 +980,7 @@ public class BAExecutor extends CustomCommandExecutor {
     @MCCommand(cmds = { "setArenaOption", "setOption", "alter", "edit" }, admin = true, perm = "arena.alter")
     public boolean arenaSetOption(CommandSender sender, Arena arena, String[] args) {
         try {
-            ArenaAlterController.setArenaOption(sender, arena, args);
+            ArenaAlterController.setArenaOption(sender, arena, false, args);
         } catch (IllegalStateException e) {
             return sendMessage(sender, "&c" + e.getMessage());
         }
@@ -1362,7 +1361,7 @@ public class BAExecutor extends CustomCommandExecutor {
             return sendMessage(sender, "&cThere is no class called &6"+ arenaClass);}
         if (sender.getCompetition() == null) {
             return sendMessage(sender, "&cYou aren't in a match&6");}
-        ArenaMatch.changeClass(sender.getPlayer(), sender.getCompetition(), ac);
+        ArenaClassController.changeClass(sender.getPlayer(), sender.getCompetition(), ac);
         return true;
     }
 

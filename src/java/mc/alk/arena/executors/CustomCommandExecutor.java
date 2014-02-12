@@ -1,7 +1,5 @@
 package mc.alk.arena.executors;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.ArenaAlterController;
@@ -17,11 +15,12 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class CustomCommandExecutor extends BaseExecutor{
 
@@ -66,13 +65,13 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
 			if (!isPlayer){
 				throw new IllegalArgumentException(ONLY_INGAME);
 			}
-			CurrentSelection cs = aec.getCurrentSelection((Player)sender);
+			CurrentSelection cs = aec.getCurrentSelection(sender);
 			if (cs == null)
 				throw new IllegalArgumentException(ChatColor.RED + "You need to select an arena first");
-
-			if (System.currentTimeMillis() - cs.lastUsed > 5*60*1000){
+            if (System.currentTimeMillis() - cs.lastUsed > 5*60*1000){
 				throw new IllegalArgumentException(ChatColor.RED + "its been over a 5 minutes since you selected an arena, reselect it");
 			}
+            cs.updateCurrentSelection();
 		}
 		return super.verifyArgs(mwrapper,cmd,sender,command,label,args,startIndex);
 	}

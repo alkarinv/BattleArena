@@ -70,7 +70,8 @@ public class ArenaAlterController {
 			if (str.equalsIgnoreCase("wr")) return WAITROOM;
 			if (str.equalsIgnoreCase("s")) return SPECTATE;
 			if (str.equalsIgnoreCase("l")) return LOBBY;
-			if (str.equalsIgnoreCase("v")) return VLOC;
+            if (str.equalsIgnoreCase("v") || str.equalsIgnoreCase("visitor")) return VLOC;
+            if (str.equalsIgnoreCase("spawn") || str.equalsIgnoreCase("teamSpawn")) return SPAWNLOC;
 			try{
 				if (Integer.valueOf(str) != null)
 					return SPAWNLOC;
@@ -109,11 +110,14 @@ public class ArenaAlterController {
 		return true;
 	}
 
-	public static boolean setArenaOption(CommandSender sender, Arena arena, String[] args)
+	public static boolean setArenaOption(CommandSender sender, Arena arena, boolean fromAA, String[] args)
 		throws IllegalStateException
 	{
 		if (args.length < 3){
-			showAlterHelp(sender);
+            if (fromAA)
+                showAlterHelp2(sender);
+            else
+			    showAlterHelp(sender);
 			return false;
 		}
 		BattleArenaController ac = BattleArena.getBAController();
@@ -275,7 +279,7 @@ public class ArenaAlterController {
 		int locindex = verifySpawnLocation(sender,value);
 		if (locindex == -1)
 			return false;
-		String locstr = locindex == Integer.MAX_VALUE ? "main" : locindex+"";
+		String locstr = locindex == Integer.MAX_VALUE ? "main" : (locindex+1)+"";
 		Player p = (Player) sender;
 		Location loc = null;
 		loc = parseLocation(p,value);
@@ -295,7 +299,7 @@ public class ArenaAlterController {
 		int locindex = verifySpawnLocation(sender,value);
 		if (locindex == -1)
 			return false;
-		String locstr = locindex == Integer.MAX_VALUE ? "main" : locindex+"";
+		String locstr = locindex == Integer.MAX_VALUE ? "main" : (locindex+1)+"";
 		Player p = (Player) sender;
 		Location loc;
 		loc = parseLocation(p,value);
@@ -320,7 +324,7 @@ public class ArenaAlterController {
 		int locindex = verifySpawnLocation(sender,value);
 		if (locindex == -1)
 			return false;
-		String locstr = locindex == Integer.MAX_VALUE ? "main" : locindex+"";
+		String locstr = locindex == Integer.MAX_VALUE ? "main" : (locindex+1)+"";
 		Player p = (Player) sender;
 		Location loc = null;
 		loc = parseLocation(p,value);
@@ -374,7 +378,7 @@ public class ArenaAlterController {
 			loc = p.getLocation();}
 		arena.setSpawnLoc(locindex,loc);
 		ac.updateArena(arena);
-		return sendMessage(sender,"&2 spawn &6"+changetype +" set to location=&6" + Util.getLocString(loc));
+		return sendMessage(sender,"&2 spawn &6"+changetype +"&2 set to location=&6" + Util.getLocString(loc));
 	}
 
 
@@ -478,13 +482,10 @@ public class ArenaAlterController {
 
 	private static void showAlterHelp(CommandSender sender) {
 		sendMessage(sender,ChatColor.GOLD+ "Usage: /arena edit <arenaname> <teamSize|nTeams|type|1|2|3...|vloc|waitroom> <value> [option]");
-		sendMessage(sender,ChatColor.GOLD+ "Example: /arena edit MainArena 1 &e: sets spawn location 1 to where you are standing");
-//		sendMessage(sender,ChatColor.GOLD+ "Example: /arena alter MainArena 1 wg &e: causes spawn 1 to have the worldguard area selected");
-		sendMessage(sender,ChatColor.GOLD+ "Example: /arena edit MainArena teamSize 3+ ");
-		sendMessage(sender,ChatColor.GOLD+ "Example: /arena edit MainArena nTeams 2 ");
-		sendMessage(sender,ChatColor.GOLD+ "Example: /arena edit MainArena type deathmatch ");
-		sendMessage(sender,ChatColor.GOLD+ "      or /arena edit MainArena waitroom 1 &e: sets waitroom 1 to your location");
 	}
+    private static void showAlterHelp2(CommandSender sender) {
+        sendMessage(sender,ChatColor.GOLD+ "Usage: /aa <teamSize|nTeams|type|1|2|3...|vloc|waitroom> <value> [option]");
+    }
 
 	public static Location parseLocation(CommandSender sender, String svl) {
 		if (!(sender instanceof Player))

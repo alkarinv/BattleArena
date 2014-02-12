@@ -253,7 +253,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
             Arguments newArgs = null;
             try {
                 newArgs= verifyArgs(mwrapper,mccmd,sender,command, label, args, startIndex);
-                Object completed = mwrapper.method.invoke(mwrapper.obj,newArgs.args);
+                    Object completed = mwrapper.method.invoke(mwrapper.obj,newArgs.args);
                 if (completed != null && completed instanceof Boolean){
                     success = (Boolean)completed;
                     if (!success){

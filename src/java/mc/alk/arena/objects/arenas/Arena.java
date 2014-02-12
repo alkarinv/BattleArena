@@ -36,6 +36,7 @@ public class Arena extends AreaContainer {
 	/// If this is not null, this is where distance will be based off of, otherwise it's an area around the spawns
 	protected Location joinloc = null;
 
+    @Persist
 	protected Map<Long, TimedSpawn> timedSpawns = null; /// Item/mob/other spawn events
 
 	protected SpawnController spawnController = null;

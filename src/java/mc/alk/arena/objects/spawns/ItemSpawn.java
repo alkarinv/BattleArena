@@ -7,22 +7,22 @@ import org.bukkit.inventory.ItemStack;
 
 
 public class ItemSpawn extends SpawnInstance{
+    final ItemStack is;
 	Entity uid;
-	ItemStack is;
 	public ItemSpawn(ItemStack is){
 		super(null);
 		this.is = is;
-
 	}
 
-	public int spawn() {
+    @Override
+	public void spawn() {
 		if (uid != null && !uid.isDead()){
-			return spawnId;
+			return;
 		}
 		uid = loc.getWorld().dropItemNaturally(loc, is);
-		return spawnId;
 	}
 
+    @Override
 	public void despawn() {
 		if (uid != null){
 			uid.remove();

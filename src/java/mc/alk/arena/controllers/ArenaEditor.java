@@ -1,20 +1,24 @@
 package mc.alk.arena.controllers;
 
-import java.util.HashMap;
-
 import mc.alk.arena.objects.arenas.Arena;
-
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+
+import java.util.HashMap;
 
 public class ArenaEditor {
 	public class CurrentSelection{
 		public long lastUsed;
 		public Arena arena;
-		CurrentSelection(long used, Arena arena){
+        public Location lastClick;
+
+        CurrentSelection(long used, Arena arena){
 			this.lastUsed = used; this.arena = arena;
 		}
-	}
+        public void updateCurrentSelection(){
+            lastUsed = System.currentTimeMillis();
+        }
+    }
 
 	HashMap<String, CurrentSelection> selections = new HashMap<String,CurrentSelection>();
 
@@ -30,7 +34,8 @@ public class ArenaEditor {
 		return cs.arena;
 	}
 
-	public CurrentSelection getCurrentSelection(Player p) {
-		return selections.get(p.getName());
+
+	public CurrentSelection getCurrentSelection(CommandSender sender) {
+		return selections.get(sender.getName());
 	}
 }

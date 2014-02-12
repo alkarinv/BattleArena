@@ -1,9 +1,9 @@
 package mc.alk.arena.objects.spawns;
 
+import org.bukkit.Location;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.bukkit.Location;
 
 public class SpawnGroup extends SpawnInstance implements Spawnable{
 	String name;
@@ -12,12 +12,12 @@ public class SpawnGroup extends SpawnInstance implements Spawnable{
 		super(null);
 		this.name = name;
 	}
-	
+
 	public SpawnGroup(SpawnInstance spawn) {
 		super(null);
 		spawns.add(spawn);
 	}
-	
+
 	public void addSpawns(List<SpawnInstance> _spawns) {
 //		System.out.println(" adding all spawns " + _spawns);
 		spawns.addAll(_spawns);
@@ -32,14 +32,13 @@ public class SpawnGroup extends SpawnInstance implements Spawnable{
 			spawn.despawn();
 		}
 	}
-	
-	public int spawn() {
+
+	public void spawn() {
 		for (Spawnable spawn: spawns){
 			spawn.spawn();
 		}
-		return spawnId;
 	}
-	
+
 	@Override
 	public void setLocation(Location l) {
 		this.loc = l;
