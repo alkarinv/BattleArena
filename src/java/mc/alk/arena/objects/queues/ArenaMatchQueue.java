@@ -263,8 +263,9 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
                     case CANT_FIT:
                         continue;
                 }
-
-                if (!o.isFull()) { /// not full, we aren't ready for a match yet
+                /// not full, we aren't ready for a match yet
+                /// but, if the force time has expired, we only need enough to start
+                if (!o.isFull() && !(timeExpired(o) && o.hasEnough())) {
                     break;
                 }
                 /// find an arena for these teams
@@ -575,9 +576,14 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         sb.append("------game queues-------\n");
         synchronized (joinHandlers) {
             for (WaitingObject o : joinHandlers) {
+                IdTime t = forceTimers.get(o);
                 sb.append("  ------ o ").append(o.hashCode()).append(" - ").
                         append(o.params.getDisplayName()).append(" - ").
-                        append(o.getArena() != null ? o.getArena().getName() : "null").append("------\n");
+                        append(o.getArena() != null ? o.getArena().getName() : "null");
+                if (t != null)
+                    sb.append(" fs=").append((t.time - System.currentTimeMillis()) / 1000);
+                sb.append("------\n");
+
                 for (ArenaTeam at : o.jh.getTeams()) {
                     sb.append("  t ").append(at).append(" - ").append(at.getId()).append("\n");
                 }
@@ -745,34 +751,23 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
                     return true;
                 }
             });
-            IdTime idt = new IdTime();
-            idt.time = System.currentTimeMillis() + timeMillis;
-//            idt.time = timeMillis;
             c.setCancelOnExpire(false);
-            idt.c = c;
-            forceTimers.put(wo, idt);
         }
     }
-
+    private boolean timeExpired(WaitingObject wo){
+        IdTime idt = forceTimers.get(wo);
+        return idt != null && System.currentTimeMillis() - idt.time >= 0;
+    }
     private void removeTimer(WaitingObject wo){
         IdTime idt = forceTimers.remove(wo);
         if (idt != null && idt.c != null){
             idt.c.stop();
         }
     }
-    private IdTime updateTimer(final WaitingObject to) {
-        IdTime idt = forceTimers.get(to);
-        if (idt == null){
-            long now = System.currentTimeMillis();
-            Long time = (now - to.getJoinOptions().getJoinTime() + to.getParams().getForceStartTime()*1000);
-            if (time > 0){
-                idt = new IdTime();
-                idt.time = time/1000;
-                return updateTimer(to, time);
-            }
 
-        }
-        return idt;
+    private IdTime updateTimer(final WaitingObject to) {
+        Long time = (System.currentTimeMillis() + to.getParams().getForceStartTime()*1000);
+        return updateTimer(to, time);
     }
     /**
      * Update the forceJoin timer for the following TeamQueue and the given QueueObject
@@ -784,7 +779,10 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
     private IdTime updateTimer(final WaitingObject to, Long time) {
         IdTime idt = forceTimers.get(to);
         if (idt == null){
-            new AnnounceInterval(this, to, time);
+            idt = new IdTime();
+            idt.time = time;
+            forceTimers.put(to, idt);
+            new AnnounceInterval(this, to, time-System.currentTimeMillis());
         }
         return idt;
     }
