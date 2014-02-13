@@ -86,7 +86,7 @@ public class ArenaEditor implements Listener{
         cs.listeningOptions = null;
         BattleArena.getBAController().updateArena(a);
         ArenaSerializer.saveArenas(a.getArenaType().getPlugin());
-        MessageUtil.sendMessage(event.getPlayer(), "&2Added block spawn &6"+ ts);
+        MessageUtil.sendMessage(event.getPlayer(), "&2Added block spawn &6"+ ts +"&2 to index=&5"+cs.listeningIndex);
     }
 
     void startListening() {

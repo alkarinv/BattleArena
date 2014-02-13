@@ -61,4 +61,8 @@ public class TimedSpawn implements Spawnable{
         return "[TimedSpawn " + id + " loc=" + SerializerUtil.getLocString(sg.getLocation()) + " s=" + sg + " fs=" +
                 firstSpawnTime + " rs=" + respawnInterval + " ds=" + timeToDespawn+"]";
     }
+    public String getDisplayName() {
+        return "["+ sg+" loc=" + SerializerUtil.getLocString(sg.getLocation()) + " fs=" +
+                firstSpawnTime + " rs=" + respawnInterval + " ds=" + timeToDespawn+"]";
+    }
 }

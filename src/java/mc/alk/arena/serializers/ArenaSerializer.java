@@ -502,6 +502,8 @@ public class ArenaSerializer extends BaseConfig{
             ((BlockSpawn)si).setMaterial(mat);
         }else if (cs.contains("type") && cs.getString("type").equalsIgnoreCase("chest")) {
             si = new ChestSpawn(loc.getBlock(), false);
+            Material mat = Material.valueOf(cs.getString("spawn"));
+            ((BlockSpawn)si).setMaterial(mat);
             List<ItemStack> items = InventoryUtil.getItemList(cs,"giveItems");
             if (items == null)
                 items = new ArrayList<ItemStack>();

@@ -17,7 +17,12 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 public class ArenaEditorExecutor extends CustomCommandExecutor {
     public static String idPrefix = "ar_";
 
@@ -43,16 +48,16 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
         if (ts != null){
             ac.updateArena(a);
             BattleArena.saveArenas();
-            return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e has deleted index=&4" + number+"&e that had spawn="+ts);
+            return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e has deleted index=&4D" + number+"&e that had spawn="+ts);
         } else {
             return MessageUtil.sendMessage(sender, "&cThere was no spawn at that index");
         }
     }
 
     @MCCommand(cmds={"as","addspawn"}, admin=true, min=2,
-            usage="/aa addspawn <mob/item/block/spawnGroup> [buffs or effects] [number] [fs=first spawn time] [rt=respawn time] [trigger=<trigger type>]")
+            usage="/aa addspawn <mob/item/spawnGroup> [buffs or effects] [number] [fs=first spawn time] [rt=respawn time] [trigger=<trigger type>] [index|i=<index>]")
     public boolean arenaAddSpawn(Player sender, CurrentSelection cs, String[] args) {
-        Long index = parseIndex(sender, args);
+        Long index = parseIndex(sender, cs.getArena(), args);
         if (index == -1)
             return true;
         Arena a = cs.getArena();
@@ -68,13 +73,13 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
         a.addTimedSpawn(index,spawn);
         ac.updateArena(a);
         ArenaSerializer.saveArenas(a.getArenaType().getPlugin());
-        return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e now has spawn &6" + spawn +"&2  index=&4" + index);
+        return MessageUtil.sendMessage(sender, "&6"+a.getName()+ "&e now has spawn &6" + spawn +"&2  index=&5" + index);
     }
 
     @MCCommand(cmds={"ab","addBlock"}, admin=true,
-            usage="/aa addBlock [number] [fs=first spawn time] [rt=respawn time] [trigger=<trigger type>] [resetTo=<air|block>]")
+            usage="/aa addBlock [number] [fs=first spawn time] [rt=respawn time] [trigger=<trigger type>] [resetTo=<block>] [index]")
     public boolean arenaAddBlock(Player sender, CurrentSelection cs, String[] args) {
-        Long index = parseIndex(sender, args);
+        Long index = parseIndex(sender, cs.getArena(), args);
         if (index == -1)
             return true;
         SpawnOptions po = SpawnOptions.parseSpawnOptions(args);
@@ -83,13 +88,32 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
         return MessageUtil.sendMessage(sender, "&2Success: &eClick a block to add the block spawn");
     }
 
-    private Long parseIndex(CommandSender sender, String[] args) {
-        Long number;
+    private Long parseIndex(CommandSender sender, Arena arena, String[] args) {
+        Long number = -1L;
+        String last = args[args.length - 1];
+        String split = "index=|i=";
         try {
-            number = Long.parseLong(args[args.length - 1]);
+            String[] s = last.split(split);
+            if (s.length==2)
+                number = Long.parseLong(s[1]);
         } catch (Exception e) {
-            MessageUtil.sendMessage(sender, "&cYou need to specify an index as the final value. &61-10000");
+            MessageUtil.sendMessage(sender, "&cindex "+last+" was bad");
             return -1L;
+        }
+        long nextIndex = 1;
+        if (number == -1L) {
+            Map<Long, TimedSpawn> spawns = arena.getTimedSpawns();
+            if (spawns==null) {
+                return 1L;
+            }
+            List<Long> keys = new ArrayList<Long>(spawns.keySet());
+            Collections.sort(keys);
+            for (Long k : keys){
+                if (k!= nextIndex)
+                    break;
+                nextIndex++;
+            }
+            number = nextIndex;
         }
 
         if (number <= 0 || number > 10000) {
@@ -175,6 +199,21 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
         ad.hideSpawns(sender);
         ad.showSpawns(sender);
         return sendMessage(sender, ChatColor.GREEN + "You are showing spawns for &6" + arena.getName());
+    }
+
+    @MCCommand(cmds={"listspawns"}, admin=true)
+    public boolean arenaListSpawns(Player sender,CurrentSelection cs) {
+        Arena arena = cs.getArena();
+        sendMessage(sender, ChatColor.GREEN + "You are listing spawns for &6" + arena.getName());
+        Map<Long, TimedSpawn> spawns = arena.getTimedSpawns();
+        if (spawns==null) {
+            return sendMessage(sender, ChatColor.RED+ "Arena has no spawns");}
+        List<Long> keys = new ArrayList<Long>(spawns.keySet());
+        Collections.sort(keys);
+        for (Long k : keys) {
+            sendMessage(sender, "&5"+k+"&e: "+spawns.get(k).getDisplayName());
+        }
+        return true;
     }
 
 }
