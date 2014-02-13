@@ -440,9 +440,6 @@ public class BAExecutor extends CustomCommandExecutor {
             if (c instanceof Match) {
                 TeamJoinHandler tjh = ((Match) c).getTeamJoinHandler();
                 tjh.switchTeams(p, index);
-                if (ph instanceof RoomContainer) {
-                    RoomContainer rc = (RoomContainer) ph;
-                }
             } else {
                 /// Not a match (like a tournament), they can't switch
             }
@@ -1524,8 +1521,7 @@ public class BAExecutor extends CustomCommandExecutor {
                     }
                     if (!_canJoin(p, true, true)) {
                         sendSystemMessage(player, "teammate_cant_join");
-                        sendMessage(player,
-                                "&6/team leave: &cto leave the team");
+                        sendMessage(player, "&6/team leave: &cto leave the team");
                         return false;
                     }
                 }
@@ -1553,14 +1549,6 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     public boolean checkAndRemoveFee(MatchParams pi, ArenaTeam t) {
-        // Team t = teamc.getSelfFormedTeam(p);
-        // if (t != null){
-        // players = t.getPlayers();
-        // } else {
-        // players = new HashSet<ArenaPlayer>();
-        // players.add(p);
-        // }
-        // final MatchTransitions tops = pi.getTransitionOptions();
         if (pi.hasEntranceFee()) {
             Double fee = pi.getEntranceFee();
             if (fee == null || fee <= 0)

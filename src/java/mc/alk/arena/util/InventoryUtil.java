@@ -18,6 +18,7 @@ import org.bukkit.inventory.PlayerInventory;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("deprecation")
 public class InventoryUtil {
 	static final String version = "BA InventoryUtil 2.1.7";
 	static final boolean DEBUG = false;
@@ -50,8 +52,10 @@ public class InventoryUtil {
 				final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.pre.InventoryHelper");
 				handler = (IInventoryHelper) clazz.getConstructor(args).newInstance((Object[])args);
 			} catch (Exception e2){
+                //noinspection PointlessBooleanExpression,ConstantConditions
                 if (!Defaults.TESTSERVER && !Defaults.TESTSERVER_DEBUG) Log.printStackTrace(e2);
 			}
+            //noinspection PointlessBooleanExpression,ConstantConditions
             if (!Defaults.TESTSERVER && !Defaults.TESTSERVER_DEBUG) Log.printStackTrace(e);
 		}
 	}
@@ -93,8 +97,8 @@ public class InventoryUtil {
 		}
 	}
 
-	public enum ArmorLevel{DISGUISE, WOOL,LEATHER,IRON,GOLD,CHAINMAIL,DIAMOND};
-	public enum ArmorType{BOOTS,LEGGINGS,CHEST,HELM};
+	public enum ArmorLevel{DISGUISE, WOOL,LEATHER,IRON,GOLD,CHAINMAIL,DIAMOND}
+	public enum ArmorType{BOOTS,LEGGINGS,CHEST,HELM}
 
 	public static Enchantment getEnchantmentByCommonName(String iname){
 		iname = iname.toLowerCase();
@@ -308,10 +312,10 @@ public class InventoryUtil {
 	/// Get the Material
 	public static Material getMat(String name) {
 		Integer id =null;
-		try{ id = Integer.parseInt(name);}catch(Exception e){}
+		try{ id = Integer.parseInt(name);}catch(Exception e){/* do nothing*/}
 		if (id == null){
 			id = getMaterialID(name);}
-		return id != null && id >= 0 ? Material.getMaterial(id) : null;
+		return id != -1 && id >= 0 ? Material.getMaterial(id) : null;
 	}
 
 	/// This allows for abbreviations to work, useful for sign etc
@@ -487,7 +491,6 @@ public class InventoryUtil {
 			is2 = inv.getHelmet();
 			if (is2 != null && is1.getTypeId() == is2.getTypeId() && is1.getDurability() == is2.getDurability()){
 				inv.setHelmet(null);
-				continue;
 			}
 		}
 		/// TODO technically this is not correct as removing the armor slots should also decrease the leftover
@@ -542,10 +545,8 @@ public class InventoryUtil {
 		return leftover;
 	}
 	private static boolean armorSlotBetter(Armor oldArmor, Armor newArmor) {
-		if (oldArmor == null || newArmor == null) /// technically we could throw an exception.. but nah
-			return false;
-		return oldArmor.level.ordinal() < newArmor.level.ordinal();
-	}
+        return !(oldArmor == null || newArmor == null) && oldArmor.level.ordinal() < newArmor.level.ordinal();
+    }
 
 	private static ItemStack getArmorSlot(PlayerInventory inv, ArmorType armorType) {
 		switch (armorType){
@@ -775,9 +776,9 @@ public class InventoryUtil {
 				//Remove the "Lore: " part
 				//Remove the quotes
 				//Possible issue: If you want quotes in your lore...?
+                str = ChatColor.translateAlternateColorCodes('&', matcher.group(1));
 				String part = str.substring(start, end).replaceFirst("(?i)lore[:=] ?", "").replaceAll("\"", ""); //Strip Lore: and quotes.
 				//Replace color codes
-				part = ChatColor.translateAlternateColorCodes('&', matcher.group(1));
 				//Now we can split it.
 				String[] lines = part.split("[;\\n]");
 				//DEBUG
@@ -785,7 +786,7 @@ public class InventoryUtil {
 				//Create a new list
 				LinkedList<String> lore = new LinkedList<String>();
 				//Add all the sections to the list
-				for(String s : lines) lore.add(s);
+                Collections.addAll(lore, lines);
 				//Success!
 				return lore;
 			}
@@ -806,11 +807,11 @@ public class InventoryUtil {
 		index = (index != -1 ? index : -1);
 		int lvl = -1;
 		if (index != -1){
-			try {lvl = Integer.parseInt(str.substring(index + 1)); } catch (Exception err){}
+			try {lvl = Integer.parseInt(str.substring(index + 1)); } catch (Exception err){/*do nothing*/}
 			str = str.substring(0,index);
 		}
 
-		try {e = Enchantment.getById(Integer.valueOf(str));} catch (Exception err){}
+		try {e = Enchantment.getById(Integer.valueOf(str));} catch (Exception err){/*do nothing*/}
 		if (e == null)
 			e = Enchantment.getByName(str);
 		if (e == null)
@@ -1141,7 +1142,7 @@ public class InventoryUtil {
 		} catch(Exception e){
 			Log.printStackTrace(e);
 		}
-		try {p.getPlayer().updateInventory(); } catch (Exception e){} /// Yes this can throw errors
+		try {p.getPlayer().updateInventory(); } catch (Exception e){/* do nothing*/} /// Yes this can throw errors
 	}
 
 

@@ -65,7 +65,6 @@ public class GameManager implements PlayerHolder{
 
 	}
 
-	//	@EventHandler(priority=org.bukkit.event.EventPriority.HIGHEST)
 	@ArenaEventHandler(priority=EventPriority.HIGHEST)
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
 		if (handled.contains(event.getPlayer()) && !event.isHandledQuit()){
@@ -79,7 +78,6 @@ public class GameManager implements PlayerHolder{
 		if (handled.remove(player)){
 			PerformTransition.transition(this, MatchState.ONLEAVE, player, null, false);
 			updateBukkitEvents(MatchState.ONLEAVE, player);
-			handled.remove(player);
 			player.reset(); /// reset their isReady status, chosen class, etc.
 		}
 	}

@@ -738,8 +738,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
 
 
     public Collection<ArenaTeam> purgeQueue() {
-        Collection<ArenaTeam> teams = amq.purgeQueue();
-        return teams;
+        return amq.purgeQueue();
     }
 
     public boolean hasRunningMatches() {

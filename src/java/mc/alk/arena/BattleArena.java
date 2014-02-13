@@ -592,6 +592,10 @@ public class BattleArena extends JavaPlugin {
         return new File(this.getDataFolder() + "/modules");
     }
 
+    /**
+     * Return the Arena Editor Executor
+     * @return ArenaEditorExecutor
+     */
     public ArenaEditorExecutor getArenaEditorExecutor() {
         return arenaEditorExecutor;
     }

@@ -348,7 +348,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
             inQueueForGame.put(wo.getParams().getType(), inQueueForGame.get(wo.getParams().getType()) - 1);
             if (wo.getArena() != null)
                 inQueueForArena.put(wo.getArena(), inQueueForArena.get(wo.getArena()) - 1);
-
+            methodController.updateEvents(MatchState.ONLEAVE, player);
             callEvent(new ArenaPlayerLeaveQueueEvent(player, wo.getParams(),wo.getArena()));
         }
         return wo;
@@ -430,11 +430,6 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
     public WaitingObject getQueueObject(ArenaPlayer p) {
         return inQueue.get(p.getName());
     }
-
-//
-//    public void setForcestartTime(Arena arena, MatchParams p, Long forceStartTime) {
-//    }
-
 
     public void stop() {
         suspend.set(true);
@@ -683,23 +678,28 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         methodController.callEvent(event);
     }
 
+    /**
+     * Get the number of players in the queue for this arena
+     * @param arena Arena
+     * @return player count
+     */
     public int getQueueCount(Arena arena) {
         return inQueueForArena.containsKey(arena) ? inQueueForArena.get(arena) : 0;
     }
 
-    public int getQueueCount(MatchParams params) {
-        return inQueueForGame.containsKey(params.getType()) ? inQueueForGame.get(params.getType()) : 0;
-    }
-
-    public int getAllQueueCount(ArenaParams params) {
+    /**
+     * Get the number of players in the queue for this game type
+     * @param params ArenaParams
+     * @return player count
+     */
+    public int getQueueCount(ArenaParams params) {
         return inQueueForGame.containsKey(params.getType()) ? inQueueForGame.get(params.getType()) : 0;
     }
 
     @ArenaEventHandler
-    public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
-        ArenaPlayer player = event.getPlayer();
-        WaitingObject wo = removeFromQueue(player, true);
-        if (wo !=null){
+    public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event) {
+        WaitingObject wo = removeFromQueue(event.getPlayer(), true);
+        if (wo != null) {
             event.addMessage(MessageHandler.getSystemMessage("you_left_queue", wo.getParams().getName()));
         }
     }
@@ -769,6 +769,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         Long time = (System.currentTimeMillis() + to.getParams().getForceStartTime()*1000);
         return updateTimer(to, time);
     }
+
     /**
      * Update the forceJoin timer for the following TeamQueue and the given QueueObject
      * The time will not be updated if an older timer is ongoing

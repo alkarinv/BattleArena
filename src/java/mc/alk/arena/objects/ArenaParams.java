@@ -534,7 +534,7 @@ public class ArenaParams {
     }
 
     public int getQueueCount() {
-        return BattleArena.getBAController().getArenaMatchQueue().getAllQueueCount(this);
+        return BattleArena.getBAController().getArenaMatchQueue().getQueueCount(this);
     }
 
     public void setArenaCooldown(int cooldown) {

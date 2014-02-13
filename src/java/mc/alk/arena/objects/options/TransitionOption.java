@@ -126,7 +126,6 @@ public enum TransitionOption{
 
 	/// onVictory, onDrawers, onLosers only Options
 	POOLMONEY("poolMoney",true),					/// =<double>: give the players a percent of the money contributed by all players
-
 	;
 
 	final String name; /// Transition name
@@ -178,7 +177,7 @@ public enum TransitionOption{
 		case ENCHANTS:
 			return EffectUtil.parseArg(value, 1, 120);
 		case GAMEMODE:
-			GameMode gm = null;
+			GameMode gm;
 			try {
 				gm = GameMode.getByValue(Integer.valueOf(value));
 			} catch (Exception e){
@@ -190,4 +189,4 @@ public enum TransitionOption{
 		}
 		return null;
 	}
-};
+}

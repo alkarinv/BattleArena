@@ -1030,7 +1030,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
      */
     @EventHandler
     public void onArenaPlayerLeaveEventGlobal(ArenaPlayerLeaveEvent event){
-        if (!matchPlayers.contains(event.getPlayer()) || isHandled(event.getPlayer()))
+        if (leftPlayers.contains(event.getPlayer().getName()) ||
+                (!matchPlayers.contains(event.getPlayer()) && !isHandled(event.getPlayer())))
             return;
         ArenaPlayer player = event.getPlayer();
         player.removeCompetition(this);
@@ -1043,10 +1044,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             /// Possibly scoreboard set wrong? player removed after team?
             Log.printStackTrace(e);
         }
-        t.killMember(player);
-        if (t.isDead()) {
-            teams.remove(t);
-        }
+        t.playerLeft(player);
+//        t.killMember(player);
+//        if (t.isDead()) {
+//            teams.remove(t);
+//        }
         leftPlayers.add(player.getName());
         if (this.getState().ordinal() < MatchState.ONVICTORY.ordinal())
             checkAndHandleIfTeamDead(t);

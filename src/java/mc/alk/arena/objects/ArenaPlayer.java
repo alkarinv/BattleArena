@@ -261,4 +261,8 @@ public class ArenaPlayer {
 		return ServerUtil.findPlayerExact(this.getName());
 	}
 
+    public String toString() {
+        return "[AP " + this.getName() + "]";
+    }
+
 }
