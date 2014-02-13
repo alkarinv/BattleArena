@@ -1366,8 +1366,8 @@ public class BAExecutor extends CustomCommandExecutor {
         ArenaClass ac = ArenaClassController.getClass(arenaClass);
         if (ac == null) {
             return sendMessage(sender, "&cThere is no class called &6"+ arenaClass);}
-        if (sender.getCompetition() == null) {
-            return sendMessage(sender, "&cYou aren't in a match&6");}
+        if (sender.getCurLocation().getType() == LocationType.HOME) {
+            return sendMessage(sender, "&cYou aren't in a game&6");}
         ArenaClassController.changeClass(sender.getPlayer(), sender.getCompetition(), ac);
         return true;
     }
