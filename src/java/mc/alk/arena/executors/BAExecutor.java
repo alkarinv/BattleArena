@@ -1436,9 +1436,7 @@ public class BAExecutor extends CustomCommandExecutor {
         /// Check for any competition
         if (player.getCompetition() != null) {
             if (showMessages)
-                sendMessage(player, "&cYou are still in the "
-                        + player.getCompetition().getName()
-                        + ". &6/arena leave");
+                sendMessage(player, "&cYou are still in the "+ player.getCompetition().getName()+ ". &6/arena leave");
             return false;
         }
         /// Inside the queue waiting for a match?
@@ -1468,8 +1466,7 @@ public class BAExecutor extends CustomCommandExecutor {
         Event ae = insideEvent(player);
         if (ae != null) {
             if (showMessages)
-                sendMessage(player, "&eYou need to leave the Event first. &6/"
-                        + ae.getCommand() + " leave");
+                sendMessage(player, "&eYou need to leave the Event first. &6/"+ ae.getCommand() + " leave");
             return false;
         }
 
@@ -1492,23 +1489,15 @@ public class BAExecutor extends CustomCommandExecutor {
                 FormingTeam ft = teamc.getFormingTeam(player);
                 if (ft.isJoining(player)) {
                     if (showMessages)
-                        sendMessage(
-                                player,
-                                "&eYou have been invited to the team. "
-                                        + ft.getDisplayName());
+                        sendMessage(player,"&eYou have been invited to the team. "+ ft.getDisplayName());
                     if (showMessages)
                         sendMessage(player, "&eType &6/team add|decline");
                 } else if (!ft.hasAllPlayers()) {
                     if (showMessages)
-                        sendMessage(player,
-                                "&eYour team is not yet formed. &6/team disband&e to leave");
+                        sendMessage(player,"&eYour team is not yet formed. &6/team disband&e to leave");
                     if (showMessages)
-                        sendMessage(
-                                player,
-                                "&eYou are still missing "
-                                        + MessageUtil.joinPlayers(
-                                        ft.getUnjoinedPlayers(), ", ")
-                                        + " !!");
+                        sendMessage(player,"&eYou are still missing "+ MessageUtil.joinPlayers(
+                                        ft.getUnjoinedPlayers(), ", ")+ " !!");
                 }
                 return false;
             }
@@ -1566,8 +1555,7 @@ public class BAExecutor extends CustomCommandExecutor {
             }
             for (ArenaPlayer player : t.getPlayers()) {
                 MoneyController.subtract(player.getName(), fee);
-                sendMessage(player, "&6" + fee
-                        + " has been subtracted from your account");
+                sendMessage(player, "&6" + fee+ " has been subtracted from your account");
             }
         }
         return true;

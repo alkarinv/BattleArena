@@ -149,7 +149,21 @@ public class YamlFileUpdater {
             );
             try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
         }
-		ms.setConfig(new File(dir+"/messages.yml"));
+        newVersion = new Version("1.6.6");
+        if (version.compareTo(newVersion) < 0){
+            FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+            fu.replace("version:.*", "version: "+newVersion);
+            fu.addAfter(".*cancelled_lack_of_players.*",
+                    "    class_chosen: '&2You have chosen the &6%s'",
+                    "    class_cant_switch_after_items: '&cYou can't switch classes after changing items!'",
+                    "    class_wait_time: '&cYou must wait &6%s&c before changing your class again'",
+                    "    class_you_are_already: '&cYou already are a &6&s'",
+                    "    class_no_perms: '&cYou don't have permissions to use the &6&s&c class!'");
+
+            try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
+        }
+
+        ms.setConfig(new File(dir+"/messages.yml"));
 	}
 
 	public static void updateBaseConfig(Plugin plugin, BAConfigSerializer bacs) {

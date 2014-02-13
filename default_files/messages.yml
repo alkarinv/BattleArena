@@ -49,6 +49,10 @@ system:
     you_joined_event: '&eYou have joined the &6%s'
     cancelled_lack_of_players: '{prefix} &cThe &6{matchname} &cwas cancelled because there were not enough players'
     class_chosen: '&2You have chosen the &6%s'
+    class_cant_switch_after_items: '&cYou can't switch classes after changing items!'
+    class_wait_time: '&cYou must wait &6%s&c before changing your class again'
+    class_you_are_already: '&cYou already are a &6&s'
+    class_no_perms: '&cYou don't have permissions to use the &6&s&c class!'
 
 common:
     team: '&7{name}&e'

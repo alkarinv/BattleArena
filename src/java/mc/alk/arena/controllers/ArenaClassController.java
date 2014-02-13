@@ -18,6 +18,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
+import mc.alk.arena.util.TimeUtil;
 import mc.alk.arena.util.plugins.DisguiseInterface;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -111,20 +112,21 @@ public class ArenaClassController {
         if (ac == null || !ac.valid()) /// Not a valid class
             return false;
         if (!p.hasPermission("arena.class.use."+ac.getName().toLowerCase())){
-            MessageUtil.sendMessage(p, "&cYou don't have permissions to use the &6 "+ac.getName()+"&c class!");
+            MessageUtil.sendSystemMessage(p, "class_no_perms", ac.getDisplayName());
             return false;
         }
 
         final ArenaPlayer ap = BattleArena.toArenaPlayer(p);
         ArenaClass chosen = ap.getCurrentClass();
         if (chosen != null && chosen.getName().equals(ac.getName())){
-            MessageUtil.sendMessage(p, "&cYou already are a &6" + ac.getName());
+            MessageUtil.sendSystemMessage(p, "class_you_are_already", ac.getDisplayName());
             return false;
         }
         String playerName = p.getName();
         if(userClassSwitchTime.containsKey(playerName)) {
-            if ((System.currentTimeMillis() - userClassSwitchTime.get(playerName)) < Defaults.TIME_BETWEEN_CLASS_CHANGE * 1000) {
-                MessageUtil.sendMessage(p, "&cYou must wait &6" + Defaults.TIME_BETWEEN_CLASS_CHANGE + "&c seconds between class selects");
+            long t = (Defaults.TIME_BETWEEN_CLASS_CHANGE * 1000) - (System.currentTimeMillis() - userClassSwitchTime.get(playerName));
+            if (t > 0){
+                MessageUtil.sendSystemMessage(p, "class_wait_time", TimeUtil.convertMillisToString(t));
                 return false;
             }
         }
@@ -147,7 +149,7 @@ public class ArenaClassController {
                 items.addAll(mp.getGiveItems(MatchState.ONSPAWN));
             }
             if (Defaults.NEED_SAME_ITEMS_TO_CHANGE_CLASS && !InventoryUtil.sameItems(items, p.getInventory(), woolTeams)){
-                MessageUtil.sendMessage(p,"&cYou can't switch classes after changing items!");
+                MessageUtil.sendSystemMessage(p, "class_cant_switch_after_items");
                 return false;
             }
         }

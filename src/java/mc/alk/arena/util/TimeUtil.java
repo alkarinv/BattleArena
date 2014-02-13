@@ -1,12 +1,11 @@
 package mc.alk.arena.util;
 
-import java.text.SimpleDateFormat;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.messaging.MessageHandler;
-
 import org.bukkit.Bukkit;
+
+import java.text.SimpleDateFormat;
 
 
 public class TimeUtil {
@@ -55,19 +54,19 @@ public class TimeUtil {
 			sb.append(MessageHandler.getSystemMessage("time_format", d, dayOrDays(d)));
 		}
 		if (h > 0) {
-			sb.append((has?" ":"") + MessageHandler.getSystemMessage("time_format", h, hourOrHours(h)));
+			sb.append(has ? " " : "").append(MessageHandler.getSystemMessage("time_format", h, hourOrHours(h)));
 			has =true;
 		}
 		if (m > 0) {
-			sb.append((has?" ":"") + MessageHandler.getSystemMessage("time_format", m, minOrMins(m)));
+			sb.append(has ? " " : "").append(MessageHandler.getSystemMessage("time_format", m, minOrMins(m)));
 			has=true;
 		}
 		if (s > 0) {
-			sb.append((has?" ":"") + MessageHandler.getSystemMessage("time_format", s, secOrSecs(s)));
+			sb.append(has ? " " : "").append(MessageHandler.getSystemMessage("time_format", s, secOrSecs(s)));
 			has = true;
 		}
 		if (!has){
-			sb.append((has?" ":"") + MessageHandler.getSystemMessage("zero_time"));
+			sb.append(MessageHandler.getSystemMessage("zero_time"));
 		}
 		return sb.toString();
 	}
