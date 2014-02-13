@@ -1,5 +1,6 @@
 package test.mc.alk.arena;
 
+import mc.alk.arena.Defaults;
 import org.bukkit.plugin.PluginLogger;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,7 +16,7 @@ public class WebPluginLogger extends PluginLogger{
 
 	public WebPluginLogger(JavaPlugin context) {
 		super(context);
-//        Defaults.TESTSERVER = true;
+        Defaults.TESTSERVER = true;
 
         name = context.getDescription().getName();
 		try {

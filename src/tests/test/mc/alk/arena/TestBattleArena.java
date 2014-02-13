@@ -37,7 +37,7 @@ public class TestBattleArena extends TestCase{
 	protected void setUp(){
 		plugin = new TestPlugin();
 		Defaults.DEBUG_MSGS = true;
-//        Defaults.TESTSERVER = true;
+        Defaults.TESTSERVER = true;
 
         ArenaType.register("arena", Arena.class, plugin);
 		BukkitInterface.setServer(new TestBukkitServer());

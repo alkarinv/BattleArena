@@ -85,6 +85,7 @@ public class BattleArena extends JavaPlugin {
     private final static ArenaEditor aac = new ArenaEditor();
     private final static DuelController dc = new DuelController();
     private static BAExecutor commandExecutor;
+    private ArenaEditorExecutor arenaEditorExecutor;
     private final BAPlayerListener playerListener = new BAPlayerListener(arenaController);
     private final BAPluginListener pluginListener = new BAPluginListener();
     private final SignUpdateListener signUpdateListener = new SignUpdateListener();
@@ -193,10 +194,11 @@ public class BattleArena extends JavaPlugin {
         ts.setConfig(FileUtil.load(clazz, dir.getPath() + "/teamConfig.yml", "/default_files/teamConfig.yml")); /// Load team Colors
         ts.loadAll();
 
+        arenaEditorExecutor = new ArenaEditorExecutor();
         /// Set our commands
         getCommand("watch").setExecutor(commandExecutor);
         getCommand("team").setExecutor(new TeamExecutor(commandExecutor));
-        getCommand("arenaAlter").setExecutor(new ArenaEditorExecutor());
+        getCommand("arenaAlter").setExecutor(arenaEditorExecutor);
         getCommand("battleArena").setExecutor(new BattleArenaExecutor());
         getCommand("battleArenaDebug").setExecutor(new BattleArenaDebugExecutor());
         final EventScheduler es = new EventScheduler();
@@ -590,4 +592,7 @@ public class BattleArena extends JavaPlugin {
         return new File(this.getDataFolder() + "/modules");
     }
 
+    public ArenaEditorExecutor getArenaEditorExecutor() {
+        return arenaEditorExecutor;
+    }
 }

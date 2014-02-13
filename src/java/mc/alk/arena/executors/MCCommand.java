@@ -28,7 +28,5 @@ public @interface MCCommand {
 	String perm() default ""; /// permission node
 	int[] alphanum() default {}; /// only alpha numeric
 
-	boolean selection() default false;	/// Selected arena
-
 	int[] arenas() default {};
 }

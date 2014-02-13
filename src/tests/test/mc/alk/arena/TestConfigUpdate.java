@@ -1,6 +1,7 @@
 package test.mc.alk.arena;
 
 import junit.framework.TestCase;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.Log;
 import mc.alk.plugin.updater.v1r5.FileUpdater;
@@ -15,7 +16,7 @@ import java.io.IOException;
 
 public class TestConfigUpdate extends TestCase{
 	public void testUpdates(){
-//        Defaults.TESTSERVER = true;
+        Defaults.TESTSERVER = true;
 
         YamlFileUpdater yfu = new YamlFileUpdater(new File("test_files/backups"));
 		File configFile = new File("test_files/config.yml");

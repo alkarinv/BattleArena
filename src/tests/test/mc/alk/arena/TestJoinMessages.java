@@ -43,7 +43,7 @@ public class TestJoinMessages extends TestCase{
     @Override
 	protected void setUp() throws Exception {
         Defaults.DEBUG_MSGS = true;
-//        Defaults.TESTSERVER = true;
+        Defaults.TESTSERVER = true;
 
         System.out.println("Working Directory = " +
                 System.getProperty("user.dir"));
@@ -107,7 +107,7 @@ public class TestJoinMessages extends TestCase{
                 millisRemaining + " remaining ");
         for (int inQ = 1; inQ < maxPlayers; inQ++) {
             String m = MessageUtil.decolorChat(BAExecutor.constructMessage(mp, millisRemaining, inQ, null)).trim();
-            String e = "Match starts immediately when " + (maxPlayers - inQ) + " more players add. " + inQ + "/" + maxPlayers;
+            String e = "Match starts immediately when " + (maxPlayers - inQ) + " more players join. " + inQ + "/" + maxPlayers;
             assertEquals(e, m);
         }
     }
@@ -147,7 +147,7 @@ public class TestJoinMessages extends TestCase{
         for (int inQ = 1; inQ < minPlayers; inQ++) {
             String m = MessageUtil.decolorChat(BAExecutor.constructMessage(mp, millisRemaining, inQ, null)).trim();
             String e = "Match starts when " + (maxPlayers - inQ) +
-                    " more players add or in " + seconds + " second with at least " + (minPlayers) + " players";
+                    " more players join or in " + seconds + " second with at least " + (minPlayers) + " players";
             assertEquals(e, m);
         }
     }
@@ -166,7 +166,7 @@ public class TestJoinMessages extends TestCase{
                 millisRemaining + " remaining ");
         for (int inQ = minPlayers; inQ < maxPlayers; inQ++) {
             String m = MessageUtil.decolorChat(BAExecutor.constructMessage(mp, millisRemaining, inQ, null)).trim();
-            String e = "Match starts when " + (maxPlayers - inQ) + " more players add or in " + (seconds) + " second";
+            String e = "Match starts when " + (maxPlayers - inQ) + " more players join or in " + (seconds) + " second";
             assertEquals(e, m);
         }
     }

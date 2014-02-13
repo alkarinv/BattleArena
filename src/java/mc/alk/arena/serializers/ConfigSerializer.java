@@ -838,7 +838,7 @@ public class ConfigSerializer extends BaseConfig{
         params.setParent(parent); ///reset the parent
     }
 
-    private static List<String> getModuleList(Collection<ArenaModule> modules) {
+    public static List<String> getModuleList(Collection<ArenaModule> modules) {
         List<String> list = new ArrayList<String>();
         if (modules != null){
             for (ArenaModule m: modules){
@@ -847,7 +847,7 @@ public class ConfigSerializer extends BaseConfig{
         return list;
     }
 
-    private static List<String> getEnchants(List<PotionEffect> effects) {
+    public static List<String> getEnchants(List<PotionEffect> effects) {
         List<String> list = new ArrayList<String>();
         if (effects != null){
             for (PotionEffect is: effects){
@@ -856,16 +856,18 @@ public class ConfigSerializer extends BaseConfig{
         return list;
     }
 
-    private static List<String> getItems(List<ItemStack> items) {
+    public static List<String> getItems(List<ItemStack> items) {
         List<String> list = new ArrayList<String>();
         if (items != null){
             for (ItemStack is: items){
-                list.add(InventoryUtil.getItemString(is));}
+                if (is != null)
+                    list.add(InventoryUtil.getItemString(is));
+            }
         }
         return list;
     }
 
-    private static Map<String,Object> getArenaClasses(Map<Integer, ArenaClass> classes) {
+    public static Map<String,Object> getArenaClasses(Map<Integer, ArenaClass> classes) {
         HashMap<String,Object> map = new HashMap<String, Object>();
         for (Integer teamNumber: classes.keySet()){
             String teamName = teamNumber == ArenaClass.DEFAULT.intValue() ? "default" : "team" + teamNumber;
@@ -873,7 +875,7 @@ public class ConfigSerializer extends BaseConfig{
         }
         return map;
     }
-    private static List<String> getDoCommandsStringList(List<CommandLineString> doCommands) {
+    public static List<String> getDoCommandsStringList(List<CommandLineString> doCommands) {
         List<String> list = new ArrayList<String>();
         if (doCommands != null){
             for (CommandLineString s: doCommands){

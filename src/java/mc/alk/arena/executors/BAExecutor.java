@@ -974,7 +974,7 @@ public class BAExecutor extends CustomCommandExecutor {
                 "&2You can add/change spawn points using &6/arena alter "
                         + arena.getName() + " <1,2,...,x : which spawn>");
         BattleArena.saveArenas(arena.getArenaType().getPlugin());
-        return true;
+        return BattleArena.getSelf().getArenaEditorExecutor().arenaSelect(sender, arena);
     }
 
     @MCCommand(cmds = { "setArenaOption", "setOption", "alter", "edit" }, admin = true, perm = "arena.alter")
@@ -985,6 +985,16 @@ public class BAExecutor extends CustomCommandExecutor {
             return sendMessage(sender, "&c" + e.getMessage());
         }
         return true;
+    }
+
+    @MCCommand(cmds = { "select", "sel" }, admin = true, perm = "arena.alter")
+    public boolean arenaSelect(CommandSender sender, Arena arena) {
+        try {
+            ArenaEditorExecutor aee = BattleArena.getSelf().getArenaEditorExecutor();
+            return aee.arenaSelect(sender, arena);
+        } catch (IllegalStateException e) {
+            return sendMessage(sender, "&c" + e.getMessage());
+        }
     }
 
     //	@MCCommand(cmds = {"dao", "deleteArenaOption" }, admin = true, perm = "arena.alter")

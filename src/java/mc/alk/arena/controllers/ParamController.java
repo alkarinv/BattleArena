@@ -31,6 +31,8 @@ public class ParamController {
                 types.put(alias, matchParams);}
         }
         addAlias(matchParams.getCommand(), matchParams);
+        if (Defaults.TESTSERVER)
+            return;
         for (Arena arena : BattleArena.getBAController().getArenas(matchParams)) {
             arena.getParams().setParent(matchParams);
         }

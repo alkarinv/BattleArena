@@ -364,7 +364,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
                     objs[objIndex] =args;
                 } else {
                     String str = strIndex < args.length ? args[strIndex] : null;
-                    objs[objIndex] = verifyArg(clazz, command, str, usedString);
+                    objs[objIndex] = verifyArg(sender, clazz, command, str, usedString);
                     if (objs[objIndex] == null){
                         throw new IllegalArgumentException("Argument " + args[strIndex] + " can not be null");
                     }
@@ -399,7 +399,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
         return sender;
     }
 
-    protected Object verifyArg(Class<?> clazz, Command command, String string, AtomicBoolean usedString) {
+    protected Object verifyArg(CommandSender sender, Class<?> clazz, Command command, String string, AtomicBoolean usedString) {
         if (Command.class == clazz){
             usedString.set(false);
             return command;

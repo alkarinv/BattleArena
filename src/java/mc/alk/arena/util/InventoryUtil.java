@@ -877,19 +877,19 @@ public class InventoryUtil {
 			StringBuilder sb2 = new StringBuilder();
 			for (String s : lore){
 				sb2.append(s).append("\n");}
-			sb.append("lore=\"").append(sb2.toString()).append("\"");
+			sb.append("lore=\"").append(sb2.toString()).append("\" ");
 		}
 
 		Color color = handler.getColor(is);
 		if (color!=null)
 			sb.append("color=\"").append(color.getRed()).append(",").
-                    append(color.getGreen()).append(",").append(color.getBlue()).append("\"");
+                    append(color.getGreen()).append(",").append(color.getBlue()).append("\" ");
 		String op = handler.getDisplayName(is);
 		if (op != null && !op.isEmpty())
-			sb.append("displayName=\"").append(op).append("\"");
+			sb.append("displayName=\"").append(op).append("\" ");
 		op = handler.getOwnerName(is);
 		if (op != null && !op.isEmpty())
-			sb.append("ownerName=\"").append(op).append("\"");
+			sb.append("ownerName=\"").append(op).append("\" ");
 		sb.append(is.getAmount());
 		return sb.toString();
 	}

@@ -2,10 +2,13 @@ package mc.alk.arena.serializers;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.SpawnController;
+import mc.alk.arena.objects.options.SpawnOptions;
+import mc.alk.arena.objects.options.SpawnOptions.SpawnOption;
 import mc.alk.arena.objects.spawns.EntitySpawn;
 import mc.alk.arena.objects.spawns.ItemSpawn;
 import mc.alk.arena.objects.spawns.SpawnGroup;
 import mc.alk.arena.objects.spawns.SpawnInstance;
+import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.util.EntityUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
@@ -145,4 +148,56 @@ public class SpawnSerializer {
 		return null;
 	}
 
+    public static TimedSpawn parseSpawn(String[] args) {
+        List<String> spawnArgs = new ArrayList<String>();
+        //		List<EditOption> optionArgs = new ArrayList<EditOption>();
+        Integer fs = 0; /// first spawn time
+        Integer rs = 30; /// Respawn time
+        Integer ds = 0; /// Despawn time
+        for (int i=1;i< args.length;i++){
+            String arg = args[i];
+            if (arg.contains("=")){
+                String as[] = arg.split("=");
+                Integer time = null;
+                try{
+                    time = Integer.valueOf(as[1]);
+                } catch (Exception e){}
+                if (as[0].equalsIgnoreCase("fs")){
+                    fs = time;
+                } else if (as[0].equalsIgnoreCase("rs") || as[0].equalsIgnoreCase("rt")){
+                    rs = time;
+                } else if (as[0].equalsIgnoreCase("ds")){
+                    ds = time;
+                }
+            } else {
+                spawnArgs.add(arg);
+            }
+        }
+        int number = -1;
+        if (spawnArgs.size() > 1){
+            try {number = Integer.parseInt(spawnArgs.get(spawnArgs.size()-1));} catch(Exception e){}
+        }
+        if (number == -1){
+            spawnArgs.add("1");}
+        List<SpawnInstance> spawn = SpawnSerializer.parseSpawnable(spawnArgs);
+        if (spawn == null){
+            return null;
+        }
+        SpawnInstance si = spawn.get(0);
+        if (si == null)
+            return null;
+        TimedSpawn ts = new TimedSpawn(fs,rs,ds,si);
+        return ts;
+    }
+
+    public static TimedSpawn createTimedSpawn(SpawnInstance si, SpawnOptions so) {
+        long fs = (Integer) (so.options.containsKey(SpawnOption.FIRST_SPAWN) ? so.options.get(SpawnOption.FIRST_SPAWN) : 0);
+        long rs = (Integer) (so.options.containsKey(SpawnOption.RESPAWN) ? so.options.get(SpawnOption.RESPAWN) : 30);
+        if (fs < 0)
+            fs = 0;
+        if (rs <= 0)
+            rs = 1;
+        long ds = (Integer) (so.options.containsKey(SpawnOption.DESPAWN) ? so.options.get(SpawnOption.DESPAWN) : 0);
+        return new TimedSpawn(fs,rs,ds,si);
+    }
 }

@@ -1,6 +1,7 @@
 package test.mc.alk.arena;
 
 import junit.framework.TestCase;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.BukkitInterface;
 import mc.alk.arena.controllers.CompetitionController;
@@ -23,7 +24,7 @@ public class TestConfig extends TestCase{
 
 	@Override
 	protected void setUp(){
-//        Defaults.TESTSERVER = true;
+        Defaults.TESTSERVER = true;
 
         plugin = new TestPlugin();
 		ArenaType.register("arena", Arena.class, plugin);

@@ -6,19 +6,23 @@ import org.bukkit.block.Block;
 
 
 public class BlockSpawn extends SpawnInstance{
-	final Block block;
+	Material mat;
 
-	public BlockSpawn(Block block){
+	public BlockSpawn(Block block, boolean setMaterial){
 		super(block.getLocation());
-        this.block = block;
+        if (setMaterial){
+            this.mat = block.getType();
+        }
     }
-
+    public void setMaterial(Material mat) {
+        this.mat = mat;
+    }
     @Override
     public void spawn() {
         World w = getLocation().getWorld();
         Block b = w.getBlockAt(getLocation());
-        if (b.getType() != block.getType())
-            b.setType(block.getType());
+        if (b.getType() != mat)
+            b.setType(mat);
 	}
 
     @Override
@@ -30,10 +34,13 @@ public class BlockSpawn extends SpawnInstance{
 
 	@Override
 	public String toString(){
-		return "[BlockSpawn "+block+"]";
+		return "[BlockSpawn "+mat.name()+"]";
 	}
 
     public Block getBlock() {
-        return block;
+        return this.getLocation().getBlock();
+    }
+    public Material getMaterial() {
+        return mat;
     }
 }

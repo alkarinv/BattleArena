@@ -95,7 +95,7 @@ public class Defaults {
 	public static final boolean DEBUG_TEVENTS = false;
 	public static final boolean DEBUG_DAMAGE = false;
 	public static final boolean DEBUG_SCHEDULER = false;
-    public static final boolean TESTSERVER = false;
+    public static boolean TESTSERVER = false;
     public static final boolean TESTSERVER_DEBUG = false;
 	public static final String DEFAULT_CONFIG_NAME = "Default";
 	public static boolean DEBUG_STRESS = false;

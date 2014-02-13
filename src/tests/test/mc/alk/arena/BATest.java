@@ -38,7 +38,7 @@ public class BATest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         Defaults.DEBUG_MSGS = true;
-//        Defaults.TESTSERVER = true;
+        Defaults.TESTSERVER = true;
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
         plugin = new TestPlugin();
         ArenaType.register("arena", Arena.class, plugin);
