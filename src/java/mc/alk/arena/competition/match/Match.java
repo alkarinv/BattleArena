@@ -77,6 +77,7 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
+import mc.alk.scoreboardapi.api.SEntry;
 import mc.alk.scoreboardapi.api.SObjective;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
 import org.bukkit.Bukkit;
@@ -768,7 +769,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         for (ArenaPlayer p: team.getPlayers()){
             if (p == null)
                 continue;
-            privateAddedToTeam(team,p);
+            _addedToTeam(team, p);
             joiningOngoing(team, p);
         }
         return true;
@@ -780,7 +781,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     }
 
     /** Called during both, addTeam and addedToTeam */
-    private void privateAddedToTeam(ArenaTeam team, ArenaPlayer player){
+    private void _addedToTeam(ArenaTeam team, ArenaPlayer player){
         leftPlayers.remove(player.getName()); /// remove players from the list as they are now joining again
         inMatch.remove(player.getName());
         team.setAlive(player);
@@ -791,6 +792,15 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         if (state == MatchState.ONOPEN && joinHandler != null && joinHandler.isFull()){
             Scheduler.scheduleSynchronousTask(BattleArena.getSelf(), this);
         }
+        defaultObjective.setPoints(player, 0);
+        scoreboard.addedToTeam(team, player);
+//        if (this.nLivesPerPlayer != 1 && this.nLivesPerPlayer != ArenaSize.MAX) {
+            player.getMetaData().setLivesLeft(this.nLivesPerPlayer);
+            SEntry e = scoreboard.getEntry(player.getPlayer());
+            e.setDisplayName(e.getDisplayName()+"(10)");
+
+
+//        }
     }
 
     @Override
@@ -819,12 +829,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
         if (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND){
             team.setDisplayName(TeamUtil.getTeamName(team.getIndex()));}
-        privateAddedToTeam(team,player);
-        defaultObjective.setPoints(player, 0);
-        scoreboard.addedToTeam(team, player);
+        _addedToTeam(team, player);
 
         mc.sendAddedToTeam(team,player);
-        //		team.sendToOtherMembers(player, MessageController.);
 
         joiningOngoing(team, player);
         return true;

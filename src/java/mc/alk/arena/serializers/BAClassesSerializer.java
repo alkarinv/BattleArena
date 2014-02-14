@@ -1,8 +1,5 @@
 package mc.alk.arena.serializers;
 
-import java.util.List;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.objects.ArenaClass;
@@ -11,10 +8,12 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
-
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
+
+import java.util.List;
+import java.util.Set;
 
 public class BAClassesSerializer extends BaseConfig{
 
@@ -68,7 +67,8 @@ public class BAClassesSerializer extends BaseConfig{
 			}
 		}
 		String displayName = cs.getString("displayName", null);
-		ArenaClass ac = new ArenaClass(cs.getName(),displayName, items,effects);
+        displayName = displayName == null || displayName.isEmpty() ? cs.getName() : displayName;
+        ArenaClass ac = new ArenaClass(cs.getName(),displayName, items,effects);
 		if (mobs != null && !mobs.isEmpty())
 			ac.setMobs(mobs);
 		if (cs.contains("disguise")){ ac.setDisguiseName(cs.getString("disguise"));}

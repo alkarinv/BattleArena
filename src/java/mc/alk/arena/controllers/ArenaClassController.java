@@ -34,78 +34,78 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ArenaClassController {
-	static HashMap<String,ArenaClass> classes = new HashMap<String,ArenaClass>();
+    static HashMap<String,ArenaClass> classes = new HashMap<String,ArenaClass>();
     /** How much time since they last changed classes*/
     static Map<String, Long> userClassSwitchTime = new ConcurrentHashMap<String, Long>();
 
     static {
-		classes.put(ArenaClass.CHOSEN_CLASS.getName().toUpperCase(), ArenaClass.CHOSEN_CLASS);
-	}
+        classes.put(ArenaClass.CHOSEN_CLASS.getName().toUpperCase(), ArenaClass.CHOSEN_CLASS);
+    }
 
-	public static void addClass(ArenaClass ac){
-		classes.put(ac.getName().toUpperCase(), ac);
-		classes.put(MessageUtil.decolorChat(ac.getDisplayName()).toUpperCase(),ac);
-		classes.put(MessageUtil.decolorChat(ac.getDisplayName().replaceAll("\\[\\]", "")).toUpperCase(),ac);
-	}
+    public static void addClass(ArenaClass ac){
+        classes.put(ac.getName().toUpperCase(), ac);
+        classes.put(MessageUtil.decolorChat(ac.getDisplayName()).toUpperCase(),ac);
+        classes.put(MessageUtil.decolorChat(ac.getDisplayName().replaceAll("\\[\\]", "")).toUpperCase(),ac);
+    }
 
-	public static ArenaClass getClass(String name){
-		return classes.get(name.toUpperCase());
-	}
+    public static ArenaClass getClass(String name){
+        return classes.get(name.toUpperCase());
+    }
 
-	public static void giveClass(ArenaPlayer player, ArenaClass ac) {
-		giveClass(player,ac,null);
-	}
+    public static void giveClass(ArenaPlayer player, ArenaClass ac) {
+        giveClass(player,ac,null);
+    }
 
-	public static void giveClass(ArenaPlayer player, ArenaClass ac, Color color) {
-		if (HeroesController.enabled())
-			ac = giveHeroClass(player,ac);
-		try{if (ac.getItems() != null)
+    public static void giveClass(ArenaPlayer player, ArenaClass ac, Color color) {
+        if (HeroesController.enabled())
+            ac = giveHeroClass(player,ac);
+        try{if (ac.getItems() != null)
             InventoryUtil.addItemsToInventory(player.getPlayer(), ac.getItems(),true, color);}
         catch (Exception e){/* do nothing, error would be reported inside InventoryUtil */}
-		giveClassEnchants(player.getPlayer(),ac);
-		if (ac.getDisguiseName()!=null && DisguiseInterface.enabled())
-			DisguiseInterface.disguisePlayer(player.getPlayer(), ac.getDisguiseName());
-		if (ac.getMobs() != null){
-			try{
-				List<SpawnInstance> mobs = new ArrayList<SpawnInstance>(ac.getMobs());
-				player.setMobs(mobs);
-				player.spawnMobs();
-			} catch (Exception e){
-				Log.printStackTrace(e);
-			}
-		}
-		if (ac.getDoCommands() != null){
-			PlayerUtil.doCommands(player.getPlayer(),ac.getDoCommands());
-		}
-		if (player.getPreferredClass() == null){
-			player.setPreferredClass(ac);}
-		player.setCurrentClass(ac);
-	}
+        giveClassEnchants(player.getPlayer(),ac);
+        if (ac.getDisguiseName()!=null && DisguiseInterface.enabled())
+            DisguiseInterface.disguisePlayer(player.getPlayer(), ac.getDisguiseName());
+        if (ac.getMobs() != null){
+            try{
+                List<SpawnInstance> mobs = new ArrayList<SpawnInstance>(ac.getMobs());
+                player.setMobs(mobs);
+                player.spawnMobs();
+            } catch (Exception e){
+                Log.printStackTrace(e);
+            }
+        }
+        if (ac.getDoCommands() != null){
+            PlayerUtil.doCommands(player.getPlayer(),ac.getDoCommands());
+        }
+        if (player.getPreferredClass() == null){
+            player.setPreferredClass(ac);}
+        player.setCurrentClass(ac);
+    }
 
-	private static ArenaClass giveHeroClass(ArenaPlayer player, ArenaClass ac){
-		if (ac == ArenaClass.CHOSEN_CLASS){
-			String className = HeroesController.getHeroClassName(player.getPlayer());
-			if (className != null){
-				ArenaClass ac2 = ArenaClassController.getClass(className);
-				if (ac2 != null)
-					return ac2;
-			}
-		}
-		/// Set them to the appropriate heroes class if one exists with this name
-		if (HeroesController.hasHeroClass(ac.getName())){
-			HeroesController.setHeroClass(player.getPlayer(), ac.getName());
-		}
-		return ac;
-	}
+    private static ArenaClass giveHeroClass(ArenaPlayer player, ArenaClass ac){
+        if (ac == ArenaClass.CHOSEN_CLASS){
+            String className = HeroesController.getHeroClassName(player.getPlayer());
+            if (className != null){
+                ArenaClass ac2 = ArenaClassController.getClass(className);
+                if (ac2 != null)
+                    return ac2;
+            }
+        }
+        /// Set them to the appropriate heroes class if one exists with this name
+        if (HeroesController.hasHeroClass(ac.getName())){
+            HeroesController.setHeroClass(player.getPlayer(), ac.getName());
+        }
+        return ac;
+    }
 
-	public static void giveClassEnchants(Player player, ArenaClass ac) {
-		try{if (ac.getEffects() != null) EffectUtil.enchantPlayer(player, ac.getEffects());}
+    public static void giveClassEnchants(Player player, ArenaClass ac) {
+        try{if (ac.getEffects() != null) EffectUtil.enchantPlayer(player, ac.getEffects());}
         catch (Exception e){/* do nothing */}
-	}
+    }
 
-	public static Set<ArenaClass> getClasses() {
-		return new HashSet<ArenaClass>(classes.values());
-	}
+    public static Set<ArenaClass> getClasses() {
+        return new HashSet<ArenaClass>(classes.values());
+    }
 
 
     public static boolean changeClass(Player p, PlayerHolder am, final ArenaClass ac) {
@@ -130,7 +130,8 @@ public class ArenaClassController {
                 return false;
             }
         }
-        MatchParams mp = am.getParams();
+        MatchParams mp = am != null ? am.getParams() : null;
+
         userClassSwitchTime.put(playerName, System.currentTimeMillis());
         /// check to see if they have a team head
         ArenaTeam at = ap.getTeam();
@@ -144,7 +145,7 @@ public class ArenaClassController {
             List<ItemStack> items = new ArrayList<ItemStack>();
             if (chosen.getItems()!=null)
                 items.addAll(chosen.getItems());
-            if (mp.hasOptionAt(MatchState.ONSPAWN, TransitionOption.GIVEITEMS) &&
+            if (mp != null && mp.hasOptionAt(MatchState.ONSPAWN, TransitionOption.GIVEITEMS) &&
                     mp.getGiveItems(MatchState.ONSPAWN) != null){
                 items.addAll(mp.getGiveItems(MatchState.ONSPAWN));
             }
@@ -161,7 +162,7 @@ public class ArenaClassController {
         EffectUtil.deEnchantAll(p);
 
         MatchState state = am.getMatchState();
-        boolean armorTeams = mp.hasAnyOption(TransitionOption.ARMORTEAMS);
+        boolean armorTeams = mp != null && mp.hasAnyOption(TransitionOption.ARMORTEAMS);
         ArenaTeam team = am.getTeam(ap);
         int teamIndex = team == null ? -1 : team.getIndex();
         Color color = armorTeams && teamIndex != -1 ? TeamUtil.getTeamColor(teamIndex) : null;
@@ -169,20 +170,23 @@ public class ArenaClassController {
         /// Regive class/items
         ArenaClassController.giveClass(ap, ac);
         ap.setPreferredClass(ac);
-        List<ItemStack> items =mp.getGiveItems(state);
-        if (items != null){
-            try{ InventoryUtil.addItemsToInventory(p, items, true,color);} catch(Exception e){Log.printStackTrace(e);}}
-        items =mp.getGiveItems(MatchState.ONSPAWN);
-        if (items!=null){
-            try{ InventoryUtil.addItemsToInventory(p, items, true,color);} catch(Exception e){Log.printStackTrace(e);}}
+        if (mp != null){
+            List<ItemStack> items = mp.getGiveItems(state);
+            if (items != null){
+                try{ InventoryUtil.addItemsToInventory(p, items, true,color);} catch(Exception e){Log.printStackTrace(e);}}
+            items =mp.getGiveItems(MatchState.ONSPAWN);
+            if (items!=null){
+                try{ InventoryUtil.addItemsToInventory(p, items, true,color);} catch(Exception e){Log.printStackTrace(e);}}
 
-        /// Deal with effects/buffs
-        List<PotionEffect> effects = mp.getEffects(state);
-        if (effects!=null){
-            EffectUtil.enchantPlayer(p, effects);}
-        effects = mp.getEffects(MatchState.ONSPAWN);
-        if (effects!=null){
-            EffectUtil.enchantPlayer(p, effects);}
+            /// Deal with effects/buffs
+
+            List<PotionEffect> effects = mp.getEffects(state);
+            if (effects!=null){
+                EffectUtil.enchantPlayer(p, effects);}
+            effects = mp.getEffects(MatchState.ONSPAWN);
+            if (effects!=null){
+                EffectUtil.enchantPlayer(p, effects);}
+        }
 
         MessageUtil.sendSystemMessage(p, "class_chosen", ac.getDisplayName());
         return true;
