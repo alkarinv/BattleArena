@@ -1016,12 +1016,15 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     @Override
     public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-        ArenaTeam team = getTeam(player);
-        try{
-            scoreboard.leaving(team,player);
+        ArenaTeam t = getTeam(player);
+        if (t == null) /// we already handled the quit
+            return;
+        try {
+            scoreboard.leaving(t,player);
         } catch (Exception e){
             Log.printStackTrace(e);
         }
+
     }
 
     /**
@@ -1031,24 +1034,26 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     @EventHandler
     public void onArenaPlayerLeaveEventGlobal(ArenaPlayerLeaveEvent event){
         if (leftPlayers.contains(event.getPlayer().getName()) ||
-                (!matchPlayers.contains(event.getPlayer()) && !isHandled(event.getPlayer())))
+                (matchPlayers.contains(event.getPlayer()) && event.getPlayer().getCurLocation().getType() == LocationType.ARENA)||
+                !isHandled(event.getPlayer()))
             return;
         ArenaPlayer player = event.getPlayer();
         player.removeCompetition(this);
         player.reset(); /// reset the players
         ArenaTeam t = getTeam(player);
+        if (t == null) {
+            /// we already handled them
+            return;
+        }
         try {
             scoreboard.setDead(t,player);
+            scoreboard.leaving(t,player);
         } catch (Exception e){
             /// something bad happened, but lets not crash b/c of it
             /// Possibly scoreboard set wrong? player removed after team?
             Log.printStackTrace(e);
         }
         t.playerLeft(player);
-//        t.killMember(player);
-//        if (t.isDead()) {
-//            teams.remove(t);
-//        }
         leftPlayers.add(player.getName());
         if (this.getState().ordinal() < MatchState.ONVICTORY.ordinal())
             checkAndHandleIfTeamDead(t);
@@ -1082,7 +1087,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         if (t==null)
             t = player.getTeam();
         PerformTransition.transition(this, MatchState.ONLEAVEARENA, player, t, false);
-        //		Log.debug(" onPostQuit !!!!!!! " + player.getName() +"   " + apte.getArenaType());
         updateBukkitEvents(MatchState.ONLEAVE,player);
         if (WorldGuardController.hasWorldGuard() && arena.hasRegion())
             psc.removeMember(player, arena.getWorldGuardRegion());

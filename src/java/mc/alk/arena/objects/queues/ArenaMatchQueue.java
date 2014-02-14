@@ -733,7 +733,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
     }
 
     class AnnounceInterval {
-        AnnounceInterval(final ArenaMatchQueue amq, final WaitingObject wo, final long timeMillis){
+        AnnounceInterval(final ArenaMatchQueue amq, final WaitingObject wo, IdTime idt, final long timeMillis){
             final Countdown c = new Countdown(BattleArena.getSelf(),
                     (int) timeMillis/1000, 30, new Countdown.CountdownCallback(){
                 @Override
@@ -752,7 +752,10 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
                 }
             });
             c.setCancelOnExpire(false);
+            idt.c = c;
+            forceTimers.put(wo, idt);
         }
+
     }
     private boolean timeExpired(WaitingObject wo){
         IdTime idt = forceTimers.get(wo);
@@ -782,8 +785,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         if (idt == null){
             idt = new IdTime();
             idt.time = time;
-            forceTimers.put(to, idt);
-            new AnnounceInterval(this, to, time-System.currentTimeMillis());
+            new AnnounceInterval(this, to, idt, time-System.currentTimeMillis());
         }
         return idt;
     }
