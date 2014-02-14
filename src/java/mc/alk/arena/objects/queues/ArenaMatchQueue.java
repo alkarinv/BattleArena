@@ -475,7 +475,9 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
             callEvent(new ArenaPlayerLeaveQueueEvent(entry.getKey(),
                     entry.getValue().getParams(),entry.getValue().getArena()));
         }
-
+        inQueue.clear();
+        inQueueForGame.clear();
+        inQueueForArena.clear();
         return teams;
     }
 

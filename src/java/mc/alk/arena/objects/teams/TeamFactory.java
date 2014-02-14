@@ -9,23 +9,21 @@ import java.util.Set;
 
 public class TeamFactory {
 
-	public static ArenaTeam createCompositeTeam(int index, MatchParams params, ArenaPlayer p){
-		CompositeTeam ct = new CompositeTeam(p);
-        ct.setIndex(index);
-        ct.setCurrentParams(params);
+	public static ArenaTeam createCompositeTeam(int index, MatchParams params, ArenaPlayer p) {
+        CompositeTeam ct = (CompositeTeam) createTeam(index, params, CompositeTeam.class);
+        ct.addPlayer(p);
         return ct;
     }
 
     public static CompositeTeam createCompositeTeam(int index, MatchParams params, Set<ArenaPlayer> players) {
-        CompositeTeam ct =  new CompositeTeam(players);
-        ct.setCurrentParams(params);
-        ct.setIndex(index);
+        CompositeTeam ct = (CompositeTeam) createTeam(index, params, CompositeTeam.class);
+        ct.addPlayers(players);
         return ct;
     }
 
     public static CompositeTeam createCompositeTeam(MatchParams params, Set<ArenaPlayer> players) {
-		CompositeTeam ct =  new CompositeTeam(players);
-		ct.setCurrentParams(params);
+        CompositeTeam ct = (CompositeTeam) createTeam(-1, params, CompositeTeam.class);
+        ct.addPlayers(players);
 		return ct;
 	}
 
