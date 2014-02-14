@@ -154,23 +154,28 @@ public class ArenaClassController {
                 return false;
             }
         }
-        am.callEvent(new ArenaPlayerClassSelectedEvent(ac));
+
+        if (am != null){
+            am.callEvent(new ArenaPlayerClassSelectedEvent(ac));
+        } else {
+            new ArenaPlayerClassSelectedEvent(ac).callEvent();
+        }
 
         /// Clear their inventory first, then give them the class and whatever items were due to them from the config
         InventoryUtil.clearInventory(p, woolTeams);
         /// Also debuff them
         EffectUtil.deEnchantAll(p);
 
-        MatchState state = am.getMatchState();
         boolean armorTeams = mp != null && mp.hasAnyOption(TransitionOption.ARMORTEAMS);
-        ArenaTeam team = am.getTeam(ap);
-        int teamIndex = team == null ? -1 : team.getIndex();
-        Color color = armorTeams && teamIndex != -1 ? TeamUtil.getTeamColor(teamIndex) : null;
         ap.despawnMobs();
         /// Regive class/items
         ArenaClassController.giveClass(ap, ac);
         ap.setPreferredClass(ac);
         if (mp != null){
+            MatchState state = am.getMatchState();
+            ArenaTeam team = am.getTeam(ap);
+            int teamIndex = team == null ? -1 : team.getIndex();
+            Color color = armorTeams && teamIndex != -1 ? TeamUtil.getTeamColor(teamIndex) : null;
             List<ItemStack> items = mp.getGiveItems(state);
             if (items != null){
                 try{ InventoryUtil.addItemsToInventory(p, items, true,color);} catch(Exception e){Log.printStackTrace(e);}}

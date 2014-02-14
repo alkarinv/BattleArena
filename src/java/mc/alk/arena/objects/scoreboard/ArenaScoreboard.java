@@ -140,7 +140,17 @@ public class ArenaScoreboard implements SScoreboard {
 		board.setEntryName(e, name);
 	}
 
-	@Override
+    @Override
+    public boolean setEntryNameSuffix(String id, String name) {
+        return board.setEntryNameSuffix(id, name);
+    }
+
+    @Override
+    public boolean setEntryNameSuffix(SEntry e, String name) {
+        return board.setEntryNameSuffix(e, name);
+    }
+
+    @Override
 	public String getName() {
 		return board.getName();
 	}

@@ -796,9 +796,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         scoreboard.addedToTeam(team, player);
 //        if (this.nLivesPerPlayer != 1 && this.nLivesPerPlayer != ArenaSize.MAX) {
             player.getMetaData().setLivesLeft(this.nLivesPerPlayer);
-            SEntry e = scoreboard.getEntry(player.getPlayer());
-            e.setDisplayName(e.getDisplayName()+"(10)");
-
+        SEntry e = scoreboard.getEntry(player.getPlayer());
+        scoreboard.setEntryName(e, e.getDisplayName()+"(10)");
 
 //        }
     }
