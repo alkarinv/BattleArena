@@ -770,15 +770,8 @@ public class InventoryUtil {
 		try{
 			Matcher matcher = PATTERN_LORE.matcher(str);
 			if(matcher.find()){
-				int start = matcher.start(); //This only takes the first match
-				int end = matcher.end();
-
-				//Remove the "Lore: " part
-				//Remove the quotes
-				//Possible issue: If you want quotes in your lore...?
-                str = ChatColor.translateAlternateColorCodes('&', matcher.group(1));
-				String part = str.substring(start, end).replaceFirst("(?i)lore[:=] ?", "").replaceAll("\"", ""); //Strip Lore: and quotes.
-				//Replace color codes
+                //Replace color codes
+                String part = ChatColor.translateAlternateColorCodes('&', matcher.group(1));
 				//Now we can split it.
 				String[] lines = part.split("[;\\n]");
 				//DEBUG
