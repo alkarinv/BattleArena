@@ -1,6 +1,8 @@
 package mc.alk.arena.controllers;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.BattleArena.AnnounceUpdateOption;
+import mc.alk.arena.BattleArena.UpdateOption;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.CustomCommandExecutor;
 import mc.alk.arena.executors.DuelExecutor;
@@ -14,8 +16,8 @@ import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
-import mc.alk.plugin.updater.v1r5.FileUpdater;
-import mc.alk.plugin.updater.v1r5.PluginUpdater;
+import mc.alk.plugin.updater.v1r6.FileUpdater;
+import mc.alk.plugin.updater.v1r6.PluginUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.Plugin;
@@ -37,6 +39,7 @@ import java.util.Set;
 
 public class APIRegistrationController {
 	static Set<String> delayedInits = Collections.synchronizedSet(new HashSet<String>());
+
 
     static class DelayedRegistrationHandler implements Runnable{
 		final JavaPlugin plugin;
@@ -280,8 +283,9 @@ public class APIRegistrationController {
 			setCommandToExecutor(plugin, mp.getCommand().toLowerCase(), exe);
 	}
 
-    public void autoUpdate(Plugin plugin, int bukkitId, File file, boolean onlyAnnounceNewVersion) {
-        PluginUpdater.announceNewerAndDownloadIfNeeded(plugin, bukkitId, file, !onlyAnnounceNewVersion);
+    public void update(Plugin plugin, int bukkitId, File file,
+                       UpdateOption updateOption, AnnounceUpdateOption announceOption) {
+        PluginUpdater.update(plugin, bukkitId, file,updateOption.toPluginUpdater(), announceOption.toPluginUpdater());
     }
 
 }

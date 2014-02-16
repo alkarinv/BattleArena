@@ -1,7 +1,7 @@
 package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
-import mc.alk.plugin.updater.v1r5.Version;
+import mc.alk.plugin.updater.v1r6.Version;
 import mc.alk.virtualPlayer.VirtualPlayers;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;

@@ -4,6 +4,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.util.TeamJoinHandler;
+import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.ArenaController;
 import mc.alk.arena.controllers.ListenerAdder;
 import mc.alk.arena.controllers.PlayerStoreController;
@@ -41,8 +42,10 @@ import mc.alk.arena.events.prizes.ArenaWinnersPrizeEvent;
 import mc.alk.arena.events.teams.TeamDeathEvent;
 import mc.alk.arena.objects.ArenaLocation;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.CompetitionState;
+import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
@@ -160,8 +163,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     int nLivesPerPlayer = 1; /// This will change as victory conditions are added
     ArenaScoreboard scoreboard;
     MatchMessager mc; /// Our message instance
-    TeamJoinHandler joinHandler = null;
-    ArenaObjective defaultObjective = null;
+    TeamJoinHandler joinHandler;
+    ArenaObjective defaultObjective;
+    ArenaPreviousState oldArenaState;
 
     @SuppressWarnings("unchecked")
     public Match(Arena arena, MatchParams params, Collection<ArenaListener> listeners) {
@@ -256,9 +260,17 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         if (lc != null){
             inMatch.addAll(lc.getInsidePlayers());
         }
+        /// Save the arena state if we are changing it
+        if (hasWaitroom() && params.isWaitroomClosedWhenRunning()){
+            oldArenaState = new ArenaPreviousState(arena);
+            arena.setContainerState(ChangeType.WAITROOM,
+                    new ContainerState(ContainerState.AreaContainerState.CLOSED,
+                            "&cA match is already in progress in arena " + arena.getName()));
+        }
         transitionTo(MatchState.ONCREATE);
         updateBukkitEvents(MatchState.ONCREATE);
     }
+
 
     private void updateBukkitEvents(MatchState matchState){
         final ArrayList<String> players = new ArrayList<String>(inMatch);
@@ -696,7 +708,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     }
 
     private void nonEndingDeconstruct(List<ArenaTeam> teams){
-        final Match match = this;
         for (ArenaTeam t: teams){
             PerformTransition.transition(this, MatchState.ONFINISH, t, true);
             for (ArenaPlayer p: t.getPlayers()){
@@ -733,6 +744,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
                 }
             }
         }
+        if (oldArenaState != null){
+            oldArenaState.revert(arena);}
         scoreboard.clear();
         arenaInterface.onFinish();
         inMatch.clear();
@@ -794,12 +807,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
         defaultObjective.setPoints(player, 0);
         scoreboard.addedToTeam(team, player);
-//        if (this.nLivesPerPlayer != 1 && this.nLivesPerPlayer != ArenaSize.MAX) {
-            player.getMetaData().setLivesLeft(this.nLivesPerPlayer);
-        SEntry e = scoreboard.getEntry(player.getPlayer());
-        scoreboard.setEntryName(e, e.getDisplayName()+"(10)");
-
-//        }
+        if (nLivesPerPlayer != 1 && nLivesPerPlayer != ArenaSize.MAX) {
+            player.getMetaData().setLivesLeft(nLivesPerPlayer);
+            SEntry e = scoreboard.getEntry(player.getPlayer());
+            scoreboard.setEntryNameSuffix(e, "(" + nLivesPerPlayer + ")");
+        }
     }
 
     @Override
@@ -1188,7 +1200,15 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         if (!alwaysOpen && victoryCondition instanceof DefinesNumTeams){
             neededTeams = Math.max(neededTeams, ((DefinesNumTeams)victoryCondition).getNeededNumberOfTeams().max);}
         if (victoryCondition instanceof DefinesNumLivesPerPlayer){
-            nLivesPerPlayer = Math.max(nLivesPerPlayer, ((DefinesNumLivesPerPlayer)victoryCondition).getLivesPerPlayer());}
+            nLivesPerPlayer = Math.max(nLivesPerPlayer, ((DefinesNumLivesPerPlayer)victoryCondition).getLivesPerPlayer());
+            for (ArenaPlayer ap : matchPlayers){
+                if (nLivesPerPlayer != 1 && nLivesPerPlayer != ArenaSize.MAX) {
+                    ap.getMetaData().setLivesLeft(nLivesPerPlayer);
+                    scoreboard.setEntryNameSuffix(ap.getName(),"&4("+nLivesPerPlayer+")");
+                }
+            }
+
+        }
         if (victoryCondition instanceof ScoreTracker){
             if (params.getMaxTeamSize() <= 2){
                 ((ScoreTracker)victoryCondition).setDisplayTeams(false);
@@ -1586,6 +1606,30 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             }
         }
         return players;
+    }
+
+    class ArenaPreviousState{
+        final ContainerState waitroomCS;
+        final ContainerState arenaCS;
+        MatchParams params;
+
+        public ArenaPreviousState(Arena arena) {
+            waitroomCS = (arena.getWaitroom()!=null) ? arena.getWaitroom().getContainerState() : null;
+            arenaCS = arena.getContainerState();
+        }
+
+        public void revert(Arena arena) {
+            if(params != null)
+                arena.setParams(params);
+            arena.setContainerState(arenaCS);
+            if (waitroomCS != null && arena.getWaitroom()!=null){
+                arena.getWaitroom().setContainerState(waitroomCS);}
+        }
+    }
+    public void setOldArenaParams(MatchParams oldArenaParams) {
+        if (oldArenaState == null) {
+            oldArenaState = new ArenaPreviousState(arena);}
+        oldArenaState.params = oldArenaParams;
     }
 
 }

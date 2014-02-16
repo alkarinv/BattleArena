@@ -131,14 +131,32 @@ public class ArenaScoreboard implements SScoreboard {
 	}
 
 	@Override
-	public boolean setEntryName(String id, String name) {
-		return board.setEntryName(id, name);
+	public boolean setEntryDisplayName(String id, String name) {
+		return board.setEntryDisplayName(id, name);
 	}
 
 	@Override
-	public void setEntryName(SEntry e, String name) {
-		board.setEntryName(e, name);
+	public void setEntryDisplayName(SEntry e, String name) {
+		board.setEntryDisplayName(e, name);
 	}
+
+    public boolean setEntryDisplayName(ArenaPlayer player, String name) {
+        return board.setEntryDisplayName(player.getName(), name);
+    }
+
+    @Override
+    public boolean setEntryNamePrefix(String id, String name) {
+        return board.setEntryNamePrefix(id,name);
+    }
+
+    @Override
+    public void setEntryNamePrefix(SEntry entry, String name) {
+        board.setEntryNamePrefix(entry,name);
+    }
+
+    public boolean setEntryNamePrefix(ArenaPlayer player, String name) {
+        return board.setEntryNamePrefix(player.getName(), name);
+    }
 
     @Override
     public boolean setEntryNameSuffix(String id, String name) {
@@ -146,8 +164,12 @@ public class ArenaScoreboard implements SScoreboard {
     }
 
     @Override
-    public boolean setEntryNameSuffix(SEntry e, String name) {
-        return board.setEntryNameSuffix(e, name);
+    public void setEntryNameSuffix(SEntry e, String name) {
+        board.setEntryNameSuffix(e, name);
+    }
+
+    public boolean setEntryNameSuffix(ArenaPlayer player, String name) {
+        return board.setEntryNameSuffix(player.getName(), name);
     }
 
     @Override

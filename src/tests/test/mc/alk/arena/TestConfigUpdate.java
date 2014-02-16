@@ -4,8 +4,8 @@ import junit.framework.TestCase;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.Log;
-import mc.alk.plugin.updater.v1r5.FileUpdater;
-import mc.alk.plugin.updater.v1r5.Version;
+import mc.alk.plugin.updater.v1r6.FileUpdater;
+import mc.alk.plugin.updater.v1r6.Version;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;

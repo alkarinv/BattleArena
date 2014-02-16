@@ -58,8 +58,8 @@ import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.plugin.updater.v1r5.FileUpdater;
-import mc.alk.plugin.updater.v1r5.PluginUpdater;
+import mc.alk.plugin.updater.v1r6.FileUpdater;
+import mc.alk.plugin.updater.v1r6.PluginUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -246,7 +246,8 @@ public class BattleArena extends JavaPlugin {
             }
         });
 
-        PluginUpdater.announceNewerAndDownloadIfNeeded(this, bukkitId, this.getFile(), mc.alk.arena.Defaults.AUTO_UPDATE);
+        PluginUpdater.update(this, bukkitId, this.getFile(),
+                Defaults.AUTO_UPDATE, Defaults.ANNOUNCE_UPDATE);
         Log.info("&4[" + pluginname + "] &6v" + BattleArena.version + "&f enabled!");
     }
 
@@ -277,11 +278,58 @@ public class BattleArena extends JavaPlugin {
      * @param plugin BattleArena extension plugin
      * @param bukkitId the bukkit id of this plugin
      * @param file File from the bukkit plugin, use this.getFile()
-     * @param onlyAnnounceNewVersion whether we should update the plugin or simply announce that there is a newer version
+     * @param updateOption whether we should update the plugin or simply announce that there is a newer version
+     * @param announceOption whether we should update the plugin or simply announce that there is a newer version
      */
-    public static void update(final Plugin plugin, final int bukkitId,
-                              final File file, final boolean onlyAnnounceNewVersion) {
-        new APIRegistrationController().autoUpdate(plugin, bukkitId, file, onlyAnnounceNewVersion);
+    public static void update(final Plugin plugin, final int bukkitId, final File file,
+                              final UpdateOption updateOption, final AnnounceUpdateOption announceOption) {
+        new APIRegistrationController().update(plugin, bukkitId, file, updateOption, announceOption);
+    }
+
+    /**
+     NONE get no releases,
+     RELEASE get only release updates, ignore beta/alpha,
+     BETA get beta/release updates, but ignore alpha builds,
+     ALL get all updates
+     */
+    public enum UpdateOption{
+        NONE/** get no releases*/,
+        RELEASE/** get only release updates, ignore beta/alpha*/,
+        BETA/** get beta/release updates, but ignore alpha builds*/,
+        ALL/** get all updates*/;
+
+        public static UpdateOption fromString(String name){
+            try {
+                return valueOf(name.toUpperCase());
+            } catch(Exception e) {
+                if (name.equalsIgnoreCase("ALPHA")) return ALL;
+                return null;
+            }
+        }
+        public PluginUpdater.UpdateOption toPluginUpdater() {
+            return PluginUpdater.UpdateOption.fromString(this.name());
+        }
+    }
+
+    /**
+     NONE don't show new versions
+     CONSOLE show only to console log on startup
+     OPS announce to ops on join, will only show this message once per server start
+     */
+    public enum AnnounceUpdateOption {
+        NONE/** don't show new versions*/,
+        CONSOLE/** show only to console log on startup*/,
+        OPS/** announce to ops on join, will only show this message once per server start*/;
+        public static AnnounceUpdateOption fromString(String name){
+            try {
+                return valueOf(name.toUpperCase());
+            } catch(Exception e) {
+                return null;
+            }
+        }
+        public PluginUpdater.AnnounceUpdateOption toPluginUpdater() {
+            return PluginUpdater.AnnounceUpdateOption.fromString(this.name());
+        }
     }
 
     private void createMessageSerializers() {

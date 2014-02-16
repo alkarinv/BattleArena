@@ -13,6 +13,7 @@ import mc.alk.arena.events.players.ArenaPlayerReadyEvent;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
@@ -28,6 +29,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.TeamUtil;
+import mc.alk.scoreboardapi.api.SEntry;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -102,7 +104,11 @@ public class ArenaMatch extends Match {
         boolean exiting = event.isExiting() || !respawns || nDeaths >= nLivesPerPlayer;
         event.setExiting(exiting);
         final boolean trueDeath = event.getPlayerDeathEvent() != null;
-
+        if (nLivesPerPlayer != ArenaSize.MAX) {
+            int curLives = nLivesPerPlayer - nDeaths;
+            SEntry e = scoreboard.getEntry(target.getPlayer());
+            scoreboard.setEntryNameSuffix(e, curLives <= 1 ? "" : "&4(" + curLives + ")");
+        }
         if (trueDeath){
             PlayerDeathEvent pde = event.getPlayerDeathEvent();
             if (cancelExpLoss)

@@ -1,9 +1,5 @@
 package mc.alk.arena.objects.victoryconditions;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.TreeMap;
-
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
@@ -16,16 +12,21 @@ import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.ScoreTracker;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
 
-/// TODO refactor with MobKills and PlayerKills
+import java.util.Collection;
+import java.util.List;
+import java.util.TreeMap;
+
+/// TODO refactor with MobKills and PlayerKills.yml
 public class AllKills extends VictoryCondition implements ScoreTracker {
 	final ArenaObjective kills;
 	final StatController sc;
 
 	public AllKills(Match match) {
 		super(match);
-		kills = new ArenaObjective("allkills","All Kills",60);
-		kills.setDisplayName(MessageUtil.colorChat("&4All Kills"));
+		kills = new ArenaObjective("allkills",  "All Kills", MessageUtil.colorChat("&4All Kills"),
+                SAPIDisplaySlot.SIDEBAR, 60);
 		boolean isRated = match.getParams().isRated();
 		boolean soloRating = !match.getParams().isTeamRating();
 		sc = (isRated && soloRating) ? new StatController(match.getParams()): null;

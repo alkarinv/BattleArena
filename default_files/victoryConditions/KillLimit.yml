@@ -1,0 +1,5 @@
+displayName: "&4First to %s Kills"
+criteria: "First player/team to %s kills"
+numKills: 50
+points:
+    player: 1

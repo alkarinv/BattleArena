@@ -33,6 +33,8 @@ import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
+import mc.alk.plugin.updater.v1r6.PluginUpdater.AnnounceUpdateOption;
+import mc.alk.plugin.updater.v1r6.PluginUpdater.UpdateOption;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -60,7 +62,10 @@ public class BAConfigSerializer extends BaseConfig{
         parseDefaultOptions(config.getConfigurationSection("defaultOptions"),defaults);
         if (!Defaults.MONEY_SET)
             Defaults.MONEY_STR = config.getString("moneyName",Defaults.MONEY_STR);
-        Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", Defaults.AUTO_UPDATE);
+        UpdateOption o = UpdateOption.fromString(config.getString("autoUpdate", "none"));
+        Defaults.AUTO_UPDATE =  o != null ? o : UpdateOption.NONE;
+        AnnounceUpdateOption ao = AnnounceUpdateOption.fromString(config.getString("announceUpdate", "none"));
+        Defaults.ANNOUNCE_UPDATE =  ao != null ? ao : AnnounceUpdateOption.NONE;
         Defaults.TELEPORT_Y_OFFSET = config.getDouble("teleportYOffset", Defaults.TELEPORT_Y_OFFSET);
         Defaults.TELEPORT_Y_VELOCITY = config.getDouble("teleportYVelocity", Defaults.TELEPORT_Y_VELOCITY);
         Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", Defaults.NUM_INV_SAVES);

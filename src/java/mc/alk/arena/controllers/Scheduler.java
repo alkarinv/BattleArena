@@ -4,7 +4,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.compat.ISchedulerHelper;
-import mc.alk.plugin.updater.v1r5.Version;
+import mc.alk.plugin.updater.v1r6.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 

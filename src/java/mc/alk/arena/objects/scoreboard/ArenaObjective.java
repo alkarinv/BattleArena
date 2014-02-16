@@ -1,10 +1,5 @@
 package mc.alk.arena.objects.scoreboard;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.TreeMap;
-
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchResult;
@@ -17,8 +12,12 @@ import mc.alk.scoreboardapi.api.SObjective;
 import mc.alk.scoreboardapi.api.SScoreboard;
 import mc.alk.scoreboardapi.api.STeam;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
-
 import org.bukkit.OfflinePlayer;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.TreeMap;
 
 
 public class ArenaObjective implements SObjective, ScoreTracker{
@@ -33,8 +32,8 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 
 	/**
 	 *
-	 * @param name
-	 * @param criteria
+	 * @param name Objective name
+	 * @param criteria Objective criteria
 	 * @param priority: lower priority means it has precedence
 	 */
 	public ArenaObjective(String name, String criteria, int priority) {
@@ -191,12 +190,27 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 		o.setDisplayName(displayName);
 	}
 
-	@Override
+    @Override
+    public String getDisplayNameSuffix() {
+        return o.getDisplayNameSuffix();
+    }
+
+    @Override
 	public void setDisplayNameSuffix(String suffix) {
 		o.setDisplayNameSuffix(suffix);
 	}
 
-	@Override
+    @Override
+    public String getDisplayNamePrefix() {
+        return o.getDisplayNamePrefix();
+    }
+
+    @Override
+    public void setDisplayNamePrefix(String prefix) {
+        o.setDisplayNamePrefix(prefix);
+    }
+
+    @Override
 	public boolean setPoints(SEntry entry, int points) {
 		return o.setPoints(entry, points);
 	}

@@ -6,7 +6,6 @@ import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinFactory;
 import mc.alk.arena.competition.util.TeamJoinHandler;
-import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
@@ -60,7 +59,6 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
     final private Set<Match> running_matches = Collections.synchronizedSet(new CopyOnWriteArraySet<Match>());
     final private Map<ArenaType,LinkedList<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,LinkedList<Match>>());
     private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
-    final private Map<Match, OldMatchContainerState> oldArenaStates = new HashMap<Match, OldMatchContainerState>();
     final private Map<ArenaType,OldLobbyState> oldLobbyState = new HashMap<ArenaType,OldLobbyState>();
     private final ArenaMatchQueue amq = new ArenaMatchQueue();
     final SignUpdateListener signUpdateListener;
@@ -76,24 +74,6 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         public boolean remove(Match am) {return running.remove(am);}
     }
 
-    public class OldMatchContainerState{
-        final ContainerState waitroomCS;
-        final ContainerState arenaCS;
-        MatchParams params = null;
-
-        public OldMatchContainerState(Arena arena) {
-            waitroomCS = (arena.getWaitroom()!=null) ? arena.getWaitroom().getContainerState() : null;
-            arenaCS = arena.getContainerState();
-        }
-
-        public void revert(Arena arena) {
-            if(params != null)
-                arena.setParams(params);
-            arena.setContainerState(arenaCS);
-            if (waitroomCS != null && arena.getWaitroom()!=null){
-                arena.getWaitroom().setContainerState(waitroomCS);}
-        }
-    }
 
     public BattleArenaController(SignUpdateListener signUpdateListener){
         MethodController methodController = new MethodController("BAC");
@@ -109,21 +89,10 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         while (!stop){
             match = amq.getArenaMatch();
             if (match != null){
-                preOpenChanges(match);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new OpenAndStartMatch(match));
             }
         }
         running = false;
-    }
-
-    private void preOpenChanges(Match match) {
-        if (match.hasWaitroom() && match.getParams().isWaitroomClosedWhenRunning()){
-            saveStates(match, match.getArena());
-            match.getArena().setContainerState(ChangeType.WAITROOM,
-                    new ContainerState(ContainerState.AreaContainerState.CLOSED,
-                            "&cA match is already in progress in arena "+
-                                    match.getArena().getName()));
-        }
     }
 
     /**
@@ -140,7 +109,6 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
             match.run();
         }
     }
-
 
     public Match createMatch(Arena arena, EventOpenOptions eoo) throws NeverWouldJoinException {
         final ArenaMatch arenaMatch = new ArenaMatch(arena, eoo.getParams(),null);
@@ -170,24 +138,22 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
     public Match createAndAutoMatch(Arena arena, EventOpenOptions eoo)
             throws NeverWouldJoinException, IllegalStateException {
         MatchParams mp = eoo.getParams();
-        OldMatchContainerState old = new OldMatchContainerState(arena);
-        old.params = arena.getParams();
+        MatchParams oldArenaParams = new MatchParams(arena.getParams());
 
         mp.setForceStartTime((long) eoo.getSecTillStart());
         ArenaParams parent = mp.getParent();
         mp.setParent(null);
         mp.setParent(parent);
+		/// Since we want people to add this event, add this arena as the next
         setFixedReservedArena(arena);
 
         arena.setParams(mp);
         Match m = createMatch(arena,eoo);
-        oldArenaStates.put(m, old);
-        preOpenChanges(m);
+        m.setOldArenaParams(oldArenaParams);
         saveStates(m,arena);
         arena.setAllContainerState(ContainerState.OPEN);
         m.setTimedStart(eoo.getSecTillStart(), eoo.getInterval());
 
-//		/// Since we want people to add this event, add this arena as the next
 
         if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
             addAllOnline(m.getParams(), arena);}
@@ -203,18 +169,8 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         }
     }
 
-    private OldMatchContainerState getOrCreateSavedState(Match m, Arena arena) {
-        OldMatchContainerState old = oldArenaStates.get(m);
-        if(old == null){
-            old = new OldMatchContainerState(arena);
-            oldArenaStates.put(m,old);
-        }
-        return old;
-    }
-
     private void saveStates(Match m, Arena arena) {
         /// save the old states to put back after the match
-        getOrCreateSavedState(m, arena);
         if (RoomController.hasLobby(arena.getArenaType())){
             RoomContainer pc = RoomController.getLobby(arena.getArenaType());
             OldLobbyState ols = oldLobbyState.get(arena.getArenaType());
@@ -255,9 +211,6 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
                 RoomController.getLobby(am.getArena().getArenaType()).setContainerState(ols.pcs);
             }
         }
-        OldMatchContainerState states = oldArenaStates.remove(am);
-        if (states != null){
-            states.revert(arena);}
     }
 
     public void startMatch(Match arenaMatch) {

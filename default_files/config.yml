@@ -1,10 +1,21 @@
-configVersion: 2.3.0
+configVersion: 2.3.1
 
 # For help the wiki is a good source of information
-# Wiki: # http://battleplugins.com/w/index.php/BattleArena
+# Wiki: # http://wiki.battleplugins.com/w/index.php/BattleArena
 
-# Updates will be retrieved from the latest plugin on the bukkit site
-autoUpdate: true
+# Updates will be retrieved from the latest plugin on the bukkit site. Valid Options : none, release, all
+# none (don't auto update)
+# release (only get release version, ignore beta and alpha)
+# beta (get release and beta versions, ignore alpha)
+# all (get all new updates)
+autoUpdate: release
+
+# show newer versions. Valid Options: none, console, ops
+# none (don't show new versions)
+# console (show only to console log on startup)
+# ops (announce to ops on join, will only show this message once per server start)
+announceUpdate: console
+
 
 ## What is the money on this server called, or if you use Vault the money name will come from there
 moneyName: Gold

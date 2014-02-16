@@ -1,0 +1,31 @@
+displayName: "&4All Kills"
+criteria: "Kill Players and Mobs"
+points:
+    player: 1
+    bat: 1
+    blaze: 1
+    cave_spider: 1
+    chicken: 1
+    cow: 1
+    creeper: 1
+    enderman: 1
+    ender_dragon: 10
+    ghast: 1
+    giant: 1
+    iron_golem: 1
+    magma_cube: 1
+    mushroom_cow: 1
+    ocelot: 1
+    pig: 1
+    pig_zombie: 1
+    sheep: 1
+    silverfish: 1
+    skeleton: 1
+    slime: 1
+    snowman: 1
+    spider: 1
+    squid: 1
+    villager: 1
+    wither: 1
+    wolf: 1
+    zombie: 1

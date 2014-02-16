@@ -1,9 +1,5 @@
 package mc.alk.arena.objects.victoryconditions;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.TreeMap;
-
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
@@ -17,13 +13,17 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.ScoreTracker;
 import mc.alk.arena.util.MessageUtil;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.TreeMap;
+
 public class KillLimit extends VictoryCondition implements ScoreTracker{
 	final ArenaObjective kills;
 	final StatController sc;
 
 	public KillLimit(Match match) {
 		super(match);
-		kills = new ArenaObjective("playerkills","Player Kills",60);
+		kills = new ArenaObjective(KillLimit.class.getSimpleName(),"Player Kills",60);
 		kills.setDisplayName(MessageUtil.colorChat("&4First to 50"));
 		boolean isRated = match.getParams().isRated();
 		boolean soloRating = !match.getParams().isTeamRating();
