@@ -3,7 +3,7 @@ FreeForAll:
     database: ffa
     rated: true
     prefix: "&c[FFA]&e"
-    victoryCondition: LastManStanding
+    victoryCondition: PlayerKills
     nTeams: 2+
     teamSize: 1
     nLives: 1
@@ -22,29 +22,19 @@ FreeForAll:
     onOpen:
         options: [pvpOff]
     onPrestart:
-        options: [pvpOff, giveItems]
-        items:
-            - iron_sword: 1
-            - bow: 1
-            - tnt: 3
-            - arrow: 32
-            - leather_helm: 1
-            - leather_chest: 1
-            - leather_leggings: 1
-            - leather_boot: 1
-            - bread: 5
+        options: [pvpOff]
     onStart:
         options: [pvpOn]
     onComplete:
         options: [teleportOut]
     onDeath:
-        options: []
+        options: [randomRespawn, keepInventory]
     onSpawn:
         options: [enchants, health=20, hunger=20]
         enchants:
             - speed:3
     winner:
-        options: [enchants, money=1,experience=300, health=20, hunger=20]
+        options: [enchants,experience=300, health=20, hunger=20]
         enchants:
             - speed:2:900
             - resistance:2:900
