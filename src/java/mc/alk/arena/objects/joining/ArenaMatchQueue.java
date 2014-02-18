@@ -1,4 +1,4 @@
-package mc.alk.arena.objects.queues;
+package mc.alk.arena.objects.joining;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
@@ -56,7 +56,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.Map.Entry;
-import static mc.alk.arena.competition.util.TeamJoinHandler.TeamJoinResult;
+import static mc.alk.arena.controllers.joining.AbstractJoinHandler.TeamJoinResult;
 
 
 public class ArenaMatchQueue implements ArenaListener, Listener {

@@ -155,8 +155,8 @@ public class ArenaAlterController {
             case WAITROOM: success = changeWaitroomSpawn(player,arena,ac,(Integer)value); break;
             case SPECTATE: success = changeSpectateSpawn(player,arena,ac,(Integer)value); break;
             case LOBBY: success = changeLobbySpawn(player, params,(Integer)value); break;
-            case ADDREGION: success = addWorldGuardRegion(player,arena,ac,(String)value); break;
-            case ADDPYLAMOREGION: success = addPylamoRegion(player,arena,ac,(String)value); break;
+            case ADDREGION: success = addWorldGuardRegion(player,arena); break;
+            case ADDPYLAMOREGION: success = addPylamoRegion(player,arena); break;
             default:
                 sendMessage(sender,ChatColor.RED+ "Option: &6" + ct+"&c does not exist. \n&cValid options are &6"+ChangeType.getValidList());
                 break;
@@ -178,7 +178,7 @@ public class ArenaAlterController {
         return true;
     }
 
-    private static boolean addPylamoRegion(Player sender, Arena arena, BattleArenaController ac, String value) {
+    private static boolean addPylamoRegion(Player sender, Arena arena) {
         if (!WorldGuardController.hasWorldEdit()){
             sendMessage(sender,"&cYou need world edit to use this command");
             return false;}
@@ -199,7 +199,7 @@ public class ArenaAlterController {
         return true;
     }
 
-    private static boolean addWorldGuardRegion(Player sender, Arena arena, BattleArenaController ac, String value) {
+    private static boolean addWorldGuardRegion(Player sender, Arena arena) {
         if (!checkWorldGuard(sender)){
             return false;}
         WorldEditPlugin wep = WorldEditUtil.getWorldEditPlugin();

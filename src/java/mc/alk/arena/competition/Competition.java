@@ -8,6 +8,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.ArenaListener;
+import mc.alk.arena.objects.joining.JoinHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 
@@ -23,7 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author alkarin
  *
  */
-public abstract class Competition implements PlayerHolder, TeamHandler {
+public abstract class Competition implements JoinHandler, PlayerHolder, TeamHandler {
 
 	/** Our teams */
 	protected List<ArenaTeam> teams = new CopyOnWriteArrayList<ArenaTeam>();
@@ -85,49 +86,6 @@ public abstract class Competition implements PlayerHolder, TeamHandler {
 	 * @return MatchParams
 	 */
 	public abstract MatchParams getParams();
-
-	/**
-	 * Add a team to this competition
-	 * @param team ArenaTeam
-	 * @return true if the team was added, false if not
-	 */
-	public abstract boolean addTeam(ArenaTeam team);
-
-	/**
-	 * Remove the team from the competition
-	 * @param team ArenaTeam
-	 * @return whether or not the team was removed
-	 */
-	public abstract boolean removeTeam(ArenaTeam team);
-
-	/**
-	 * Signify that the set of players were added to the team
-	 * @param team ArenaTeam
-	 * @param players ArenaPlayers
-	 */
-	public abstract void addedToTeam(ArenaTeam team, Collection<ArenaPlayer> players);
-
-	/**
-	 * Signify that the set of players were added to the team
-	 * @param team ArenaTeam
-	 * @param player ArenaPlayer
-	 * @return true if the player could be added to the team, false otherwise
-	 */
-	public abstract boolean addedToTeam(ArenaTeam team, ArenaPlayer player);
-
-	/**
-	 * Signify that the set of players were removed from the team
-	 * @param team ArenaTeam
-	 * @param players ArenaPlayers
-	 */
-	public abstract void removedFromTeam(ArenaTeam team, Collection<ArenaPlayer> players);
-
-	/**
-	 * Signify that the set of players were added to the team
-	 * @param team ArenaTeam
-	 * @param player ArenaPlayer
-	 */
-	public abstract void removedFromTeam(ArenaTeam team, ArenaPlayer player);
 
 	/**
 	 * Set our teams

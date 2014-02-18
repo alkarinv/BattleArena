@@ -3,7 +3,7 @@ package mc.alk.arena.competition.match;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.competition.util.TeamJoinHandler;
+import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.ArenaController;
 import mc.alk.arena.controllers.ListenerAdder;
@@ -163,7 +163,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     int nLivesPerPlayer = 1; /// This will change as victory conditions are added
     ArenaScoreboard scoreboard;
     MatchMessager mc; /// Our message instance
-    TeamJoinHandler joinHandler;
+    AbstractJoinHandler joinHandler;
     ArenaObjective defaultObjective;
     ArenaPreviousState oldArenaState;
 
@@ -339,12 +339,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
     }
 
-    public void setTeamJoinHandler(TeamJoinHandler teamJoinHandler){
+    public void setTeamJoinHandler(AbstractJoinHandler teamJoinHandler){
         this.joinHandler = teamJoinHandler;
         teamJoinHandler.setCompetition(this);
     }
 
-    public void hookTeamJoinHandler(TeamJoinHandler teamJoinHandler){
+    public void hookTeamJoinHandler(AbstractJoinHandler teamJoinHandler){
         teamJoinHandler.setCompetition(this);
         this.joinHandler = teamJoinHandler;
         this.teams = this.joinHandler.getTeams();
@@ -353,7 +353,14 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
         matchPlayers.addAll(joinHandler.getPlayers());
     }
-
+    public List<ArenaTeam> getNonEmptyTeams() {
+        List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
+        for (ArenaTeam at: this.teams) {
+            if (at != null && at.size() > 0) {
+                teams.add(at);}
+        }
+        return teams;
+    }
     private void preStartTeams(List<ArenaTeam> teams, boolean matchPrestarting){
         TransitionOptions ts = tops.getOptions(MatchState.ONPRESTART);
         /// If we will teleport them into the arena for the first time, check to see they are ready first
@@ -364,9 +371,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         PerformTransition.transition(this, MatchState.ONPRESTART, teams, true);
         /// Send messages to teams and server, or just to the teams
         if (matchPrestarting) {
-            mc.sendOnPreStartMsg(teams);
+            mc.sendOnPreStartMsg(getNonEmptyTeams());
         } else {
-            mc.sendOnPreStartMsg(teams, ServerChannel.NullChannel);
+            mc.sendOnPreStartMsg(getNonEmptyTeams(), ServerChannel.NullChannel);
         }
     }
 
@@ -450,7 +457,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             callEvent(event);
             PerformTransition.transition(this, state, competingTeams, true);
             arenaInterface.onStart();
-            try{mc.sendOnStartMsg(teams);}catch(Exception e){Log.printStackTrace(e);}
+            try{mc.sendOnStartMsg(getNonEmptyTeams());}catch(Exception e){Log.printStackTrace(e);}
         }
         checkEnoughTeams(competingTeams, neededTeams);
     }
@@ -1494,7 +1501,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             obj.setDisplayNameSuffix(" &e("+remaining+")");}
     }
 
-    public TeamJoinHandler getTeamJoinHandler() {
+    public AbstractJoinHandler getTeamJoinHandler() {
         return joinHandler;
     }
 

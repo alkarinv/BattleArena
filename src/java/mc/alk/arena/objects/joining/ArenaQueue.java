@@ -1,4 +1,4 @@
-package mc.alk.arena.objects.queues;
+package mc.alk.arena.objects.joining;
 
 import java.util.Iterator;
 import java.util.LinkedList;

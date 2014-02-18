@@ -156,9 +156,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
     @Override
     public boolean equals(Object other) {
-        if (this == other) return true;
-        if (!(other instanceof MatchParams)) return false;
-        return this.hashCode() == other.hashCode();
+        return this == other || (other instanceof MatchParams && this.hashCode() == other.hashCode());
     }
 
     public void setAnnouncementOptions(AnnouncementOptions announcementOptions) {
@@ -237,9 +235,9 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
     @Override
     public boolean valid() {
-        return super.valid() && (getTransitionOptions() != null ?
-                (!getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY) ||
-                        RoomController.hasLobby(getType())) : true);
+        return super.valid() && (getTransitionOptions() == null ||
+                        (!getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTLOBBY) ||
+                                RoomController.hasLobby(getType())));
     }
 
     @Override

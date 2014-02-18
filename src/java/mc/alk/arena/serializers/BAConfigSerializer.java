@@ -26,7 +26,7 @@ import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.queues.ArenaMatchQueue;
+import mc.alk.arena.objects.joining.ArenaMatchQueue;
 import mc.alk.arena.objects.victoryconditions.Custom;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.FileUtil;

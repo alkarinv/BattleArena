@@ -6,7 +6,7 @@ import mc.alk.arena.Permissions;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.competition.util.TeamJoinHandler;
+import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.ArenaAlterController.ArenaOptionPair;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
@@ -63,7 +63,7 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.pairs.GameOptionPair;
 import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.pairs.TransitionOptionTuple;
-import mc.alk.arena.objects.queues.TeamJoinObject;
+import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
@@ -172,10 +172,7 @@ public class BAExecutor extends CustomCommandExecutor {
     public boolean arenaCheckArenaTypes(CommandSender sender) {
         String types = ArenaType.getValidList();
         sendMessage(sender, "&e valid types are = &6" + types);
-        return sendMessage(
-                sender,
-                "&5Enabled types = &6 "
-                        + ParamController.getAvaibleTypes(disabled));
+        return sendMessage(sender,"&5Enabled types = &6 "+ ParamController.getAvaibleTypes(disabled));
     }
 
     @MCCommand(cmds = { "join", "j" }, usage = "add [options]", helpOrder = 1)
@@ -444,7 +441,7 @@ public class BAExecutor extends CustomCommandExecutor {
             }
         } else { /// they are in a competition
             if (c instanceof Match) {
-                TeamJoinHandler tjh = ((Match) c).getTeamJoinHandler();
+                AbstractJoinHandler tjh = ((Match) c).getTeamJoinHandler();
                 tjh.switchTeams(p, index);
             } else {
                 /// Not a match (like a tournament), they can't switch

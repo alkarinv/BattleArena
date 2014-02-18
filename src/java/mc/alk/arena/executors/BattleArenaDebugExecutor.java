@@ -17,7 +17,7 @@ import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
-import mc.alk.arena.objects.queues.WaitingObject;
+import mc.alk.arena.objects.joining.WaitingObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
@@ -41,9 +41,13 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
@@ -499,12 +503,32 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
         }
         for (Objective o : sc.getObjectives()){
             sendMessage(sender, "&2 -- Objective &e"+o.getName() +" - "+o.getDisplayName());
+            TreeMap<Integer, List<String>> m = new TreeMap<Integer, List<String>>(Collections.reverseOrder());
+
             for (OfflinePlayer op: ops) {
                 Score score = o.getScore(op);
                 if (score == null)
                     continue;
-                sendMessage(sender, op.getName()+" : "+score.getScore());
+                Team t = sc.getPlayerTeam(op);
+                List<String> l = m.get(score.getScore());
+                if (l == null) {
+                    l = new ArrayList<String>();
+                    m.put(score.getScore(), l);
+                }
+                String displayName;
+                if (t != null) {
+                    displayName = t.getPrefix() + op.getName() + t.getSuffix();
+                } else {
+                    displayName = op.getName();
+                }
+                l.add(displayName);
             }
+            for (Entry<Integer,List<String>> e : m.entrySet()) {
+                for (String s : e.getValue()) {
+                    sendMessage(sender, s + " : " + e.getKey());
+                }
+            }
+
         }
         return true;
     }

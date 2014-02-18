@@ -3,7 +3,7 @@ package mc.alk.arena.events.players;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.pairs.JoinResult;
-import mc.alk.arena.objects.queues.TeamJoinObject;
+import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
 public class ArenaPlayerEnterQueueEvent extends ArenaPlayerEvent{

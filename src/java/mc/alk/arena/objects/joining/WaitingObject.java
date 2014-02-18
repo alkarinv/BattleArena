@@ -1,7 +1,7 @@
-package mc.alk.arena.objects.queues;
+package mc.alk.arena.objects.joining;
 
-import mc.alk.arena.competition.util.TeamJoinFactory;
-import mc.alk.arena.competition.util.TeamJoinHandler;
+import mc.alk.arena.controllers.joining.AbstractJoinHandler;
+import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
@@ -13,7 +13,7 @@ import java.util.Collection;
 
 public class WaitingObject {
     protected boolean joinable = true;
-    protected final TeamJoinHandler jh;
+    protected final AbstractJoinHandler jh;
     protected final MatchParams params;
     protected final QueueObject originalQueuedObject;
     protected final Arena arena;
@@ -38,7 +38,7 @@ public class WaitingObject {
                         params.matchesIgnoreNTeams(qo.getMatchParams()));
     }
 
-    public TeamJoinHandler.TeamJoinResult join(TeamJoinObject qo) {
+    public AbstractJoinHandler.TeamJoinResult join(TeamJoinObject qo) {
         return jh.joiningTeam(qo);
     }
 

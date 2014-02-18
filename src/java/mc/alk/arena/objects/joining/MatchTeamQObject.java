@@ -1,4 +1,4 @@
-package mc.alk.arena.objects.queues;
+package mc.alk.arena.objects.joining;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.ArenaTeam;

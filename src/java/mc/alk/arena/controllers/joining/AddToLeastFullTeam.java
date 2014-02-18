@@ -1,4 +1,4 @@
-package mc.alk.arena.competition.util;
+package mc.alk.arena.controllers.joining;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
@@ -7,9 +7,9 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.JoinOptions.JoinOption;
-import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class AddToLeastFullTeam extends TeamJoinHandler {
+public class AddToLeastFullTeam extends AbstractJoinHandler {
 
     public AddToLeastFullTeam(MatchParams params, Competition competition, Class<? extends ArenaTeam> clazz) throws NeverWouldJoinException{
         super(params,competition,clazz);
@@ -46,7 +46,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
             team = teams.get(toTeamIndex);
             if (team.size()+1 <= team.getMaxPlayers()){
                 removedFromTeam(oldTeam, player);
-                addToTeam(team, player);
+                addedToTeam(team, player);
                 return true;
             }
         }
@@ -111,7 +111,7 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
     private TeamJoinResult teamFits(ArenaTeam baseTeam, ArenaTeam team) {
         if ( baseTeam.size() + team.size() <= baseTeam.getMaxPlayers()){
             team.setIndex(baseTeam.getIndex());
-            addToTeam(baseTeam, team.getPlayers());
+            addedToTeam(baseTeam, team.getPlayers());
             if (baseTeam.size() == 0){
                 return new TeamJoinResult(TeamJoinStatus.ADDED, baseTeam.getMinPlayers() - baseTeam.size(),baseTeam);
             } else {
@@ -126,4 +126,6 @@ public class AddToLeastFullTeam extends TeamJoinHandler {
     public String toString(){
         return "["+competition.getParams().getName() +":JH:AddToLeast]";
     }
+
+
 }

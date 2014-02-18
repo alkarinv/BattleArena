@@ -100,10 +100,11 @@ public class MessageUtil {
 	}
 
 	public static ChatColor getFirstColor(String str) {
-		String lbl = str.replaceFirst("&", "§");
-		int index = lbl.indexOf("§");
-		if (index != -1 && lbl.length() > index+1){
-			ChatColor cc = ChatColor.getByChar(lbl.charAt(index+1));
+		int index = str.indexOf('§');
+        if (index == -1)
+            index = str.indexOf('&');
+        if (index != -1 && str.length() > index+1){
+			ChatColor cc = ChatColor.getByChar(str.charAt(index+1));
 			if (cc != null)
 				return cc;
 		}

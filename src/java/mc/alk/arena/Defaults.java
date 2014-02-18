@@ -11,7 +11,7 @@ public class Defaults {
 	/// Use auto updating
 	public static UpdateOption AUTO_UPDATE = UpdateOption.RELEASE;
     public static AnnounceUpdateOption ANNOUNCE_UPDATE = AnnounceUpdateOption.CONSOLE;
-    
+
     public static boolean REPORT_ERRORS = false;
 
 	public static double TICK_MULT = 1.0;
@@ -124,5 +124,4 @@ public class Defaults {
 
 	public static final int MAIN_SPAWN = Integer.MAX_VALUE;
 	public static final int MAX_TEAMS = 1000;
-
 }

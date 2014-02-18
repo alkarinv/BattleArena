@@ -4,8 +4,8 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.competition.util.TeamJoinFactory;
-import mc.alk.arena.competition.util.TeamJoinHandler;
+import mc.alk.arena.controllers.joining.AbstractJoinHandler;
+import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
@@ -26,10 +26,10 @@ import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.JoinResult;
-import mc.alk.arena.objects.queues.ArenaMatchQueue;
-import mc.alk.arena.objects.queues.MatchTeamQObject;
-import mc.alk.arena.objects.queues.TeamJoinObject;
-import mc.alk.arena.objects.queues.WaitingObject;
+import mc.alk.arena.objects.joining.ArenaMatchQueue;
+import mc.alk.arena.objects.joining.MatchTeamQObject;
+import mc.alk.arena.objects.joining.TeamJoinObject;
+import mc.alk.arena.objects.joining.WaitingObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PlayerUtil;
@@ -112,7 +112,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
 
     public Match createMatch(Arena arena, EventOpenOptions eoo) throws NeverWouldJoinException {
         final ArenaMatch arenaMatch = new ArenaMatch(arena, eoo.getParams(),null);
-        TeamJoinHandler jh = TeamJoinFactory.createTeamJoinHandler(eoo.getParams(), arenaMatch);
+        AbstractJoinHandler jh = TeamJoinFactory.createTeamJoinHandler(eoo.getParams(), arenaMatch);
         arenaMatch.setTeamJoinHandler(jh);
         Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
             @Override
@@ -363,12 +363,12 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
                     continue;
                 }
                 if (match.getParams().matches(params)) {
-                    TeamJoinHandler tjh = match.getTeamJoinHandler();
+                    AbstractJoinHandler tjh = match.getTeamJoinHandler();
                     if (tjh == null)
                         continue;
                     if (!JoinOptions.matches(tqo.getJoinOptions(), match))
                         continue;
-                    TeamJoinHandler.TeamJoinResult tjr = tjh.joiningTeam(tqo);
+                    AbstractJoinHandler.TeamJoinResult tjr = tjh.joiningTeam(tqo);
                     switch (tjr.status) {
                         case ADDED:
                         case ADDED_TO_EXISTING:

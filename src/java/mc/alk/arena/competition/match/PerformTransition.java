@@ -41,8 +41,6 @@ import java.util.Map;
 
 public class PerformTransition {
 
-    //	public static boolean debug = false;
-
     /**
      * Perform a transition
      * @param am Match, which match to perform the transition on
@@ -108,7 +106,6 @@ public class PerformTransition {
         } else {
             return transition(am,transition,player,team,onlyInMatch,insideArena,am.getParams().getTransitionOptions());
         }
-
     }
 
     @SuppressWarnings("ConstantConditions")

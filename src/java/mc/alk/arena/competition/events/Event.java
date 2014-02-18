@@ -3,8 +3,8 @@ package mc.alk.arena.competition.events;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.competition.util.TeamJoinFactory;
-import mc.alk.arena.competition.util.TeamJoinHandler;
+import mc.alk.arena.controllers.joining.AbstractJoinHandler;
+import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeamController;
@@ -31,7 +31,7 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.pairs.JoinResult;
-import mc.alk.arena.objects.queues.TeamJoinObject;
+import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
@@ -69,7 +69,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
     final ArrayList<Round> rounds = new ArrayList<Round>(); /// The list of matchups for each round
 
-    TeamJoinHandler joinHandler; /// Specify how teams are allocated
+    AbstractJoinHandler joinHandler; /// Specify how teams are allocated
 
     EventState state = null; /// The current state of this event
 
@@ -293,7 +293,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
             js = JoinResult.JoinStatus.NOTOPEN;
             return js;
         }
-        TeamJoinHandler.TeamJoinResult tjr = joinHandler.joiningTeam(tqo);
+        AbstractJoinHandler.TeamJoinResult tjr = joinHandler.joiningTeam(tqo);
         switch(tjr.status){
             case ADDED_TO_EXISTING: /* drop down into added */
             case ADDED:
@@ -341,7 +341,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
         return size;
     }
 
-    public void setTeamJoinHandler(TeamJoinHandler tjh){
+    public void setTeamJoinHandler(AbstractJoinHandler tjh){
         this.joinHandler = tjh;
     }
 

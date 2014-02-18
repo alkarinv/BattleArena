@@ -1,37 +1,25 @@
-package mc.alk.arena.competition.util;
+package mc.alk.arena.controllers.joining;
 
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
-import mc.alk.arena.objects.queues.TeamJoinObject;
+import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
-
-import java.util.Collection;
 
 /**
  * When there is an infinite number of teams
  * @author alkarin
  *
  */
-public class BinPackAdd extends TeamJoinHandler {
+public class BinPackAdd extends AbstractJoinHandler {
     boolean full = false;
 
     public BinPackAdd(MatchParams params, Competition competition, Class<? extends ArenaTeam> clazz) throws NeverWouldJoinException {
         super(params, competition,clazz);
     }
 
-    public BinPackAdd(MatchParams params, Collection<ArenaTeam> teams, Class<CompositeTeam> clazz) {
-        super(params, null, clazz);
-        this.teams.addAll(teams);
-        if (competition != null){
-            for (ArenaTeam t : teams) {
-                addTeam(t);
-            }
-        }
-    }
     @Override
     public boolean switchTeams(ArenaPlayer player, Integer toTeamIndex) {
         if (toTeamIndex>= maxTeams)
@@ -48,7 +36,7 @@ public class BinPackAdd extends TeamJoinHandler {
         final int size = team.size()+1;
         if (size <= team.getMaxPlayers() && size <= team.getMinPlayers()){
             removedFromTeam(oldTeam,player);
-            addToTeam(team, player);
+            addedToTeam(team, player);
             return true;
         } else {
             return false;
@@ -66,21 +54,6 @@ public class BinPackAdd extends TeamJoinHandler {
                 return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING,oldTeam.getMinPlayers() - oldTeam.size(), oldTeam);
             }
         }
-
-        for (ArenaTeam t: teams){
-            final int size = t.size()+team.size();
-            if (size <= t.getMaxPlayers()){
-                t.addPlayers(team.getPlayers());
-                if ( size >= t.getMinPlayers()){ /// the new team would be a valid range, add them
-                    team.setIndex(t.getIndex());
-                    addToTeam(t, team.getPlayers());
-                    return new TeamJoinResult(TeamJoinStatus.ADDED, 0,t);
-                } else {
-                    return new TeamJoinResult(TeamJoinStatus.ADDED_STILL_NEEDS_PLAYERS, t.getMinPlayers() - t.size(),t);
-                }
-            }
-        }
-
         /// So we couldnt add them to an existing team
         /// Can we add them to a new team
         if (teams.size() < maxTeams){
@@ -95,10 +68,23 @@ public class BinPackAdd extends TeamJoinHandler {
                 return new TeamJoinResult(TeamJoinStatus.ADDED_STILL_NEEDS_PLAYERS,
                         ct.getMinPlayers() - ct.size(),ct);
             }
-        } else {
-            /// sorry peeps.. full up
-            return CANTFIT;
         }
+
+        for (ArenaTeam t: teams){
+            final int size = t.size()+team.size();
+            if (size <= t.getMaxPlayers()){
+                t.addPlayers(team.getPlayers());
+                if ( size >= t.getMinPlayers()){ /// the new team would be a valid range, add them
+                    team.setIndex(t.getIndex());
+                    addedToTeam(t, team.getPlayers());
+                    return new TeamJoinResult(TeamJoinStatus.ADDED, 0,t);
+                } else {
+                    return new TeamJoinResult(TeamJoinStatus.ADDED_STILL_NEEDS_PLAYERS, t.getMinPlayers() - t.size(),t);
+                }
+            }
+        }
+        /// sorry peeps.. full up
+        return CANTFIT;
     }
 
     @Override
