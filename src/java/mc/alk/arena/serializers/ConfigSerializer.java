@@ -29,12 +29,12 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.BTInterface;
-import mc.alk.arena.util.plugins.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.SerializerUtil;
+import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -415,11 +414,13 @@ public class ConfigSerializer extends BaseConfig{
     public static TransitionOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, IllegalArgumentException {
         if (cs == null || !cs.contains("options"))
             return null;
-        Set<Object> optionsstr = new HashSet<Object>(cs.getList("options"));
+        if (!cs.isList("options")) {
+            throw new InvalidOptionException("options: should be a list, instead it was '" + cs.getString("options", null) + "'");}
+        Collection<String> optionsstr = cs.getStringList("options");
         Map<TransitionOption,Object> options = new EnumMap<TransitionOption,Object>(TransitionOption.class);
         TransitionOptions tops = new TransitionOptions();
-        for (Object obj : optionsstr){
-            String[] split = obj.toString().split("=");
+        for (String obj : optionsstr){
+            String[] split = obj.split("=");
             /// Our key for this option
             final String key = split[0].trim().toUpperCase();
             final String value = split.length > 1 ? split[1].trim() : null;

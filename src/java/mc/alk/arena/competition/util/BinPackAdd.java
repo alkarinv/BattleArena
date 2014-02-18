@@ -28,7 +28,7 @@ public class BinPackAdd extends TeamJoinHandler {
         this.teams.addAll(teams);
         if (competition != null){
             for (ArenaTeam t : teams) {
-                competition.addTeam(t);
+                addTeam(t);
             }
         }
     }

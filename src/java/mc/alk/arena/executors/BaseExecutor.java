@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class BaseExecutor implements ArenaExecutor{
     public static final String version = "2.0.1";
@@ -351,10 +351,9 @@ public abstract class BaseExecutor implements ArenaExecutor{
 
         newArgs.args = objs; /// Set our return object with the new castable arguments
         objs[0] = verifySender(sender, types[0]);
-        AtomicBoolean usedString = new AtomicBoolean();
+        AtomicInteger numUsedStrings = new AtomicInteger(0);
         for (int i=1;i<types.length;i++){
             Class<?> clazz = types[i];
-            usedString.set(false);
             try{
                 if (CommandSender.class == clazz){
                     objs[objIndex] = sender;
@@ -364,7 +363,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
                     objs[objIndex] =args;
                 } else {
                     String str = strIndex < args.length ? args[strIndex] : null;
-                    objs[objIndex] = verifyArg(sender, clazz, command, str, usedString);
+                    objs[objIndex] = verifyArg(sender, clazz, command, args, strIndex, numUsedStrings);
                     if (objs[objIndex] == null){
                         throw new IllegalArgumentException("Argument " + args[strIndex] + " can not be null");
                     }
@@ -372,8 +371,8 @@ public abstract class BaseExecutor implements ArenaExecutor{
                 if (DEBUG)Log.info("   " + objIndex + " : " + strIndex + "  " +
                         (args.length > strIndex ? args[strIndex] : null ) + " <-> " + objs[objIndex] +" !!! Cs = " +
                         clazz.getCanonicalName());
-                if (usedString.get()){
-                    strIndex++;}
+                if (numUsedStrings.get() > 0){
+                    strIndex+=numUsedStrings.get();}
             } catch (ArrayIndexOutOfBoundsException e){
                 throw new IllegalArgumentException("You didnt supply enough arguments for this method");
             }
@@ -399,29 +398,30 @@ public abstract class BaseExecutor implements ArenaExecutor{
         return sender;
     }
 
-    protected Object verifyArg(CommandSender sender, Class<?> clazz, Command command, String string, AtomicBoolean usedString) {
-        if (Command.class == clazz){
-            usedString.set(false);
+    protected Object verifyArg(CommandSender sender, Class<?> clazz, Command command, String[] args, int curIndex, AtomicInteger numUsedStrings) {
+        numUsedStrings.set(0);
+        if (Command.class == clazz) {
             return command;
         }
+        String string = args[curIndex];
         if (string == null)
             throw new ArrayIndexOutOfBoundsException();
-        usedString.set(true);
-        if (Player.class ==clazz){
+        numUsedStrings.set(1);
+        if (Player.class == clazz) {
             return verifyPlayer(string);
-        } else if (OfflinePlayer.class ==clazz){
+        } else if (OfflinePlayer.class == clazz) {
             return verifyOfflinePlayer(string);
-        } else if (String.class == clazz){
+        } else if (String.class == clazz) {
             return string;
-        } else if (Integer.class == clazz || int.class == clazz){
+        } else if (Integer.class == clazz || int.class == clazz) {
             return verifyInteger(string);
-        } else if (Boolean.class == clazz || boolean.class == clazz){
+        } else if (Boolean.class == clazz || boolean.class == clazz) {
             return Boolean.parseBoolean(string);
-        } else if (Object.class == clazz){
+        } else if (Object.class == clazz) {
             return string;
-        } else if (Float.class == clazz || float.class == clazz){
+        } else if (Float.class == clazz || float.class == clazz) {
             return verifyFloat(string);
-        } else if (Double.class == clazz || double.class == clazz){
+        } else if (Double.class == clazz || double.class == clazz) {
             return verifyDouble(string);
         }
         return null;

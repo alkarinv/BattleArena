@@ -248,4 +248,8 @@ public class ArenaType implements Comparable<ArenaType>{
 		ArenaType at = types.get(checkType);
 		return at != null && at.equals(arenaType);
 	}
+
+    public static ArenaType getType(String value) {
+        return types.get(value);
+    }
 }

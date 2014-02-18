@@ -18,127 +18,131 @@ import java.util.Collection;
 import java.util.List;
 
 public class ArenaScoreboard implements SScoreboard {
-	final Match match;
-	final protected SScoreboard board;
+    final protected SScoreboard board;
+
+    public ArenaScoreboard(String scoreboardName) {
+        this.board = Defaults.TESTSERVER ? ScoreboardAPI.createSAPIScoreboard(scoreboardName) :
+                ScoreboardAPI.createScoreboard(scoreboardName);
+    }
 
     @SuppressWarnings({"unused"})
-	public ArenaScoreboard(Match match, MatchParams params) {
-		this.match = match;
+    @Deprecated
+    public ArenaScoreboard(Match match, MatchParams params) {
         this.board = Defaults.TESTSERVER ? ScoreboardAPI.createSAPIScoreboard(match.getName()) :
                 ScoreboardAPI.createScoreboard(match.getName());
-	}
+    }
 
-	public ArenaObjective createObjective(String id, String criteria, String displayName) {
-		return createObjective(id,criteria,displayName,SAPIDisplaySlot.SIDEBAR);
-	}
+    public ArenaObjective createObjective(String id, String criteria, String displayName) {
+        return createObjective(id,criteria,displayName,SAPIDisplaySlot.SIDEBAR);
+    }
 
-	public ArenaObjective createObjective(String id, String criteria, String displayName,
-			SAPIDisplaySlot slot) {
-		return createObjective(id,criteria,displayName,SAPIDisplaySlot.SIDEBAR, 50);
-	}
+    public ArenaObjective createObjective(String id, String criteria, String displayName,
+                                          SAPIDisplaySlot slot) {
+        return createObjective(id,criteria,displayName,SAPIDisplaySlot.SIDEBAR, 50);
+    }
 
-	public ArenaObjective createObjective(String id, String criteria, String displayName,
-			SAPIDisplaySlot slot, int priority) {
-		ArenaObjective o = new ArenaObjective(id,criteria,displayName,slot,priority);
-		addObjective(o);
-		return o;
-	}
+    public ArenaObjective createObjective(String id, String criteria, String displayName,
+                                          SAPIDisplaySlot slot, int priority) {
+        ArenaObjective o = new ArenaObjective(id,criteria,displayName,slot,priority);
+        addObjective(o);
+        return o;
+    }
 
-	public STeam addTeam(ArenaTeam team) { return null;}
+    public STeam addTeam(ArenaTeam team) { return null;}
 
-	public void addedToTeam(ArenaTeam team, ArenaPlayer player) {/* do nothing */}
+    public void addedToTeam(ArenaTeam team, ArenaPlayer player) {/* do nothing */}
 
-	public void removeTeam(ArenaTeam team) {/* do nothing */}
+    public void removeTeam(ArenaTeam team) {/* do nothing */}
 
-	public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {/* do nothing */}
+    public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {/* do nothing */}
 
-	public void setDead(ArenaTeam t, ArenaPlayer p) {/* do nothing */}
+    public void setDead(ArenaTeam t, ArenaPlayer p) {/* do nothing */}
 
-	public void leaving(ArenaTeam t, ArenaPlayer player) {/* do nothing */}
+    public void leaving(ArenaTeam t, ArenaPlayer player) {/* do nothing */}
 
-	public void addObjective(ArenaObjective scores) {
-		this.registerNewObjective(scores);
-	}
+    public void addObjective(ArenaObjective scores) {
+        this.registerNewObjective(scores);
+    }
 
-	public List<STeam> getTeams() {
-		return null;
-	}
+    public List<STeam> getTeams() {
+        return null;
+    }
 
-	@Override
-	public SObjective registerNewObjective(String objectiveName,
-			String criteria, String displayName, SAPIDisplaySlot slot) {
-		return createObjective(objectiveName,criteria, displayName,slot);
-	}
+    @Override
+    public SObjective registerNewObjective(String objectiveName,
+                                           String criteria, String displayName, SAPIDisplaySlot slot) {
+        return createObjective(objectiveName,criteria, displayName,slot);
+    }
 
-	@Override
-	public void setDisplaySlot(SAPIDisplaySlot slot, SObjective objective) {
-		board.setDisplaySlot(slot, objective);
-	}
+    @Override
+    public void setDisplaySlot(SAPIDisplaySlot slot, SObjective objective) {
+        board.setDisplaySlot(slot, objective);
+    }
 
-	@Override
-	public void setDisplaySlot(SAPIDisplaySlot slot, SObjective objective,boolean fromObjective) {
-		board.setDisplaySlot(slot, objective, fromObjective);
-	}
+    @Override
+    public void setDisplaySlot(SAPIDisplaySlot slot, SObjective objective,boolean fromObjective) {
+        board.setDisplaySlot(slot, objective, fromObjective);
+    }
 
-	@Override
-	public SObjective getObjective(SAPIDisplaySlot slot) {
-		return board.getObjective(slot);
-	}
+    @Override
+    public SObjective getObjective(SAPIDisplaySlot slot) {
+        return board.getObjective(slot);
+    }
 
-	@Override
-	public SObjective getObjective(String id) {
-		return board.getObjective(id);
-	}
+    @Override
+    public SObjective getObjective(String id) {
+        return board.getObjective(id);
+    }
 
-	@Override
-	public List<SObjective> getObjectives() {
-		return board.getObjectives();
-	}
+    @Override
+    public List<SObjective> getObjectives() {
+        return board.getObjectives();
+    }
 
-	@Override
-	public String getPrintString() {
-		return board.getPrintString();
-	}
+    @Override
+    public String getPrintString() {
+        return board.getPrintString();
+    }
 
-	@Override
-	public void createEntry(OfflinePlayer p) {
-		board.createEntry(p);
-	}
+    @Override
+    public SEntry createEntry(OfflinePlayer p) {
+        return board.createEntry(p);
+    }
 
-	@Override
-	public SEntry createEntry(OfflinePlayer p, String displayName) {
-		return board.createEntry(p,displayName);
-	}
+    @Override
+    public SEntry createEntry(OfflinePlayer p, String displayName) {
+        return board.createEntry(p,displayName);
+    }
 
-	@Override
-	public SEntry createEntry(String id, String displayName) {
-		return board.createEntry(id, displayName);
-	}
+    @Override
+    public SEntry createEntry(String id, String displayName) {
+        return board.createEntry(id, displayName);
+    }
 
-	@Override
-	public STeam createTeamEntry(String id, String displayName) {
-		return board.createTeamEntry(id, displayName);
-	}
+    @Override
+    public STeam createTeamEntry(String id, String displayName) {
+        return board.createTeamEntry(id, displayName);
+    }
 
-	@Override
-	public SEntry removeEntry(OfflinePlayer p) {
-		return board.removeEntry(p);
-	}
+    @Override
+    public SEntry removeEntry(OfflinePlayer p) {
+        return board.removeEntry(p);
+    }
 
-	@Override
-	public SEntry removeEntry(SEntry e) {
-		return board.removeEntry(e);
-	}
+    @Override
+    public SEntry removeEntry(SEntry e) {
+        return board.removeEntry(e);
+    }
 
-	@Override
-	public boolean setEntryDisplayName(String id, String name) {
-		return board.setEntryDisplayName(id, name);
-	}
+    @Override
+    public boolean setEntryDisplayName(String id, String name) {
+        return board.setEntryDisplayName(id, name);
+    }
 
-	@Override
-	public void setEntryDisplayName(SEntry e, String name) {
-		board.setEntryDisplayName(e, name);
-	}
+    @Override
+    public void setEntryDisplayName(SEntry e, String name) {
+        board.setEntryDisplayName(e, name);
+    }
 
     public boolean setEntryDisplayName(ArenaPlayer player, String name) {
         return board.setEntryDisplayName(player.getName(), name);
@@ -173,44 +177,44 @@ public class ArenaScoreboard implements SScoreboard {
     }
 
     @Override
-	public String getName() {
-		return board.getName();
-	}
+    public String getName() {
+        return board.getName();
+    }
 
-	@Override
-	public SEntry getEntry(String id) {
-		return board.getEntry(id);
-	}
+    @Override
+    public SEntry getEntry(String id) {
+        return board.getEntry(id);
+    }
 
-	@Override
-	public SEntry getEntry(OfflinePlayer player) {
-		return board.getEntry(player);
-	}
+    @Override
+    public SEntry getEntry(OfflinePlayer player) {
+        return board.getEntry(player);
+    }
 
-	@Override
-	public STeam getTeam(String id) {
-		return board.getTeam(id);
-	}
+    @Override
+    public STeam getTeam(String id) {
+        return board.getTeam(id);
+    }
 
-	@Override
-	public void clear() {
-		board.clear();
-	}
+    @Override
+    public void clear() {
+        board.clear();
+    }
 
-	@Override
-	public SObjective registerNewObjective(SObjective objective) {
-		return board.registerNewObjective(objective);
-	}
+    @Override
+    public SObjective registerNewObjective(SObjective objective) {
+        return board.registerNewObjective(objective);
+    }
 
-	@Override
-	public SEntry getOrCreateEntry(OfflinePlayer p) {
-		return board.getOrCreateEntry(p);
-	}
+    @Override
+    public SEntry getOrCreateEntry(OfflinePlayer p) {
+        return board.getOrCreateEntry(p);
+    }
 
-	@Override
-	public Collection<SEntry> getEntries() {
-		return board.getEntries();
-	}
+    @Override
+    public Collection<SEntry> getEntries() {
+        return board.getEntries();
+    }
 
     @Override
     public void removeScoreboard(Player player) {
@@ -223,14 +227,14 @@ public class ArenaScoreboard implements SScoreboard {
     }
 
     public void setObjectiveScoreboard(ArenaObjective arenaObjective) {
-		arenaObjective.setScoreBoard(board);
-	}
+        arenaObjective.setScoreBoard(board);
+    }
 
-	public void setPoints(ArenaObjective objective, ArenaTeam team, int points) {
-		objective.setPoints(team, points);
-	}
+    public void setPoints(ArenaObjective objective, ArenaTeam team, int points) {
+        objective.setPoints(team, points);
+    }
 
-	public void setPoints(ArenaObjective objective, ArenaPlayer player, int points) {
-		objective.setPoints(player, points);
-	}
+    public void setPoints(ArenaObjective objective, ArenaPlayer player, int points) {
+        objective.setPoints(player, points);
+    }
 }

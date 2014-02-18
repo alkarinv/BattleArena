@@ -5,21 +5,34 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.queues.TeamJoinObject;
+import mc.alk.arena.objects.scoreboard.ArenaObjective;
+import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
+import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
+import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
+import mc.alk.arena.util.TeamUtil;
+import mc.alk.scoreboardapi.api.SEntry;
+import mc.alk.scoreboardapi.api.STeam;
+import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class TeamJoinHandler implements TeamHandler {
     MatchParams matchParams;
 
     public static final TeamJoinResult CANTFIT = new TeamJoinResult(TeamJoinStatus.CANT_FIT,-1,null);
-
+    ArenaScoreboard scoreboard;
+    Map<ArenaTeam, LinkedList<SEntry>> reqPlaceHolderPlayers;
+    Map<ArenaTeam, LinkedList<SEntry>> opPlaceHolderPlayers;
     public Collection<ArenaPlayer> getPlayers() {
         List<ArenaPlayer> players = new ArrayList<ArenaPlayer>();
         for (ArenaTeam at: teams) {
@@ -50,6 +63,9 @@ public abstract class TeamJoinHandler implements TeamHandler {
     int minTeams,maxTeams;
     Class<? extends ArenaTeam> clazz;
     int nPlayers;
+    ArenaObjective ao;
+    boolean usePlaceHolder = false;
+    boolean useCondensedPlaceHolder = false;
 
     public TeamJoinHandler(MatchParams params, Competition competition){
         this(params,competition,CompositeTeam.class);
@@ -59,6 +75,34 @@ public abstract class TeamJoinHandler implements TeamHandler {
         setParams(params);
         this.clazz = clazz;
         setCompetition(competition);
+        if (competition == null){
+            scoreboard = ScoreboardFactory.createScoreboard(String.valueOf(hashCode()), params);
+            ao = scoreboard.createObjective("waiting",
+                    "Queue Players", "&6Waiting Players", SAPIDisplaySlot.SIDEBAR, 100);
+            ao.setDisplayTeams(false);
+        }
+        if (maxTeams <= -1) { /// TODO reenable
+            int needed = 0;
+            int optional = 0;
+            for (int i = 0; i < maxTeams; i++) {
+                ArenaTeam team = TeamFactory.createTeam(i, params, clazz);
+                if (team.getMinPlayers() < 16) {
+                    needed += team.getMinPlayers();
+                    if (team.getMaxPlayers() < 100) {
+                        optional += team.getMaxPlayers();
+                    } else {
+                        optional += 1000;
+                    }
+                }
+            }
+            if (needed + optional <= 16) {
+                usePlaceHolder = true;
+                reqPlaceHolderPlayers = new HashMap<ArenaTeam, LinkedList<SEntry>>();
+                opPlaceHolderPlayers = new HashMap<ArenaTeam, LinkedList<SEntry>>();
+            } else {
+                useCondensedPlaceHolder = true;
+            }
+        }
     }
 
     public abstract boolean switchTeams(ArenaPlayer player, Integer toTeamIndex);
@@ -69,7 +113,6 @@ public abstract class TeamJoinHandler implements TeamHandler {
 
     public void setParams(MatchParams mp) {
         this.matchParams = mp;
-//        this.minTeamSize = mp.getMinTeamSize(); this.maxTeamSize = mp.getMaxTeamSize();
         this.minTeams = mp.getMinTeams();
         this.maxTeams = mp.getMaxTeams();
     }
@@ -79,13 +122,15 @@ public abstract class TeamJoinHandler implements TeamHandler {
             if (t.hasLeft(player)){
                 t.addPlayer(player);
                 nPlayers++;
-                if (competition != null){
-                    competition.addedToTeam(t,player);}
+                if (competition != null)
+                    competition.addedToTeam(t, player);
+                _addedToTeam(t,player);
                 return t;
             }
         }
         return null;
     }
+
 
     protected void addToTeam(ArenaTeam team, Set<ArenaPlayer> players) {
         team.addPlayers(players);
@@ -93,14 +138,26 @@ public abstract class TeamJoinHandler implements TeamHandler {
 
         if (competition != null){
             competition.addedToTeam(team,players);
+        } else if (scoreboard != null ) {
+            for (ArenaPlayer ap : players) {
+                _addedToTeam(team,ap);
+            }
         }
     }
 
     protected void addToTeam(ArenaTeam team, ArenaPlayer player) {
         team.addPlayer(player);
         nPlayers++;
-        if (competition != null){
+        if (competition != null)
             competition.addedToTeam(team,player);
+        _addedToTeam(team,player);
+    }
+
+    void _addedToTeam(ArenaTeam team, ArenaPlayer player) {
+        if (competition == null && scoreboard != null) {
+            scoreboard.addedToTeam(team, player);
+            ao.setPoints(player, 10);
+            removePlaceHolder(team, player);
         }
     }
 
@@ -108,8 +165,111 @@ public abstract class TeamJoinHandler implements TeamHandler {
         team.removePlayer(player);
         nPlayers--;
         if (competition != null){
-            competition.removedFromTeam(team,player);
+            competition.removedFromTeam(team, player);
+        } else if (scoreboard != null ){
+            scoreboard.removedFromTeam(team, player);
+            addPlaceholders(team, scoreboard.getTeam(team.getIDString()), team.size() < team.getMinPlayers());
         }
+    }
+
+    private LinkedList<SEntry> getTeamMap(ArenaTeam team) {
+        LinkedList<SEntry> es;
+        if (team.size() < team.getMinPlayers()) {
+            es = reqPlaceHolderPlayers.get(team);
+            if (es == null) {
+                es = new LinkedList<SEntry>();
+                reqPlaceHolderPlayers.put(team, es);
+            }
+        } else {
+            es = opPlaceHolderPlayers.get(team);
+            if (es == null) {
+                es = new LinkedList<SEntry>();
+                opPlaceHolderPlayers.put(team, es);
+            }
+        }
+        return es;
+    }
+
+    protected void removePlaceHolder(ArenaTeam team, ArenaPlayer player){
+        if (usePlaceHolder) {
+            LinkedList<SEntry> list = reqPlaceHolderPlayers.get(team);
+            if (list == null || list.isEmpty()) {
+                list = opPlaceHolderPlayers.get(team);
+            }
+            if (list == null || list.isEmpty()) {
+                return;
+            }
+            SEntry e = list.removeLast();
+            scoreboard.removeEntry(e);
+        }
+    }
+
+    private int getPlayerHolderSize(ArenaTeam team) {
+        int size = 0;
+        LinkedList<SEntry> es = reqPlaceHolderPlayers.get(team);
+        if (es != null) {
+            size += es.size();
+        }
+
+        es = opPlaceHolderPlayers.get(team);
+        if (es != null) {
+            size += es.size();
+        }
+        return size;
+    }
+
+    private void addPlaceholders(ArenaTeam team, STeam t, boolean needed) {
+        if (usePlaceHolder) {
+            String name;
+
+            LinkedList<SEntry> r;
+            int size = getPlayerHolderSize(team);
+            int points;
+            if (needed) {
+                r = reqPlaceHolderPlayers.get(team);
+                if (r == null) {
+                    r = new LinkedList<SEntry>();
+                    reqPlaceHolderPlayers.put(team, r);
+                }
+                name = "needed";
+                points = 1;
+            } else {
+                r = opPlaceHolderPlayers.get(team);
+                if (r == null) {
+                    r = new LinkedList<SEntry>();
+                    opPlaceHolderPlayers.put(team, r);
+                }
+                name = "open";
+                points = 0;
+            }
+
+            String dis ="- "+name+" -" + team.getTeamChatColor() +TeamUtil.getTeamChatColor(size);
+            if (dis.length() > 16) {
+                dis = dis.substring(0, 16);
+            }
+            String pname = "p_" + team.getIndex() + "_" + size;
+            SEntry e = scoreboard.getEntry(pname);
+            if (e == null){
+                e = scoreboard.createEntry(pname, dis);
+            }
+
+            r.addLast(e);
+            t.addPlayer(e.getOfflinePlayer());
+            ao.addEntry(e, points);
+        }
+    }
+
+    private void addTeamPlaceholders(ArenaTeam team) {
+        STeam t = scoreboard.getTeam(team.getIDString());
+        if (usePlaceHolder){
+            for (int i = 0; i < team.getMinPlayers() - team.size(); i++) {
+                addPlaceholders(team, t, true);
+            }
+            for (int i = 0; i < team.getMaxPlayers() - team.getMinPlayers() - team.size(); i++) {
+                addPlaceholders(team, t, false);
+            }
+        }
+
     }
 
     protected void addTeam(ArenaTeam team) {
@@ -118,6 +278,12 @@ public abstract class TeamJoinHandler implements TeamHandler {
         teams.add(team);
         if (competition != null){
             competition.addTeam(team);
+        } else if (scoreboard != null ) {
+            TeamUtil.initTeam(team, matchParams);
+            STeam t = scoreboard.addTeam(team);
+            String teamSuffix = "("+(team.getMinPlayers() - team.size())+")";
+            scoreboard.setEntryNameSuffix(t,  teamSuffix);
+            addTeamPlaceholders(team);
         }
     }
 
@@ -139,8 +305,10 @@ public abstract class TeamJoinHandler implements TeamHandler {
                 t.removePlayer(p);
                 if (competition!=null) {
                     competition.leave(p);
+                } else if (scoreboard != null ){
+                    scoreboard.leaving(t,p);
+                    addPlaceholders(t, scoreboard.getTeam(t.getIDString()), t.size() < t.getMinPlayers());
                 }
-//                pickupTeams.remove(t);
                 return true;
             }
         }

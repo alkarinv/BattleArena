@@ -16,11 +16,15 @@ public class ScoreboardFactory {
 		}
 	}
 
-    public static ArenaScoreboard createScoreboard(Match match, MatchParams params) {
+    public static ArenaScoreboard createScoreboard(String scoreboardName, MatchParams params) {
         // Intellij warning suppression
         // noinspection PointlessBooleanExpression,ConstantConditions
         return (Defaults.USE_SCOREBOARD && hasBukkitScoreboard && !Defaults.TESTSERVER) ?
-                new ArenaBukkitScoreboard(match, params) : new ArenaScoreboard(match, params);
+                new ArenaBukkitScoreboard(scoreboardName, params) : new ArenaScoreboard(scoreboardName);
+    }
+
+    public static ArenaScoreboard createScoreboard(Match match, MatchParams params) {
+        return createScoreboard(match.getName(),params);
     }
 
 	public static boolean hasBukkitScoreboard(){

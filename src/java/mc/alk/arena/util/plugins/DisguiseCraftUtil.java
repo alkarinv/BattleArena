@@ -1,5 +1,6 @@
 package mc.alk.arena.util.plugins;
 
+import mc.alk.arena.util.DisguiseUtil;
 import mc.alk.arena.util.Log;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -9,24 +10,27 @@ import pgDev.bukkit.DisguiseCraft.api.DisguiseCraftAPI;
 import pgDev.bukkit.DisguiseCraft.disguise.Disguise;
 import pgDev.bukkit.DisguiseCraft.disguise.DisguiseType;
 
-public class DisguiseUtil {
+public class DisguiseCraftUtil implements DisguiseUtil{
 	public static DisguiseCraftAPI disguiseInterface;
 
 
-	public static void setDisguiseCraft(Plugin plugin){
+	public static DisguiseUtil setPlugin(Plugin plugin){
 		disguiseInterface = DisguiseCraft.getAPI();
-	}
+        return new DisguiseCraftUtil();
+    }
 
 	public static boolean enabled(){
 		return disguiseInterface != null;
 	}
 
-	public static void undisguise(Player player) {
+    @Override
+	public void undisguise(Player player) {
 		if (disguiseInterface.isDisguised(player)){
 			disguiseInterface.undisguisePlayer(player);}
 	}
 
-	public static void disguisePlayer(Player player, String disguise) {
+    @Override
+	public void disguisePlayer(Player player, String disguise) {
 		try{
 			DisguiseType type = DisguiseType.fromString(disguise);
 			if (type == null){

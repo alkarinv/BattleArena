@@ -19,7 +19,7 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.arena.util.plugins.DisguiseInterface;
+import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;

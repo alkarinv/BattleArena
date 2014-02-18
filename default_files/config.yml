@@ -3,7 +3,7 @@ configVersion: 2.3.1
 # For help the wiki is a good source of information
 # Wiki: # http://wiki.battleplugins.com/w/index.php/BattleArena
 
-# Updates will be retrieved from the latest plugin on the bukkit site. Valid Options : none, release, all
+# Updates will be retrieved from the latest plugin on the bukkit site. Valid Options : none, release, beta, all
 # none (don't auto update)
 # release (only get release version, ignore beta and alpha)
 # beta (get release and beta versions, ignore alpha)

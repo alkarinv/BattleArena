@@ -19,7 +19,7 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.util.plugins.DisguiseInterface;
+import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;

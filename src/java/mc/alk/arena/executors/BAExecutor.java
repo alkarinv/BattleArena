@@ -8,6 +8,7 @@ import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.util.TeamJoinHandler;
 import mc.alk.arena.controllers.ArenaAlterController;
+import mc.alk.arena.controllers.ArenaAlterController.ArenaOptionPair;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.BAEventController;
@@ -55,14 +56,18 @@ import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.options.EventOpenOptions;
+import mc.alk.arena.objects.options.GameOption;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.pairs.GameOptionPair;
 import mc.alk.arena.objects.pairs.JoinResult;
+import mc.alk.arena.objects.pairs.TransitionOptionTuple;
 import mc.alk.arena.objects.queues.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
+import mc.alk.arena.objects.teams.TeamIndex;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
@@ -224,6 +229,7 @@ public class BAExecutor extends CustomCommandExecutor {
             Log.printStackTrace(e);
             return sendMessage(player, e.getMessage());
         }
+        mp = jp.getMatchParams();
         /// Check to make sure at least one arena can be joined at some time
         Arena arena = ac.getArenaByMatchParams(mp, jp);
         if (arena == null) {
@@ -974,15 +980,6 @@ public class BAExecutor extends CustomCommandExecutor {
         return BattleArena.getSelf().getArenaEditorExecutor().arenaSelect(sender, arena);
     }
 
-    @MCCommand(cmds = { "setArenaOption", "setOption", "alter", "edit" }, admin = true, perm = "arena.alter")
-    public boolean arenaSetOption(CommandSender sender, Arena arena, String[] args) {
-        try {
-            ArenaAlterController.setArenaOption(sender, arena, false, args);
-        } catch (IllegalStateException e) {
-            return sendMessage(sender, "&c" + e.getMessage());
-        }
-        return true;
-    }
 
     @MCCommand(cmds = { "select", "sel" }, admin = true, perm = "arena.alter")
     public boolean arenaSelect(CommandSender sender, Arena arena) {
@@ -994,24 +991,91 @@ public class BAExecutor extends CustomCommandExecutor {
         }
     }
 
-    //	@MCCommand(cmds = {"dao", "deleteArenaOption" }, admin = true, perm = "arena.alter")
-    //	public boolean arenaDeleteOption(CommandSender sender, MatchParams params, Arena arena, String[] args) {
-    //		try {
-    //			ArenaAlterController.deleteArenaOption(sender, params, arena, args);
-    //		} catch (IllegalStateException e) {
-    //			return sendMessage(sender, "&c" + e.getMessage());
-    //		}
-    //		return true;
-    //	}
-
-    @MCCommand(cmds = { "setOption", "setGameOption" }, admin = true, perm = "arena.alter")
-    public boolean setOption(CommandSender sender, MatchParams params,String[] args) {
-        ParamAlterController pac = new ParamAlterController(params);
-        pac.setOption(sender, args);
+    @MCCommand(cmds = { "setArenaOption", "alter", "edit" }, admin = true, perm = "arena.alter")
+    public boolean arenaSetOption(CommandSender sender, Arena arena, ArenaOptionPair aop) {
+        try {
+            ArenaAlterController.setArenaOption(sender, arena, aop.ao, aop.value);
+        } catch (IllegalStateException e) {
+            return sendMessage(sender, "&c" + e.getMessage());
+        }
         return true;
     }
 
-    @MCCommand(cmds = { "deleteOption", "deleteGameOption" }, admin = true, perm = "arena.alter")
+    @MCCommand(cmds = { "setArenaOption", "alter", "edit" }, admin = true, perm = "arena.alter")
+    public boolean arenaSetOption(CommandSender sender, Arena arena, GameOptionPair gop) {
+        try {
+            ArenaAlterController.setArenaOption(sender, arena, gop.gameOption, gop.value);
+        } catch (IllegalStateException e) {
+            return sendMessage(sender, "&c" + e.getMessage());
+        }
+        return true;
+    }
+
+    @MCCommand(cmds = { "setArenaOption", "alter", "edit" }, admin = true, perm = "arena.alter")
+    public boolean arenaSetOption(CommandSender sender, Arena arena, TransitionOptionTuple top) {
+        try {
+            ArenaAlterController.setArenaOption(sender, arena, top.state, top.op, top.value);
+        } catch (IllegalStateException e) {
+            return sendMessage(sender, "&c" + e.getMessage());
+        } catch (InvalidOptionException e) {
+            return sendMessage(sender, "&c" + e.getMessage());
+        }
+        return true;
+    }
+
+    @MCCommand(cmds = { "setOption" }, admin = true, perm = "arena.alter")
+    public boolean setGameOption(CommandSender sender, MatchParams params, GameOptionPair gop) {
+        return _setGameOption(sender, params,null, gop.gameOption, gop.value);
+    }
+
+    @MCCommand(cmds = { "setOption" }, admin = true, perm = "arena.alter")
+    public boolean setGameOption(CommandSender sender, MatchParams params, TeamIndex index, GameOptionPair gop) {
+        return _setGameOption(sender, params,index.getInt(), gop.gameOption, gop.value);
+    }
+
+    public boolean _setGameOption(CommandSender sender, MatchParams params,
+                                  Integer teamIndex, GameOption option, Object value) {
+        try {
+            ParamAlterController.setGameOption(sender, params,teamIndex, option, value);
+            if (value != null){
+                sendMessage(sender, "&2Game options &6"+option+"&2 changed to &6"+value );
+            } else {
+                sendMessage(sender, "&2Game options &6"+option+"&2 changed");
+            }
+        } catch (InvalidOptionException e) {
+            sendMessage(sender, "&cCould not set game option "+option.name());
+            sendMessage(sender, "&c" + e.getMessage());
+        }
+        return true;
+    }
+
+    @MCCommand(cmds = { "setOption" }, admin = true, perm = "arena.alter")
+    public boolean setGameStateOption(CommandSender sender, MatchParams params, TransitionOptionTuple top) {
+        return _setGameStateOption(sender, params, null, top.state, top.op, top.value);
+    }
+
+    @MCCommand(cmds = { "setOption" }, admin = true, perm = "arena.alter")
+    public boolean setGameStateOption(CommandSender sender, MatchParams params, TeamIndex index, TransitionOptionTuple top) {
+        return _setGameStateOption(sender, params, index.getInt(), top.state, top.op, top.value);
+    }
+
+    public boolean _setGameStateOption(CommandSender sender, MatchParams params, Integer teamIndex,
+                                       MatchState state, TransitionOption to, Object value) {
+        try {
+            ParamAlterController.setGameOption(sender, params,teamIndex, state,to,value);
+            if (value != null){
+                sendMessage(sender, "&2Game options &6"+state+"&2 added &6"+to +" " + value);
+            } else {
+                sendMessage(sender, "&2Game options &6"+state+"&2 added &6"+to );
+            }
+        } catch (InvalidOptionException e) {
+            sendMessage(sender, "&cCould not set game option " + state + " " + to);
+            sendMessage(sender, "&c" + e.getMessage());
+        }
+        return true;
+    }
+
+    @MCCommand(cmds = { "deleteOption" }, admin = true, perm = "arena.alter")
     public boolean deleteOption(CommandSender sender, MatchParams params,String[] args) {
         ParamAlterController pac = new ParamAlterController(params);
         pac.deleteOption(sender, args);
@@ -1036,12 +1100,6 @@ public class BAExecutor extends CustomCommandExecutor {
             return sendMessage(sender, "&c" + e.getMessage());
         }
         return sendMessage(sender,"&2Game type &6"+params.getType()+" set back to default game options");
-    }
-
-    @MCCommand(cmds = { "addLobby", "al" }, admin = true, perm = "arena.alter")
-    public boolean addLobby(Player sender, MatchParams params, String[] args) {
-        ArenaAlterController.alterLobby(sender, params, args);
-        return true;
     }
 
     @MCCommand(cmds = { "rescind" }, helpOrder = 13)
@@ -1497,7 +1555,7 @@ public class BAExecutor extends CustomCommandExecutor {
                         sendMessage(player,"&eYour team is not yet formed. &6/team disband&e to leave");
                     if (showMessages)
                         sendMessage(player,"&eYou are still missing "+ MessageUtil.joinPlayers(
-                                        ft.getUnjoinedPlayers(), ", ")+ " !!");
+                                ft.getUnjoinedPlayers(), ", ")+ " !!");
                 }
                 return false;
             }

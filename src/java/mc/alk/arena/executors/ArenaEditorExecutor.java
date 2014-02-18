@@ -3,11 +3,15 @@ package mc.alk.arena.executors;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.ArenaAlterController;
+import mc.alk.arena.controllers.ArenaAlterController.ArenaOptionPair;
 import mc.alk.arena.controllers.ArenaDebugger;
 import mc.alk.arena.controllers.ArenaEditor;
 import mc.alk.arena.controllers.ArenaEditor.CurrentSelection;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.SpawnOptions;
+import mc.alk.arena.objects.pairs.GameOptionPair;
+import mc.alk.arena.objects.pairs.TransitionOptionTuple;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.SpawnSerializer;
@@ -124,62 +128,38 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
     }
 
     @MCCommand(cmds = {}, admin = true, perm = "arena.alter")
-    public boolean arenaGeneric(CommandSender sender,CurrentSelection cs,  String args[]) {
+    public boolean arenaGeneric(CommandSender sender,CurrentSelection cs,  ArenaOptionPair aop) {
         Arena arena = cs.getArena();
-        String newargs[] = new String[args.length + 2];
-        newargs[0] = "setOption";
-        newargs[1] = arena.getName();
-        System.arraycopy(args, 0, newargs, 2, args.length);
-        return alter(sender, arena, newargs);
-    }
-
-    @MCCommand(cmds = {"spawn"}, admin = true, perm = "arena.alter")
-    public boolean arenaSetSpawn(CommandSender sender,CurrentSelection cs,  String index) {
-        return alter(sender, cs.getArena(), new String[]{"","spawn", index});
-    }
-
-    @MCCommand(cmds = {"wr","waitRoom"}, admin = true, perm = "arena.alter")
-    public boolean arenaSetWaitroom(CommandSender sender,CurrentSelection cs,  String index) {
-        return alter(sender, cs.getArena(), new String[]{"", "","wr", index});
-    }
-
-    @MCCommand(cmds = {"s","Spectate"}, admin = true, perm = "arena.alter")
-    public boolean arenaSetSpectate(CommandSender sender, CurrentSelection cs, String index) {
-        return alter(sender, cs.getArena(), new String[]{"", "","spectate", index});
-    }
-
-    @MCCommand(cmds = {"l","lobby"}, admin = true, perm = "arena.alter")
-    public boolean arenaSetLobby(CommandSender sender, CurrentSelection cs, String index) {
-        return alter(sender, cs.getArena(), new String[]{"", "","lobby", index});
-    }
-
-    private boolean alter(CommandSender sender, Arena a, String[] args) {
         try {
-            ArenaAlterController.setArenaOption(sender, a,true, args);
+            ArenaAlterController.setArenaOption(sender, arena, aop.ao, aop.value);
             return true;
         } catch (IllegalStateException e) {
             return sendMessage(sender, "&c" + e.getMessage());
         }
     }
 
-    @MCCommand(cmds = { "setArenaOption", "setOption", "alter", "edit" }, admin = true, perm = "arena.alter")
-    public boolean arenaSetOption(CommandSender sender, CurrentSelection cs, String[] args) {
+    @MCCommand(cmds = {}, admin = true, perm = "arena.alter")
+    public boolean arenaGeneric(CommandSender sender,CurrentSelection cs,  GameOptionPair gop) {
+        Arena arena = cs.getArena();
         try {
-            Arena arena = cs.getArena();
-            String newargs[] = new String[args.length + 1];
-            newargs[1] = arena.getName();
-            for (int i = 0; i < args.length; i++) {
-                if (i < 1){
-                    newargs[i] = args[i];
-                } else if (i >= 1){
-                    newargs[i + 1] = args[i];
-                }
-            }
-            ArenaAlterController.setArenaOption(sender, arena, true, newargs);
+            ArenaAlterController.setArenaOption(sender, arena, gop.gameOption, gop.value);
+            return true;
         } catch (IllegalStateException e) {
             return sendMessage(sender, "&c" + e.getMessage());
         }
-        return true;
+    }
+
+    @MCCommand(cmds = {}, admin = true, perm = "arena.alter")
+    public boolean arenaGeneric(CommandSender sender,CurrentSelection cs,  TransitionOptionTuple top) {
+        Arena arena = cs.getArena();
+        try {
+            ArenaAlterController.setArenaOption(sender, arena, top.state, top.op, top.value);
+            return true;
+        } catch (IllegalStateException e) {
+            return sendMessage(sender, "&c" + e.getMessage());
+        } catch (InvalidOptionException e) {
+            return sendMessage(sender, "&c" + e.getMessage());
+        }
     }
 
     @MCCommand(cmds={"hidespawns"}, admin=true, usage="hidespawns")

@@ -5,6 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.CombatTagInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.FactionsController;
 import mc.alk.arena.controllers.plugins.HeroesController;
@@ -17,7 +18,6 @@ import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.plugins.HerochatPlugin;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
-import mc.alk.arena.util.plugins.DisguiseInterface;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -39,8 +39,10 @@ public class BAPluginListener implements Listener {
 	public void onPluginEnable(PluginEnableEvent event) {
         if (event.getPlugin().getName().equalsIgnoreCase("BattleTracker"))
             loadBattleTracker();
-        if (event.getPlugin().getName().equalsIgnoreCase("CombatTag"))
+        else if (event.getPlugin().getName().equalsIgnoreCase("CombatTag"))
             loadCombatTag();
+        else if (event.getPlugin().getName().equalsIgnoreCase("DisguiseCraft"))
+            loadDisguiseCraft();
 		else if (event.getPlugin().getName().equalsIgnoreCase("Essentials"))
 			loadEssentials();
 		else if (event.getPlugin().getName().equalsIgnoreCase("Factions"))
@@ -49,8 +51,8 @@ public class BAPluginListener implements Listener {
 			loadHeroChat();
 		else if (event.getPlugin().getName().equalsIgnoreCase("Heroes"))
 			loadHeroes();
-		else if (event.getPlugin().getName().equalsIgnoreCase("DisguiseCraft"))
-			loadDisguiseCraft();
+        else if (event.getPlugin().getName().equalsIgnoreCase("LibsDisguise"))
+            loadLibsDisguise();
         else if (event.getPlugin().getName().equalsIgnoreCase("MobArena"))
             loadMcMMO();
 		else if (event.getPlugin().getName().equalsIgnoreCase("MobArena"))
@@ -73,7 +75,7 @@ public class BAPluginListener implements Listener {
 			loadVault();
 	}
 
-	public void loadAll(){
+    public void loadAll(){
 		loadBattleTracker();
         loadCombatTag();
 		loadDisguiseCraft();
@@ -81,6 +83,7 @@ public class BAPluginListener implements Listener {
 		loadFactions();
 		loadHeroChat();
 		loadHeroes();
+        loadLibsDisguise();
         loadMcMMO();
 		loadMobArena();
 		loadMultiInv();
@@ -115,10 +118,10 @@ public class BAPluginListener implements Listener {
     }
 
 	public void loadDisguiseCraft(){
-		if (!DisguiseInterface.enabled()){
+		if (!DisguiseInterface.hasDC()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("DisguiseCraft");
 			if (plugin != null) {
-				DisguiseInterface.setPlugin(plugin);
+				DisguiseInterface.setDisguiseCraft(plugin);
 				Log.info("[BattleArena] DisguiseCraft detected, enabling disguises");
 			}
 		}
@@ -169,6 +172,16 @@ public class BAPluginListener implements Listener {
 			}
 		}
 	}
+
+    public void loadLibsDisguise() {
+        if (!DisguiseInterface.hasLibs()){
+            Plugin plugin = Bukkit.getPluginManager().getPlugin("LibsDisguise");
+            if (plugin != null) {
+                DisguiseInterface.setLibsDisguise(plugin);
+                Log.info("[BattleArena] LibsDisguise detected. Implementing disguises");
+            }
+        }
+    }
 
     public void loadMcMMO(){
         if (!McMMOController.enabled()){

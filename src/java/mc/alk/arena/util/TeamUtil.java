@@ -2,6 +2,9 @@ package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamAppearance;
 import org.bukkit.ChatColor;
@@ -112,4 +115,29 @@ public class TeamUtil {
 		return sb.toString();
 	}
 
+    public static void initTeam(ArenaTeam team, MatchParams params) {
+        team.reset();/// reset scores, set alive
+        team.setCurrentParams(params);
+
+        int index = team.getIndex();
+        team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
+        MatchTransitions tops = params.getTransitionOptions();
+        boolean alwaysTeamNames = false;
+        if (tops != null){
+            if (tops.hasAnyOption(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() > 1 ||
+                    tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS)){
+                team.setHeadItem(TeamUtil.getTeamHead(index));
+            }
+            alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
+        }
+
+        String name = TeamUtil.getTeamName(index);
+        if ( alwaysTeamNames ||
+                (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
+            team.setDisplayName(name);
+        }
+
+        team.setScoreboardDisplayName(name.length() > Defaults.MAX_SCOREBOARD_NAME_SIZE ?
+                name.substring(0,Defaults.MAX_SCOREBOARD_NAME_SIZE) : name);
+    }
 }

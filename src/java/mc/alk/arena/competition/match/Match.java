@@ -762,21 +762,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             return false;
         if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addTeam("+team.getName()+":"+team.getId()+")");
 
-        team.reset();/// reset scores, set alive
-        team.setCurrentParams(params);
-
-        int index = team.getIndex();
-        team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
-        if (woolTeams)
-            team.setHeadItem(TeamUtil.getTeamHead(index));
-        String name = TeamUtil.getTeamName(index);
-        if ( alwaysTeamNames ||
-                (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
-            team.setDisplayName(name);
-        }
-
-        team.setScoreboardDisplayName(name.length() > Defaults.MAX_SCOREBOARD_NAME_SIZE ?
-                name.substring(0,Defaults.MAX_SCOREBOARD_NAME_SIZE) : name);
+        TeamUtil.initTeam(team,params);
         team.setArenaObjective(defaultObjective);
         scoreboard.addTeam(team);
         for (ArenaPlayer p: team.getPlayers()){
@@ -787,6 +773,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
         return true;
     }
+
 
     @Override
     public boolean addTeam(ArenaTeam team) {

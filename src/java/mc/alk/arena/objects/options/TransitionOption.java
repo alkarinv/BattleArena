@@ -150,7 +150,7 @@ public enum TransitionOption{
                 return TransitionOption.WGRESETREGION;
             else if (str.equals("DISGUISEALL"))
                 return TransitionOption.DISGUISEALLAS;
-			throw new IllegalArgumentException(e.getMessage());
+			throw new IllegalArgumentException("The stage option " + str +" does not exist");
 		}
 	}
 
