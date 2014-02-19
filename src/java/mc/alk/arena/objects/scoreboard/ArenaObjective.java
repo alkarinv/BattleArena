@@ -37,7 +37,7 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 	 * @param priority: lower priority means it has precedence
 	 */
 	public ArenaObjective(String name, String criteria, int priority) {
-		this(name,criteria,null,SAPIDisplaySlot.SIDEBAR,priority);
+		this(name,criteria,name,SAPIDisplaySlot.SIDEBAR,priority);
 	}
 
 	public ArenaObjective(String name, String criteria, String displayName, SAPIDisplaySlot slot) {
