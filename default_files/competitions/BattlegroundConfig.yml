@@ -1,6 +1,7 @@
 Battleground:
     enabled: true
     database: bg
+    command: bg
     rated: true
     prefix: "&c[Battleground]&e"
     victoryCondition: PlayerKills

@@ -33,8 +33,10 @@ public class ParamController {
         addAlias(matchParams.getCommand(), matchParams);
         if (Defaults.TESTSERVER)
             return;
+        RoomController.updateRoomParams(matchParams);
         for (Arena arena : BattleArena.getBAController().getArenas(matchParams)) {
             arena.getParams().setParent(matchParams);
+            RoomController.updateArenaParamms(arena.getParams());
         }
     }
 

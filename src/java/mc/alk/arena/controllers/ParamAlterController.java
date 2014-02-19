@@ -172,8 +172,10 @@ public class ParamAlterController {
         }
         /// if we removed teleportIn, then we should put it back in the most logical place
         if ((state == MatchState.ONPRESTART || state == MatchState.ONJOIN) &&
-                tpOps.contains(to) && to!=TransitionOption.TELEPORTIN){
-            tops.addTransitionOption(MatchState.ONSTART, TransitionOption.TELEPORTIN);}
+                tpOps.contains(to) && to!=TransitionOption.TELEPORTIN &&
+                !tops.hasOptionAt(MatchState.ONPRESTART,TransitionOption.TELEPORTIN)){
+            tops.addTransitionOption(MatchState.ONSTART, TransitionOption.TELEPORTIN);
+        }
 
         tops.addTransitionOption(state, to, value);
         return true;

@@ -140,4 +140,35 @@ public enum RoomController {
 		lobby.playerLeaving(p);
 	}
 
+    public static void updateRoomParams(MatchParams matchParams) {
+        synchronized(INSTANCE.lobbies) {
+            LobbyContainer lc = INSTANCE.lobbies.get(matchParams.getType());
+            if (lc != null) {
+                MatchParams mp = new MatchParams(matchParams);
+                mp.flatten();
+                lc.setParams(mp);
+            }
+        }
+    }
+
+    public static void updateArenaParamms(MatchParams matchParams) {
+        synchronized (INSTANCE.waitrooms) {
+            for (RoomContainer rc : INSTANCE.waitrooms.values()) {
+                if (rc.getParams().getType()==matchParams.getType()){
+                    MatchParams mp = new MatchParams(matchParams);
+                    mp.flatten();
+                    rc.setParams(mp);
+                }
+            }
+        }
+        synchronized (INSTANCE.spectate) {
+            for (RoomContainer rc : INSTANCE.spectate.values()) {
+                if (rc.getParams().getType()==matchParams.getType()){
+                    MatchParams mp = new MatchParams(matchParams);
+                    mp.flatten();
+                    rc.setParams(mp);
+                }
+            }
+        }
+    }
 }

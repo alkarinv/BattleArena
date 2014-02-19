@@ -45,7 +45,7 @@ public class TeleportLocationController {
 			ArenaPlayer player, TransitionOptions mo, int teamIndex,
 			boolean insideArena, boolean onlyInMatch, boolean wipeInventory) {
 		MatchParams mp = am.getParams();
-		Location loc = null;
+		Location loc;
 		ArenaLocation src = player.getCurLocation();
 		final LocationType type;
 		if (mo.hasOption(TransitionOption.TELEPORTTO)){
