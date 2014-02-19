@@ -1,4 +1,4 @@
-version: 1.6.0
+version: 1.6.7
 
 system:
     type_enabled: "&2 tipo &6%s&2 abilitato"
@@ -25,25 +25,34 @@ system:
     no_arena_for_size: "&cL'Arena non è stata costurita per il team di quelle dimensioni"
     joined_the_queue: '&eSei entrato nella &6%s&e coda.'
     position_in_queue: 'Posizione: &6%s/%s'
-    match_starts_players_or_time: '&eIl match inzierà quando &6%s&e altri giocatori entreranno o con un minimo di %s&e giocatori'
-    match_starts_when_time: '&eIl match inizierà tra %s'
-    you_start_when_free_pos: "&ePosizione: &6%s&e. Il tuo match inizierà appena una arena sarà libera"
-    you_start_when_free: "&eIl tuo match inizierà appena una arena sarà libera"
+    match_starts_players_or_time: '&eLa partita inzierà quando &6%s&e altri giocatori entreranno o con un minimo di %s&e giocatori'
+    match_starts_players_or_time2: '&eLa partita inizierà %s &econ &6%s&e giocatori'
+    match_starts_players_or_time3: '&eLa partita inizierà con &6%s&e giocatori in più o tra %s'
+    match_starts_immediately: '&eLa partita inizierà immediatamente con &6%s&e giocatori'
+    match_starts_when_time: '&eLa partita inizierà tra %s'
+    you_start_when_free_pos: "&ePosizione: &6%s&e. La tua partita inizierà appena una arena sarà libera"
+    you_start_when_free: "&eLa tua partita inizierà appena una arena sarà libera"
     server_joined_the_queue: "%s &6%s&e è entrato nella coda. &6%s/%s"
-    you_left_match: "&eHai abbandonato il match"
+    you_left_match: "&eHai abbandonato la partita"
     you_left_event: "&eHai abbandonato l'evento &6%s&e"
     you_left_competition: "&eHai abbandonato l'evento &6%s&"
     you_left: "&eHai lasciato"
     you_not_in_queue: "&eNon sei in coda"
     you_left_queue: "&eHai lasciato la coda per &6%s"
     team_left_queue: "&6Il team ha lasciato la coda per &6%s&e. &6%s&e ha inserito il commando"
-    you_cant_join_event: "&cThe event can not be joined at this time"
-    no_event_open: "&cThere is no event currently open"
+    you_cant_join_event: "&cNon hai accesso a questo evento"
+    no_event_open: "&cNon ci sono eventi attualmente aperti"
     you_cant_join_event_while: "&eNon puoi entrare nel &6%s&e mentre è %s"
     you_will_join_when_matched: "&eSei già entrato nel 6%s&e e quando inziierà sarai inserito in un team"
     event_will_start_in: "&2L'Evento inzia tra &6%s"
     event_invalid_team_size: "&cQuesto Evento supporta fino a &6%s&e il tuo team ha &6%s"
     you_joined_event: '&eSei entrato nel &6%s'
+    cancelled_lack_of_players: '{prefix} &cIl &6{matchname} &cè stato cancellato perchè non ci sono abbastanza giocatori'
+    class_chosen: '&2Hai scelto di essere il &6%s'
+    class_cant_switch_after_items: "&cNon puoi cambiare classe dopo aver cambiato oggetti!"
+    class_wait_time: '&cDevi aspettare &6%s&c prima di cambiare classe di nuovo'
+    class_you_are_already: '&cSei già un &6&s'
+    class_no_perms: "&cNon hai i permessi diusare questa classe &6&s&c"
 
 common:
     team: '&7{name}&e'
@@ -111,10 +120,13 @@ event:
 match:    
     leading_header: "&6 O---[{==========> &fLeaders &6<==========}]---O"
     leading_row: "&6{rank} : {name}({wins}{losses})" ## rank/wins/losses are all per match
-    server_onjoin: '{prefix} &e&6%s&e has &2joined&e. There are &6{nplayers}&e inside'
+    server_onjoin: '{prefix} &e&6%s&e è &2entrato&e. Ci sono &6{nplayers}&e dentro'
+    interval_update: '{prefix} Il gioco finirà tra {time}.'
+    interval_update_winning: '&6{winner}&e ha vinto con &6{winnerpointsfor} &euccisioni e &6{winnerpointsagainst} morti'
+    interval_update_tied: 'E pareggio tra  &6{teams}'
     oneTeam: ### 1 team matches
-        prestart: '&eYour {matchname}&e starts in {time}.'
-        server_prestart: '&6{prefix} {teamshort1} is entering the {matchname}!'
+        prestart: '&eYour {matchname}&e inizierà tra {time}.'
+        server_prestart: '&6{prefix} {teamshort1} è entrato nel {matchname}!'
         start: '&4********** &eBuona fortuna!!!! &4**********'
         server_start: ""
         victory: |
@@ -152,7 +164,7 @@ match:
         server_start: ""
         victory: |
             &eHai sconfitto tutti i nemici!
-            &eHai ancora {time} prima che il match finisca
+            &eHai ancora {time} prima che la partita finisca
             &eIL tuo nuovo punteggio &6[{ranking}] &e({wins}:{losses})
         loss: |
             &eSei stato sconfitto da {winnershort}&e!
