@@ -1,25 +1,20 @@
 package mc.alk.arena.objects.scoreboard.base;
 
-import java.util.List;
-
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.scoreboardapi.api.STeam;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
-import mc.alk.scoreboardapi.scoreboard.SAPITeam;
+
+import java.util.List;
 
 public class BAScoreboard extends ArenaScoreboard {
-//	final boolean solo;
-//
 	Match match;
 
-	public BAScoreboard(Match match, MatchParams params) {
-		super(match,params);
-//		solo = params.getMaxTeamSize() == 1;
+	public BAScoreboard(Match match) {
+		super(match.getName());
 		this.match = match;
 	}
 
@@ -43,16 +38,16 @@ public class BAScoreboard extends ArenaScoreboard {
 	}
 
 	@Override
-	public SAPITeam addTeam(ArenaTeam team) { return null;}
+	public STeam addTeam(ArenaTeam team) { return null;}
 
 	@Override
-	public void addedToTeam(ArenaTeam team, ArenaPlayer player) {/* do nothing */}
+	public STeam addedToTeam(ArenaTeam team, ArenaPlayer player) {return null;}
 
 	@Override
-	public void removeTeam(ArenaTeam team) {/* do nothing */}
+	public STeam removeTeam(ArenaTeam team) {return null;}
 
 	@Override
-	public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {/* do nothing */}
+	public STeam removedFromTeam(ArenaTeam team, ArenaPlayer player) {return null;}
 
 	@Override
 	public void setDead(ArenaTeam t, ArenaPlayer p) {/* do nothing */}

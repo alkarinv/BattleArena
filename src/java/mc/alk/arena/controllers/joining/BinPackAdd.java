@@ -35,8 +35,8 @@ public class BinPackAdd extends AbstractJoinHandler {
 
         final int size = team.size()+1;
         if (size <= team.getMaxPlayers() && size <= team.getMinPlayers()){
-            removedFromTeam(oldTeam,player);
-            addedToTeam(team, player);
+            removeFromTeam(oldTeam,player);
+            addToTeam(team, player);
             return true;
         } else {
             return false;
@@ -76,7 +76,7 @@ public class BinPackAdd extends AbstractJoinHandler {
                 t.addPlayers(team.getPlayers());
                 if ( size >= t.getMinPlayers()){ /// the new team would be a valid range, add them
                     team.setIndex(t.getIndex());
-                    addedToTeam(t, team.getPlayers());
+                    addToTeam(t, team.getPlayers());
                     return new TeamJoinResult(TeamJoinStatus.ADDED, 0,t);
                 } else {
                     return new TeamJoinResult(TeamJoinStatus.ADDED_STILL_NEEDS_PLAYERS, t.getMinPlayers() - t.size(),t);

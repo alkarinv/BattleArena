@@ -8,6 +8,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.joining.JoinHandler;
+import mc.alk.arena.objects.joining.JoinResponseHandler;
 import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
@@ -23,15 +24,18 @@ import java.util.Set;
 public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     public static final TeamJoinResult CANTFIT = new TeamJoinResult(TeamJoinStatus.CANT_FIT,-1,null);
 
-    MatchParams matchParams;
+    final MatchParams matchParams;
 
-    List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
+    final List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
+
+    final int minTeams,maxTeams;
+    final Class<? extends ArenaTeam> clazz;
 
     Competition competition;
-    int minTeams,maxTeams;
-    Class<? extends ArenaTeam> clazz;
-    int nPlayers;
+
     WaitingScoreboard scoreboard;
+
+    int nPlayers;
 
     public Collection<ArenaPlayer> getPlayers() {
         List<ArenaPlayer> players = new ArrayList<ArenaPlayer>();
@@ -57,40 +61,39 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         public int getRemaining(){return remaining;}
     }
 
-
-
     public AbstractJoinHandler(MatchParams params, Competition competition){
         this(params,competition,CompositeTeam.class);
     }
 
     public AbstractJoinHandler(MatchParams params, Competition competition, Class<? extends ArenaTeam> clazz) {
-        setParams(params);
+        this.matchParams = params;
+        this.minTeams = params.getMinTeams();
+        this.maxTeams = params.getMaxTeams();
+
         this.clazz = clazz;
         setCompetition(competition);
         initWaitingScoreboard();
     }
 
     private void initWaitingScoreboard() {
-        if (maxTeams <= -1) {
+        if (maxTeams <= 16) {
             int needed = 0;
             int optional = 0;
             for (int i = 0; i < maxTeams; i++) {
                 ArenaTeam team = TeamFactory.createTeam(i, matchParams, clazz);
                 if (team.getMinPlayers() < 16) {
                     needed += team.getMinPlayers();
-                    if (team.getMaxPlayers() < 100) {
-                        optional += team.getMaxPlayers();
-                    } else {
-                        optional += 1000;
+                    if (team.getMinPlayers() != team.getMaxPlayers() && team.getMaxPlayers() < 1000) {
+                        optional += team.getMaxPlayers() - team.getMinPlayers();
                     }
                 }
             }
             if (needed + optional <= 16) {
                 scoreboard = new FullScoreboard(matchParams);
-            } else {
-                scoreboard = new AbridgedScoreboard(matchParams);
+                return;
             }
         }
+        scoreboard = new AbridgedScoreboard(matchParams);
     }
 
     public abstract boolean switchTeams(ArenaPlayer player, Integer toTeamIndex);
@@ -99,18 +102,12 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         this.competition = comp;
     }
 
-    public void setParams(MatchParams mp) {
-        this.matchParams = mp;
-        this.minTeams = mp.getMinTeams();
-        this.maxTeams = mp.getMaxTeams();
-    }
-
     protected ArenaTeam addToPreviouslyLeftTeam(ArenaPlayer player) {
         for (ArenaTeam t: teams){
             if (t.hasLeft(player)){
                 t.addPlayer(player);
                 nPlayers++;
-                JoinHandler jh = competition != null ? competition : scoreboard;
+                JoinResponseHandler jh = competition != null ? competition : scoreboard;
                 if (jh != null) jh.addedToTeam(t,player);
                 return t;
             }
@@ -120,39 +117,36 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
 
 
     @Override
-    public void addedToTeam(ArenaTeam team, Collection<ArenaPlayer> players) {
+    public void addToTeam(ArenaTeam team, Collection<ArenaPlayer> players) {
         team.addPlayers(players);
         nPlayers+=players.size();
-        JoinHandler jh = competition != null ? competition : scoreboard;
-        if (jh != null) jh.addedToTeam(team,players);
+        JoinResponseHandler jh = competition != null ? competition : scoreboard;
+        if (jh != null) jh.addedToTeam(team, players);
     }
 
     @Override
-    public boolean addedToTeam(ArenaTeam team, ArenaPlayer player) {
+    public boolean addToTeam(ArenaTeam team, ArenaPlayer player) {
         team.addPlayer(player);
         nPlayers++;
-        JoinHandler jh = competition != null ? competition : scoreboard;
-        return jh != null && jh.addedToTeam(team,player);
+        JoinResponseHandler jh = competition != null ? competition : scoreboard;
+        if (jh !=null) jh.addedToTeam(team,player);
+        return true;
     }
 
     @Override
-    public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {
+    public boolean removeFromTeam(ArenaTeam team, ArenaPlayer player) {
         team.removePlayer(player);
         nPlayers--;
-        JoinHandler jh = competition != null ? competition : scoreboard;
+        JoinResponseHandler jh = competition != null ? competition : scoreboard;
         if (jh != null) jh.removedFromTeam(team,player);
-
-//        if (competition != null){
-//            competition.removedFromTeam(team, player);
-//        } else if (scoreboard != null ){
-//            scoreboard.removedFromTeam(team, player);
-////            addPlaceholders(team, scoreboard.getTeam(team.getIDString()));
-//        }
+        return true;
     }
 
     @Override
-    public void removedFromTeam(ArenaTeam team, Collection<ArenaPlayer> player) {
-
+    public void removeFromTeam(ArenaTeam team, Collection<ArenaPlayer> players) {
+        for (ArenaPlayer ap: players){
+            removeFromTeam(team, ap);
+        }
     }
 
     @Override
@@ -160,29 +154,14 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         return true;
     }
 
+
     @Override
-    public boolean addTeam(ArenaTeam team) {
+    public boolean addTeam(ArenaTeam team){
         nPlayers+=team.size();
         team.setIndex(teams.size());
         teams.add(team);
-        JoinHandler jh = competition != null ? competition : scoreboard;
-        return jh != null && jh.addTeam(team);
-//        if (competition != null){
-//            competition.addTeam(team);
-//        } else if (scoreboard != null ) {
-//            scoreboard.addTeam(team);
-////            TeamUtil.initTeam(team, matchParams);
-////            STeam t = scoreboard.addTeam(team);
-////            String teamSuffix = "(" + (team.getMinPlayers() - team.size()) + ")";
-////            scoreboard.setEntryNameSuffix(t, teamSuffix);
-////            addTeamPlaceholders(team);
-//        }
-//        return true;
-    }
-
-    public void deconstruct() {
-        teams.clear();
-        matchParams = null;
+        JoinResponseHandler jh = competition != null ? competition : scoreboard;
+        return jh != null && jh.addedTeam(team);
     }
 
     public abstract TeamJoinResult joiningTeam(TeamJoinObject tqo);
@@ -200,10 +179,6 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
                     competition.leave(p);
                 } else if (scoreboard != null ) {
                     scoreboard.removedFromTeam(t,p);
-//                    scoreboard.leave(p);
-//                    scoreboard.leaving(t, p);
-//                    STeam st = scoreboard.getTeam(t.getIDString());
-//                    addPlaceholders(t, st);
                 }
                 return true;
             }
@@ -279,7 +254,6 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     public int getnPlayers() {
         return nPlayers;
     }
-//    public abstract void switchTeams(ArenaPlayer p, Integer index);
 
     public String toString() {
         return "[TJH " + this.hashCode() + "]";

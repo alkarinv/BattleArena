@@ -83,11 +83,6 @@ public abstract class AbstractTeam implements ArenaTeam{
 		deaths.clear();
 		kills.clear();
 		setAlive();
-//		for (ArenaPlayer ap: players){
-//			if (leftplayers.contains(ap))
-//				continue;
-//			ap.reset();
-//		}
 	}
 
 	protected String createName() {
@@ -360,14 +355,14 @@ public abstract class AbstractTeam implements ArenaTeam{
 	}
 
 	@Override
-	public void removePlayer(ArenaPlayer player) {
-		this.players.remove(player);
+	public boolean removePlayer(ArenaPlayer player) {
 		this.deadplayers.remove(player);
 		this.leftplayers.remove(player);
 		this.kills.remove(player);
 		this.deaths.remove(player);
 		this.nameChanged = true;
-	}
+        return this.players.remove(player);
+    }
 
 	/**
 	 * Call when a player has left this team

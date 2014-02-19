@@ -45,8 +45,8 @@ public class AddToLeastFullTeam extends AbstractJoinHandler {
         if (toTeamIndex < maxTeams) { /// they specified a team index within range
             team = teams.get(toTeamIndex);
             if (team.size()+1 <= team.getMaxPlayers()){
-                removedFromTeam(oldTeam, player);
-                addedToTeam(team, player);
+                removeFromTeam(oldTeam, player);
+                addToTeam(team, player);
                 return true;
             }
         }
@@ -111,7 +111,7 @@ public class AddToLeastFullTeam extends AbstractJoinHandler {
     private TeamJoinResult teamFits(ArenaTeam baseTeam, ArenaTeam team) {
         if ( baseTeam.size() + team.size() <= baseTeam.getMaxPlayers()){
             team.setIndex(baseTeam.getIndex());
-            addedToTeam(baseTeam, team.getPlayers());
+            addToTeam(baseTeam, team.getPlayers());
             if (baseTeam.size() == 0){
                 return new TeamJoinResult(TeamJoinStatus.ADDED, baseTeam.getMinPlayers() - baseTeam.size(),baseTeam);
             } else {

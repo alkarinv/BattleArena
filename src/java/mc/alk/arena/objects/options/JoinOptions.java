@@ -41,7 +41,7 @@ public class JoinOptions {
 		}
 		public static JoinOption fromName(String str){
 			str = str.toUpperCase();
-			try {return JoinOption.valueOf(str);} catch (Exception e){}
+			try {return JoinOption.valueOf(str);} catch (Exception e){/*do nothing*/}
 			throw new IllegalArgumentException();
 		}
 		public static String getValidList() {
@@ -54,7 +54,7 @@ public class JoinOptions {
 				switch (r){
 				default: break;
 				}
-				sb.append(r.getName()+val);
+				sb.append(r.getName()).append(val);
 			}
 			return sb.toString();
 		}
@@ -173,7 +173,7 @@ public class JoinOptions {
 				ops.put(JoinOption.TEAM, teamIndex);
 				continue;
 			}
-			JoinOption jo = null;
+			JoinOption jo;
 			try{
 				jo = JoinOption.fromName(op);
 				if (jo.needsValue && i+1 >= args.length){
@@ -226,7 +226,7 @@ public class JoinOptions {
 			}
 		}
 		MinMax mm = null;
-		try{mm = MinMax.valueOf(lastArg);} catch (Exception e){}
+		try{mm = MinMax.valueOf(lastArg);} catch (Exception e){/* do nothing */}
 
 //		final WantedTeamSizePair teamSize = WantedTeamSizePair.getWantedTeamSize(player,t,mp,lastArg);
 //		if (teamSize.manuallySet){
@@ -253,7 +253,7 @@ public class JoinOptions {
 		for (JoinOption op: options.keySet()){
 			sb.append(op.getName());
 			if (op.needsValue){
-				sb.append("=" + options.get(op));
+				sb.append("=").append(options.get(op));
 			}
 			sb.append(" ");
 		}
@@ -287,15 +287,16 @@ public class JoinOptions {
     }
 
     public boolean hasArena() {
-		return options.containsKey(JoinOption.ARENA);
+		return options.containsKey(JoinOption.ARENA) && options.get(JoinOption.ARENA)!=null;
 	}
 
 	public Arena getArena() {
 		return hasArena() ? (Arena) options.get(JoinOption.ARENA) : null;
 	}
 
+
 	public void setArena(Arena arena) {
-		options.put(JoinOption.ARENA, arena);
+        options.put(JoinOption.ARENA, arena);
 	}
 
 	public MatchParams getMatchParams() {

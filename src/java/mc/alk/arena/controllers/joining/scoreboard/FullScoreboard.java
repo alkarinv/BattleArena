@@ -76,10 +76,9 @@ public class FullScoreboard implements WaitingScoreboard {
         r.addLast(e);
         t.addPlayer(e.getOfflinePlayer());
         ao.addEntry(e, points);
-
     }
 
-    private void removePlaceHolder(ArenaTeam team, ArenaPlayer player){
+    private void removePlaceHolder(ArenaTeam team){
         LinkedList<SEntry> list = reqPlaceHolderPlayers.get(team);
         if (list == null || list.isEmpty()) {
             list = opPlaceHolderPlayers.get(team);
@@ -92,30 +91,38 @@ public class FullScoreboard implements WaitingScoreboard {
     }
 
     @Override
-    public boolean addedToTeam(ArenaTeam team, ArenaPlayer player) {
-        removePlaceHolder(team,player);
-        return true;
+    public void addedToTeam(ArenaTeam team, ArenaPlayer player) {
+        scoreboard.addedToTeam(team, player);
+        ao.setPoints(player, 10);
+        removePlaceHolder(team);
     }
 
     @Override
-    public void addedToTeam(ArenaTeam team, Collection<ArenaPlayer> player) {
-
+    public void addedToTeam(ArenaTeam team, Collection<ArenaPlayer> players) {
+        for (ArenaPlayer player : players) {
+            addedToTeam(team,player);
+        }
     }
-
 
     @Override
     public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {
-
-    }
-
-    @Override
-    public void removedFromTeam(ArenaTeam team, Collection<ArenaPlayer> player) {
-
-    }
-
-    @Override
-    public boolean addTeam(ArenaTeam team) {
         STeam t = scoreboard.getTeam(team.getIDString());
+        scoreboard.removedFromTeam(team,player);
+        addPlaceholder(team, t);
+    }
+
+    @Override
+    public void removedFromTeam(ArenaTeam team, Collection<ArenaPlayer> players) {
+        STeam t = scoreboard.getTeam(team.getIDString());
+        for (ArenaPlayer player : players) {
+            scoreboard.removedFromTeam(team,player);
+            addPlaceholder(team, t);
+        }
+    }
+
+    @Override
+    public boolean addedTeam(ArenaTeam team) {
+        STeam t = scoreboard.addTeam(team);
         for (int i = 0; i < team.getMaxPlayers() - team.size(); i++) {
             addPlaceholder(team, t);
         }
@@ -123,7 +130,7 @@ public class FullScoreboard implements WaitingScoreboard {
     }
 
     @Override
-    public boolean removeTeam(ArenaTeam team) {
+    public boolean removedTeam(ArenaTeam team) {
         STeam t = scoreboard.getTeam(team.getIDString());
         scoreboard.removeEntry(t);
         return false;

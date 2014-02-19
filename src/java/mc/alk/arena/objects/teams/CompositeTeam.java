@@ -78,11 +78,11 @@ public class CompositeTeam extends AbstractTeam{
 	}
 
 	@Override
-	public void removePlayer(ArenaPlayer p) {
-		super.removePlayer(p);
+	public boolean removePlayer(ArenaPlayer p) {
+		boolean success = super.removePlayer(p);
 		for (ArenaTeam t: oldTeams){
 			if (t.hasMember(p)){
-				t.removePlayer(p);
+				success |= t.removePlayer(p);
 				if (t.size() == 0){
 					oldTeams.remove(t);
 				}
@@ -90,7 +90,8 @@ public class CompositeTeam extends AbstractTeam{
 				break;
 			}
 		}
-	}
+        return success;
+    }
 	public Collection<ArenaTeam> getOldTeams(){
 		return oldTeams;
 	}

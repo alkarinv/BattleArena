@@ -50,11 +50,11 @@ public class ArenaScoreboard implements SScoreboard {
 
     public STeam addTeam(ArenaTeam team) { return null;}
 
-    public void addedToTeam(ArenaTeam team, ArenaPlayer player) {/* do nothing */}
+    public STeam addedToTeam(ArenaTeam team, ArenaPlayer player) {return null;}
 
-    public void removeTeam(ArenaTeam team) {/* do nothing */}
+    public STeam removeTeam(ArenaTeam team) {return null;}
 
-    public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {/* do nothing */}
+    public STeam removedFromTeam(ArenaTeam team, ArenaPlayer player) {return null;}
 
     public void setDead(ArenaTeam t, ArenaPlayer p) {/* do nothing */}
 

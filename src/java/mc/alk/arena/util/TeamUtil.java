@@ -120,24 +120,27 @@ public class TeamUtil {
         team.setCurrentParams(params);
 
         int index = team.getIndex();
-        team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
-        MatchTransitions tops = params.getTransitionOptions();
         boolean alwaysTeamNames = false;
-        if (tops != null){
-            if (tops.hasAnyOption(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() > 1 ||
-                    tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS)){
-                team.setHeadItem(TeamUtil.getTeamHead(index));
+        if (index != -1){
+            MatchTransitions tops = params.getTransitionOptions();
+            team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
+            if (tops != null){
+                if (tops.hasAnyOption(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() > 1 ||
+                        tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS)){
+                    team.setHeadItem(TeamUtil.getTeamHead(index));
+                }
+                alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
             }
-            alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
+
+            String name = TeamUtil.getTeamName(index);
+            if ( alwaysTeamNames ||
+                    (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
+                team.setDisplayName(name);
+            }
+
+            team.setScoreboardDisplayName(name.length() > Defaults.MAX_SCOREBOARD_NAME_SIZE ?
+                    name.substring(0,Defaults.MAX_SCOREBOARD_NAME_SIZE) : name);
         }
 
-        String name = TeamUtil.getTeamName(index);
-        if ( alwaysTeamNames ||
-                (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
-            team.setDisplayName(name);
-        }
-
-        team.setScoreboardDisplayName(name.length() > Defaults.MAX_SCOREBOARD_NAME_SIZE ?
-                name.substring(0,Defaults.MAX_SCOREBOARD_NAME_SIZE) : name);
     }
 }

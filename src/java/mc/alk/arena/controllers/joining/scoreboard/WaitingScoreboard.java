@@ -1,7 +1,7 @@
 package mc.alk.arena.controllers.joining.scoreboard;
 
-import mc.alk.arena.objects.joining.JoinHandler;
+import mc.alk.arena.objects.joining.JoinResponseHandler;
 
-public interface WaitingScoreboard extends JoinHandler {
+public interface WaitingScoreboard extends JoinResponseHandler {
 
 }

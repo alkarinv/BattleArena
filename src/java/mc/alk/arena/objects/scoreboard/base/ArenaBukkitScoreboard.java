@@ -36,8 +36,8 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
 
     public ArenaBukkitScoreboard(String scoreboardName, MatchParams params) {
         super(scoreboardName);
-        this.colorPlayerNames = Defaults.USE_COLORNAMES &&
-                !params.getTransitionOptions().hasAnyOption(TransitionOption.NOTEAMNAMECOLOR);
+        this.colorPlayerNames = Defaults.USE_COLORNAMES && (params.getTransitionOptions()!=null &&
+                !params.getTransitionOptions().hasAnyOption(TransitionOption.NOTEAMNAMECOLOR));
         bboard = (BScoreboard) board;
     }
 
@@ -75,7 +75,7 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
     }
 
     @Override
-    public void removeTeam(ArenaTeam team) {
+    public STeam removeTeam(ArenaTeam team) {
         STeam t = teams.remove(team);
         if (t != null){
             super.removeEntry(t);
@@ -86,6 +86,7 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
                 }
             }
         }
+        return t;
     }
 
     @Override
@@ -124,21 +125,23 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
     }
 
     @Override
-    public void addedToTeam(ArenaTeam team, ArenaPlayer player) {
+    public STeam addedToTeam(ArenaTeam team, ArenaPlayer player) {
         STeam t = teams.get(team);
         if (t == null){
             t = addTeam(team);}
         addToTeam(t,player);
+        return t;
     }
 
     @Override
-    public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {
+    public STeam removedFromTeam(ArenaTeam team, ArenaPlayer player) {
         STeam t = teams.get(team);
         if (t == null) {
             Log.err(teams.size() + "  Removing from a team that doesn't exist player=" + player.getName() + "   team=" + team + "  " + team.getId());
-            return;
+            return null;
         }
         removeFromTeam(t,player);
+        return t;
     }
 
     @Override

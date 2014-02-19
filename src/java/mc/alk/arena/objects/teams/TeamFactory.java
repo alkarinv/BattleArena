@@ -3,6 +3,7 @@ package mc.alk.arena.objects.teams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.TeamUtil;
 
 import java.lang.reflect.Constructor;
 import java.util.Set;
@@ -62,6 +63,7 @@ public class TeamFactory {
         if (index != null && index != -1){
             at.setIndex(index);
         }
+        TeamUtil.initTeam(at, params);
         return at;
     }
 

@@ -48,9 +48,9 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 		this(name,criteria,displayName,slot, priority,0);
 	}
 
-	public ArenaObjective(String name, String criteria, String displayName,
+	public ArenaObjective(String id, String criteria, String displayName,
 			SAPIDisplaySlot slot, int priority, int points) {
-		o = SAPIFactory.createObjective(name,criteria,slot, priority);
+		o = SAPIFactory.createObjective(id,displayName, criteria,slot, priority);
 		if (displayName != null){
 			setDisplayName(displayName);}
 	}
@@ -231,8 +231,8 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 	}
 
 	@Override
-	public String getName() {
-		return o.getName();
+	public String getID() {
+		return o.getID();
 	}
 
 	@Override

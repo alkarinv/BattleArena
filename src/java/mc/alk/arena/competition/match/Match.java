@@ -758,16 +758,13 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         inMatch.clear();
         teams.clear();
         methodController.deconstruct();
-        //		arenaListeners.clear();
-        if (joinHandler != null){
-            joinHandler.deconstruct();}
         HandlerList.unregisterAll(this);
     }
 
     private boolean _addedTeam(ArenaTeam team){
         if (this.isFinished())
             return false;
-        if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addTeam("+team.getName()+":"+team.getId()+")");
+        if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addedTeam("+team.getName()+":"+team.getId()+")");
 
         TeamUtil.initTeam(team,params);
         team.setArenaObjective(defaultObjective);
@@ -783,11 +780,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
 
     @Override
-    public boolean addTeam(ArenaTeam team) {
+    public boolean addedTeam(ArenaTeam team) {
         return _addedTeam(team);
     }
 
-    /** Called during both, addTeam and addedToTeam */
+    /** Called during both, addedTeam and addedToTeam */
     private void _addedToTeam(ArenaTeam team, ArenaPlayer player){
         leftPlayers.remove(player.getName()); /// remove players from the list as they are now joining again
         inMatch.remove(player.getName());
@@ -809,8 +806,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     }
 
     @Override
-    public boolean removeTeam(ArenaTeam team){
-        if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" removeTeam("+team.getName()+":"+team.getId()+")");
+    public boolean removedTeam(ArenaTeam team){
+        if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" removedTeam("+team.getName()+":"+team.getId()+")");
 
         if (teams.contains(team)){
             onLeave(team);
@@ -826,9 +823,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
      * @param player player
      */
     @Override
-    public boolean addedToTeam(final ArenaTeam team, final ArenaPlayer player) {
+    public void addedToTeam(final ArenaTeam team, final ArenaPlayer player) {
         if (isEnding())
-            return false;
+            return;
         if (Defaults.DEBUG_MATCH_TEAMS)
             Log.info(getID()+" addedToTeam("+team.getName()+":"+team.getId()+", " + player.getName()+") inside="+inMatch.contains(player.getName()));
 
@@ -839,7 +836,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         mc.sendAddedToTeam(team,player);
 
         joiningOngoing(team, player);
-        return true;
     }
 
     private static void doTransition(Match match, MatchState state, ArenaPlayer player, ArenaTeam team, boolean onlyInMatch){

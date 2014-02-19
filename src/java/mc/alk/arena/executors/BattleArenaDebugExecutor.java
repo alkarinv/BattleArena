@@ -517,7 +517,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
                 }
                 String displayName;
                 if (t != null) {
-                    displayName = t.getPrefix() + op.getName() + t.getSuffix();
+                    displayName = (t.getPrefix()!=null?t.getPrefix():"") +
+                            op.getName() + (t.getSuffix()!=null?t.getSuffix():"");
                 } else {
                     displayName = op.getName();
                 }

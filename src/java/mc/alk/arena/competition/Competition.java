@@ -8,7 +8,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.ArenaListener;
-import mc.alk.arena.objects.joining.JoinHandler;
+import mc.alk.arena.objects.joining.JoinResponseHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 
@@ -24,7 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author alkarin
  *
  */
-public abstract class Competition implements JoinHandler, PlayerHolder, TeamHandler {
+public abstract class Competition implements JoinResponseHandler, PlayerHolder, TeamHandler {
 
 	/** Our teams */
 	protected List<ArenaTeam> teams = new CopyOnWriteArrayList<ArenaTeam>();

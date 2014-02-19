@@ -125,7 +125,7 @@ public interface ArenaTeam {
 
 	public void addPlayer(ArenaPlayer player);
 
-	public void removePlayer(ArenaPlayer player);
+	public boolean removePlayer(ArenaPlayer player);
 
 	public void addPlayers(Collection<ArenaPlayer> players);
 
