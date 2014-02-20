@@ -235,7 +235,7 @@ public class ArenaSerializer extends BaseConfig{
             Log.err("Couldnt load the Arena " + name);
             return null;
         }
-        ParamController.addArenaParams(name, mp);
+
 
         /// Spawns
         ConfigurationSection loccs = cs.getConfigurationSection("locations");

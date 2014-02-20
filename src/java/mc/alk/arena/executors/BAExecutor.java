@@ -944,15 +944,7 @@ public class BAExecutor extends CustomCommandExecutor {
         }
 
         MatchParams ap = new MatchParams(mp.getType());
-        try {
-            if (args.length > 2)
-                ap.setTeamSizes(MinMax.valueOf(args[2]));
-            if (args.length > 3)
-                ap.setNTeams(MinMax.valueOf(args[3]));
-        } catch (Exception e) {
-            return sendMessage(sender,"That size not recognized.  Examples: 1 or 2 or 1-5 or 2+");
-        }
-        ParamController.addArenaParams(name, ap);
+        ap.setParent(ParamController.getMatchParams(mp.getType()));
 
         Arena arena = ArenaType.createArena(name, ap, false);
         if (arena == null) {
@@ -1033,11 +1025,12 @@ public class BAExecutor extends CustomCommandExecutor {
     public boolean _setGameOption(CommandSender sender, MatchParams params,
                                   Integer teamIndex, GameOption option, Object value) {
         try {
-            ParamAlterController.setGameOption(sender, params,teamIndex, option, value);
-            if (value != null){
-                sendMessage(sender, "&2Game options &6"+option+"&2 changed to &6"+value );
+            params = ParamController.getMatchParams(params);
+            ParamAlterController.setGameOption(sender, params, teamIndex, option, value);
+            if (value != null) {
+                sendMessage(sender, "&2Game options &6" + option + "&2 changed to &6" + value);
             } else {
-                sendMessage(sender, "&2Game options &6"+option+"&2 changed");
+                sendMessage(sender, "&2Game options &6" + option + "&2 changed");
             }
         } catch (InvalidOptionException e) {
             sendMessage(sender, "&cCould not set game option "+option.name());
@@ -1059,6 +1052,7 @@ public class BAExecutor extends CustomCommandExecutor {
     public boolean _setGameStateOption(CommandSender sender, MatchParams params, Integer teamIndex,
                                        MatchState state, TransitionOption to, Object value) {
         try {
+            params = ParamController.getMatchParams(params);
             ParamAlterController.setGameOption(sender, params,teamIndex, state,to,value);
             if (value != null){
                 sendMessage(sender, "&2Game options &6"+state+"&2 added &6"+to +" " + value);
@@ -1074,6 +1068,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
     @MCCommand(cmds = { "deleteOption" }, admin = true, perm = "arena.alter")
     public boolean deleteOption(CommandSender sender, MatchParams params,String[] args) {
+        params = ParamController.getMatchParams(params);
         ParamAlterController pac = new ParamAlterController(params);
         pac.deleteOption(sender, args);
         return true;

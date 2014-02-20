@@ -141,7 +141,7 @@ public class ArenaParams {
     }
 
     public MatchTransitions getTransitionOptions(){
-        return allTops;
+        return allTops != null ? allTops : (parent != null ? parent.getTransitionOptions() : null);
     }
 
     public void setTransitionOptions(MatchTransitions transitionOptions) {

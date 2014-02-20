@@ -174,7 +174,7 @@ public class ArenaType implements Comparable<ArenaType>{
 			arenaParams.setName(arenaName);
 			arenaParams.setType(arenaType);
 			arena.setName(arenaName);
-			arenaParams.setParent(ParamController.getMatchParamCopy(arenaType));
+			arenaParams.setParent(ParamController.getMatchParams(arenaParams));
 			arena.setParams(arenaParams);
 			if (RoomController.hasWaitroom(arena))
 				arena.setWaitRoom(RoomController.getWaitroom(arena));

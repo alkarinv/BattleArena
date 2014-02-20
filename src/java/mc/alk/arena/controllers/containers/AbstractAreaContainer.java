@@ -193,6 +193,9 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
     }
 
     public void setParams(MatchParams mp) {
+//        this.params = new MatchParams(mp);
+//        this.params.flatten();
+
         this.params= mp;
     }
 

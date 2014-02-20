@@ -144,9 +144,7 @@ public enum RoomController {
         synchronized(INSTANCE.lobbies) {
             LobbyContainer lc = INSTANCE.lobbies.get(matchParams.getType());
             if (lc != null) {
-                MatchParams mp = new MatchParams(matchParams);
-                mp.flatten();
-                lc.setParams(mp);
+                lc.setParams(matchParams);
             }
         }
     }
@@ -155,18 +153,18 @@ public enum RoomController {
         synchronized (INSTANCE.waitrooms) {
             for (RoomContainer rc : INSTANCE.waitrooms.values()) {
                 if (rc.getParams().getType()==matchParams.getType()){
-                    MatchParams mp = new MatchParams(matchParams);
-                    mp.flatten();
-                    rc.setParams(mp);
+//                    MatchParams mp = new MatchParams(matchParams);
+//                    mp.flatten();
+                    rc.setParams(matchParams);
                 }
             }
         }
         synchronized (INSTANCE.spectate) {
             for (RoomContainer rc : INSTANCE.spectate.values()) {
                 if (rc.getParams().getType()==matchParams.getType()){
-                    MatchParams mp = new MatchParams(matchParams);
-                    mp.flatten();
-                    rc.setParams(mp);
+//                    MatchParams mp = new MatchParams(matchParams);
+//                    mp.flatten();
+                    rc.setParams(matchParams);
                 }
             }
         }

@@ -34,7 +34,8 @@ public class AreaContainer extends AbstractAreaContainer{
 
 	public AreaContainer(String name, MatchParams params, LocationType type){
 		super(name);
-		this.params = params;
+        this.params = new MatchParams(params);
+//        this.params.setTransitionOptions(params.getTransitionOptions());
 		this.params.flatten();
 		this.type = type;
 	}

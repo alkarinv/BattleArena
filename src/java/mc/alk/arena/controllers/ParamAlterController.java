@@ -50,6 +50,7 @@ public class ParamAlterController {
         RegisteredCompetition rc = CompetitionController.getCompetition(params.getName());
         if (rc == null){
             throw new InvalidOptionException("&cGame &6" + params.getName() +"&c not found!");}
+
         MatchParams tp = getOrCreateTeamParams(teamIndex, params);
         setOption(sender, tp, option, value);
         saveParamsAndUpdate(rc, params);

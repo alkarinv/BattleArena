@@ -21,14 +21,18 @@ public class ParamController {
     static final CaseInsensitiveMap<MatchParams> types = new CaseInsensitiveMap<MatchParams>();
     static final Map<String, MatchTransitions> transitions = new ConcurrentHashMap<String, MatchTransitions>();
     static final CaseInsensitiveMap<Set<String>> aliases = new CaseInsensitiveMap<Set<String>>();
-    static final CaseInsensitiveMap<MatchParams> arenaParams = new CaseInsensitiveMap<MatchParams>();
 
     public static void addMatchParams(MatchParams matchParams) {
-        types.put(matchParams.getName(), matchParams);
-        Set<String> a = aliases.get(matchParams.getName());
-        if (a != null){
-            for (String alias : a){
-                types.put(alias, matchParams);}
+        MatchParams old = types.get(matchParams.getType().getName());
+//        if (old != null && old == matchParams)
+//            return;
+        types.put(matchParams.getType().getName(), matchParams);
+        Set<String> a = aliases.get(matchParams.getType().getName());
+
+        if (a != null) {
+            for (String alias : a) {
+                types.put(alias, matchParams);
+            }
         }
         addAlias(matchParams.getCommand(), matchParams);
         if (Defaults.TESTSERVER)
@@ -40,22 +44,18 @@ public class ParamController {
         }
     }
 
-    public static void addArenaParams(String arenaName, MatchParams mp) {
-        arenaParams.put(arenaName, mp);
-    }
-
     public static void addAlias(String alias, MatchParams matchParams) {
-        Set<String> set = aliases.get(matchParams.getName());
+        Set<String> set = aliases.get(matchParams.getType().getName());
         if (set == null){
             set = new HashSet<String>();
-            aliases.put(matchParams.getName(), set);
+            aliases.put(matchParams.getType().getName(), set);
         }
         types.put(alias, matchParams);
         set.add(alias.toUpperCase());
     }
 
     public static void removeMatchType(MatchParams matchParams) {
-        types.remove(matchParams.getName());
+        types.remove(matchParams.getType().getName());
         types.remove(matchParams.getCommand());
     }
 
@@ -82,6 +82,15 @@ public class ParamController {
         return types.get(type);
     }
 
+    /**
+     * Returns the found matchparams
+     * If you want to change you should make a copy
+     * @param params the Params
+     * @return MatchParams
+     */
+    public static MatchParams getMatchParams(MatchParams params) {
+        return types.get(params.getType().getName());
+    }
 
     /**
      * Return a copy of the found matchparams
@@ -162,5 +171,6 @@ public class ParamController {
             return new MatchParams(parent);
         }
     }
+
 
 }
