@@ -1,6 +1,5 @@
 package mc.alk.arena.objects;
 
-import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -77,25 +76,18 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
     @Override
     public void flatten() {
         if (mparent != null){
-            mparent = (MatchParams) ParamController.copy(mparent);
-            this.mparent.flatten();
-            if (this.prefix == null) this.prefix = mparent.prefix;
-            if (this.vc == null) this.vc = mparent.vc;
-            if (this.matchTime == null) this.matchTime = mparent.matchTime;
-            if (this.intervalTime == null) this.intervalTime = mparent.intervalTime;
-            if (this.ao == null) this.ao = mparent.ao;
-            if (this.nLives == null) this.nLives = mparent.nLives;
-            if (this.numConcurrentCompetitions == null) this.numConcurrentCompetitions = mparent.numConcurrentCompetitions;
-            if (this.useBTMessages == null) this.useBTMessages = mparent.useBTMessages;
-            if (this.useBTPvP == null) this.useBTPvP = mparent.useBTPvP;
-            if (this.useBTTeamRating == null) this.useBTTeamRating = mparent.useBTTeamRating;
-            if (this.forceStartTime== null) this.forceStartTime = mparent.forceStartTime;
-            if (this.modules != null && mparent.modules != null){
-                this.modules.addAll(mparent.modules);
-            } else if (mparent.modules != null){
-                this.modules = new HashSet<ArenaModule>(mparent.modules);
-            }
-
+            if (this.prefix == null) this.prefix = mparent.getPrefix();
+            if (this.vc == null) this.vc = mparent.getVictoryType();
+            if (this.matchTime == null) this.matchTime = mparent.getMatchTime();
+            if (this.intervalTime == null) this.intervalTime = mparent.getIntervalTime();
+            if (this.ao == null) this.ao = mparent.getAnnouncementOptions();
+            if (this.nLives == null) this.nLives = mparent.getNLives();
+            if (this.numConcurrentCompetitions == null) this.numConcurrentCompetitions = mparent.getNConcurrentCompetitions();
+            if (this.useBTMessages == null) this.useBTMessages = mparent.getUseTrackerMessages();
+            if (this.useBTPvP == null) this.useBTPvP = mparent.getUseTrackerPvP();
+            if (this.useBTTeamRating == null) this.useBTTeamRating = mparent.isTeamRating();
+            if (this.forceStartTime== null) this.forceStartTime = mparent.getForceStartTime();
+            this.modules = getModules();
             this.mparent = null;
         }
         super.flatten();
@@ -195,16 +187,12 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
         modules.add(am);
     }
 
-    public Collection<ArenaModule> getModules(){
-        return modules;
-    }
+    public Set<ArenaModule> getModules() {
+        Set<ArenaModule> ms  = modules == null ? new HashSet<ArenaModule>() : new HashSet<ArenaModule>(modules);
 
-    public Collection<ArenaModule> getAllModules(){
-        if (modules == null)
-            return null;
-        List<ArenaModule> ms = new ArrayList<ArenaModule>(modules);
-        if (mparent != null){
-            ms.addAll(mparent.getAllModules());}
+        if (mparent != null) {
+            ms.addAll(mparent.getModules());
+        }
         return ms;
     }
 

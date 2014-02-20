@@ -944,7 +944,6 @@ public class BAExecutor extends CustomCommandExecutor {
         }
 
         MatchParams ap = new MatchParams(mp.getType());
-        ap.setParent(ParamController.getMatchParams(mp.getType()));
 
         Arena arena = ArenaType.createArena(name, ap, false);
         if (arena == null) {

@@ -34,6 +34,7 @@ public class BATest extends TestCase {
     BattleArena ba = new BattleArena();
     ArenaPlayer[] ap = new ArenaPlayer[10];
     public static String dir = "../arena/BattleArena";
+    public static String cdir = dir + "/test_files/competitions";
 
     @Override
     protected void setUp() throws Exception {
@@ -92,6 +93,9 @@ public class BATest extends TestCase {
 
     protected void delay(long millis) {
         try {Thread.sleep(millis);}catch(Exception e){}
+    }
+    protected MatchParams loadParams(String type, String configName) throws Exception {
+        return Helper.loadParams(cdir+"/"+configName, plugin, type);
     }
 
 }

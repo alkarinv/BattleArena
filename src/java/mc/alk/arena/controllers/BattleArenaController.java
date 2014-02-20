@@ -398,8 +398,8 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         Arena a = amq.removeArena(arena);
         if (a != null){
             allarenas.remove(arena.getName().toUpperCase());}
-
-        return a;
+        allarenas.remove(arena.getName());
+        return arena;
     }
 
     public void deleteArena(Arena arena) {

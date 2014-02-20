@@ -74,30 +74,25 @@ public class ArenaParams {
             this.nTeams = new MinMax(ap.nTeams);
         if (ap.teamSize != null)
             this.teamSize = new MinMax(ap.teamSize);
-        if (ap.teamParams != null) {
-            this.teamParams = ap.teamParams;
-        }
+        this.teamParams = ap.teamParams;
         this.parent = ap.parent;
     }
 
-    @SuppressWarnings("ConstantConditions")
     public void flatten() {
         if (parent == null){
             return;}
-        parent = ParamController.copy(parent);
-        parent.flatten();
-        if (this.arenaType == null) this.arenaType = parent.arenaType;
-        if (this.rating == Rating.ANY) this.rating = parent.rating;
-        if (this.cmd == null) this.cmd = parent.cmd;
-        if (this.name == null) this.name = parent.name;
-        if (this.timeBetweenRounds == null) this.timeBetweenRounds = parent.timeBetweenRounds;
-        if (this.secondsTillMatch == null) this.secondsTillMatch = parent.secondsTillMatch;
-        if (this.secondsToLoot == null) this.secondsToLoot = parent.secondsToLoot;
-        if (this.dbName == null) this.dbName = parent.dbName;
-        if (this.closeWaitroomWhileRunning == null) this.closeWaitroomWhileRunning = parent.closeWaitroomWhileRunning;
-        if (this.cancelIfNotEnoughPlayers == null) this.cancelIfNotEnoughPlayers = parent.cancelIfNotEnoughPlayers;
-        if (this.arenaCooldown== null) this.arenaCooldown = parent.arenaCooldown;
-        if (this.allowedTeamSizeDifference== null) this.allowedTeamSizeDifference= parent.allowedTeamSizeDifference;
+        if (this.arenaType == null) this.arenaType = parent.getType();
+        if (this.rating == Rating.ANY) this.rating = parent.getRating();
+        if (this.cmd == null) this.cmd = parent.getCommand();
+        if (this.name == null) this.name = parent.getName();
+        if (this.timeBetweenRounds == null) this.timeBetweenRounds = parent.getTimeBetweenRounds();
+        if (this.secondsTillMatch == null) this.secondsTillMatch = parent.getSecondsTillMatch();
+        if (this.secondsToLoot == null) this.secondsToLoot = parent.getSecondsToLoot();
+        if (this.dbName == null) this.dbName = parent.getDBName();
+        if (this.closeWaitroomWhileRunning == null) this.closeWaitroomWhileRunning = parent.isWaitroomClosedWhenRunning();
+        if (this.cancelIfNotEnoughPlayers == null) this.cancelIfNotEnoughPlayers = parent.isCancelIfNotEnoughPlayers();
+        if (this.arenaCooldown== null) this.arenaCooldown = parent.getArenaCooldown();
+        if (this.allowedTeamSizeDifference== null) this.allowedTeamSizeDifference= parent.getAllowedTeamSizeDifference();
         this.allTops = MatchTransitions.mergeChildWithParent(this.allTops, parent.allTops);
         if (this.nTeams == null && parent.getNTeams()!=null) this.nTeams = new MinMax(parent.getNTeams());
         if (this.teamSize == null && parent.getTeamSizes() !=null) this.teamSize = new MinMax(parent.getTeamSizes());
@@ -247,7 +242,7 @@ public class ArenaParams {
     public void setRated(boolean rated) {
         this.rating = rated ? Rating.RATED : Rating.UNRATED;
     }
-
+    public Rating getRating(){ return rating;}
     public void setRating(Rating rating) {
         this.rating = rating;
     }
@@ -295,12 +290,12 @@ public class ArenaParams {
     }
 
     public String toPrettyString() {
-        return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
+        return  name+":"+arenaType+",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
     }
 
     @Override
     public String toString(){
-        return  name+":"+cmd+":"+arenaType +" rating="+rating +",nteams="+
+        return  name+":"+arenaType +",nteams="+
                 getNTeamRange()+",teamSize="+getTeamSizeRange() +" options=\n"+
                 (getTransitionOptions()==null ? "" : getTransitionOptions().getOptionString());
     }

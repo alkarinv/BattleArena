@@ -23,9 +23,6 @@ public class ParamController {
     static final CaseInsensitiveMap<Set<String>> aliases = new CaseInsensitiveMap<Set<String>>();
 
     public static void addMatchParams(MatchParams matchParams) {
-        MatchParams old = types.get(matchParams.getType().getName());
-//        if (old != null && old == matchParams)
-//            return;
         types.put(matchParams.getType().getName(), matchParams);
         Set<String> a = aliases.get(matchParams.getType().getName());
 
@@ -154,21 +151,21 @@ public class ParamController {
         return (EventParams) types.get(Defaults.DEFAULT_CONFIG_NAME);
     }
 
-    public static ArenaParams copy(ArenaParams parent) {
-        if (parent instanceof EventParams){
-            return new EventParams((EventParams)parent);
-        } else if (parent instanceof MatchParams){
-            return new MatchParams((MatchParams)parent);
+    public static ArenaParams copy(ArenaParams params) {
+        if (params instanceof EventParams){
+            return new EventParams((EventParams)params);
+        } else if (params instanceof MatchParams){
+            return new MatchParams((MatchParams)params);
         } else {
-            return new ArenaParams(parent);
+            return new ArenaParams(params);
         }
     }
 
-    public static MatchParams copyParams(MatchParams parent) {
-        if (parent instanceof EventParams){
-            return new EventParams(parent);
+    public static MatchParams copyParams(MatchParams params) {
+        if (params instanceof EventParams){
+            return new EventParams(params);
         } else {
-            return new MatchParams(parent);
+            return new MatchParams(params);
         }
     }
 

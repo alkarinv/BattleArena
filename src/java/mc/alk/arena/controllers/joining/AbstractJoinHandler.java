@@ -1,8 +1,6 @@
 package mc.alk.arena.controllers.joining;
 
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.controllers.joining.scoreboard.AbridgedScoreboard;
-import mc.alk.arena.controllers.joining.scoreboard.FullScoreboard;
 import mc.alk.arena.controllers.joining.scoreboard.WaitingScoreboard;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionSize;
@@ -12,7 +10,6 @@ import mc.alk.arena.objects.joining.JoinResponseHandler;
 import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
-import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
 
 import java.util.ArrayList;
@@ -76,24 +73,24 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     }
 
     private void initWaitingScoreboard() {
-        if (maxTeams <= 16) {
-            int needed = 0;
-            int optional = 0;
-            for (int i = 0; i < maxTeams; i++) {
-                ArenaTeam team = TeamFactory.createTeam(i, matchParams, clazz);
-                if (team.getMinPlayers() < 16) {
-                    needed += team.getMinPlayers();
-                    if (team.getMinPlayers() != team.getMaxPlayers() && team.getMaxPlayers() < 1000) {
-                        optional += team.getMaxPlayers() - team.getMinPlayers();
-                    }
-                }
-            }
-            if (needed + optional <= 16) {
-                scoreboard = new FullScoreboard(matchParams);
-                return;
-            }
-        }
-        scoreboard = new AbridgedScoreboard(matchParams);
+//        if (maxTeams <= 16) {
+//            int needed = 0;
+//            int optional = 0;
+//            for (int i = 0; i < maxTeams; i++) {
+//                ArenaTeam team = TeamFactory.createTeam(i, matchParams, clazz);
+//                if (team.getMinPlayers() < 16) {
+//                    needed += team.getMinPlayers();
+//                    if (team.getMinPlayers() != team.getMaxPlayers() && team.getMaxPlayers() < 1000) {
+//                        optional += team.getMaxPlayers() - team.getMinPlayers();
+//                    }
+//                }
+//            }
+//            if (needed + optional <= 16) {
+//                scoreboard = new FullScoreboard(matchParams);
+//                return;
+//            }
+//        }
+//        scoreboard = new AbridgedScoreboard(matchParams);
     }
 
     public abstract boolean switchTeams(ArenaPlayer player, Integer toTeamIndex);

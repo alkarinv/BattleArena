@@ -3,6 +3,7 @@ package mc.alk.arena.competition.match;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.ArenaController;
@@ -168,12 +169,16 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     ArenaPreviousState oldArenaState;
 
     @SuppressWarnings("unchecked")
-    public Match(Arena arena, MatchParams params, Collection<ArenaListener> listeners) {
+    public Match(Arena arena, MatchParams matchParams, Collection<ArenaListener> listeners) {
         if (Defaults.DEBUG) System.out.println("ArenaMatch::" + params);
-        this.params = params;
-        params.setName(params.getType().getName());
+        MatchParams a = arena.getParams();
+        MatchParams b = new MatchParams(ParamController.getMatchParamCopy(arena.getArenaType()));
+        params = ParamController.copyParams(matchParams);
+        params.setName(this.getName());
         params.flatten();
         this.tops = params.getTransitionOptions();
+        MatchParams a2 = arena.getParams();
+        MatchParams b2 = ParamController.getMatchParamCopy(arena.getArenaType());
         /// Assign variables
         this.plugin = BattleArena.getSelf();
         this.gameManager = GameManager.getGameManager(params);
