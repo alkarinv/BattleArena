@@ -185,8 +185,12 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
 
     public Set<ArenaPlayer> getExcludedPlayers() {
         Set<ArenaPlayer> tplayers = new HashSet<ArenaPlayer>();
-        for (ArenaTeam t: teams){
-            tplayers.addAll(t.getPlayers());
+        for (ArenaTeam t : teams) {
+            if (t.size() < t.getMinPlayers()) {
+                tplayers.addAll(t.getPlayers());
+            }
+            /// greater should never happen
+
         }
         return tplayers;
     }

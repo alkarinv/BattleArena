@@ -228,6 +228,8 @@ public class MatchTransitions {
 		if (pmt == null)
 			return cmt;
 		for (MatchState ms: pmt.ops.keySet()){
+            if (cmt.ops.containsKey(ms))
+                continue;
 			cmt.ops.put(ms, new TransitionOptions(pmt.ops.get(ms)));
 		}
 		cmt.calculateAllOptions();
