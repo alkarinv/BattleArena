@@ -410,47 +410,48 @@ public class ConfigSerializer extends BaseConfig{
     }
 
     public static TransitionOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, IllegalArgumentException {
-        if (cs == null || !cs.contains("options"))
+        if (cs == null )
             return null;
-        if (!cs.isList("options")) {
-            throw new InvalidOptionException("options: should be a list, instead it was '" + cs.getString("options", null) + "'");}
-        Collection<String> optionsstr = cs.getStringList("options");
         Map<TransitionOption,Object> options = new EnumMap<TransitionOption,Object>(TransitionOption.class);
         TransitionOptions tops = new TransitionOptions();
-        for (String obj : optionsstr){
-            String[] split = obj.split("=");
-            /// Our key for this option
-            final String key = split[0].trim().toUpperCase();
-            final String value = split.length > 1 ? split[1].trim() : null;
+        if (cs.contains("options")){
+            if (!cs.isList("options")) {
+                throw new InvalidOptionException("options: should be a list, instead it was '" + cs.getString("options", null) + "'");}
+            Collection<String> optionsstr = cs.getStringList("options");
+            for (String obj : optionsstr){
+                String[] split = obj.split("=");
+                /// Our key for this option
+                final String key = split[0].trim().toUpperCase();
+                final String value = split.length > 1 ? split[1].trim() : null;
 
-            /// Check first to see if this option is actually a set of options
-            TransitionOptions optionSet = OptionSetController.getOptionSet(key);
-            if (optionSet != null){
-                tops.addOptions(optionSet);
-                continue;
-            }
-
-            TransitionOption to;
-            Object ovalue;
-            try{
-                to = TransitionOption.fromString(key);
-                if (to == TransitionOption.ENCHANTS) /// we deal with these later
-                    continue;
-                if (to.hasValue() && value == null){
-                    Log.err("Transition Option " + to +" needs a value! " + key+"=<value>");
+                /// Check first to see if this option is actually a set of options
+                TransitionOptions optionSet = OptionSetController.getOptionSet(key);
+                if (optionSet != null){
+                    tops.addOptions(optionSet);
                     continue;
                 }
-                ovalue = to.parseValue(value);
-            } catch (Exception e){
-                Log.err("Couldn't parse Option " + key +" value="+value);
-                continue;
+
+                TransitionOption to;
+                Object ovalue;
+                try{
+                    to = TransitionOption.fromString(key);
+                    if (to == TransitionOption.ENCHANTS) /// we deal with these later
+                        continue;
+                    if (to.hasValue() && value == null){
+                        Log.err("Transition Option " + to +" needs a value! " + key+"=<value>");
+                        continue;
+                    }
+                    ovalue = to.parseValue(value);
+                } catch (Exception e){
+                    Log.err("Couldn't parse Option " + key +" value="+value);
+                    continue;
+                }
+
+                options.put(to,ovalue);
             }
-
-            options.put(to,ovalue);
-
         }
-        tops.addOptions(options);
-
+        if (!options.isEmpty())
+            tops.addOptions(options);
         try{
             if (cs.contains("teleportTo")){
                 tops.addOption(TransitionOption.TELEPORTTO, SerializerUtil.getLocation(cs.getString("teleportTo")));}
@@ -524,7 +525,7 @@ public class ConfigSerializer extends BaseConfig{
 
         setPermissionSection(cs,"addPerms",tops);
 
-        return tops;
+        return tops.getOptions() == null || tops.getOptions().isEmpty() ? null : tops;
     }
 
     public static List<CommandLineString> getDoCommands(List<String> list) throws InvalidOptionException {

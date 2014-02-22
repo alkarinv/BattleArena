@@ -789,7 +789,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     private void _addedToTeam(ArenaTeam team, ArenaPlayer player){
         leftPlayers.remove(player.getName()); /// remove players from the list as they are now joining again
 
-        if (params.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN))
+        if (params.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)
+                && (state == MatchState.NONE || state == MatchState.ONCREATE))
             inMatch.add(player.getName());
         else
             inMatch.remove(player.getName()); /// when they "enter" which should happen after this, inMatch will get them
@@ -1001,7 +1002,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     private void postFirstJoin(ArenaPlayer player){
         ArenaTeam team = getTeam(player);
         inMatch.add(player.getName());
-
 
         if (cancelExpLoss){
             psc.cancelExpLoss(player,true);}

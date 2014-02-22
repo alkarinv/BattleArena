@@ -27,7 +27,7 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 	protected SObjective o;
 
 	public ArenaObjective(String name, String criteria) {
-		this(name,criteria,null, SAPIDisplaySlot.SIDEBAR,50);
+		this(name,criteria,name, SAPIDisplaySlot.SIDEBAR,50);
 	}
 
 	/**

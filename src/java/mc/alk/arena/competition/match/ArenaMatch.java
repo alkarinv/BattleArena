@@ -72,8 +72,7 @@ public class ArenaMatch extends Match {
 
     @ArenaEventHandler(suppressCastWarnings=true,bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
     public void onPlayerDeath(PlayerDeathEvent event, final ArenaPlayer target){
-        if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE ||
-                !inMatch.contains(target.getName())){
+        if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE){
             return;}
         final ArenaTeam t = getTeam(target);
         if (t==null)
@@ -95,8 +94,7 @@ public class ArenaMatch extends Match {
     @ArenaEventHandler(bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
     public void onPlayerDeath(ArenaPlayerDeathEvent event){
         final ArenaPlayer target = event.getPlayer();
-        if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE ||
-                !inMatch.contains(target.getName())){
+        if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE){
             return;}
         final ArenaTeam t = event.getTeam();
 

@@ -31,7 +31,7 @@ import java.util.Set;
 @SuppressWarnings("unchecked")
 public class TransitionOptions {
 
-	Map<TransitionOption,Object> options = null;
+	Map<TransitionOption,Object> options;
 
 	public TransitionOptions() {}
 	public TransitionOptions(TransitionOptions o) {

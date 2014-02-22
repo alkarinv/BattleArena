@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers.messaging;
 
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.events.matches.MatchMessageEvent;
 import mc.alk.arena.events.matches.messages.MatchIntervalMessageEvent;
 import mc.alk.arena.events.matches.messages.MatchTimeExpiredMessageEvent;
@@ -33,7 +34,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 	final String typedot;
 
 	public MatchMessageImpl(Match m){
-		super(m.getParams().getName(), m.getParams());
+		super(ParamController.getMatchParams(m.getParams()).getName(), m.getParams());
 		this.match = m;
 		typeName = mp.getName();
 		typedot = "match.";
