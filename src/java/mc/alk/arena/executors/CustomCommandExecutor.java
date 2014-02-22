@@ -135,11 +135,19 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
         }
         if (ct.needsPlayer() && !(sender instanceof Player))
             throw new IllegalArgumentException(ChatColor.RED + "You need to be online to change the option " + ct.name());
+        ArenaOptionPair aop = new ArenaOptionPair();
+        aop.ao = ct;
+        if (ct == ChangeType.SPAWNLOC) {
+            Integer i = TeamUtil.getFromHumanTeamIndex(args[curIndex]);
+            if (i != null) {
+                numUsedStrings.set(1);
+                aop.value = i;
+                return aop;
+            }
+        }
         if (ct.hasValue() && args.length < curIndex+2){
             throw new IllegalArgumentException(ChatColor.RED + "Option " + ct.name()+" needs a value");
         }
-        ArenaOptionPair aop = new ArenaOptionPair();
-        aop.ao = ct;
         if (ct.hasValue()){
             try {
                 aop.value = ChangeType.getValue(ct, args[curIndex + 1]);

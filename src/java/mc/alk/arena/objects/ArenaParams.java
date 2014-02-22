@@ -45,7 +45,6 @@ public class ArenaParams {
 
     public ArenaParams(ArenaType at) {
         this.arenaType = at;
-        rating = Rating.ANY;
     }
 
     public ArenaParams(ArenaParams ap) {
@@ -82,7 +81,7 @@ public class ArenaParams {
         if (parent == null){
             return;}
         if (this.arenaType == null) this.arenaType = parent.getType();
-        if (this.rating == Rating.ANY) this.rating = parent.getRating();
+        if (this.rating == null) this.rating = parent.getRating();
         if (this.cmd == null) this.cmd = parent.getCommand();
         if (this.name == null) this.name = parent.getName();
         if (this.timeBetweenRounds == null) this.timeBetweenRounds = parent.getTimeBetweenRounds();
@@ -93,7 +92,7 @@ public class ArenaParams {
         if (this.cancelIfNotEnoughPlayers == null) this.cancelIfNotEnoughPlayers = parent.isCancelIfNotEnoughPlayers();
         if (this.arenaCooldown== null) this.arenaCooldown = parent.getArenaCooldown();
         if (this.allowedTeamSizeDifference== null) this.allowedTeamSizeDifference= parent.getAllowedTeamSizeDifference();
-        this.allTops = MatchTransitions.mergeChildWithParent(this.allTops, parent.allTops);
+        this.allTops = mergeChildWithParent(this, parent);
         if (this.nTeams == null && parent.getNTeams()!=null) this.nTeams = new MinMax(parent.getNTeams());
         if (this.teamSize == null && parent.getTeamSizes() !=null) this.teamSize = new MinMax(parent.getTeamSizes());
 
@@ -133,6 +132,14 @@ public class ArenaParams {
             this.teamParams = tp;
         }
         this.parent = null;
+    }
+
+    private MatchTransitions mergeChildWithParent(ArenaParams cap, ArenaParams pap) {
+        MatchTransitions mt = cap.allTops == null ? new MatchTransitions() : new MatchTransitions(cap.allTops);
+        if (pap != null) {
+            MatchTransitions.mergeChildWithParent(mt, mergeChildWithParent(pap, pap.parent));
+        }
+        return mt;
     }
 
     public MatchTransitions getTransitionOptions(){
@@ -242,7 +249,10 @@ public class ArenaParams {
     public void setRated(boolean rated) {
         this.rating = rated ? Rating.RATED : Rating.UNRATED;
     }
-    public Rating getRating(){ return rating;}
+    public Rating getRating(){
+        return rating != null ? rating : (parent != null ? parent.getRating() : null);
+    }
+
     public void setRating(Rating rating) {
         this.rating = rating;
     }
@@ -336,11 +346,6 @@ public class ArenaParams {
     public Integer getMaxTeams() {
         return nTeams != null ? nTeams.max : (parent != null ? parent.getMaxTeams() : null);
     }
-
-//	public ArenaSize getSize(){
-//		return size != null ? size :
-//			(parent != null ? parent.getSize() : null);
-//	}
 
     public Integer getMaxPlayers() {
         MinMax nt = getNTeams();

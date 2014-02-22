@@ -164,11 +164,11 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
             disabledCommands.add("/" + s.toLowerCase());}
     }
 
-    protected static void doTransition(PlayerHolder match, MatchState state, ArenaPlayer player, ArenaTeam team, boolean onlyInMatch){
+    protected void doTransition(MatchState state, ArenaPlayer player, ArenaTeam team, boolean onlyInMatch){
         if (player != null){
-            PerformTransition.transition(match, state, player,team, onlyInMatch);
+            PerformTransition.transition(this, state, player,team, onlyInMatch);
         } else {
-            PerformTransition.transition(match, state, team, onlyInMatch);
+            PerformTransition.transition(this, state, team, onlyInMatch);
         }
     }
 
@@ -193,9 +193,6 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
     }
 
     public void setParams(MatchParams mp) {
-//        this.params = new MatchParams(mp);
-//        this.params.flatten();
-
         this.params= mp;
     }
 

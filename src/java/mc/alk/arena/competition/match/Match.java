@@ -171,14 +171,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     @SuppressWarnings("unchecked")
     public Match(Arena arena, MatchParams matchParams, Collection<ArenaListener> listeners) {
         if (Defaults.DEBUG) System.out.println("ArenaMatch::" + params);
-        MatchParams a = arena.getParams();
-        MatchParams b = new MatchParams(ParamController.getMatchParamCopy(arena.getArenaType()));
         params = ParamController.copyParams(matchParams);
         params.setName(this.getName());
         params.flatten();
         this.tops = params.getTransitionOptions();
-        MatchParams a2 = arena.getParams();
-        MatchParams b2 = ParamController.getMatchParamCopy(arena.getArenaType());
         /// Assign variables
         this.plugin = BattleArena.getSelf();
         this.gameManager = GameManager.getGameManager(params);

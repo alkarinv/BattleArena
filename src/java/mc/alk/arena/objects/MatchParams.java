@@ -42,7 +42,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
     public MatchParams(ArenaType at) {
         super(at);
-        this.setRating(rating);
     }
 
     public MatchParams(MatchParams mp) {
@@ -267,21 +266,4 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
     public Boolean isTeamRating(){
         return useBTTeamRating != null ? useBTTeamRating : (mparent!= null ? mparent.isTeamRating() : null);
     }
-
-    public boolean isAutoable() {
-//		if (allTops.hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN) ||
-//				allTops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN) ||
-//				allTops.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN) ||
-//				allTops.hasAnyOption(options)
-//
-//				)
-//			return true;
-        return false;
-    }
-
-    public String getNotAutoableReasons() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

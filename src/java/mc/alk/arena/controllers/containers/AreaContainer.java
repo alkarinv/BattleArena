@@ -22,8 +22,6 @@ import java.util.Map;
 
 
 public class AreaContainer extends AbstractAreaContainer{
-//	Map<String, Long> userTime = new ConcurrentHashMap<String, Long>();
-//	Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
 	Map<String, Integer> respawnTimer = null;
 	final LocationType type;
 
@@ -34,9 +32,7 @@ public class AreaContainer extends AbstractAreaContainer{
 
 	public AreaContainer(String name, MatchParams params, LocationType type){
 		super(name);
-        this.params = new MatchParams(params);
-//        this.params.setTransitionOptions(params.getTransitionOptions());
-		this.params.flatten();
+        setParams(params);
 		this.type = type;
 	}
 
@@ -49,7 +45,7 @@ public class AreaContainer extends AbstractAreaContainer{
 	}
 
 	protected boolean playerJoining(ArenaPlayer player, ArenaTeam team){
-		doTransition(this, MatchState.ONJOIN, player,team, true);
+		doTransition(MatchState.ONJOIN, player,team, true);
 		return true;
 	}
 

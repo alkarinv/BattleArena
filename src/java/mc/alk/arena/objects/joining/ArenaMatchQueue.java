@@ -6,6 +6,7 @@ import mc.alk.arena.Permissions;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.MethodController;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.matches.MatchCreatedEvent;
@@ -16,6 +17,7 @@ import mc.alk.arena.events.players.ArenaPlayerLeaveQueueEvent;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -31,6 +33,7 @@ import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.PermissionsUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -381,23 +384,30 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         synchronized (joinHandlers) {
             Iterator<WaitingObject> iter = joinHandlers.iterator();
             WaitingObject o;
+            boolean resetParams = false;
             while (iter.hasNext()) {
                 o = iter.next();
-                if (wo != null && !o.equals(wo))
-                    continue;
-                if (needsMinPlayers && !o.hasEnough()) {
-                    continue;
+                if (wo != null && !o.equals(wo)){
+                    continue;}
+                if (!o.hasEnough()){
+                    if (needsMinPlayers) {
+                        continue;}
+                    resetParams = true;
                 }
-                if (params !=null && !o.getParams().matches(params))
-                    continue;
+                if (params !=null && !o.getParams().matches(params)){
+                    continue;}
                 Arena arena = reserveNextArena(o.getParams(), o.getJoinOptions());
                 if (arena == null) {
-                    break;
-                }
+                    break;}
                 FoundMatch mf = createFoundMatch(null, o, arena);
                 iter.remove();
                 if (finds == null) {
                     finds = new ArrayList<FoundMatch>();}
+                if (resetParams){
+                    mf.params = ParamController.copyParams(mf.params);
+                    mf.params.setNTeams(new MinMax(0, ArenaSize.MAX));
+                    mf.params.setTeamSizes(new MinMax(0, ArenaSize.MAX));
+                }
                 finds.add(mf);
             }
         }

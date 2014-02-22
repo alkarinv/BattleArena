@@ -37,7 +37,7 @@ public class ParamController {
         RoomController.updateRoomParams(matchParams);
         for (Arena arena : BattleArena.getBAController().getArenas(matchParams)) {
             arena.getParams().setParent(matchParams);
-            RoomController.updateArenaParamms(arena.getParams());
+            RoomController.updateArenaParams(arena);
         }
     }
 

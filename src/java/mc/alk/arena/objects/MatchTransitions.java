@@ -220,8 +220,10 @@ public class MatchTransitions {
 		return tops == null ? null : tops.getDouble(option);
 	}
 
-	public static MatchTransitions mergeChildWithParent(MatchTransitions pmt, MatchTransitions cmt) {
-		if (cmt == null){
+	public static MatchTransitions mergeChildWithParent(MatchTransitions cmt, MatchTransitions pmt) {
+        if (cmt == null && pmt == null)
+            return null;
+        if (cmt == null){
 			cmt = new MatchTransitions();}
 		if (pmt == null)
 			return cmt;
