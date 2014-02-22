@@ -20,6 +20,7 @@ import java.util.Set;
 public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
     String prefix;
+    String signDisplayName;
     VictoryType vc;
     Integer matchTime;
     Integer intervalTime;
@@ -67,6 +68,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
             this.useBTPvP = mp.useBTPvP;
             this.useBTTeamRating  = mp.useBTTeamRating;
             this.forceStartTime  = mp.forceStartTime;
+            this.signDisplayName = mp.signDisplayName;
             if (mp.modules != null)
                 this.modules = new HashSet<ArenaModule>(mp.modules);
         }
@@ -86,6 +88,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
             if (this.useBTPvP == null) this.useBTPvP = mparent.getUseTrackerPvP();
             if (this.useBTTeamRating == null) this.useBTTeamRating = mparent.isTeamRating();
             if (this.forceStartTime== null) this.forceStartTime = mparent.getForceStartTime();
+            if (this.signDisplayName== null) this.signDisplayName = mparent.getSignDisplayName();
             this.modules = getModules();
             this.mparent = null;
         }
@@ -100,6 +103,14 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
     public String getPrefix(){
         return prefix == null && mparent!=null ? mparent.getPrefix() : prefix;
+    }
+
+    public String getSignDisplayName(){
+        return signDisplayName == null && mparent!=null ? mparent.getSignDisplayName() : signDisplayName;
+    }
+
+    public void setSignDisplayName(String signDisplayName) {
+        this.signDisplayName = signDisplayName;
     }
 
     public void setPrefix(String str){prefix = str;}
@@ -266,4 +277,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
     public Boolean isTeamRating(){
         return useBTTeamRating != null ? useBTTeamRating : (mparent!= null ? mparent.isTeamRating() : null);
     }
+
+
 }

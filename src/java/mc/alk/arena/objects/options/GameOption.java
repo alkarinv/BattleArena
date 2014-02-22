@@ -16,6 +16,7 @@ public enum GameOption{
     VICTORYCONDITION("victoryCondition",true, false),
     NCUMONCURRENTCOMPETITIONS("numConcurrentCompetitions", true, false),
     COMMAND("command",true, false),
+    SIGNDISPLAYNAME("signDisplayName",true, false),
     RATED("rated",true, false),
     GIVEITEMS("giveItems",true, false),
     ALLOWEDTEAMSIZEDIFFERENCE("allowedTeamSizeDifference",true,false),
@@ -76,6 +77,7 @@ public enum GameOption{
                 return ConfigSerializer.toPositiveSize(value, -1);
             case PREFIX:
             case COMMAND:
+            case SIGNDISPLAYNAME:
                 return value;
             case VICTORYCONDITION:
                 return VictoryType.fromString(value);

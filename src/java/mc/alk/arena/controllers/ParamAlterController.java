@@ -105,6 +105,7 @@ public class ParamAlterController {
             case FORCESTARTTIME: params.setForceStartTime((long) (Integer) value);  break;
             case TEAMSIZE: params.setTeamSizes((MinMax) value);  break;
             case PREFIX: params.setPrefix((String)value); break;
+            case SIGNDISPLAYNAME: params.setSignDisplayName((String)value); break;
             case COMMAND: params.setCommand((String)value); break;
             case MATCHTIME: params.setMatchTime((Integer)value);break;
             case CLOSEWAITROOMWHILERUNNING: params.setWaitroomClosedWhileRunning((Boolean)value); break;
@@ -243,11 +244,13 @@ public class ParamAlterController {
             case NTEAMS: params.setNTeams(null);  break;
             case TEAMSIZE: params.setTeamSizes(null);  break;
             case PREFIX: params.setPrefix(null); break;
+            case SIGNDISPLAYNAME: params.setSignDisplayName(null); break;
             case COMMAND: params.setCommand(null); break;
             case MATCHTIME: params.setMatchTime(null);break;
             case PRESTARTTIME: params.setSecondsTillMatch(null);break;
             case VICTORYTIME: params.setSecondsToLoot(null); break;
             case VICTORYCONDITION: params.setVictoryCondition(null); break;
+            case CLOSEWAITROOMWHILERUNNING: params.setWaitroomClosedWhileRunning(null);
             case RATED: params.setRated(false); break;
             default:
                 break;

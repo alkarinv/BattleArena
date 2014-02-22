@@ -1,7 +1,5 @@
 package mc.alk.arena.util;
 
-import java.util.Collection;
-
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.ParamController;
@@ -10,12 +8,13 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.signs.ArenaCommandSign;
 import mc.alk.arena.objects.signs.ArenaCommandSign.ARENA_COMMAND;
 import mc.alk.arena.objects.signs.ArenaStatusSign;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+
+import java.util.Collection;
 
 public class SignUtil {
 
@@ -27,7 +26,9 @@ public class SignUtil {
 		if (mp == null){
 			Collection<MatchParams> params = ParamController.getAllParams();
 			for (MatchParams p: params){
-				if (p.getName().toLowerCase().startsWith(param) || p.getCommand().toLowerCase().startsWith(param)){
+				if (p.getName().toLowerCase().startsWith(param) ||
+                        p.getCommand().toLowerCase().startsWith(param) || p.getSignDisplayName()!=null &&
+                        MessageUtil.decolorChat(p.getSignDisplayName()).equalsIgnoreCase(param)){
 					mp = p;
 					break;
 				}
@@ -36,7 +37,7 @@ public class SignUtil {
 				return null;}
 		}
 		param = MessageUtil.decolorChat(lines[1]).toUpperCase().trim();
-		ARENA_COMMAND cmd = null;
+		ARENA_COMMAND cmd;
 		try {
 			cmd = ARENA_COMMAND.valueOf(param);
 		} catch (Exception e){
