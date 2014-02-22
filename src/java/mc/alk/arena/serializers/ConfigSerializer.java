@@ -202,7 +202,7 @@ public class ConfigSerializer extends BaseConfig{
     private static MatchTransitions loadTransitionOptions(ConfigurationSection cs, MatchParams mp, boolean isArena)
             throws InvalidOptionException {
         MatchTransitions allTops = new MatchTransitions();
-
+        boolean found = false;
         /// Set all Transition Options
         for (MatchState transition : MatchState.values()){
             /// OnCancel gets taken from onComplete and modified
@@ -225,6 +225,7 @@ public class ConfigSerializer extends BaseConfig{
             if (tops == null){
                 allTops.removeTransitionOptions(transition);
                 continue;}
+            found = true;
             if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + transition +" "+tops);
             switch (transition){
                 case ONCOMPLETE:
@@ -251,11 +252,6 @@ public class ConfigSerializer extends BaseConfig{
         }
         if (allTops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN))
             allTops.addTransitionOption(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN);
-        if (!isArena)
-            ParamController.setTransitionOptions(mp, allTops);
-        else {
-            mp.setTransitionOptions(allTops);
-        }
         /// By Default if they respawn in the arena.. people must want infinite lives
         if (mp.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWN) && !cs.contains("nLives")){
             mp.setNLives(Integer.MAX_VALUE);
@@ -263,6 +259,8 @@ public class ConfigSerializer extends BaseConfig{
         /// start auto setting this option, as really thats what they want
         if (mp.getNLives() != null && mp.getNLives() > 1){
             allTops.addTransitionOption(MatchState.ONDEATH, TransitionOption.RESPAWN);}
+        if (!found && allTops.getAllOptions().isEmpty())
+            return null;
         return allTops;
     }
 

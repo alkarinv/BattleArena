@@ -323,18 +323,18 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         }
         if (tqo.getJoinOptions().hasArena()) {
             Arena a = tqo.getJoinOptions().getArena();
-            if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM) ||
+            if (a.getParams().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM) ||
                     mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTMAINWAITROOM)) {
                 if (a.getWaitroom() == null) {
                     throw new IllegalStateException("&cWaitroom is not set for this arena");
                 }
                 a.getWaitroom().teamJoining(tqo.getTeam());
-            } else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTSPECTATE)) {
+            } else if (a.getParams().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTSPECTATE)) {
                 if (a.getSpectatorRoom() == null) {
                     throw new IllegalStateException("&cSpectate is not set for this arena");
                 }
                 a.getSpectatorRoom().teamJoining(tqo.getTeam());
-            } else if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)) {
+            } else if (a.getParams().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)) {
                 tqo.getJoinOptions().getArena().teamJoining(tqo.getTeam());
             }
         }

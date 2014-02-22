@@ -20,7 +20,6 @@ public enum InArenaListener implements Listener {
     INSTANCE;
 
     final Set<String> inArena = Collections.synchronizedSet(new HashSet<String>());
-    final Set<String> inGame = Collections.synchronizedSet(new HashSet<String>());
     final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
     boolean registered = false;
 

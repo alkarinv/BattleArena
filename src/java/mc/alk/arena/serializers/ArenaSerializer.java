@@ -208,7 +208,6 @@ public class ArenaSerializer extends BaseConfig{
             return null;
         }
         MatchParams mp = new MatchParams(atype);
-
         try {
             if (cs.contains("params"))
                 mp = ConfigSerializer.loadMatchParams(plugin, atype, name, cs.getConfigurationSection("params"),true);

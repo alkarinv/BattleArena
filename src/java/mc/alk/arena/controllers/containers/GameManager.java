@@ -3,10 +3,12 @@ package mc.alk.arena.controllers.containers;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
-import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.MethodController;
+import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.events.BAEvent;
+import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
+import mc.alk.arena.events.players.ArenaPlayerLeaveMatchEvent;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.PlayerHolder;
@@ -150,6 +152,7 @@ public class GameManager implements PlayerHolder{
 			// When teleporting in for the first time defaults
 			PlayerUtil.setGameMode(player.getPlayer(), GameMode.SURVIVAL);
 			EssentialsController.setGod(player.getPlayer(), false);
+            callEvent(new ArenaPlayerEnterMatchEvent(player, player.getTeam()));
 
 			player.getMetaData().setJoining(true);
 		}
@@ -158,7 +161,8 @@ public class GameManager implements PlayerHolder{
 	@Override
 	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
 		player.getMetaData().setJoining(false);
-	}
+
+    }
 
 	@Override
 	public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
@@ -167,6 +171,7 @@ public class GameManager implements PlayerHolder{
 	@Override
 	public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
 		this.quitting(player);
+        callEvent(new ArenaPlayerLeaveMatchEvent(player,player.getTeam()));
 		if (EssentialsController.enabled())
 			BAPlayerListener.setBackLocation(player.getName(), null);
 

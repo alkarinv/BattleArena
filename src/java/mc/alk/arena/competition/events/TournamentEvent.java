@@ -96,11 +96,21 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         joinHandler.removeImproperTeams();
     }
 
+    static int getNTeams(Collection<ArenaTeam> teams) {
+        int size = 0;
+        for (ArenaTeam at : teams){
+            if (at != null && at.size() > 0) {
+                size++;
+            }
+        }
+        return size;
+    }
+
     @Override
     public void startEvent() {
         super.startEvent();
         Server server = Bukkit.getServer();
-        int osize = teams.size();
+        int osize = getNTeams(teams);
         nrounds = getNRounds(osize);
         final int minTeams = eventParams.getMinTeams();
         int roundteams = (int) Math.pow(minTeams, nrounds);
@@ -110,10 +120,15 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         TreeMap<Double,ArenaTeam> sortTeams = new TreeMap<Double,ArenaTeam>(Collections.reverseOrder());
         StatController sc = new StatController(eventParams);
 
-        for (ArenaTeam t: teams){
+        for (ArenaTeam t: teams) {
+            if (t.size() <= 0) {
+                continue;
+            }
             ArenaStat stat = sc.loadRecord(t);
             Double elo = (double) stat.getRating();
-            while (sortTeams.containsKey(elo)){elo+= 0.0001;}
+            while (sortTeams.containsKey(elo)) {
+                elo += 0.0001;
+            }
             sortTeams.put(elo, t);
         }
         teams.clear();

@@ -58,7 +58,6 @@ import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.plugins.BattlePluginsAPI;
 import mc.alk.plugin.updater.v1r6.FileUpdater;
 import mc.alk.plugin.updater.v1r6.PluginUpdater;
 import org.bukkit.Bukkit;
@@ -69,7 +68,6 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -247,12 +245,6 @@ public class BattleArena extends JavaPlugin {
                     es.start();
             }
         });
-        try {
-            BattlePluginsAPI api = new BattlePluginsAPI();
-            api.pasteFile("config---", dir.getPath()+"/competitions/ArenaConfig.yml");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         PluginUpdater.update(this, bukkitId, this.getFile(),
                 Defaults.AUTO_UPDATE, Defaults.ANNOUNCE_UPDATE);

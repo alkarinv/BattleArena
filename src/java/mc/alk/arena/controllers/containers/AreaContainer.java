@@ -16,7 +16,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +64,7 @@ public class AreaContainer extends AbstractAreaContainer{
 	}
 
 	public Collection<String> getInsidePlayers() {
-		return new HashSet<String>(players);
+		return players;
 	}
 
 	@Override

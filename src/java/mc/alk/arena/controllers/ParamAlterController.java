@@ -85,7 +85,6 @@ public class ParamAlterController {
         }
 
         saveParamsAndUpdate(rc, params);
-        ParamController.setTransitionOptions(params, params.getTransitionOptions());
         return true;
 
     }
@@ -221,7 +220,6 @@ public class ParamAlterController {
             try{
                 deleteTransitionOption(state, key);
                 rc.saveParams(params);
-                ParamController.setTransitionOptions(params, params.getTransitionOptions());
                 return sendMessage(sender, "&2Game option &6"+state +"&2 removed");
             } catch (Exception e) {
                 sendMessage(sender, "&cCould not remove game option " + args[1]);

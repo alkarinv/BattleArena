@@ -194,4 +194,5 @@ public class BAPlayerListener implements Listener  {
 	public static Location getBackLocation(String playerName) {
 		return restore.containsKey(playerName) ? restore.get(playerName).getBackLocation() : null;
 	}
+
 }

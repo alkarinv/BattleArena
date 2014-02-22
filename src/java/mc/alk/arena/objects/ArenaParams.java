@@ -147,7 +147,7 @@ public class ArenaParams {
     }
 
     public void setTransitionOptions(MatchTransitions transitionOptions) {
-        this.allTops = new MatchTransitions(transitionOptions);
+        this.allTops = transitionOptions;
     }
 
     public String getTeamSizeRange() {
@@ -311,11 +311,13 @@ public class ArenaParams {
     }
 
     public boolean isDuelOnly() {
-        return getTransitionOptions().hasOptionAt(MatchState.DEFAULTS, TransitionOption.DUELONLY);
+        MatchTransitions tops = getTransitionOptions();
+        return tops != null && tops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.DUELONLY);
     }
 
     public boolean isAlwaysOpen(){
-        return getTransitionOptions().hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN);
+        MatchTransitions tops = getTransitionOptions();
+        return tops != null && tops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN);
     }
 
     public void setParent(ArenaParams parent) {

@@ -228,11 +228,6 @@ public class JoinOptions {
 		MinMax mm = null;
 		try{mm = MinMax.valueOf(lastArg);} catch (Exception e){/* do nothing */}
 
-//		final WantedTeamSizePair teamSize = WantedTeamSizePair.getWantedTeamSize(player,t,mp,lastArg);
-//		if (teamSize.manuallySet){
-//			length = args.length -1;
-//			jos.setTeamSize(teamSize.size);
-//		}
 		if (mm != null)
 			ops.put(JoinOption.WANTEDTEAMSIZE, mm);
 //		mp.flatten();

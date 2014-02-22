@@ -1,5 +1,10 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.Defaults;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.util.ServerUtil;
+import org.bukkit.entity.Player;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -7,17 +12,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mc.alk.arena.Defaults;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.util.ServerUtil;
-
-import org.bukkit.entity.Player;
-
 public final class PlayerController {
 	private static HashMap<String,ArenaPlayer> players = new HashMap<String,ArenaPlayer>();
-	public class A{
 
-	}
 	/**
 	 * wrap a player into an ArenaPlayer
 	 * @param player
@@ -38,6 +35,10 @@ public final class PlayerController {
 		}
 		return ap;
 	}
+
+    public static ArenaPlayer getArenaPlayer(String playerName) {
+        return players.get(playerName);
+    }
 
 	/**
 	 * Returns the ArenaPlayer for the given player

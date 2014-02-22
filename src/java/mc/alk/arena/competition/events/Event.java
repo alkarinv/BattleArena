@@ -43,6 +43,7 @@ import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 
 import java.util.ArrayList;
@@ -536,7 +537,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
     @Override
     public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {/* do nothing */}
 
-    @EventHandler
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
         if (hasPlayer(event.getPlayer())) {
             event.addMessage(MessageHandler.getSystemMessage("you_left_event", this.getName()));

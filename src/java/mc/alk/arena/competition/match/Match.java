@@ -3,18 +3,16 @@ package mc.alk.arena.competition.match;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.ArenaController;
 import mc.alk.arena.controllers.ListenerAdder;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.RewardController;
-import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.containers.GameManager;
-import mc.alk.arena.controllers.containers.RoomContainer;
+import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.messaging.MatchMessageHandler;
 import mc.alk.arena.controllers.messaging.MatchMessager;
 import mc.alk.arena.controllers.messaging.MessageHandler;
@@ -31,9 +29,7 @@ import mc.alk.arena.events.matches.MatchResultEvent;
 import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.matches.MatchTimerIntervalEvent;
 import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
-import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
-import mc.alk.arena.events.players.ArenaPlayerLeaveMatchEvent;
 import mc.alk.arena.events.players.ArenaPlayerReadyEvent;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.events.prizes.ArenaDrawersPrizeEvent;
@@ -137,11 +133,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     Countdown startCountdown = null; /// Start Countdown
 
-    final Collection<ArenaPlayer> matchPlayers = new HashSet<ArenaPlayer>();
+    private final Collection<ArenaPlayer> matchPlayers = new HashSet<ArenaPlayer>();
 
     final Set<ArenaTeam> nonEndingTeams =
             Collections.synchronizedSet(new HashSet<ArenaTeam>());
-    final Map<ArenaTeam,Integer> individualTeamTimers = Collections.synchronizedMap(new HashMap<ArenaTeam,Integer>());
+    final Map<ArenaTeam,Integer> individualTeamTimers =
+            Collections.synchronizedMap(new HashMap<ArenaTeam,Integer>());
     AtomicBoolean addedVictoryConditions = new AtomicBoolean(false);
     final GameManager gameManager;
     double prizePoolMoney = 0;
@@ -257,10 +254,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         if (params.getMaxTeamSize() <= 2){
             defaultObjective.setDisplayTeams(false);}
 
-        RoomContainer lc = RoomController.getLobby(params.getType());
-        if (lc != null){
-            inMatch.addAll(lc.getInsidePlayers());
-        }
+
         /// Save the arena state if we are changing it
         if (hasWaitroom() && params.isWaitroomClosedWhenRunning()){
             oldArenaState = new ArenaPreviousState(arena);
@@ -351,6 +345,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         this.teams = this.joinHandler.getTeams();
         for (int i=0;i<teams.size();i++){
             this.teams.get(i).setIndex(i);
+            for (ArenaPlayer ap : this.teams.get(i).getPlayers()) {
+                joiningOngoing(this.teams.get(i),ap);
+            }
+
+
         }
         matchPlayers.addAll(joinHandler.getPlayers());
     }
@@ -774,7 +773,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             if (p == null)
                 continue;
             _addedToTeam(team, p);
-            joiningOngoing(team, p);
+            if (!this.isHandled(p))
+                joiningOngoing(team, p);
         }
         return true;
     }
@@ -788,7 +788,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     /** Called during both, addedTeam and addedToTeam */
     private void _addedToTeam(ArenaTeam team, ArenaPlayer player){
         leftPlayers.remove(player.getName()); /// remove players from the list as they are now joining again
-        inMatch.remove(player.getName());
+
+        if (params.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN))
+            inMatch.add(player.getName());
+        else
+            inMatch.remove(player.getName()); /// when they "enter" which should happen after this, inMatch will get them
         team.setAlive(player);
         player.addCompetition(this);
         if (params.hasEntranceFee()){
@@ -835,8 +839,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         _addedToTeam(team, player);
 
         mc.sendAddedToTeam(team,player);
-
-        joiningOngoing(team, player);
+        if (!this.isHandled(player))
+            joiningOngoing(team, player);
     }
 
     private static void doTransition(Match match, MatchState state, ArenaPlayer player, ArenaTeam team, boolean onlyInMatch){
@@ -848,14 +852,13 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     }
 
     private void joiningOngoing(final ArenaTeam team, final ArenaPlayer player) {
-        if (this.isHandled(player))
-            return;
         final Match match = this;
 
         if (!gameManager.hasPlayer(player)){
             /// onJoin Them
             doTransition(match, MatchState.ONJOIN, player,team, true);
-        } else if (state== MatchState.NONE && params.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)){
+        } else if ((state== MatchState.NONE || state==MatchState.ONCREATE)  &&
+                params.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)){
             /// This is a bit strange.. but in instances where people have teleported in
             /// before the match was created, we need to add them in as if they were teleporting
             /// These are the 2 methods called from the teleport in events
@@ -999,7 +1002,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         ArenaTeam team = getTeam(player);
         inMatch.add(player.getName());
 
-        callEvent(new ArenaPlayerEnterMatchEvent(player,team));
 
         if (cancelExpLoss){
             psc.cancelExpLoss(player,true);}
@@ -1067,6 +1069,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         if (this.getState().ordinal() < MatchState.ONVICTORY.ordinal())
             checkAndHandleIfTeamDead(t);
         inMatch.remove(player.getName());
+        matchPlayers.remove(player);
 
         event.addMessage(MessageHandler.getSystemMessage("you_left_competition", this.params.getName()));
     }
@@ -1080,7 +1083,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     }
 
     private void quitting(ArenaPlayerLeaveEvent event, ArenaPlayer player) {
-        matchPlayers.remove(player);
         event.addMessage(MessageHandler.getSystemMessage("you_left_competition", this.params.getName()));
         if (params.hasOptionAt(MatchState.DEFAULTS, TransitionOption.DROPITEMS)) {
             InventoryUtil.dropItems(player.getPlayer());
@@ -1093,8 +1095,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     @Override
     public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
         ArenaTeam t = getTeam(player);
-        if (t==null)
-            t = player.getTeam();
         PerformTransition.transition(this, MatchState.ONLEAVEARENA, player, t, false);
         updateBukkitEvents(MatchState.ONLEAVE,player);
         if (WorldGuardController.hasWorldGuard() && arena.hasRegion())
@@ -1114,7 +1114,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
 
         arenaInterface.onLeave(player,t);
-        callEvent(new ArenaPlayerLeaveMatchEvent(player,t));
+
         if (cancelExpLoss){
             psc.cancelExpLoss(player,false);}
     }
