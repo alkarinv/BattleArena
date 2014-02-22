@@ -113,7 +113,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
     public Match createMatch(Arena arena, EventOpenOptions eoo) throws NeverWouldJoinException {
         final ArenaMatch arenaMatch = new ArenaMatch(arena, eoo.getParams(),null);
         AbstractJoinHandler jh = TeamJoinFactory.createTeamJoinHandler(eoo.getParams(), arenaMatch);
-        arenaMatch.setTeamJoinHandler(jh);
+        arenaMatch.hookTeamJoinHandler(jh);
         Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
             @Override
             public void run() {
@@ -144,7 +144,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         ArenaParams parent = mp.getParent();
         mp.setParent(null);
         mp.setParent(parent);
-		/// Since we want people to add this event, add this arena as the next
+        /// Since we want people to add this event, add this arena as the next
         setFixedReservedArena(arena);
 
         arena.setParams(mp);
@@ -281,9 +281,11 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         }
 
         /// We don't want them to add a queue if they can't fit
-        /// Here or inside AMQ?? // TODO kpvp with limited teams shouldn't add if it's full
         if (tqo.getJoinOptions().getArena() != null &&
                 tqo.getJoinOptions().getArena().getParams().hasOptionAt(MatchState.DEFAULTS,TransitionOption.ALWAYSOPEN)){
+            if (this.getArenas(tqo.getMatchParams()).size()==1)
+                throw new IllegalStateException("&cThe arena " +
+                        tqo.getJoinOptions().getArena().getDisplayName() + "&c is currently in use");
         }
         jr = amq.join(tqo);
 
@@ -298,7 +300,9 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
                     "   --- hasArena=" + tqo.getJoinOptions().hasArena());
         if (tqo.getJoinOptions().hasArena()) {
             Arena a = tqo.getJoinOptions().getArena();
-            if (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN) && BattleArena.getBAController().getMatch(a) != null) {
+            if (!(a.getParams().hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN) ||
+                    a.getParams().hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN)) &&
+                    mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN) && BattleArena.getBAController().getMatch(a) != null) {
                 throw new IllegalStateException("&cThe arena " + a.getDisplayName() + "&c is currently in use");
             }
         }

@@ -334,11 +334,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
     }
 
-    public void setTeamJoinHandler(AbstractJoinHandler teamJoinHandler){
-        this.joinHandler = teamJoinHandler;
-        teamJoinHandler.setCompetition(this);
-    }
-
     public void hookTeamJoinHandler(AbstractJoinHandler teamJoinHandler){
         teamJoinHandler.setCompetition(this);
         this.joinHandler = teamJoinHandler;
@@ -766,7 +761,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             return false;
         if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addedTeam("+team.getName()+":"+team.getId()+")");
 
-        TeamUtil.initTeam(team,params);
+        TeamUtil.initTeam(team, params);
         team.setArenaObjective(defaultObjective);
         scoreboard.addTeam(team);
         for (ArenaPlayer p: team.getPlayers()){
@@ -788,7 +783,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     /** Called during both, addedTeam and addedToTeam */
     private void _addedToTeam(ArenaTeam team, ArenaPlayer player){
         leftPlayers.remove(player.getName()); /// remove players from the list as they are now joining again
-
+        matchPlayers.add(player);
         if (params.getTransitionOptions().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN)
                 && (state == MatchState.NONE || state == MatchState.ONCREATE))
             inMatch.add(player.getName());
@@ -982,6 +977,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     private void preFirstJoin(ArenaPlayer player){
         ArenaTeam team = getTeam(player);
+
         final String name = player.getName();
         inMatch.add(player.getName());
         if (WorldGuardController.hasWorldGuard() && arena.hasRegion()){
@@ -1114,7 +1110,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
 
         arenaInterface.onLeave(player,t);
-
+        if (alwaysOpen){ /// free the team up for more players
+            joinHandler.leave(player);
+            matchPlayers.remove(player);
+        }
         if (cancelExpLoss){
             psc.cancelExpLoss(player,false);}
     }

@@ -10,6 +10,7 @@ import mc.alk.arena.objects.joining.JoinResponseHandler;
 import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
+import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
 
 import java.util.ArrayList;
@@ -40,6 +41,13 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
             players.addAll(at.getPlayers());
         }
         return players;
+    }
+
+    public void joiningPlayer(ArenaPlayer player) {
+        ArenaTeam ct = TeamFactory.createTeam(teams.size(), matchParams, clazz);
+        addTeam(ct);
+        ct.addPlayer(player);
+        addToTeam(ct, player);
     }
 
 
@@ -173,7 +181,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
                 nPlayers--;
                 t.removePlayer(p);
                 if (competition!=null) {
-                    competition.leave(p);
+                    competition.removedFromTeam(t,p);
                 } else if (scoreboard != null ) {
                     scoreboard.removedFromTeam(t,p);
                 }
