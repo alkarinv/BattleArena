@@ -47,6 +47,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 	MatchParams params;
 
     int index = -1;
+    String strID = null;
 
 	/**
 	 * Default Constructor
@@ -429,7 +430,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 
 	@Override
 	public String getIDString(){
-		return String.valueOf(id);
+		return strID == null ? String.valueOf(id) : strID;
 	}
 
 	@Override

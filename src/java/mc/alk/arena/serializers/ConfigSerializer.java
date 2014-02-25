@@ -380,11 +380,14 @@ public class ConfigSerializer extends BaseConfig{
      */
     public static ArenaType getArenaType(Plugin plugin, ConfigurationSection cs) throws ConfigException {
         ArenaType at;
-        if (cs.contains("arenaType") || cs.contains("type")){
-            String type = cs.contains("type") ? cs.getString("type") : cs.getString("arenaType");
+        if (cs.contains("arenaType") || cs.contains("type") || cs.contains("gameType")) {
+            String type = cs.getString("gameType");
+            if (type == null)
+                type = cs.contains("type") ? cs.getString("type") : cs.getString("arenaType");
+
             at = ArenaType.fromString(type);
-            if (at == null && type != null && !type.isEmpty()){ /// User is trying to make a custom type... let them
-                Class<? extends Arena> arenaClass = ArenaType.getArenaClass(cs.getString("arenaClass","Arena"));
+            if (at == null && type != null && !type.isEmpty()) { /// User is trying to make a custom type... let them
+                Class<? extends Arena> arenaClass = ArenaType.getArenaClass(cs.getString("arenaClass", "Arena"));
                 at = ArenaType.register(type, arenaClass, plugin);
             }
             if (at == null)

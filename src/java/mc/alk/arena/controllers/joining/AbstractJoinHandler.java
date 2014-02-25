@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers.joining;
 
 import mc.alk.arena.competition.Competition;
+import mc.alk.arena.controllers.joining.scoreboard.FullScoreboard;
 import mc.alk.arena.controllers.joining.scoreboard.WaitingScoreboard;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionSize;
@@ -81,23 +82,23 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     }
 
     private void initWaitingScoreboard() {
-//        if (maxTeams <= 16) {
-//            int needed = 0;
-//            int optional = 0;
-//            for (int i = 0; i < maxTeams; i++) {
-//                ArenaTeam team = TeamFactory.createTeam(i, matchParams, clazz);
-//                if (team.getMinPlayers() < 16) {
-//                    needed += team.getMinPlayers();
-//                    if (team.getMinPlayers() != team.getMaxPlayers() && team.getMaxPlayers() < 1000) {
-//                        optional += team.getMaxPlayers() - team.getMinPlayers();
-//                    }
-//                }
-//            }
-//            if (needed + optional <= 16) {
-//                scoreboard = new FullScoreboard(matchParams);
-//                return;
-//            }
-//        }
+        if (maxTeams <= 16) {
+            int needed = 0;
+            int optional = 0;
+            for (int i = 0; i < maxTeams; i++) {
+                ArenaTeam team = TeamFactory.createTeam(i, matchParams, clazz);
+                if (team.getMinPlayers() < 16) {
+                    needed += team.getMinPlayers();
+                    if (team.getMinPlayers() != team.getMaxPlayers() && team.getMaxPlayers() < 1000) {
+                        optional += team.getMaxPlayers() - team.getMinPlayers();
+                    }
+                }
+            }
+            if (needed + optional <= 16) {
+                scoreboard = new FullScoreboard(matchParams);
+                return;
+            }
+        }
 //        scoreboard = new AbridgedScoreboard(matchParams);
     }
 

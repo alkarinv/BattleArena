@@ -454,9 +454,7 @@ public class BAExecutor extends CustomCommandExecutor {
     public boolean leave(ArenaPlayer p, MatchParams mp, boolean adminLeave) {
         if (!adminLeave && !p.hasPermission("arena.leave") && !PermissionsUtil.hasMatchPerm(p,mp,"leave"))
             return true;
-        if (!canLeave(p)) {
-            return true;
-        }
+
         ArenaPlayerLeaveEvent event = new ArenaPlayerLeaveEvent(p, p.getTeam(),
                 ArenaPlayerLeaveEvent.QuitReason.QUITCOMMAND);
         event.callEvent();
@@ -673,19 +671,6 @@ public class BAExecutor extends CustomCommandExecutor {
         return true;
     }
 
-//	@MCCommand(cmds = { "check" }, usage = "check")
-//	public boolean arenaCheck(ArenaPlayer p) {
-//		if (ac.isInQue(p)) {
-//			JoinResult qpp = ac.getCurrentQuePos(p);
-//			if (qpp != null) {
-//				return sendMessage(p, "&e" + qpp.params.getName()
-//						+ "&e Queue Position: " + " &6" + (qpp.pos + 1)
-//						+ "&e. &6" + qpp.playersInQueue + " &eplayers in queue");
-//			}
-//		}
-//		return sendMessage(p, "&eYou are currently not in any arena queues.");
-//	}
-
     @MCCommand(cmds = { "auto" }, admin = true, perm = "arena.auto")
     public boolean arenaAuto(CommandSender sender, MatchParams params,String args[]) {
         try {
@@ -694,7 +679,6 @@ public class BAExecutor extends CustomCommandExecutor {
             Arena arena = eoo.getArena(params, null);
             Arena a = BattleArena.getBAController().reserveArena(arena);
             if (a == null){
-            } else {
                 return sendMessage(sender,"[BattleArena] auto args="+Arrays.toString(args) +
                         " can't be started. Arena "+arena+" is not there or in use");
             }
@@ -869,9 +853,6 @@ public class BAExecutor extends CustomCommandExecutor {
             }
             sendMessage(sender, "Teams: " + StringUtils.join(strs, ", "));
         }
-        // final BAEventController controller =
-        // BattleArena.getBAEventController();
-        // Event event = controller.getEvent(arena);
         return true;
     }
 
@@ -925,8 +906,8 @@ public class BAExecutor extends CustomCommandExecutor {
         return true;
     }
 
-    @MCCommand(cmds = { "create" }, admin = true, perm = "arena.create", usage = "create <arena name> [team size] [# teams]")
-    public boolean arenaCreate(Player sender, MatchParams mp, String name, String[] args) {
+    @MCCommand(cmds = { "create" }, admin = true, perm = "arena.create", usage = "create <arena name>")
+    public boolean arenaCreate(Player sender, MatchParams mp, String name) {
         if (ac.getArena(name) != null) {
             return sendMessage(sender, "&cThere is already an arena named &6" + name);
         }
@@ -947,8 +928,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
         Arena arena = ArenaType.createArena(name, ap, false);
         if (arena == null) {
-            return sendMessage(sender, "&cCouldn't create the arena " + name
-                    + " of type " + ap.getType());
+            return sendMessage(sender, "&cCouldn't create the arena " + name+ " of type " + ap.getType());
         }
 
         arena.setSpawnLoc(0, sender.getLocation());
@@ -959,10 +939,8 @@ public class BAExecutor extends CustomCommandExecutor {
         aci.init();
 
         sendMessage(sender, "&2You have created the arena &6" + arena);
-        sendMessage(sender,
-                "&2A spawn point has been created where you are standing");
-        sendMessage(sender,
-                "&2You can add/change spawn points using &6/arena alter "
+        sendMessage(sender,"&2A spawn point has been created where you are standing");
+        sendMessage(sender,"&2You can add/change spawn points using &6/arena alter "
                         + arena.getName() + " <1,2,...,x : which spawn>");
         BattleArena.saveArenas(arena.getArenaType().getPlugin());
         return BattleArena.getSelf().getArenaEditorExecutor().arenaSelect(sender, arena);
@@ -1455,10 +1433,6 @@ public class BAExecutor extends CustomCommandExecutor {
             sendMessage(sender, "&6/arena list all&e: to see all arenas");
         return sendMessage(sender,
                 "&6/arena info <arenaname>&e: for details on an arena");
-    }
-
-    public boolean canLeave(ArenaPlayer p) {
-        return true;
     }
 
     public boolean canJoin(ArenaTeam t) {

@@ -60,6 +60,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.plugin.updater.v1r6.FileUpdater;
 import mc.alk.plugin.updater.v1r6.PluginUpdater;
+import mc.battleplugins.api.BattlePluginsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -97,7 +98,7 @@ public class BattleArena extends JavaPlugin {
     private static final EventScheduleSerializer eventSchedulerSerializer = new EventScheduleSerializer();
     private static final SignSerializer signSerializer = new SignSerializer();
     private static final int bukkitId = 43134; /// project bukkitId
-
+    private BattlePluginsAPI bpapi;
 
     /**
      * enable the BattleArena plugin
@@ -245,7 +246,7 @@ public class BattleArena extends JavaPlugin {
                     es.start();
             }
         });
-
+        bpapi = new BattlePluginsAPI(this);
         PluginUpdater.update(this, bukkitId, this.getFile(),
                 Defaults.AUTO_UPDATE, Defaults.ANNOUNCE_UPDATE);
         Log.info("&4[" + pluginname + "] &6v" + BattleArena.version + "&f enabled!");

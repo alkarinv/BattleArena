@@ -227,6 +227,9 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         removeMatch(am); /// handles removing running match from the BArenaController
 
         final Arena arena = allarenas.get(am.getArena().getName().toUpperCase());
+        if (arena == null) { /// we have deleted this arena while a match was going on
+            return;}
+
         /// put back old states if it was autoed
         restoreStates(am, arena);
         removeFixedReservedArena(arena);
@@ -239,7 +242,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
             }
         }
         /// isEnabled to check to see if we are shutting down
-        if (arena != null && BattleArena.getSelf().isEnabled()){
+        if (BattleArena.getSelf().isEnabled()){
             Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
                 @Override
                 public void run() {
@@ -399,10 +402,8 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
     public Arena getArena(String arenaName) {return allarenas.get(arenaName.toUpperCase());}
 
     public Arena removeArena(Arena arena) {
-        Arena a = amq.removeArena(arena);
-        if (a != null){
-            allarenas.remove(arena.getName().toUpperCase());}
-        allarenas.remove(arena.getName());
+        amq.removeArena(arena);
+        allarenas.remove(arena.getName().toUpperCase());
         return arena;
     }
 

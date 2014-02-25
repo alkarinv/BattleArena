@@ -9,7 +9,6 @@ import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.MessageUtil;
 import mc.alk.scoreboardapi.api.SObjective;
 import mc.alk.scoreboardapi.api.STeam;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
@@ -100,7 +99,7 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
             bboard.setScoreboard(p);
         }
         if (colorPlayerNames)
-            t.setPrefix(MessageUtil.colorChat(team.getTeamChatColor()+""));
+            t.setPrefix(team.getTeamChatColor()+"");
         teams.put(team, t);
 
         for (SObjective o : this.getObjectives()){
@@ -114,23 +113,20 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
         return t;
     }
 
-    private void addToTeam(STeam team, ArenaPlayer player){
-        team.addPlayer(player.getPlayer());
-        bboard.setScoreboard(player.getPlayer());
-    }
-
-    private void removeFromTeam(STeam team, ArenaPlayer player){
-        team.removePlayer(player.getPlayer());
-        bboard.removeScoreboard(player.getPlayer());
-    }
 
     @Override
     public STeam addedToTeam(ArenaTeam team, ArenaPlayer player) {
         STeam t = teams.get(team);
         if (t == null){
             t = addTeam(team);}
-        addToTeam(t,player);
+        addedToTeam(t,player);
         return t;
+    }
+
+    @Override
+    public void addedToTeam(STeam team, ArenaPlayer player){
+        team.addPlayer(player.getPlayer());
+        bboard.setScoreboard(player.getPlayer());
     }
 
     @Override
@@ -142,6 +138,11 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
         }
         removeFromTeam(t,player);
         return t;
+    }
+
+    private void removeFromTeam(STeam team, ArenaPlayer player){
+        team.removePlayer(player.getPlayer());
+        bboard.removeScoreboard(player.getPlayer());
     }
 
     @Override

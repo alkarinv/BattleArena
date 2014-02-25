@@ -68,4 +68,7 @@ public class TeamFactory {
     }
 
 
+    public static void setStringID(AbstractTeam team, String newID) {
+        team.strID = newID;
+    }
 }

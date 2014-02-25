@@ -173,5 +173,6 @@ public interface ArenaTeam {
     public void setIndex(int index);
 
     public int getIndex();
+
 }
 

@@ -1,12 +1,11 @@
 package mc.alk.arena.controllers;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.RegisteredCompetition;
-
 import org.bukkit.plugin.Plugin;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CompetitionController {
 	static HashMap<String, Map<String, RegisteredCompetition>> registeredCompetitions =
@@ -61,11 +60,11 @@ public class CompetitionController {
 			Map<String, RegisteredCompetition> comps = registeredCompetitions.get(plugin);
 			if (comps == null || comps.isEmpty())
 				continue;
-			for (RegisteredCompetition rc: comps.values()){
-				rc.reload();
-				break; /// we only need to reload once per plugin
-			}
+            comps.values().iterator().next().reload(); /// we only need to reload once per plugin
 		}
 	}
 
+    public static boolean hasPlugin(Plugin plugin) {
+        return registeredCompetitions.containsKey(plugin.getName());
+    }
 }

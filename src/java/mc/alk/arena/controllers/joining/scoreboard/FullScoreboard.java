@@ -5,7 +5,10 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
+import mc.alk.arena.objects.teams.AbstractTeam;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.objects.teams.CompositeTeam;
+import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.scoreboardapi.api.SEntry;
 import mc.alk.scoreboardapi.api.STeam;
@@ -17,49 +20,61 @@ import java.util.LinkedList;
 import java.util.Map;
 
 public class FullScoreboard implements WaitingScoreboard {
-    Map<ArenaTeam, LinkedList<SEntry>> reqPlaceHolderPlayers = new HashMap<ArenaTeam, LinkedList<SEntry>>();
+    Map<Integer, LinkedList<SEntry>> reqPlaceHolderPlayers = new HashMap<Integer, LinkedList<SEntry>>();
 
-    Map<ArenaTeam, LinkedList<SEntry>> opPlaceHolderPlayers = new HashMap<ArenaTeam, LinkedList<SEntry>>();
+    Map<Integer, LinkedList<SEntry>> opPlaceHolderPlayers = new HashMap<Integer, LinkedList<SEntry>>();
     ArenaScoreboard scoreboard;
     ArenaObjective ao;
+    final int minTeams;
 
     public FullScoreboard(MatchParams params) {
         scoreboard = ScoreboardFactory.createScoreboard(String.valueOf(this.hashCode()), params);
         ao = scoreboard.createObjective("waiting",
                 "Queue Players", "&6Waiting Players", SAPIDisplaySlot.SIDEBAR, 100);
         ao.setDisplayTeams(false);
+        minTeams = params.getMinTeams();
+        int maxTeams = params.getMaxTeams();
+        for (int i = 0; i < maxTeams; i++) {
+            ArenaTeam team = TeamFactory.createTeam(i, params, CompositeTeam.class);
+            TeamFactory.setStringID((AbstractTeam)team, String.valueOf(team.getIndex()));
+            STeam t = scoreboard.addTeam(team);
+            for (int j = 0; j < team.getMaxPlayers(); j++) {
+                addPlaceholder(team, t, i >= minTeams);
+            }
+        }
     }
 
 
-    private int getReqSize(ArenaTeam team) {
-        return reqPlaceHolderPlayers.containsKey(team) ? reqPlaceHolderPlayers.get(team).size() : 0;
+    private int getReqSize(int teamIndex) {
+        return reqPlaceHolderPlayers.containsKey(teamIndex) ?
+                reqPlaceHolderPlayers.get(teamIndex).size() : 0;
     }
 
 
-    private void addPlaceholder(ArenaTeam team, STeam t) {
+    private void addPlaceholder(ArenaTeam team, STeam t, boolean optionalTeam) {
         String name;
 
         LinkedList<SEntry> r;
         int index;
         int points;
-        if (getReqSize(team) < team.getMinPlayers()) {
-            r = reqPlaceHolderPlayers.get(team);
+        if (!optionalTeam && getReqSize(team.getIndex()) < team.getMinPlayers()) {
+            r = reqPlaceHolderPlayers.get(team.getIndex());
             if (r == null) {
                 r = new LinkedList<SEntry>();
-                reqPlaceHolderPlayers.put(team, r);
+                reqPlaceHolderPlayers.put(team.getIndex(), r);
             }
             name = "needed";
             points = 1;
             index = r.size();
         } else {
-            r = opPlaceHolderPlayers.get(team);
+            r = opPlaceHolderPlayers.get(team.getIndex());
             if (r == null) {
                 r = new LinkedList<SEntry>();
-                opPlaceHolderPlayers.put(team, r);
+                opPlaceHolderPlayers.put(team.getIndex(), r);
             }
             name = "open";
             points = 0;
-            index = team.getMinPlayers() + r.size();
+            index = optionalTeam ? r.size() : team.getMinPlayers() + r.size();
         }
 
         String dis = "- " + name + " -" + team.getTeamChatColor() + TeamUtil.getTeamChatColor(index);
@@ -71,17 +86,19 @@ public class FullScoreboard implements WaitingScoreboard {
         SEntry e = scoreboard.getEntry(pname);
         if (e == null) {
             e = scoreboard.createEntry(pname, dis);
+            ao.addEntry(e, points);
         }
 
         r.addLast(e);
         t.addPlayer(e.getOfflinePlayer());
-        ao.addEntry(e, points);
+
+        ao.setPoints(e, points);
     }
 
-    private void removePlaceHolder(ArenaTeam team){
-        LinkedList<SEntry> list = reqPlaceHolderPlayers.get(team);
+    private void removePlaceHolder(int teamIndex){
+        LinkedList<SEntry> list = reqPlaceHolderPlayers.get(teamIndex);
         if (list == null || list.isEmpty()) {
-            list = opPlaceHolderPlayers.get(team);
+            list = opPlaceHolderPlayers.get(teamIndex);
         }
         if (list == null || list.isEmpty()) {
             return;
@@ -92,9 +109,10 @@ public class FullScoreboard implements WaitingScoreboard {
 
     @Override
     public void addedToTeam(ArenaTeam team, ArenaPlayer player) {
-        scoreboard.addedToTeam(team, player);
+        STeam t = scoreboard.getTeam(String.valueOf(team.getIndex()));
+        scoreboard.addedToTeam(t, player);
         ao.setPoints(player, 10);
-        removePlaceHolder(team);
+        removePlaceHolder(team.getIndex());
     }
 
     @Override
@@ -106,32 +124,34 @@ public class FullScoreboard implements WaitingScoreboard {
 
     @Override
     public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {
-        STeam t = scoreboard.getTeam(team.getIDString());
+        STeam t = scoreboard.getTeam(String.valueOf(team.getIndex()));
         scoreboard.removedFromTeam(team,player);
-        addPlaceholder(team, t);
+        addPlaceholder(team, t,team.getIndex()>= minTeams);
     }
 
     @Override
     public void removedFromTeam(ArenaTeam team, Collection<ArenaPlayer> players) {
-        STeam t = scoreboard.getTeam(team.getIDString());
+        STeam t = scoreboard.getTeam(String.valueOf(team.getIndex()));
         for (ArenaPlayer player : players) {
             scoreboard.removedFromTeam(team,player);
-            addPlaceholder(team, t);
+            addPlaceholder(team, t, team.getIndex()>= minTeams);
         }
     }
 
     @Override
     public boolean addedTeam(ArenaTeam team) {
-        STeam t = scoreboard.addTeam(team);
-        for (int i = 0; i < team.getMaxPlayers() - team.size(); i++) {
-            addPlaceholder(team, t);
+        STeam t = scoreboard.createTeamEntry(String.valueOf(team.getIndex()), "");
+//        int s = team.size();
+        for (ArenaPlayer ap : team.getPlayers()) {
+            addedToTeam(team, ap);
+//            addPlaceholder(team, t, team.getIndex()>= minTeams);
         }
         return true;
     }
 
     @Override
     public boolean removedTeam(ArenaTeam team) {
-        STeam t = scoreboard.getTeam(team.getIDString());
+        STeam t = scoreboard.getTeam(String.valueOf(team.getIndex()));
         scoreboard.removeEntry(t);
         return false;
     }
