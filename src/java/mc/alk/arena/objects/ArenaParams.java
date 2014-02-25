@@ -293,7 +293,8 @@ public class ArenaParams {
     }
 
     public String getName() {
-        return name;
+        return name != null ? name :
+                (parent != null ? parent.getName() : null);
     }
     public void setName(String name) {
         this.name = name;

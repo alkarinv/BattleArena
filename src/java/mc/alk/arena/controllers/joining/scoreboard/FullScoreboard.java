@@ -140,11 +140,9 @@ public class FullScoreboard implements WaitingScoreboard {
 
     @Override
     public boolean addedTeam(ArenaTeam team) {
-        STeam t = scoreboard.createTeamEntry(String.valueOf(team.getIndex()), "");
-//        int s = team.size();
+        scoreboard.createTeamEntry(String.valueOf(team.getIndex()), "");
         for (ArenaPlayer ap : team.getPlayers()) {
             addedToTeam(team, ap);
-//            addPlaceholder(team, t, team.getIndex()>= minTeams);
         }
         return true;
     }

@@ -287,6 +287,10 @@ public class BattleArena extends JavaPlugin {
         new APIRegistrationController().update(plugin, bukkitId, file, updateOption, announceOption);
     }
 
+    public BattlePluginsAPI getBattlePluginsAPI() {
+        return bpapi;
+    }
+
     /**
      NONE get no releases,
      RELEASE get only release updates, ignore beta/alpha,

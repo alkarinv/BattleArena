@@ -256,15 +256,20 @@ public class APIRegistrationController {
         /// Create our Executor
         createExecutor(plugin, cmd, executor, mp);
 
+        /// Set our config
         rc.setConfigSerializer(config);
+
+        /// schedule stats
+        if (!CompetitionController.hasPlugin(plugin)){
+            new BattlePluginsAPI(plugin);}
+
+        /// Add the competition
         CompetitionController.addRegisteredCompetition(rc);
 
         /// Load our arenas
         ArenaSerializer as = new ArenaSerializer(plugin, defaultArenaFile); /// arena config
         as.loadArenas(plugin,at);
         rc.setArenaSerializer(as);
-        if (!CompetitionController.hasPlugin(plugin)){
-            new BattlePluginsAPI(plugin);}
 
         return true;
     }

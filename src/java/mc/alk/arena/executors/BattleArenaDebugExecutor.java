@@ -4,6 +4,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaClassController;
+import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
@@ -15,6 +16,7 @@ import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.RegisteredCompetition;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.joining.WaitingObject;
@@ -40,6 +42,8 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -488,6 +492,36 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
         }
         sendMessage(sender, "    Total time "+gtotal + (useMs ? " time(ms)" : " time(ns)"));
         return true;
+    }
+
+    @MCCommand(cmds={"pasteConfig"}, admin=true)
+    public boolean pasteConfig(CommandSender sender, String paramName, String[] args) {
+        MatchParams mp = findMatchParam(sender, paramName);
+        if (mp == null)
+            return true;
+        RegisteredCompetition rc = CompetitionController.getCompetition(mp.getName());
+        if (rc == null) {
+            return sendMessage(sender, "&cNo config file found for " + paramName);
+        }
+        String pasteTitle;
+        File f;
+        if (args.length > 2 && args[2].equalsIgnoreCase("arenas")){
+            f = rc.getArenaSerializer().getFile();
+            pasteTitle = mp.getName() + " " + f.getName();
+        } else {
+            f = rc.getConfigSerializer().getFile();
+            pasteTitle = f.getName();
+        }
+        if (!f.exists()){
+            return sendMessage(sender, "&cNo config file found for " + paramName);}
+        try {
+            String pasteID = BattleArena.getSelf().getBattlePluginsAPI().pasteFile(pasteTitle,f.getPath());
+            sendMessage(sender, "&2Paste successful, link is");
+            return sendMessage(sender, pasteID);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return sendMessage(sender, "&cCouldn't send paste Error was : " + e.getMessage());
+        }
     }
 
     @MCCommand(cmds={"showScoreboard"}, admin=true)
