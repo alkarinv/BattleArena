@@ -13,6 +13,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
+import mc.alk.arena.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,6 +83,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     }
 
     private void initWaitingScoreboard() {
+        try {
         if (maxTeams <= 16) {
             int needed = 0;
             int optional = 0;
@@ -89,8 +91,8 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
                 ArenaTeam team = TeamFactory.createTeam(i, matchParams, clazz);
                 if (team.getMinPlayers() < 16) {
                     needed += team.getMinPlayers();
-                    if (team.getMinPlayers() != team.getMaxPlayers() && team.getMaxPlayers() < 1000) {
-                        optional += team.getMaxPlayers() - team.getMinPlayers();
+                    if (team.getMinPlayers() != team.getMaxPlayers()) {
+                        optional += team.getMaxPlayers() < 1000 ? team.getMaxPlayers() - team.getMinPlayers() : 1000;
                     }
                 }
             }
@@ -98,6 +100,9 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
                 scoreboard = new FullScoreboard(matchParams);
                 return;
             }
+        }
+        }catch(Throwable e) {
+            Log.printStackTrace(e);
         }
 //        scoreboard = new AbridgedScoreboard(matchParams);
     }

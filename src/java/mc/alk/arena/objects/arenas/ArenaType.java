@@ -126,7 +126,7 @@ public class ArenaType implements Comparable<ArenaType>{
 
 	public static ArenaType register(String arenaType, Class<? extends Arena> arenaClass, Plugin plugin) {
 		final String uarenaType = arenaType.toUpperCase();
-		if (!classes.containsKey(uarenaType))
+		if (!classes.containsKey(uarenaType) || classes.get(uarenaType) == null)
 			classes.put(uarenaType, arenaClass);
 		if (!types.containsKey(uarenaType)){
 			new ArenaType(arenaType,plugin);

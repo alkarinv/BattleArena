@@ -50,7 +50,7 @@ public class BAPlayerListener implements Listener  {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerRespawn(PlayerRespawnEvent event){
 		if (restore.containsKey(event.getPlayer().getName())){
-			if (restore.get(event.getPlayer().getName()).handle(event.getPlayer(),event)){
+			if (!restore.get(event.getPlayer().getName()).handle(event.getPlayer(),event)){
 				restore.remove(event.getPlayer().getName());
 			}
 		}

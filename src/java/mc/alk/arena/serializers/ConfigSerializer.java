@@ -380,25 +380,32 @@ public class ConfigSerializer extends BaseConfig{
      */
     public static ArenaType getArenaType(Plugin plugin, ConfigurationSection cs) throws ConfigException {
         ArenaType at;
-        if (cs.contains("arenaType") || cs.contains("type") || cs.contains("gameType")) {
-            String type = cs.getString("gameType");
+            at = ArenaType.fromString(cs.getName()); /// Get it from the configuration section name
+
+        return at;
+    }
+    /**
+     * Get the ArenaClass for this plugin given the Configuration section
+     * @param plugin the plugin
+     * @param cs section containing the "type"
+     * @return The ArenaClass
+     * @throws ConfigException
+     */
+    public static Class<? extends Arena> getArenaClass(Plugin plugin, ConfigurationSection cs) throws ConfigException {
+        String type = null;
+        if (cs.contains("arenaType") || cs.contains("type") || cs.contains("arenaClass")) {
+            type = cs.getString("arenaClass");
             if (type == null)
                 type = cs.contains("type") ? cs.getString("type") : cs.getString("arenaType");
 
-            at = ArenaType.fromString(type);
-            if (at == null && type != null && !type.isEmpty()) { /// User is trying to make a custom type... let them
-                Class<? extends Arena> arenaClass = ArenaType.getArenaClass(cs.getString("arenaClass", "Arena"));
-                at = ArenaType.register(type, arenaClass, plugin);
+        }
+        if (type != null){
+            ArenaType at = ArenaType.fromString(type);
+            if (at != null) { /// User is trying to make a custom type... let them
+                return ArenaType.getArenaClass(at);
             }
-            if (at == null)
-                throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
-        } else {
-            at = ArenaType.fromString(cs.getName()); /// Get it from the configuration section name
         }
-        if (at == null){
-            at = ArenaType.register(cs.getName(), Arena.class, plugin);
-        }
-        return at;
+        return null;
     }
 
     public static ArenaType getArenaGameType(Plugin plugin, ConfigurationSection cs) throws ConfigException {

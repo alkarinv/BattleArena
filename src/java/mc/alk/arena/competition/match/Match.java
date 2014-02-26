@@ -1045,6 +1045,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
                 !isHandled(event.getPlayer()))
             return;
         ArenaPlayer player = event.getPlayer();
+        if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(player, " -onArenaPlayerLeaveEventGlobal  t="+player.getTeam());
         player.removeCompetition(this);
         player.reset(); /// reset the players
         ArenaTeam t = getTeam(player);
@@ -1090,6 +1091,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     @Override
     public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+        if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(player, " -onPostQuit  t="+player.getTeam());
         ArenaTeam t = getTeam(player);
         PerformTransition.transition(this, MatchState.ONLEAVEARENA, player, t, false);
         updateBukkitEvents(MatchState.ONLEAVE,player);
@@ -1108,7 +1110,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             t.killMember(player);
             if (this.getState().ordinal() < MatchState.ONVICTORY.ordinal())
                 checkAndHandleIfTeamDead(t);
-            scoreboard.setDead(t,player);
+            scoreboard.setDead(t, player);
 
         }
 

@@ -10,7 +10,6 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.RegisteredCompetition;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
-import mc.alk.arena.objects.exceptions.ConfigException;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
@@ -211,22 +210,26 @@ public class APIRegistrationController {
             Log.err(plugin.getName() + " " + pluginFile.getName() + " config file could not be loaded!");
             return false;
         }
+        /// What is our game type ? spleef, ctf, etc
+        final ArenaType gameType = ConfigSerializer.getArenaGameType(plugin,config.getConfigurationSection(name));
+
         /// load or register our arena type
-        ArenaType at;
-        if (arenaClass == null){
-            try{
-                at = ConfigSerializer.getArenaType(plugin, config.getConfigurationSection(name));
-            } catch (ConfigException e){
-                Log.err(e.getMessage());
-                return false;
+        if (arenaClass == null) {
+            if (gameType != null) {
+                arenaClass = ArenaType.getArenaClass(gameType);
+            } else {
+                arenaClass = ConfigSerializer.getArenaClass(plugin, config.getConfigurationSection(name));
             }
-        } else {
-            at = ArenaType.register(name, arenaClass, plugin);
+            if (arenaClass == null) {
+                arenaClass = Arena.class;
+            }
         }
+        ArenaType at = ArenaType.register(name, arenaClass, plugin);
+
         /// Load our Match Params for this types
         MatchParams mp = config.loadMatchParams();
 
-        final ArenaType gameType = ConfigSerializer.getArenaGameType(plugin,config.getConfigurationSection(name));
+
         MessageSerializer ms = null;
         /// load messages
         if (loadFile(plugin, messageFile, name+"Messages.yml",name,cmd)){
