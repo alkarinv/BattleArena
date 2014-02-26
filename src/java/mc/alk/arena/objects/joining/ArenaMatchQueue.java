@@ -7,6 +7,7 @@ import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.MethodController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.matches.MatchCreatedEvent;
@@ -116,18 +117,25 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         MatchParams params;
 
         public void startMatch() {
-            final Match m = new ArenaMatch(arena, params, wo.getArenaListeners());
-            m.hookTeamJoinHandler(wo.jh);
-            ready_matches.add(m);
             removeTimer(wo); /// get rid of any timers
-            for (ArenaTeam t : wo.jh.getTeams()) {
-                for (ArenaPlayer ap : t.getPlayers()) {
-                    ap.addCompetition(m);
-                    removeFromQueue(ap, false);
+            Scheduler.scheduleSynchronousTask(new Runnable() {
+                @Override
+                public void run() {
+                    final Match m = new ArenaMatch(arena, params, wo.getArenaListeners());
+                    m.hookTeamJoinHandler(wo.jh);
+                    ready_matches.add(m);
+                    for (ArenaTeam t : wo.jh.getTeams()) {
+                        for (ArenaPlayer ap : t.getPlayers()) {
+                            ap.addCompetition(m);
+                            removeFromQueue(ap, false);
+                        }
+                    }
+                    MatchCreatedEvent mce = new MatchCreatedEvent(m, wo);
+                    m.callEvent(mce);
                 }
-            }
-            MatchCreatedEvent mce = new MatchCreatedEvent(m, wo);
-            m.callEvent(mce);
+            });
+
+
         }
     }
 

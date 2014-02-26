@@ -1095,18 +1095,21 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         updateBukkitEvents(MatchState.ONLEAVE,player);
         if (WorldGuardController.hasWorldGuard() && arena.hasRegion())
             psc.removeMember(player, arena.getWorldGuardRegion());
-        if (this.woolTeams)
-            TeamUtil.removeTeamHead(t.getIndex(), player.getPlayer());
-        t.killMember(player);
-        if (this.getState().ordinal() < MatchState.ONVICTORY.ordinal())
-            checkAndHandleIfTeamDead(t);
         inMatch.remove(player.getName());
         player.removeCompetition(this);
         player.reset(); /// reset the players
-        scoreboard.setDead(t,player);
         if (!params.getUseTrackerPvP()){
             StatController.resumeTracking(player);
             StatController.resumeTrackingMessages(player);
+        }
+        if (t != null){
+            if (this.woolTeams)
+                TeamUtil.removeTeamHead(t.getIndex(), player.getPlayer());
+            t.killMember(player);
+            if (this.getState().ordinal() < MatchState.ONVICTORY.ordinal())
+                checkAndHandleIfTeamDead(t);
+            scoreboard.setDead(t,player);
+
         }
 
         arenaInterface.onLeave(player,t);
