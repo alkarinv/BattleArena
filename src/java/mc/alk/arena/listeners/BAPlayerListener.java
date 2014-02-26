@@ -49,7 +49,7 @@ public class BAPlayerListener implements Listener  {
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerRespawn(PlayerRespawnEvent event){
-		if (restore.containsKey(event.getPlayer().getName())){
+        if (restore.containsKey(event.getPlayer().getName())){
 			if (!restore.get(event.getPlayer().getName()).handle(event.getPlayer(),event)){
 				restore.remove(event.getPlayer().getName());
 			}
@@ -83,8 +83,8 @@ public class BAPlayerListener implements Listener  {
 	}
 
 	private static PlayerRestoreController getOrCreateRestorer(final String name){
-		if (restore.containsKey(name))
-			return restore.get(name);
+		if (restore.containsKey(name)){
+            return restore.get(name);}
 		PlayerRestoreController prc = new PlayerRestoreController(name);
 		restore.put(name, prc);
 		return prc;

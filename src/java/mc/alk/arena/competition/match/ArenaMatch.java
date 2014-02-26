@@ -72,6 +72,7 @@ public class ArenaMatch extends Match {
 
     @ArenaEventHandler(suppressCastWarnings=true,bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
     public void onPlayerDeath(PlayerDeathEvent event, final ArenaPlayer target){
+        if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(target, " -onPlayerDeath  t=" + target.getTeam());
         if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE){
             return;}
         final ArenaTeam t = getTeam(target);
@@ -137,7 +138,7 @@ public class ArenaMatch extends Match {
             /// where we need to give them back the current Inventory they have on them
             /// even if they log out
             if (keepsInventory){
-                boolean restores = getParams().hasAnyOption(TransitionOption.RESTOREALL);
+                boolean restores = getParams().hasOptionAt(MatchState.ONLEAVE,TransitionOption.RESTOREITEMS);
                 /// Restores and exiting, means clear their match inventory so they won't
                 /// get their match and their already stored inventory
                 if (restores && exiting){
@@ -221,6 +222,8 @@ public class ArenaMatch extends Match {
 
     @ArenaEventHandler(priority=EventPriority.HIGH)
     public void onPlayerRespawn(PlayerRespawnEvent event, final ArenaPlayer p){
+        if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(p, " -onPlayerRespawn  t="+p.getTeam());
+
         if (isWon()){
             return;}
         final TransitionOptions mo = tops.getOptions(MatchState.ONDEATH);

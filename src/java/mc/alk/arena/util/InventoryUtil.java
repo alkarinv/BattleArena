@@ -1131,11 +1131,12 @@ public class InventoryUtil {
 				}
 			}
 			inv.setContents(pinv.contents);
-
 		} catch(Exception e){
 			Log.printStackTrace(e);
 		}
-		try {p.getPlayer().updateInventory(); } catch (Exception e){/* do nothing*/} /// Yes this can throw errors
+		try {p.getPlayer().updateInventory(); } catch (Exception e){
+            Log.printStackTrace(e);
+        }
 	}
 
 

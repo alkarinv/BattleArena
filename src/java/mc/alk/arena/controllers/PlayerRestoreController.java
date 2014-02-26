@@ -1,10 +1,6 @@
 package mc.alk.arena.controllers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.EffectUtil;
@@ -17,14 +13,15 @@ import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.Util;
-
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class PlayerRestoreController {
@@ -109,7 +106,7 @@ public class PlayerRestoreController {
 
 		/// DeEnchant
 		if (deEnchant){
-			try{ EffectUtil.deEnchantAll(p);} catch (Exception e){}
+			try{ EffectUtil.deEnchantAll(p);} catch (Exception e){/* do nothing */}
 			HeroesController.deEnchant(p);
 		}
 
@@ -146,10 +143,10 @@ public class PlayerRestoreController {
 	private void handleItems() {
 		final PInv items = item;
 		item=null;
-		Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
 			public void run() {
 				Player pl = ServerUtil.findPlayerExact(name);
-				if (Defaults.DEBUG_STORAGE) Log.info("### restoring items to " + name +"   pl = " + pl);
 				if (pl != null){
 					ArenaPlayer ap = PlayerController.toArenaPlayer(pl);
 					PlayerStoreController.setInventory(ap, items);
@@ -330,14 +327,6 @@ public class PlayerRestoreController {
 
 	private void handleClearInventory(Player p) {
 		Log.warn("[BattleArena] clearing inventory for quitting during a match " + p.getName());
-		for (ItemStack is: p.getInventory().getContents()){
-			if (is == null || is.getType()==Material.AIR)
-				continue;
-		}
-		for (ItemStack is: p.getInventory().getArmorContents()){
-			if (is == null || is.getType()==Material.AIR)
-				continue;
-		}
 		InventoryUtil.clearInventory(p);
 	}
 
@@ -396,7 +385,7 @@ public class PlayerRestoreController {
 	}
 
 	public void setItem(PInv item) {
-		this.item = item;
+        this.item = item;
 	}
 
 	public void setMatchItems(PInv matchItems) {

@@ -941,6 +941,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     }
 
     public boolean onLeave(ArenaPlayer p) {
+        if (Defaults.DEBUG_TRACE) Log.info(p.getName() + " -onLeave  t=" + p.getTeam());
+
         /// remove them from the match, they don't want to be here
         ArenaTeam t = getTeam(p);
         if (t==null) /// really? trying to make a player leave who isnt in the match
@@ -1040,6 +1042,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
      */
     @EventHandler
     public void onArenaPlayerLeaveEventGlobal(ArenaPlayerLeaveEvent event){
+        if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(event.getPlayer(), " -onArenaPlayerLeaveEventGlobal  t=" + event.getPlayer().getTeam());
+
         if (leftPlayers.contains(event.getPlayer().getName()) ||
                 (matchPlayers.contains(event.getPlayer()) && event.getPlayer().getCurLocation().getType() == LocationType.ARENA)||
                 !isHandled(event.getPlayer()))
@@ -1074,12 +1078,14 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     @ArenaEventHandler
     public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
         ArenaPlayer player = event.getPlayer();
+        if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(player, " -onArenaPlayerLeaveEvent  t="+player.getTeam());
         if (!isHandled(player))
             return;
         quitting(event, player);
     }
 
     private void quitting(ArenaPlayerLeaveEvent event, ArenaPlayer player) {
+        if (Defaults.DEBUG_TRACE) Log.info(player.getName() + " -quitting  t=" + player.getTeam());
         event.addMessage(MessageHandler.getSystemMessage("you_left_competition", this.params.getName()));
         if (params.hasOptionAt(MatchState.DEFAULTS, TransitionOption.DROPITEMS)) {
             InventoryUtil.dropItems(player.getPlayer());
@@ -1091,7 +1097,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     @Override
     public void onPostQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-        if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(player, " -onPostQuit  t="+player.getTeam());
+        if (Defaults.DEBUG_TRACE) Log.info(player.getName() + " -onPostQuit  t=" + player.getTeam());
         ArenaTeam t = getTeam(player);
         PerformTransition.transition(this, MatchState.ONLEAVEARENA, player, t, false);
         updateBukkitEvents(MatchState.ONLEAVE,player);
@@ -1143,11 +1149,14 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     @Override
     public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
         //		Log.debug(" onPreLeave !!!!!!! " + player.getName() +"   " + apte.getArenaType());
+        if (Defaults.DEBUG_TRACE) Log.info(player.getName() + " -onPreLeave  t=" + player.getTeam());
         inMatch.remove(player.getName());
     }
 
     @Override
     public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+        if (Defaults.DEBUG_TRACE) Log.info(player.getName() + " -onPostLeave  t=" + player.getTeam());
+
     }
 
     public void setMessageHandler(MatchMessageHandler mc){this.mc.setMessageHandler(mc);}

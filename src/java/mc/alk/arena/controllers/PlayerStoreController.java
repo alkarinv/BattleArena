@@ -1,8 +1,5 @@
 package mc.alk.arena.controllers;
 
-import java.util.HashMap;
-import java.util.List;
-
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.HeroesController;
@@ -17,10 +14,12 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
-
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class PlayerStoreController {
 	static final PlayerStoreController INSTANCE = new PlayerStoreController();
@@ -50,7 +49,7 @@ public class PlayerStoreController {
 			exp += expmap.get(name);}
 		expmap.put(name, exp);
 		ExpUtil.setTotalExperience(p, 0);
-		try{p.updateInventory();} catch(Exception e){}
+		try{p.updateInventory();} catch(Exception e){/* do nothing */}
 	}
 
 	public void restoreExperience(ArenaPlayer p) {
@@ -148,7 +147,7 @@ public class PlayerStoreController {
 	/**
 	 * Warning!!! Unlike most other methods in the StoreController, this one
 	 * overwrites previous values
-	 * @param player
+	 * @param player ArenaPlayer
 	 */
 	public void storeMatchItems(ArenaPlayer player) {
 		final String name= player.getName();
@@ -195,7 +194,7 @@ public class PlayerStoreController {
 	}
 
 	public static void setInventory(ArenaPlayer p, PInv pinv) {
-		if (Defaults.DEBUG_STORAGE) Log.info("restoring items for " + p.getName() +"= "+" o="+p.isOnline() +"  dead="+p.isDead() +" h=" + p.getHealth()+"");
+        if (Defaults.DEBUG_STORAGE) Log.info("setInventory items to " + p.getName() +"= "+" o="+p.isOnline() +"  dead="+p.isDead() +" h=" + p.getHealth()+"");
 		if (p.isOnline() && !p.isDead()){
 			InventoryUtil.addToInventory(p.getPlayer(), pinv);
 		} else {
@@ -219,7 +218,7 @@ public class PlayerStoreController {
 		if (Defaults.DEBUG_STORAGE)  Log.info("storing godmode " + p.getName() +" " + p.getPlayer().getGameMode());
 		Boolean b = EssentialsController.isGod(p);
 		if (b)
-			godmode.put(p.getName(), b);
+			godmode.put(p.getName(), true);
 	}
 
 	public void restoreFlight(ArenaPlayer p) {
@@ -235,7 +234,7 @@ public class PlayerStoreController {
 		if (Defaults.DEBUG_STORAGE)  Log.info("storing flight " + p.getName() +" " + p.getPlayer().getGameMode());
 		Boolean b = EssentialsController.isFlying(p);
 		if (b)
-			flight.put(p.getName(), b);
+			flight.put(p.getName(), true);
 	}
 
 	public void restoreGodmode(ArenaPlayer p) {
@@ -327,7 +326,7 @@ public class PlayerStoreController {
 	}
 
 	public void deEnchant(Player p) {
-		try{ EffectUtil.deEnchantAll(p);} catch (Exception e){}
+		try{ EffectUtil.deEnchantAll(p);} catch (Exception e){/* do nothing */}
 		HeroesController.deEnchant(p);
 		if (!p.isOnline() || p.isDead()){
 			BAPlayerListener.deEnchantOnEnter(p.getName());
