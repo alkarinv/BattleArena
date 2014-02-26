@@ -55,8 +55,8 @@ public class DuelController implements ArenaListener{
 				teams.add(t2);
 				JoinOptions jo = new JoinOptions();
                 jo.setMatchParams(d.getMatchParams());
-
-				if (d.getOptions().hasOption(DuelOption.ARENA)){
+                jo.setJoinLocation(player.getLocation());
+                if (d.getOptions().hasOption(DuelOption.ARENA)){
 					jo.setArena((Arena) d.getOptions().getOptionValue(DuelOption.ARENA));
 				}
 				Matchup m = new Matchup(d.getMatchParams(),teams, jo);

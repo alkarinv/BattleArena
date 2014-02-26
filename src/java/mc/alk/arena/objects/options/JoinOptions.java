@@ -25,7 +25,6 @@ import java.util.UUID;
 public class JoinOptions {
 
 
-
     public static enum JoinOption{
 		ARENA("<arena>",false), TEAM("<team>",false),
 		WANTEDTEAMSIZE("<teamSize>",false);
@@ -107,10 +106,14 @@ public class JoinOptions {
 		return jo==null || (jo.matches(match.getArena()) && jo.matches(match.getParams()));
 	}
 
+    public void setJoinLocation(Location joinLocation) {
+        this.joinedLocation = joinLocation;
+    }
 
-
-	public boolean nearby(Arena arena, double distance) {
-		UUID wid = joinedLocation.getWorld().getUID();
+    public boolean nearby(Arena arena, double distance) {
+        if (joinedLocation == null)
+            return false;
+        UUID wid = joinedLocation.getWorld().getUID();
 		Location arenajoinloc = arena.getJoinLocation();
 		if (arenajoinloc != null){
 			return (wid == arenajoinloc.getWorld().getUID() &&
