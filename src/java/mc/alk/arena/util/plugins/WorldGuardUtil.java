@@ -38,6 +38,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Creature;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -146,7 +148,7 @@ public class WorldGuardUtil {
 			return;
 
 		Location l;
-		for (Item entity: w.getEntitiesByClass(Item.class)) {
+		for (Entity entity : w.getEntitiesByClasses(Item.class, Creature.class)) {
 			l = entity.getLocation();
 			if (region.contains(l.getBlockX(), l.getBlockY(), l.getBlockZ())){
 				entity.remove();
