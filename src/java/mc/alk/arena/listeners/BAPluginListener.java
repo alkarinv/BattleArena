@@ -51,7 +51,7 @@ public class BAPluginListener implements Listener {
 			loadHeroChat();
 		else if (event.getPlugin().getName().equalsIgnoreCase("Heroes"))
 			loadHeroes();
-        else if (event.getPlugin().getName().equalsIgnoreCase("LibsDisguise"))
+        else if (event.getPlugin().getName().equalsIgnoreCase("LibsDisguises"))
             loadLibsDisguise();
         else if (event.getPlugin().getName().equalsIgnoreCase("MobArena"))
             loadMcMMO();
@@ -175,10 +175,10 @@ public class BAPluginListener implements Listener {
 
     public void loadLibsDisguise() {
         if (!DisguiseInterface.hasLibs()){
-            Plugin plugin = Bukkit.getPluginManager().getPlugin("LibsDisguise");
+            Plugin plugin = Bukkit.getPluginManager().getPlugin("LibsDisguises");
             if (plugin != null) {
                 DisguiseInterface.setLibsDisguise(plugin);
-                Log.info("[BattleArena] LibsDisguise detected. Implementing disguises");
+                Log.info("[BattleArena] LibsDisguises detected. Implementing disguises");
             }
         }
     }

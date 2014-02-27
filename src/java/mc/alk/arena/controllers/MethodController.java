@@ -22,6 +22,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
@@ -350,11 +351,13 @@ public class MethodController {
                             bukkitEvent.getCanonicalName()+"returns no player, and no entities. Class="+alClass);
                     return;
                 } else if (getLivingMethod != null && !supressCastWarnings){
-                    Log.warn("[BattleArena] Warning. "+alClass+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
-                            bukkitEvent.getCanonicalName()+" returns only a living entity. Cast to Player will be attempted at runtime");
+                    if (!EntityDamageByEntityEvent.class.isAssignableFrom(bukkitEvent))
+                        Log.warn("[BattleArena] Warning. "+alClass+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
+                                bukkitEvent.getCanonicalName()+" returns only a living entity. Cast to Player will be attempted at runtime");
                 } else if (getEntityMethod != null && !supressCastWarnings){
-                    Log.warn("[BattleArena] Warning. "+alClass+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
-                            bukkitEvent.getCanonicalName()+" returns only an Entity. Cast to Player will be attempted at runtime");
+                    if (!EntityDamageByEntityEvent.class.isAssignableFrom(bukkitEvent))
+                        Log.warn("[BattleArena] Warning. "+alClass+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
+                                bukkitEvent.getCanonicalName()+" returns only an Entity. Cast to Player will be attempted at runtime");
                 }
             }
 
