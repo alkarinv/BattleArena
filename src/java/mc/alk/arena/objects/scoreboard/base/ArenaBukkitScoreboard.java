@@ -136,11 +136,12 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
             Log.err(teams.size() + "  Removing from a team that doesn't exist player=" + player.getName() + "   team=" + team + "  " + team.getId());
             return null;
         }
-        removeFromTeam(t,player);
+        removedFromTeam(t,player);
         return t;
     }
 
-    private void removeFromTeam(STeam team, ArenaPlayer player){
+    @Override
+    public void removedFromTeam(STeam team, ArenaPlayer player){
         team.removePlayer(player.getPlayer());
         bboard.removeScoreboard(player.getPlayer());
     }

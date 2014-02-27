@@ -125,7 +125,7 @@ public class FullScoreboard implements WaitingScoreboard {
     @Override
     public void removedFromTeam(ArenaTeam team, ArenaPlayer player) {
         STeam t = scoreboard.getTeam(String.valueOf(team.getIndex()));
-        scoreboard.removedFromTeam(team,player);
+        scoreboard.removedFromTeam(t,player);
         addPlaceholder(team, t,team.getIndex()>= minTeams);
     }
 

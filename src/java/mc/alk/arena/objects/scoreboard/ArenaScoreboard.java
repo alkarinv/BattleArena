@@ -58,6 +58,8 @@ public class ArenaScoreboard implements SScoreboard {
 
     public STeam removedFromTeam(ArenaTeam team, ArenaPlayer player) {return null;}
 
+    public void removedFromTeam(STeam team, ArenaPlayer player){/* do nothing */}
+
     public void setDead(ArenaTeam t, ArenaPlayer p) {/* do nothing */}
 
     public void leaving(ArenaTeam t, ArenaPlayer player) {/* do nothing */}
