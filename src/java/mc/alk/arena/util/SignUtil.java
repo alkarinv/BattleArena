@@ -28,7 +28,7 @@ public class SignUtil {
 			for (MatchParams p: params){
 				if (p.getName().toLowerCase().startsWith(param) ||
                         p.getCommand().toLowerCase().startsWith(param) || p.getSignDisplayName()!=null &&
-                        MessageUtil.decolorChat(p.getSignDisplayName()).equalsIgnoreCase(param)){
+                        MessageUtil.decolorChat(p.getSignDisplayName().replaceAll("[\\[\\"+Defaults.SIGN_PREFIX+"\\]]","").trim()).equalsIgnoreCase(param)){
 					mp = p;
 					break;
 				}
