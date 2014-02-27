@@ -265,11 +265,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
         return GameManager.getGameManager(this);
     }
 
-
-    public Rating getRated() {
-        return rating;
-    }
-
     public void setTeamRating(Boolean b) {
         this.useBTTeamRating = b;
     }

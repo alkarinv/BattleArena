@@ -7,6 +7,7 @@ import mc.alk.arena.controllers.ModuleController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaSize;
@@ -15,7 +16,6 @@ import mc.alk.arena.objects.JoinType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
-import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.ConfigException;
@@ -34,7 +34,6 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.SerializerUtil;
-import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -325,10 +324,8 @@ public class ConfigSerializer extends BaseConfig{
         //		mp.set
         //		mp.setOverrideBTMessages(cs.getBoolean(path))
         /// What is the default rating for this match type
-        Rating rating = cs.contains("rated") ? Rating.fromBoolean(cs.getBoolean("rated")) : Rating.ANY;
-        if (rating == null || rating == Rating.UNKNOWN)
-            throw new ConfigException("Could not parse rating: valid types. " + Rating.getValidList());
-        mp.setRating(rating);
+        if (cs.contains("rated"))
+            mp.setRated(cs.getBoolean("rated", true));
     }
 
 
@@ -701,12 +698,11 @@ public class ConfigSerializer extends BaseConfig{
             if (params.getTimeBetweenRounds() != null) cs.set("timeBetweenRounds", params.getTimeBetweenRounds());
             if (params.getIntervalTime() != null) cs.set("matchUpdateInterval", params.getIntervalTime());
         }
-        if (params.getRated() != null &&
-                (params.getDBName() != null ||
-                        params.getRated() != Rating.ANY || params.getUseTrackerMessages() != null)) {
+        if (params.isRated() != null ||
+                params.getDBName() != null || params.getUseTrackerMessages() != null) {
             ConfigurationSection cs = maincs.createSection("tracking");
             if (params.getDBName() != null) cs.set("database", params.getDBName());
-            if (params.getRated() != Rating.ANY) cs.set("rated", params.isRated());
+            if (params.isRated() != null) cs.set("rated", params.isRated());
             if (params.getUseTrackerMessages() != null) cs.set("useTrackerMessages", params.getUseTrackerMessages());
         }
 

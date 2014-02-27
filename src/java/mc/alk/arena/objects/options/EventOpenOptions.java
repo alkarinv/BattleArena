@@ -6,7 +6,6 @@ import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.Rating;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.MinMax;
@@ -166,7 +165,7 @@ public class EventOpenOptions {
 	public void updateParams(MatchParams mp){
 		/// Rated
 		if (hasOption(EventOpenOption.UNRATED))
-			mp.setRating(Rating.UNRATED);
+			mp.setRated(false);
 		/// By default lets make the teamSize the min team size if max # teams not specified as a finite range
 		if (mp.getMaxTeams() == ArenaSize.MAX){
 			mp.setMaxTeamSize(mp.getMinTeamSize());

@@ -334,7 +334,7 @@ public class ArenaAlterController {
         MatchParams ap = arena.getParams();
         MatchParams p = new MatchParams(ap.getType());
         MatchParams parent = ParamController.getMatchParams(ap.getType());
-        p.setRating(ap.getRated());
+        p.setRated(ap.isRated());
         p.setParent(parent);
         arena.setParams(p);
         BattleArenaController ac = BattleArena.getBAController();

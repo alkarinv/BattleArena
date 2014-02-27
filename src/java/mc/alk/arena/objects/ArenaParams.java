@@ -19,7 +19,7 @@ import static java.util.Map.Entry;
 
 public class ArenaParams {
     ArenaType arenaType;
-    Rating rating;
+    Boolean rated;
 
     String name;
     String cmd;
@@ -56,7 +56,7 @@ public class ArenaParams {
         if (this == ap)
             return;
         this.arenaType = ap.arenaType;
-        this.rating = ap.rating;
+        this.rated = ap.rated;
         this.cmd = ap.cmd;
         this.name = ap.name;
         this.timeBetweenRounds = ap.timeBetweenRounds;
@@ -81,7 +81,7 @@ public class ArenaParams {
         if (parent == null){
             return;}
         if (this.arenaType == null) this.arenaType = parent.getType();
-        if (this.rating == null) this.rating = parent.getRating();
+        if (this.rated == null) this.rated = parent.isRated();
         if (this.cmd == null) this.cmd = parent.getCommand();
         if (this.name == null) this.name = parent.getName();
         if (this.timeBetweenRounds == null) this.timeBetweenRounds = parent.getTimeBetweenRounds();
@@ -242,19 +242,12 @@ public class ArenaParams {
                 (parent != null ? parent.getCommand() : null);
 
     }
-    public boolean isRated(){
-        return rating == Rating.RATED;
-    }
 
     public void setRated(boolean rated) {
-        this.rating = rated ? Rating.RATED : Rating.UNRATED;
+        this.rated = rated;
     }
-    public Rating getRating(){
-        return rating != null ? rating : (parent != null ? parent.getRating() : null);
-    }
-
-    public void setRating(Rating rating) {
-        this.rating = rating;
+    public Boolean isRated(){
+        return rated != null ? rated : (parent != null ? parent.isRated() : null);
     }
 
     public void setSecondsToLoot(Integer i) {
