@@ -1,7 +1,6 @@
 package mc.alk.arena.objects.spawns;
 
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 
 
@@ -11,24 +10,22 @@ public class BlockSpawn extends SpawnInstance{
 	public BlockSpawn(Block block, boolean setMaterial){
 		super(block.getLocation());
         if (setMaterial){
-            this.mat = block.getType();
-        }
+            this.mat = block.getType();}
     }
+
     public void setMaterial(Material mat) {
         this.mat = mat;
     }
     @Override
     public void spawn() {
-        World w = getLocation().getWorld();
-        Block b = w.getBlockAt(getLocation());
+        Block b = getLocation().getBlock();
         if (b.getType() != mat)
             b.setType(mat);
-	}
+    }
 
     @Override
 	public void despawn() {
-        World w = getLocation().getWorld();
-        Block b = w.getBlockAt(getLocation());
+        Block b = getLocation().getBlock();
         b.setType(Material.AIR);
 	}
 

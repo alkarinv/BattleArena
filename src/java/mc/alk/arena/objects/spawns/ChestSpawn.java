@@ -1,7 +1,6 @@
 package mc.alk.arena.objects.spawns;
 
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
@@ -41,8 +40,7 @@ public class ChestSpawn extends BlockSpawn{
 
     @Override
 	public void despawn() {
-        World w = getLocation().getWorld();
-        Block b = w.getBlockAt(getLocation());
+        Block b = getLocation().getBlock();
         if (b.getState() instanceof Chest){
             Chest chest = (Chest) loc.getBlock().getState();
             chest.getInventory().clear();

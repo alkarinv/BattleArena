@@ -42,7 +42,7 @@ public class BASignListener implements Listener{
 
         if (event.getClickedBlock().getState() instanceof Sign){
             String[] lines = ((Sign)event.getClickedBlock().getState()).getLines();
-            if (!lines[0].matches("^.[0-9a-fA-F].*$") && !lines[0].matches("^\\[.*$")){
+            if (!lines[0].startsWith("&") && !lines[0].startsWith("[") && !lines[0].startsWith("§")){
                 return;}
             ArenaCommandSign acs = SignUtil.getArenaCommandSign(((Sign)event.getClickedBlock().getState()),
                     ((Sign)event.getClickedBlock().getState()).getLines());
