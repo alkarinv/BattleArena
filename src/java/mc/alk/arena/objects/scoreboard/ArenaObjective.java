@@ -1,5 +1,6 @@
 package mc.alk.arena.objects.scoreboard;
 
+import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchResult;
@@ -50,7 +51,10 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 
 	public ArenaObjective(String id, String criteria, String displayName,
 			SAPIDisplaySlot slot, int priority, int points) {
-		o = SAPIFactory.createObjective(id,displayName, criteria,slot, priority);
+
+		o = (Defaults.TESTSERVER || !Defaults.USE_SCOREBOARD) ?
+                SAPIFactory.createSAPIObjective(id,displayName, criteria,slot, priority) :
+                SAPIFactory.createObjective(id,displayName, criteria,slot, priority);
 		if (displayName != null){
 			setDisplayName(displayName);}
 	}

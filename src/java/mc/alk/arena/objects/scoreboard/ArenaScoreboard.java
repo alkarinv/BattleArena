@@ -21,14 +21,16 @@ public class ArenaScoreboard implements SScoreboard {
     final protected SScoreboard board;
 
     public ArenaScoreboard(String scoreboardName) {
-        this.board = Defaults.TESTSERVER ? ScoreboardAPI.createSAPIScoreboard(scoreboardName) :
+        this.board = (Defaults.TESTSERVER || !Defaults.USE_SCOREBOARD) ?
+                ScoreboardAPI.createSAPIScoreboard(scoreboardName) :
                 ScoreboardAPI.createScoreboard(scoreboardName);
     }
 
     @SuppressWarnings({"unused"})
     @Deprecated
     public ArenaScoreboard(Match match, MatchParams params) {
-        this.board = Defaults.TESTSERVER ? ScoreboardAPI.createSAPIScoreboard(match.getName()) :
+        this.board = (Defaults.TESTSERVER || !Defaults.USE_SCOREBOARD) ?
+                ScoreboardAPI.createSAPIScoreboard(match.getName()) :
                 ScoreboardAPI.createScoreboard(match.getName());
     }
 

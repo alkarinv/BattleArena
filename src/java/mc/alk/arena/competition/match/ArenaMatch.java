@@ -106,7 +106,8 @@ public class ArenaMatch extends Match {
         if (nLivesPerPlayer != ArenaSize.MAX) {
             int curLives = nLivesPerPlayer - nDeaths;
             SEntry e = scoreboard.getEntry(target.getPlayer());
-            scoreboard.setEntryNameSuffix(e, curLives <= 1 ? "" : "&4(" + curLives + ")");
+            if (e != null)
+                scoreboard.setEntryNameSuffix(e, curLives <= 1 ? "" : "&4(" + curLives + ")");
         }
         if (trueDeath){
             PlayerDeathEvent pde = event.getPlayerDeathEvent();
