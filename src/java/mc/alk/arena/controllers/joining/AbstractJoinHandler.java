@@ -1,5 +1,6 @@
 package mc.alk.arena.controllers.joining;
 
+import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.joining.scoreboard.FullScoreboard;
 import mc.alk.arena.controllers.joining.scoreboard.WaitingScoreboard;
@@ -79,7 +80,8 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
 
         this.clazz = clazz;
         setCompetition(competition);
-        initWaitingScoreboard();
+        if (Defaults.USE_SCOREBOARD)
+            initWaitingScoreboard();
     }
 
     private void initWaitingScoreboard() {

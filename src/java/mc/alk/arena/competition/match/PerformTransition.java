@@ -329,6 +329,8 @@ public class PerformTransition {
 
     private static String getDisguise(TransitionOptions mo, final int teamIndex) {
         Map<Integer,String> disguises = mo.getDisguises();
+        if (disguises==null)
+            return null;
         if (disguises.containsKey(teamIndex)){
             return disguises.get(teamIndex);
         } else if (disguises.containsKey(DisguiseInterface.DEFAULT)){
