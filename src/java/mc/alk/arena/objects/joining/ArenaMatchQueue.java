@@ -117,6 +117,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         MatchParams params;
 
         public void startMatch() {
+            incNumberOpenMatches(params.getType());
             removeTimer(wo); /// get rid of any timers
             Scheduler.scheduleSynchronousTask(new Runnable() {
                 @Override
@@ -190,13 +191,11 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
 
                 /// do we still have room for another match
                 if (getNumberOpenMatches(match.params.getType()) < match.params.getNConcurrentCompetitions()) {
-                    incNumberOpenMatches(match.params.getType());
                     match = l.removeFirst();
                     match.startMatch();
                 }
             }
         } else{
-            incNumberOpenMatches(match.params.getType());
             match.startMatch();
         }
     }
@@ -214,7 +213,6 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
                         break;
                     }
                     iter.remove();
-                    incNumberOpenMatches(at);
                     fm.startMatch();
                 }
             }
@@ -820,7 +818,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         return count;
     }
 
-    private int incNumberOpenMatches(ArenaType type){
+    public int incNumberOpenMatches(ArenaType type){
         Integer count = runningMatchTypes.get(type);
         if (count==null){
             count = 0;}

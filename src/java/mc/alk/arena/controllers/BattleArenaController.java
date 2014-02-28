@@ -153,6 +153,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         saveStates(m,arena);
         arena.setAllContainerState(ContainerState.OPEN);
         m.setTimedStart(eoo.getSecTillStart(), eoo.getInterval());
+        amq.incNumberOpenMatches(mp.getType());
 
 
         if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
@@ -286,7 +287,8 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         /// We don't want them to add a queue if they can't fit
         if (tqo.getJoinOptions().getArena() != null &&
                 tqo.getJoinOptions().getArena().getParams().hasOptionAt(MatchState.DEFAULTS,TransitionOption.ALWAYSOPEN)){
-            if (this.getArenas(tqo.getMatchParams()).size()==1)
+            if (this.getArenas(tqo.getMatchParams()).size()==1 &&
+                    amq.getNumberOpenMatches(tqo.getMatchParams().getType()) >= 1)
                 throw new IllegalStateException("&cThe arena " +
                         tqo.getJoinOptions().getArena().getDisplayName() + "&c is currently in use");
         }

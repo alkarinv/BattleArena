@@ -48,15 +48,6 @@ public class DamageListener implements ArenaListener{
 		this.match = match;
 	}
 
-	@ArenaEventHandler(priority=EventPriority.HIGH)
-	public void onPlayerBlockBreak(BlockBreakEvent event){
-		if (transitionOptions.hasInArenaOrOptionAt(match.getMatchState(), TransitionOption.BLOCKBREAKOFF)){
-			event.setCancelled(true);
-		} else if (transitionOptions.hasInArenaOrOptionAt(match.getMatchState(), TransitionOption.BLOCKBREAKON)){
-			event.setCancelled(false);
-		}
-	}
-
 	@ArenaEventHandler(suppressCastWarnings=true,priority=EventPriority.LOW)
 	public void onEntityDamageEvent(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player))
