@@ -296,7 +296,8 @@ public class ArenaMatch extends Match {
                 }
             });
         } else { /// This player is now out of the system now that we have given the ondeath effects
-            Location l = mo.hasOption(TransitionOption.TELEPORTTO) ? mo.getTeleportToLoc() : oldlocs.get(p.getName());
+            Location l = tops.hasOptionAt(MatchState.ONLEAVE, TransitionOption.TELEPORTTO) ?
+                    tops.getOptions(MatchState.ONLEAVE).getTeleportToLoc() : oldlocs.get(p.getName());
             if (l != null)
                 event.setRespawnLocation(l);
         }
