@@ -1,5 +1,6 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.plugins.TagAPIController;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.competition.BlockBreakListener;
@@ -9,7 +10,9 @@ import mc.alk.arena.listeners.competition.ItemDropListener;
 import mc.alk.arena.listeners.competition.ItemPickupListener;
 import mc.alk.arena.listeners.competition.PlayerTeleportListener;
 import mc.alk.arena.listeners.competition.PotionListener;
+import mc.alk.arena.listeners.competition.PreClearInventoryListener;
 import mc.alk.arena.listeners.competition.TeamHeadListener;
+import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
@@ -39,6 +42,9 @@ public class ListenerAdder {
 		if (!ScoreboardFactory.hasBukkitScoreboard() &&
 				TagAPIController.enabled() && !tops.hasAnyOption(TransitionOption.NOTEAMNAMECOLOR)){
 			match.addArenaListener(TagAPIController.getNewListener());}
+        if (Defaults.PLUGIN_ANTILOOT && tops.hasOptionAt(MatchState.ONDEATH,TransitionOption.CLEARINVENTORY)){
+            match.addArenaListener(new PreClearInventoryListener());
+        }
 	}
 
 }

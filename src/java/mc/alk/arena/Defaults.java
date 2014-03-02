@@ -72,10 +72,13 @@ public class Defaults {
 	public static int TIME_BETWEEN_SCHEDULED_EVENTS = 30;
 	public static boolean SCHEDULER_ANNOUNCE_TIMETILLNEXT = false;
 
+    /// Plugin loads
 	/// Workaround for gamemode switching and teleporting
 	public static boolean PLUGIN_MULTI_INV = false; /// workarounds for multiinv and tping
 	public static boolean PLUGIN_MULITVERSE_INV = false;
 	public static boolean PLUGIN_MULITVERSE_CORE = false;
+    /// Workaround for antiloot
+    public static boolean PLUGIN_ANTILOOT = false;
 
 	/// MISC OPTIONS
 	public static int NUM_INV_SAVES = 5; /// number of inventory saves

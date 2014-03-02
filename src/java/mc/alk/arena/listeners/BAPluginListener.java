@@ -71,9 +71,17 @@ public class BAPluginListener implements Listener {
 			loadWorldEdit();
 		else if (event.getPlugin().getName().equalsIgnoreCase("WorldGuard"))
 			loadWorldGuard();
-		else if (event.getPlugin().getName().equalsIgnoreCase("Vault"))
-			loadVault();
+        else if (event.getPlugin().getName().equalsIgnoreCase("Vault"))
+            loadVault();
+        else
+            loadOthers();
 	}
+
+    private void loadOthers() {
+        if (Bukkit.getPluginManager().getPlugin("AntiLootSteal") != null) {
+            Defaults.PLUGIN_ANTILOOT = true;
+        }
+    }
 
     public void loadAll(){
 		loadBattleTracker();
@@ -94,7 +102,8 @@ public class BAPluginListener implements Listener {
 		loadWorldEdit();
 		loadWorldGuard();
 		loadVault();
-	}
+        loadOthers();
+    }
 
 
 	public void loadBattleTracker(){
