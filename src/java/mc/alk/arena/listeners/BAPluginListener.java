@@ -77,12 +77,6 @@ public class BAPluginListener implements Listener {
             loadOthers();
 	}
 
-    private void loadOthers() {
-        if (Bukkit.getPluginManager().getPlugin("AntiLootSteal") != null) {
-            Defaults.PLUGIN_ANTILOOT = true;
-        }
-    }
-
     public void loadAll(){
 		loadBattleTracker();
         loadCombatTag();
@@ -323,5 +317,12 @@ public class BAPluginListener implements Listener {
 			PermissionsUtil.setPermission(plugin);
 		}
 	}
+
+    private void loadOthers() {
+        if (Bukkit.getPluginManager().getPlugin("AntiLootSteal") != null) {
+            Defaults.PLUGIN_ANTILOOT = true;
+        }
+    }
+
 
 }
