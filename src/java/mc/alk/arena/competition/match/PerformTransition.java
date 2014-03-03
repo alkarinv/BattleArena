@@ -131,8 +131,11 @@ public class PerformTransition {
         final boolean teleportIn = mo.shouldTeleportIn();
         final boolean teleportRoom = mo.shouldTeleportWaitRoom() || mo.shouldTeleportLobby() || mo.shouldTeleportSpectate();
         /// If the flag onlyInMatch is set, we should leave if the player isnt inside.  disregard if we are teleporting people in
-        if (onlyInMatch && !insideArena && !(teleportIn || teleportRoom)){
+        if (onlyInMatch && (!insideArena && !(teleportIn || teleportRoom) ||
+                am instanceof Match && !((Match)am).isInMatch(player) &&
+                        player.getCompetition()!=null && !player.getCompetition().equals(am) )  ){
             return true;}
+
         final boolean teleportOut = mo.shouldTeleportOut();
         final boolean wipeInventory = mo.clearInventory();
 

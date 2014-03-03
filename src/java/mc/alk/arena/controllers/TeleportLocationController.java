@@ -44,11 +44,6 @@ public class TeleportLocationController {
 	public static void teleportOut(PlayerHolder am, ArenaTeam team,
 			ArenaPlayer player, TransitionOptions mo, int teamIndex,
 			boolean insideArena, boolean onlyInMatch, boolean wipeInventory) {
-        /// A bit of a kludge, but don't tp them out of a match when they've already started another
-        if (onlyInMatch && am instanceof Match && !((Match)am).isInMatch(player) &&
-                player.getCompetition()!=null && !player.getCompetition().equals(am)) {
-            return;
-        }
         MatchParams mp = am.getParams();
 		Location loc;
 		ArenaLocation src = player.getCurLocation();
