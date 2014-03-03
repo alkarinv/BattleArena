@@ -114,7 +114,7 @@ public class PerformTransition {
                                      final boolean insideArena, MatchTransitions tops) {
         if (tops == null){
             Log.err("&ctops was null am="+am +"   tops=&6"+tops);
-            Log.err("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
+            Log.err("-- transition "+am.getClass().getSimpleName()+" "+am.hashCode()+" " + transition + " p= " +player.getName() +
                     " ops="+am.getParams().getTransitionOptions().getOptions(transition)+" onlyInMatch="+onlyInMatch+
                     " inArena="+am.isHandled(player) + " dead="+player.isDead()+":"+player.getHealth()+" online="+player.isOnline()+" clearInv=" +
                     am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));

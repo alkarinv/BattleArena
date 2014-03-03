@@ -1401,6 +1401,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         return isHandled(p);
     }
 
+    public boolean isInMatch(ArenaPlayer player) {
+        return inMatch.contains(player.getName());
+    }
+
     protected Set<ArenaPlayer> checkReady(final ArenaTeam t, TransitionOptions mo) {
         Set<ArenaPlayer> alive = new HashSet<ArenaPlayer>();
         for (ArenaPlayer p : t.getPlayers()){
