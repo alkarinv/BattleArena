@@ -241,7 +241,13 @@ public class ArenaAlterController {
             WorldGuardController.saveSchematic(sender, id);
             MatchParams mp = ParamController.getMatchParams(arena.getArenaType().getName());
             if (mp != null && mp.getTransitionOptions().hasAnyOption(TransitionOption.WGNOENTER)){
-                WorldGuardController.trackRegion(w.getName(), id);}
+                WorldGuardController.trackRegion(w.getName(), id);
+                WorldGuardController.setFlag(region, "entry", false);
+            }
+            if (mp != null && mp.getTransitionOptions().hasAnyOption(TransitionOption.WGNOLEAVE)){
+                WorldGuardController.trackRegion(w.getName(), id);
+                WorldGuardController.setFlag(region, "exit", false);
+            }
         } catch (Exception e) {
             sendMessage(sender,"&cAdding WorldGuard region failed!");
             sendMessage(sender, "&c" + e.getMessage());

@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class FullScoreboard implements WaitingScoreboard {
+public class CutoffScoreboard implements WaitingScoreboard {
     Map<Integer, LinkedList<SEntry>> reqPlaceHolderPlayers = new HashMap<Integer, LinkedList<SEntry>>();
 
     Map<Integer, LinkedList<SEntry>> opPlaceHolderPlayers = new HashMap<Integer, LinkedList<SEntry>>();
@@ -28,22 +28,28 @@ public class FullScoreboard implements WaitingScoreboard {
     ArenaObjective ao;
     final int minTeams;
 
-    public FullScoreboard(MatchParams params) {
+    public CutoffScoreboard(MatchParams params) {
         scoreboard = ScoreboardFactory.createScoreboard(String.valueOf(this.hashCode()), params);
         ao = scoreboard.createObjective("waiting",
                 "Queue Players", "&6Waiting Players", SAPIDisplaySlot.SIDEBAR, 100);
         ao.setDisplayTeams(false);
         minTeams = params.getMinTeams();
         int maxTeams = params.getMaxTeams();
-        for (int i = 0; i < maxTeams; i++) {
+        int count = 0;
+        int ppteam = 15;
+        if (maxTeams < 16) {
+            ppteam = 15 / maxTeams;
+        }
+        for (int i = 0; i <maxTeams && count < 15; i++) {
             ArenaTeam team = TeamFactory.createTeam(i, params, CompositeTeam.class);
-            TeamFactory.setStringID((AbstractTeam)team, String.valueOf(team.getIndex()));
+            TeamFactory.setStringID((AbstractTeam) team, String.valueOf(team.getIndex()));
             STeam t = scoreboard.addTeam(team);
-            for (int j = 0; j < team.getMaxPlayers(); j++) {
+            for (int j = 0; j < team.getMaxPlayers() && count < 15 && j < ppteam; j++) {
+                count++;
                 addPlaceholder(team, t, i >= minTeams);
             }
         }
-     }
+    }
 
 
     private int getReqSize(int teamIndex) {
@@ -79,16 +85,21 @@ public class FullScoreboard implements WaitingScoreboard {
         }
 
         String dis = "- " + name + " -" + team.getTeamChatColor() + TeamUtil.getTeamChatColor(index);
-        SEntry e = scoreboard.getEntry(dis);
+        if (dis.length() > 16) {
+            dis = dis.substring(0, 16);
+        }
+
+        String pname = "p_" + team.getIndex() + "_" + index;
+        SEntry e = scoreboard.getEntry(pname);
         if (e == null) {
-            e = scoreboard.createEntry(Bukkit.getOfflinePlayer(dis), dis);
+            e = scoreboard.createEntry(Bukkit.getOfflinePlayer(pname), dis);
             ao.addEntry(e, points);
-        } else {
-            ao.setPoints(e, points);
         }
 
         r.addLast(e);
         t.addPlayer(e.getOfflinePlayer());
+
+        ao.setPoints(e, points);
     }
 
     private void removePlaceHolder(int teamIndex){
@@ -105,10 +116,10 @@ public class FullScoreboard implements WaitingScoreboard {
 
     @Override
     public void addedToTeam(ArenaTeam team, ArenaPlayer player) {
-        removePlaceHolder(team.getIndex());
         STeam t = scoreboard.getTeam(String.valueOf(team.getIndex()));
         scoreboard.addedToTeam(t, player);
         ao.setPoints(player, 10);
+        removePlaceHolder(team.getIndex());
     }
 
     @Override

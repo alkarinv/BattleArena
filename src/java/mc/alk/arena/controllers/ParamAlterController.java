@@ -1,9 +1,12 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.BattleArena;
+import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.RegisteredCompetition;
+import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.GameOption;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -170,6 +173,19 @@ public class ParamAlterController {
             tops.removeTransitionOption(MatchState.ONJOIN, to);
             for (TransitionOption op: tpOps){
                 tops.removeTransitionOption(state, op);}
+        }
+        if (state == MatchState.DEFAULTS){
+            if (to == TransitionOption.WGNOENTER){
+                for (Arena a: BattleArena.getBAController().getArenas(params)){
+                    if (a.getWorldGuardRegion()!=null){
+                        WorldGuardController.setFlag(a.getWorldGuardRegion(), "entry", false);}
+                }
+            } else if (to == TransitionOption.WGNOLEAVE){
+                    for (Arena a: BattleArena.getBAController().getArenas(params)){
+                        if (a.getWorldGuardRegion()!=null){
+                            WorldGuardController.setFlag(a.getWorldGuardRegion(), "exit", false);}
+                    }
+                }
         }
         /// if we removed teleportIn, then we should put it back in the most logical place
         if ((state == MatchState.ONPRESTART || state == MatchState.ONJOIN) &&

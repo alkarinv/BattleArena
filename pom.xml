@@ -49,13 +49,13 @@
         <dependency>
             <groupId>mc.battleplugins</groupId>
             <artifactId>BattlePluginsAPI</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattleScoreboardAPI</artifactId>
-            <version>1.1.6</version>
+            <version>1.1.7.1.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -213,6 +213,13 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                          <relocations>
+                              <relocation>
+                                  <pattern>mc.battleplugins.api</pattern>
+                                  <shadedPattern>mc.alk.mc.battleplugins.api</shadedPattern>
+                              </relocation>
+                          </relocations>
+                          
                             <artifactSet>
                                 <includes>
                                     <include>mc.alk:BattleScoreboardAPI</include>

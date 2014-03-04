@@ -2,6 +2,7 @@ package mc.alk.arena.controllers.joining;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
+import mc.alk.arena.controllers.joining.scoreboard.CutoffScoreboard;
 import mc.alk.arena.controllers.joining.scoreboard.FullScoreboard;
 import mc.alk.arena.controllers.joining.scoreboard.WaitingScoreboard;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -106,7 +107,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         }catch(Throwable e) {
             Log.printStackTrace(e);
         }
-//        scoreboard = new AbridgedScoreboard(matchParams);
+        scoreboard = new CutoffScoreboard(matchParams);
     }
 
     public abstract boolean switchTeams(ArenaPlayer player, Integer toTeamIndex);

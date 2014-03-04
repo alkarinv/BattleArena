@@ -275,7 +275,17 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 		scoreboard.registerNewObjective(this);
 	}
 
-	@Override
+    @Override
+    public int getPoints(String id) {
+        return o.getPoints(id);
+    }
+
+    @Override
+    public int getPoints(SEntry e) {
+        return o.getPoints(e);
+    }
+
+    @Override
 	public String toString(){
 		return o.toString();
 	}
