@@ -17,7 +17,6 @@ import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.plugin.updater.v1r6.FileUpdater;
 import mc.alk.plugin.updater.v1r6.PluginUpdater;
-import mc.battleplugins.api.BattlePluginsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.Plugin;
@@ -264,7 +263,7 @@ public class APIRegistrationController {
 
         /// schedule stats
         if (!CompetitionController.hasPlugin(plugin)){
-            new BattlePluginsAPI(plugin);}
+            BattleArena.getSelf().getBattlePluginsAPI().scheduleSendStats(plugin);}
 
         /// Add the competition
         CompetitionController.addRegisteredCompetition(rc);

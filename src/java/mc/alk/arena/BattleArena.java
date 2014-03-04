@@ -246,7 +246,7 @@ public class BattleArena extends JavaPlugin {
                     es.start();
             }
         });
-        bpapi = new BattlePluginsAPI(this);
+        bpapi = new BattlePluginsAPI();
         PluginUpdater.update(this, bukkitId, this.getFile(),
                 Defaults.AUTO_UPDATE, Defaults.ANNOUNCE_UPDATE);
         Log.info("&4[" + pluginname + "] &6v" + BattleArena.version + "&f enabled!");
