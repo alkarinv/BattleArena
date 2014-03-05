@@ -11,6 +11,7 @@ public enum EventState implements CompetitionState{
         globalOrdinal = StateController.register(this);
     }
 
+    @Override
     public int globalOrdinal() {
         return globalOrdinal;
     }

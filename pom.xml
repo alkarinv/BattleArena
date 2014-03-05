@@ -219,7 +219,7 @@
                                   <shadedPattern>mc.alk.mc.battleplugins.api</shadedPattern>
                               </relocation>
                           </relocations>
-                          
+
                             <artifactSet>
                                 <includes>
                                     <include>mc.alk:BattleScoreboardAPI</include>

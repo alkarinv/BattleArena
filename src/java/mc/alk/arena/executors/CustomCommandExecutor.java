@@ -10,10 +10,11 @@ import mc.alk.arena.controllers.ArenaEditor.CurrentSelection;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.StateController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.options.GameOption;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -166,13 +167,13 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
     }
 
     private TransitionOptionTuple verifyTransitionOptionTuple( String[] args, int curIndex, AtomicInteger numUsedStrings) {
-        MatchState stage = MatchState.fromString(args[curIndex]);
+        CompetitionState stage = StateController.fromString(args[curIndex]);
         if (stage==null){
             throw new IllegalArgumentException(ChatColor.RED + "You need to specify a Game Stage : [onJoin, onStart,...]");
         }
 
         if (args.length < curIndex+2){
-            throw new IllegalArgumentException(ChatColor.RED + "Game stage " + stage.name()+" needs a value");
+            throw new IllegalArgumentException(ChatColor.RED + "Game stage " + stage+" needs a value");
         }
         TransitionOption to = TransitionOption.fromString(args[curIndex + 1]);
         if (to == null){

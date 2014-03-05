@@ -41,6 +41,7 @@ import mc.alk.arena.objects.ArenaLocation;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.CompetitionSize;
+import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.LocationType;
@@ -1027,7 +1028,7 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     public boolean _setGameStateOption(CommandSender sender, MatchParams params, Integer teamIndex,
-                                       MatchState state, TransitionOption to, Object value) {
+                                       CompetitionState state, TransitionOption to, Object value) {
         try {
             params = ParamController.getMatchParams(params);
             ParamAlterController.setGameOption(sender, params,teamIndex, state,to,value);

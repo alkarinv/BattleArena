@@ -45,6 +45,7 @@ import org.bukkit.potion.PotionEffect;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -768,11 +769,17 @@ public class ConfigSerializer extends BaseConfig{
         }
 
         MatchTransitions alltops = params.getTransitionOptions();
-        if (alltops != null){
-            Map<CompetitionState,TransitionOptions> transitions =
-                    new TreeMap<CompetitionState,TransitionOptions>(alltops.getAllOptions());
-            for (CompetitionState ms: transitions.keySet()){
-                try{
+        if (alltops != null) {
+            Map<CompetitionState, TransitionOptions> transitions =
+                    new TreeMap<CompetitionState, TransitionOptions>(new Comparator<CompetitionState>() {
+                        @Override
+                        public int compare(CompetitionState o1, CompetitionState o2) {
+                            return o1.globalOrdinal() - o2.globalOrdinal();
+                        }
+                    });
+            transitions.putAll(alltops.getAllOptions());
+            for (CompetitionState ms : transitions.keySet()) {
+                try {
                     if (ms == MatchState.ONCANCEL)
                         continue;
                     TransitionOptions tops = transitions.get(ms);
@@ -781,24 +788,24 @@ public class ConfigSerializer extends BaseConfig{
                     if (tops.getOptions() == null)
                         continue;
                     tops = new TransitionOptions(tops); // make a copy so we can modify while saving
-                    Map<TransitionOption,Object> ops = tops.getOptions();
+                    Map<TransitionOption, Object> ops = tops.getOptions();
                     List<String> list = new ArrayList<String>();
 
-                    for (Entry<String,TransitionOptions> entry : OptionSetController.getOptionSets().entrySet()){
-                        if (tops.containsAll(entry.getValue())){
+                    for (Entry<String, TransitionOptions> entry : OptionSetController.getOptionSets().entrySet()) {
+                        if (tops.containsAll(entry.getValue())) {
                             list.add(entry.getKey());
-                            for (TransitionOption op : entry.getValue().getOptions().keySet()){
+                            for (TransitionOption op : entry.getValue().getOptions().keySet()) {
                                 ops.remove(op);
                             }
                         }
                     }
                     /// transition map
-                    Map<String,Object> tmap = new LinkedHashMap<String,Object>();
-                    ops = new TreeMap<TransitionOption,Object>(ops); /// try to maintain some ordering
-                    for (TransitionOption to: ops.keySet()){
-                        try{
+                    Map<String, Object> tmap = new LinkedHashMap<String, Object>();
+                    ops = new TreeMap<TransitionOption, Object>(ops); /// try to maintain some ordering
+                    for (TransitionOption to : ops.keySet()) {
+                        try {
                             String s;
-                            switch(to){
+                            switch (to) {
                                 case NEEDITEMS:
                                     tmap.put(to.toString(), getItems(tops.getNeedItems()));
                                     continue;
@@ -821,20 +828,20 @@ public class ConfigSerializer extends BaseConfig{
                                     break;
                             }
                             Object value = ops.get(to);
-                            if (value == null){
+                            if (value == null) {
                                 s = to.toString();
                             } else {
-                                s = to.toString() + "="+value.toString();
+                                s = to.toString() + "=" + value.toString();
                             }
                             list.add(s);
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             Log.err("[BA Error] couldn't save " + to);
                             Log.printStackTrace(e);
                         }
                     }
                     tmap.put("options", list);
                     maincs.set(ms.toString(), tmap);
-                } catch(Exception e){
+                } catch (Exception e) {
                     Log.printStackTrace(e);
                 }
             }

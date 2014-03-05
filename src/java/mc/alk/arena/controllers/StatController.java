@@ -57,7 +57,6 @@ public class StatController {
 	public void addRecord(ArenaPlayer victor,ArenaPlayer loser, WinLossDraw wld) {
 		if (!enabled)
 			return;
-
 		BTInterface.addRecord(mp, victor, loser, wld);
 	}
 

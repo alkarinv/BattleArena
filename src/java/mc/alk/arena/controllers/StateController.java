@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers;
 
 import mc.alk.arena.objects.CompetitionState;
+import mc.alk.arena.util.Log;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class StateController {
             for (Enum e : classes.getEnumConstants()) {
                 if (e.name().equalsIgnoreCase(en.name()))
                     throw new IllegalStateException("You can't have multiple CompetitionStates with the same name \n"+
-                    enumClass.getSimpleName() +"."+en.name() +"  and "+ e.getDeclaringClass().getSimpleName() +"."+e.name());
+                            enumClass.getSimpleName() +"."+en.name() +"  and "+ e.getDeclaringClass().getSimpleName() +"."+e.name());
             }
         }
         if (!enums.contains(enumClass)) {
@@ -49,17 +50,28 @@ public class StateController {
 
     public static CompetitionState fromString(String arg) {
         for (Class<? extends Enum> enumClass : enums) {
+            Method m = null;
             try {
-                Method m = enumClass.getMethod("fromString", String.class);
-                if (m==null){
-                    m = enumClass.getMethod("valueOf", String.class);}
-                if (m == null){
-                    continue;}
+                m = enumClass.getMethod("fromString", String.class);
+            } catch (Exception e) {
+                /* no method there, check for next */
+            }
+            if (m == null) {
+                try{
+                    m = enumClass.getMethod("valueOf", String.class);
+                } catch (Exception e ){
+                    /* no method there, check for next */
+                }
+            }
+            if (m == null) {
+                continue;}
+            try {
                 Object o = m.invoke(null, arg);
                 if (o == null || !(o instanceof CompetitionState))
                     continue;
                 return (CompetitionState) o;
             } catch (Exception e) {
+                Log.printStackTrace(e);
                 /* continue on */
             }
         }

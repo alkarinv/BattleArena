@@ -77,7 +77,7 @@ public class ParamAlterController {
     }
 
     public static boolean setGameOption(CommandSender sender, MatchParams params, Integer teamIndex,
-                                        MatchState state, TransitionOption to, Object value) throws InvalidOptionException {
+                                        CompetitionState state, TransitionOption to, Object value) throws InvalidOptionException {
         RegisteredCompetition rc = CompetitionController.getCompetition(params.getName());
         if (rc == null){
             throw new InvalidOptionException("&cGame &6" + params.getName() +"&c not found!");}
@@ -143,7 +143,7 @@ public class ParamAlterController {
         return true;
     }
 
-    public static boolean setOption(CommandSender sender, MatchParams params, MatchState state, TransitionOption to, Object value)
+    public static boolean setOption(CommandSender sender, MatchParams params, CompetitionState state, TransitionOption to, Object value)
             throws InvalidOptionException {
 
         if (to.hasValue() && value == null)

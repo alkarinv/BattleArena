@@ -8,6 +8,7 @@ import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.controllers.plugins.PylamoController;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
@@ -126,7 +127,7 @@ public class ArenaAlterController {
         return true;
     }
 
-    public static boolean setArenaOption(CommandSender sender, Arena arena, MatchState state,
+    public static boolean setArenaOption(CommandSender sender, Arena arena, CompetitionState state,
                                          TransitionOption op, Object value) throws IllegalStateException, InvalidOptionException {
         MatchParams params = arena.getParams();
         ParamAlterController.setOption(sender, params, state, op, value);

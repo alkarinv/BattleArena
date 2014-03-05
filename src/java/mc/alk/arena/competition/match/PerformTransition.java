@@ -99,28 +99,23 @@ public class PerformTransition {
 
     public static boolean transition(final PlayerHolder am, final CompetitionState transition,
                                      final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch) {
-        final boolean insideArena = am.isHandled(player);
+        if (am.getParams().getTransitionOptions() == null) {
+            return true;}
         if (team != null && team.getIndex() != -1 && am.getParams().getTeamParams() != null &&
                 am.getParams().getTeamParams().containsKey(team.getIndex())){
-            return transition(am,transition,player,team,onlyInMatch,insideArena,am.getParams().
+            return transition(am,transition,player,team,onlyInMatch,am.getParams().
                     getTeamParams().get(team.getIndex()).getTransitionOptions());
         } else {
-            return transition(am,transition,player,team,onlyInMatch,insideArena,am.getParams().getTransitionOptions());
+            return transition(am,transition,player,team,onlyInMatch,am.getParams().getTransitionOptions());
         }
     }
 
     @SuppressWarnings("ConstantConditions")
     private static boolean transition(final PlayerHolder am, final CompetitionState transition,
                                      final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch,
-                                     final boolean insideArena, MatchTransitions tops) {
+                                     MatchTransitions tops) {
         if (tops == null){
-            Log.err("&ctops was null am="+am +"   tops=&6"+tops);
-            Log.err("-- transition "+am.getClass().getSimpleName()+" "+am.hashCode()+" " + transition + " p= " +player.getName() +
-                    " ops="+am.getParams().getTransitionOptions().getOptions(transition)+" onlyInMatch="+onlyInMatch+
-                    " inArena="+am.isHandled(player) + " dead="+player.isDead()+":"+player.getHealth()+" online="+player.isOnline()+" clearInv=" +
-                    am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
-            return true;
-        }
+            return true;}
         final TransitionOptions mo = tops.getOptions(transition);
         if (mo == null){ /// no options
             return true;}
@@ -128,7 +123,7 @@ public class PerformTransition {
                 " ops="+am.getParams().getTransitionOptions().getOptions(transition)+" onlyInMatch="+onlyInMatch+
                 " inArena="+am.isHandled(player) + " dead="+player.isDead()+":"+player.getHealth()+" online="+player.isOnline()+" clearInv=" +
                 am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
-
+        final boolean insideArena = am.isHandled(player);
         final boolean teleportIn = mo.shouldTeleportIn();
         final boolean teleportRoom = mo.shouldTeleportWaitRoom() || mo.shouldTeleportLobby() || mo.shouldTeleportSpectate();
         /// If the flag onlyInMatch is set, we should leave if the player isnt inside.  disregard if we are teleporting people in
@@ -147,8 +142,6 @@ public class PerformTransition {
         List<PotionEffect> effects = mo.getEffects()!=null ? new ArrayList<PotionEffect>(mo.getEffects()) : null;
         final Double health = mo.getHealth();
         final Integer hunger = mo.getHunger();
-        final String disguiseAllAs = mo.getDisguiseAllAs();
-        final Boolean undisguise = mo.undisguise();
 
         final int teamIndex = team == null ? -1 : team.getIndex();
         boolean playerReady = player.isOnline();
@@ -195,8 +188,8 @@ public class PerformTransition {
             if (mo.hasOption(TransitionOption.FLIGHTSPEED)) { PlayerUtil.setFlightSpeed(p,mo.getFlightSpeed()); }
             if (mo.hasOption(TransitionOption.DOCOMMANDS)) { PlayerUtil.doCommands(p,mo.getDoCommands()); }
             if (mo.deEnchant()) { psc.deEnchant(p);}
-            if (DisguiseInterface.enabled() && undisguise != null && undisguise) {DisguiseInterface.undisguise(p);}
-            if (DisguiseInterface.enabled() && disguiseAllAs != null) {DisguiseInterface.disguisePlayer(p, disguiseAllAs);}
+            if (mo.undisguise() != null && mo.undisguise()) {DisguiseInterface.undisguise(p);}
+            if (mo.getDisguiseAllAs() != null) {DisguiseInterface.disguisePlayer(p, mo.getDisguiseAllAs());}
             if (mo.getMoney() != null) {MoneyController.add(player.getName(), mo.getMoney());}
             if (mo.hasOption(TransitionOption.POOLMONEY) && am instanceof Match) {
                 prizeMoney = ((Match)am).prizePoolMoney * mo.getDouble(TransitionOption.POOLMONEY) /
