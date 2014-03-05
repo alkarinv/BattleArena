@@ -68,8 +68,8 @@ public class ArenaClassController {
         if (ac.getMobs() != null){
             try{
                 List<SpawnInstance> mobs = new ArrayList<SpawnInstance>(ac.getMobs());
-                player.setMobs(mobs);
                 player.spawnMobs();
+                player.setMobs(mobs);
             } catch (Exception e){
                 Log.printStackTrace(e);
             }

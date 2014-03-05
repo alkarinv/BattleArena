@@ -242,7 +242,6 @@ public class ArenaPlayer {
                 ((EntitySpawn) si).setOwner(getPlayer());
             }
         }
-
 	}
 
 	public void spawnMobs(){
