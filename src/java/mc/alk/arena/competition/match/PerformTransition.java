@@ -4,22 +4,23 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.ArenaController;
-import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.PlayerStoreController;
-import mc.alk.arena.controllers.plugins.PylamoController;
 import mc.alk.arena.controllers.TeleportLocationController;
+import mc.alk.arena.controllers.plugins.DisguiseInterface;
+import mc.alk.arena.controllers.plugins.HeroesController;
+import mc.alk.arena.controllers.plugins.PylamoController;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
@@ -48,7 +49,7 @@ public class PerformTransition {
      * @param teams: which teams to affect
      * @param onlyInMatch: only perform the actions on people still in the arena match
      */
-    public static void transition(Match am, MatchState transition, Collection<ArenaTeam> teams, boolean onlyInMatch){
+    public static void transition(Match am, CompetitionState transition, Collection<ArenaTeam> teams, boolean onlyInMatch){
         if (teams == null)
             return;
         boolean first = true;
@@ -58,7 +59,7 @@ public class PerformTransition {
         }
     }
 
-    public static boolean transition(PlayerHolder am, final MatchState transition, ArenaTeam team, boolean onlyInMatch) {
+    public static boolean transition(PlayerHolder am, final CompetitionState transition, ArenaTeam team, boolean onlyInMatch) {
         try {
             return transition(am,transition,team,onlyInMatch,true);
         } catch (Exception e){
@@ -67,7 +68,7 @@ public class PerformTransition {
         }
     }
 
-    static boolean transition(PlayerHolder am, final MatchState transition, ArenaTeam team, boolean onlyInMatch,
+    static boolean transition(PlayerHolder am, final CompetitionState transition, ArenaTeam team, boolean onlyInMatch,
                               boolean performOncePerTransitionOptions) {
         final TransitionOptions mo = am.getParams().getTransitionOptions().getOptions(transition);
         if (mo == null)
@@ -96,7 +97,7 @@ public class PerformTransition {
         return true;
     }
 
-    public static boolean transition(final PlayerHolder am, final MatchState transition,
+    public static boolean transition(final PlayerHolder am, final CompetitionState transition,
                                      final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch) {
         final boolean insideArena = am.isHandled(player);
         if (team != null && team.getIndex() != -1 && am.getParams().getTeamParams() != null &&
@@ -109,7 +110,7 @@ public class PerformTransition {
     }
 
     @SuppressWarnings("ConstantConditions")
-    private static boolean transition(final PlayerHolder am, final MatchState transition,
+    private static boolean transition(final PlayerHolder am, final CompetitionState transition,
                                      final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch,
                                      final boolean insideArena, MatchTransitions tops) {
         if (tops == null){
@@ -308,7 +309,7 @@ public class PerformTransition {
             attachment.setPermission(perm, true);}
     }
 
-    private static void giveItems(final MatchState ms, final ArenaPlayer p, final List<ItemStack> items,
+    private static void giveItems(final CompetitionState ms, final ArenaPlayer p, final List<ItemStack> items,
                                   final int teamIndex,final boolean woolTeams, final boolean insideArena, Color color) {
         if (woolTeams && insideArena){
             TeamUtil.setTeamHead(teamIndex, p);}

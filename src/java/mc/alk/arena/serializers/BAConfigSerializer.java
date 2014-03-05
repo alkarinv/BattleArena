@@ -191,7 +191,7 @@ public class BAConfigSerializer extends BaseConfig{
         AnnouncementOptions.setDefaultOptions(an);
         defaults.setAnnouncementOptions(an);
 
-        Defaults.MATCH_FORCESTART_TIME = cs.getLong("matchForceStartTime", Defaults.MATCH_FORCESTART_TIME);
+        Defaults.MATCH_FORCESTART_TIME = cs.getInt("matchForceStartTime", Defaults.MATCH_FORCESTART_TIME);
         defaults.setForceStartTime(Defaults.MATCH_FORCESTART_TIME);
 
         Defaults.TIME_BETWEEN_CLASS_CHANGE = cs.getInt("timeBetweenClassChange", Defaults.TIME_BETWEEN_CLASS_CHANGE);

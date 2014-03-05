@@ -296,6 +296,8 @@ public class APIRegistrationController {
 
     public void update(Plugin plugin, int bukkitId, File file,
                        UpdateOption updateOption, AnnounceUpdateOption announceOption) {
+        if (updateOption==null) updateOption = UpdateOption.NONE;
+        if (announceOption ==null) announceOption = AnnounceUpdateOption.NONE;
         PluginUpdater.update(plugin, bukkitId, file,updateOption.toPluginUpdater(), announceOption.toPluginUpdater());
     }
 

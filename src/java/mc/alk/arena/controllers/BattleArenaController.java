@@ -140,7 +140,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         MatchParams mp = eoo.getParams();
         MatchParams oldArenaParams = new MatchParams(arena.getParams());
 
-        mp.setForceStartTime((long) eoo.getSecTillStart());
+        mp.setForceStartTime(eoo.getSecTillStart());
         ArenaParams parent = mp.getParent();
         mp.setParent(null);
         mp.setParent(parent);

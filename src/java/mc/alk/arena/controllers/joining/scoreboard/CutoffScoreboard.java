@@ -1,6 +1,8 @@
 package mc.alk.arena.controllers.joining.scoreboard;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
@@ -9,6 +11,8 @@ import mc.alk.arena.objects.teams.AbstractTeam;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
+import mc.alk.arena.util.Countdown;
+import mc.alk.arena.util.Countdown.CountdownCallback;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.scoreboardapi.api.SEntry;
 import mc.alk.scoreboardapi.api.STeam;
@@ -49,6 +53,23 @@ public class CutoffScoreboard implements WaitingScoreboard {
                 addPlaceholder(team, t, i >= minTeams);
             }
         }
+        if (params.getForceStartTime() >0 &&
+                params.getForceStartTime() != ArenaSize.MAX
+                && !params.getMaxPlayers().equals(params.getMinPlayers())
+                ){
+            new Countdown(BattleArena.getSelf(), params.getForceStartTime(),1,
+                    new CountdownCallback(){
+                        @Override
+                        public boolean intervalTick(int remaining) {
+                            if (remaining == 0){
+                                ao.setDisplayNameSuffix("");
+                            } else {
+                                ao.setDisplayNameSuffix(" &e("+remaining+")");
+                            }
+                            return true;
+                        }
+                    });
+        }
     }
 
 
@@ -85,21 +106,16 @@ public class CutoffScoreboard implements WaitingScoreboard {
         }
 
         String dis = "- " + name + " -" + team.getTeamChatColor() + TeamUtil.getTeamChatColor(index);
-        if (dis.length() > 16) {
-            dis = dis.substring(0, 16);
-        }
-
-        String pname = "p_" + team.getIndex() + "_" + index;
-        SEntry e = scoreboard.getEntry(pname);
+        SEntry e = scoreboard.getEntry(dis);
         if (e == null) {
-            e = scoreboard.createEntry(Bukkit.getOfflinePlayer(pname), dis);
+            e = scoreboard.createEntry(Bukkit.getOfflinePlayer(dis), dis);
             ao.addEntry(e, points);
+        } else {
+            ao.setPoints(e, points);
         }
 
         r.addLast(e);
         t.addPlayer(e.getOfflinePlayer());
-
-        ao.setPoints(e, points);
     }
 
     private void removePlaceHolder(int teamIndex){

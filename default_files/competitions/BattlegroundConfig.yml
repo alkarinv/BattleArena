@@ -4,6 +4,7 @@ Battleground:
     command: bg
     rated: true
     prefix: "&c[Battleground]&e"
+    signDisplayName: "&c[Battleground]"
     victoryCondition: PlayerKills
     matchTime: 60
     nTeams: 4

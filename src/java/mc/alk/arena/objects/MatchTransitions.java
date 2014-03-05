@@ -11,29 +11,30 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumMap;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class MatchTransitions {
-	final Map<MatchState,TransitionOptions> ops = new EnumMap<MatchState,TransitionOptions>(MatchState.class);
+	final Map<CompetitionState,TransitionOptions> ops = new HashMap<CompetitionState,TransitionOptions>();
 	final Set<TransitionOption> allops = new HashSet<TransitionOption>();
 
 	public MatchTransitions() {}
 	public MatchTransitions(MatchTransitions o) {
-		for (MatchState ms: o.ops.keySet()){
+		for (CompetitionState ms: o.ops.keySet()){
 			ops.put(ms, new TransitionOptions(o.ops.get(ms)));
 		}
 		calculateAllOptions();
 	}
 
-	public Map<MatchState,TransitionOptions> getAllOptions(){
+	public Map<CompetitionState,TransitionOptions> getAllOptions(){
 		return ops;
 	}
 
-	public void addTransitionOptions(MatchState ms, TransitionOptions tops) {
+	public void addTransitionOptions(CompetitionState ms, TransitionOptions tops) {
 		ops.put(ms, tops);
 		Map<TransitionOption,Object> ops = tops.getOptions();
 		if (ops != null)
@@ -49,7 +50,7 @@ public class MatchTransitions {
 		}
 		tops.addOption(option);
 	}
-	public void addTransitionOption(MatchState state, TransitionOption option, Object value) throws InvalidOptionException {
+	public void addTransitionOption(CompetitionState state, TransitionOption option, Object value) throws InvalidOptionException {
 		allops.add(option);
 		TransitionOptions tops = ops.get(state);
 		if (tops == null){
@@ -59,12 +60,12 @@ public class MatchTransitions {
 		tops.addOption(option,value);
 	}
 
-	public boolean removeTransitionOption(MatchState state, TransitionOption option) {
+	public boolean removeTransitionOption(CompetitionState state, TransitionOption option) {
 		TransitionOptions tops = ops.get(state);
 		return tops != null && tops.removeOption(option) != null;
 	}
 
-	public void removeTransitionOptions(MatchState ms) {
+	public void removeTransitionOptions(CompetitionState ms) {
 		ops.remove(ms);
 		calculateAllOptions();
 	}
@@ -88,8 +89,8 @@ public class MatchTransitions {
 		return false;
 	}
 
-	public MatchState getMatchState(TransitionOption option) {
-		for (MatchState state: ops.keySet()){
+	public CompetitionState getMatchState(TransitionOption option) {
+		for (CompetitionState state: ops.keySet()){
 			TransitionOptions tops = ops.get(state);
 			if (tops.hasOption(option))
 				return state;
@@ -102,15 +103,27 @@ public class MatchTransitions {
 		return allops.containsAll(ops);
 	}
 
-	public boolean hasInArenaOrOptionAt(MatchState state, TransitionOption option) {
+	public boolean hasInArenaOrOptionAt(CompetitionState state, TransitionOption option) {
 		TransitionOptions tops = ops.get(state);
 		return tops == null ? hasOptionAt(MatchState.INARENA,option) : tops.hasOption(option);
 	}
 
-	public boolean hasOptionAt(MatchState state, TransitionOption option) {
+	public boolean hasOptionAt(CompetitionState state, TransitionOption option) {
 		TransitionOptions tops = ops.get(state);
 		return tops != null && tops.hasOption(option);
 	}
+
+    /**
+     * Use the newer more generic
+     * public boolean hasOptionAt(CompetitionState state, TransitionOption option) {
+     * @param state MatchState
+     * @param option TransitionOption
+     * @return true or false
+     */
+    @Deprecated
+    public boolean hasOptionAt(MatchState state, TransitionOption option) {
+        return hasOptionAt((CompetitionState) state, option);
+    }
 
 	public boolean hasOptionIn(MatchState beginState, MatchState endState, TransitionOption option) {
 		List<MatchState> states = MatchState.getStates(beginState, endState);
@@ -139,7 +152,7 @@ public class MatchTransitions {
 		return ops.containsKey(ms) ? ops.get(ms).getPrizeMsg(null): null;
 	}
 
-	public TransitionOptions getOptions(MatchState ms) {
+	public TransitionOptions getOptions(CompetitionState ms) {
 		return ops.get(ms);
 	}
 
@@ -185,9 +198,15 @@ public class MatchTransitions {
 
 	public String getOptionString() {
 		StringBuilder sb = new StringBuilder();
-		List<MatchState> states = new ArrayList<MatchState>(ops.keySet());
-		Collections.sort(states);
-		for (MatchState ms : states){
+		List<CompetitionState> states = new ArrayList<CompetitionState>(ops.keySet());
+		Collections.sort(states, new Comparator<CompetitionState>() {
+            @Override
+            public int compare(CompetitionState o1, CompetitionState o2) {
+                return o1.globalOrdinal() - o2.globalOrdinal();
+            }
+        });
+
+		for (CompetitionState ms : states){
 			TransitionOptions to = ops.get(ms);
 			sb.append(ms).append(" -- ").append(to).append("\n");
 			Map<Integer, ArenaClass> classes = to.getClasses();
@@ -227,7 +246,7 @@ public class MatchTransitions {
 			cmt = new MatchTransitions();}
 		if (pmt == null)
 			return cmt;
-		for (MatchState ms: pmt.ops.keySet()){
+		for (CompetitionState ms: pmt.ops.keySet()){
             if (cmt.ops.containsKey(ms))
                 continue;
 			cmt.ops.put(ms, new TransitionOptions(pmt.ops.get(ms)));

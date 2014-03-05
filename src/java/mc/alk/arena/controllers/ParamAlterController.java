@@ -2,6 +2,7 @@ package mc.alk.arena.controllers;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
+import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
@@ -105,7 +106,7 @@ public class ParamAlterController {
         switch(option){
             case NLIVES: params.setNLives((Integer)value); break;
             case NTEAMS: params.setNTeams((MinMax) value);  break;
-            case FORCESTARTTIME: params.setForceStartTime((long) (Integer) value);  break;
+            case FORCESTARTTIME: params.setForceStartTime((Integer) value);  break;
             case TEAMSIZE: params.setTeamSizes((MinMax) value);  break;
             case PREFIX: params.setPrefix((String)value); break;
             case SIGNDISPLAYNAME: params.setSignDisplayName((String)value); break;
@@ -231,7 +232,7 @@ public class ParamAlterController {
                 return false;
             }
         }
-        MatchState state = MatchState.fromString(args[1]);
+        CompetitionState state = StateController.fromString(args[1]);
         if (state != null){
             final String key = args[2].trim().toUpperCase();
             try{
@@ -248,7 +249,7 @@ public class ParamAlterController {
         return false;
     }
 
-    private boolean deleteTransitionOption(MatchState state, String key) throws Exception{
+    private boolean deleteTransitionOption(CompetitionState state, String key) throws Exception{
         TransitionOption to = TransitionOption.fromString(key);
         MatchTransitions tops = params.getTransitionOptions();
         return tops.removeTransitionOption(state,to);

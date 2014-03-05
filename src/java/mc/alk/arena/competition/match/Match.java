@@ -127,7 +127,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     final PlayerStoreController psc = new PlayerStoreController(); /// Store items and exp for players if specified
 
     Set<MatchState> waitRoomStates = null; /// which states are inside a waitRoom
-    final MatchState tinState; /// which matchstat teleports players in (first one is chosen)
+    final CompetitionState tinState; /// which matchstat teleports players in (first one is chosen)
     Long joinCutoffTime = null; /// at what point do we cut people off from joining
     Integer currentTimer = null; /// Our current timer (for switching between states)
 

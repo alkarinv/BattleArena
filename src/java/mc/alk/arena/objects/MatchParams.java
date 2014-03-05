@@ -35,7 +35,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
     MatchParams mparent;
 
-    Long forceStartTime;
+    Integer forceStartTime;
 
     public MatchParams(){
         super();
@@ -223,11 +223,11 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
         useBTMessages = enable;
     }
 
-    public void setForceStartTime(Long forceStartTime) {
+    public void setForceStartTime(Integer forceStartTime) {
         this.forceStartTime = forceStartTime;
     }
 
-    public Long getForceStartTime() {
+    public Integer getForceStartTime() {
         return forceStartTime != null ? forceStartTime : (mparent!= null ? mparent.getForceStartTime() : null);
     }
 

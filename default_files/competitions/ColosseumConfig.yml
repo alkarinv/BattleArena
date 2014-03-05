@@ -1,6 +1,8 @@
 Colosseum:
     enabled: true
     database: col
+    prefix: &8[Colosseum]
+    signDisplayName: &8[Colosseum]
     rated: true
     victoryCondition: LastManStanding
     nTeams: 4

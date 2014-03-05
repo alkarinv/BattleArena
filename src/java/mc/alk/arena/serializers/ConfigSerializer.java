@@ -7,11 +7,13 @@ import mc.alk.arena.controllers.ModuleController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.StateController;
 import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.CommandLineString;
+import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.JoinType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -128,7 +130,7 @@ public class ConfigSerializer extends BaseConfig{
         if (cs.contains("allowedTeamSizeDifference"))
             mp.setAllowedTeamSizeDifference(cs.getInt("allowedTeamSizeDifference"));
         if (cs.contains("forceStartTime"))
-            mp.setForceStartTime(cs.getLong("forceStartTime"));
+            mp.setForceStartTime(cs.getInt("forceStartTime"));
 
         if (cs.contains("teamParams")) {
             ConfigurationSection teamcs = cs.getConfigurationSection("teamParams");
@@ -203,7 +205,7 @@ public class ConfigSerializer extends BaseConfig{
         MatchTransitions allTops = new MatchTransitions();
         boolean found = false;
         /// Set all Transition Options
-        for (MatchState transition : MatchState.values()){
+        for (CompetitionState transition : StateController.values()){
             /// OnCancel gets taken from onComplete and modified
             if (transition == MatchState.ONCANCEL)
                 continue;
@@ -226,27 +228,24 @@ public class ConfigSerializer extends BaseConfig{
                 continue;}
             found = true;
             if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + transition +" "+tops);
-            switch (transition){
-                case ONCOMPLETE:
-                    if (allTops.hasOptionAt(MatchState.ONLEAVE, TransitionOption.CLEARINVENTORY)){
-                        tops.addOption(TransitionOption.CLEARINVENTORY);
-                    }
-                    TransitionOptions cancelOps = new TransitionOptions(tops);
-                    allTops.addTransitionOptions(MatchState.ONCANCEL, cancelOps);
-                    if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
-                    break;
-                case ONLEAVE:
-                    if (tops.hasOption(TransitionOption.TELEPORTOUT)){
-                        tops.removeOption(TransitionOption.TELEPORTOUT);
-                        Log.warn("You should never use the option teleportOut inside of onLeave!");
-                    }
-                    break;
-                case DEFAULTS:
-                    if (cs.getBoolean("duelOnly", false)){ /// for backwards compatibility
-                        tops.addOption(TransitionOption.DUELONLY);}
-                default:
-                    break;
+
+            if (transition == MatchState.ONCOMPLETE){
+                if (allTops.hasOptionAt(MatchState.ONLEAVE, TransitionOption.CLEARINVENTORY)){
+                    tops.addOption(TransitionOption.CLEARINVENTORY);
+                }
+                TransitionOptions cancelOps = new TransitionOptions(tops);
+                allTops.addTransitionOptions(MatchState.ONCANCEL, cancelOps);
+                if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
+            } else if (transition == MatchState.ONLEAVE){
+                if (tops.hasOption(TransitionOption.TELEPORTOUT)){
+                    tops.removeOption(TransitionOption.TELEPORTOUT);
+                    Log.warn("You should never use the option teleportOut inside of onLeave!");
+                }
+            } else if (transition == MatchState.DEFAULTS){
+                if (cs.getBoolean("duelOnly", false)){ /// for backwards compatibility
+                    tops.addOption(TransitionOption.DUELONLY);}
             }
+
             allTops.addTransitionOptions(transition,tops);
         }
         if (allTops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN))
@@ -377,7 +376,7 @@ public class ConfigSerializer extends BaseConfig{
      */
     public static ArenaType getArenaType(Plugin plugin, ConfigurationSection cs) throws ConfigException {
         ArenaType at;
-            at = ArenaType.fromString(cs.getName()); /// Get it from the configuration section name
+        at = ArenaType.fromString(cs.getName()); /// Get it from the configuration section name
 
         return at;
     }
@@ -770,9 +769,9 @@ public class ConfigSerializer extends BaseConfig{
 
         MatchTransitions alltops = params.getTransitionOptions();
         if (alltops != null){
-            Map<MatchState,TransitionOptions> transitions =
-                    new TreeMap<MatchState,TransitionOptions>(alltops.getAllOptions());
-            for (MatchState ms: transitions.keySet()){
+            Map<CompetitionState,TransitionOptions> transitions =
+                    new TreeMap<CompetitionState,TransitionOptions>(alltops.getAllOptions());
+            for (CompetitionState ms: transitions.keySet()){
                 try{
                     if (ms == MatchState.ONCANCEL)
                         continue;

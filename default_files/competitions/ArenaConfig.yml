@@ -1,5 +1,6 @@
 Arena:
   prefix: '&6[Arena]&e'
+  signDisplayName: '&6[Arena]'
   gameSize:
     nTeams: '2'
     teamSize: '1'

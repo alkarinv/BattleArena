@@ -1,11 +1,12 @@
 package mc.alk.arena.objects;
 
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.containers.AreaContainer;
+import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.meta.PlayerMetaData;
+import mc.alk.arena.objects.spawns.EntitySpawn;
 import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -235,7 +236,13 @@ public class ArenaPlayer {
 	}
 
 	public void setMobs(List<SpawnInstance> mobs){
-		this.mobs = mobs;
+        this.mobs = mobs;
+        for (SpawnInstance si: mobs){
+            if (si instanceof EntitySpawn) {
+                ((EntitySpawn) si).setOwner(getPlayer());
+            }
+        }
+
 	}
 
 	public void spawnMobs(){

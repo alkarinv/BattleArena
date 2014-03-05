@@ -48,7 +48,7 @@ public enum GameOption{
         try {
             return GameOption.valueOf(str);
         } catch (IllegalArgumentException e){
-            if (str.equalsIgnoreCase("secondsTillMatch"))
+            if (str.equalsIgnoreCase("secondsTillMatch") || str.equalsIgnoreCase("secondsUntilMatch"))
                 return GameOption.PRESTARTTIME;
             if (str.equalsIgnoreCase("secondsToLoot"))
                 return GameOption.VICTORYTIME;

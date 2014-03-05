@@ -1,5 +1,7 @@
 package mc.alk.arena.objects;
 
+import mc.alk.arena.controllers.StateController;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,15 +28,23 @@ public enum MatchState implements CompetitionState{
 	;
 
 	String name;
-	MatchState(String name){
+    int globalOrdinal;
+
+    MatchState(String name){
 		this.name = name;
-	}
+        this.globalOrdinal = StateController.register(this);
+    }
 	@Override
 	public String toString(){
 		return name;
 	}
 
-	public static MatchState fromString(String str){
+    @Override
+    public int globalOrdinal() {
+        return globalOrdinal;
+    }
+
+    public static MatchState fromString(String str){
 		str = str.toUpperCase();
 		try{
 			return MatchState.valueOf(str);
