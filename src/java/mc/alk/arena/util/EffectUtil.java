@@ -1,11 +1,11 @@
 package mc.alk.arena.util;
 
-import java.util.HashMap;
-import java.util.List;
-
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class EffectUtil {
 	static final String version = "2.1.2";
@@ -89,7 +89,8 @@ public class EffectUtil {
 		return getCommonName(effect) +":" + (str+1)+":"+tim/20;
 	}
 
-	public static PotionEffect parseArg(String arg, int defaultStrength, int defaultTime) {
+
+    public static PotionEffect parseArg(String arg, int defaultStrength, int defaultTimeSeconds) {
 		if (arg.contains("{"))
 			arg = arg.replaceFirst("=", " ");
 		arg = arg.replaceAll("[}{]", "");
@@ -99,10 +100,13 @@ public class EffectUtil {
 		if (type == null)
 			throw new IllegalArgumentException("PotionEffectType "+ arg +" not found");
 		Integer strength = defaultStrength;
-		Integer time = defaultTime;
-		if (split.length > 1){try{strength = Integer.valueOf(split[1]) -1;} catch (Exception e){}}
-		if (split.length > 2){try{time = Integer.valueOf(split[2])*20/*ticks*/;} catch (Exception e){}}
-		return new PotionEffect(type,time, strength);
+		Integer time = defaultTimeSeconds*20 /*convert to ticks*/;
+		if (split.length > 1){try{strength = Integer.valueOf(split[1]) -1;} catch (Exception e){/* do nothing */}}
+		if (split.length > 2){try{time = Integer.valueOf(split[2])*20/*ticks*/;} catch (Exception e){/* do nothing */}}
+        if (time < 0) {
+            time = Integer.MAX_VALUE;
+        }
+        return new PotionEffect(type,time, strength);
 	}
 
 	public static void deEnchantAll(Player p) {

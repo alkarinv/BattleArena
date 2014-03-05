@@ -615,7 +615,7 @@ public class ConfigSerializer extends BaseConfig{
     public static List<PotionEffect> getEffectList(ConfigurationSection cs, String nodeString) {
         if (cs == null || cs.getList(nodeString) == null)
             return null;
-        final int strengthDefault = 1;
+        final int strengthDefault = 0;
         final int timeDefault = 60;
         ArrayList<PotionEffect> effects = new ArrayList<PotionEffect>();
         try {

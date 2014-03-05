@@ -2,6 +2,8 @@ package mc.alk.arena.controllers;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
+import mc.alk.arena.objects.ArenaClass;
+import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
@@ -50,7 +52,7 @@ public class ParamAlterController {
     }
 
     public static boolean setTeamParams(CommandSender sender, Integer teamIndex, MatchParams params, GameOption option,
-                                 Object value) throws InvalidOptionException {
+                                        Object value) throws InvalidOptionException {
         RegisteredCompetition rc = CompetitionController.getCompetition(params.getName());
         if (rc == null){
             throw new InvalidOptionException("&cGame &6" + params.getName() +"&c not found!");}
@@ -154,11 +156,22 @@ public class ParamAlterController {
                 throw new InvalidOptionException("&cYou need to be in game to set this option");}
             value = InventoryUtil.getItemList((Player) sender);
         } else if (to == TransitionOption.ENCHANTS){
-            List<PotionEffect> effects = tops.hasOptionAt(state, to) ?
+            List<PotionEffect> list = tops.hasOptionAt(state, to) ?
                     tops.getOptions(state).getEffects() : new ArrayList<PotionEffect>();
-            effects.add((PotionEffect)value);
-            value = effects;
+            list.add((PotionEffect) value);
+            value = list;
+        } else if (to == TransitionOption.DOCOMMANDS){
+            List<CommandLineString> list = tops.hasOptionAt(state, to) ?
+                    tops.getOptions(state).getDoCommands() : new ArrayList<CommandLineString>();
+            list.add((CommandLineString)value);
+            value = list;
+        } else if (to == TransitionOption.GIVECLASS){
+            Map<Integer, ArenaClass> map = tops.hasOptionAt(state, to) ?
+                    tops.getOptions(state).getClasses() : new HashMap<Integer, ArenaClass>();
+            map.put(ArenaClass.DEFAULT, (ArenaClass) value);
+            value = map;
         }
+
         /// For teleport options, remove them from other places where they just dont make sense
         HashSet<TransitionOption> tpOps =
                 new HashSet<TransitionOption>(Arrays.asList(
@@ -182,11 +195,11 @@ public class ParamAlterController {
                         WorldGuardController.setFlag(a.getWorldGuardRegion(), "entry", false);}
                 }
             } else if (to == TransitionOption.WGNOLEAVE){
-                    for (Arena a: BattleArena.getBAController().getArenas(params)){
-                        if (a.getWorldGuardRegion()!=null){
-                            WorldGuardController.setFlag(a.getWorldGuardRegion(), "exit", false);}
-                    }
+                for (Arena a: BattleArena.getBAController().getArenas(params)){
+                    if (a.getWorldGuardRegion()!=null){
+                        WorldGuardController.setFlag(a.getWorldGuardRegion(), "exit", false);}
                 }
+            }
         }
         /// if we removed teleportIn, then we should put it back in the most logical place
         if ((state == MatchState.ONPRESTART || state == MatchState.ONJOIN) &&

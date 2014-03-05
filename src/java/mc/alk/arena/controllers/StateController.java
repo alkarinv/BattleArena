@@ -1,7 +1,6 @@
 package mc.alk.arena.controllers;
 
 import mc.alk.arena.objects.CompetitionState;
-import mc.alk.arena.util.Log;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -71,7 +70,6 @@ public class StateController {
                     continue;
                 return (CompetitionState) o;
             } catch (Exception e) {
-                Log.printStackTrace(e);
                 /* continue on */
             }
         }

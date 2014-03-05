@@ -65,7 +65,7 @@ public class ArenaClass {
 
 	/**
 	 * Get the name
-	 * @return
+	 * @return name
 	 */
 	public String getName() {
 		return name;
@@ -73,7 +73,7 @@ public class ArenaClass {
 
 	/**
 	 * get the items
-	 * @return
+	 * @return List of items
 	 */
 	public List<ItemStack> getItems() {
 		return items;
@@ -81,7 +81,7 @@ public class ArenaClass {
 
 	/**
 	 * Get the effects
-	 * @return
+	 * @return list of effects
 	 */
 	public List<PotionEffect> getEffects() {
 		return effects;
@@ -89,7 +89,7 @@ public class ArenaClass {
 
 	/**
 	 * Get the Display Name
-	 * @return
+	 * @return displayName or name if displayName is null
 	 */
 	public String getDisplayName() {
 		return displayName != null ? displayName : name;
@@ -97,7 +97,7 @@ public class ArenaClass {
 
 	/**
 	 * Get the disguise name
-	 * @return
+	 * @return disguiseName
 	 */
 	public String getDisguiseName() {
 		return disguiseName;
@@ -105,7 +105,7 @@ public class ArenaClass {
 
 	/**
 	 * Set the disguise name
-	 * @param disguiseName
+	 * @param disguiseName String
 	 */
 	public void setDisguiseName(String disguiseName) {
 		this.disguiseName = disguiseName;
@@ -113,7 +113,7 @@ public class ArenaClass {
 
 	@Override
 	public String toString(){
-		return "[ArenaClass "+name+" items="+items +" enchants=" + effects+"]";
+        return "[ArenaClass "+getName()+"]";
 	}
 
 	public boolean valid() {
@@ -134,6 +134,7 @@ public class ArenaClass {
 		this.commands = commands;
 	}
 
+
     public List<SpawnInstance> getMobsClone() {
         List<SpawnInstance> l = new ArrayList<SpawnInstance>();
         for (SpawnInstance si: mobs){
@@ -144,6 +145,5 @@ public class ArenaClass {
             }
         }
         return l;
-
     }
 }

@@ -12,6 +12,7 @@ import mc.alk.arena.controllers.EventController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.StateController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
@@ -24,6 +25,7 @@ import mc.alk.arena.objects.teams.TeamIndex;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TeamUtil;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -110,7 +112,7 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
         } else if (GameOptionPair.class == clazz){
             return verifyGameOption(sender,args,curIndex,numUsedStrings);
         } else if (TransitionOptionTuple.class == clazz){
-            return verifyTransitionOptionTuple( args, curIndex, numUsedStrings);
+            return verifyTransitionOptionTuple(sender, args, curIndex, numUsedStrings);
         } else if (ArenaOptionPair.class == clazz){
             return verifyArenaOptionPair(sender, args, curIndex, numUsedStrings);
         } else if (TeamIndex.class == clazz){
@@ -166,7 +168,8 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
         return aop;
     }
 
-    private TransitionOptionTuple verifyTransitionOptionTuple( String[] args, int curIndex, AtomicInteger numUsedStrings) {
+    private TransitionOptionTuple verifyTransitionOptionTuple(
+            CommandSender sender, String[] args, int curIndex, AtomicInteger numUsedStrings) {
         CompetitionState stage = StateController.fromString(args[curIndex]);
         if (stage==null){
             throw new IllegalArgumentException(ChatColor.RED + "You need to specify a Game Stage : [onJoin, onStart,...]");
@@ -185,16 +188,25 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
         TransitionOptionTuple top = new TransitionOptionTuple();
         top.op = to;
         top.state = stage;
+        if (to == TransitionOption.GIVEITEMS && !(sender instanceof Player)){
+            throw new IllegalArgumentException(ChatColor.RED + "You need to be online to change the option " +
+                    to.name());}
         if (to.hasValue()){
             try {
-                top.value = to.parseValue(args[curIndex+2]);
+                numUsedStrings.set(3);
+                if (to == TransitionOption.DOCOMMANDS) {
+                    String s = StringUtils.join(args, " ", curIndex + 2, args.length);
+                    top.value = CommandLineString.parse(s);
+                    numUsedStrings.set(args.length-curIndex);
+                } else {
+                    top.value = to.parseValue(args[curIndex+2]);
+                }
                 if (top.value == null){
                     throw new IllegalArgumentException(ChatColor.RED + "Option " + to.name()+" couldn't parse value "+args[curIndex+2]);
                 }
             } catch (Exception e) {
                 throw new IllegalArgumentException(ChatColor.RED + "Option " + to.name()+" couldn't parse value "+args[curIndex+2]);
             }
-            numUsedStrings.set(3);
         } else {
             numUsedStrings.set(2);
         }
