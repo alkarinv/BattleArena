@@ -30,6 +30,12 @@ public class StateController {
         return states;
     }
 
+    public static void register(Class<? extends Enum> enumClass) {
+        if (!enums.contains(enumClass)) {
+            enums.add(enumClass);
+        }
+    }
+
     public static int register(Enum en) {
         Class<? extends Enum> enumClass = en.getClass();
         for (Class<? extends Enum> classes : enums){
