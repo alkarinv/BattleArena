@@ -24,6 +24,12 @@ public class EntitySpawn extends SpawnInstance{
 		this.number =number;
 	}
 
+    public EntitySpawn(EntitySpawn entitySpawn) {
+        super(null);
+        this.et = entitySpawn.et;
+        this.number = entitySpawn.number;
+    }
+
     @Override
     public void spawn() {
 		for (LivingEntity id: uids){

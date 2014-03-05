@@ -66,8 +66,8 @@ public class ArenaClassController {
         if (ac.getDisguiseName()!=null && DisguiseInterface.enabled())
             DisguiseInterface.disguisePlayer(player.getPlayer(), ac.getDisguiseName());
         if (ac.getMobs() != null){
-            try{
-                List<SpawnInstance> mobs = new ArrayList<SpawnInstance>(ac.getMobs());
+            try {
+                List<SpawnInstance> mobs = ac.getMobsClone();
                 player.setMobs(mobs);
                 player.spawnMobs();
             } catch (Exception e){

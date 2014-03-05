@@ -1,14 +1,14 @@
 package mc.alk.arena.objects;
 
+import mc.alk.arena.objects.spawns.EntitySpawn;
+import mc.alk.arena.objects.spawns.SpawnInstance;
+import mc.alk.arena.util.InventoryUtil;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import mc.alk.arena.objects.spawns.SpawnInstance;
-import mc.alk.arena.util.InventoryUtil;
-
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
 
 public class ArenaClass {
 	public static final Integer DEFAULT = Integer.MAX_VALUE;
@@ -38,7 +38,7 @@ public class ArenaClass {
 
 	boolean valid = false;
 
-	public ArenaClass(String name){
+    public ArenaClass(String name){
 		this(name,name,new ArrayList<ItemStack>(),new ArrayList<PotionEffect>());
 		valid = false;
 	}
@@ -133,4 +133,17 @@ public class ArenaClass {
 	public void setDoCommands(List<CommandLineString> commands){
 		this.commands = commands;
 	}
+
+    public List<SpawnInstance> getMobsClone() {
+        List<SpawnInstance> l = new ArrayList<SpawnInstance>();
+        for (SpawnInstance si: mobs){
+            if (si instanceof EntitySpawn){
+                l.add(new EntitySpawn((EntitySpawn)si));
+            } else {
+                l.add(si);
+            }
+        }
+        return l;
+
+    }
 }
