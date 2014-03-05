@@ -99,7 +99,7 @@ public class SpawnSerializer {
 		StringBuilder sb = new StringBuilder(key);
 		List<SpawnInstance> spawns = new ArrayList<SpawnInstance>();
 		for (int i=1;i< args.size();i++){
-			sb.append(" " + args.get(i));
+			sb.append(" ").append(args.get(i));
 		}
 		final String value = sb.toString();
 		try {
@@ -124,6 +124,7 @@ public class SpawnSerializer {
 				if (isizedif <= esizedif){
 					spawns.add(new ItemSpawn(is));
 				} else {
+                    try{number = Integer.parseInt(args.get(args.size()-1));} catch(Exception e){}
 					spawns.add(new EntitySpawn(et,number));
 				}
 				return spawns;
@@ -131,6 +132,7 @@ public class SpawnSerializer {
 				spawns.add(new ItemSpawn(is));
 				return spawns;
 			}  else if (et != null){
+                try{number = Integer.parseInt(args.get(args.size()-1));} catch(Exception e){}
 				spawns.add(new EntitySpawn(et,number));
 				return spawns;
 			} else {
