@@ -48,15 +48,13 @@ public class SpecificArenaPlayerEventListener extends SpecificPlayerEventListene
 	private void doMethods(Event event, final ArenaPlayer p, Collection<RListener> lmethods) {
 		/// For each of the splisteners methods that deal with this BukkitEvent
 		for(RListener lmethod: lmethods){
-			final Method method = lmethod.getMethod().getMethod();
-			final Class<?>[] types = method.getParameterTypes();
-			final Object[] os = new Object[1];
-			os[0] = event;
 			try {
-				method.invoke(lmethod.getListener(), os); /// Invoke the listening arenalisteners method
+                lmethod.getMethod().getMethod().invoke(lmethod.getListener(), event); /// Invoke the listening arenalisteners method
 			} catch (Exception e){
-				Log.err("["+BattleArena.getNameAndVersion()+" Error] method=" + method.getName() +
-                        ",  types.length=" +types.length +",  p=" + p +",  listener="+lmethod);
+				Log.err("["+BattleArena.getNameAndVersion()+" Error] method=" +
+                        lmethod.getMethod().getMethod().getName() +
+                        ",  types.length=" +lmethod.getMethod().getMethod().getParameterTypes().length +
+                        ",  p=" + p +",  listener="+lmethod);
 				Log.printStackTrace(e);
 			}
 		}

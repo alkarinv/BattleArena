@@ -73,23 +73,25 @@ public class ArenaMatch extends Match {
     }
 
     @ArenaEventHandler(suppressCastWarnings=true,bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
-    public void onPlayerDeath(PlayerDeathEvent event, final ArenaPlayer target){
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        final ArenaPlayer target = BattleArena.toArenaPlayer(event.getEntity());
         if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(target, " -onPlayerDeath  t=" + target.getTeam());
-        if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE){
-            return;}
+        if (state == MatchState.ONCANCEL || state == MatchState.ONCOMPLETE) {
+            return;
+        }
         final ArenaTeam t = getTeam(target);
-        if (t==null)
+        if (t == null)
             return;
 
-        ArenaPlayerDeathEvent apde = new ArenaPlayerDeathEvent(target,t);
+        ArenaPlayerDeathEvent apde = new ArenaPlayerDeathEvent(target, t);
         apde.setPlayerDeathEvent(event);
         callEvent(apde);
         ArenaPlayer killer = DmgDeathUtil.getPlayerCause(event);
-        if (killer != null){
+        if (killer != null) {
             ArenaTeam killT = getTeam(killer);
-            if (killT != null){ /// they must be in the same match for this to count
+            if (killT != null) { /// they must be in the same match for this to count
                 killT.addKill(killer);
-                callEvent(new ArenaPlayerKillEvent(killer,killT,target));
+                callEvent(new ArenaPlayerKillEvent(killer, killT, target));
             }
         }
     }
@@ -224,39 +226,42 @@ public class ArenaMatch extends Match {
     //	}
 
     @ArenaEventHandler(priority=EventPriority.HIGH)
-    public void onPlayerRespawn(PlayerRespawnEvent event, final ArenaPlayer p){
-        if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(p, " -onPlayerRespawn  t="+p.getTeam());
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        final ArenaPlayer p = BattleArena.toArenaPlayer(event.getPlayer());
+        if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(p, " -onPlayerRespawn  t=" + p.getTeam());
 
-        if (isWon()){
-            return;}
+        if (isWon()) {
+            return;
+        }
         final TransitionOptions mo = tops.getOptions(MatchState.ONDEATH);
 
         if (mo == null)
             return;
 
-        if (respawns){
+        if (respawns) {
             final boolean randomRespawn = mo.randomRespawn();
             /// Lets cancel our death respawn timer
             Integer timer = deathTimer.get(p.getName());
-            if (timer != null){
-                Bukkit.getScheduler().cancelTask(timer);}
+            if (timer != null) {
+                Bukkit.getScheduler().cancelTask(timer);
+            }
             final Location loc;
             final ArenaTeam t = getTeam(p);
-            if (mo.hasAnyOption(TransitionOption.TELEPORTLOBBY,TransitionOption.TELEPORTMAINLOBBY,
-                    TransitionOption.TELEPORTWAITROOM,TransitionOption.TELEPORTMAINWAITROOM)){
+            if (mo.hasAnyOption(TransitionOption.TELEPORTLOBBY, TransitionOption.TELEPORTMAINLOBBY,
+                    TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTMAINWAITROOM)) {
                 final int index = t.getIndex();
-                if (mo.hasOption(TransitionOption.TELEPORTLOBBY)){
+                if (mo.hasOption(TransitionOption.TELEPORTLOBBY)) {
                     loc = RoomController.getLobbySpawn(index, getParams().getType(), randomRespawn);
-                } else if (mo.hasOption(TransitionOption.TELEPORTMAINLOBBY)){
+                } else if (mo.hasOption(TransitionOption.TELEPORTMAINLOBBY)) {
                     loc = RoomController.getLobbySpawn(Defaults.MAIN_SPAWN, getParams().getType(), randomRespawn);
-                } else if (mo.hasOption(TransitionOption.TELEPORTMAINWAITROOM)){
+                } else if (mo.hasOption(TransitionOption.TELEPORTMAINWAITROOM)) {
                     loc = this.getWaitRoomSpawn(Defaults.MAIN_SPAWN, randomRespawn);
                 } else {
                     loc = this.getWaitRoomSpawn(index, randomRespawn);
                 }
                 /// Should we respawn the player to the team spawn after a certain amount of time
-                if (mo.hasOption(TransitionOption.RESPAWNTIME)){
-                    int id = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+                if (mo.hasOption(TransitionOption.RESPAWNTIME)) {
+                    int id = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
                         @Override
                         public void run() {
                             Integer id = respawnTimer.remove(p.getName());
@@ -264,7 +269,7 @@ public class ArenaMatch extends Match {
                             Location loc = getTeamSpawn(index, tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
                             TeleportController.teleport(p.getPlayer(), loc);
                         }
-                    }, mo.getRespawnTime()*20);
+                    }, mo.getRespawnTime() * 20);
                     respawnTimer.put(p.getName(), id);
                 }
             } else {
@@ -278,21 +283,23 @@ public class ArenaMatch extends Match {
             Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
                 public void run() {
                     ArenaTeam t = getTeam(p);
-                    PerformTransition.transition(am, MatchState.ONDEATH, p, t , false);
+                    PerformTransition.transition(am, MatchState.ONDEATH, p, t, false);
                     PerformTransition.transition(am, MatchState.ONSPAWN, p, t, false);
-                    if (respawnsWithClass){
+                    if (respawnsWithClass) {
                         ArenaClass ac = null;
-                        if (p.getPreferredClass() != null){
-                            ac = p.getPreferredClass();}
-                        else if (p.getCurrentClass() != null){
-                            ac = p.getCurrentClass();}
-                        if (ac!=null){
-                            ArenaClassController.giveClass(p, ac);}
+                        if (p.getPreferredClass() != null) {
+                            ac = p.getPreferredClass();
+                        } else if (p.getCurrentClass() != null) {
+                            ac = p.getCurrentClass();
+                        }
+                        if (ac != null) {
+                            ArenaClassController.giveClass(p, ac);
+                        }
                     }
-                    if (keepsInventory){
+                    if (keepsInventory) {
                         psc.restoreMatchItems(p);
                     }
-                    if (woolTeams){
+                    if (woolTeams) {
                         TeamUtil.setTeamHead(t.getIndex(), p);
                     }
                 }
@@ -385,7 +392,7 @@ public class ArenaMatch extends Match {
         Bukkit.getScheduler().cancelTask(id);
         Location loc = am.getSpawn(am.getTeam(ap).getIndex(),
                 am.getParams().hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
-        TeleportController.teleport(ap.getPlayer(), loc);
+        TeleportController.teleport(ap, loc);
     }
 
     public static void signClick(PlayerInteractEvent event, PlayerHolder am) {

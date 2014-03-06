@@ -76,7 +76,10 @@ public class ArenaPlayer {
         this.isReady = false;
         this.currentClass = null;
         this.preferredClass = null;
-        this.despawnMobs();
+        if (mobs != null) {
+            despawnMobs();
+            mobs.clear();
+        }
     }
 
     @Override
@@ -231,7 +234,6 @@ public class ArenaPlayer {
         if (mobs != null){
             for (SpawnInstance es: mobs){
                 es.despawn();}
-            mobs.clear();
         }
     }
 

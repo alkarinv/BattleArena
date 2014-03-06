@@ -393,7 +393,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
         }
         if (loc ==null){
             return sendMessage(sender,"&2Spawn " + spawnIndex +" doesn't exist for " + type);}
-        TeleportController.teleport(sender.getPlayer(), loc);
+        TeleportController.teleport(sender, loc);
         return sendMessage(sender,"&2Teleported to &6"+ type +" " + spawnIndex +" &2loc=&6"+SerializerUtil.getBlockLocString(loc));
     }
 
@@ -472,25 +472,34 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
     @MCCommand(cmds={"setTimings"}, admin=true)
     public boolean setTimings(CommandSender sender, boolean set) {
-        BaseEventListener.setTimings(set);
-        sendMessage(sender, "&2Timings now " +set);
+        Defaults.DEBUG_TIMINGS = true;
+        sendMessage(sender, "&2Timings now " + set);
         return true;
     }
 
     @MCCommand(cmds={"timings"}, admin=true)
     public boolean showTimings(CommandSender sender, String[] args) {
-        boolean useMs = args.length >1 && args[1].equalsIgnoreCase("ms");
+        boolean useMs = !(args.length >1 && args[1].equalsIgnoreCase("ns"));
         Map<String,TimingStat> timings = BaseEventListener.getTimings();
-        sendMessage(sender, BattleArena.getNameAndVersion() +" "+(useMs ? "time(ms)" : "time(ns)"));
+        String timeStr = (useMs ? "time(ms)" : "time(ns)");
+        sendMessage(sender, BattleArena.getNameAndVersion() +" "+timeStr);
         long gtotal = 0;
         for (Entry<String,TimingStat> entry : timings.entrySet()){
             TimingStat t = entry.getValue();
             long total = useMs ? t.totalTime/1000000 : t.totalTime;
             gtotal += total;
-            long avg = useMs ? t.getAverage()/1000000 : t.getAverage();
-            sendMessage(sender, "    " +entry.getKey() +" Time: "+total +" Count: "+t.count +" Avg: " +avg);
+            if (useMs){
+                double avg = ((double) t.getAverage() / 1000000);
+                sendMessage(sender, String.format(
+                        "    %s  Time: %d Count: %d Avg: %.2f", entry.getKey(), total, t.count, avg));
+            } else {
+                long avg = t.getAverage();
+                sendMessage(sender, String.format(
+                        "    %s  Time: %d Count: %d Avg: %d", entry.getKey(), total, t.count, avg));
+            }
+
         }
-        sendMessage(sender, "    Total time "+gtotal + (useMs ? " time(ms)" : " time(ns)"));
+        sendMessage(sender, "    Total time "+gtotal + " "+timeStr);
         return true;
     }
 

@@ -233,7 +233,7 @@ public class JoinOptions {
 
 		if (mm != null)
 			ops.put(JoinOption.WANTEDTEAMSIZE, mm);
-//		mp.flatten();
+
 		jos.params= mp;
 		return jos;
 	}

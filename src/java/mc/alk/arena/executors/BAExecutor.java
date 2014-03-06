@@ -6,6 +6,7 @@ import mc.alk.arena.Permissions;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.controllers.TeleportLocationController;
 import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.ArenaAlterController.ArenaOptionPair;
@@ -279,6 +280,10 @@ public class BAExecutor extends CustomCommandExecutor {
         /// Check entrance fee
         if (!checkAndRemoveFee(mp, t)) {
             return true;
+        }
+
+        for (ArenaPlayer ap: t.getPlayers()){
+            ap.setCurLocation(TeleportLocationController.createCurrentArenaLocation(ap));
         }
 
         TeamJoinObject tqo = new TeamJoinObject(t, mp, jp);

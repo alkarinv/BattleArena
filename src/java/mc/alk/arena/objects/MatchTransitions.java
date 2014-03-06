@@ -255,5 +255,9 @@ public class MatchTransitions {
 		return cmt;
 	}
 
+    public void deleteOptions(CompetitionState state) {
+        ops.remove(state);
+        calculateAllOptions();
+    }
 }
 

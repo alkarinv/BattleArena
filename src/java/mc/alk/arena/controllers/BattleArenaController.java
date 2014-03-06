@@ -273,6 +273,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
      * @return JoinResult
      */
     public JoinResult wantsToJoin(TeamJoinObject tqo) throws IllegalStateException {
+
         /// Can they add an existing Game
         JoinResult jr = joinExistingMatch(tqo);
         if (jr.status == JoinResult.JoinStatus.ADDED_TO_EXISTING_MATCH) {

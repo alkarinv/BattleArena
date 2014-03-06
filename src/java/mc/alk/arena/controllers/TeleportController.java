@@ -5,6 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.listeners.BAPlayerListener;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
@@ -33,75 +34,88 @@ public class TeleportController implements Listener{
     static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
     private final int TELEPORT_FIX_DELAY = 15; // ticks
 
-    public static boolean teleport(final Player player, final Location location){
+    public static boolean teleport(final Player player, final Location location) {
+        return teleport(BattleArena.toArenaPlayer(player), location, false);
+    }
+
+    public static boolean teleport(final ArenaPlayer player, final Location location){
 		return teleport(player,location,false);
 	}
 
-    public static boolean teleport(final Player player, final Location location, boolean giveBypassPerms){
-		if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
-		try {
+    public static boolean teleport(final ArenaPlayer arenaPlayer, final Location location, boolean giveBypassPerms) {
+        Player player = arenaPlayer.getPlayer();
+        if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
+        try {
             teleporting.add(player.getName());
-			player.setVelocity(new Vector(0,Defaults.TELEPORT_Y_VELOCITY,0));
-			player.setFallDistance(0);
-			Location loc = location.clone();
-			loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
-			/// Close their inventory so they arent taking things in/out
-			InventoryUtil.closeInventory(player);
-			player.setFireTicks(0);
+            player.setVelocity(new Vector(0, Defaults.TELEPORT_Y_VELOCITY, 0));
+            player.setFallDistance(0);
+            Location loc = location.clone();
+            loc.setY(loc.getY() + Defaults.TELEPORT_Y_OFFSET);
+            /// Close their inventory so they arent taking things in/out
+            InventoryUtil.closeInventory(player);
+            player.setFireTicks(0);
+            arenaPlayer.despawnMobs();
 
-			/// Deal with vehicles
-			if (player.isInsideVehicle()){
-				try{ player.leaveVehicle(); } catch(Exception e){/*ignore*/}
-			}
 
-			/// Load the chunk if its not already loaded
-			try {
-				if(!loc.getWorld().isChunkLoaded(loc.getBlock().getChunk())){
-					loc.getWorld().loadChunk(loc.getBlock().getChunk());}
-			} catch (Exception e){/*ignore*/}
+            /// Deal with vehicles
+            if (player.isInsideVehicle()) {
+                try {
+                    player.leaveVehicle();
+                } catch (Exception e) {/*ignore*/}
+            }
 
-			/// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
-			/// or game states ... lets not let this happen
-			PermissionsUtil.givePlayerInventoryPerms(player);
+            /// Load the chunk if its not already loaded
+            try {
+                if (!loc.getWorld().isChunkLoaded(loc.getBlock().getChunk())) {
+                    loc.getWorld().loadChunk(loc.getBlock().getChunk());
+                }
+            } catch (Exception e) {/*ignore*/}
+
+            /// MultiInv and Multiverse-Inventories stores/restores items when changing worlds
+            /// or game states ... lets not let this happen
+            PermissionsUtil.givePlayerInventoryPerms(player);
 
             /// CombatTag will prevent teleports
             if (CombatTagInterface.enabled())
                 CombatTagInterface.untag(player);
 
-			/// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
-			if (giveBypassPerms && BattleArena.getSelf().isEnabled() && !Defaults.DEBUG_STRESS){
-				player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);}
+            /// Give bypass perms for Teleport checks like noTeleport, and noChangeWorld
+            if (giveBypassPerms && BattleArena.getSelf().isEnabled() && !Defaults.DEBUG_STRESS) {
+                player.addAttachment(BattleArena.getSelf(), Permissions.TELEPORT_BYPASS_PERM, true, 1);
+            }
 
-			/// Some worlds "regenerate" which means they have the same name, but are different worlds
-			/// To deal with this, reget the world
-			World w = Bukkit.getWorld(loc.getWorld().getName());
-			Location nl = new Location(w, loc.getX(),loc.getY(),loc.getZ(),loc.getYaw(),loc.getPitch());
-			if (!player.teleport(nl, PlayerTeleportEvent.TeleportCause.PLUGIN) ||
-                    (Defaults.DEBUG_VIRTUAL && !player.isOnline())){
-				BAPlayerListener.teleportOnReenter(player.getName(),nl, player.getLocation());
+            /// Some worlds "regenerate" which means they have the same name, but are different worlds
+            /// To deal with this, reget the world
+            World w = Bukkit.getWorld(loc.getWorld().getName());
+            Location nl = new Location(w, loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+            if (!player.teleport(nl, PlayerTeleportEvent.TeleportCause.PLUGIN) ||
+                    (Defaults.DEBUG_VIRTUAL && !player.isOnline())) {
+                BAPlayerListener.teleportOnReenter(player.getName(), nl, player.getLocation());
                 //noinspection PointlessBooleanExpression,ConstantConditions
                 if (!Defaults.DEBUG_VIRTUAL)
                     Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + nl);
-				return false;
-			}
+                return false;
+            }
+            arenaPlayer.spawnMobs();
 
-			/// Handle the /back command from Essentials
-			if (EssentialsController.enabled()){
-				Location l = BAPlayerListener.getBackLocation(player.getName());
-				if (l != null){
-					EssentialsController.setBackLocation(player.getName(), l);}
-			}
+            /// Handle the /back command from Essentials
+            if (EssentialsController.enabled()) {
+                Location l = BAPlayerListener.getBackLocation(player.getName());
+                if (l != null) {
+                    EssentialsController.setBackLocation(player.getName(), l);
+                }
+            }
 
-			if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());
-		} catch (Exception e){
-            if (!Defaults.DEBUG_VIRTUAL){
-                Log.err("[BA Error] teleporting player=" + player.getName() +" to " + location +" " + giveBypassPerms);
+            if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());
+        } catch (Exception e) {
+            if (!Defaults.DEBUG_VIRTUAL) {
+                Log.err("[BA Error] teleporting player=" + player.getName() + " to " + location + " " + giveBypassPerms);
                 Log.printStackTrace(e);
             }
-			return false;
-		}
-		return true;
-	}
+            return false;
+        }
+        return true;
+    }
 
 	/**
 	 * This prevents other plugins from cancelling the teleport

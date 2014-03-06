@@ -10,7 +10,6 @@ import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveLobbyEvent;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.PlayerHolder;
-import mc.alk.arena.listeners.competition.InArenaListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.ContainerState;
@@ -22,15 +21,10 @@ import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
-import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.PermissionsUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,7 +76,8 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
     public AbstractAreaContainer(String name){
         methodController = new MethodController("AAC " + name);
         methodController.addAllEvents(this);
-        try{Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());}catch(Exception e){
+        try{
+            Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());}catch(Exception e){
             //noinspection PointlessBooleanExpression,ConstantConditions
             if (!Defaults.TESTSERVER && !Defaults.TESTSERVER_DEBUG) Log.printStackTrace(e);
         }
@@ -134,36 +129,6 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
             event.addMessage(MessageHandler.getSystemMessage("you_left_competition", this.params.getName()));
             event.getPlayer().reset();
         }
-    }
-
-    /**
-     * Tekkit Servers don't get the @EventHandler methods (reason unknown) so have this method be
-     * redundant.  Possibly can now simplify to just the @ArenaEventHandler
-     * @param event PlayerCommandPreprocessEvent
-     */
-    @ArenaEventHandler
-    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        _onPlayerCommandPreprocess(event);
-    }
-
-    @EventHandler
-    public void _onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
-        if (disabledCommands == null)
-            return;
-        if (!event.isCancelled() && InArenaListener.inQueue(event.getPlayer().getName()) &&
-                CommandUtil.shouldCancel(event, disabledAllCommands, disabledCommands, enabledCommands)){
-            event.setCancelled(true);
-            event.getPlayer().sendMessage(ChatColor.RED+"You cannot use that command when you are in the "+displayName);
-            if (PermissionsUtil.isAdmin(event.getPlayer())){
-                MessageUtil.sendMessage(event.getPlayer(),"&cYou can set &6/bad allowAdminCommands true: &c to change");}
-        }
-    }
-
-    public void setDisabledCommands(List<String> commands) {
-        if (disabledCommands == null)
-            disabledCommands = new HashSet<String>();
-        for (String s: commands){
-            disabledCommands.add("/" + s.toLowerCase());}
     }
 
     protected void doTransition(MatchState state, ArenaPlayer player, ArenaTeam team, boolean onlyInMatch){

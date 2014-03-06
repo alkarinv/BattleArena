@@ -108,6 +108,8 @@ public class Defaults {
 	public static boolean DEBUG_STRESS = false;
 	public static boolean DEBUG_MSGS = false;
 	public static boolean DEBUG_COMMANDS = false;
+    public static boolean DEBUG_TIMINGS = true;
+
 
 	public static int TIME_BETWEEN_CLASS_CHANGE = 3;
 	public static final int MAX_SPAWNS = 100;

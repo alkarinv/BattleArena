@@ -248,23 +248,30 @@ public class ParamAlterController {
         }
         CompetitionState state = StateController.fromString(args[1]);
         if (state != null){
-            final String key = args[2].trim().toUpperCase();
-            try{
-                deleteTransitionOption(state, key);
-                rc.saveParams(params);
-                sendMessage(sender, "&2Game option &6"+state +" "+key+" &2 removed");
+            if (args.length < 3){
                 MatchTransitions tops = params.getTransitionOptions();
-                TransitionOptions ops = tops.getOptions(state);
-                if (ops == null){
-                    sendMessage(sender, "&2Options at &6"+state +"&2 are empty");
-                } else {
-                    sendMessage(sender, "&2Options at &6"+state +"&2 are &6" + ops.toString());
+                tops.deleteOptions(state);
+                return  sendMessage(sender, "&2Options at &6"+state +"&2 are now empty");
+            } else {
+                final String key = args[2].trim().toUpperCase();
+                try{
+                    deleteTransitionOption(state, key);
+                    rc.saveParams(params);
+                    sendMessage(sender, "&2Game option &6"+state +" "+key+" &2 removed");
+                    MatchTransitions tops = params.getTransitionOptions();
+                    TransitionOptions ops = tops.getOptions(state);
+                    if (ops == null){
+                        sendMessage(sender, "&2Options at &6"+state +"&2 are empty");
+                    } else {
+                        sendMessage(sender, "&2Options at &6"+state +"&2 are &6" + ops.toString());
+                    }
+                    return true;
+                } catch (Exception e) {
+                    sendMessage(sender, "&cCould not remove game option " + args[1]);
+                    sendMessage(sender, e.getMessage());
+                    return false;
                 }
-                return true;
-            } catch (Exception e) {
-                sendMessage(sender, "&cCould not remove game option " + args[1]);
-                sendMessage(sender, e.getMessage());
-                return false;
+
             }
         }
         sendMessage(sender, "&cGame option &6" + args[1] +"&c not found!");

@@ -135,12 +135,7 @@ public class PerformTransition {
         final boolean teleportOut = mo.shouldTeleportOut();
         final boolean wipeInventory = mo.clearInventory();
 
-        /// People that are quiting/leaving with wipeInventory should lose their inventory
-        /// even if they are "dead" or "offline"
-//		final boolean forceClearInventory = wipeInventory && mo.shouldTeleportOut();
-
         List<PotionEffect> effects = mo.getEffects()!=null ? new ArrayList<PotionEffect>(mo.getEffects()) : null;
-        final Double health = mo.getHealth();
         final Integer hunger = mo.getHunger();
 
         final int teamIndex = team == null ? -1 : team.getIndex();
@@ -176,7 +171,7 @@ public class PerformTransition {
             if (storeAll || mo.hasOption(TransitionOption.STOREFLIGHT)){psc.storeFlight(player);}
             if (wipeInventory){InventoryUtil.clearInventory(p);}
             if (mo.hasOption(TransitionOption.CLEAREXPERIENCE)){ ExpUtil.clearExperience(p);}
-            if (mo.hasOption(TransitionOption.HEALTH)) { PlayerUtil.setHealth(p, health);}
+            if (mo.hasOption(TransitionOption.HEALTH)) { PlayerUtil.setHealth(p, mo.getHealth());}
             if (mo.hasOption(TransitionOption.HEALTHP)) { PlayerUtil.setHealthP(p, mo.getHealthP());}
             if (mo.hasOption(TransitionOption.MAGIC)) { setMagicLevel(p, mo.getMagic()); }
             if (mo.hasOption(TransitionOption.MAGICP)) { setMagicLevelP(p, mo.getMagicP()); }

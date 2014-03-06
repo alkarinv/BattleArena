@@ -23,6 +23,10 @@ import java.util.Random;
 public class TeleportLocationController {
 	static Random rand = new Random();
 
+    public static ArenaLocation createCurrentArenaLocation(ArenaPlayer ap){
+        return new ArenaLocation(AbstractAreaContainer.HOMECONTAINER, ap.getLocation(),LocationType.HOME);
+    }
+
 	public static void teleport(PlayerHolder am, ArenaTeam team,
 			ArenaPlayer player, TransitionOptions mo, int teamIndex) {
 		player.markOldLocation();
@@ -98,7 +102,7 @@ public class TeleportLocationController {
 			break;
 		}
 		dest.callEvent(apte);
-		if (!TeleportController.teleport(player.getPlayer(), apte.getDestLocation().getLocation(), true) &&
+		if (!TeleportController.teleport(player, apte.getDestLocation().getLocation(), true) &&
 				player.isOnline() && !player.isDead() && !Defaults.DEBUG_VIRTUAL){
 			Log.err("[BA Warning] couldn't teleport "+player.getName()+" srcLoc="+apte.getSrcLocation() +" destLoc=" + apte.getDestLocation());
 		}

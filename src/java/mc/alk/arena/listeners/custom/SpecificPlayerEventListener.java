@@ -2,10 +2,8 @@ package mc.alk.arena.listeners.custom;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.listeners.custom.RListener.RListenerPriorityComparator;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfTreeSet;
@@ -168,36 +166,13 @@ public class SpecificPlayerEventListener extends BaseEventListener {
 
 	private void doMethods(Event event, final Player p, Collection<RListener> lmethods) {
 		/// For each of the splisteners methods that deal with this BukkitEvent
-
-		ArenaPlayer arenaPlayer = null;
 		for(RListener lmethod: lmethods){
-			final Method method = lmethod.getMethod().getMethod();
-			final Class<?>[] types = method.getParameterTypes();
-			final Object[] os = new Object[types.length];
-			os[0] = event;
-
 			try {
-				/// assign variables that we can determine
-				for (int i=1;i< types.length;i++){
-					final Class<?> t = types[i];
-					/// Assign the correct values for method parameters
-					if (Player.class.isAssignableFrom(t)){
-						os[i] = p;
-					} else if (ArenaTeam.class.isAssignableFrom(t)){
-						if (arenaPlayer == null){
-							arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;}
-						if (arenaPlayer != null)
-							os[i] = arenaPlayer.getTeam();
-					} else if (ArenaPlayer.class.isAssignableFrom(t)){
-						if (arenaPlayer == null){
-							arenaPlayer = p != null ? PlayerController.toArenaPlayer(p) : null;}
-						if (arenaPlayer != null)
-							os[i] = arenaPlayer;
-					}
-				}
-				method.invoke(lmethod.getListener(), os); /// Invoke the listening arenalisteners method
+                lmethod.getMethod().getMethod().invoke(lmethod.getListener(), event); /// Invoke the listening arenalisteners method
 			} catch (Exception e){
-				Log.err("["+BattleArena.getNameAndVersion()+" Error] method=" + method + ",  types.length=" +types.length +",  p=" + p +",  listener="+lmethod);
+				Log.err("["+BattleArena.getNameAndVersion()+" Error] method=" + lmethod.getMethod().getMethod() +
+                        ",  types.length=" +lmethod.getMethod().getMethod().getParameterTypes().length +
+                        ",  p=" + p +",  listener="+lmethod);
 				Log.printStackTrace(e);
 			}
 		}

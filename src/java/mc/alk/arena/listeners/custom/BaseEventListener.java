@@ -31,7 +31,6 @@ public abstract class BaseEventListener implements Listener  {
 	Integer timerid = null;
 	EventExecutor executor = null;
 	static Map<String,TimingStat> timings = new HashMap<String,TimingStat>();
-	static boolean useTimings = false;
 
 	public BaseEventListener(final Class<? extends Event> bukkitEvent, EventPriority bukkitPriority) {
 		if (Defaults.DEBUG_EVENTS) Log.info("Registering BAEventListener for type &5" + bukkitEvent.getSimpleName());
@@ -77,7 +76,7 @@ public abstract class BaseEventListener implements Listener  {
 			timerid= null;
 		}
 		if (executor == null){
-			if (Bukkit.getPluginManager().useTimings() || useTimings){
+			if (Bukkit.getPluginManager().useTimings() || Defaults.DEBUG_TIMINGS){
 				executor = new EventExecutor() {
 					public void execute(final Listener listener, final Event event) throws EventException {
 						long startTime = System.nanoTime();
@@ -126,9 +125,5 @@ public abstract class BaseEventListener implements Listener  {
 
 	public static Map<String,TimingStat> getTimings(){
 		return timings;
-	}
-
-	public static void setTimings(boolean set){
-		useTimings = set;
 	}
 }

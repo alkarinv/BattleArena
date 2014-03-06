@@ -1,5 +1,18 @@
 package mc.alk.arena.serializers;
 
+import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.Scheduler;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.InventoryUtil.PInv;
+import mc.alk.arena.util.KeyValue;
+import mc.alk.arena.util.Log;
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
 import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -10,21 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.Timer;
 import java.util.TimerTask;
-
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.Defaults;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.util.InventoryUtil;
-import mc.alk.arena.util.InventoryUtil.PInv;
-import mc.alk.arena.util.KeyValue;
-import mc.alk.arena.util.Log;
-
-import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 public class InventorySerializer {
 
@@ -101,8 +100,7 @@ public class InventorySerializer {
 	public static void saveInventory(final String name, final PInv pinv) {
 		if (Defaults.NUM_INV_SAVES <= 0){
 			return;}
-		Timer t = new Timer();
-		t.schedule(new TimerTask(){
+        Scheduler.scheduleAsynchronousTask(new TimerTask(){
 			@Override
 			public void run() {
 				BaseConfig serializer = getSerializer(name);

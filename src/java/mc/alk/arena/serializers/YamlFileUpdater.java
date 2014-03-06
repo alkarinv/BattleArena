@@ -231,6 +231,7 @@ public class YamlFileUpdater {
                 fu.addAfter(".*disabledQueueCommands.*", "",
                         "# which player commands will be allowed in a queue. commands specified here will work even if ('all') is specified above",
                         "enabledQueueCommands: []");
+                fu.delete(".*secondsTillBegin:.*");
                 try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
             }
         } catch (IOException e){
