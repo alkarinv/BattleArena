@@ -1,5 +1,6 @@
 package mc.alk.arena.objects.options;
 
+import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.util.MinMax;
@@ -12,6 +13,7 @@ public enum GameOption{
     PRESTARTTIME("secondsTillMatch",true, false),
     FORCESTARTTIME("forceStartTime",true, false),
     MATCHTIME("matchTime",true, false),
+    GAMETYPE("gameType",true, false),
     VICTORYTIME("secondsToLoot",true, false),
     VICTORYCONDITION("victoryCondition",true, false),
     NCUMONCURRENTCOMPETITIONS("numConcurrentCompetitions", true, false),
@@ -81,6 +83,8 @@ public enum GameOption{
                 return value;
             case VICTORYCONDITION:
                 return VictoryType.fromString(value);
+            case GAMETYPE:
+                return ArenaType.getType(value);
             case CANCELIFNOTENOUGHPLAYERS:
             case CLOSEWAITROOMWHILERUNNING:
             case RATED:

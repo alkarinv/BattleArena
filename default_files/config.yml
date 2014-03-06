@@ -1,4 +1,4 @@
-configVersion: 2.3.1
+configVersion: 2.3.2
 
 # For help the wiki is a good source of information
 # Wiki: # http://wiki.battleplugins.com/w/index.php/BattleArena
@@ -31,11 +31,17 @@ teleportYVelocity: 0.0
 # put in 0 if you don't want this option
 numberSavedInventories: 5
 
-# which player commands should be disabled when they enter an arena
+# which player commands should be disabled when they enter an arena (use 'all' to disable everything)
 disabledCommands: [home, spawn, payhome, warp, watch, sethome, ma, f, factions]
 
-# What commands should be disabled when the player is inside of a queue, but not in a match
+# which player commands will be allowed. commands specified here will work even if ('all') is specified above
+enabledCommands: []
+
+# What commands should be disabled when the player is inside of a queue, but not in a match, (use 'all' to disable everything)
 disabledQueueCommands: []
+
+# which player commands will be allowed in a queue. commands specified here will work even if ('all') is specified above
+enabledQueueCommands: []
 
 # If set to true, items that are usually not stackable will be stacked when
 # a player is given items.  Examples: 64 mushroom soup, or 64 snow_ball, instead of 1 or 16

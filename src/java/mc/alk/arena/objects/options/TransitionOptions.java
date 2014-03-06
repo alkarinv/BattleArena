@@ -467,7 +467,7 @@ public class TransitionOptions {
 
 	@Override
 	public String toString(){
-		StringBuilder sb = new StringBuilder("[MatchOptions=");
+		StringBuilder sb = new StringBuilder("[Options=");
 		boolean first = true;
 		for (TransitionOption op: options.keySet()){
 			if (!first) sb.append(", " );

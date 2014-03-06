@@ -65,7 +65,9 @@ import static mc.alk.arena.controllers.joining.AbstractJoinHandler.TeamJoinResul
 
 public class ArenaMatchQueue implements ArenaListener, Listener {
     static final boolean DEBUG = false;
+    static boolean disabledAllCommands;
     private static HashSet<String> disabledCommands = new HashSet<String>();
+    private static HashSet<String> enabledCommands = new HashSet<String>();
 
     final List<WaitingObject> joinHandlers = new LinkedList<WaitingObject>();
     final Map<WaitingObject, IdTime> forceTimers = Collections.synchronizedMap(new HashMap<WaitingObject, IdTime>());
@@ -737,7 +739,8 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
 
     @ArenaEventHandler
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event){
-        if (!event.isCancelled() && CommandUtil.shouldCancel(event, disabledCommands)){
+        if (!event.isCancelled() &&
+                CommandUtil.shouldCancel(event, disabledAllCommands, disabledCommands, enabledCommands)){
             event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.RED+"You cannot use that command when you are in the queue");
             if (PermissionsUtil.isAdmin(event.getPlayer())){
@@ -746,8 +749,24 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
     }
 
     public static void setDisabledCommands(List<String> commands) {
+        if (commands == null)
+            return;
+        disabledCommands.clear();
+        if (commands.contains("all")) {
+            disabledAllCommands = true;
+        } else {
+            for (String s: commands){
+                disabledCommands.add("/" + s.toLowerCase());}
+        }
+    }
+
+
+    public static void setEnabledCommands(List<String> commands) {
+        if (commands == null)
+            return;
+        enabledCommands.clear();
         for (String s: commands){
-            disabledCommands.add("/" + s.toLowerCase());}
+            enabledCommands.add("/" + s.toLowerCase());}
     }
 
     class AnnounceInterval {

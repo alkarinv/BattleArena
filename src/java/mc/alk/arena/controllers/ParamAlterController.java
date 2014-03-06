@@ -13,6 +13,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.GameOption;
 import mc.alk.arena.objects.options.TransitionOption;
+import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
@@ -251,7 +252,15 @@ public class ParamAlterController {
             try{
                 deleteTransitionOption(state, key);
                 rc.saveParams(params);
-                return sendMessage(sender, "&2Game option &6"+state +"&2 removed");
+                sendMessage(sender, "&2Game option &6"+state +" "+key+" &2 removed");
+                MatchTransitions tops = params.getTransitionOptions();
+                TransitionOptions ops = tops.getOptions(state);
+                if (ops == null){
+                    sendMessage(sender, "&2Options at &6"+state +"&2 are empty");
+                } else {
+                    sendMessage(sender, "&2Options at &6"+state +"&2 are &6" + ops.toString());
+                }
+                return true;
             } catch (Exception e) {
                 sendMessage(sender, "&cCould not remove game option " + args[1]);
                 sendMessage(sender, e.getMessage());

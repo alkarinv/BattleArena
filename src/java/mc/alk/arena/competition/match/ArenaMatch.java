@@ -56,7 +56,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * like ItemDropListener
  */
 public class ArenaMatch extends Match {
+    static boolean disabledAllCommands;
     static HashSet<String> disabledCommands = new HashSet<String>();
+    static HashSet<String> enabledCommands = new HashSet<String>();
 
     Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
     Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
@@ -340,7 +342,7 @@ public class ArenaMatch extends Match {
     }
 
     private void handlePreprocess(PlayerCommandPreprocessEvent event) {
-        if (CommandUtil.shouldCancel(event, disabledCommands)){
+        if (CommandUtil.shouldCancel(event, disabledAllCommands, disabledCommands, enabledCommands)){
             event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.RED+"You cannot use that command when you are in a match");
             if (PermissionsUtil.isAdmin(event.getPlayer())){
@@ -443,7 +445,23 @@ public class ArenaMatch extends Match {
     }
 
     public static void setDisabledCommands(List<String> commands) {
+        if (commands == null)
+            return;
+        disabledCommands.clear();
+        if (commands.contains("all")) {
+            disabledAllCommands = true;
+        } else {
+            for (String s: commands){
+                disabledCommands.add("/" + s.toLowerCase());}
+        }
+    }
+
+
+    public static void setEnabledCommands(List<String> commands) {
+        if (commands == null)
+            return;
+        enabledCommands.clear();
         for (String s: commands){
-            disabledCommands.add("/" + s.toLowerCase());}
+            enabledCommands.add("/" + s.toLowerCase());}
     }
 }

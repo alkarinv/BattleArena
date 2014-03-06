@@ -2,6 +2,7 @@ package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.util.compat.IInventoryHelper;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -773,7 +774,7 @@ public class InventoryUtil {
                 //Replace color codes
                 String part = ChatColor.translateAlternateColorCodes('&', matcher.group(1));
 				//Now we can split it.
-				String[] lines = part.split("[;\\n]");
+				String[] lines = part.split("([;\\n]|\\\\n)");
 				//DEBUG
 				if(DEBUG) Log.info(Arrays.toString(lines));
 				//Create a new list
@@ -868,10 +869,7 @@ public class InventoryUtil {
 		}
 		List<String> lore = handler.getLore(is);
 		if (lore != null && !lore.isEmpty()){
-			StringBuilder sb2 = new StringBuilder();
-			for (String s : lore){
-				sb2.append(s).append("\n");}
-			sb.append("lore=\"").append(sb2.toString()).append("\" ");
+            sb.append("lore=\"").append(StringUtils.join(lore, "\\n")).append("\" ");
 		}
 
 		Color color = handler.getColor(is);

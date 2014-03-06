@@ -217,7 +217,22 @@ public class YamlFileUpdater {
             newVersion = new Version("2.3.1");
             if (version.compareTo(newVersion) < 0){
                 version = to2Point31(version, yfu, configFile, newVersion);}
-
+            newVersion = new Version("2.3.2");
+            if (version.compareTo(newVersion) < 0){
+                FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+                fu.replace("version:.*", "version: "+newVersion);
+                fu.replace(".*which player commands should be disabled .*",
+                        "# which player commands should be disabled when they enter an arena (use 'all' to disable everything)");
+                fu.addAfter(".*disabledCommands.*", "",
+                        "# which player commands will be allowed. commands specified here will work even if ('all') is specified above",
+                        "enabledCommands: []");
+                fu.replace(".*What commands should be disabled when the.*",
+                        "# What commands should be disabled when the player is inside of a queue, but not in a match, (use 'all' to disable everything)");
+                fu.addAfter(".*disabledQueueCommands.*", "",
+                        "# which player commands will be allowed in a queue. commands specified here will work even if ('all') is specified above",
+                        "enabledQueueCommands: []");
+                try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
+            }
         } catch (IOException e){
             Log.printStackTrace(e);
         }

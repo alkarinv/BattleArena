@@ -77,7 +77,9 @@ public class BAConfigSerializer extends BaseConfig{
         Defaults.NEED_SAME_ITEMS_TO_CHANGE_CLASS = config.getBoolean("needSameItemsToChangeClass", Defaults.NEED_SAME_ITEMS_TO_CHANGE_CLASS);
         parseOptionSets(config.getConfigurationSection("optionSets"));
         ArenaMatch.setDisabledCommands(config.getStringList("disabledCommands"));
+        ArenaMatch.setEnabledCommands(config.getStringList("enabledCommands"));
         ArenaMatchQueue.setDisabledCommands(config.getStringList("disabledQueueCommands"));
+        ArenaMatchQueue.setEnabledCommands(config.getStringList("enabledQueueCommands"));
         loadOtherPlugins();
 
         if (Defaults.TESTSERVER)

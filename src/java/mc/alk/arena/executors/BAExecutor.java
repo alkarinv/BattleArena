@@ -1037,11 +1037,25 @@ public class BAExecutor extends CustomCommandExecutor {
             } else {
                 sendMessage(sender, "&2Game options &6"+state+"&2 added &6"+to );
             }
+            MatchTransitions tops = params.getTransitionOptions();
+            TransitionOptions ops = tops.getOptions(state);
+            sendMessage(sender, "&2Options at &6"+state +"&2 now &6" + ops.toString());
         } catch (InvalidOptionException e) {
             sendMessage(sender, "&cCould not set game option " + state + " " + to);
             sendMessage(sender, "&c" + e.getMessage());
         }
         return true;
+    }
+
+    @MCCommand(cmds = { "showOptions" }, admin = true, perm = "arena.alter")
+    public boolean showGameOptions(CommandSender sender, MatchParams params) {
+        MatchTransitions tops = params.getTransitionOptions();
+        if (tops == null){
+            return sendMessage(sender, "&2Options for "+params.getName() +" are empty");
+        }
+        sendMessage(sender, "&2Options for &6"+params.getName() +" : " + params.getDisplayName());
+        sendMessage(sender, params.toSummaryString());
+        return sendMessage(sender, tops.getOptionString());
     }
 
     @MCCommand(cmds = { "deleteOption" }, admin = true, perm = "arena.alter")

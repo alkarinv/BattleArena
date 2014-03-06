@@ -22,11 +22,9 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
     String prefix;
     String signDisplayName;
     VictoryType vc;
-    Integer matchTime;
     Integer intervalTime;
     AnnouncementOptions ao;
 
-    Integer nLives;
     Integer numConcurrentCompetitions;
     Set<ArenaModule> modules;
     Boolean useBTPvP;
@@ -35,7 +33,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
     MatchParams mparent;
 
-    Integer forceStartTime;
 
     public MatchParams(){
         super();
@@ -58,16 +55,13 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
             this.prefix = mp.prefix;
             this.vc = mp.vc;
 
-            this.matchTime = mp.matchTime;
             this.intervalTime = mp.intervalTime;
             this.ao = mp.ao;
-            this.nLives = mp.nLives;
             this.numConcurrentCompetitions = mp.numConcurrentCompetitions;
             this.mparent = mp.mparent;
             this.useBTMessages = mp.useBTMessages;
             this.useBTPvP = mp.useBTPvP;
             this.useBTTeamRating  = mp.useBTTeamRating;
-            this.forceStartTime  = mp.forceStartTime;
             this.signDisplayName = mp.signDisplayName;
             if (mp.modules != null)
                 this.modules = new HashSet<ArenaModule>(mp.modules);
@@ -79,15 +73,12 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
         if (mparent != null){
             if (this.prefix == null) this.prefix = mparent.getPrefix();
             if (this.vc == null) this.vc = mparent.getVictoryType();
-            if (this.matchTime == null) this.matchTime = mparent.getMatchTime();
             if (this.intervalTime == null) this.intervalTime = mparent.getIntervalTime();
             if (this.ao == null) this.ao = mparent.getAnnouncementOptions();
-            if (this.nLives == null) this.nLives = mparent.getNLives();
             if (this.numConcurrentCompetitions == null) this.numConcurrentCompetitions = mparent.getNConcurrentCompetitions();
             if (this.useBTMessages == null) this.useBTMessages = mparent.getUseTrackerMessages();
             if (this.useBTPvP == null) this.useBTPvP = mparent.getUseTrackerPvP();
             if (this.useBTTeamRating == null) this.useBTTeamRating = mparent.isTeamRating();
-            if (this.forceStartTime== null) this.forceStartTime = mparent.getForceStartTime();
             if (this.signDisplayName== null) this.signDisplayName = mparent.getSignDisplayName();
             this.modules = getModules();
             this.mparent = null;
@@ -127,14 +118,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
         this.vc = victoryCondition;
     }
 
-    public Integer getMatchTime() {
-        return matchTime == null && mparent!=null ? mparent.getMatchTime() : matchTime;
-    }
-
-    public void setMatchTime(Integer matchTime) {
-        this.matchTime = matchTime;
-    }
-
     public Integer getIntervalTime() {
         return intervalTime ==null && mparent!=null ? mparent.getIntervalTime() : intervalTime;
     }
@@ -143,13 +126,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
         this.intervalTime = intervalTime;
     }
 
-    public void setNLives(Integer nlives){
-        this.nLives = nlives;
-    }
 
-    public Integer getNLives(){
-        return nLives==null&&mparent!=null ? mparent.getNLives() : nLives;
-    }
 
     @Override
     public int hashCode() {
@@ -223,13 +200,6 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
         useBTMessages = enable;
     }
 
-    public void setForceStartTime(Integer forceStartTime) {
-        this.forceStartTime = forceStartTime;
-    }
-
-    public Integer getForceStartTime() {
-        return forceStartTime != null ? forceStartTime : (mparent!= null ? mparent.getForceStartTime() : null);
-    }
 
     @Override
     public boolean valid() {
