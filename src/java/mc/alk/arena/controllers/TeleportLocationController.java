@@ -23,10 +23,6 @@ import java.util.Random;
 public class TeleportLocationController {
 	static Random rand = new Random();
 
-    public static ArenaLocation createCurrentArenaLocation(ArenaPlayer ap){
-        return new ArenaLocation(AbstractAreaContainer.HOMECONTAINER, ap.getLocation(),LocationType.HOME);
-    }
-
 	public static void teleport(PlayerHolder am, ArenaTeam team,
 			ArenaPlayer player, TransitionOptions mo, int teamIndex) {
 		player.markOldLocation();
@@ -51,12 +47,10 @@ public class TeleportLocationController {
         MatchParams mp = am.getParams();
 		Location loc;
 		ArenaLocation src = player.getCurLocation();
-		final LocationType type;
+		final LocationType type = LocationType.HOME;
 		if (mo.hasOption(TransitionOption.TELEPORTTO)){
 			loc = mo.getTeleportToLoc();
-			type = LocationType.CUSTOM;
 		} else {
-			type = LocationType.HOME;
 			loc = player.getOldLocation();
 			/// TODO
 			/// This is a bit of a kludge, sometimes we are "teleporting them out"

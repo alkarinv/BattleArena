@@ -6,8 +6,6 @@ import mc.alk.arena.Permissions;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.controllers.TeleportLocationController;
-import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.ArenaAlterController;
 import mc.alk.arena.controllers.ArenaAlterController.ArenaOptionPair;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
@@ -27,6 +25,7 @@ import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
+import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.HeroesController;
@@ -53,6 +52,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.Channel;
 import mc.alk.arena.objects.options.DuelOptions;
@@ -65,7 +65,6 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.pairs.GameOptionPair;
 import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.pairs.TransitionOptionTuple;
-import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
@@ -280,10 +279,6 @@ public class BAExecutor extends CustomCommandExecutor {
         /// Check entrance fee
         if (!checkAndRemoveFee(mp, t)) {
             return true;
-        }
-
-        for (ArenaPlayer ap: t.getPlayers()){
-            ap.setCurLocation(TeleportLocationController.createCurrentArenaLocation(ap));
         }
 
         TeamJoinObject tqo = new TeamJoinObject(t, mp, jp);

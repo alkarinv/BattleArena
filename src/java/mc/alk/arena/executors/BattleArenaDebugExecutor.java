@@ -386,7 +386,6 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
                 break;
             case NONE:
             case COURTYARD:
-            case CUSTOM:
             default:
                 loc = null;
                 break;
