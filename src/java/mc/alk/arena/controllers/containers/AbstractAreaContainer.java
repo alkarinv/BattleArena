@@ -57,7 +57,9 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
     ContainerState state = ContainerState.OPEN;
 
+    boolean disabledAllCommands;
     Set<String> disabledCommands;
+    Set<String> enabledCommands;
 
     private final MethodController methodController;
 
@@ -149,7 +151,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
         if (disabledCommands == null)
             return;
         if (!event.isCancelled() && InArenaListener.inQueue(event.getPlayer().getName()) &&
-                CommandUtil.shouldCancel(event, disabledCommands)){
+                CommandUtil.shouldCancel(event, disabledAllCommands, disabledCommands, enabledCommands)){
             event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.RED+"You cannot use that command when you are in the "+displayName);
             if (PermissionsUtil.isAdmin(event.getPlayer())){
