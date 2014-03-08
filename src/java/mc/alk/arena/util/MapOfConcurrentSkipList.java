@@ -24,25 +24,6 @@ public class MapOfConcurrentSkipList<K,V> extends HashMap<K,ConcurrentSkipListSe
     }
 
     public boolean add(K k, V v) {
-        ConcurrentSkipListSet<V> set = getOrMake(k);
-        set.add(v);
-        return set.add(v);
-    }
-
-    public boolean remove(K k, V v) {
-        if (!containsKey(k))
-            return false;
-        ConcurrentSkipListSet<V> set = get(k);
-        if (set.remove(v) && set.isEmpty()) {
-            synchronized(this){
-                remove(k);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private ConcurrentSkipListSet<V> getOrMake(K k) {
         ConcurrentSkipListSet<V> set = get(k);
         if (set == null){
             if (comparator != null){
@@ -50,10 +31,28 @@ public class MapOfConcurrentSkipList<K,V> extends HashMap<K,ConcurrentSkipListSe
             } else {
                 set = new ConcurrentSkipListSet<V>();
             }
+            set.add(v);
             synchronized(this){
                 put(k, set);
             }
+            return true;
+        } else {
+            return set.add(v);
         }
-        return set;
+    }
+
+    public boolean remove(K k, V v) {
+        ConcurrentSkipListSet<V> set = get(k);
+        if (set==null)
+            return false;
+        if (set.remove(v)) {
+            if (set.isEmpty()){
+                synchronized (this) {
+                    remove(k);
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }

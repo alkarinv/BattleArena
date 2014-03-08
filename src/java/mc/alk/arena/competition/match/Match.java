@@ -1001,7 +1001,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     private void postFirstJoin(ArenaPlayer player){
         ArenaTeam team = getTeam(player);
         inMatch.add(player.getName());
-
+        if (woolTeams && team !=null && team.getIndex()!=-1){
+            TeamUtil.setTeamHead(team.getIndex(), player); // give wool heads
+        }
         if (cancelExpLoss){
             psc.cancelExpLoss(player,true);}
     }
