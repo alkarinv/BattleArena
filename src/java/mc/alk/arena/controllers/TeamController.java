@@ -43,6 +43,11 @@ public enum TeamController implements Listener {
         return at;
     }
 
+    public boolean inSelfFormedTeam(ArenaPlayer player){
+        return (INSTANCE.selfFormedTeams.containsKey(player.getName()) ||
+                (HeroesController.enabled() && HeroesController.getTeam(player.getPlayer() )!=null));
+    }
+
 	public ArenaTeam getSelfFormedTeam(ArenaPlayer player) {
 		return getTeam(player);
 	}
@@ -71,15 +76,19 @@ public enum TeamController implements Listener {
 	}
 
 	private void leaveSelfTeam(ArenaPlayer p) {
-		ArenaTeam t = getFormingTeam(p);
-		if (t != null && formingTeams.remove(t)){
-			t.sendMessage("&cYou're team has been disbanded as &6" + p.getDisplayName()+"&c has left minecraft");
-			return;
-		}
-		t = getSelfFormedTeam(p);
-		if (t != null && this.removeSelfFormedTeam(t)){
-			t.sendMessage("&cYou're team has been disbanded as &6" + p.getDisplayName()+"&c has left minecraft");
-		}
+        if (inFormingTeam(p)){
+            ArenaTeam t = getFormingTeam(p);
+            if (t != null && formingTeams.remove(t)){
+                t.sendMessage("&cYou're team has been disbanded as &6" + p.getDisplayName()+"&c has left minecraft");
+                return;
+            }
+        }
+        if (inSelfFormedTeam(p)){
+            ArenaTeam t = getSelfFormedTeam(p);
+            if (t != null && this.removeSelfFormedTeam(t)){
+                t.sendMessage("&cYou're team has been disbanded as &6" + p.getDisplayName()+"&c has left minecraft");
+            }
+        }
 	}
 
 	@EventHandler

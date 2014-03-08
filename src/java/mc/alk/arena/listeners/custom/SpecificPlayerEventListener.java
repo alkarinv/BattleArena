@@ -6,7 +6,7 @@ import mc.alk.arena.listeners.custom.RListener.RListenerPriorityComparator;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.MapOfTreeSet;
+import mc.alk.arena.util.MapOfConcurrentSkipList;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -17,7 +17,6 @@ import org.bukkit.event.entity.EntityDeathEvent;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.TreeSet;
 
 
 /**
@@ -27,7 +26,7 @@ import java.util.TreeSet;
  */
 public class SpecificPlayerEventListener extends BaseEventListener {
 	/** map of player to listeners listening for that player */
-	final protected MapOfTreeSet<String,RListener> listeners = new MapOfTreeSet<String,RListener>(
+	final protected MapOfConcurrentSkipList<String,RListener> listeners = new MapOfConcurrentSkipList<String,RListener>(
 			new RListenerPriorityComparator());
 
 	/** The method which will return a Player if invoked */
@@ -58,7 +57,7 @@ public class SpecificPlayerEventListener extends BaseEventListener {
 	 * Get the map of players to listeners
 	 * @return players
 	 */
-	public MapOfTreeSet<String,RListener> getListeners(){
+	public MapOfConcurrentSkipList<String,RListener> getListeners(){
 		return listeners;
 	}
 
@@ -154,18 +153,14 @@ public class SpecificPlayerEventListener extends BaseEventListener {
 		final Entity entity = getEntityFromMethod(event, getPlayerMethod);
 		if (!(entity instanceof Player))
 			return;
-		callListeners(event, (Player) entity);
+        doMethods(event, (Player) entity);
 	}
 
-	private void callListeners(Event event, final Player p) {
-		TreeSet<RListener> spls = listeners.getSafe(p.getName());
-		if (spls == null){
-			return;}
-		doMethods(event,p, spls);
-	}
-
-	private void doMethods(Event event, final Player p, Collection<RListener> lmethods) {
-		/// For each of the splisteners methods that deal with this BukkitEvent
+	private void doMethods(final Event event, final Player p) {
+        Collection<RListener> lmethods = listeners.get(p.getName());
+        if (lmethods == null){
+            return;}
+        /// For each of the splisteners methods that deal with this BukkitEvent
 		for(RListener lmethod: lmethods){
 			try {
                 lmethod.getMethod().getMethod().invoke(lmethod.getListener(), event); /// Invoke the listening arenalisteners method
@@ -180,24 +175,24 @@ public class SpecificPlayerEventListener extends BaseEventListener {
 
 	private void doEntityDeathEvent(EntityDeathEvent event) {
 		if (event.getEntity() instanceof Player && listeners.containsKey(((Player)event.getEntity()).getName()) ){
-			callListeners(event, (Player) event.getEntity());
+            doMethods(event, (Player) event.getEntity());
 			return;
 		}
 		ArenaPlayer ap = DmgDeathUtil.getPlayerCause(event.getEntity().getLastDamageCause());
 		if (ap == null)
 			return;
 		if (listeners.containsKey(ap.getName())){
-			callListeners(event, ap.getPlayer());
+            doMethods(event, ap.getPlayer());
 		}
 	}
 
 	private void doEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
 		if (event.getEntity() instanceof Player && listeners.containsKey(((Player)event.getEntity()).getName()) ){
-			callListeners(event, (Player) event.getEntity());
+            doMethods(event, (Player) event.getEntity());
 			return;
 		}
 		if (event.getDamager() instanceof Player && listeners.containsKey(((Player)event.getDamager()).getName())){
-			callListeners(event, (Player) event.getDamager());
+            doMethods(event, (Player) event.getDamager());
 			return;
 		}
 
@@ -209,21 +204,21 @@ public class SpecificPlayerEventListener extends BaseEventListener {
 			}
 		}
 		if (player != null){
-			callListeners(event, player);
+            doMethods(event, player);
 		}
 		/// Else the target wasnt a player, and the shooter wasnt a player.. nothing to do
 	}
 
 	private void doEntityDamageEvent(EntityDamageEvent event) {
 		if (event.getEntity() instanceof Player){
-			callListeners(event, (Player) event.getEntity());
+            doMethods(event, (Player) event.getEntity());
 			return;
 		}
 
 		EntityDamageEvent lastDamage = event.getEntity().getLastDamageCause();
 		ArenaPlayer damager = DmgDeathUtil.getPlayerCause(lastDamage);
 		if (damager != null){
-			callListeners(event, damager.getPlayer());
+            doMethods(event, damager.getPlayer());
 		}
 	}
 

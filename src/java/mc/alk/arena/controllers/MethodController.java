@@ -12,7 +12,7 @@ import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.ArenaEventMethod;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.MapOfTreeSet;
+import mc.alk.arena.util.MapOfConcurrentSkipList;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.Util;
 import org.bukkit.Bukkit;
@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 
 
 @SuppressWarnings("deprecation")
@@ -546,7 +545,7 @@ public class MethodController {
             HashMap<Type, BukkitEventHandler> types = gels.get(bp);
             for (BukkitEventHandler bel: types.values()){
                 if (bel.getSpecificPlayerListener() != null){
-                    MapOfTreeSet<String,RListener> lists2 = bel.getSpecificPlayerListener().getListeners();
+                    MapOfConcurrentSkipList<String,RListener> lists2 = bel.getSpecificPlayerListener().getListeners();
                     String str = MessageUtil.joinBukkitPlayers(bel.getSpecificPlayerListener().getPlayers(),", ");
                     String has = bel.hasListeners() ? "&2true" : "&cfalse";
                     if (!lists2.isEmpty())
@@ -555,7 +554,7 @@ public class MethodController {
                     for (String p : lists2.keySet()){
                         if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
                             continue;
-                        TreeSet<RListener> rls = lists2.get(p);
+                        Collection<RListener> rls = lists2.get(p);
                         for (RListener rl : rls){
                             MessageUtil.sendMessage(sender, "!! " + rl.getPriority() + "  " + p +
                                     "  Listener  " + rl.getListener().getClass().getSimpleName() +
@@ -564,7 +563,7 @@ public class MethodController {
                     }
                 }
                 if (bel.getSpecificArenaPlayerListener() != null){
-                    MapOfTreeSet<String,RListener> lists2 = bel.getSpecificArenaPlayerListener().getListeners();
+                    MapOfConcurrentSkipList<String,RListener> lists2 = bel.getSpecificArenaPlayerListener().getListeners();
                     String str = MessageUtil.joinBukkitPlayers(bel.getSpecificArenaPlayerListener().getPlayers(),", ");
                     String has = bel.hasListeners() ? "&2true" : "&cfalse";
                     if (!lists2.isEmpty())
@@ -573,7 +572,7 @@ public class MethodController {
                     for (String p : lists2.keySet()){
                         if (limitToPlayer != null && !p.equalsIgnoreCase(limitToPlayer))
                             continue;
-                        TreeSet<RListener> rls = lists2.get(p);
+                        Collection<RListener> rls = lists2.get(p);
                         for (RListener rl : rls){
                             MessageUtil.sendMessage(sender, "!!! " + rl.getPriority() + "  " + p +
                                     "  Listener  " + rl.getListener().getClass().getSimpleName() +

@@ -1,10 +1,8 @@
 package mc.alk.arena.objects.signs;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.EventController;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -13,14 +11,16 @@ import mc.alk.arena.objects.JoinType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.SerializerUtil;
 import mc.alk.arena.util.SignUtil;
-
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ArenaCommandSign implements ConfigurationSerializable{
 	public static enum ARENA_COMMAND{
-		JOIN, LEAVE, START;
+		JOIN, LEAVE, START
 	}
 	final Location location;
 	MatchParams mp;
@@ -50,10 +50,10 @@ public class ArenaCommandSign implements ConfigurationSerializable{
 		switch (command){
 		case JOIN:
 			args = new String[]{"add", options1};
-			executor.join(player, mp, args, true);
+			executor.join(player, ParamController.copyParams(mp), args, true);
 			break;
 		case LEAVE:
-			args = new String[]{"leave", options1,options2};
+//			args = new String[]{"leave", options1,options2};
 			executor.leave(player,mp,true);
 			break;
 		case START:
@@ -71,7 +71,7 @@ public class ArenaCommandSign implements ConfigurationSerializable{
 			executor.eventJoin(player, ep, args, true);
 			break;
 		case LEAVE:
-			args = new String[]{"leave", options1,options2};
+//			args = new String[]{"leave", options1,options2};
 			executor.leave(player,ep,true);
 			break;
 		case START:
@@ -105,8 +105,7 @@ public class ArenaCommandSign implements ConfigurationSerializable{
 		Sign s = SignUtil.getSign(location);
 		if (s == null)
 			return null;
-		ArenaCommandSign acs = SignUtil.getArenaCommandSign(s, s.getLines());
-		return acs;
+        return SignUtil.getArenaCommandSign(s, s.getLines());
 	}
 
 	public Location getLocation() {

@@ -20,14 +20,13 @@ import java.util.Set;
 
 public class MatchTransitions {
 	final Map<CompetitionState,TransitionOptions> ops = new HashMap<CompetitionState,TransitionOptions>();
-	final Set<TransitionOption> allops = new HashSet<TransitionOption>();
+	Set<TransitionOption> allops;
 
 	public MatchTransitions() {}
 	public MatchTransitions(MatchTransitions o) {
 		for (CompetitionState ms: o.ops.keySet()){
 			ops.put(ms, new TransitionOptions(o.ops.get(ms)));
 		}
-		calculateAllOptions();
 	}
 
 	public Map<CompetitionState,TransitionOptions> getAllOptions(){
@@ -37,27 +36,27 @@ public class MatchTransitions {
 	public void addTransitionOptions(CompetitionState ms, TransitionOptions tops) {
 		ops.put(ms, tops);
 		Map<TransitionOption,Object> ops = tops.getOptions();
-		if (ops != null)
-			allops.addAll(ops.keySet());
+		allops = null;
 	}
 
 	public void addTransitionOption(MatchState state, TransitionOption option) throws InvalidOptionException {
-		allops.add(option);
 		TransitionOptions tops = ops.get(state);
 		if (tops == null){
 			tops = new TransitionOptions();
 			ops.put(state, tops);
 		}
 		tops.addOption(option);
+        allops = null;
 	}
+
 	public void addTransitionOption(CompetitionState state, TransitionOption option, Object value) throws InvalidOptionException {
-		allops.add(option);
 		TransitionOptions tops = ops.get(state);
 		if (tops == null){
 			tops = new TransitionOptions();
 			ops.put(state, tops);
 		}
 		tops.addOption(option,value);
+        allops = null;
 	}
 
 	public boolean removeTransitionOption(CompetitionState state, TransitionOption option) {
@@ -67,21 +66,29 @@ public class MatchTransitions {
 
 	public void removeTransitionOptions(CompetitionState ms) {
 		ops.remove(ms);
-		calculateAllOptions();
+        allops = null;
 	}
 
 	private void calculateAllOptions(){
-		allops.clear();
-		for (TransitionOptions top: ops.values()){
+		if (allops != null){
+            allops.clear();
+        } else {
+            allops = new HashSet<TransitionOption>();
+        }
+        for (TransitionOptions top: ops.values()){
 			allops.addAll(top.getOptions().keySet());
 		}
 	}
 
 	public boolean hasAnyOption(TransitionOption option) {
+        if (allops == null)
+            calculateAllOptions();
 		return allops.contains(option);
 	}
 
 	public boolean hasAnyOption(TransitionOption... options) {
+        if (allops == null)
+            calculateAllOptions();
 		for (TransitionOption op: options){
 			if (allops.contains(op))
 				return true;
@@ -100,7 +107,9 @@ public class MatchTransitions {
 
 	public boolean hasAllOptions(TransitionOption... options) {
 		Set<TransitionOption> ops = new HashSet<TransitionOption>(Arrays.asList(options));
-		return allops.containsAll(ops);
+        if (allops == null)
+            calculateAllOptions();
+        return allops.containsAll(ops);
 	}
 
 	public boolean hasInArenaOrOptionAt(CompetitionState state, TransitionOption option) {

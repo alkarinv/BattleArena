@@ -362,11 +362,9 @@ public class ArenaMatch extends Match {
         playerInteract(event);
     }
 
-    public void playerInteract(PlayerInteractEvent event){
-        if (event.getClickedBlock() == null)
-            return;
-
-        if (!(event.getClickedBlock().getType().equals(Material.SIGN) ||
+    private void playerInteract(PlayerInteractEvent event){
+        if (event.getClickedBlock() == null ||
+                !(event.getClickedBlock().getType().equals(Material.SIGN) ||
                 event.getClickedBlock().getType().equals(Material.WALL_SIGN) ||
                 event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)
         )) {

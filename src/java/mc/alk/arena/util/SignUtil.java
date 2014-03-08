@@ -21,14 +21,16 @@ public class SignUtil {
 	public static ArenaCommandSign getArenaCommandSign(Sign sign, String[] lines) {
 		if (lines.length < 2)
 			return null;
-		String param = MessageUtil.decolorChat(lines[0]).replaceAll("[\\[\\"+Defaults.SIGN_PREFIX+"\\]]","").trim().toLowerCase();
-		MatchParams mp = ParamController.getMatchParamCopy(param);
-		if (mp == null){
+		String param = MessageUtil.decolorChat(lines[0]).replaceAll("[\\[\\" + Defaults.SIGN_PREFIX + "\\]]", "").trim();
+        MatchParams mp = ParamController.getMatchParams(param);
+        if (mp == null){
 			Collection<MatchParams> params = ParamController.getAllParams();
 			for (MatchParams p: params){
-				if (p.getName().toLowerCase().startsWith(param) ||
-                        p.getCommand().toLowerCase().startsWith(param) || p.getSignDisplayName()!=null &&
-                        MessageUtil.decolorChat(p.getSignDisplayName().replaceAll("[\\[\\"+Defaults.SIGN_PREFIX+"\\]]","").trim()).equalsIgnoreCase(param)){
+				if (p.getName().equalsIgnoreCase(param) ||
+                        p.getCommand().equalsIgnoreCase(param) ||
+                        p.getSignDisplayName()!=null &&
+                        MessageUtil.decolorChat(p.getSignDisplayName().replaceAll("[\\[\\"+Defaults.SIGN_PREFIX+"\\]]","").trim()).
+                                equalsIgnoreCase(param)){
 					mp = p;
 					break;
 				}
@@ -36,23 +38,22 @@ public class SignUtil {
 			if (mp == null){
 				return null;}
 		}
-		param = MessageUtil.decolorChat(lines[1]).toUpperCase().trim();
-		ARENA_COMMAND cmd;
+
 		try {
-			cmd = ARENA_COMMAND.valueOf(param);
-		} catch (Exception e){
+            return new ArenaCommandSign(
+                    sign.getLocation(),
+                    mp,
+                    ARENA_COMMAND.valueOf(MessageUtil.decolorChat(lines[1]).toUpperCase().trim()),
+                    MessageUtil.decolorChat(lines[2]),
+                    MessageUtil.decolorChat(lines[3]));
+        } catch (Exception e){
 			return null;
 		}
-		String op1 =  MessageUtil.decolorChat(lines[2]);
-		String op2 =  MessageUtil.decolorChat(lines[3]);
-		ArenaCommandSign acs = new ArenaCommandSign(sign.getLocation(), mp, cmd, op1, op2);
-		return acs;
 	}
 
 	public static ArenaClass getArenaClassSign(String[] lines) {
-		ArenaClass ac = ArenaClassController.getClass(
-				MessageUtil.decolorChat(lines[0]).replaceAll("[\\[\\"+Defaults.SIGN_PREFIX+"\\]]", ""));
-		return ac;
+        return ArenaClassController.getClass(
+                MessageUtil.decolorChat(lines[0]).replaceAll("[\\[\\"+Defaults.SIGN_PREFIX+"\\]]", ""));
 	}
 
 	public static ArenaStatusSign getArenaStatusSign(String[] lines) {

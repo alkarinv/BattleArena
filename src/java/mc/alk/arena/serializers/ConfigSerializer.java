@@ -109,8 +109,6 @@ public class ConfigSerializer extends BaseConfig{
         }
         loadGameSize(cs, mp, isNonBaseConfig); /// Set the game size
 
-        if (!isNonBaseConfig)
-            ArenaType.addAliasForType(name, mp.getCommand());
         if (cs.contains("prefix")) mp.setPrefix( cs.getString("prefix","&6["+name+"]"));
         if (cs.contains("signDisplayName")) mp.setSignDisplayName( cs.getString("signDisplayName"));
 
@@ -756,14 +754,16 @@ public class ConfigSerializer extends BaseConfig{
 
             map = ao.getEventOptions();
             if (map != null){
-                ConfigurationSection cs = maincs.createSection("eventAnnouncements");
                 for (Entry<MatchState, Map<AnnouncementOption, Object>> entry : map.entrySet()){
                     List<String> ops = new ArrayList<String>();
                     for (Entry<AnnouncementOption,Object> entry2 : entry.getValue().entrySet()){
                         Object o = entry2.getValue();
                         ops.add(entry2.getKey() +(o != null ? o.toString() :""));
                     }
-                    cs.set(entry.getKey().name(), ops);
+                    if (!ops.isEmpty()){
+                        ConfigurationSection cs = maincs.createSection("eventAnnouncements");
+                        cs.set(entry.getKey().name(), ops);
+                    }
                 }
             }
         }

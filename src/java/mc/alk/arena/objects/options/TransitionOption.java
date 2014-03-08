@@ -29,6 +29,8 @@ public enum TransitionOption{
     RESTOREGAMEMODE("restoreGamemode",false),		/// Restore gamemode
     STOREITEMS("storeItems",false),					/// Store Items
     RESTOREITEMS("restoreItems",false),				/// Restore Items
+    STOREENCHANTS("storeEnchants",false),			/// Store Enchants/Potion Effects
+    RESTOREENCHANTS("restoreEnchants",false),		/// Restore Enchants/Potion Effects
     STOREHEALTH("storeHealth",false),				/// Store Health
     RESTOREHEALTH("restoreHealth",false),			/// Restore Health
     STOREHUNGER("storeHunger",false),				/// Store Hunger
@@ -155,6 +157,12 @@ public enum TransitionOption{
                 return TransitionOption.DOCOMMANDS;
             else if (str.equals("CLASS"))
                 return TransitionOption.GIVECLASS;
+            else if (str.equals("INVULNERABILITY") || str.equals("INV"))
+                return TransitionOption.INVULNERABLE;
+            else if (str.equals("STOREPOTIONEFFECTS"))
+                return TransitionOption.STOREENCHANTS;
+            else if (str.equals("RESTOREPOTIONEFFECTS"))
+                return TransitionOption.RESTOREENCHANTS;
             throw new IllegalArgumentException("The stage option " + str +" does not exist");
         }
     }

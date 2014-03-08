@@ -91,6 +91,7 @@ public class GameManager implements PlayerHolder{
 			PerformTransition.transition(this, MatchState.ONCANCEL, player, t, false);
 		}
 	}
+
 	@Override
 	public MatchParams getParams() {
 		return params;

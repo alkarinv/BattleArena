@@ -21,7 +21,9 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -168,8 +170,11 @@ public class BAPlayerListener implements Listener  {
 	public static void deEnchantOnEnter(String playerName) {
 		getOrCreateRestorer(playerName).deEnchant();
 	}
+    public static void restoreEffectsOnReenter(String playerName, Collection<PotionEffect> c) {
+        getOrCreateRestorer(playerName).enchant(c);
+    }
 
-	public static void killAllOnReenter(Set<String> keys) {
+    public static void killAllOnReenter(Set<String> keys) {
 		if (keys==null)
 			return;
 		for (String name: keys){
@@ -194,5 +199,6 @@ public class BAPlayerListener implements Listener  {
 	public static Location getBackLocation(String playerName) {
 		return restore.containsKey(playerName) ? restore.get(playerName).getBackLocation() : null;
 	}
+
 
 }

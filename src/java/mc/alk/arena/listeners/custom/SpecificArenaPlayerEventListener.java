@@ -8,7 +8,6 @@ import org.bukkit.event.Event;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.TreeSet;
 
 
 /**
@@ -34,18 +33,13 @@ public class SpecificArenaPlayerEventListener extends SpecificPlayerEventListene
 	 */
 	@Override
 	public void invokeEvent(Event event){
-		final ArenaPlayer player = getEntityFromMethod(event, getPlayerMethod);
-		callListeners(event, player);
+        doMethods(event, getEntityFromMethod(event, getPlayerMethod));
 	}
 
-	private void callListeners(Event event, final ArenaPlayer p) {
-		TreeSet<RListener> spls = listeners.getSafe(p.getName());
-		if (spls == null){
-			return;}
-		doMethods(event,p, spls);
-	}
-
-	private void doMethods(Event event, final ArenaPlayer p, Collection<RListener> lmethods) {
+	private void doMethods(Event event, final ArenaPlayer p) {
+        Collection<RListener> lmethods = listeners.get(p.getName());
+        if (lmethods == null){
+            return;}
 		/// For each of the splisteners methods that deal with this BukkitEvent
 		for(RListener lmethod: lmethods){
 			try {

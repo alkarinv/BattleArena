@@ -4,8 +4,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 public class EffectUtil {
 	static final String version = "2.1.2";
@@ -63,7 +63,7 @@ public class EffectUtil {
 		return effect.getType().getName().toLowerCase();
 	}
 
-	public static void enchantPlayer(Player player, List<PotionEffect> ewas){
+	public static void enchantPlayer(Player player, Collection<PotionEffect> ewas){
 		for (PotionEffect ewa : ewas){
 			if (player.hasPotionEffect(ewa.getType())){
 				player.removePotionEffect(ewa.getType());
@@ -72,7 +72,7 @@ public class EffectUtil {
 		}
 	}
 
-	public static String getEnchantString(List<PotionEffect> effects){
+	public static String getEnchantString(Collection<PotionEffect> effects){
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		for (PotionEffect pe : effects){

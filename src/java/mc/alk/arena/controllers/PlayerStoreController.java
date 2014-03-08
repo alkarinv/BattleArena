@@ -17,7 +17,9 @@ import mc.alk.arena.util.PermissionsUtil;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,7 +35,8 @@ public class PlayerStoreController {
 	final HashMap <String, Integer> magicpmap = new HashMap<String,Integer>();
 	final HashMap <String, PInv> itemmap = new HashMap<String,PInv>();
 	final HashMap <String, PInv> matchitemmap = new HashMap<String,PInv>();
-	final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
+    final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
+    final HashMap <String, Collection<PotionEffect>> effects = new HashMap<String,Collection<PotionEffect>>();
 	final HashMap <String, Boolean> godmode = new HashMap<String,Boolean>();
 	final HashMap <String, Boolean> flight = new HashMap<String,Boolean>();
 	final HashMap <String, String> arenaclass = new HashMap<String,String>();
@@ -64,12 +67,11 @@ public class PlayerStoreController {
 	}
 
 	public void storeHealth(ArenaPlayer player) {
-		final String name = player.getName();
-		if (healthmap.containsKey(name))
+		if (healthmap.containsKey(player.getName()))
 			return;
 		double health = player.getHealth();
 		if (Defaults.DEBUG_STORAGE) Log.info("storing health=" + health+" for player=" + player.getName());
-		healthmap.put(name, health);
+		healthmap.put(player.getName(), health);
 	}
 
 	public void restoreHealth(ArenaPlayer p) {
@@ -87,11 +89,10 @@ public class PlayerStoreController {
 	}
 
 	public void storeHunger(ArenaPlayer player) {
-		final String name = player.getName();
-		if (hungermap.containsKey(name))
+		if (hungermap.containsKey(player.getName()))
 			return;
 
-		hungermap.put(name, player.getFoodLevel());
+		hungermap.put(player.getName(), player.getFoodLevel());
 	}
 
 	public void restoreHunger(ArenaPlayer p) {
@@ -107,7 +108,28 @@ public class PlayerStoreController {
 		}
 	}
 
-	public void storeMagic(ArenaPlayer player) {
+    public void storeEffects(ArenaPlayer player) {
+        if (effects.containsKey(player.getName()))
+            return;
+        Collection<PotionEffect> c = player.getPlayer().getActivePotionEffects();
+        if (c == null || c.isEmpty())
+            return;
+        effects.put(player.getName(), c);
+    }
+
+    public void restoreEffects(ArenaPlayer p) {
+        if (!effects.containsKey(p.getName()))
+            return;
+        Collection<PotionEffect> c = effects.remove(p.getName());
+        if (p.isOnline() && !p.isDead()) {
+            EffectUtil.enchantPlayer(p.getPlayer(), c);
+        } else {
+            BAPlayerListener.restoreEffectsOnReenter(p.getName(), c);
+        }
+    }
+
+
+    public void storeMagic(ArenaPlayer player) {
 		if (!HeroesController.enabled())
 			return;
 		final String name = player.getName();
@@ -132,6 +154,7 @@ public class PlayerStoreController {
 			BAPlayerListener.restoreMagicOnReenter(p.getName(), val);
 		}
 	}
+
 
 	public void storeItems(ArenaPlayer player) {
 		final String name= player.getName();

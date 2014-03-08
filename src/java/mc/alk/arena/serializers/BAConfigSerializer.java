@@ -126,7 +126,6 @@ public class BAConfigSerializer extends BaseConfig{
         ArenaType.addAliasForType("FreeForAll","ffa");
         ArenaType.addAliasForType("DeathMatch","dm");
         ArenaType.addAliasForType("Colosseum","col");
-        ArenaType.addAliasForType("Colosseum","Colliseum");
 
         /// And lastly.. add our tournament which is different than the rest
         createTournament(plugin, dir);

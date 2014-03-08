@@ -169,6 +169,7 @@ public class PerformTransition {
             if (storeAll || mo.hasOption(TransitionOption.STOREHEROCLASS)){psc.storeHeroClass(player);}
             if (storeAll || mo.hasOption(TransitionOption.STOREGAMEMODE)){psc.storeGodmode(player);}
             if (storeAll || mo.hasOption(TransitionOption.STOREFLIGHT)){psc.storeFlight(player);}
+            if (storeAll || mo.hasOption(TransitionOption.STOREENCHANTS)){psc.storeEffects(player);}
             if (wipeInventory){InventoryUtil.clearInventory(p);}
             if (mo.hasOption(TransitionOption.CLEAREXPERIENCE)){ ExpUtil.clearExperience(p);}
             if (mo.hasOption(TransitionOption.HEALTH)) { PlayerUtil.setHealth(p, mo.getHealth());}
@@ -266,6 +267,7 @@ public class PerformTransition {
             if (Defaults.DEBUG_TRANSITIONS)Log.info("   "+transition+" transition restoring items "+insideArena);
             psc.restoreItems(player);
         }
+        if (restoreAll || mo.hasOption(TransitionOption.RESTOREENCHANTS)){psc.restoreEffects(player);}
         if (restoreAll || mo.hasOption(TransitionOption.RESTOREHEALTH)){ psc.restoreHealth(player);}
         if (restoreAll || mo.hasOption(TransitionOption.RESTOREHUNGER)){ psc.restoreHunger(player);}
         if (restoreAll || mo.hasOption(TransitionOption.RESTOREMAGIC)) { psc.restoreMagic(player);}
