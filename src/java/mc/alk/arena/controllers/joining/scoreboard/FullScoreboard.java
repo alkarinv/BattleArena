@@ -9,7 +9,6 @@ import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
 import mc.alk.arena.objects.teams.AbstractTeam;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Countdown.CountdownCallback;
@@ -40,7 +39,7 @@ public class FullScoreboard implements WaitingScoreboard {
         minTeams = params.getMinTeams();
         int maxTeams = params.getMaxTeams();
         for (int i = 0; i < maxTeams; i++) {
-            ArenaTeam team = TeamFactory.createTeam(i, params, CompositeTeam.class);
+            ArenaTeam team = TeamFactory.createCompositeTeam(i, params);
             TeamFactory.setStringID((AbstractTeam)team, String.valueOf(team.getIndex()));
             STeam t = scoreboard.addTeam(team);
             for (int j = 0; j < team.getMaxPlayers(); j++) {

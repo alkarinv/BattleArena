@@ -1,9 +1,8 @@
 package mc.alk.arena.listeners;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.objects.ArenaClass;
-import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.signs.ArenaCommandSign;
 import mc.alk.arena.objects.signs.ArenaStatusSign;
 import mc.alk.arena.util.Log;
@@ -50,8 +49,7 @@ public class BASignListener implements Listener{
                 return;}
             event.setCancelled(true);
             sul.addSign(acs);
-            ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
-            acs.performAction(ap);
+            acs.performAction(PlayerController.toArenaPlayer(event.getPlayer()));
         }
     }
 
@@ -96,7 +94,6 @@ public class BASignListener implements Listener{
                 return;
             }
             makeArenaStatusSign(event, ass, lines);
-            return;
         }
     }
 
@@ -116,7 +113,6 @@ public class BASignListener implements Listener{
             MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Class Sign");
             Log.printStackTrace(e);
             cancelSignPlace(event,block);
-            return;
         }
     }
 
@@ -153,7 +149,6 @@ public class BASignListener implements Listener{
             MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Command Sign");
             Log.printStackTrace(e);
             cancelSignPlace(event,block);
-            return;
         }
     }
 
@@ -180,7 +175,6 @@ public class BASignListener implements Listener{
             MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Status Sign");
             Log.printStackTrace(e);
             cancelSignPlace(event,block);
-            return;
         }
     }
 

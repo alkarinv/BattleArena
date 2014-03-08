@@ -137,8 +137,6 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
                     m.callEvent(mce);
                 }
             });
-
-
         }
     }
 

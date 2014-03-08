@@ -108,7 +108,7 @@ public class Defaults {
 	public static boolean DEBUG_STRESS = false;
 	public static boolean DEBUG_MSGS = false;
 	public static boolean DEBUG_COMMANDS = false;
-    public static boolean DEBUG_TIMINGS = true;
+    public static boolean DEBUG_TIMINGS = false;
 
 
 	public static int TIME_BETWEEN_CLASS_CHANGE = 3;

@@ -1484,6 +1484,7 @@ public class BAExecutor extends CustomCommandExecutor {
                 sendMessage(player, "&eType &6/arena leave");
             return false;
         }
+
         /// Inside MobArena?
         if (MobArenaInterface.hasMobArena()
                 && MobArenaInterface.insideMobArena(player)) {

@@ -24,7 +24,6 @@ import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.Log;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.event.EventHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -121,7 +120,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
         _onArenaPlayerLeaveEvent(event);
     }
 
-    @EventHandler
+//    @EventHandler
     public void _onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
         if (players.remove(event.getPlayer().getName())){
             updateBukkitEvents(MatchState.ONLEAVE, event.getPlayer());

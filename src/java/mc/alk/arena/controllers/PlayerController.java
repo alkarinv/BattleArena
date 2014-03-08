@@ -17,8 +17,8 @@ public final class PlayerController {
 
 	/**
 	 * wrap a player into an ArenaPlayer
-	 * @param player
-	 * @return
+	 * @param player Bukkit player
+	 * @return ArenaPlayer
 	 */
 	public static ArenaPlayer toArenaPlayer(Player player){
 		ArenaPlayer ap = players.get(player.getName());
@@ -42,7 +42,7 @@ public final class PlayerController {
 
 	/**
 	 * Returns the ArenaPlayer for the given player
-	 * @param player
+	 * @param player Bukkit player
 	 * @return player if found, null otherwise
 	 */
 	public static ArenaPlayer getArenaPlayer(Player player){

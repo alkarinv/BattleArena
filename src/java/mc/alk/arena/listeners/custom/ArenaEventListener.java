@@ -98,8 +98,7 @@ public class ArenaEventListener extends GeneralEventListener {
     @Override
     public void invokeEvent(final Event event){
         /// For each ArenaListener class that is listening
-        final RListener[] rls = getRegisteredListeners();
-        for (RListener rl: rls){
+        for (RListener rl: getRegisteredListeners()){
             try {
                 rl.getMethod().getMethod().invoke(rl.getListener(), event); /// Invoke the listening arenalisteners method
             } catch (Exception e){

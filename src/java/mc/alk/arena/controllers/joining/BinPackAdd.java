@@ -16,8 +16,8 @@ import mc.alk.arena.objects.teams.TeamFactory;
 public class BinPackAdd extends AbstractJoinHandler {
     boolean full = false;
 
-    public BinPackAdd(MatchParams params, Competition competition, Class<? extends ArenaTeam> clazz) throws NeverWouldJoinException {
-        super(params, competition,clazz);
+    public BinPackAdd(MatchParams params, Competition competition) throws NeverWouldJoinException {
+        super(params, competition);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class BinPackAdd extends AbstractJoinHandler {
         /// So we couldnt add them to an existing team
         /// Can we add them to a new team
         if (teams.size() < maxTeams){
-            ArenaTeam ct = TeamFactory.createTeam(teams.size(), matchParams, clazz);
+            ArenaTeam ct = TeamFactory.createCompositeTeam(teams.size(), matchParams);
             ct.addPlayers(team.getPlayers());
             team.setIndex(ct.getIndex());
             if (ct.size() == ct.getMaxPlayers()){

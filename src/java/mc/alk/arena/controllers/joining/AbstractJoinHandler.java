@@ -12,7 +12,6 @@ import mc.alk.arena.objects.joining.JoinHandler;
 import mc.alk.arena.objects.joining.JoinResponseHandler;
 import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.teams.CompositeTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.Log;
@@ -31,7 +30,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     final List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 
     final int minTeams,maxTeams;
-    final Class<? extends ArenaTeam> clazz;
+//    final Class<? extends ArenaTeam> clazz;
 
     Competition competition;
 
@@ -48,7 +47,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     }
 
     public void joiningPlayer(ArenaPlayer player) {
-        ArenaTeam ct = TeamFactory.createTeam(teams.size(), matchParams, clazz);
+        ArenaTeam ct = TeamFactory.createCompositeTeam(teams.size(), matchParams);
         addTeam(ct);
         ct.addPlayer(player);
         addToTeam(ct, player);
@@ -69,17 +68,17 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         public TeamJoinStatus getEventType(){ return status;}
         public int getRemaining(){return remaining;}
     }
+//
+//    public AbstractJoinHandler(MatchParams params, Competition competition){
+//        this(params,competition,CompositeTeam.class);
+//    }
 
-    public AbstractJoinHandler(MatchParams params, Competition competition){
-        this(params,competition,CompositeTeam.class);
-    }
-
-    public AbstractJoinHandler(MatchParams params, Competition competition, Class<? extends ArenaTeam> clazz) {
+    public AbstractJoinHandler(MatchParams params, Competition competition) {
         this.matchParams = params;
         this.minTeams = params.getMinTeams();
         this.maxTeams = params.getMaxTeams();
 
-        this.clazz = clazz;
+//        this.clazz = clazz;
         setCompetition(competition);
         if (Defaults.USE_SCOREBOARD)
             initWaitingScoreboard();
@@ -91,7 +90,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
             int needed = 0;
             int optional = 0;
             for (int i = 0; i < maxTeams; i++) {
-                ArenaTeam team = TeamFactory.createTeam(i, matchParams, clazz);
+                ArenaTeam team = TeamFactory.createCompositeTeam(i, matchParams);
                 if (team.getMinPlayers() < 16) {
                     needed += team.getMinPlayers();
                     if (team.getMinPlayers() != team.getMaxPlayers()) {

@@ -29,9 +29,9 @@ public class TeamJoinFactory {
 	public static AbstractJoinHandler createTeamJoinHandler(MatchParams params, Competition competition,
 			Class<? extends ArenaTeam> clazz) throws NeverWouldJoinException {
 		if (params.getMaxTeams() <= Defaults.MAX_TEAMS ){
-			return new AddToLeastFullTeam(params, competition,clazz);	/// lets try and add players to all players first
+			return new AddToLeastFullTeam(params, competition);	/// lets try and add players to all players first
 		} else { /// finite team size
-			return new BinPackAdd(params, competition,clazz);
+			return new BinPackAdd(params, competition);
 		}
 	}
 
