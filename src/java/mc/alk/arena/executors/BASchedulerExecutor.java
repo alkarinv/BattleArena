@@ -1,19 +1,18 @@
 package mc.alk.arena.executors;
 
-import java.util.Arrays;
-import java.util.List;
-
 import mc.alk.arena.controllers.EventScheduler;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.pairs.EventPair;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 
-public class BattleArenaSchedulerExecutor extends CustomCommandExecutor{
+import java.util.Arrays;
+import java.util.List;
+
+public class BASchedulerExecutor extends CustomCommandExecutor{
 	EventScheduler es;
-	public BattleArenaSchedulerExecutor(EventScheduler es){
+	public BASchedulerExecutor(EventScheduler es){
 		this.es = es;
 	}
 

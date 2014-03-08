@@ -3,6 +3,7 @@ package mc.alk.arena.controllers;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.events.EventFinishedEvent;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.executors.EventExecutor;
@@ -13,6 +14,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
+import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.pairs.EventPair;
 import mc.alk.arena.util.Log;
@@ -76,23 +78,26 @@ public class EventScheduler implements Runnable, ArenaListener{
 				} else { /// normal match
 					EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null, params);
 					Arena arena = eoo.getArena(params, null);
-                    Arena a = BattleArena.getBAController().reserveArena(arena);
-                    if (a != null){
-                        BattleArena.getBAController().createAndAutoMatch(arena, eoo);
-                        arena.addArenaListener(scheduler);
+                    if (arena != null){
+                        Match m = BattleArena.getBAController().createAndAutoMatch(arena, eoo);
+                        m.addArenaListener(scheduler);
                         success = true;
                     } else {
                         Log.warn("[BattleArena] scheduled command args="+Arrays.toString(args) +
-                                " can't be started. Arena "+arena+" is not there or in use");
+                                " can't be started. Arena is not there or in use");
                     }
 				}
-			} catch (InvalidEventException e) {
-				/** do nothing */
+            } catch (InvalidOptionException e){
+                Log.warn(e.getMessage());
+            } catch (InvalidEventException e) {
+                Log.warn(e.getMessage());
 			} catch (Exception e){
 				Log.printStackTrace(e);
 			}
 
-			if (!success){ /// wait then start up the scheduler again in x seconds
+			if (!success && BattleArena.getSelf().isEnabled()){ /// wait then start up the scheduler again in x seconds
+                Log.info("[BattleArena scheduler starting next command in " +
+                        Defaults.TIME_BETWEEN_SCHEDULED_EVENTS + " seconds");
 				currentTimer = Scheduler.scheduleAsynchronousTask(scheduler, 20L * Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			}
 		}
@@ -107,7 +112,8 @@ public class EventScheduler implements Runnable, ArenaListener{
                     "  scheduling next event in "+ 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS + " ticks");
 
 			/// Wait x sec then start the next event
-			Scheduler.scheduleAsynchronousTask(this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
+            if (BattleArena.getSelf().isEnabled())
+			    Scheduler.scheduleAsynchronousTask(this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
                 MessageUtil.broadcastMessage(
 						MessageUtil.colorChat(
@@ -124,7 +130,8 @@ public class EventScheduler implements Runnable, ArenaListener{
 			if (Defaults.DEBUG_SCHEDULER) Log.info("[BattleArena debugging] finished event "+ event.getEventName()+"  scheduling next event in "+ 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS + " ticks");
 
 			/// Wait x sec then start the next event
-            Scheduler.scheduleAsynchronousTask(this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
+            if (BattleArena.getSelf().isEnabled())
+                Scheduler.scheduleAsynchronousTask(this, 20L*Defaults.TIME_BETWEEN_SCHEDULED_EVENTS);
 			if (Defaults.SCHEDULER_ANNOUNCE_TIMETILLNEXT){
                 MessageUtil.broadcastMessage(
 						MessageUtil.colorChat(

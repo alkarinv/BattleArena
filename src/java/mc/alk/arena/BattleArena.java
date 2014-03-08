@@ -16,9 +16,9 @@ import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.executors.ArenaEditorExecutor;
 import mc.alk.arena.executors.BAExecutor;
+import mc.alk.arena.executors.BASchedulerExecutor;
 import mc.alk.arena.executors.BattleArenaDebugExecutor;
 import mc.alk.arena.executors.BattleArenaExecutor;
-import mc.alk.arena.executors.BattleArenaSchedulerExecutor;
 import mc.alk.arena.executors.CustomCommandExecutor;
 import mc.alk.arena.executors.TeamExecutor;
 import mc.alk.arena.listeners.BAPlayerListener;
@@ -203,7 +203,7 @@ public class BattleArena extends JavaPlugin {
         getCommand("battleArena").setExecutor(new BattleArenaExecutor());
         getCommand("battleArenaDebug").setExecutor(new BattleArenaDebugExecutor());
         final EventScheduler es = new EventScheduler();
-        getCommand("battleArenaScheduler").setExecutor(new BattleArenaSchedulerExecutor(es));
+        getCommand("battleArenaScheduler").setExecutor(new BASchedulerExecutor(es));
 
         /// Reload our scheduled events
         eventSchedulerSerializer.setConfig(dir.getPath() + "/saves/scheduledEvents.yml");

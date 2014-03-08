@@ -678,8 +678,7 @@ public class BAExecutor extends CustomCommandExecutor {
             EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null,params);
 
             Arena arena = eoo.getArena(params, null);
-            Arena a = BattleArena.getBAController().reserveArena(arena);
-            if (a == null){
+            if (arena == null){
                 return sendMessage(sender,"[BattleArena] auto args="+Arrays.toString(args) +
                         " can't be started. Arena "+arena+" is not there or in use");
             }

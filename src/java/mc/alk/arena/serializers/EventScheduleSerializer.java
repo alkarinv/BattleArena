@@ -1,5 +1,15 @@
 package mc.alk.arena.serializers;
 
+import mc.alk.arena.BattleArena;
+import mc.alk.arena.controllers.EventScheduler;
+import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.pairs.EventPair;
+import mc.alk.arena.util.Log;
+import mc.alk.arena.util.SerializerUtil;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.configuration.ConfigurationSection;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,17 +17,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.controllers.EventScheduler;
-import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.objects.EventParams;
-import mc.alk.arena.objects.pairs.EventPair;
-import mc.alk.arena.util.Log;
-import mc.alk.arena.util.SerializerUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.ConfigurationSection;
 
 
 public class EventScheduleSerializer extends BaseConfig {
@@ -40,9 +39,9 @@ public class EventScheduleSerializer extends BaseConfig {
 			if (se == null)
 				continue;
 			String[] fullargs = se.split(" ");
-			EventParams eventParams = ParamController.getEventParamCopy(fullargs[0]);
+			MatchParams eventParams = ParamController.getMatchParamCopy(fullargs[0]);
 			if (eventParams == null){
-				Log.err(BattleArena.getPluginName()+" couldn't reparse the scheduled event " + fullargs[0]);
+				Log.err(BattleArena.getPluginName()+" couldn't reparse the scheduled command " + fullargs[0]);
 				continue;
 			}
 			String[] args = Arrays.copyOfRange(fullargs, 1, fullargs.length);
