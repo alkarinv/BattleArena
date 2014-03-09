@@ -23,6 +23,8 @@ public class ParamController {
     static final CaseInsensitiveMap<Set<String>> aliases = new CaseInsensitiveMap<Set<String>>();
 
     public static void addMatchParams(MatchParams matchParams) {
+        if (matchParams.getType() == null)
+            return;
         types.put(matchParams.getType().getName(), matchParams);
         Set<String> a = aliases.get(matchParams.getType().getName());
 
@@ -52,7 +54,8 @@ public class ParamController {
     }
 
     public static void removeMatchType(MatchParams matchParams) {
-        types.remove(matchParams.getType().getName());
+        if (matchParams.getType()!=null)
+            types.remove(matchParams.getType().getName());
         types.remove(matchParams.getCommand());
     }
 

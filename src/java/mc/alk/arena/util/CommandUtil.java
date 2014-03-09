@@ -11,7 +11,7 @@ public class CommandUtil {
                                        Set<String> disabledCommands, Set<String> enabledCommands){
 		if (Defaults.DEBUG_COMMANDS){
 			event.getPlayer().sendMessage("event Message=" + event.getMessage() +"   isCancelled=" + event.isCancelled());}
-		if (disabledCommands == null || disabledCommands.isEmpty())
+		if (!allDisabled && (disabledCommands == null || disabledCommands.isEmpty()))
 			return false;
 		if (Defaults.ALLOW_ADMIN_CMDS_IN_Q_OR_MATCH && PermissionsUtil.isAdmin(event.getPlayer())){
 			return false;}
@@ -23,9 +23,9 @@ public class CommandUtil {
 		if (index != -1){
 			cmd = cmd.substring(0, index);
 		}
-		cmd = cmd.toLowerCase();
-        return !cmd.equals("/bad") && ( allDisabled ?
-                (enabledCommands == null || !enabledCommands.contains(cmd)) :
-                disabledCommands.contains(cmd) && (enabledCommands==null || !enabledCommands.contains(cmd)) );
+        cmd = cmd.toLowerCase();
+//        boolean enabled = ;
+        return !(enabledCommands != null && enabledCommands.contains(cmd)) &&
+                !cmd.equals("/bad") && (allDisabled || disabledCommands.contains(cmd));
     }
 }

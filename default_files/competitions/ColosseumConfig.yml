@@ -1,43 +1,70 @@
 Colosseum:
-    enabled: true
+  name: Colosseum
+  command: Colosseum
+  prefix: '&8[Colosseum]'
+  signDisplayName: 8[Colosseum]
+  gameSize:
+    nTeams: '4'
+    teamSize: '1'
+  nLives: '2'
+  victoryCondition: LASTMANSTANDING
+  tracking:
     database: col
-    prefix: &8[Colosseum]
-    signDisplayName: &8[Colosseum]
     rated: true
-    victoryCondition: LastManStanding
-    nTeams: 4
-    teamSize: 1
-    nLives: 2
-    preReqs:
-        options: [clearInventory]
-    onEnter:
-        options: [storeAll]
-    onLeave:
-        options: [restoreAll]
-    onJoin:
-        options: [pvpOff]
-    onPrestart:
-        options: [pvpOff, teleportIn, woolTeams]
-    onStart:
-        options: [pvpOn]
-    onComplete:
-        options: [teleportOut]
-    onSpawn:
-        options: [enchants, health=20, hunger=20, deEnchant,giveItems, woolTeams, respawnWithClass]
-        enchants:
-            - speed:1
-        items: # ignored if options doesnt have "giveItems"
-            - diamond_sword: sharpness:1 1
-            - bow: 1
-            - arrow: 32
-            - diamond_helm: 1
-            - diamond_chest: 1
-            - diamond_leggings: 1
-            - diamond_boot: 1
-    onDeath:
-        options: [clearInventory]
-    winner:
-        options: [enchants, money=1,experience=300, health=20, hunger=20]
-        enchants:
-            - speed:1:900
-            - resistance:1:900
+    useTrackerMessages: false
+  arenaType: Colosseum
+  arenaClass: Arena
+  onEnter:
+    options:
+    - STOREALL
+  onLeave:
+    options:
+    - RESTOREALL
+  preReqs:
+    options:
+    - clearInventory
+  onJoin:
+    options:
+    - pvpOff
+  onPreStart:
+    options:
+    - woolTeams
+    - teleportIn
+    - pvpOff
+  onStart:
+    options:
+    - pvpOn
+  onComplete:
+    options:
+    - teleportOut
+    - clearInventory
+  onSpawn:
+    giveItems:
+    - DIAMOND_SWORD DAMAGE_ALL:1 1
+    - BOW 1
+    - ARROW 32
+    - DIAMOND_HELMET 1
+    - DIAMOND_CHESTPLATE 1
+    - DIAMOND_LEGGINGS 1
+    - DIAMOND_BOOTS 1
+    enchants:
+    - speed:1:60
+    options:
+    - woolTeams
+    - health=20.0
+    - hunger=20
+    - deEnchant
+    - respawnWithClass
+  onDeath:
+    options:
+    - clearInventory
+    - respawn
+  winners:
+    enchants:
+    - speed:1:900
+    - prot:1:900
+    options:
+    - health=20.0
+    - hunger=20
+    - experience=300
+    - money=1.0
