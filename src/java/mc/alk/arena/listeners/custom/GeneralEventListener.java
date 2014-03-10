@@ -15,7 +15,7 @@ import java.util.Map;
  * @author alkarin
  *
  */
-public abstract class GeneralEventListener extends BaseEventListener  {
+abstract class GeneralEventListener extends BaseEventListener  {
     /** Set of arena listeners */
     final public EnumMap<mc.alk.arena.objects.events.EventPriority, Map<RListener,Integer>> listeners =
             new EnumMap<mc.alk.arena.objects.events.EventPriority, Map<RListener,Integer>>(mc.alk.arena.objects.events.EventPriority.class);

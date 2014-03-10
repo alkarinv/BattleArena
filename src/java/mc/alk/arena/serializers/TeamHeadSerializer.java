@@ -1,8 +1,5 @@
 package mc.alk.arena.serializers;
 
-import java.awt.Color;
-import java.util.List;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.exceptions.ConfigException;
 import mc.alk.arena.objects.teams.TeamAppearance;
@@ -10,9 +7,11 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TeamUtil;
-
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
+
+import java.awt.*;
+import java.util.List;
 
 public class TeamHeadSerializer extends BaseConfig{
 
@@ -25,21 +24,17 @@ public class TeamHeadSerializer extends BaseConfig{
 		if (cs == null){
 			Log.info(BattleArena.getPluginName() +" has no teamColors");
 			return;}
-		StringBuilder sb = new StringBuilder();
 		List<String> keys = cs.getStringList("teams");
 		boolean first = true;
 		for (String teamStr : keys){
-			String teamName;
 			try {
-				teamName = addTeamHead(teamStr);
+				addTeamHead(teamStr);
 			} catch (Exception e) {
 				Log.err("Error parsing teamHead " + teamStr);
 				Log.printStackTrace(e);
 				continue;
 			}
 			if (first) first = false;
-			else sb.append(", ");
-			sb.append(teamName);
 		}
 		if (first){
 			Log.info(BattleArena.getPluginName() +" no predefined teamColors found. inside of " + cs.getCurrentPath());

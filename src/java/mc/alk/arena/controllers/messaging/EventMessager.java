@@ -1,15 +1,17 @@
 package mc.alk.arena.controllers.messaging;
 
-import java.util.Collection;
-import java.util.Set;
-
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.Channel;
+import mc.alk.arena.objects.messaging.Channels;
+import mc.alk.arena.objects.messaging.EventMessageHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
+
+import java.util.Collection;
+import java.util.Set;
 
 
 public class EventMessager {
@@ -23,7 +25,7 @@ public class EventMessager {
 	}
 
 	protected Channel getChannel(MatchState state) {
-		if (silent) return Channel.NullChannel;
+		if (silent) return Channels.NullChannel;
 		return bos != null && bos.hasOption(false,state) ? bos.getChannel(false,state) :
 			AnnouncementOptions.getDefaultChannel(false,state);
 	}

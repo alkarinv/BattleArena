@@ -18,7 +18,7 @@ public class BoundingBox
 		createBoundingBox(l, l2);
 	}
 
-	public void createBoundingBox(Location l1, Location l2)
+	private void createBoundingBox(Location l1, Location l2)
 	{
 		lower = new Location(l1.getWorld(), Math.min(l1.getBlockX(),
 				l2.getBlockX()), Math.min(l1.getBlockY(), l2.getBlockY()),

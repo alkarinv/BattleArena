@@ -34,9 +34,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ArenaClassController {
-    static HashMap<String,ArenaClass> classes = new HashMap<String,ArenaClass>();
+    final static HashMap<String,ArenaClass> classes = new HashMap<String,ArenaClass>();
     /** How much time since they last changed classes*/
-    static Map<String, Long> userClassSwitchTime = new ConcurrentHashMap<String, Long>();
+    final static Map<String, Long> userClassSwitchTime = new ConcurrentHashMap<String, Long>();
 
     static {
         classes.put(ArenaClass.CHOSEN_CLASS.getName().toUpperCase(), ArenaClass.CHOSEN_CLASS);

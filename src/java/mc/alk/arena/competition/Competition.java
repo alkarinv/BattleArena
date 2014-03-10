@@ -1,6 +1,6 @@
 package mc.alk.arena.competition;
 
-import mc.alk.arena.controllers.MethodController;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.CompetitionEvent;
 import mc.alk.arena.listeners.PlayerHolder;

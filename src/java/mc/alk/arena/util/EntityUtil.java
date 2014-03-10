@@ -9,8 +9,7 @@ public class EntityUtil {
 		boolean tamed = str.startsWith(TAMED);
 		if (tamed){
 			str = str.substring(TAMED.length(), str.length());}
-		EntityType et = EntityType.fromName(str);
-		return et;
+        return EntityType.fromName(str);
 	}
 
 }

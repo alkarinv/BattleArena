@@ -23,7 +23,7 @@ import java.util.List;
 
 public class ArenaBukkitScoreboard extends ArenaScoreboard{
 
-    HashMap<ArenaTeam,STeam> teams = new HashMap<ArenaTeam,STeam>();
+    final HashMap<ArenaTeam,STeam> teams = new HashMap<ArenaTeam,STeam>();
     final BScoreboard bboard;
     final boolean colorPlayerNames;
 

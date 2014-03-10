@@ -8,7 +8,7 @@ import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.controllers.messaging.EventMessageHandler;
+import mc.alk.arena.objects.messaging.EventMessageHandler;
 import mc.alk.arena.controllers.messaging.EventMessageImpl;
 import mc.alk.arena.controllers.messaging.EventMessager;
 import mc.alk.arena.controllers.messaging.MessageHandler;

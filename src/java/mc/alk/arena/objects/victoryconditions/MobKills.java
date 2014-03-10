@@ -10,7 +10,8 @@ import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.ScoreTracker;
 import mc.alk.arena.util.DmgDeathUtil;
-import mc.alk.arena.util.MessageUtil;
+import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.entity.EntityDeathEvent;
 
 import java.util.Collection;
@@ -20,11 +21,14 @@ import java.util.TreeMap;
 public class MobKills extends VictoryCondition implements ScoreTracker{
 	final ArenaObjective mkills;
 
-	public MobKills(Match match) {
-		super(match);
-		this.mkills = new ArenaObjective("mobkills","Kill Mobs",60);
-		this.mkills.setDisplayName(MessageUtil.colorChat("&4Mob Kills"));
-	}
+    public MobKills(Match match, ConfigurationSection section) {
+        super(match);
+        String displayName = section.getString("displayName", "Mob Kills");
+        String criteria = section.getString("criteria", "Kill mobs");
+
+        mkills = new ArenaObjective(getClass().getSimpleName(),displayName, criteria,
+                SAPIDisplaySlot.SIDEBAR, 60);
+    }
 
 	@Override
 	public List<ArenaTeam> getLeaders() {

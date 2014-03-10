@@ -36,7 +36,7 @@ public class ArenaDebugger {
 		}
 	}
 
-	Arena arena;
+    final Arena arena;
 	HashMap<Location, ItemStack> oldBlocks = new HashMap<Location, ItemStack>(); /// Used for debugging with show/hide spawns
 
 	public ArenaDebugger(Arena arena) {

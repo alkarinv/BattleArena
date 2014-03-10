@@ -81,7 +81,7 @@ public class ConfigSerializer extends BaseConfig{
             cs = config.getConfigurationSection(name);}
         /// Set up match options.. specifying defaults where not specified
         /// Set Arena Type
-        ArenaType at = getArenaType(plugin, cs);
+        ArenaType at = getArenaType(cs);
         if (at == null && !name.equalsIgnoreCase("tourney"))
             throw new ConfigException("Could not parse arena type. Valid types. " + ArenaType.getValidList());
 
@@ -156,7 +156,7 @@ public class ConfigSerializer extends BaseConfig{
         //noinspection UnusedAssignment
         List<String> modules = loadModules(cs, mp); /// load modules
 
-        MatchTransitions tops = loadTransitionOptions(cs, mp, isNonBaseConfig); /// load transition options
+        MatchTransitions tops = loadTransitionOptions(cs, mp); /// load transition options
         mp.setTransitionOptions(tops);
 
         mp.setParent(ParamController.getDefaultConfig());
@@ -199,7 +199,7 @@ public class ConfigSerializer extends BaseConfig{
     }
 
 
-    private static MatchTransitions loadTransitionOptions(ConfigurationSection cs, MatchParams mp, boolean isArena)
+    private static MatchTransitions loadTransitionOptions(ConfigurationSection cs, MatchParams mp)
             throws InvalidOptionException {
         MatchTransitions allTops = new MatchTransitions();
         boolean found = false;
@@ -368,12 +368,11 @@ public class ConfigSerializer extends BaseConfig{
 
     /**
      * Get and create the ArenaType for this plugin given the Configuration section
-     * @param plugin the plugin
      * @param cs section containing the "type"
      * @return The ArenaType
      * @throws ConfigException
      */
-    public static ArenaType getArenaType(Plugin plugin, ConfigurationSection cs) throws ConfigException {
+    public static ArenaType getArenaType(ConfigurationSection cs) throws ConfigException {
         ArenaType at;
         at = ArenaType.fromString(cs.getName()); /// Get it from the configuration section name
 
@@ -381,12 +380,11 @@ public class ConfigSerializer extends BaseConfig{
     }
     /**
      * Get the ArenaClass for this plugin given the Configuration section
-     * @param plugin the plugin
      * @param cs section containing the "type"
      * @return The ArenaClass
      * @throws ConfigException
      */
-    public static Class<? extends Arena> getArenaClass(Plugin plugin, ConfigurationSection cs) throws ConfigException {
+    public static Class<? extends Arena> getArenaClass(ConfigurationSection cs) throws ConfigException {
         String type = null;
         if (cs.contains("arenaType") || cs.contains("type") || cs.contains("arenaClass")) {
             type = cs.getString("arenaClass");
@@ -403,13 +401,13 @@ public class ConfigSerializer extends BaseConfig{
         return null;
     }
 
-    public static ArenaType getArenaGameType(Plugin plugin, ConfigurationSection cs) throws ConfigException {
+    public static ArenaType getArenaGameType( ConfigurationSection cs) throws ConfigException {
         ArenaType at = null;
         if (cs.contains("gameType")){
             String s = cs.getString("gameType");
             at = ArenaType.fromString(s);
             if (at == null){
-                at = getArenaType(plugin,cs);}
+                at = getArenaType(cs);}
         }
         return at;
     }

@@ -1,11 +1,11 @@
 package mc.alk.arena.objects;
 
+import mc.alk.arena.objects.MatchResult.WinLossDraw;
+import mc.alk.arena.objects.teams.ArenaTeam;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import mc.alk.arena.objects.MatchResult.WinLossDraw;
-import mc.alk.arena.objects.teams.ArenaTeam;
 
 
 /**
@@ -84,8 +84,7 @@ public class CompetitionResult{
 
 	@Override
 	public String toString(){
-		StringBuilder sb = new StringBuilder("["+wld+",victor=" + victors + ",losers=" + losers +",drawers=" + drawers+"]");
-		return sb.toString() + toPrettyString();
+        return "[" + wld + ",victor=" + victors + ",losers=" + losers + ",drawers=" + drawers + "]" + toPrettyString();
 	}
 
 	public String toPrettyString() {
@@ -93,10 +92,10 @@ public class CompetitionResult{
 			return "&eThere are no victors yet";}
 		StringBuilder sb = new StringBuilder();
 		for (ArenaTeam t: victors){
-			sb.append(t.getTeamSummary()+" ");}
+			sb.append(t.getTeamSummary()).append(" ");}
 		sb.append(" &ewins vs ");
 		for (ArenaTeam t: losers){
-			sb.append(t.getTeamSummary()+" ");}
+			sb.append(t.getTeamSummary()).append(" ");}
 
 		return sb.toString();
 	}

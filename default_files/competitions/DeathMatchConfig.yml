@@ -1,13 +1,13 @@
 DeathMatch:
     enabled: true
-    victoryCondition: highestKills
+    victoryCondition: PlayerKills
     database: dm
     rated: true
     prefix: "&8[DeathMatch]&e"
     nTeams: 2+
     teamSize: 1
     announcements: ### Override the match victory announcement as the event has one too
-        onVictory:  [ dontannounce ] 
+        onVictory:  [ dontannounce ]
     defaults:
         options: [woolTeams]
     preReqs:

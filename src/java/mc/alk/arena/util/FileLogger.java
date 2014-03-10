@@ -1,5 +1,7 @@
 package mc.alk.arena.util;
 
+import mc.alk.arena.BattleArena;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,8 +16,6 @@ import java.util.Calendar;
 import java.util.Formatter;
 import java.util.GregorianCalendar;
 import java.util.Vector;
-
-import mc.alk.arena.BattleArena;
 
 
 /**
@@ -38,7 +38,7 @@ public class FileLogger {
 		try {
 			lineCount = count(f.getAbsolutePath());
 			if (lineCount > maxFileSize){
-				f = trimFile(f,lineCount);
+				trimFile(f,lineCount);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -49,7 +49,7 @@ public class FileLogger {
 		try {
 			Calendar cal = new GregorianCalendar();
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd,hh:mm:ss");
-			msgs.add(sdf.format(cal.getTime()).toString() + ","+msg+"\n");
+			msgs.add(sdf.format(cal.getTime()) + ","+msg+"\n");
 		} catch(Exception e){
 			e.printStackTrace();
 		}
@@ -66,7 +66,7 @@ public class FileLogger {
 			StringBuilder buf = new StringBuilder();
 			Formatter form = new Formatter(buf);
 			form.format(node, varArgs);
-			msgs.add(sdf.format(cal.getTime()).toString() + "," + buf.toString() +"\n");
+			msgs.add(sdf.format(cal.getTime()) + "," + buf.toString() +"\n");
 			form.close();
 			return msgs.size();
 		} catch(Exception e){
@@ -93,7 +93,7 @@ public class FileLogger {
 			e.printStackTrace();
 		} finally{
 			if (out != null)
-				try {out.close();} catch (IOException e) {}
+				try {out.close();} catch (IOException e) {/* do nothing */}
 		}
 	}
 
@@ -119,9 +119,9 @@ public class FileLogger {
 			e.printStackTrace();
 		} finally{
 			if (out != null)
-				try {out.close();} catch (Exception e) {}
+				try {out.close();} catch (Exception e) {/* do nothing */}
 			if (br != null)
-				try {br.close();} catch (Exception e) {}
+				try {br.close();} catch (Exception e) {/* do nothing */}
 		}
 		return f2;
 	}
@@ -130,11 +130,11 @@ public class FileLogger {
 	 * Code from
 	 * http://stackoverflow.com/questions/453018/number-of-lines-in-a-file-in-java
 	 *
-	 * @param filename
-	 * @return
+	 * @param filename name of file
+	 * @return line count
 	 * @throws IOException
 	 */
-	public static int count(String filename) throws IOException {
+	static int count(String filename) throws IOException {
 		File f = new File(filename);
 		if (!f.exists())
 			return 0;
@@ -142,7 +142,7 @@ public class FileLogger {
 	    try {
 	        byte[] c = new byte[1024];
 	        int count = 0;
-	        int readChars = 0;
+	        int readChars;
 	        while ((readChars = is.read(c)) != -1) {
 	            for (int i = 0; i < readChars; ++i) {
 	                if (c[i] == '\n')
@@ -151,7 +151,7 @@ public class FileLogger {
 	        }
 	        return count;
 	    } finally {
-	        try{is.close();} catch(Exception e){}
+	        try{is.close();} catch(Exception e){/* do nothing */}
 	    }
 	}
 

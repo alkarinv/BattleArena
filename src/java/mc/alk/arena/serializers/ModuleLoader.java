@@ -1,5 +1,10 @@
 package mc.alk.arena.serializers;
 
+import mc.alk.arena.controllers.ModuleController;
+import mc.alk.arena.objects.modules.ArenaModule;
+import mc.alk.arena.util.Log;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Constructor;
@@ -7,12 +12,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
-
-import mc.alk.arena.controllers.ModuleController;
-import mc.alk.arena.objects.modules.ArenaModule;
-import mc.alk.arena.util.Log;
-
-import org.apache.commons.lang.StringUtils;
 
 public class ModuleLoader {
 	public void loadModules(File moduleDirectory) {
@@ -65,7 +64,6 @@ public class ModuleLoader {
 		Class<?>[] args = {};
 		Class<?extends ArenaModule> moduleClass = clazz.asSubclass(ArenaModule.class);
 		Constructor<?> constructor = moduleClass.getConstructor(args);
-		ArenaModule module = (ArenaModule) constructor.newInstance((Object[])args);
-		return module;
+        return (ArenaModule) constructor.newInstance((Object[])args);
 	}
 }

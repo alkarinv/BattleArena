@@ -13,7 +13,7 @@ import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.joining.AbstractJoinHandler;
-import mc.alk.arena.controllers.messaging.MatchMessageHandler;
+import mc.alk.arena.objects.messaging.MatchMessageHandler;
 import mc.alk.arena.controllers.messaging.MatchMessager;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.controllers.plugins.HeroesController;
@@ -53,7 +53,7 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
-import mc.alk.arena.objects.messaging.ServerChannel;
+import mc.alk.arena.objects.messaging.Channels;
 import mc.alk.arena.objects.modules.ArenaModule;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
@@ -139,7 +139,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             Collections.synchronizedSet(new HashSet<ArenaTeam>());
     final Map<ArenaTeam,Integer> individualTeamTimers =
             Collections.synchronizedMap(new HashMap<ArenaTeam,Integer>());
-    AtomicBoolean addedVictoryConditions = new AtomicBoolean(false);
+    final AtomicBoolean addedVictoryConditions = new AtomicBoolean(false);
     final GameManager gameManager;
     double prizePoolMoney = 0;
 
@@ -159,10 +159,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     int neededTeams; /// How many teams do we need to properly start this match
     int nLivesPerPlayer = 1; /// This will change as victory conditions are added
-    ArenaScoreboard scoreboard;
-    MatchMessager mc; /// Our message instance
+    final ArenaScoreboard scoreboard;
+    final MatchMessager mc; /// Our message instance
     AbstractJoinHandler joinHandler;
-    ArenaObjective defaultObjective;
+    final ArenaObjective defaultObjective;
     ArenaPreviousState oldArenaState;
 
     @SuppressWarnings("unchecked")
@@ -368,7 +368,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         if (matchPrestarting) {
             mc.sendOnPreStartMsg(getNonEmptyTeams());
         } else {
-            mc.sendOnPreStartMsg(getNonEmptyTeams(), ServerChannel.NullChannel);
+            mc.sendOnPreStartMsg(getNonEmptyTeams(), Channels.NullChannel);
         }
     }
 

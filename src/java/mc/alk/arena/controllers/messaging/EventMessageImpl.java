@@ -4,6 +4,8 @@ import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.messaging.Channel;
+import mc.alk.arena.objects.messaging.Channels;
+import mc.alk.arena.objects.messaging.EventMessageHandler;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -35,13 +37,13 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 		Message message = getNodeMessage("event.countdownTillEvent");
 		Message serverMessage = getNodeMessage("event.server_countdownTillEvent");
 		Set<MessageOption> ops = message.getOptions();
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channels.NullChannel){
 			ops.addAll(serverMessage.getOptions());
 		}
 		MessageFormatter msgf = new MessageFormatter(this, event.getParams(), 0, message, ops);
 		msgf.formatCommonOptions(null,seconds);
 
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channels.NullChannel){
 			String msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}
@@ -64,7 +66,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 
 	@Override
 	public void sendEventOpenMsg(Channel serverChannel) {
-		if (serverChannel == Channel.NullChannel){
+		if (serverChannel == Channels.NullChannel){
 			return;
 		}
 		final String nTeamPath = getStringPathFromSize(mp.getMinTeams());
@@ -95,7 +97,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 
 	private void formatAndSend(Channel serverChannel, Collection<ArenaTeam> teams, Message message, Message serverMessage) {
 		Set<MessageOption> ops = message.getOptions();
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channels.NullChannel){
 			ops.addAll(serverMessage.getOptions());
 		}
 
@@ -108,7 +110,7 @@ public class EventMessageImpl extends MessageSerializer implements EventMessageH
 			t.sendMessage(newmsg);
 		}
 
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channels.NullChannel){
 			String msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}

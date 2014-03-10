@@ -5,7 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.CompetitionController;
-import mc.alk.arena.controllers.MethodController;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeleportController;

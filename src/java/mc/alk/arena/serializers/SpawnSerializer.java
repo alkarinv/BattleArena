@@ -26,7 +26,7 @@ import java.util.Set;
 
 public class SpawnSerializer {
 	public YamlConfiguration config = new YamlConfiguration();
-	File f = new File(BattleArena.getSelf().getDataFolder()+"/spawns.yml");;
+	File f = new File(BattleArena.getSelf().getDataFolder()+"/spawns.yml");
 
 
 	public void setConfig(File f){
@@ -188,8 +188,7 @@ public class SpawnSerializer {
         SpawnInstance si = spawn.get(0);
         if (si == null)
             return null;
-        TimedSpawn ts = new TimedSpawn(fs,rs,ds,si);
-        return ts;
+        return new TimedSpawn(fs,rs,ds,si);
     }
 
     public static TimedSpawn createTimedSpawn(SpawnInstance si, SpawnOptions so) {

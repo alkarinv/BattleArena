@@ -27,8 +27,8 @@ public enum MatchState implements CompetitionState{
 	ONENTERQUEUE("onEnterQueue")
 	;
 
-	String name;
-    int globalOrdinal;
+    final String name;
+    final int globalOrdinal;
 
     MatchState(String name){
 		this.name = name;

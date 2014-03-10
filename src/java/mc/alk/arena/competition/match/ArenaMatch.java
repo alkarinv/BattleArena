@@ -57,11 +57,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ArenaMatch extends Match {
     static boolean disabledAllCommands;
-    static HashSet<String> disabledCommands = new HashSet<String>();
-    static HashSet<String> enabledCommands = new HashSet<String>();
+    final static HashSet<String> disabledCommands = new HashSet<String>();
+    final static HashSet<String> enabledCommands = new HashSet<String>();
 
-    Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
-    Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
+    final Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
+    final Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
 
     public ArenaMatch(Arena arena, MatchParams mp, Collection<ArenaListener> listeners) {
         super(arena, mp,listeners);

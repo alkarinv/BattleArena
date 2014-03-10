@@ -24,7 +24,7 @@ public class SpawnOptions {
                 try{
                     time = Integer.valueOf(as[1]);
                 } catch (Exception e) {
-                    throw new IllegalStateException("time value " + time +" not valid. arg='" + arg+"'");
+                    throw new IllegalStateException("time value not valid. arg='" + arg+"'");
                 }
                 if (as[0].equalsIgnoreCase("fs")) {
                     options.put(SpawnOption.FIRST_SPAWN, time);

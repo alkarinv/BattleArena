@@ -10,7 +10,6 @@ import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
@@ -334,10 +333,6 @@ public class ArenaAlterController {
     }
 
     public static boolean restoreDefaultArenaOptions(Arena arena) {
-        return restoreDefaultArenaOptions(arena,true);
-    }
-
-    private static boolean restoreDefaultArenaOptions(Arena arena, boolean save) {
         MatchParams ap = arena.getParams();
         MatchParams p = new MatchParams(ap.getType());
         MatchParams parent = ParamController.getMatchParams(ap.getType());
@@ -345,8 +340,7 @@ public class ArenaAlterController {
         p.setParent(parent);
         arena.setParams(p);
         BattleArenaController ac = BattleArena.getBAController();
-        if (save)
-            BattleArena.saveArenas(arena.getArenaType().getPlugin());
+           BattleArena.saveArenas(arena.getArenaType().getPlugin());
         ac.updateArena(arena);
         return true;
     }

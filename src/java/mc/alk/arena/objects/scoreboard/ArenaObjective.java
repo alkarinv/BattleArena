@@ -23,9 +23,9 @@ import java.util.TreeMap;
 
 public class ArenaObjective implements SObjective, ScoreTracker{
 
-	protected ScoreMap<ArenaTeam> teamPoints = new ScoreMap<ArenaTeam>();
-	protected ScoreMap<ArenaPlayer> playerPoints = new ScoreMap<ArenaPlayer>();
-	protected SObjective o;
+    final protected ScoreMap<ArenaTeam> teamPoints = new ScoreMap<ArenaTeam>();
+    final protected ScoreMap<ArenaPlayer> playerPoints = new ScoreMap<ArenaPlayer>();
+    final protected SObjective o;
 
 	public ArenaObjective(String name, String criteria) {
 		this(name,criteria,name, SAPIDisplaySlot.SIDEBAR,50);

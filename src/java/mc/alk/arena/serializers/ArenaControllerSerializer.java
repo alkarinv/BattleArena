@@ -1,12 +1,5 @@
 package mc.alk.arena.serializers;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.PlayerRestoreController;
 import mc.alk.arena.listeners.BAPlayerListener;
@@ -14,12 +7,18 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.SerializerUtil;
-
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 
 public class ArenaControllerSerializer extends BaseConfig{
@@ -70,7 +69,7 @@ public class ArenaControllerSerializer extends BaseConfig{
 					System.err.println("Couldnt load the player " + name +" when reading restoreGameModeOnReenter inside arenaplayers.yml");
 					continue;
 				}
-				GameMode gm = null;
+				GameMode gm;
 				try{
 					gm = GameMode.valueOf(strgm);
 					if (gm == null){

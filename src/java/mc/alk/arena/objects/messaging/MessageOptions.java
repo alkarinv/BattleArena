@@ -1,9 +1,9 @@
 package mc.alk.arena.objects.messaging;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
 
 public class MessageOptions {
 	public static enum MessageOption{
@@ -30,7 +30,7 @@ public class MessageOptions {
 		LIFELEFT("{lifeleft}"),
 		WINPOINTSFOR("{winnerpointsfor}"), LOSEPOINTSFOR("{loserpointsfor}"),
 		TEAMS("{teams}");
-		private String replaceString;
+        final private String replaceString;
 
 		private MessageOption(String replaceString){
 			this.replaceString = replaceString;

@@ -4,7 +4,7 @@ import mc.alk.arena.competition.match.Match;
 
 
 public class MatchTimerIntervalEvent extends MatchEvent {
-	int secondsRemaining;
+    final int secondsRemaining;
 	public MatchTimerIntervalEvent(Match match, int remaining) {
 		super(match);
 		this.secondsRemaining = remaining;

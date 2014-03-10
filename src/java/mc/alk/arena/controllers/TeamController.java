@@ -77,7 +77,7 @@ public enum TeamController implements Listener {
 
 	private void leaveSelfTeam(ArenaPlayer p) {
         if (inFormingTeam(p)){
-            ArenaTeam t = getFormingTeam(p);
+            FormingTeam t = getFormingTeam(p);
             if (t != null && formingTeams.remove(t)){
                 t.sendMessage("&cYou're team has been disbanded as &6" + p.getDisplayName()+"&c has left minecraft");
                 return;

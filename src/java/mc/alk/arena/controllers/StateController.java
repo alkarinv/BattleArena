@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author alkarin
  */
 public class StateController {
-    static AtomicInteger count = new AtomicInteger(0);
-    static List<Class<? extends Enum>> enums = new ArrayList<Class<? extends Enum>>();
+    final static AtomicInteger count = new AtomicInteger(0);
+    final static List<Class<? extends Enum>> enums = new ArrayList<Class<? extends Enum>>();
 
 
     public static CompetitionState[] values() {

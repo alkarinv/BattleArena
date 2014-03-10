@@ -12,7 +12,7 @@ public class CaseInsensitiveMap<V> extends LinkedHashMap<String, V> {
 
 	@Override
     public V put(String key, V value) {
-        return super.put(key.toString().toUpperCase(), value);
+        return super.put(key.toUpperCase(), value);
     }
 
 	@Override

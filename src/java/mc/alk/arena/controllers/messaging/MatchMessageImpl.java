@@ -8,6 +8,8 @@ import mc.alk.arena.events.matches.messages.MatchTimeExpiredMessageEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.Channel;
+import mc.alk.arena.objects.messaging.Channels;
+import mc.alk.arena.objects.messaging.MatchMessageHandler;
 import mc.alk.arena.objects.messaging.Message;
 import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -60,7 +62,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		Message message = getNodeMessage(typedot+ nTeamPath+"."+path);
 		Message serverMessage = getNodeMessage(typedot+ nTeamPath+"."+serverpath);
 		Set<MessageOption> ops = message.getOptions();
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channels.NullChannel){
 			ops.addAll(serverMessage.getOptions());
 		}
 		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), teams.size(), message, ops);
@@ -74,7 +76,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 			t.sendMessage(newmsg);
 		}
 
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channels.NullChannel){
 			String msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}
@@ -188,7 +190,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		if (emessage != null && !emessage.isEmpty())
 			match.sendMessage(emessage);
 		emessage = event.getServerMessage();
-		if (event.getServerChannel() != Channel.NullChannel && emessage != null && !emessage.isEmpty())
+		if (event.getServerChannel() != Channels.NullChannel && emessage != null && !emessage.isEmpty())
 			event.getServerChannel().broadcast(emessage);
 	}
 
@@ -199,7 +201,7 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		if (message != null && !message.isEmpty())
 			match.sendMessage(message);
 		message = event.getServerMessage();
-		if (event.getServerChannel() != Channel.NullChannel && message != null && !message.isEmpty())
+		if (event.getServerChannel() != Channels.NullChannel && message != null && !message.isEmpty())
 			event.getServerChannel().broadcast(message);
 	}
 
@@ -246,12 +248,12 @@ public class MatchMessageImpl extends MessageSerializer implements MatchMessageH
 		Message message = getNodeMessage("event.countdownTillEvent");
 		Message serverMessage = getNodeMessage("event.server_countdownTillEvent");
 		Set<MessageOption> ops = message.getOptions();
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channels.NullChannel){
 			ops.addAll(serverMessage.getOptions());
 		}
 		MessageFormatter msgf = new MessageFormatter(this, match.getParams(), 0, message, ops);
 		msgf.formatCommonOptions(null,seconds);
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channels.NullChannel){
 			String msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}

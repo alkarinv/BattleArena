@@ -1,10 +1,10 @@
 package mc.alk.arena.objects;
 
+import mc.alk.arena.util.MinMax;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import mc.alk.arena.util.MinMax;
 
 public class ArenaSize implements CompetitionSize{
 	int minTeamSize = 1;
@@ -41,21 +41,17 @@ public class ArenaSize implements CompetitionSize{
 	}
 
 	public static boolean matchesTeamSize(ArenaSize size1, ArenaSize size2) {
-		if (size1 == null && size2 == null)
-			return true;
-		return size1 == null || size2 == null ? false : size1.matchesTeamSize(size2);
-	}
+        return size1 == null && size2 == null ||
+                !(size1 == null || size2 == null) && size1.matchesTeamSize(size2);
+    }
 	public static boolean matchesNTeams(ArenaSize size1, ArenaSize size2) {
-		if (size1 == null && size2 == null)
-			return true;
-		return size1 == null || size2 == null ? false : size1.matchesNTeams(size2);
-	}
+        return size1 == null && size2 == null ||
+                !(size1 == null || size2 == null) && size1.matchesNTeams(size2);
+    }
 
 	public static boolean lower(MinMax child, MinMax parent) {
-		if (child == null || parent == null)
-			return true;
-		return child.max < parent.max;
-	}
+        return child == null || parent == null || child.max < parent.max;
+    }
 
 	@Override
 	public void setTeamSize(int size) {

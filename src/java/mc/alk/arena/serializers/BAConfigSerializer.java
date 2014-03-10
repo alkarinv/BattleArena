@@ -80,7 +80,7 @@ public class BAConfigSerializer extends BaseConfig{
         ArenaMatch.setEnabledCommands(config.getStringList("enabledCommands"));
         ArenaMatchQueue.setDisabledCommands(config.getStringList("disabledQueueCommands"));
         ArenaMatchQueue.setEnabledCommands(config.getStringList("enabledQueueCommands"));
-        loadOtherPlugins();
+        loadOtherFiles();
 
         if (Defaults.TESTSERVER)
             return;
@@ -329,17 +329,35 @@ public class BAConfigSerializer extends BaseConfig{
         return an;
     }
 
-    private void loadOtherPlugins() {
+    private void loadOtherFiles() {
         loadHeroes();
         loadMcMMO();
     }
 
-    private ConfigurationSection loadOtherConfig(String file){
+
+    public void loadVictoryConditions() {
+        for (VictoryType vt : VictoryType.values()) {
+            String name = vt.getName();
+            if (name.equalsIgnoreCase("HighestKills")) { /// Old name for PlayerKills
+                name = "PlayerKills";}
+            BaseConfig c = loadOtherConfig(BattleArena.getSelf().getDataFolder() +
+                    "/victoryConditions/" + name + ".yml");
+            if (c == null)
+                continue;
+            VictoryType.addConfig(vt, c);
+        }
+    }
+
+    private BaseConfig loadOtherConfig(String file){
         File f = new File(file);
         if (!f.exists()) /// File not found, get outta here
             return null;
-        BaseConfig cs = new BaseConfig();
-        return cs.getConfig();
+        return new BaseConfig(f);
+    }
+
+    private ConfigurationSection loadOtherConfigSection(String file) {
+        BaseConfig c = loadOtherConfig(file);
+        return c == null ? null : c.getConfig();
     }
 
     public ConfigurationSection getWorldGuardConfig(){
@@ -347,7 +365,7 @@ public class BAConfigSerializer extends BaseConfig{
         if (config.contains("defaultWGFlags")) {
             return config;
         } else {
-            return loadOtherConfig(BattleArena.getSelf().getDataFolder() +
+            return loadOtherConfigSection(BattleArena.getSelf().getDataFolder() +
                     "/otherPluginConfigs/WorldGuardConfig.yml");
         }
     }
@@ -359,7 +377,7 @@ public class BAConfigSerializer extends BaseConfig{
             if (disabled != null && !disabled.isEmpty()){
                 HeroesController.addDisabledCommands(disabled);
             } else { /// look for options in the new config
-                ConfigurationSection cs = loadOtherConfig(BattleArena.getSelf().getDataFolder() +
+                ConfigurationSection cs = loadOtherConfigSection(BattleArena.getSelf().getDataFolder() +
                         "/otherPluginConfigs/HeroesConfig.yml");
                 if (cs == null)
                     return;
@@ -374,7 +392,7 @@ public class BAConfigSerializer extends BaseConfig{
     private void loadMcMMO(){
         if (McMMOController.enabled()){
             /// Look for it in the old location first, config.yml
-            ConfigurationSection cs = loadOtherConfig(BattleArena.getSelf().getDataFolder() +
+            ConfigurationSection cs = loadOtherConfigSection(BattleArena.getSelf().getDataFolder() +
                     "/otherPluginConfigs/McMMOConfig.yml");
             if (cs == null)
                 return;

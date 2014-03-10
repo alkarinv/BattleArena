@@ -12,10 +12,10 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
-import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
@@ -24,7 +24,6 @@ import mc.alk.arena.util.TimeUtil;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
-import java.util.Set;
 
 
 public class EventExecutor extends BAExecutor{
@@ -117,8 +116,7 @@ public class EventExecutor extends BAExecutor{
 		int size = event.getNTeams();
 		String teamOrPlayers = MessageUtil.getTeamsOrPlayers(eventParams.getMaxTeamSize());
 		sendMessage(sender,"&eThere are currently &6" + size +"&e "+teamOrPlayers);
-		StringBuilder sb = new StringBuilder(event.getInfo());
-		return sendMessage(sender,sb.toString());
+        return sendMessage(sender, event.getInfo());
 	}
 
 	//	@MCCommand(cmds={"leave"}, usage="leave", order=2)
@@ -252,7 +250,7 @@ public class EventExecutor extends BAExecutor{
 	private boolean eventTeams(CommandSender sender, Event event) {
 		StringBuilder sb = new StringBuilder();
 		for (ArenaTeam t: event.getTeams()){
-			sb.append("\n" + t.getTeamInfo(null)); }
+			sb.append("\n").append(t.getTeamInfo(null)); }
 
 		return sendMessage(sender,sb.toString());
 	}
@@ -270,9 +268,8 @@ public class EventExecutor extends BAExecutor{
 
 	private void appendTeamStatus(CommandSender sender, Event event, StringBuilder sb) {
 		if (PermissionsUtil.isAdmin(sender) || sender.hasPermission("arena.event.status")){
-			Set<String> inside = null;
 			for (ArenaTeam t: event.getTeams()){
-				sb.append("\n" + t.getTeamInfo(inside));
+				sb.append("\n").append(t.getTeamInfo(null));
 			}
 		}
 	}

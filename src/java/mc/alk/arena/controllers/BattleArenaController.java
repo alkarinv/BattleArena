@@ -8,6 +8,7 @@ import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.containers.RoomContainer;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.listeners.SignUpdateListener;
 import mc.alk.arena.objects.ArenaParams;

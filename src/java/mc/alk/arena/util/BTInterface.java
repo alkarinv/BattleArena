@@ -1,11 +1,5 @@
 package mc.alk.arena.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.StatController;
@@ -20,12 +14,17 @@ import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatType;
 import mc.alk.tracker.objects.WLT;
-
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class BTInterface {
@@ -59,7 +58,7 @@ public class BTInterface {
 		if (mp == null)
 			return false;
 		final String db = mp.getDBName();
-		return db == null ? false : btis.containsKey(db);
+		return db != null && btis.containsKey(db);
 	}
 
 	public static void addRecord(TrackerInterface bti, Set<ArenaTeam> victors,Set<ArenaTeam> losers,
@@ -162,7 +161,7 @@ public class BTInterface {
 
 	public Integer getElo(ArenaTeam t) {
 		if (!isValid())
-			return new Integer((int) Defaults.DEFAULT_ELO);
+			return (int) Defaults.DEFAULT_ELO;
 		Stat s = getRecord(ti,t);
 		return (int) (s == null ? Defaults.DEFAULT_ELO : s.getRating());
 	}

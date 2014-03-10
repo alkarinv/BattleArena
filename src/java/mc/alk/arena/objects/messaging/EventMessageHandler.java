@@ -1,4 +1,4 @@
-package mc.alk.arena.controllers.messaging;
+package mc.alk.arena.objects.messaging;
 
 import java.util.Collection;
 import java.util.Set;

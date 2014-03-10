@@ -16,8 +16,8 @@ import java.util.Set;
 
 
 public class ArenaType implements Comparable<ArenaType>{
-	static public CaseInsensitiveMap<Class<? extends Arena>> classes = new CaseInsensitiveMap<Class<? extends Arena>>();
-	static public CaseInsensitiveMap<ArenaType> types = new CaseInsensitiveMap<ArenaType>();
+    final static public CaseInsensitiveMap<Class<? extends Arena>> classes = new CaseInsensitiveMap<Class<? extends Arena>>();
+    final static public CaseInsensitiveMap<ArenaType> types = new CaseInsensitiveMap<ArenaType>();
 
 	static int count = 0;
 

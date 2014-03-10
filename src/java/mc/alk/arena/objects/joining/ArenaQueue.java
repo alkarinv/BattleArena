@@ -1,12 +1,12 @@
 package mc.alk.arena.objects.joining;
 
+import mc.alk.arena.objects.arenas.Arena;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import mc.alk.arena.objects.arenas.Arena;
 
-
-public class ArenaQueue extends LinkedList<Arena> {
+class ArenaQueue extends LinkedList<Arena> {
 	private static final long serialVersionUID = 1L;
 
 	@Override

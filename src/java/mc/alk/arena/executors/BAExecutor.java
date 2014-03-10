@@ -11,7 +11,7 @@ import mc.alk.arena.controllers.ArenaAlterController.ArenaOptionPair;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.BAEventController;
-import mc.alk.arena.controllers.CombatTagInterface;
+import mc.alk.arena.controllers.plugins.CombatTagInterface;
 import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;

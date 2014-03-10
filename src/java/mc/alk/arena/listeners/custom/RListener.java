@@ -1,14 +1,14 @@
 package mc.alk.arena.listeners.custom;
 
-import java.util.Comparator;
-
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventMethod;
 import mc.alk.arena.objects.events.EventPriority;
 
-public class RListener {
-	ArenaListener al;
-	ArenaEventMethod mem;
+import java.util.Comparator;
+
+class RListener {
+    final private ArenaListener al;
+    final private ArenaEventMethod mem;
 
 	public RListener(ArenaListener spl, ArenaEventMethod mem) {
 		this.al = spl;

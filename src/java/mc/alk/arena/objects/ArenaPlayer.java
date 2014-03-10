@@ -39,7 +39,7 @@ public class ArenaPlayer {
      * where they have the event, and the match
      * The stack order is the order in which they joined, the top being the most recent
      */
-    Stack<Competition> competitions = new Stack<Competition>();
+    final Stack<Competition> competitions = new Stack<Competition>();
 
     Arena arena;
 
@@ -60,7 +60,7 @@ public class ArenaPlayer {
     /** Has the player specified they are "ready" by clicking a block or sign */
     boolean isReady;
 
-    PlayerMetaData meta = new PlayerMetaData();
+    final PlayerMetaData meta = new PlayerMetaData();
 
     public ArenaPlayer(Player player) {
         this.player = player;
@@ -84,10 +84,8 @@ public class ArenaPlayer {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof ArenaPlayer)) {
-            return false;}
-        if (obj == this) return true;
-        return ((ArenaPlayer)obj).id == this.id;
+        return obj instanceof ArenaPlayer &&
+                ((ArenaPlayer) obj).id == this.id;
     }
 
     @Override

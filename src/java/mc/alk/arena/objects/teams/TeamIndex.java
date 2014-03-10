@@ -1,7 +1,7 @@
 package mc.alk.arena.objects.teams;
 
 public class TeamIndex {
-    public final Integer index;
+    private final Integer index;
 
     public TeamIndex(Integer teamIndex) {
         this.index = teamIndex;

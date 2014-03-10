@@ -58,7 +58,7 @@ public class MatchTeamQObject extends QueueObject{
 	@Override
 	public boolean hasTeam(ArenaTeam team) {
 		List<ArenaTeam> teams = matchup.getTeams();
-		return teams != null ? teams.contains(team) : false;
+		return teams != null && teams.contains(team);
 	}
 
 }

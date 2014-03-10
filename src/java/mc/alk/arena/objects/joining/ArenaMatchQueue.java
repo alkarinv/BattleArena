@@ -5,7 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.controllers.MethodController;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.messaging.MessageHandler;
@@ -66,8 +66,8 @@ import static mc.alk.arena.controllers.joining.AbstractJoinHandler.TeamJoinResul
 public class ArenaMatchQueue implements ArenaListener, Listener {
     static final boolean DEBUG = false;
     static boolean disabledAllCommands;
-    private static HashSet<String> disabledCommands = new HashSet<String>();
-    private static HashSet<String> enabledCommands = new HashSet<String>();
+    final private static HashSet<String> disabledCommands = new HashSet<String>();
+    final private static HashSet<String> enabledCommands = new HashSet<String>();
 
     final List<WaitingObject> joinHandlers = new LinkedList<WaitingObject>();
     final Map<WaitingObject, IdTime> forceTimers = Collections.synchronizedMap(new HashMap<WaitingObject, IdTime>());
@@ -86,7 +86,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
 
     final Lock lock = new ReentrantLock();
     final Condition empty = lock.newCondition();
-    AtomicBoolean suspend = new AtomicBoolean();
+    final AtomicBoolean suspend = new AtomicBoolean();
 
 
     public ArenaMatchQueue(){

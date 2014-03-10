@@ -19,11 +19,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class YamlFileUpdater {
-    BufferedReader br = null;
-    BufferedWriter fw =null;
-    File tempFile = null;
-    File configFile = null;
-    File backupDir;
+    private BufferedReader br = null;
+    private BufferedWriter fw =null;
+    private File tempFile = null;
+    private File configFile = null;
+    private File backupDir;
 
     public YamlFileUpdater(File backupDir){
         this.backupDir = backupDir;

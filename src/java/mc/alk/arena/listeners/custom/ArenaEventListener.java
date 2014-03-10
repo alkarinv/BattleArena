@@ -5,7 +5,6 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.util.Log;
 import org.bukkit.event.Event;
 
-import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
@@ -18,18 +17,17 @@ import java.util.TreeMap;
  * @author alkarin
  *
  */
-public class ArenaEventListener extends GeneralEventListener {
+class ArenaEventListener extends GeneralEventListener {
 
     /**
      * Construct a listener to listen for the given bukkit event
      * @param bukkitEvent : which event we will listen for
-     * @param getPlayerMethod : a method which when not null and invoked will return a Player
      */
     public ArenaEventListener(final Class<? extends Event> bukkitEvent,
-                              org.bukkit.event.EventPriority bukkitPriority, Method getPlayerMethod) {
+                              org.bukkit.event.EventPriority bukkitPriority) {
         super(bukkitEvent, bukkitPriority);
         if (Defaults.DEBUG_EVENTS) Log.info("Registering GenericPlayerEventListener for type " +
-                bukkitEvent.getSimpleName() +" pm="+(getPlayerMethod == null ? "null" : getPlayerMethod.getName()));
+                bukkitEvent.getSimpleName());
     }
 
     /**
@@ -83,9 +81,8 @@ public class ArenaEventListener extends GeneralEventListener {
 
     public void invokeEvent(final Set<ArenaListener> listeners, final Event event){
         /// For each ArenaListener class that is listening
-        final RListener[] rls = getRegisteredListeners();
-        for (RListener rl: rls){
-            if (!listeners.contains(rl.al))
+        for (RListener rl: getRegisteredListeners()){
+            if (!listeners.contains(rl.getListener()))
                 continue;
             try {
                 rl.getMethod().getMethod().invoke(rl.getListener(), event); /// Invoke the listening arenalisteners method

@@ -15,7 +15,7 @@ import java.util.Collection;
  * @author alkarin
  *
  */
-public class SpecificArenaPlayerEventListener extends SpecificPlayerEventListener{
+class SpecificArenaPlayerEventListener extends SpecificPlayerEventListener{
 	/**
 	 * Construct a listener to listen for the given bukkit event
 	 * @param bukkitEvent : which event we will listen for

@@ -1,18 +1,20 @@
 package mc.alk.arena.objects.modules;
 
-import java.io.File;
-import java.io.IOException;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
-
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 
+import java.io.File;
+import java.io.IOException;
+
+/**
+ *
+ */
 public abstract class ArenaModule implements Listener, ArenaListener{
 	private boolean enabled;
 	protected FileConfiguration config;
@@ -57,7 +59,7 @@ public abstract class ArenaModule implements Listener, ArenaListener{
 
 	/**
 	 * Set the module to be enabled or not
-	 * @param enable
+	 * @param enable Whether to enable or disable
 	 */
 	public void setEnabled(boolean enable){
 		if (this.enabled != enable){

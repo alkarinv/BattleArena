@@ -23,10 +23,10 @@ public class ArenaCommandSign implements ConfigurationSerializable{
 		JOIN, LEAVE, START
 	}
 	final Location location;
-	MatchParams mp;
-	ARENA_COMMAND command;
-	String options1;
-	String options2;
+	final MatchParams mp;
+    final ARENA_COMMAND command;
+    final String options1;
+    final String options2;
 
 	public ArenaCommandSign(Location location, MatchParams mp, ARENA_COMMAND cmd, String op1, String op2) {
 		this.mp = mp;

@@ -18,7 +18,10 @@ import mc.alk.arena.util.Log;
 import mc.alk.plugin.updater.v1r6.FileUpdater;
 import mc.alk.plugin.updater.v1r6.PluginUpdater;
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -37,44 +40,7 @@ import java.util.List;
 import java.util.Set;
 
 public class APIRegistrationController {
-    static Set<String> delayedInits = Collections.synchronizedSet(new HashSet<String>());
-
-
-    static class DelayedRegistrationHandler implements Runnable{
-        final JavaPlugin plugin;
-        final File compDir;
-        final File arenaFile;
-
-        public DelayedRegistrationHandler(JavaPlugin plugin, File compDir, File arenaFile) {
-            this.plugin = plugin;
-            this.compDir = compDir;
-            this.arenaFile = arenaFile;
-        }
-
-        @Override
-        public void run() {
-            if (!plugin.isEnabled()) /// lets not try to register plugins that aren't loaded
-                return;
-            FileFilter fileFilter = new FileFilter() {
-                public boolean accept(File file) {return file.toString().matches(".*Config.yml$");}
-            };
-            if (!compDir.exists())
-                return;
-            for (File file : compDir.listFiles(fileFilter)){
-                String n = file.getName().substring(0, file.getName().length()-"Config.yml".length());
-                if (ArenaType.contains(n) || n.contains(".")){ /// we already loaded this type, or bad type
-                    continue;}
-                File configFile = new File(compDir+"/"+n+"Config.yml");
-                File msgFile = new File(compDir+"/"+n+"Messages.yml");
-                if (!new APIRegistrationController().registerCompetition(
-                        plugin,n /*name*/,n /*command*/, null /*Arena class*/,
-                        null /*executor*/, configFile, msgFile, null,arenaFile)){
-                    Log.err("[BattleArena] Unable to load custom competition " + n);
-                }
-
-            }
-        }
-    }
+    final static Set<String> delayedInits = Collections.synchronizedSet(new HashSet<String>());
 
     private boolean loadFile(Plugin plugin, File fullFile, String fileName, String name, String cmd){
         if (fullFile.exists())
@@ -119,10 +85,10 @@ public class APIRegistrationController {
         return true;
     }
 
-    private static void setCommandToExecutor(JavaPlugin plugin, String wantedCommand, CommandExecutor executor) {
+    private void setCommandToExecutor(JavaPlugin plugin, String wantedCommand, CommandExecutor executor) {
         if (!setCommandToExecutor(plugin,wantedCommand, executor, false)){
             List<String> aliases = new ArrayList<String>();
-            ArenaCommand arenaCommand = new ArenaCommand(wantedCommand,"","", aliases, BattleArena.getSelf(),executor);
+            ArenaBukkitCommand arenaCommand = new ArenaBukkitCommand(wantedCommand,"","", aliases, BattleArena.getSelf(),executor);
             CommandController.registerCommand(arenaCommand);
         }
     }
@@ -210,14 +176,14 @@ public class APIRegistrationController {
             return false;
         }
         /// What is our game type ? spleef, ctf, etc
-        final ArenaType gameType = ConfigSerializer.getArenaGameType(plugin,config.getConfigurationSection(name));
+        final ArenaType gameType = ConfigSerializer.getArenaGameType(config.getConfigurationSection(name));
 
         /// load or register our arena type
         if (arenaClass == null) {
             if (gameType != null) {
                 arenaClass = ArenaType.getArenaClass(gameType);
             } else {
-                arenaClass = ConfigSerializer.getArenaClass(plugin, config.getConfigurationSection(name));
+                arenaClass = ConfigSerializer.getArenaClass(config.getConfigurationSection(name));
             }
             if (arenaClass == null) {
                 arenaClass = Arena.class;
@@ -276,7 +242,7 @@ public class APIRegistrationController {
         return true;
     }
 
-    private static void createExecutor(JavaPlugin plugin, String cmd, CustomCommandExecutor executor, MatchParams mp) {
+    private void createExecutor(JavaPlugin plugin, String cmd, CustomCommandExecutor executor, MatchParams mp) {
         CustomCommandExecutor exe;
 
         if (mp.isDuelOnly()){
@@ -300,5 +266,63 @@ public class APIRegistrationController {
         if (announceOption ==null) announceOption = AnnounceUpdateOption.NONE;
         PluginUpdater.update(plugin, bukkitId, file,updateOption.toPluginUpdater(), announceOption.toPluginUpdater());
     }
+
+    class ArenaBukkitCommand extends Command implements PluginIdentifiableCommand {
+        final CommandExecutor executor;
+        final Plugin plugin;
+
+        public ArenaBukkitCommand(String name, String description, String usageMessage, List<String> aliases, Plugin plugin, CommandExecutor executor) {
+            super(name, description, usageMessage, aliases);
+            this.plugin = plugin;
+            this.executor = executor;
+        }
+
+        @Override
+        public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+            return executor.onCommand(sender, this, commandLabel, args);
+        }
+
+        @Override
+        public Plugin getPlugin() {
+            return plugin;
+        }
+    }
+
+    class DelayedRegistrationHandler implements Runnable{
+        final JavaPlugin plugin;
+        final File compDir;
+        final File arenaFile;
+
+        public DelayedRegistrationHandler(JavaPlugin plugin, File compDir, File arenaFile) {
+            this.plugin = plugin;
+            this.compDir = compDir;
+            this.arenaFile = arenaFile;
+        }
+
+        @Override
+        public void run() {
+            if (!plugin.isEnabled()) /// lets not try to register plugins that aren't loaded
+                return;
+            FileFilter fileFilter = new FileFilter() {
+                public boolean accept(File file) {return file.toString().matches(".*Config.yml$");}
+            };
+            if (!compDir.exists())
+                return;
+            for (File file : compDir.listFiles(fileFilter)){
+                String n = file.getName().substring(0, file.getName().length()-"Config.yml".length());
+                if (ArenaType.contains(n) || n.contains(".")){ /// we already loaded this type, or bad type
+                    continue;}
+                File configFile = new File(compDir+"/"+n+"Config.yml");
+                File msgFile = new File(compDir+"/"+n+"Messages.yml");
+                if (!new APIRegistrationController().registerCompetition(
+                        plugin,n /*name*/,n /*command*/, null /*Arena class*/,
+                        null /*executor*/, configFile, msgFile, null,arenaFile)){
+                    Log.err("[BattleArena] Unable to load custom competition " + n);
+                }
+
+            }
+        }
+    }
+
 
 }

@@ -1,4 +1,4 @@
-package mc.alk.arena.controllers.joining.scoreboard;
+package mc.alk.arena.objects.scoreboard;
 
 import mc.alk.arena.objects.joining.JoinResponseHandler;
 

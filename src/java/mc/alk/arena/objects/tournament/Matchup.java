@@ -53,7 +53,7 @@ public class Matchup {
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		for (ArenaTeam t: teams){
-			sb.append("t=" + t +",");
+			sb.append("t=").append(t).append(",");
 		}
 		return sb.toString() + " result=" + result;
 	}
@@ -68,10 +68,10 @@ public class Matchup {
 
 	@Override
 	public boolean equals(Object other) {
-		if (this == other) return true;
-		if (!(other instanceof Matchup)) return false;
-		return this.hashCode() == ((Matchup) other).hashCode();
-	}
+        return this == other ||
+                other instanceof Matchup &&
+                        this.hashCode() == other.hashCode();
+    }
 
 	@Override
 	public int hashCode() { return id;}

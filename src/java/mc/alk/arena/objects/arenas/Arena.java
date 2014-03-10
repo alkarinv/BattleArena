@@ -34,13 +34,13 @@ import java.util.Set;
 public class Arena extends AreaContainer {
 
 	/// If this is not null, this is where distance will be based off of, otherwise it's an area around the spawns
-	protected Location joinloc = null;
+	protected Location joinloc;
 
-	protected Map<Long, TimedSpawn> timedSpawns = null; /// Item/mob/other spawn events
+	protected Map<Long, TimedSpawn> timedSpawns; /// Item/mob/other spawn events
 
-	protected SpawnController spawnController = null;
+	protected SpawnController spawnController;
 
-	protected Match match = null;
+	protected Match match;
 
 	protected RoomContainer spectate;
 

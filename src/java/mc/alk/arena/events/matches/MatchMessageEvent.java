@@ -3,6 +3,7 @@ package mc.alk.arena.events.matches;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.messaging.Channel;
+import mc.alk.arena.objects.messaging.Channels;
 
 
 public class MatchMessageEvent extends MatchEvent {
@@ -36,7 +37,7 @@ public class MatchMessageEvent extends MatchEvent {
 	}
 
 	public Channel getServerChannel() {
-		return serverChannel == null ? Channel.NullChannel : serverChannel;
+		return serverChannel == null ? Channels.NullChannel : serverChannel;
 	}
 
 	public void setServerChannel(Channel serverChannel) {

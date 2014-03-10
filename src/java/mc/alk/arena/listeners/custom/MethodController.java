@@ -1,9 +1,7 @@
-package mc.alk.arena.controllers;
+package mc.alk.arena.listeners.custom;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.events.BAEvent;
-import mc.alk.arena.listeners.custom.BukkitEventHandler;
-import mc.alk.arena.listeners.custom.RListener;
 import mc.alk.arena.listeners.custom.RListener.RListenerPriorityComparator;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
@@ -42,30 +40,29 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 
-@SuppressWarnings("deprecation")
 public class MethodController {
 
     /** Our Dynamic listeners, listening for bukkit events*/
-    static EnumMap<EventPriority, HashMap<Type, BukkitEventHandler>> bukkitListeners =
+    final static EnumMap<EventPriority, HashMap<Type, BukkitEventHandler>> bukkitListeners =
             new EnumMap<EventPriority,HashMap<Type, BukkitEventHandler>>(EventPriority.class);
 
     /** Our registered bukkit events and the methods to call when they happen*/
-    static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<ArenaEventMethod>>> bukkitEventMethods =
+    final static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<ArenaEventMethod>>> bukkitEventMethods =
             new HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends Event>,List<ArenaEventMethod>>>();
 
     /** Our registered match events and the methods to call when they happen*/
-    static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends BAEvent>,List<ArenaEventMethod>>> matchEventMethods =
+    final static HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends BAEvent>,List<ArenaEventMethod>>> matchEventMethods =
             new HashMap<Class<? extends ArenaListener>,HashMap<Class<? extends BAEvent>,List<ArenaEventMethod>>>();
 
-    private HashMap<Class<? extends Event>,List<RListener>> bukkitMethods = new HashMap<Class<? extends Event>,List<RListener>>();
+    final private HashMap<Class<? extends Event>,List<RListener>> bukkitMethods = new HashMap<Class<? extends Event>,List<RListener>>();
 
-    private HashMap<Class<? extends BAEvent>,List<RListener>> matchMethods = new HashMap<Class<? extends BAEvent>,List<RListener>>();
+    final private HashMap<Class<? extends BAEvent>,List<RListener>> matchMethods = new HashMap<Class<? extends BAEvent>,List<RListener>>();
 
-    static Set<MethodController> controllers = new HashSet<MethodController>();
+    final static Set<MethodController> controllers = new HashSet<MethodController>();
     static int controllerCount = 0;
 
-    Set<ArenaListener> listeners = new HashSet<ArenaListener>();
-    Object owner;
+    final Set<ArenaListener> listeners = new HashSet<ArenaListener>();
+    final Object owner;
 
     public MethodController(Object owner){
         if (Defaults.DEBUG_EVENTS) controllers.add(this);

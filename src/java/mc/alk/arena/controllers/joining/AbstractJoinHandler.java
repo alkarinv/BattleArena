@@ -4,7 +4,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.joining.scoreboard.CutoffScoreboard;
 import mc.alk.arena.controllers.joining.scoreboard.FullScoreboard;
-import mc.alk.arena.controllers.joining.scoreboard.WaitingScoreboard;
+import mc.alk.arena.objects.scoreboard.WaitingScoreboard;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.MatchParams;

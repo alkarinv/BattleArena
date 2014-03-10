@@ -16,13 +16,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 public class TeamExecutor extends CustomCommandExecutor {
-	TeamController teamc;
-	BAExecutor bae;
+	private TeamController teamc;
+    private BAExecutor bae;
 
 	public TeamExecutor(BAExecutor bae) {
 		super();
@@ -80,8 +81,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		Set<String> players = new HashSet<String>();
 		Set<Player> foundplayers = new HashSet<Player>();
 		Set<String> unfoundplayers = new HashSet<String>();
-		for (int i=1;i<args.length;i++){
-			players.add(args[i]);}
+        players.addAll(Arrays.asList(args).subList(1, args.length));
 		if (players.contains(player.getName()))
 			return sendMessage(player,ChatColor.YELLOW + "You can not invite yourself to a team");
 

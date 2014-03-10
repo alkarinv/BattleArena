@@ -3,7 +3,7 @@ package mc.alk.arena.controllers.containers;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
-import mc.alk.arena.controllers.MethodController;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
@@ -57,21 +57,21 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
     private final MethodController methodController;
 
-    protected Set<String> players = new HashSet<String>();
+    final protected Set<String> players = new HashSet<String>();
 
     /** Spawn points */
-    protected List<Location> spawns = new ArrayList<Location>();
+    final protected List<Location> spawns = new ArrayList<Location>();
 
     /** Main Spawn is different than the normal spawns.  It is specified by Defaults.MAIN_SPAWN */
     Location mainSpawn = null;
 
     /** Our teams */
-    protected List<ArenaTeam> teams = Collections.synchronizedList(new ArrayList<ArenaTeam>());
+    final protected List<ArenaTeam> teams = Collections.synchronizedList(new ArrayList<ArenaTeam>());
 
     /** our values for the team index, only used if the Team.getIndex is null*/
     final Map<ArenaTeam,Integer> teamIndexes = new ConcurrentHashMap<ArenaTeam,Integer>();
 
-    static Random r = new Random();
+    final static Random r = new Random();
 
     public AbstractAreaContainer(String name){
         methodController = new MethodController("AAC " + name);
@@ -216,7 +216,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
         }
     }
     public boolean validIndex(int index){
-        return spawns != null && spawns.size() < index;
+        return spawns.size() < index;
     }
 
     public List<Location> getSpawns(){

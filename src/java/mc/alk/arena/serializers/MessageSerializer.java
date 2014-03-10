@@ -1,22 +1,23 @@
 package mc.alk.arena.serializers;
 
+import mc.alk.arena.controllers.messaging.MessageFormatter;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.messaging.Channel;
+import mc.alk.arena.objects.messaging.Channels;
+import mc.alk.arena.objects.messaging.Message;
+import mc.alk.arena.objects.messaging.MessageOptions;
+import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
+import mc.alk.arena.objects.teams.ArenaTeam;
+import org.bukkit.ChatColor;
+import org.bukkit.configuration.MemorySection;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import mc.alk.arena.controllers.messaging.MessageFormatter;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.messaging.Channel;
-import mc.alk.arena.objects.messaging.Message;
-import mc.alk.arena.objects.messaging.MessageOptions;
-import mc.alk.arena.objects.messaging.MessageOptions.MessageOption;
-import mc.alk.arena.objects.teams.ArenaTeam;
-
-import org.bukkit.configuration.MemorySection;
 
 
 public class MessageSerializer extends BaseConfig {
@@ -26,9 +27,9 @@ public class MessageSerializer extends BaseConfig {
 	/// Map of path to options
 	private HashMap<String,MessageOptions> msgOptions = new HashMap<String,MessageOptions>();
 
-	private static HashMap<String,MessageSerializer> files = new HashMap<String,MessageSerializer>();
+    final private static HashMap<String,MessageSerializer> files = new HashMap<String,MessageSerializer>();
 
-	protected MatchParams mp;
+    final protected MatchParams mp;
 
 	public MessageSerializer(String name, MatchParams params){
 		mp = params;
@@ -81,9 +82,6 @@ public class MessageSerializer extends BaseConfig {
 	}
 
 	public Message getNodeMessage(String path) {
-		if (config != null && !this.getFile().getPath().equals("plugins/BattleArena/messages.yml")){
-			Set<String> keys = config.getKeys(true);
-		}
 		if (config != null && config.contains(path)){
 			return new Message(config.getString(path), msgOptions.get(path));
 		}
@@ -110,7 +108,7 @@ public class MessageSerializer extends BaseConfig {
 	}
 
 	public static boolean hasMessage(String prefix, String node) {
-		return defaultMessages != null ? defaultMessages.contains(prefix+"." + node) : false;
+		return defaultMessages != null && defaultMessages.contains(prefix + "." + node);
 	}
 
 	public static void loadDefaults() {
@@ -121,12 +119,9 @@ public class MessageSerializer extends BaseConfig {
 		MessageSerializer.defaultMessages = messageSerializer;
 	}
 
-	public static String getDefaultMessage(String string, String string2) {
-		return null;
-	}
-
 	public static String colorChat(String msg) {return msg.replace('&', '\167');}
-	public static String decolorChat(String msg) { return msg.replaceAll("&", "§").replaceAll("\\§[0-9a-zA-Z]", "");}
+    public static String decolorChat(String msg) {
+        return msg.contains("§") || msg.contains("&") ? ChatColor.stripColor(msg).replaceAll("(&|§).", "") : msg;}
 
 	protected static String getStringPathFromSize(int size) {
 		if (size == 1)
@@ -149,30 +144,37 @@ public class MessageSerializer extends BaseConfig {
 		if (ops == null)
 			ops =new HashSet<MessageOption>();
 		ops.addAll(losermessage.getOptions());
-		if (serverChannel != Channel.NullChannel && serverMessage != null){
+		if (serverChannel != Channels.NullChannel && serverMessage != null){
 			ops.addAll(serverMessage.getOptions());
 		}
 
-		String msg = losermessage.getMessage();
 		MessageFormatter msgf = new MessageFormatter(this, mp, size, losermessage, ops);
-		List<ArenaTeam> teams = new ArrayList<ArenaTeam>(losers);
-		if (victors != null){
+        List<ArenaTeam> teams;
+        if (losers !=null) {
+            teams = new ArrayList<ArenaTeam>(losers);
+        } else {
+            teams = new ArrayList<ArenaTeam>();
+        }
+
+        if (victors != null){
 			teams.addAll(victors);
 		}
 
 		msgf.formatCommonOptions(teams, mp.getSecondsToLoot());
 		ArenaTeam vic = (victors != null && !victors.isEmpty()) ? victors.iterator().next() : null;
-		for (ArenaTeam t: losers){
-			msgf.formatTeamOptions(t,false);
-			msgf.formatTwoTeamsOptions(t, teams);
-			msgf.formatTeams(teams);
-			msgf.formatWinnerOptions(t, false);
-			/// TODO : I now need to make this work with multiple winners
-			if (vic != null)
-				msgf.formatWinnerOptions(vic, true);
-			String newmsg = msgf.getFormattedMessage(losermessage);
-			t.sendMessage(newmsg);
-		}
+        if (losers !=null){
+            for (ArenaTeam t: losers){
+                msgf.formatTeamOptions(t,false);
+                msgf.formatTwoTeamsOptions(t, teams);
+                msgf.formatTeams(teams);
+                msgf.formatWinnerOptions(t, false);
+                /// TODO : I now need to make this work with multiple winners
+                if (vic != null)
+                    msgf.formatWinnerOptions(vic, true);
+                String newmsg = msgf.getFormattedMessage(losermessage);
+                t.sendMessage(newmsg);
+            }
+        }
 
 		if (victors != null){
 			for (ArenaTeam victor: victors){
@@ -181,7 +183,7 @@ public class MessageSerializer extends BaseConfig {
 				msgf.formatTeamOptions(victor,true);
 				msgf.formatTwoTeamsOptions(victor, teams);
 				msgf.formatTeams(teams);
-				if (!losers.isEmpty()){
+				if (losers !=null && !losers.isEmpty()){
 					msgf.formatWinnerOptions(losers.iterator().next(), false);
 				}
 				msgf.formatWinnerOptions(victor, true);
@@ -190,8 +192,8 @@ public class MessageSerializer extends BaseConfig {
 			}
 		}
 
-		if (serverChannel != Channel.NullChannel && serverMessage != null){
-			msg = msgf.getFormattedMessage(serverMessage);
+		if (serverChannel != Channels.NullChannel && serverMessage != null){
+            String msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}
 	}
@@ -209,11 +211,10 @@ public class MessageSerializer extends BaseConfig {
 		Message message = getNodeMessage("common.onjoin");
 		Message serverMessage = getNodeMessage("common.onjoin_server");
 		Set<MessageOption> ops = message.getOptions();
-		if (serverChannel != Channel.NullChannel){
+		if (serverChannel != Channels.NullChannel){
 			ops.addAll(serverMessage.getOptions());
 		}
 
-		String msg = message.getMessage();
 		List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 		teams.add(team);
 		MessageFormatter msgf = new MessageFormatter(this, mp, teams.size(), message, ops);
@@ -225,8 +226,8 @@ public class MessageSerializer extends BaseConfig {
 			t.sendMessage(newmsg);
 		}
 
-		if (serverChannel != Channel.NullChannel){
-			msg = msgf.getFormattedMessage(serverMessage);
+		if (serverChannel != Channels.NullChannel){
+            String msg = msgf.getFormattedMessage(serverMessage);
 			serverChannel.broadcast(msg);
 		}
 	}

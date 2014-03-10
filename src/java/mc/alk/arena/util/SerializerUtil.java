@@ -1,17 +1,16 @@
 package mc.alk.arena.util;
 
+import mc.alk.arena.controllers.BukkitInterface;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-
-import mc.alk.arena.controllers.BukkitInterface;
-
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 
 public class SerializerUtil {
 
@@ -76,8 +75,7 @@ public class SerializerUtil {
 		Map<Integer,Location> locs = new TreeMap<Integer,Location>();
 		Set<String> indices = cs.getKeys(false);
 		for (String locIndexStr : indices){
-			Location loc = null;
-			loc = SerializerUtil.getLocation(cs.getString(locIndexStr));
+			Location loc = SerializerUtil.getLocation(cs.getString(locIndexStr));
 			Integer i = Integer.valueOf(locIndexStr);
 			locs.put(i, loc);
 		}
@@ -92,11 +90,8 @@ public class SerializerUtil {
 
 	public static Block parseBlock(String string) {
 		String[] split = string.split(";");
-		Integer.valueOf(split[0]);
-		Integer.valueOf(split[1]);
 		Location l = getLocation(split[2]);
-		Block b = l.getWorld().getBlockAt(l);
-		return b;
+        return l.getWorld().getBlockAt(l);
 	}
 
 }

@@ -1,10 +1,10 @@
 package mc.alk.arena.controllers;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.util.CaseInsensitiveMap;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 public class OptionSetController {
 	static final Map<String,TransitionOptions> options = new CaseInsensitiveMap<TransitionOptions>();
@@ -18,8 +18,7 @@ public class OptionSetController {
 	}
 
 	public static Map<String,TransitionOptions> getOptionSets() {
-		Map<String,TransitionOptions> ops = new TreeMap<String,TransitionOptions>(options);
-		return ops;
+        return new TreeMap<String,TransitionOptions>(options);
 	}
 
 }

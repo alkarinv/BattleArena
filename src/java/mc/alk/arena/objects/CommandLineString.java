@@ -3,7 +3,7 @@ package mc.alk.arena.objects;
 
 
 public class CommandLineString {
-	private enum SenderType{ CONSOLE, PLAYER};
+	private enum SenderType{ CONSOLE, PLAYER}
 	String raw;
 	SenderType sender;
 	String command;

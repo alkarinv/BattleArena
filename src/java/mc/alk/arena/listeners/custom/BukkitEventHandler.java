@@ -16,7 +16,7 @@ import java.util.Set;
  * @author alkarin
  *
  */
-public class BukkitEventHandler {
+class BukkitEventHandler {
     BukkitEventListener bel;
     ArenaEventListener ael;
     SpecificPlayerEventListener spl;
@@ -36,7 +36,7 @@ public class BukkitEventHandler {
             }
         } else {
             if (aem.isBAEvent()){
-                ael = new ArenaEventListener(bukkitEvent,aem.getBukkitPriority(), null);
+                ael = new ArenaEventListener(bukkitEvent,aem.getBukkitPriority());
             } else{
                 bel = new BukkitEventListener(bukkitEvent,aem.getBukkitPriority(), null);
             }

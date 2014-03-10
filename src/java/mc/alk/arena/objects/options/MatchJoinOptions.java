@@ -1,13 +1,13 @@
 package mc.alk.arena.objects.options;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.MinMax;
+
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Set;
 
 public class MatchJoinOptions {
 	public static enum MatchJoinOption{
@@ -31,7 +31,7 @@ public class MatchJoinOptions {
 				default:
 					break;
 				}
-				sb.append(r+val);
+				sb.append(r).append(val);
 			}
 			return sb.toString();
 		}
@@ -49,7 +49,7 @@ public class MatchJoinOptions {
 			Object obj = null;
 			String[] split = op.split("=");
 			split[0] = split[0].trim().toUpperCase();
-			MatchJoinOption to = null;
+			MatchJoinOption to;
 			try{
 				to = MatchJoinOption.valueOf(split[0]);
 			} catch(IllegalArgumentException e){

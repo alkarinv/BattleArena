@@ -23,9 +23,9 @@ public abstract class AbstractTeam implements ArenaTeam{
 	static int count = 0;
 	final int id = count++; /// id
 
-	protected Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
-	protected Set<ArenaPlayer> deadplayers = new HashSet<ArenaPlayer>();
-	protected Set<ArenaPlayer> leftplayers = new HashSet<ArenaPlayer>();
+    final protected Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
+    final protected Set<ArenaPlayer> deadplayers = new HashSet<ArenaPlayer>();
+    final protected Set<ArenaPlayer> leftplayers = new HashSet<ArenaPlayer>();
 
 	protected boolean nameManuallySet = false;
 	protected boolean nameChanged = true;
@@ -33,8 +33,8 @@ public abstract class AbstractTeam implements ArenaTeam{
 	protected String displayName =null; /// Display name
 	protected String scoreboardDisplayName =null; /// Scoreboard name
 
-	HashMap<ArenaPlayer, Integer> kills = new HashMap<ArenaPlayer,Integer>();
-	HashMap<ArenaPlayer, Integer> deaths = new HashMap<ArenaPlayer,Integer>();
+    final HashMap<ArenaPlayer, Integer> kills = new HashMap<ArenaPlayer,Integer>();
+    final HashMap<ArenaPlayer, Integer> deaths = new HashMap<ArenaPlayer,Integer>();
 
 	/// Pickup teams are transient in nature, once the match end they disband
 	protected boolean isPickupTeam = false;

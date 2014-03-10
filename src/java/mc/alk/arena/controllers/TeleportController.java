@@ -3,6 +3,7 @@ package mc.alk.arena.controllers;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
+import mc.alk.arena.controllers.plugins.CombatTagInterface;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -31,7 +32,7 @@ import java.util.UUID;
 
 
 public class TeleportController implements Listener{
-    static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
+    final static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
     private final int TELEPORT_FIX_DELAY = 15; // ticks
 
     public static boolean teleport(final Player player, final Location location) {

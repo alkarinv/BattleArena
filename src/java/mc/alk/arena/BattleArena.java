@@ -125,13 +125,17 @@ public class BattleArena extends JavaPlugin {
         FileUpdater.makeIfNotExists(new File(dir + "/saves"));
         FileUpdater.makeIfNotExists(new File(dir + "/modules"));
         FileUpdater.makeIfNotExists(new File(dir + "/otherPluginConfigs"));
+        FileUpdater.makeIfNotExists(new File(dir + "/victoryConditions"));
 
-        new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/HeroesConfig.yml",
-                "/default_files/otherPluginConfigs/HeroesConfig.yml"));
-        new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/McMMOConfig.yml",
-                "/default_files/otherPluginConfigs/McMMOConfig.yml"));
-        new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/WorldGuardConfig.yml",
-                "/default_files/otherPluginConfigs/WorldGuardConfig.yml"));
+        for (String c : new String[]{"HeroesConfig", "McMMOConfig", "WorldGuardConfig"}){
+            new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/"+c+".yml",
+                    "/default_files/otherPluginConfigs/"+c+".yml"));
+        }
+
+        for (String c : new String[]{"AllKills", "KillLimit", "MobKills","PlayerKills"}){
+            new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/victoryConditions/"+c+".yml",
+                    "/default_files/victoryConditions/"+c+".yml"));
+        }
 
         /// For potential updates to default yml files
         YamlFileUpdater yfu = new YamlFileUpdater(this);
@@ -167,12 +171,13 @@ public class BattleArena extends JavaPlugin {
         VictoryType.register(TimeLimit.class, this);
         VictoryType.register(OneTeamLeft.class, this);
         VictoryType.register(NoTeamsLeft.class, this);
-        VictoryType.register(HighestKills.class, this);
         VictoryType.register(PlayerKills.class, this);
         VictoryType.register(MobKills.class, this);
         VictoryType.register(AllKills.class, this);
         VictoryType.register(KillLimit.class, this);
         VictoryType.register(Custom.class, this);
+        //noinspection deprecation
+        VictoryType.register(HighestKills.class, this);
 
         /// Load our configs, then arenas
         baConfigSerializer.setConfig(FileUtil.load(clazz, dir.getPath() + "/config.yml", "/default_files/config.yml"));
@@ -218,6 +223,7 @@ public class BattleArena extends JavaPlugin {
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             @Override
             public void run() {
+                baConfigSerializer.loadVictoryConditions();
                 baConfigSerializer.loadCompetitions(); /// Load our competitions, has to happen after classes and teams
 
                 /// persist our disabled arena types

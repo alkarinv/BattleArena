@@ -36,7 +36,7 @@ public class DuelOptions {
 		}
 		public static DuelOption fromName(String str){
 			str = str.toUpperCase();
-			try {return DuelOption.valueOf(str);} catch (Exception e){}
+			try {return DuelOption.valueOf(str);} catch (Exception e){/* do nothing */}
 			if (str.equals("BET") || str.equals("WAGER") || str.equals(Defaults.MONEY_STR))
 				return DuelOption.MONEY;
 			throw new IllegalArgumentException();
@@ -54,7 +54,7 @@ public class DuelOptions {
 					break;
 				default: break;
 				}
-				sb.append(r.getName()+val);
+				sb.append(r.getName()).append(val);
 			}
 			return sb.toString();
 		}
@@ -88,7 +88,7 @@ public class DuelOptions {
 			}
 			Object obj = null;
 
-			DuelOption to = null;
+			DuelOption to;
 			String val;
 			if (op.contains("=")){
 				String[] split = op.split("=");
@@ -113,7 +113,7 @@ public class DuelOptions {
 			i++; /// another increment to get past the value
 			switch(to){
 			case MONEY:
-				Double money = null;
+				Double money;
 				try {money = Double.valueOf(val);}catch(Exception e){
 					throw new InvalidOptionException("&cmoney needs to be a number! Example: &6money=100");}
 				if (!MoneyController.hasEconomy()){
@@ -141,7 +141,7 @@ public class DuelOptions {
 		return dop;
 	}
 	private static DuelOption parseOp(String op, String value) throws InvalidOptionException {
-		DuelOption to = null;
+		DuelOption to;
 		try{
 			to = DuelOption.fromName(op);
 			if (to.needsValue && value == null){
@@ -155,11 +155,11 @@ public class DuelOptions {
 
 	public String optionsString(MatchParams mp) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("rated=" +mp.isRated()+" ");
+		sb.append("rated=").append(mp.isRated()).append(" ");
 		for (DuelOption op: options.keySet()){
 			sb.append(op.getName());
 			if (op.needsValue){
-				sb.append("=" + options.get(op));
+				sb.append("=").append(options.get(op));
 			}
 			sb.append(" ");
 		}

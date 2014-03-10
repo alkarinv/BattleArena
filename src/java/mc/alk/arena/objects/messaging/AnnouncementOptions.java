@@ -20,7 +20,7 @@ public class AnnouncementOptions {
 			AnnouncementOption ao = null;
 			try{
 				ao = AnnouncementOption.valueOf(str);
-			} catch (Exception e){}
+			} catch (Exception e){/* do nothing*/}
 			if (ao != null)
 				return ao;
 			if (str.contains("HC") || str.contains("HEROCHAT"))
@@ -33,9 +33,9 @@ public class AnnouncementOptions {
 	public static ChatPlugin chatPlugin = null;
 	public static Chat chat = null;
 
-	Map<MatchState, Map<AnnouncementOption,Object>> matchOptions =
+    final Map<MatchState, Map<AnnouncementOption,Object>> matchOptions =
 			new EnumMap<MatchState, Map<AnnouncementOption,Object>>(MatchState.class);
-	Map<MatchState, Map<AnnouncementOption,Object>> eventOptions =
+    final Map<MatchState, Map<AnnouncementOption,Object>> eventOptions =
 			new EnumMap<MatchState, Map<AnnouncementOption,Object>>(MatchState.class);
 
 	public static void setPlugin(ChatPlugin plugin) {
@@ -84,9 +84,7 @@ public class AnnouncementOptions {
 						", will be ignored as world " + value +" can not be found. Defaulting to Server Announcement");
 				ops.put(AnnouncementOption.SERVER, null);
 				return;
-			} else {
-
-			}
+			} 
 			break;
 		default:
 			break;
@@ -104,19 +102,19 @@ public class AnnouncementOptions {
 		Map<AnnouncementOption,Object> ops = options.get(state);
 		/// Dont announce
 		if (ops == null || ops.containsKey(AnnouncementOption.DONTANNOUNCE))
-			return Channel.NullChannel;
+			return Channels.NullChannel;
 
 		/// Channel option enabled
 		if (ops.containsKey(AnnouncementOption.CHANNEL)){
 			String hcChannelName = (String) ops.get(AnnouncementOption.CHANNEL);
 			if (chatPlugin == null){
 				Log.warn(BattleArena.getPluginName()+" channel plugin is not enabled, ignoring config.yml announcement option channel="+hcChannelName);
-				return Channel.ServerChannel;
+				return Channels.ServerChannel;
 			}
 			Channel channel = chatPlugin.getChannel(hcChannelName);
 			if (channel == null){
 				Log.warn(BattleArena.getPluginName()+" channel not found!. ignoring config.yml announcement option channel="+hcChannelName);
-				return Channel.ServerChannel;
+				return Channels.ServerChannel;
 			} else {
 				return channel;
 			}
@@ -126,7 +124,7 @@ public class AnnouncementOptions {
 			if (w != null){
 				return new WorldChannel(w);}
 		}
-		return Channel.ServerChannel;
+		return Channels.ServerChannel;
 	}
 
 	public static Channel getDefaultChannel(boolean match, MatchState state) {

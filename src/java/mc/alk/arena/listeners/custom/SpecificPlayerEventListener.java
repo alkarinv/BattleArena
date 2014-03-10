@@ -24,7 +24,7 @@ import java.util.Collection;
  * @author alkarin
  *
  */
-public class SpecificPlayerEventListener extends BaseEventListener {
+class SpecificPlayerEventListener extends BaseEventListener {
 	/** map of player to listeners listening for that player */
 	final protected MapOfConcurrentSkipList<String,RListener> listeners = new MapOfConcurrentSkipList<String,RListener>(
 			new RListenerPriorityComparator());

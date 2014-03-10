@@ -16,7 +16,7 @@ import java.util.TreeMap;
  * @author alkarin
  *
  */
-public class BukkitEventListener extends GeneralEventListener {
+class BukkitEventListener extends GeneralEventListener {
 
 
 	/**

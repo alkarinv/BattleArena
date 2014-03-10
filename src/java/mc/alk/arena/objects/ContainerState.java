@@ -7,7 +7,7 @@ public class ContainerState {
 	public static final ContainerState CLOSED = new ContainerState(AreaContainerState.CLOSED);
 
 	public enum AreaContainerState{
-		CLOSED, OPEN;
+		CLOSED, OPEN
 	}
 
 	final AreaContainerState state;
