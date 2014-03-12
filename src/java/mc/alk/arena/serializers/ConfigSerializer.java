@@ -110,7 +110,8 @@ public class ConfigSerializer extends BaseConfig{
         loadGameSize(cs, mp, isNonBaseConfig); /// Set the game size
 
         if (cs.contains("prefix")) mp.setPrefix( cs.getString("prefix","&6["+name+"]"));
-        if (cs.contains("signDisplayName")) mp.setSignDisplayName( cs.getString("signDisplayName"));
+        if (cs.contains("displayName")) mp.setDisplayName( cs.getString("displayName"));
+        if (cs.contains("signDisplayName")) mp.setSignDisplayName(cs.getString("signDisplayName"));
 
         loadTimes(cs, mp); /// Set the game times
         if (!isNonBaseConfig || cs.contains("nLives"))
@@ -673,6 +674,7 @@ public class ConfigSerializer extends BaseConfig{
         }
 
         if (params.getPrefix() != null) maincs.set("prefix", params.getPrefix());
+        if (params.getDisplayName() != null) maincs.set("displayName", params.getDisplayName());
         if (params.getSignDisplayName() != null) maincs.set("signDisplayName", params.getSignDisplayName());
 
         if (params.getNTeams() != null || params.getTeamSizes() != null) {

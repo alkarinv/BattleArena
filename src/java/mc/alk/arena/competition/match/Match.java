@@ -761,7 +761,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             return false;
         if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addedTeam("+team.getName()+":"+team.getId()+")");
 
-        TeamUtil.initTeam(team, params);
         team.setArenaObjective(defaultObjective);
         scoreboard.addTeam(team);
         for (ArenaPlayer p: team.getPlayers()){

@@ -22,6 +22,7 @@ public class ArenaParams {
     Boolean rated;
 
     String name;
+    String displayName;
     String cmd;
 
     Integer timeBetweenRounds;
@@ -74,6 +75,7 @@ public class ArenaParams {
         this.matchTime = ap.matchTime;
         this.forceStartTime = ap.forceStartTime;
         this.nLives = ap.nLives;
+        this.displayName = ap.displayName;
 
         if (ap.allTops != null)
             this.allTops = new MatchTransitions(ap.allTops);
@@ -103,11 +105,12 @@ public class ArenaParams {
         if (this.cancelIfNotEnoughPlayers == null) this.cancelIfNotEnoughPlayers = parent.isCancelIfNotEnoughPlayers();
         if (this.arenaCooldown== null) this.arenaCooldown = parent.getArenaCooldown();
         if (this.allowedTeamSizeDifference== null) this.allowedTeamSizeDifference= parent.getAllowedTeamSizeDifference();
+        if (this.displayName == null) this.displayName = parent.getDisplayName();
         this.allTops = mergeChildWithParent(this, parent);
         if (this.nTeams == null && parent.getNTeams()!=null) this.nTeams = new MinMax(parent.getNTeams());
         if (this.teamSize == null && parent.getTeamSizes() !=null) this.teamSize = new MinMax(parent.getTeamSizes());
 
-        if (this.teamParams != null && parent.teamParams != null) {
+        if (this.teamParams != null && parent.getTeamParams() != null) {
             HashMap<Integer,MatchParams> tp = new HashMap<Integer,MatchParams>(this.teamParams);
             tp.putAll(parent.getTeamParams());
             this.parent = null;
@@ -119,8 +122,8 @@ public class ArenaParams {
                 tp.put(e.getKey(), ap);
             }
             this.teamParams = tp;
-        } else if (parent.teamParams != null){
-            HashMap<Integer,MatchParams> tp =  new HashMap<Integer,MatchParams>(parent.teamParams);
+        } else if (parent.getTeamParams() != null){
+            HashMap<Integer,MatchParams> tp =  new HashMap<Integer,MatchParams>(parent.getTeamParams());
             this.parent = null;
             this.teamParams = null;
             for (Entry<Integer, MatchParams> e : tp.entrySet()) {
@@ -543,8 +546,14 @@ public class ArenaParams {
     public void setCancelIfNotEnoughPlayers(Boolean value) {
         this.cancelIfNotEnoughPlayers = value;
     }
+
     public String getDisplayName() {
-        return this.getName();
+        return displayName != null ? displayName :
+                (parent != null ? parent.getDisplayName() : this.getName());
+    }
+
+    public String getThisDisplayName() {
+        return displayName;
     }
 
     public int getQueueCount() {
@@ -589,11 +598,32 @@ public class ArenaParams {
     public Integer getNLives() {
         return nLives == null && parent != null ? parent.getNLives() : nLives;
     }
+
     public Map<Integer, MatchParams> getTeamParams() {
+        return teamParams == null && parent != null ? parent.getTeamParams() : teamParams;
+    }
+
+    public MatchParams getTeamParams(int index) {
+        if (teamParams!=null) {
+            MatchParams mp = teamParams.get(index);
+            if (mp != null) {
+                return mp;}
+        }
+        if (parent != null) {
+            return parent.getTeamParams(index);
+        }
+        return null;
+    }
+
+    public Map<Integer, MatchParams> getThisTeamParams() {
         return teamParams;
     }
 
     public void setTeamParams(Map<Integer, MatchParams> teamParams) {
         this.teamParams = teamParams;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }

@@ -443,7 +443,7 @@ public class BAExecutor extends CustomCommandExecutor {
         } else { /// they are in a competition
             if (c instanceof Match) {
                 AbstractJoinHandler tjh = ((Match) c).getTeamJoinHandler();
-                tjh.switchTeams(p, index);
+                tjh.switchTeams(p, index, true);
             } else {
                 /// Not a match (like a tournament), they can't switch
             }

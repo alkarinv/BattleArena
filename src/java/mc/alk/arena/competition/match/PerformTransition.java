@@ -15,6 +15,7 @@ import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
+import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -99,21 +100,19 @@ public class PerformTransition {
 
     public static boolean transition(final PlayerHolder am, final CompetitionState transition,
                                      final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch) {
-        if (am.getParams().getTransitionOptions() == null) {
-            return true;}
-        if (team != null && team.getIndex() != -1 && am.getParams().getTeamParams() != null &&
-                am.getParams().getTeamParams().containsKey(team.getIndex())){
-            return transition(am,transition,player,team,onlyInMatch,am.getParams().
-                    getTeamParams().get(team.getIndex()).getTransitionOptions());
-        } else {
-            return transition(am,transition,player,team,onlyInMatch,am.getParams().getTransitionOptions());
+        if (team != null && team.getIndex() != -1) {
+            MatchParams mp = am.getParams().getTeamParams(team.getIndex());
+            if (mp != null){
+                return transition(am, transition, player, team, onlyInMatch, mp.getTransitionOptions());}
         }
+        return transition(am,transition,player,team,onlyInMatch,am.getParams().getTransitionOptions());
+
     }
 
     @SuppressWarnings("ConstantConditions")
     private static boolean transition(final PlayerHolder am, final CompetitionState transition,
-                                     final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch,
-                                     MatchTransitions tops) {
+                                      final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch,
+                                      MatchTransitions tops) {
         if (tops == null){
             return true;}
         final TransitionOptions mo = tops.getOptions(transition);

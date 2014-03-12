@@ -398,7 +398,11 @@ public class MessageFormatter{
 	public String getFormattedMessage(Message message) {
 		return replaceEach(message.getMessage(), searchList, replaceList);
 	}
+
+
 	/**
+     * This code is from StringUtils version 3 from Apache.  Bukkit is using the older version of this code
+     * which does not include this one function
 	 * <p>
 	 * Replaces all occurrences of Strings within another String.
 	 * </p>

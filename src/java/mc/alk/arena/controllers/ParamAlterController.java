@@ -38,7 +38,7 @@ public class ParamAlterController {
     }
 
     private static MatchParams getOrCreateTeamParams(Integer teamIndex, MatchParams params){
-        Map<Integer, MatchParams> map = params.getTeamParams();
+        Map<Integer, MatchParams> map = params.getThisTeamParams();
         if (map == null) {
             map = new HashMap<Integer, MatchParams>();
             params.setTeamParams(map);
@@ -113,6 +113,7 @@ public class ParamAlterController {
             case TEAMSIZE: params.setTeamSizes((MinMax) value);  break;
             case PREFIX: params.setPrefix((String)value); break;
             case SIGNDISPLAYNAME: params.setSignDisplayName((String)value); break;
+            case DISPLAYNAME: params.setDisplayName((String)value); break;
             case COMMAND: params.setCommand((String)value); break;
             case MATCHTIME: params.setMatchTime((Integer)value);break;
             case CLOSEWAITROOMWHILERUNNING: params.setWaitroomClosedWhileRunning((Boolean)value); break;

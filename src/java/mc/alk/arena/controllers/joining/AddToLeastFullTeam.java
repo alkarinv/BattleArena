@@ -40,24 +40,32 @@ public class AddToLeastFullTeam extends AbstractJoinHandler {
     }
 
     @Override
-    public boolean switchTeams(ArenaPlayer player, Integer toTeamIndex) {
+    public boolean switchTeams(ArenaPlayer player, Integer toTeamIndex, boolean checkSizes) {
         ArenaTeam oldTeam = player.getTeam();
-        if (oldTeam == null || oldTeam.size()-1 < oldTeam.getMinPlayers())
+        if (oldTeam == null || toTeamIndex >= maxTeams) // no correct team, or team out of range
             return false;
-        ArenaTeam team = addToPreviouslyLeftTeam(player);
-        if (team != null)
-            return true;
+        if (checkSizes){
+            if (oldTeam.size()-1 < oldTeam.getMinPlayers())
+                return false;
+            ArenaTeam team = addToPreviouslyLeftTeam(player);
+            if (team != null)
+                return true;
 
-        /// Try to let them join their specified team if possible
-        if (toTeamIndex < maxTeams) { /// they specified a team index within range
+            /// Try to let them join their specified team if possible
             team = teams.get(toTeamIndex);
-            if (team.size()+1 <= team.getMaxPlayers()){
+            if (team.size() + 1 <= team.getMaxPlayers()) {
                 removeFromTeam(oldTeam, player);
                 addToTeam(team, player);
                 return true;
             }
+
+            return false;
+        } else {
+            ArenaTeam team = teams.get(toTeamIndex);
+            removeFromTeam(oldTeam, player);
+            addToTeam(team, player);
+            return true;
         }
-        return false;
     }
 
     @Override

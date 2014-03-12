@@ -109,7 +109,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         scoreboard = new CutoffScoreboard(matchParams);
     }
 
-    public abstract boolean switchTeams(ArenaPlayer player, Integer toTeamIndex);
+    public abstract boolean switchTeams(ArenaPlayer player, Integer toTeamIndex, boolean checkSizes);
 
     public void setCompetition(Competition comp) {
         this.competition = comp;

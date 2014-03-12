@@ -130,7 +130,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
     @Override
     public int hashCode() {
-        return ((arenaType.ordinal()) << 27);
+        return arenaType == null ? super.hashCode() : (arenaType.ordinal() << 25);
     }
 
     @Override

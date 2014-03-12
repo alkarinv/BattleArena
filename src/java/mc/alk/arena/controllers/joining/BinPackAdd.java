@@ -29,25 +29,30 @@ public class BinPackAdd extends AbstractJoinHandler {
     }
 
     @Override
-    public boolean switchTeams(ArenaPlayer player, Integer toTeamIndex) {
-        if (toTeamIndex>= maxTeams)
-            return false;
+    public boolean switchTeams(ArenaPlayer player, Integer toTeamIndex, boolean checkSizes) {
         ArenaTeam oldTeam = player.getTeam();
-        if (oldTeam == null || oldTeam.size()-1 < oldTeam.getMinPlayers())
+        if (oldTeam == null || toTeamIndex >= maxTeams) // no correct team, or team out of range
             return false;
+        if (checkSizes){
+            if (oldTeam.size()-1 < oldTeam.getMinPlayers())
+                return false;
+            ArenaTeam team = addToPreviouslyLeftTeam(player);
+            if (team != null)
+                return true;
 
-        ArenaTeam team = addToPreviouslyLeftTeam(player);
-        if (team != null)
-            return true;
-        team = teams.get(toTeamIndex);
-
-        final int size = team.size()+1;
-        if (size <= team.getMaxPlayers() && size <= team.getMinPlayers()){
-            removeFromTeam(oldTeam,player);
+            /// Try to let them join their specified team if possible
+            team = teams.get(toTeamIndex);
+            if (team.size() + 1 <= team.getMaxPlayers()) {
+                removeFromTeam(oldTeam, player);
+                addToTeam(team, player);
+                return true;
+            }
+            return false;
+        } else {
+            ArenaTeam team = teams.get(toTeamIndex);
+            removeFromTeam(oldTeam, player);
             addToTeam(team, player);
             return true;
-        } else {
-            return false;
         }
     }
 

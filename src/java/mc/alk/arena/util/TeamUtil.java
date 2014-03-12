@@ -118,26 +118,41 @@ public class TeamUtil {
     public static void initTeam(ArenaTeam team, MatchParams params) {
         team.reset();/// reset scores, set alive
         team.setCurrentParams(params);
-
         int index = team.getIndex();
+        MatchParams teamParams = null;
+        if (index != -1) {
+            teamParams = params.getTeamParams(index);
+        }
+        if (teamParams == null) {
+            teamParams = params;
+        }
+
+        team.setMinPlayers(teamParams.getMinTeamSize());
+        team.setMaxPlayers(teamParams.getMaxTeamSize());
+
         boolean alwaysTeamNames = false;
         if (index != -1){
-            MatchTransitions tops = params.getTransitionOptions();
+            MatchTransitions tops = teamParams.getTransitionOptions();
             team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
             if (tops != null){
-                if (tops.hasAnyOption(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() > 1 ||
+                if (tops.hasAnyOption(TransitionOption.WOOLTEAMS) && teamParams.getMaxTeamSize() > 1 ||
                         tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS)){
                     team.setHeadItem(TeamUtil.getTeamHead(index));
                 }
                 alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
             }
 
-            String name = TeamUtil.getTeamName(index);
-            if ( alwaysTeamNames ||
-                    (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
+            final String name;
+            if (teamParams.getThisDisplayName() == null) {
+                name = TeamUtil.getTeamName(index);
+                if ( alwaysTeamNames ||
+                        (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){
+                    team.setDisplayName(name);
+                }
+            } else {
+                name = teamParams.getThisDisplayName();
                 team.setDisplayName(name);
             }
-
             team.setScoreboardDisplayName(name.length() > Defaults.MAX_SCOREBOARD_NAME_SIZE ?
                     name.substring(0,Defaults.MAX_SCOREBOARD_NAME_SIZE) : name);
         }

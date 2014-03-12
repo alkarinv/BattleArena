@@ -32,15 +32,6 @@ public class TeamFactory {
 
     public static ArenaTeam createCompositeTeam(Integer index, MatchParams params) {
         ArenaTeam at = new CompositeTeam();
-        if (index != null && (index == -1 || params.getTeamParams() == null || !params.getTeamParams().containsKey(index))) {
-            at.setMinPlayers(params.getMinTeamSize());
-            at.setMaxPlayers(params.getMaxTeamSize());
-        } else {
-            MatchParams tp = params.getTeamParams().get(index);
-            at.setMinPlayers(tp.getMinTeamSize());
-            at.setMaxPlayers(tp.getMaxTeamSize());
-        }
-        at.setCurrentParams(params);
         if (index != null && index != -1) {
             at.setIndex(index);
         }
