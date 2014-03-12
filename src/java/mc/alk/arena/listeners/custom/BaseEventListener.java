@@ -3,6 +3,8 @@ package mc.alk.arena.listeners.custom;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.TimingUtil;
+import mc.alk.arena.util.TimingUtil.TimingStat;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
@@ -11,8 +13,6 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.EventExecutor;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -30,7 +30,7 @@ public abstract class BaseEventListener implements Listener  {
 	AtomicBoolean registered = new AtomicBoolean();
 	Integer timerid = null;
 	EventExecutor executor = null;
-	static Map<String,TimingStat> timings = new HashMap<String,TimingStat>();
+	static TimingUtil timings;
 
 	public BaseEventListener(final Class<? extends Event> bukkitEvent, EventPriority bukkitPriority) {
 		if (Defaults.DEBUG_EVENTS) Log.info("Registering BAEventListener for type &5" + bukkitEvent.getSimpleName());
@@ -75,20 +75,19 @@ public abstract class BaseEventListener implements Listener  {
 			Bukkit.getScheduler().cancelTask(timerid);
 			timerid= null;
 		}
+
 		if (executor == null){
 			if (Bukkit.getPluginManager().useTimings() || Defaults.DEBUG_TIMINGS){
-				executor = new EventExecutor() {
+                if (timings == null) {
+                    timings = new TimingUtil();}
+                executor = new EventExecutor() {
 					public void execute(final Listener listener, final Event event) throws EventException {
 						long startTime = System.nanoTime();
 						if (!isListening() ||
 								(event.getClass() != bukkitEvent &&
 								!bukkitEvent.isAssignableFrom(event.getClass()))){
 							return;}
-						TimingStat t = timings.get(event.getClass().getSimpleName());
-						if (t == null){
-							t = new TimingStat();
-							timings.put(event.getClass().getSimpleName(),t);
-						}
+						TimingStat t = timings.getOrCreate(event.getClass().getSimpleName());
                         invokeEvent(event);
 						t.count+=1;
 						t.totalTime += System.nanoTime() - startTime;
@@ -122,8 +121,4 @@ public abstract class BaseEventListener implements Listener  {
 	public abstract boolean hasListeners();
 
 	public abstract void removeAllListeners(RListener rl);
-
-	public static Map<String,TimingStat> getTimings(){
-		return timings;
-	}
 }

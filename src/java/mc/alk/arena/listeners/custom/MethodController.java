@@ -12,6 +12,8 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfConcurrentSkipList;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.TimingUtil;
+import mc.alk.arena.util.TimingUtil.TimingStat;
 import mc.alk.arena.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -23,6 +25,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -63,11 +66,51 @@ public class MethodController {
 
     final Set<ArenaListener> listeners = new HashSet<ArenaListener>();
     final Object owner;
+    final BAEventCaller baexecutor;
+    static TimingUtil timings;
 
     public MethodController(Object owner){
         if (Defaults.DEBUG_EVENTS) controllers.add(this);
         this.owner = owner;
         controllerCount++;
+        if (Bukkit.getPluginManager().useTimings() || Defaults.DEBUG_TIMINGS){
+            if (timings == null) {
+                timings = new TimingUtil();}
+
+            baexecutor = new BAEventCaller() {
+                @Override
+                public void callEvent(BAEvent event) {
+                    TimingStat t = timings.getOrCreate(event.getClass().getSimpleName());
+                    long startTime = System.nanoTime();
+
+                    Class<?> clazz = event.getClass();
+                    for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
+                        BukkitEventHandler beh = ls.get(clazz);
+                        if (beh == null)
+                            continue;
+                        beh.invokeArenaEvent(listeners, event);
+                    }
+                    event.callEvent();
+                    t.count+=1;
+                    t.totalTime += System.nanoTime() - startTime;
+                }
+            };
+        } else {
+            baexecutor = new BAEventCaller() {
+                @Override
+                public void callEvent(BAEvent event) {
+                    Class<?> clazz = event.getClass();
+                    for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
+                        BukkitEventHandler beh = ls.get(clazz);
+                        if (beh == null)
+                            continue;
+                        beh.invokeArenaEvent(listeners, event);
+                    }
+
+                    event.callEvent();
+                }
+            };
+        }
     }
 
     public static EnumMap<EventPriority, HashMap<Type, BukkitEventHandler>> getEventListeners() {
@@ -593,15 +636,12 @@ public class MethodController {
         return true;
     }
 
-    public void callEvent(BAEvent event) {
-        Class<?> clazz = event.getClass();
-        for (HashMap<Type,BukkitEventHandler> ls : bukkitListeners.values()){
-            BukkitEventHandler beh = ls.get(clazz);
-            if (beh == null)
-                continue;
-            beh.invokeArenaEvent(listeners, event);
-        }
+    interface BAEventCaller{
+        void callEvent(BAEvent event);
+    }
 
-        event.callEvent();
+
+    public void callEvent(BAEvent event) {
+        baexecutor.callEvent(event);
     }
 }

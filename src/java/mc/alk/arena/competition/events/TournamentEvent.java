@@ -6,6 +6,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.events.events.tournaments.TournamentRoundEvent;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.events.matches.MatchCreatedEvent;
@@ -111,7 +112,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         super.startEvent();
         Server server = Bukkit.getServer();
         int osize = getNTeams(teams);
-        nrounds = getNRounds(osize);
+        nrounds = calcNRounds(osize);
         final int minTeams = eventParams.getMinTeams();
         int roundteams = (int) Math.pow(minTeams, nrounds);
         server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&e The " + oParms.getName() +
@@ -230,6 +231,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
                 PerformTransition.transition(am, MatchState.PARTICIPANTS, losers,false);
                 eventCompleted();
             } else {
+                callEvent(new TournamentRoundEvent(this,round));
                 makeNextRound();
                 startRound();
             }
@@ -280,7 +282,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         round++;
         Round tr = new Round(round);
         rounds.add(tr);
-        int nrounds = getNRounds(teams.size()) + 1;
+        int nrounds = calcNRounds(teams.size()) + 1;
         int minTeams = eventParams.getMinTeams();
         final int needed_size = (int) Math.pow(minTeams, nrounds-1);
         final int nprelims = (aliveTeams.size() - needed_size) / (minTeams-1);
@@ -425,7 +427,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
             if (t.size() > 0)
                 size++;
         }
-        int nrounds = getNRounds(size);
+        int nrounds = calcNRounds(size);
         int idealteam = (int) Math.pow(eventParams.getMinTeams(), nrounds);
         if (nrounds > 1 && size % idealteam == 0){
             MessageUtil.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&6" + size +" "+MessageUtil.getTeamsOrPlayers(teams.size())+
@@ -433,7 +435,11 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         }
     }
 
-    public int getNRounds(int size){
+    public int getNrounds() {
+        return nrounds;
+    }
+
+    private int calcNRounds(int size){
         return (int) Math.floor(Math.log(size)/Math.log(eventParams.getMinTeams()));
     }
 

@@ -5,13 +5,11 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.CompetitionController;
-import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.containers.RoomContainer;
-import mc.alk.arena.listeners.custom.BaseEventListener;
-import mc.alk.arena.listeners.custom.TimingStat;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.LocationType;
@@ -29,6 +27,8 @@ import mc.alk.arena.util.NotifierUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.SerializerUtil;
 import mc.alk.arena.util.TeamUtil;
+import mc.alk.arena.util.TimingUtil;
+import mc.alk.arena.util.TimingUtil.TimingStat;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.bukkit.ChatColor;
@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -479,24 +478,29 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
     @MCCommand(cmds={"timings"}, admin=true)
     public boolean showTimings(CommandSender sender, String[] args) {
         boolean useMs = !(args.length >1 && args[1].equalsIgnoreCase("ns"));
-        Map<String,TimingStat> timings = BaseEventListener.getTimings();
+        List<TimingUtil> timers = TimingUtil.getTimers();
+        if (timers == null){
+            return sendMessage(sender, "Timings were not enabled");
+        }
         String timeStr = (useMs ? "time(ms)" : "time(ns)");
         sendMessage(sender, BattleArena.getNameAndVersion() +" "+timeStr);
         long gtotal = 0;
-        for (Entry<String,TimingStat> entry : timings.entrySet()){
-            TimingStat t = entry.getValue();
-            long total = useMs ? t.totalTime/1000000 : t.totalTime;
-            gtotal += total;
-            if (useMs){
-                double avg = ((double) t.getAverage() / 1000000);
-                sendMessage(sender, String.format(
-                        "    %s  Time: %d Count: %d Avg: %.2f", entry.getKey(), total, t.count, avg));
-            } else {
-                long avg = t.getAverage();
-                sendMessage(sender, String.format(
-                        "    %s  Time: %d Count: %d Avg: %d", entry.getKey(), total, t.count, avg));
-            }
+        for (TimingUtil timer : timers){
+            for (Entry<String,TimingStat> entry : timer.getTimings().entrySet()){
+                TimingStat t = entry.getValue();
+                long total = useMs ? t.totalTime/1000000 : t.totalTime;
+                gtotal += total;
+                if (useMs){
+                    double avg = ((double) t.getAverage() / 1000000);
+                    sendMessage(sender, String.format(
+                            "    %s  Time: %d Count: %d Avg: %.2f", entry.getKey(), total, t.count, avg));
+                } else {
+                    long avg = t.getAverage();
+                    sendMessage(sender, String.format(
+                            "    %s  Time: %d Count: %d Avg: %d", entry.getKey(), total, t.count, avg));
+                }
 
+            }
         }
         sendMessage(sender, "    Total time "+gtotal + " "+timeStr);
         return true;
