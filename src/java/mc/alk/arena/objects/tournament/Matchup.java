@@ -3,8 +3,8 @@ package mc.alk.arena.objects.tournament;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.options.JoinOptions;
@@ -19,7 +19,7 @@ public class Matchup {
 	static int count = 0;
 	final int id = count++; /// id
 
-	public MatchResult result = new MatchResult();
+	public CompetitionResult result = new CompetitionResult();
 	public List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 
 	List<ArenaListener> listeners = new ArrayList<ArenaListener>();
@@ -45,7 +45,7 @@ public class Matchup {
 		return params;
 	}
 
-	public void setResult(MatchResult result) {
+	public void setResult(CompetitionResult result) {
 		this.result = result;
 	}
 
@@ -62,7 +62,7 @@ public class Matchup {
 	public ArenaTeam getTeam(int i) {
 		return teams.get(i);
 	}
-	public MatchResult getResult() {
+	public CompetitionResult getResult() {
 		return result;
 	}
 

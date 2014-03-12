@@ -153,6 +153,17 @@ public abstract class Competition implements JoinResponseHandler, PlayerHolder, 
 		return null;
 	}
 
+    /**
+     * Get the team that this player has left
+     * @param player ArenaPlayer
+     * @return ArenaPlayer, or null if no team has this player leaving
+     */
+    public ArenaTeam getLeftTeam(ArenaPlayer player) {
+        for (ArenaTeam t: teams) {
+            if (t.hasLeft(player)) return t;}
+        return null;
+    }
+
 	/**
 	 * Get the team with this index
 	 * @param teamIndex index of the team

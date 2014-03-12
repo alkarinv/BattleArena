@@ -3,12 +3,11 @@ package mc.alk.arena.competition.events;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.controllers.joining.AbstractJoinHandler;
-import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.objects.messaging.EventMessageHandler;
+import mc.alk.arena.controllers.joining.AbstractJoinHandler;
+import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.controllers.messaging.EventMessageImpl;
 import mc.alk.arena.controllers.messaging.EventMessager;
 import mc.alk.arena.controllers.messaging.MessageHandler;
@@ -26,12 +25,12 @@ import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
-import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.joining.TeamJoinObject;
+import mc.alk.arena.objects.messaging.EventMessageHandler;
 import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.pairs.JoinResult;
-import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.objects.tournament.Round;
@@ -411,11 +410,11 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
         for (int r = 0;r<rounds.size();r++){
             Round round = rounds.get(r);
             if (useRounds) sb.append("&5***&4 Round ").append(r + 1).append("&5 ***\n");
-            //			boolean useMatchups = round.getMatchups().size() > 1 || isTourney;
+            //			boolean useMatchups = curRound.getMatchups().size() > 1 || isTourney;
             boolean useMatchups = round.getMatchups().size() > 1;
             for (Matchup m: round.getMatchups()){
                 if (useMatchups) sb.append("&4Matchup :");
-                MatchResult result = m.getResult();
+                CompetitionResult result = m.getResult();
                 if (result == null || result.getVictors() == null){
                     for (ArenaTeam t: m.getTeams()){
                         sb.append(t.getTeamSummary()).append(" "); }

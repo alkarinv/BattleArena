@@ -21,7 +21,9 @@ public interface ArenaTeam {
 
 	public Set<ArenaPlayer> getDeadPlayers();
 
-	public Set<ArenaPlayer> getLivingPlayers();
+    public Set<ArenaPlayer> getLivingPlayers();
+
+    public Set<ArenaPlayer> getLeftPlayers();
 
 	public boolean wouldBeDeadWithout(ArenaPlayer player);
 

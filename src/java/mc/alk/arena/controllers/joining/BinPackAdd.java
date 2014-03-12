@@ -8,6 +8,8 @@ import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 
+import java.util.Collection;
+
 /**
  * When there is an infinite number of teams
  * @author alkarin
@@ -16,8 +18,14 @@ import mc.alk.arena.objects.teams.TeamFactory;
 public class BinPackAdd extends AbstractJoinHandler {
     boolean full = false;
 
-    public BinPackAdd(MatchParams params, Competition competition) throws NeverWouldJoinException {
+    public BinPackAdd(MatchParams params, Competition competition, Collection<ArenaTeam> newTeams)
+            throws NeverWouldJoinException {
         super(params, competition);
+        if (newTeams != null){
+            for (ArenaTeam at : newTeams) {
+                addTeam(at);
+            }
+        }
     }
 
     @Override

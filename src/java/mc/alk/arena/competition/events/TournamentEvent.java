@@ -4,8 +4,8 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.match.PerformTransition;
-import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.events.events.tournaments.TournamentRoundEvent;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
@@ -16,14 +16,13 @@ import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.LocationType;
-import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.joining.MatchTeamQObject;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.joining.MatchTeamQObject;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -55,7 +54,7 @@ import java.util.TreeMap;
 public class TournamentEvent extends Event implements Listener, ArenaListener {
     public long timeBetweenRounds;
 
-    int round = -1;
+    int curRound = -1;
     int nrounds = -1;
     boolean preliminary_round = false;
     ArrayList<ArenaTeam> aliveTeams = new ArrayList<ArenaTeam>();
@@ -64,7 +63,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
     Random rand = new Random();
     Integer curTimer = null;
     Map<Match, Matchup> matchups = Collections.synchronizedMap(new HashMap<Match,Matchup>());
-
+    Set<Matchup> incompleteMatchups = new HashSet<Matchup>();
     public TournamentEvent(EventParams params) {
         super(params);
         oParms = params;
@@ -77,7 +76,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         aliveTeams.clear();
         competingTeams.clear();
         rounds.clear();
-        round = -1;
+        curRound = -1;
         nrounds = -1;
         timeBetweenRounds = oParms.getTimeBetweenRounds();
         ChatColor color = MessageUtil.getFirstColor(mp.getPrefix());
@@ -161,22 +160,12 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
 
     @ArenaEventHandler
     public void matchCompleted(MatchCompletedEvent event){
-        Match am = event.getMatch();
-        if (am.getState() == MatchState.ONCANCEL){
-            endEvent();
-            return;
-        }
-        matchEnded(am);
+        matchEnded(event.getMatch());
     }
 
     @ArenaEventHandler
     public void matchCancelled(MatchCancelledEvent event){
-        Match am = event.getMatch();
-        if (am.getState() == MatchState.ONCANCEL){
-            endEvent();
-            return;
-        }
-        matchEnded(am);
+        matchEnded(event.getMatch());
     }
 
     @Override
@@ -200,62 +189,92 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
             Log.err("[BA Error] match completed but not found in tournament");
             return;
         }
-        MatchResult r = am.getResult();
-        ArenaTeam victor = null;
-        if (r.isDraw() || r.isUnknown()){ /// match was a draw, pick a random lucky winner
-            victor = pickRandomWinner(r, r.getDrawers());
-        } else if (r.hasVictor() && r.getVictors().size() != 1){
-            victor = pickRandomWinner(r, r.getVictors());
-        } else if (r.hasVictor()){
-            victor = r.getVictors().iterator().next(); /// single winner
+        incompleteMatchups.remove(m);
+        CompetitionResult nmr = createNewMatchResult(am);
+        if (nmr.getVictors().isEmpty()) { /// we must have cancelled :(
+            return;
         }
-        m.setResult(r);
-        for (ArenaTeam t: r.getLosers()){
+        ArenaTeam victor = nmr.getVictors().iterator().next(); /// single winner
+        m.setResult(nmr);
+        for (ArenaTeam t: nmr.getLosers()){
             super.removedTeam(t);
         }
-        aliveTeams.removeAll(r.getLosers());
+        aliveTeams.removeAll(nmr.getLosers());
 
-        if (roundFinished()){
+        if (incompleteMatchups.isEmpty()){
             TimeUtil.testClock();
             if (Defaults.DEBUG) Log.info("ROUND FINISHED !!!!!   " + aliveTeams);
 
-            if (round+1 == nrounds || isFinished()){
-                ArenaTeam t = aliveTeams.get(0);
+            if (curRound +1 == nrounds || isFinished()){
                 HashSet<ArenaTeam> losers = new HashSet<ArenaTeam>(competingTeams);
                 losers.remove(victor);
                 Set<ArenaTeam> victors = new HashSet<ArenaTeam>(Arrays.asList(victor));
                 CompetitionResult result = new CompetitionResult();
                 result.setVictors(victors);
                 setEventResult(result,true);
-                PerformTransition.transition(am, MatchState.FIRSTPLACE, t,false);
+                PerformTransition.transition(am, MatchState.FIRSTPLACE, victors,false);
                 PerformTransition.transition(am, MatchState.PARTICIPANTS, losers,false);
                 eventCompleted();
             } else {
-                callEvent(new TournamentRoundEvent(this,round));
+                callEvent(new TournamentRoundEvent(this, curRound));
                 makeNextRound();
                 startRound();
             }
         }
     }
 
-    private ArenaTeam pickRandomWinner(MatchResult r, Collection<ArenaTeam> randos) {
-        ArenaTeam victor;
-        List<ArenaTeam> ls = new ArrayList<ArenaTeam>(randos);
-        if (ls.isEmpty()){
-            Log.err("[BattleArena] Tournament found a match with no players, cancelling tournament");
-            this.cancelEvent();
-            return null;
+    private CompetitionResult createNewMatchResult(Match match) {
+        CompetitionResult r = match.getResult();
+        CompetitionResult nmr;
+        if (r.isDraw() || r.isUnknown()) { /// match was a draw, pick a random lucky winner
+            nmr = createRandomWinner(r.getDrawers(), match);
+            nmr.addLosers(r.getLosers());
+        } else if (r.hasVictor() && r.getVictors().size() != 1) {
+            nmr = createRandomWinner(r.getVictors(), match);
+            nmr.addLosers(r.getLosers());
+            nmr.addLosers(r.getDrawers());
+        } else {
+            nmr = r;
         }
-        victor = ls.get(rand.nextInt(ls.size()));
+        return nmr;
+    }
+
+    private CompetitionResult createRandomWinner(Collection<ArenaTeam> randos, Match match) {
+        CompetitionResult mr = new CompetitionResult();
+        ArenaTeam victor = null;
+
+        List<ArenaTeam> ls = new ArrayList<ArenaTeam>();
+        for (ArenaTeam at : randos){
+            if (at.size() == 0)
+                continue;
+            ls.add(at);
+        }
+        if (ls.isEmpty()) {
+            List<ArenaPlayer> lp = new ArrayList<ArenaPlayer>();
+            for (ArenaTeam at: match.getTeams()) {
+                lp.addAll(at.getLeftPlayers());
+            }
+            ArenaPlayer v = lp.isEmpty() ? null : lp.get(rand.nextInt(lp.size()));
+            if (v != null) {
+                victor = match.getLeftTeam(v);}
+            if (victor == null){
+                Log.err("[BattleArena] Tournament found a match with no players, cancelling tournament");
+                this.cancelEvent();
+                return mr;
+            }
+        } else {
+            victor = ls.get(rand.nextInt(ls.size()));
+        }
+
         victor.sendMessage("&2You drew your match but have been randomly selected as the winner!");
-        r.setVictor(victor);
+        mr.setVictor(victor);
         Set<ArenaTeam> losers = new HashSet<ArenaTeam>(ls);
         losers.remove(victor);
-        r.addLosers(losers);
-        for (ArenaTeam l: losers){
+        mr.addLosers(losers);
+        for (ArenaTeam l : losers) {
             l.sendMessage("&cYou drew your match but someone else has been randomly selected as the winner!");
         }
-        return victor;
+        return mr;
     }
 
     private void removeExtraneous(){
@@ -279,8 +298,9 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
 
     private void makePreliminaryRound() {
         Matchup m;
-        round++;
-        Round tr = new Round(round);
+        curRound++;
+        incompleteMatchups.clear();
+        Round tr = new Round(curRound);
         rounds.add(tr);
         int nrounds = calcNRounds(teams.size()) + 1;
         int minTeams = eventParams.getMinTeams();
@@ -304,13 +324,15 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
             m = new Matchup(eventParams,newTeams, jo);
             m.addArenaListener(this);
             tr.addMatchup(m);
+            incompleteMatchups.add(m);
         }
     }
 
     private void makeNextRound() {
         Matchup m;
-        round++;
-        Round tr = new Round(round);
+        curRound++;
+        incompleteMatchups.clear();
+        Round tr = new Round(curRound);
         rounds.add(tr);
         int minTeams = eventParams.getMinTeams();
         int size = aliveTeams.size();
@@ -328,29 +350,22 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
 
             m.addArenaListener(this);
             tr.addMatchup(m);
+            incompleteMatchups.add(m);
         }
-    }
-
-    private boolean roundFinished() {
-        Round tr = rounds.get(round);
-        for (Matchup m : tr.getMatchups()){
-            if (!m.result.isFinished())
-                return false;
-        }
-        return true;
     }
 
     public boolean startRound(){
         /// trying to start when we havent created anything yet
         /// or event was canceled/closed
-        if (round <0 || state == EventState.CLOSED){
+        if (curRound <0 || state == EventState.CLOSED){
             return false;}
         announceRound();
         Plugin plugin = BattleArena.getSelf();
         /// Section to start the match
         curTimer = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
             public void run() {
-                Round tr = rounds.get(round);
+                Round tr = rounds.get(curRound);
                 for (Matchup m: tr.getMatchups()){
                     ac.addMatchup(new MatchTeamQObject(m));
                 }
@@ -360,10 +375,10 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
     }
 
     private void announceRound() {
-        Round tr = rounds.get(round);
+        Round tr = rounds.get(curRound);
 
-        String strround = preliminary_round && round==0 ? "PreliminaryRound" : ("Round "+(round+1));
-        if (round+1 == nrounds){
+        String strround = preliminary_round && curRound ==0 ? "PreliminaryRound" : ("Round "+(curRound +1));
+        if (curRound +1 == nrounds){
             strround = "Final Round";}
         if (preliminary_round){
             preliminary_round = false;
@@ -393,7 +408,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
             broadcastAlive(prefix + "&e Round " + strround +" has " + tr.getMatchups().size()+ " "+
                     MessageUtil.teamsOrPlayers(eventParams.getMinTeamSize())+" competing. &6/tourney status:&e for updates");
         }
-        if (round != nrounds)
+        if (curRound != nrounds)
             broadcast(prefix+"&e "+strround+" will start in &4" + timeBetweenRounds +" &eseconds!");
         else
             broadcast(prefix +"&e The "+strround+" will start in &4" + timeBetweenRounds +" &eseconds!");
@@ -451,6 +466,10 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
 
     @Override
     public String getStatus() {
+        return getStatus(curRound);
+    }
+
+    public String getStatus(int round) {
         StringBuilder sb = new StringBuilder();
         sb.append(super.getStatus());
         if (round <0){

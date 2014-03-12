@@ -4,7 +4,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
 import mc.alk.arena.events.players.ArenaPlayerKillEvent;
-import mc.alk.arena.objects.MatchResult.WinLossDraw;
+import mc.alk.arena.objects.WinLossDraw;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
@@ -41,7 +41,7 @@ public class PlayerKills extends VictoryCondition implements ScoreTracker{
         kills.addPoints(event.getPlayer(), points);
         kills.addPoints(event.getTeam(), points);
         if (sc != null)
-            sc.addRecord(event.getPlayer(),event.getTarget(),WinLossDraw.WIN);
+            sc.addRecord(event.getPlayer(),event.getTarget(), WinLossDraw.WIN);
     }
 
     @ArenaEventHandler(priority = EventPriority.LOW)

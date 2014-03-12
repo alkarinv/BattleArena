@@ -91,7 +91,7 @@ defaultOptions:
     timeBetweenClassChange: 3
 
     #### Event Options ####
-    eventCountdownTime: 180 ## How long before announcing an automated event and its start
+    eventCountdownTime: 120 ## How long before announcing an automated event and its start
     eventCountdownInterval: 60 ## How often will it announce a reminder that its open and you can join
     ## If true, when a player joins and an event that can be opened, it will be
     ## opened and the player will join

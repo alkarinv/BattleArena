@@ -3,7 +3,7 @@ package mc.alk.arena.listeners.competition;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.events.players.ArenaPlayerKillEvent;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchResult.WinLossDraw;
+import mc.alk.arena.objects.WinLossDraw;
 import mc.alk.arena.objects.arenas.ArenaListener;
 
 public class ArenaPlayerKillListener implements ArenaListener{
@@ -13,6 +13,6 @@ public class ArenaPlayerKillListener implements ArenaListener{
 	}
 
 	public void onArenaPlayerKillEvent(ArenaPlayerKillEvent event){
-		sc.addRecord(event.getPlayer(),event.getTarget(),WinLossDraw.WIN);
+		sc.addRecord(event.getPlayer(),event.getTarget(), WinLossDraw.WIN);
 	}
 }

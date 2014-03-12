@@ -5,7 +5,7 @@ import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchResult.WinLossDraw;
+import mc.alk.arena.objects.WinLossDraw;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.stats.TrackerArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;

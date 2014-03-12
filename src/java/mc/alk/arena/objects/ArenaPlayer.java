@@ -266,7 +266,7 @@ public class ArenaPlayer {
     }
 
     public String toString() {
-        return "[AP " + this.getName() + "]";
+        return "[" + this.getName() + "]";
     }
 
 }

@@ -1,6 +1,5 @@
 package mc.alk.arena.objects;
 
-import mc.alk.arena.objects.MatchResult.WinLossDraw;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
 import java.util.Collection;
@@ -18,7 +17,15 @@ public class CompetitionResult{
 	Set<ArenaTeam> drawers = new HashSet<ArenaTeam>();
 	WinLossDraw wld = WinLossDraw.UNKNOWN;
 
-	/**
+    public CompetitionResult(){}
+    public CompetitionResult(CompetitionResult r) {
+        this.wld = r.wld;
+        victors.addAll(r.getVictors());
+        losers.addAll(r.getLosers());
+        drawers.addAll(r.getDrawers());
+    }
+
+    /**
 	 * Changes the outcome type of this match to the given type.
 	 * Example, adding winners to this match will not change the outcome,
 	 * unless this match is set to a WinLossDraw.WIN

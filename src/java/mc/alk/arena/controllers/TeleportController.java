@@ -128,12 +128,6 @@ public class TeleportController implements Listener{
 	public void onPlayerTeleport(PlayerTeleportEvent event){
 		if (teleporting.remove(event.getPlayer().getName())){
 			event.setCancelled(false);
-            Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
-                @Override
-                public void run() {
-
-                }
-            });
             if (Defaults.ENABLE_TELEPORT_FIX){
 				invisbleTeleportWorkaround(event.getPlayer().getName());
 			}

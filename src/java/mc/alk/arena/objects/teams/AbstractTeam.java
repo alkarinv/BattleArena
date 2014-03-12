@@ -80,7 +80,8 @@ public abstract class AbstractTeam implements ArenaTeam{
 		reset();
 	}
 
-	public void reset() {
+	@Override
+    public void reset() {
 		deaths.clear();
 		kills.clear();
 		setAlive();
@@ -107,11 +108,13 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return name;
 	}
 
-	public Set<ArenaPlayer> getPlayers() {
+	@Override
+    public Set<ArenaPlayer> getPlayers() {
 		return players;
 	}
 
-	public Set<Player> getBukkitPlayers() {
+	@Override
+    public Set<Player> getBukkitPlayers() {
 		Set<Player> ps = new HashSet<Player>();
 
 		for (ArenaPlayer ap: players){
@@ -122,7 +125,13 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return ps;
 	}
 
+    @Override
 	public Set<ArenaPlayer> getDeadPlayers() {return deadplayers;}
+
+    @Override
+    public Set<ArenaPlayer> getLeftPlayers() {return leftplayers;}
+
+    @Override
 	public Set<ArenaPlayer> getLivingPlayers() {
 		Set<ArenaPlayer> living = new HashSet<ArenaPlayer>();
 		for (ArenaPlayer p : players){
@@ -131,7 +140,9 @@ public abstract class AbstractTeam implements ArenaTeam{
 		}
 		return living;
 	}
-	public boolean wouldBeDeadWithout(ArenaPlayer p) {
+
+	@Override
+    public boolean wouldBeDeadWithout(ArenaPlayer p) {
 		Set<ArenaPlayer> living = getLivingPlayers();
 		living.remove(p);
 		int offline = 0;
@@ -142,17 +153,24 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return living.isEmpty() || living.size() <= offline;
 	}
 
-	public boolean hasMember(ArenaPlayer p) {return players.contains(p);}
-	public boolean hasLeft(ArenaPlayer p) {return leftplayers.contains(p);}
-	public boolean hasAliveMember(ArenaPlayer p) {return hasMember(p) && !deadplayers.contains(p);}
-	public boolean isPickupTeam() {return isPickupTeam;}
-	public void setPickupTeam(boolean isPickupTeam) {this.isPickupTeam = isPickupTeam;}
+	@Override
+    public boolean hasMember(ArenaPlayer p) {return players.contains(p);}
+    @Override
+    public boolean hasLeft(ArenaPlayer p) {return leftplayers.contains(p);}
+	@Override
+    public boolean hasAliveMember(ArenaPlayer p) {return hasMember(p) && !deadplayers.contains(p);}
+	@Override
+    public boolean isPickupTeam() {return isPickupTeam;}
+	@Override
+    public void setPickupTeam(boolean isPickupTeam) {this.isPickupTeam = isPickupTeam;}
 	public void setHealth(int health) {for (ArenaPlayer p: players){p.setHealth(health);}}
 	public void setHunger(int hunger) {for (ArenaPlayer p: players){p.setFoodLevel(hunger);}}
 
-	public String getName() {return createName();}
+	@Override
+    public String getName() {return createName();}
 
-	public void setName(String name) {
+	@Override
+    public void setName(String name) {
 		this.name = name;
 		this.nameManuallySet = true;
 	}
@@ -162,14 +180,17 @@ public abstract class AbstractTeam implements ArenaTeam{
 	 * Team ID is unique to everything, and no two teams will have the same ID.
 	 * This is NOT equivilant to Arena.getMatch().getTeams().indexOf(this)!
 	 */
-	public int getId(){ return id;}
+	@Override
+    public int getId(){ return id;}
 
-	public void setAlive() {deadplayers.clear();}
+	@Override
+    public void setAlive() {deadplayers.clear();}
 
 	@Override
 	public void setAlive(ArenaPlayer player){deadplayers.remove(player);}
 
-	public boolean isDead() {
+	@Override
+    public boolean isDead() {
 		if (deadplayers.size() >= players.size())
 			return true;
 		Set<ArenaPlayer> living = getLivingPlayers();
@@ -192,9 +213,11 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return true;
 	}
 
-	public int size() {return players.size();}
+	@Override
+    public int size() {return players.size();}
 
-	public int addDeath(ArenaPlayer teamMemberWhoDied) {
+	@Override
+    public int addDeath(ArenaPlayer teamMemberWhoDied) {
 		Integer d = deaths.get(teamMemberWhoDied);
 		if (d == null){
 			d = 0;}
@@ -202,7 +225,8 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return d;
 	}
 
-	public int addKill(ArenaPlayer teamMemberWhoKilled){
+	@Override
+    public int addKill(ArenaPlayer teamMemberWhoKilled){
 		Integer d = kills.get(teamMemberWhoKilled);
 		if (d == null){
 			d = 0;}
@@ -214,23 +238,27 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return d;
 	}
 
-	public int getNKills() {
+	@Override
+    public int getNKills() {
 		int nkills = 0;
 		for (Integer i: kills.values()) nkills+=i;
 		return nkills;
 	}
 
-	public int getNDeaths() {
+	@Override
+    public int getNDeaths() {
 		int nkills = 0;
 		for (Integer i: deaths.values()) nkills+=i;
 		return nkills;
 	}
 
-	public Integer getNDeaths(ArenaPlayer p) {
+	@Override
+    public Integer getNDeaths(ArenaPlayer p) {
 		return deaths.get(p);
 	}
 
-	public Integer getNKills(ArenaPlayer p) {
+	@Override
+    public Integer getNKills(ArenaPlayer p) {
 		return kills.get(p);
 	}
 
@@ -239,14 +267,16 @@ public abstract class AbstractTeam implements ArenaTeam{
 	 * @param p ArenaPlayer
 	 * @return whether all players are dead
 	 */
-	public boolean killMember(ArenaPlayer p) {
+	@Override
+    public boolean killMember(ArenaPlayer p) {
 		if (!hasMember(p))
 			return false;
 		deadplayers.add(p);
 		return deadplayers.size() == players.size();
 	}
 
-	public boolean allPlayersOffline() {
+	@Override
+    public boolean allPlayersOffline() {
 		for (ArenaPlayer p: players){
 			if (p.isOnline())
 				return false;
@@ -254,18 +284,22 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return true;
 	}
 
-	public void sendMessage(String message) {
+	@Override
+    public void sendMessage(String message) {
 		for (ArenaPlayer p: players){
 			MessageUtil.sendMessage(p, message);}
 	}
-	public void sendToOtherMembers(ArenaPlayer player, String message) {
+	@Override
+    public void sendToOtherMembers(ArenaPlayer player, String message) {
 		for (ArenaPlayer p: players){
 			if (!p.equals(player))
 				MessageUtil.sendMessage(p, message);}
 	}
 
-	public String getDisplayName(){return displayName == null ? getName() : displayName;}
-	public void setDisplayName(String teamName){displayName = teamName;}
+	@Override
+    public String getDisplayName(){return displayName == null ? getName() : displayName;}
+	@Override
+    public void setDisplayName(String teamName){displayName = teamName;}
 
 	@SuppressWarnings("SimplifiableIfStatement")
     @Override
@@ -281,7 +315,8 @@ public abstract class AbstractTeam implements ArenaTeam{
 	@Override
 	public String toString(){return "["+getDisplayName()+"]";}
 
-	public boolean hasTeam(ArenaTeam team){
+	@Override
+    public boolean hasTeam(ArenaTeam team){
 		if (team instanceof CompositeTeam){
 			for (ArenaTeam t: ((CompositeTeam)team).getOldTeams()){
 				if (this.hasTeam(t))
@@ -293,6 +328,7 @@ public abstract class AbstractTeam implements ArenaTeam{
 		}
 	}
 
+    @Override
     public String getTeamInfo(Set<String> insideMatch){
 		StringBuilder sb = new StringBuilder("&eTeam: ");
 		if (displayName != null) sb.append(displayName);
@@ -312,7 +348,8 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return sb.toString();
 	}
 
-	public String getTeamSummary() {
+	@Override
+    public String getTeamSummary() {
 		StringBuilder sb = new StringBuilder("&6"+getDisplayName());
 		for (ArenaPlayer p: players){
 			final int k = kills.containsKey(p) ? kills.get(p) : 0;
@@ -322,7 +359,8 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return sb.toString();
 	}
 
-	public String getOtherNames(ArenaPlayer player) {
+	@Override
+    public String getOtherNames(ArenaPlayer player) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		for (ArenaPlayer p: players){
@@ -335,11 +373,13 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return sb.toString();
 	}
 
-	public boolean hasSetName() {
+	@Override
+    public boolean hasSetName() {
 		return this.nameManuallySet;
 	}
 
-	public int getPriority() {
+	@Override
+    public int getPriority() {
 		int priority = Integer.MAX_VALUE;
 		for (ArenaPlayer ap: players){
 			if (ap.getPriority() < priority)
@@ -368,7 +408,8 @@ public abstract class AbstractTeam implements ArenaTeam{
 	/**
 	 * Call when a player has left this team
 	 */
-	public void playerLeft(ArenaPlayer p) {
+	@Override
+    public void playerLeft(ArenaPlayer p) {
 		if (!hasMember(p))
 			return;
 		deadplayers.remove(p);
@@ -406,7 +447,8 @@ public abstract class AbstractTeam implements ArenaTeam{
 		this.deadplayers.clear();
 	}
 
-	public void setArenaObjective(ArenaObjective objective){
+	@Override
+    public void setArenaObjective(ArenaObjective objective){
 		this.objective = objective;
 		int tk = 0;
 		for (ArenaPlayer player: this.getPlayers()){
@@ -446,11 +488,13 @@ public abstract class AbstractTeam implements ArenaTeam{
 		return name.length() > Defaults.MAX_SCOREBOARD_NAME_SIZE ? name.substring(0,Defaults.MAX_SCOREBOARD_NAME_SIZE) : name;
 	}
 
-	public ItemStack getHeadItem(){
+	@Override
+    public ItemStack getHeadItem(){
 		return this.headItem;
 	}
 
-	public void setHeadItem(ItemStack item){
+	@Override
+    public void setHeadItem(ItemStack item){
 		this.headItem = item;
 	}
 
