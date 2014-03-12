@@ -362,7 +362,16 @@ public class ConfigSerializer extends BaseConfig{
 
     public static int toPositiveSize(String value, int defValue) {
         int s = ArenaSize.toInt(value, defValue);
-        return s <= 0 ? Integer.MAX_VALUE : s;
+        return s <= 0 ? defValue : s;
+    }
+
+    public static int toNonNegativeSize(String value, int defValue) {
+        int s = ArenaSize.toInt(value, defValue);
+        return s < 0 ? defValue : s;
+    }
+
+    public static int toSize(String value, int defValue) {
+        return ArenaSize.toInt(value, defValue);
     }
 
 

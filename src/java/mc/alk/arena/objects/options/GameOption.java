@@ -1,5 +1,6 @@
 package mc.alk.arena.objects.options;
 
+import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.serializers.ConfigSerializer;
@@ -70,14 +71,18 @@ public enum GameOption{
             case TEAMSIZE:
             case NTEAMS:
                 return MinMax.valueOf(value);
+            case MATCHTIME:
+                return ConfigSerializer.toPositiveSize(value, 30);
             case VICTORYTIME:
             case PRESTARTTIME:
-            case MATCHTIME:
             case FORCESTARTTIME:
+                return ConfigSerializer.toNonNegativeSize(value, 1);
             case NLIVES:
+                return ConfigSerializer.toPositiveSize(value, ArenaSize.MAX);
             case NCUMONCURRENTCOMPETITIONS:
+                return ConfigSerializer.toPositiveSize(value, ArenaSize.MAX);
             case ALLOWEDTEAMSIZEDIFFERENCE:
-                return ConfigSerializer.toPositiveSize(value, -1);
+                return ConfigSerializer.toNonNegativeSize(value, 1);
             case PREFIX:
             case COMMAND:
             case DISPLAYNAME:
