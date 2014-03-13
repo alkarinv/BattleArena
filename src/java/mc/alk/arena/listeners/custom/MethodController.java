@@ -25,7 +25,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -643,5 +642,9 @@ public class MethodController {
 
     public void callEvent(BAEvent event) {
         baexecutor.callEvent(event);
+    }
+
+    public Collection<ArenaListener> getArenaListeners() {
+        return listeners;
     }
 }

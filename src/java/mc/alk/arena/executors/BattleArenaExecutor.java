@@ -1,8 +1,5 @@
 package mc.alk.arena.executors;
 
-import java.util.Collection;
-import java.util.Set;
-
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
@@ -16,11 +13,19 @@ import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.MessageUtil;
-
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class BattleArenaExecutor extends CustomCommandExecutor{
 
@@ -77,13 +82,21 @@ public class BattleArenaExecutor extends CustomCommandExecutor{
 	@MCCommand(cmds={"version"}, admin=true)
 	public boolean showVersion(CommandSender sender, String[] args) {
 		sendMessage(sender, "&6"+BattleArena.getNameAndVersion());
-		if (args.length > 1 && args[1].equalsIgnoreCase("all")){
-			for (ArenaType at : ArenaType.getTypes()){
-				String name = at.getPlugin().getName();
-				String version = at.getPlugin().getDescription().getVersion();
-				sendMessage(sender, at.getName() +"  " + name +"  " + version);
-			}
-		} else {
+		if (args.length > 1 && args[1].equalsIgnoreCase("all")) {
+            HashMap<Plugin, List<ArenaType>> map = new HashMap<Plugin, List<ArenaType>>();
+            for (ArenaType at : ArenaType.getTypes()) {
+                List<ArenaType> l = map.get(at.getPlugin());
+                if (l == null) {
+                    l = new ArrayList<ArenaType>();
+                    map.put(at.getPlugin(),l);
+                }
+                l.add(at);
+            }
+            for (Entry<Plugin, List<ArenaType>> entry : map.entrySet()) {
+                sendMessage(sender,"&6"+entry.getKey().getName() + " " + entry.getKey().getDescription().getVersion() +
+                                "&e games: &f" + StringUtils.join(entry.getValue(), ", "));
+            }
+        } else {
 			sendMessage(sender, "&2For all game type versions, type &6/ba version all");
 		}
 		return true;

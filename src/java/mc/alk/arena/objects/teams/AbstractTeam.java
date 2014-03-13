@@ -298,9 +298,11 @@ public abstract class AbstractTeam implements ArenaTeam{
 
 	@Override
     public String getDisplayName(){return displayName == null ? getName() : displayName;}
+
 	@Override
     public void setDisplayName(String teamName){
         displayName = teamName;
+        this.nameManuallySet = true;
     }
 
 	@SuppressWarnings("SimplifiableIfStatement")

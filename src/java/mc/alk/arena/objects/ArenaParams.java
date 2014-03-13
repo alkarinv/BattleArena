@@ -308,7 +308,7 @@ public class ArenaParams {
     }
 
     public String toPrettyString() {
-        return  name+":"+arenaType+",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
+        return  getDisplayName()+":"+arenaType+",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
     }
 
     public String toSummaryString() {

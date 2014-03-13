@@ -1,5 +1,17 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.BattleArena;
+import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.events.events.EventFinishedEvent;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.EventState;
+import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.exceptions.InvalidEventException;
+import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -7,18 +19,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.events.events.EventFinishedEvent;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.EventParams;
-import mc.alk.arena.objects.EventState;
-import mc.alk.arena.objects.exceptions.InvalidEventException;
-
-import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 
 
 public class BAEventController implements Listener{
@@ -34,7 +34,7 @@ public class BAEventController implements Listener{
 		public Event event = null;
 	}
 
-	public SizeEventPair getUniqueEvent(EventParams eventParams) {
+	public SizeEventPair getUniqueEvent(MatchParams eventParams) {
 		final String key = getKey(eventParams);
 		Map<EventState,List<Event>> events = allEvents.get(key);
 		SizeEventPair result = new SizeEventPair();
@@ -102,7 +102,7 @@ public class BAEventController implements Listener{
 		return getKey(event.getParams());
 	}
 
-	private String getKey(final EventParams eventParams){
+	private String getKey(final MatchParams eventParams){
 		return eventParams.getCommand().toUpperCase();
 	}
 

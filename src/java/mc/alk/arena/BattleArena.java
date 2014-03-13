@@ -26,11 +26,9 @@ import mc.alk.arena.listeners.BAPluginListener;
 import mc.alk.arena.listeners.BASignListener;
 import mc.alk.arena.listeners.SignUpdateListener;
 import mc.alk.arena.listeners.competition.InArenaListener;
-import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.victoryconditions.AllKills;
 import mc.alk.arena.objects.victoryconditions.Custom;
 import mc.alk.arena.objects.victoryconditions.HighestKills;
@@ -130,13 +128,23 @@ public class BattleArena extends JavaPlugin {
         FileUpdater.makeIfNotExists(new File(dir + "/victoryConditions"));
 
         for (String c : new String[]{"HeroesConfig", "McMMOConfig", "WorldGuardConfig"}){
-            new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/"+c+".yml",
-                    "/default_files/otherPluginConfigs/"+c+".yml"));
+            try{
+                new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/otherPluginConfigs/"+c+".yml",
+                        "/default_files/otherPluginConfigs/"+c+".yml"));
+            } catch( Exception e ){
+                Log.err("Couldn't load File " + dir.getPath() + "/otherPluginConfigs/"+c+".yml");
+                Log.printStackTrace(e);
+            }
         }
 
         for (String c : new String[]{"AllKills", "KillLimit", "MobKills","PlayerKills"}){
-            new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/victoryConditions/"+c+".yml",
-                    "/default_files/victoryConditions/"+c+".yml"));
+            try{
+                new BaseConfig(FileUtil.load(clazz, dir.getPath() + "/victoryConditions/"+c+".yml",
+                        "/default_files/victoryConditions/"+c+".yml"));
+            } catch( Exception e ){
+                Log.err("Couldn't load File " + dir.getPath() + "/otherPluginConfigs/"+c+".yml");
+                Log.printStackTrace(e);
+            }
         }
 
         /// For potential updates to default yml files

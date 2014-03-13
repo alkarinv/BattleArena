@@ -320,14 +320,22 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
             }
             JoinOptions jo = new JoinOptions();
             jo.setMatchParams(eventParams);
-
-            m = new Matchup(eventParams,newTeams, jo);
-            m.addArenaListener(this);
+            m = createMatchup(eventParams, newTeams, jo);
             tr.addMatchup(m);
             incompleteMatchups.add(m);
         }
     }
 
+    private Matchup createMatchup(EventParams eventParams, Collection<ArenaTeam> teams, JoinOptions jo){
+        Matchup m = new Matchup(eventParams,teams, jo);
+        Collection<ArenaListener> li = methodController.getArenaListeners() != null ?
+                new ArrayList<ArenaListener>(methodController.getArenaListeners()) : new ArrayList<ArenaListener>();
+        for (ArenaListener al : li){
+            m.addArenaListener(al);
+        }
+        m.addArenaListener(this);
+        return m;
+    }
     private void makeNextRound() {
         Matchup m;
         curRound++;
@@ -346,9 +354,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
             }
             JoinOptions jo = new JoinOptions();
             jo.setMatchParams(eventParams);
-            m = new Matchup(eventParams,newTeams, jo);
-
-            m.addArenaListener(this);
+            m = createMatchup(eventParams, newTeams, jo);
             tr.addMatchup(m);
             incompleteMatchups.add(m);
         }

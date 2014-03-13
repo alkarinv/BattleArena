@@ -120,11 +120,14 @@ public class TeamUtil {
         team.setCurrentParams(params);
         int index = team.getIndex();
         MatchParams teamParams = null;
+        boolean isTeamParam = false;
         if (index != -1) {
             teamParams = params.getTeamParams(index);
         }
         if (teamParams == null) {
             teamParams = params;
+        } else {
+            isTeamParam = true;
         }
 
         team.setMinPlayers(teamParams.getMinTeamSize());
@@ -143,7 +146,7 @@ public class TeamUtil {
             }
 
             final String name;
-            if (teamParams.getThisDisplayName() == null) {
+            if (!isTeamParam || teamParams.getThisDisplayName() == null) {
                 name = TeamUtil.getTeamName(index);
                 if ( alwaysTeamNames ||
                         (!team.hasSetName() && team.getDisplayName().length() > Defaults.MAX_TEAM_NAME_APPEND)){

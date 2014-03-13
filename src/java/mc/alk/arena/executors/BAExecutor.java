@@ -1057,6 +1057,17 @@ public class BAExecutor extends CustomCommandExecutor {
         return sendMessage(sender, tops.getOptionString());
     }
 
+    @MCCommand(cmds = { "showOptions" }, admin = true, perm = "arena.alter")
+    public boolean showGameOptions(CommandSender sender, MatchParams params, Arena arena) {
+        MatchTransitions tops = arena.getParams().getTransitionOptions();
+        if (tops == null) {
+            return sendMessage(sender, "&2Options for " + params.getName() + " are empty");
+        }
+        sendMessage(sender, "&2Options for &6" + params.getName() + " : " + params.getDisplayName());
+        sendMessage(sender, params.toSummaryString());
+        return sendMessage(sender, tops.getOptionString());
+    }
+
     @MCCommand(cmds = { "deleteOption" }, admin = true, perm = "arena.alter")
     public boolean deleteOption(CommandSender sender, MatchParams params,String[] args) {
         params = ParamController.getMatchParams(params);
