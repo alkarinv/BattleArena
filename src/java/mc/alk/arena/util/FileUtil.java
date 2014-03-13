@@ -78,7 +78,6 @@ public class FileUtil {
 				inputStream = clazz.getResourceAsStream(default_file);
 				if (inputStream == null){
 					inputStream = clazz.getClassLoader().getResourceAsStream(default_file);}
-
 				out=new FileOutputStream(config_file);
 				byte buf[]=new byte[1024];
 				int len;

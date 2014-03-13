@@ -189,6 +189,8 @@
                     <include>default_files/competitions/*</include>
                     <include>default_files/otherPluginConfigs</include>
                     <include>default_files/otherPluginConfigs/*</include>
+                    <include>default_files/victoryConditions</include>
+                    <include>default_files/victoryConditions/*</include>
                 </includes>
             </resource>
             <!-- Exclude JUnit test directory -->
