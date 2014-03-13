@@ -3,35 +3,27 @@ package mc.alk.arena.objects.victoryconditions;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
-import mc.alk.arena.events.matches.MatchResultEvent;
-import mc.alk.arena.events.matches.MatchStartEvent;
+import mc.alk.arena.objects.MatchResult;
+import mc.alk.arena.objects.WinLossDraw;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
+import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesTimeLimit;
 import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Countdown.CountdownCallback;
 
-public class TimeLimit extends VictoryCondition implements DefinesTimeLimit, CountdownCallback {
+public class TeamTimeLimit extends VictoryCondition implements DefinesTimeLimit, CountdownCallback {
 
     Countdown timer; /// Timer for when victory condition is time based
     int announceInterval;
+    final ArenaTeam team;
 
-    public TimeLimit(Match match) {
+    public TeamTimeLimit(Match match, ArenaTeam team) {
         super(match);
+        this.team = team;
     }
-
-    @SuppressWarnings("UnusedParameters")
-    @ArenaEventHandler(priority=EventPriority.LOW)
-    public void onStart(MatchStartEvent event){
-        cancelTimers();
-        announceInterval =match.getParams().getIntervalTime();
+    public void startCountdown(){
         timer = new Countdown(BattleArena.getSelf(),match.getParams().getMatchTime(), announceInterval, this);
-    }
-
-    @ArenaEventHandler(priority=EventPriority.LOW)
-    public void onVictory(MatchResultEvent event){
-        if (event.isMatchEnding())
-            cancelTimers();
     }
 
     @SuppressWarnings("UnusedParameters")
@@ -49,14 +41,19 @@ public class TimeLimit extends VictoryCondition implements DefinesTimeLimit, Cou
 
     @Override
     public boolean intervalTick(int remaining){
-        if (remaining <= 0){
-            match.timeExpired();
+        if (match.isEnding())
+            return false;
+        if (remaining <= 0) {
+            MatchResult cr = new MatchResult();
+            cr.setResult(WinLossDraw.LOSS);
+            cr.addLoser(team);
+            match.endMatchWithResult(cr);
         } else {
-            if (remaining % announceInterval ==0)
-                match.intervalTick(remaining);
+            match.intervalTick(remaining);
         }
         return true;
     }
+
 
     @Override
     public int getTime() {

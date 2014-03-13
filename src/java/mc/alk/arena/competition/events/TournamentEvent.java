@@ -16,6 +16,7 @@ import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.LocationType;
+import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
@@ -209,7 +210,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
                 HashSet<ArenaTeam> losers = new HashSet<ArenaTeam>(competingTeams);
                 losers.remove(victor);
                 Set<ArenaTeam> victors = new HashSet<ArenaTeam>(Arrays.asList(victor));
-                CompetitionResult result = new CompetitionResult();
+                CompetitionResult result = new MatchResult();
                 result.setVictors(victors);
                 setEventResult(result,true);
                 PerformTransition.transition(am, MatchState.FIRSTPLACE, victors,false);
@@ -240,7 +241,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
     }
 
     private CompetitionResult createRandomWinner(Collection<ArenaTeam> randos, Match match) {
-        CompetitionResult mr = new CompetitionResult();
+        CompetitionResult mr = new MatchResult();
         ArenaTeam victor = null;
 
         List<ArenaTeam> ls = new ArrayList<ArenaTeam>();

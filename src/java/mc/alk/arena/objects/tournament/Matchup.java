@@ -5,6 +5,7 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.options.JoinOptions;
@@ -19,7 +20,7 @@ public class Matchup {
 	static int count = 0;
 	final int id = count++; /// id
 
-	public CompetitionResult result = new CompetitionResult();
+	public CompetitionResult result = new MatchResult();
 	public List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 
 	List<ArenaListener> listeners = new ArrayList<ArenaListener>();

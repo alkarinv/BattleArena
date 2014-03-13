@@ -64,6 +64,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.NLives;
 import mc.alk.arena.objects.victoryconditions.NoTeamsLeft;
 import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
+import mc.alk.arena.objects.victoryconditions.TeamTimeLimit;
 import mc.alk.arena.objects.victoryconditions.TimeLimit;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
@@ -132,13 +133,16 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     Integer currentTimer = null; /// Our current timer (for switching between states)
 
     Countdown startCountdown = null; /// Start Countdown
+    Countdown matchCountdown = null; /// Match Countdown
 
     private final Collection<ArenaPlayer> matchPlayers = new HashSet<ArenaPlayer>();
 
     final Set<ArenaTeam> nonEndingTeams =
-            Collections.synchronizedSet(new HashSet<ArenaTeam>());
+            new HashSet<ArenaTeam>();
     final Map<ArenaTeam,Integer> individualTeamTimers =
-            Collections.synchronizedMap(new HashMap<ArenaTeam,Integer>());
+            new HashMap<ArenaTeam,Integer>();
+    final Map<ArenaTeam,TeamTimeLimit> individualTeamTimeLimits =
+            new HashMap<ArenaTeam,TeamTimeLimit>();
     final AtomicBoolean addedVictoryConditions = new AtomicBoolean(false);
     final GameManager gameManager;
     double prizePoolMoney = 0;
@@ -419,6 +423,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         if (currentTimer != null){
             Bukkit.getScheduler().cancelTask(currentTimer);}
         currentTimer = Scheduler.scheduleSynchronousTask(plugin, new Runnable() {
+            @Override
             public void run() {
                 startMatch();
             }
@@ -452,7 +457,16 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             callEvent(event);
             PerformTransition.transition(this, state, competingTeams, true);
             arenaInterface.onStart();
-            try{mc.sendOnStartMsg(getNonEmptyTeams());}catch(Exception e){Log.printStackTrace(e);}
+            List<ArenaTeam> net = getNonEmptyTeams();
+            try{mc.sendOnStartMsg(net);}catch(Exception e){Log.printStackTrace(e);}
+            if (alwaysOpen){
+                for (ArenaTeam at: net) {
+                    TeamTimeLimit ttl = new TeamTimeLimit(this, at);
+                    ttl.startCountdown();
+                    individualTeamTimeLimits.put(at, ttl);
+                }
+            }
+
         }
         checkEnoughTeams(competingTeams, neededTeams);
     }
@@ -538,6 +552,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         final MatchResult result;
         NonEndingMatchVictory(Match am, MatchResult result){this.am = am; this.result = result;}
 
+        @Override
         public void run() {
             List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
             final Set<ArenaTeam> victors = result.getVictors();
@@ -571,6 +586,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         final Match am;
         MatchVictory(Match am){this.am = am; }
 
+        @Override
         public void run() {
             final Set<ArenaTeam> victors = matchResult.getVictors();
             final Set<ArenaTeam> losers = matchResult.getLosers();
@@ -877,8 +893,14 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
                         doTransition(match, MatchState.ONSTART, player,team, true);
                     }
                 }, (int) (params.getSecondsTillMatch() * 20L * Defaults.TICK_MULT));
-                for (ArenaTeam t: teams)
+                for (ArenaTeam t: teams){
                     individualTeamTimers.put(t, timerid);
+                    if (alwaysOpen){
+                        TeamTimeLimit ttl = new TeamTimeLimit(this, t);
+                        ttl.startCountdown();
+                        individualTeamTimeLimits.put(t, ttl);
+                    }
+                }
             }
         }
     }
@@ -1169,7 +1191,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         VictoryCondition vt = VictoryType.createVictoryCondition(this);
 
         /// Add a time limit unless one is provided by default
-        if (!(vt instanceof DefinesTimeLimit) &&
+        if (!alwaysOpen && !(vt instanceof DefinesTimeLimit) &&
                 (params.getMatchTime() != null && params.getMatchTime() > 0 &&
                         params.getMatchTime() != Integer.MAX_VALUE)){
             addVictoryCondition(new TimeLimit(this));
@@ -1184,7 +1206,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         /// Add a default number of teams unless the specified victory condition handles it
         Integer nTeams = params.getMinTeams();
         if (!(vt instanceof DefinesNumTeams)){
-            if (nTeams <= 0){
+            if (nTeams <= 0 || alwaysOpen){
 				/* do nothing.  They want this event to be open even with no teams*/
             } else if (nTeams == 1){
                 addVictoryCondition(new NoTeamsLeft(this));
@@ -1213,7 +1235,19 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
                     scoreboard.setEntryNameSuffix(ap.getName(),"&4("+nLivesPerPlayer+")");
                 }
             }
-
+        }
+        /// if it's a time limit. make a timer for the scoreboard
+        if (Defaults.USE_SCOREBOARD && !alwaysOpen && victoryCondition instanceof TimeLimit){
+            if (matchCountdown != null){
+                matchCountdown.stop();}
+            final Match match = this;
+            matchCountdown = new Countdown(BattleArena.getSelf(),((TimeLimit)victoryCondition).getTime(), 1, new CountdownCallback() {
+                @Override
+                public boolean intervalTick(int secondsRemaining) {
+                    match.secondTick(secondsRemaining);
+                    return true;
+                }
+            });
         }
         if (victoryCondition instanceof ScoreTracker){
             if (params.getMaxTeamSize() <= 2){
@@ -1388,6 +1422,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     public int indexOf(ArenaTeam t){return teams.indexOf(t);}
 
+    @Override
     public boolean isHandled(ArenaPlayer player) {
         GameManager gm = GameManager.getGameManager(params);
         boolean b = gm.isHandled(player);
@@ -1415,6 +1450,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         return alive;
     }
 
+    @Override
     public boolean checkReady(ArenaPlayer p, final ArenaTeam t, TransitionOptions mo, boolean announce) {
         boolean online = p.isOnline();
         boolean inBed = p.getPlayer().isSleeping();

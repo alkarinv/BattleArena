@@ -7,6 +7,6 @@ public interface DefinesTimeLimit {
 	 * Returns the number of seconds until the match ends
 	 * @return
 	 */
-	public int getMatchTime();
+	public int getTime();
 
 }

@@ -91,6 +91,7 @@ public enum TransitionOption{
     BLOCKPLACEON("blockPlaceOn",false),				/// Allow player to place blocks
     ITEMDROPOFF("itemDropOff",false),				/// Stop the player from throwing/dropping items
     ITEMPICKUPOFF("itemPickupOff",false),			/// Stop the player from pickkingup items
+    HUNGEROFF("hungerOff",false),			        /// Stop the player from decreasing hunger level
     DISGUISEALLAS("disguiseAllAs",true),			/// =<String> : Disguise the players as the given mob/player (needs DisguiseCraft)
     UNDISGUISE("undisguise",false),					/// Undisguise all players in the arena (needs DisguiseCraft)
     ENCHANTS("enchants",true),						/// Give the Enchants found in enchants:

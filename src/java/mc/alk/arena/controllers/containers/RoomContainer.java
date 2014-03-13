@@ -8,6 +8,7 @@ import mc.alk.arena.util.InventoryUtil;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -51,6 +52,11 @@ public class RoomContainer extends AreaContainer{
 
     @ArenaEventHandler(priority=EventPriority.HIGH)
     public void onPlayerTeleport(PlayerTeleportEvent event){
+        event.setCancelled(true);
+    }
+
+    @ArenaEventHandler(priority=EventPriority.HIGH)
+    public void onFoodLevelChangeEvent(FoodLevelChangeEvent event){
         event.setCancelled(true);
     }
 

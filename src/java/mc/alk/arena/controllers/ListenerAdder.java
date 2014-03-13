@@ -6,6 +6,7 @@ import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.competition.BlockBreakListener;
 import mc.alk.arena.listeners.competition.BlockPlaceListener;
 import mc.alk.arena.listeners.competition.DamageListener;
+import mc.alk.arena.listeners.competition.HungerListener;
 import mc.alk.arena.listeners.competition.ItemDropListener;
 import mc.alk.arena.listeners.competition.ItemPickupListener;
 import mc.alk.arena.listeners.competition.PlayerTeleportListener;
@@ -35,6 +36,8 @@ public class ListenerAdder {
 			match.addArenaListener(new BlockPlaceListener(match));}
 		if (tops.hasAnyOption(TransitionOption.ITEMDROPOFF)){
 			match.addArenaListener(new ItemDropListener(match));}
+        if (tops.hasAnyOption(TransitionOption.HUNGEROFF)){
+            match.addArenaListener(new HungerListener(match));}
 		if (tops.hasAnyOption(TransitionOption.ITEMPICKUPOFF)){
 			match.addArenaListener(new ItemPickupListener(match));}
 		if (tops.hasAnyOption(TransitionOption.POTIONDAMAGEON)){
