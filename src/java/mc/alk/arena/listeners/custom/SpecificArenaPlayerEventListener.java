@@ -7,7 +7,6 @@ import mc.alk.arena.util.Log;
 import org.bukkit.event.Event;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
 
 
 /**
@@ -37,7 +36,7 @@ class SpecificArenaPlayerEventListener extends SpecificPlayerEventListener{
 	}
 
 	private void doMethods(Event event, final ArenaPlayer p) {
-        Collection<RListener> lmethods = listeners.get(p.getName());
+        RListener[] lmethods = listeners.getSafe(p.getName());
         if (lmethods == null){
             return;}
 		/// For each of the splisteners methods that deal with this BukkitEvent

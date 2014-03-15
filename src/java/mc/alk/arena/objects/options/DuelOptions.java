@@ -68,7 +68,7 @@ public class DuelOptions {
 		return parseOptions(null,null,args);
 	}
 
-	public static DuelOptions parseOptions(MatchParams params, ArenaPlayer challenger, String[] args) throws InvalidOptionException{
+	public static DuelOptions parseOptions(final MatchParams params, ArenaPlayer challenger, String[] args) throws InvalidOptionException{
 		DuelOptions dop = new DuelOptions();
 		dop.options.putAll(defaultOptions.options);
 		Map<DuelOption,Object> ops = dop.options;

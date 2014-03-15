@@ -63,7 +63,8 @@ public abstract class Competition implements JoinResponseHandler, PlayerHolder, 
 	 * Returns the current state of the competition
 	 * @return CompetitionState
 	 */
-	public abstract CompetitionState getState();
+	@Override
+    public abstract CompetitionState getState();
 
 	/**
 	 * Transition from one state to another
@@ -85,7 +86,8 @@ public abstract class Competition implements JoinResponseHandler, PlayerHolder, 
 	 * Returns either the MatchParams or EventParams of the match/event
 	 * @return MatchParams
 	 */
-	public abstract MatchParams getParams();
+	@Override
+    public abstract MatchParams getParams();
 
 	/**
 	 * Set our teams
@@ -111,7 +113,8 @@ public abstract class Competition implements JoinResponseHandler, PlayerHolder, 
 	 * Notify Bukkit Listeners and specific listeners to this match
 	 * @param event BAevent
 	 */
-	public void callEvent(BAEvent event) {
+	@Override
+    public void callEvent(BAEvent event) {
 		if (event instanceof CompetitionEvent && ((CompetitionEvent)event).getCompetition()==null){
 			((CompetitionEvent)event).setCompetition(this);}
 		methodController.callEvent(event);
@@ -130,7 +133,8 @@ public abstract class Competition implements JoinResponseHandler, PlayerHolder, 
 	 * Add an arena listener for this competition
 	 * @param arenaListener ArenaListener
 	 */
-	public void addArenaListener(ArenaListener arenaListener){
+	@Override
+    public void addArenaListener(ArenaListener arenaListener){
 		methodController.addListener(arenaListener);
 	}
 
@@ -138,7 +142,8 @@ public abstract class Competition implements JoinResponseHandler, PlayerHolder, 
 	 * Remove an arena listener for this competition
 	 * @param arenaListener ArenaListener
 	 */
-	public boolean removeArenaListener(ArenaListener arenaListener){
+	@Override
+    public boolean removeArenaListener(ArenaListener arenaListener){
 		return methodController.removeListener(arenaListener);
 	}
 
@@ -147,7 +152,8 @@ public abstract class Competition implements JoinResponseHandler, PlayerHolder, 
 	 * @param player ArenaPlayer
 	 * @return ArenaPlayer, or null if no team contains this player
 	 */
-	public ArenaTeam getTeam(ArenaPlayer player) {
+	@Override
+    public ArenaTeam getTeam(ArenaPlayer player) {
 		for (ArenaTeam t: teams) {
 			if (t.hasMember(player)) return t;}
 		return null;

@@ -2,12 +2,14 @@ package mc.alk.arena.objects.arenas;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.competition.match.PerformTransition;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.SpawnController;
 import mc.alk.arena.controllers.containers.AreaContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionTransition;
 import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
@@ -866,4 +868,21 @@ public class Arena extends AreaContainer {
 		return BattleArena.getBAController().getArenaMatchQueue().getQueueCount(this);
 	}
 
+    /**
+     * Perform a player transition while in a game
+     * @param transition the transition type to perform
+     * @param player the player to perform the transition on
+     */
+    protected void performTransition(CompetitionTransition transition, ArenaPlayer player) {
+        PerformTransition.transition((match != null ? match : this), transition, player, player.getTeam(), false);
+    }
+
+    /**
+     * Perform a team transition while in a game
+     * @param transition the transition type to perform
+     * @param team the team to perform the transition on
+     */
+    protected void performTransition(CompetitionTransition transition, ArenaTeam team) {
+        PerformTransition.transition((match != null ? match : this), transition, team, false);
+    }
 }

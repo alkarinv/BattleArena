@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.9.7.1.5</version>
+    <version>3.9.7.2.1</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattleScoreboardAPI</artifactId>
-            <version>1.1.7.2</version>
+            <version>1.1.7.5</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -231,6 +231,16 @@
                             </artifactSet>
                             <!-- Specify to remove all unneeded classes -->
                             <minimizeJar>true</minimizeJar>
+                            <filters>
+                                <filter>
+                                    <artifact>mc.alk:BattleScoreboardAPI</artifact>
+                                    <includes>
+                                        <include>mc/alk/scoreboardapi/**</include>
+                                    </includes>
+                                    
+                                </filter>
+                            </filters>
+                            
                         </configuration>
                     </execution>
                 </executions>

@@ -208,6 +208,15 @@ public class YamlFileUpdater {
                 fu.delete(".*secondsTillBegin:.*");
                 try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
             }
+            newVersion = new Version("2.3.3");
+            if (version.compareTo(newVersion) < 0){
+                FileUpdater fu = new FileUpdater(configFile, yfu.backupDir, newVersion, version);
+                fu.replace("configVersion:.*", "configVersion: "+newVersion);
+                fu.addAfter(".*needSameItemsToChangeClass.*", "",
+                        "# Use perms for join/leave signs.",
+                        "useSignPerms: false");
+                try {version = fu.update();} catch (IOException e) {Log.printStackTrace(e);}
+            }
         } catch (IOException e){
             Log.printStackTrace(e);
         }

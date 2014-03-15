@@ -22,6 +22,7 @@ import org.bukkit.Bukkit;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class CutoffScoreboard implements WaitingScoreboard {
@@ -32,7 +33,7 @@ public class CutoffScoreboard implements WaitingScoreboard {
     ArenaObjective ao;
     final int minTeams;
 
-    public CutoffScoreboard(MatchParams params) {
+    public CutoffScoreboard(MatchParams params, List<ArenaTeam> teams) {
         scoreboard = ScoreboardFactory.createScoreboard(String.valueOf(this.hashCode()), params);
         ao = scoreboard.createObjective("waiting",
                 "Queue Players", "&6Waiting Players", SAPIDisplaySlot.SIDEBAR, 100);
@@ -45,7 +46,7 @@ public class CutoffScoreboard implements WaitingScoreboard {
             ppteam = 15 / maxTeams;
         }
         for (int i = 0; i <maxTeams && count < 15; i++) {
-            ArenaTeam team = TeamFactory.createCompositeTeam(i, params);
+            ArenaTeam team = i < teams.size() ? teams.get(i) : TeamFactory.createCompositeTeam(i, params);
             TeamFactory.setStringID((AbstractTeam) team, String.valueOf(team.getIndex()));
             STeam t = scoreboard.addTeam(team);
             for (int j = 0; j < team.getMaxPlayers() && count < 15 && j < ppteam; j++) {

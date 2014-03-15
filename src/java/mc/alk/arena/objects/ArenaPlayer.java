@@ -52,6 +52,9 @@ public class ArenaPlayer {
     /** The players old location, from where they were first teleported*/
     Location oldLocation;
 
+    /** The players team, *this is not their self formed team* */
+    ArenaTeam arenaTeam;
+
     /** The current location of the player (in arena, lobby, etc)*/
     ArenaLocation curLocation = new ArenaLocation(AreaContainer.HOMECONTAINER, null , LocationType.HOME);
 
@@ -204,7 +207,13 @@ public class ArenaPlayer {
      * @return Team, or null if they are not inside a competition
      */
     public ArenaTeam getTeam() {
+        if (arenaTeam != null)
+            return arenaTeam;
         return competitions.isEmpty() ? null : competitions.peek().getTeam(this);
+    }
+
+    public void setTeam(ArenaTeam team) {
+        this.arenaTeam = team;
     }
 
     public void markOldLocation(){

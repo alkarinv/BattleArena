@@ -17,6 +17,12 @@ public class TimingUtil {
         return timers;
     }
 
+    public static void resetTimers() {
+        for (TimingUtil t: timers){
+            t.timings.clear();
+        }
+    }
+
     public class TimingStat {
         public int count = 0;
         public long totalTime = 0;

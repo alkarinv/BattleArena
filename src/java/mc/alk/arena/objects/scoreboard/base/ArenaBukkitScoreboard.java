@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 
 public class ArenaBukkitScoreboard extends ArenaScoreboard{
@@ -94,8 +95,10 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
         if (t != null)
             return t;
         t = createTeamEntry(team.getIDString(), team.getScoreboardDisplayName());
-        t.addPlayers(team.getBukkitPlayers());
-        for (Player p: team.getBukkitPlayers()){
+        Set<Player> bukkitPlayers = team.getBukkitPlayers();
+
+        t.addPlayers(bukkitPlayers);
+        for (Player p: bukkitPlayers){
             bboard.setScoreboard(p);
         }
         if (colorPlayerNames)

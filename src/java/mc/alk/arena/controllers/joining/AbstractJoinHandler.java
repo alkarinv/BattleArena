@@ -30,7 +30,6 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     final List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
 
     final int minTeams,maxTeams;
-//    final Class<? extends ArenaTeam> clazz;
 
     Competition competition;
 
@@ -68,45 +67,42 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         public TeamJoinStatus getEventType(){ return status;}
         public int getRemaining(){return remaining;}
     }
-//
-//    public AbstractJoinHandler(MatchParams params, Competition competition){
-//        this(params,competition,CompositeTeam.class);
-//    }
 
     public AbstractJoinHandler(MatchParams params, Competition competition) {
         this.matchParams = params;
         this.minTeams = params.getMinTeams();
         this.maxTeams = params.getMaxTeams();
 
-//        this.clazz = clazz;
         setCompetition(competition);
         if (Defaults.USE_SCOREBOARD)
             initWaitingScoreboard();
     }
 
     private void initWaitingScoreboard() {
+        List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
         try {
-        if (maxTeams <= 16) {
-            int needed = 0;
-            int optional = 0;
-            for (int i = 0; i < maxTeams; i++) {
-                ArenaTeam team = TeamFactory.createCompositeTeam(i, matchParams);
-                if (team.getMinPlayers() < 16) {
-                    needed += team.getMinPlayers();
-                    if (team.getMinPlayers() != team.getMaxPlayers()) {
-                        optional += team.getMaxPlayers() < 1000 ? team.getMaxPlayers() - team.getMinPlayers() : 1000;
+            if (maxTeams <= 16) {
+                int needed = 0;
+                int optional = 0;
+                for (int i = 0; i < maxTeams; i++) {
+                    ArenaTeam team = TeamFactory.createCompositeTeam(i, matchParams);
+                    if (team.getMinPlayers() < 16) {
+                        needed += team.getMinPlayers();
+                        if (team.getMinPlayers() != team.getMaxPlayers()) {
+                            optional += team.getMaxPlayers() < 1000 ? team.getMaxPlayers() - team.getMinPlayers() : 1000;
+                        }
                     }
+                    teams.add(team);
+                }
+                if (needed + optional <= 16) {
+                    scoreboard = new FullScoreboard(matchParams, teams);
+                    return;
                 }
             }
-            if (needed + optional <= 16) {
-                scoreboard = new FullScoreboard(matchParams);
-                return;
-            }
-        }
         }catch(Throwable e) {
             Log.printStackTrace(e);
         }
-        scoreboard = new CutoffScoreboard(matchParams);
+        scoreboard = new CutoffScoreboard(matchParams, teams);
     }
 
     public abstract boolean switchTeams(ArenaPlayer player, Integer toTeamIndex, boolean checkSizes);
@@ -132,6 +128,9 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     @Override
     public void addToTeam(ArenaTeam team, Collection<ArenaPlayer> players) {
         team.addPlayers(players);
+        for (ArenaPlayer ap : players){
+            ap.setTeam(team);
+        }
         nPlayers+=players.size();
         JoinResponseHandler jh = competition != null ? competition : scoreboard;
         if (jh != null) jh.addedToTeam(team, players);
@@ -140,6 +139,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     @Override
     public boolean addToTeam(ArenaTeam team, ArenaPlayer player) {
         team.addPlayer(player);
+        player.setTeam(team);
         nPlayers++;
         JoinResponseHandler jh = competition != null ? competition : scoreboard;
         if (jh !=null) jh.addedToTeam(team,player);
@@ -149,6 +149,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     @Override
     public boolean removeFromTeam(ArenaTeam team, ArenaPlayer player) {
         team.removePlayer(player);
+        player.setTeam(null);
         nPlayers--;
         JoinResponseHandler jh = competition != null ? competition : scoreboard;
         if (jh != null) jh.removedFromTeam(team,player);
@@ -179,10 +180,12 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
 
     public abstract TeamJoinResult joiningTeam(TeamJoinObject tqo);
 
+    @Override
     public boolean canLeave(ArenaPlayer p) {
         return true;
     }
 
+    @Override
     public boolean leave(ArenaPlayer p) {
         for (ArenaTeam t: teams){
             if (t.hasMember(p)) {

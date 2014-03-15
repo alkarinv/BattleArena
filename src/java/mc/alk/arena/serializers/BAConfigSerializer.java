@@ -21,12 +21,12 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.joining.ArenaMatchQueue;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.joining.ArenaMatchQueue;
 import mc.alk.arena.objects.victoryconditions.Custom;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.FileUtil;
@@ -69,6 +69,7 @@ public class BAConfigSerializer extends BaseConfig{
         Defaults.TELEPORT_Y_OFFSET = config.getDouble("teleportYOffset", Defaults.TELEPORT_Y_OFFSET);
         Defaults.TELEPORT_Y_VELOCITY = config.getDouble("teleportYVelocity", Defaults.TELEPORT_Y_VELOCITY);
         Defaults.NUM_INV_SAVES = config.getInt("numberSavedInventories", Defaults.NUM_INV_SAVES);
+        Defaults.USE_SIGN_PERMS = config.getBoolean("useSignPerms", Defaults.USE_SIGN_PERMS);
         Defaults.ITEMS_IGNORE_STACKSIZE = config.getBoolean("ignoreMaxStackSize", Defaults.ITEMS_IGNORE_STACKSIZE);
         Defaults.ITEMS_UNSAFE_ENCHANTMENTS = config.getBoolean("unsafeItemEnchants", Defaults.ITEMS_UNSAFE_ENCHANTMENTS);
         Defaults.USE_ARENAS_ONLY_IN_ORDER = config.getBoolean("useArenasOnlyInOrder", Defaults.USE_ARENAS_ONLY_IN_ORDER);
@@ -207,8 +208,11 @@ public class BAConfigSerializer extends BaseConfig{
         Defaults.ALLOW_PLAYER_EVENT_CREATION = cs.getBoolean("allowPlayerCreation", Defaults.ALLOW_PLAYER_EVENT_CREATION);
 
         Defaults.ENABLE_PLAYER_READY_BLOCK = cs.getBoolean("enablePlayerReadyBlock", Defaults.ENABLE_PLAYER_READY_BLOCK);
-        int value = cs.getInt("readyBlockType", Defaults.READY_BLOCK.getId());
-        Defaults.READY_BLOCK = value > 0 && value < Material.values().length ? Material.values()[value] : Defaults.READY_BLOCK;
+        try {
+            Material value = Material.matchMaterial(cs.getString("readyBlockType", Defaults.READY_BLOCK.name()).toUpperCase());
+            if (value != null){
+                Defaults.READY_BLOCK = value;}
+        } catch (Exception e) { /* do nothing*/}
 
         defaults.setWaitroomClosedWhileRunning(true);
         defaults.setCancelIfNotEnoughPlayers(false);

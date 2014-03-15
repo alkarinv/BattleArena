@@ -13,6 +13,7 @@ import mc.alk.scoreboardapi.api.SObjective;
 import mc.alk.scoreboardapi.api.SScoreboard;
 import mc.alk.scoreboardapi.api.STeam;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
+import mc.alk.scoreboardapi.scoreboard.bukkit.BObjective;
 import org.bukkit.OfflinePlayer;
 
 import java.util.Collection;
@@ -244,7 +245,12 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 		return o.getDisplayName();
 	}
 
-	@Override
+    @Override
+    public String getBaseDisplayName() {
+        return o.getBaseDisplayName();
+    }
+
+    @Override
 	public boolean setTeamPoints(STeam t, int points) {
 		return o.setTeamPoints(t, points);
 	}
@@ -345,7 +351,9 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 		return o.addTeam(entry, points);
 	}
 
-
-
-
+    public void setDisplayName(String displayNamePrefix, String displayName, String displayNameSuffix, STeam team){
+        if (o instanceof BObjective) {
+            ((BObjective) o).setDisplayName(displayNamePrefix, displayName,displayNameSuffix, team);
+        }
+    }
 }

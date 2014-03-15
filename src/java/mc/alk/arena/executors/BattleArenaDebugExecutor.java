@@ -29,6 +29,7 @@ import mc.alk.arena.util.SerializerUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.TimingUtil;
 import mc.alk.arena.util.TimingUtil.TimingStat;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.bukkit.ChatColor;
@@ -482,6 +483,10 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
         if (timers == null){
             return sendMessage(sender, "Timings were not enabled");
         }
+        if ((args.length >1 && args[1].equalsIgnoreCase("reset"))){
+            TimingUtil.resetTimers();
+            return sendMessage(sender, "Timings are reset");
+        }
         String timeStr = (useMs ? "time(ms)" : "time(ns)");
         sendMessage(sender, BattleArena.getNameAndVersion() +" "+timeStr);
         long gtotal = 0;
@@ -544,8 +549,14 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
         sendMessage(sender, "&4Scoreboard &f" + sc.hashCode());
         sendMessage(sender, "&e -- Teams -- ");
         Collection<OfflinePlayer> ops = sc.getPlayers();
+        Collection<String> names;
         for (Team t : sc.getTeams()) {
-            sendMessage(sender, t.getName() +" - " + t.getDisplayName());
+            names = new ArrayList<String>();
+            for (OfflinePlayer p: t.getPlayers()) {
+                names.add(p.getName());
+            }
+            sendMessage(sender, t.getName() + " - " + t.getDisplayName() + " &f" + t.hashCode() + " = &6" +
+                    StringUtils.join(names, ", "));
         }
         for (Objective o : sc.getObjectives()){
             sendMessage(sender, "&2 -- Objective &e"+o.getName() +" - "+o.getDisplayName());

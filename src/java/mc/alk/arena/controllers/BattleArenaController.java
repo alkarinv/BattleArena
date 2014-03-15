@@ -458,7 +458,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         int sizeDif = Integer.MAX_VALUE;
         int m1 = mp.getMinTeamSize();
         for (Arena a : allarenas.values()){
-            if (!a.valid() || a.getArenaType() != mp.getType())
+            if (a.getArenaType() != mp.getType() || !a.valid())
                 continue;
             if (a.matchesIgnoreSize(mp,jp)){
                 return a;}

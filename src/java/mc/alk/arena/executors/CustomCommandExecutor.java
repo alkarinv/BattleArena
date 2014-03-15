@@ -70,7 +70,7 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
     protected String getUsageString(Class<?> clazz) {
         if (ArenaPlayer.class == clazz){
             return "<player> ";
-        } else if (Arena.class == clazz){
+        } else if (Arena.class.isAssignableFrom(clazz)){
             return "<arena> ";
         } else if (ChangeType.class == clazz){
             return "<Arena | Lobby | Waitroom>";
@@ -105,8 +105,8 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
         String string = args[curIndex];
         if (ArenaPlayer.class == clazz){
             return verifyArenaPlayer(string);
-        } else if (Arena.class == clazz){
-            return verifyArena(string);
+        } else if (Arena.class.isAssignableFrom(clazz)){
+            return verifyArena(clazz, string);
         } else if (ChangeType.class == clazz){
             return verifyChangeType(string);
         } else if (GameOptionPair.class == clazz){
@@ -266,20 +266,22 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
         return BattleArena.toArenaPlayer(p);
     }
 
-    private Arena verifyArena(String name) throws IllegalArgumentException {
+    private Arena verifyArena(Class<?> arenaClass, String name) throws IllegalArgumentException {
         Arena arena = ac.getArena(name);
         if (arena == null){
             throw new IllegalArgumentException("Arena '" +name+"' doesnt exist" );}
+        if (!arenaClass.isAssignableFrom(arena.getClass())){
+            throw new IllegalArgumentException("Arena '" +name+"' isn't a "+arenaClass.getSimpleName()+" arena" );}
         return arena;
     }
 
     private MatchParams verifyMatchParams(Command command) throws IllegalArgumentException {
-        MatchParams mp = ParamController.getMatchParamCopy(command.getName());
+        MatchParams mp = ParamController.getMatchParams(command.getName());
         if (mp != null){
             return mp;
         } else {
             for (String alias : command.getAliases()){
-                mp = ParamController.getMatchParamCopy(alias);
+                mp = ParamController.getMatchParams(alias);
                 if (mp != null)
                     return mp;
             }

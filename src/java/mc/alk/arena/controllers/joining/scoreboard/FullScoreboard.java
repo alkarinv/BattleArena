@@ -22,6 +22,7 @@ import org.bukkit.Bukkit;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class FullScoreboard implements WaitingScoreboard {
@@ -32,7 +33,7 @@ public class FullScoreboard implements WaitingScoreboard {
     ArenaObjective ao;
     final int minTeams;
 
-    public FullScoreboard(MatchParams params) {
+    public FullScoreboard(MatchParams params, List<ArenaTeam> teams) {
         scoreboard = ScoreboardFactory.createScoreboard(String.valueOf(this.hashCode()), params);
         ao = scoreboard.createObjective("waiting",
                 "Queue Players", "&6Waiting Players", SAPIDisplaySlot.SIDEBAR, 100);
@@ -40,8 +41,9 @@ public class FullScoreboard implements WaitingScoreboard {
         minTeams = params.getMinTeams();
         int maxTeams = params.getMaxTeams();
         for (int i = 0; i < maxTeams; i++) {
-            ArenaTeam team = TeamFactory.createCompositeTeam(i, params);
-            TeamFactory.setStringID((AbstractTeam)team, String.valueOf(team.getIndex()));
+            ArenaTeam team = i < teams.size() ? teams.get(i) : TeamFactory.createCompositeTeam(i, params);
+
+            TeamFactory.setStringID((AbstractTeam) team, String.valueOf(team.getIndex()));
             STeam t = scoreboard.addTeam(team);
             for (int j = 0; j < team.getMaxPlayers(); j++) {
                 addPlaceholder(team, t, i >= minTeams);
@@ -65,6 +67,7 @@ public class FullScoreboard implements WaitingScoreboard {
                     });
         }
     }
+
 
 
     private int getReqSize(int teamIndex) {

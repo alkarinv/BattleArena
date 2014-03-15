@@ -84,6 +84,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
         this.name = name;
     }
 
+    @Override
     public void callEvent(BAEvent event){
         methodController.callEvent(event);
     }
@@ -152,6 +153,11 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
     @Override
     public void addArenaListener(ArenaListener arenaListener) {
         this.methodController.addListener(arenaListener);
+    }
+
+    @Override
+    public boolean removeArenaListener(ArenaListener arenaListener) {
+        return this.methodController.removeListener(arenaListener);
     }
 
     @Override

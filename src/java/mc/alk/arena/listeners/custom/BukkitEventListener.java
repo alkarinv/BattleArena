@@ -35,6 +35,7 @@ class BukkitEventListener extends GeneralEventListener {
      * add an arena listener to this bukkit event
      * @param rl RListener
      */
+    @Override
     protected synchronized void addMatchListener(RListener rl) {
         if (!isListening()){
             startListening();}
@@ -66,6 +67,7 @@ class BukkitEventListener extends GeneralEventListener {
      * @param listener RListener
      * @return whether listener was found and removed
      */
+    @Override
     protected boolean removeMatchListener(RListener listener) {
         final Map<RListener,Integer> map = listeners.get(listener.getPriority());
         if (map==null)

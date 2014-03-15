@@ -142,10 +142,12 @@ public class JoinOptions {
 		return true;
 	}
 
-	public static JoinOptions parseOptions(MatchParams mp, ArenaTeam t, ArenaPlayer player, String[] args)
+	public static JoinOptions parseOptions(final MatchParams omp, ArenaTeam t, ArenaPlayer player, String[] args)
 			throws InvalidOptionException, NumberFormatException{
 		JoinOptions jos = new JoinOptions();
-		jos.setJoinTime(System.currentTimeMillis());
+        MatchParams mp = new MatchParams(omp.getType());
+        mp.setParent(omp);
+        jos.setJoinTime(System.currentTimeMillis());
 		jos.joinedLocation = player.getLocation();
 		Map<JoinOption,Object> ops = jos.options;
 		Arena arena = null;
@@ -219,9 +221,7 @@ public class JoinOptions {
 			jos.setArena(arena);
 		}
 		if (arena != null){
-            MatchParams old = mp;
-			mp = arena.getParams();
-			mp.setParent(old);
+			mp.setParent(arena.getParams());
 			if (!arena.matchesIgnoreSize(mp, jos)){
 				throw new InvalidOptionException("&cThe arena &6" +arena.getName() +
 						"&c doesn't match your add requirements. "  +

@@ -39,6 +39,7 @@ import mc.alk.arena.events.teams.TeamDeathEvent;
 import mc.alk.arena.objects.ArenaLocation;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaSize;
+import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.ContainerState;
@@ -137,12 +138,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     private final Collection<ArenaPlayer> matchPlayers = new HashSet<ArenaPlayer>();
 
-    final Set<ArenaTeam> nonEndingTeams =
-            new HashSet<ArenaTeam>();
-    final Map<ArenaTeam,Integer> individualTeamTimers =
-            new HashMap<ArenaTeam,Integer>();
-    final Map<ArenaTeam,TeamTimeLimit> individualTeamTimeLimits =
-            new HashMap<ArenaTeam,TeamTimeLimit>();
+    final Set<ArenaTeam> nonEndingTeams = new HashSet<ArenaTeam>();
+    final Map<ArenaTeam,Integer> individualTeamTimers = new HashMap<ArenaTeam,Integer>();
+    final Map<ArenaTeam,TeamTimeLimit> individualTeamTimeLimits = new HashMap<ArenaTeam,TeamTimeLimit>();
+
     final AtomicBoolean addedVictoryConditions = new AtomicBoolean(false);
     final GameManager gameManager;
     double prizePoolMoney = 0;
@@ -304,6 +303,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         onJoin(teams);
     }
 
+    @Override
     public void run() {
         preStartMatch();
     }
@@ -405,6 +405,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         /// Schedule the start of the match
 
         currentTimer = Scheduler.scheduleSynchronousTask(plugin, new Runnable() {
+            @Override
             public void run() {
                 startMatch();
             }
@@ -459,14 +460,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             arenaInterface.onStart();
             List<ArenaTeam> net = getNonEmptyTeams();
             try{mc.sendOnStartMsg(net);}catch(Exception e){Log.printStackTrace(e);}
-            if (alwaysOpen){
-                for (ArenaTeam at: net) {
-                    TeamTimeLimit ttl = new TeamTimeLimit(this, at);
-                    ttl.startCountdown();
-                    individualTeamTimeLimits.put(at, ttl);
-                }
-            }
-
         }
         checkEnoughTeams(competingTeams, neededTeams);
     }
@@ -609,6 +602,28 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
                     new MatchCompleted(am), (int) (params.getSecondsToLoot() * 20L * Defaults.TICK_MULT));
         }
     }
+
+    private void givePrizes(Match am, CompetitionResult result){
+        if (result.getLosers() != null && !result.getLosers().isEmpty()){
+            PerformTransition.transition(am, MatchState.LOSERS, result.getLosers(), false);
+            ArenaPrizeEvent event = new ArenaLosersPrizeEvent(am, result.getLosers());
+            callEvent(event);
+            new RewardController(event,psc).giveRewards();
+        }
+        if (result.getDrawers() != null && !result.getDrawers().isEmpty()){
+            PerformTransition.transition(am, MatchState.DRAWERS, result.getDrawers(), false);
+            ArenaPrizeEvent event = new ArenaDrawersPrizeEvent(am, result.getDrawers());
+            callEvent(event);
+            new RewardController(event,psc).giveRewards();
+        }
+        if (result.getVictors() != null && !result.getVictors().isEmpty()){
+            PerformTransition.transition(am, MatchState.WINNERS, result.getVictors(), false);
+            ArenaPrizeEvent event = new ArenaWinnersPrizeEvent(am, result.getVictors());
+            callEvent(event);
+            new RewardController(event,psc).giveRewards();
+        }
+    }
+
     class NonEndingMatchCompleted implements Runnable{
         final Match am;
         final MatchResult result;
@@ -620,6 +635,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             this.teams = teams;
         }
 
+        @Override
         public void run() {
             final Collection<ArenaTeam> victors = result.getVictors();
             if (Defaults.DEBUG) System.out.println("Match::NonEndingMatchCompleted(): " + victors);
@@ -630,26 +646,10 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             /// Once again, lets delay this final bit so that transitions have time to finish before
             /// Other splisteners get a chance to handle
             int timerid = Scheduler.scheduleSynchronousTask(plugin, new Runnable(){
+                @Override
                 public void run() {
                     /// Losers and winners get handled after the match is complete
-                    if (result.getLosers() != null){
-                        PerformTransition.transition(am, MatchState.LOSERS, result.getLosers(), false);
-                        ArenaPrizeEvent event = new ArenaLosersPrizeEvent(am, result.getLosers());
-                        callEvent(event);
-                        new RewardController(event,psc).giveRewards();
-                    }
-                    if (result.getDrawers() != null){
-                        PerformTransition.transition(am, MatchState.DRAWERS, result.getDrawers(), false);
-                        ArenaPrizeEvent event = new ArenaDrawersPrizeEvent(am, result.getDrawers());
-                        callEvent(event);
-                        new RewardController(event,psc).giveRewards();
-                    }
-                    if (result.getVictors() != null){
-                        PerformTransition.transition(am, MatchState.WINNERS, result.getVictors(), false);
-                        ArenaPrizeEvent event = new ArenaWinnersPrizeEvent(am, result.getVictors());
-                        callEvent(event);
-                        new RewardController(event,psc).giveRewards();
-                    }
+                    givePrizes(am, result);
                     nonEndingDeconstruct(teams);
                 }
             });
@@ -662,6 +662,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         final Match am;
 
         MatchCompleted(Match am){this.am = am;}
+        @Override
         public void run() {
             transitionTo(MatchState.ONCOMPLETE);
             if (Defaults.DEBUG) System.out.println("Match::MatchCompleted(): " + am.getResult());
@@ -672,31 +673,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             /// Once again, lets delay this final bit so that transitions have time to finish before
             /// Other splisteners get a chance to handle
             currentTimer = Scheduler.scheduleSynchronousTask(plugin, new Runnable(){
+                @Override
                 public void run() {
                     callEvent(new MatchCompletedEvent(am));
                     arenaInterface.onComplete();
                     /// Losers and winners get handled after the match is complete
-
-                    if (am.getLosers() != null){
-                        PerformTransition.transition(am, MatchState.LOSERS, am.getLosers(), false);
-                        ArenaPrizeEvent event = new ArenaLosersPrizeEvent(am, am.getLosers());
-                        callEvent(event);
-                        new RewardController(event,psc).giveRewards();
-                    }
-
-                    if (am.getDrawers() != null){
-                        PerformTransition.transition(am, MatchState.DRAWERS, am.getDrawers(), false);
-                        ArenaPrizeEvent event = new ArenaDrawersPrizeEvent(am, am.getDrawers());
-                        callEvent(event);
-                        new RewardController(event,psc).giveRewards();
-                    }
-
-                    if (am.getVictors() != null){
-                        PerformTransition.transition(am, MatchState.WINNERS, am.getVictors(), false);
-                        ArenaPrizeEvent event = new ArenaWinnersPrizeEvent(am, am.getVictors());
-                        callEvent(event);
-                        new RewardController(event,psc).giveRewards();
-                    }
+                    givePrizes(am, matchResult);
                     updateBukkitEvents(MatchState.ONCOMPLETE);
                     deconstruct();
                 }
@@ -735,9 +717,14 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             }
             individualTeamTimers.remove(t);
             scoreboard.removeTeam(t);
+            TeamTimeLimit ttl = individualTeamTimeLimits.remove(t);
+            if (ttl !=null){
+                ttl.stopCountdown();
+            }
+            t.reset();
         }
         nonEndingTeams.removeAll(teams);
-        this.teams.removeAll(teams);
+
     }
 
     private void deconstruct(){
@@ -775,10 +762,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     private boolean _addedTeam(ArenaTeam team){
         if (this.isFinished())
             return false;
-        if (Defaults.DEBUG_MATCH_TEAMS) Log.info(getID()+" addedTeam("+team.getName()+":"+team.getId()+")");
+        if (Defaults.DEBUG_MATCH_TEAMS)Log.info(getID() + " addedTeam(" + team.getName() + ":" + team.getId()+ ")" );
 
         team.setArenaObjective(defaultObjective);
         scoreboard.addTeam(team);
+
         for (ArenaPlayer p: team.getPlayers()){
             if (p == null)
                 continue;
@@ -889,18 +877,18 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             /// onStart Them
             if (state.ordinal() >= MatchState.ONSTART.ordinal()){
                 int timerid = Scheduler.scheduleSynchronousTask(plugin, new Runnable() {
+                    @Override
                     public void run() {
                         doTransition(match, MatchState.ONSTART, player,team, true);
                     }
                 }, (int) (params.getSecondsTillMatch() * 20L * Defaults.TICK_MULT));
-                for (ArenaTeam t: teams){
-                    individualTeamTimers.put(t, timerid);
-                    if (alwaysOpen){
-                        TeamTimeLimit ttl = new TeamTimeLimit(this, t);
-                        ttl.startCountdown();
-                        individualTeamTimeLimits.put(t, ttl);
-                    }
+                if (!individualTeamTimeLimits.containsKey(team)){
+                    TeamTimeLimit ttl = new TeamTimeLimit(this, team);
+                    individualTeamTimeLimits.put(team, ttl);
+                    ttl.startCountdown();
                 }
+
+                individualTeamTimers.put(team, timerid);
             }
         }
     }
@@ -982,7 +970,16 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     protected void checkAndHandleIfTeamDead(ArenaTeam team){
         if (team.isDead()){
-            callEvent(new TeamDeathEvent(team));}
+            if (this.getState().ordinal() < MatchState.ONVICTORY.ordinal()){
+                callEvent(new TeamDeathEvent(team));
+            }
+            if (alwaysOpen) {
+                TeamTimeLimit ttl = individualTeamTimeLimits.remove(team);
+                if (ttl !=null) {
+                    ttl.stopCountdown();
+                }
+            }
+        }
     }
 
     private void privateRemovedFromTeam(ArenaTeam team,ArenaPlayer ap){
@@ -1091,8 +1088,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
         t.playerLeft(player);
         leftPlayers.add(player.getName());
-        if (this.getState().ordinal() < MatchState.ONVICTORY.ordinal())
-            checkAndHandleIfTeamDead(t);
+        checkAndHandleIfTeamDead(t);
         inMatch.remove(player.getName());
         matchPlayers.remove(player);
 
@@ -1138,8 +1134,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             if (this.woolTeams)
                 TeamUtil.removeTeamHead(t.getIndex(), player.getPlayer());
             t.killMember(player);
-            if (this.getState().ordinal() < MatchState.ONVICTORY.ordinal())
-                checkAndHandleIfTeamDead(t);
+            checkAndHandleIfTeamDead(t);
             scoreboard.setDead(t, player);
 
         }
@@ -1151,6 +1146,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
         if (cancelExpLoss){
             psc.cancelExpLoss(player,false);}
+        player.setTeam(null);
     }
 
     @Override
@@ -1172,7 +1168,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     @Override
     public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-        //		Log.debug(" onPreLeave !!!!!!! " + player.getName() +"   " + apte.getArenaType());
         if (Defaults.DEBUG_TRACE) Log.info(player.getName() + " -onPreLeave  t=" + player.getTeam());
         inMatch.remove(player.getName());
     }
@@ -1196,11 +1191,17 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
                         params.getMatchTime() != Integer.MAX_VALUE)){
             addVictoryCondition(new TimeLimit(this));
         }
-
+        if (alwaysOpen){
+            for (ArenaTeam team : getNonEmptyTeams()){
+                TeamTimeLimit ttl = new TeamTimeLimit(this, team);
+                individualTeamTimeLimits.put(team, ttl);
+                ttl.startCountdown();
+            }
+        }
         /// set the number of lives
         Integer nLives = params.getNLives();
         if (nLives != null && nLives > 0 && !(vt instanceof DefinesNumLivesPerPlayer)){
-            addVictoryCondition(new NLives(this,nLives));
+            addVictoryCondition(new NLives(this, nLives));
         }
 
         /// Add a default number of teams unless the specified victory condition handles it
@@ -1285,6 +1286,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
      * Gets the arena currently being used by this match
      * @return arena or null if not in use
      */
+    @Override
     public Arena getArena() {return arena;}
 
     public boolean isEnding() {return isWon() || isFinished();}

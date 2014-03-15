@@ -8,18 +8,24 @@ import mc.alk.arena.events.players.ArenaPlayerLeaveQueueEvent;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.signs.ArenaCommandSign;
-import mc.alk.arena.util.MapOfSet;
+import mc.alk.arena.util.MapOfTreeSet;
 import mc.alk.arena.util.MessageUtil;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import java.util.Set;
+import java.util.Comparator;
 
 public class SignUpdateListener implements Listener{
-    MapOfSet<String,ArenaCommandSign> arenaSigns = new MapOfSet<String, ArenaCommandSign>();
-
+    MapOfTreeSet<String,ArenaCommandSign> arenaSigns =
+            new MapOfTreeSet<String, ArenaCommandSign>(ArenaCommandSign.class, new ArenaCommandSignPriorityComparator());
+    public static class ArenaCommandSignPriorityComparator implements Comparator<ArenaCommandSign> {
+        @Override
+        public int compare(ArenaCommandSign o1, ArenaCommandSign o2) {
+            return o1.hashCode() - o2.hashCode();
+        }
+    }
     private String getMatchState(String str){
         if (str != null && (str.startsWith("\\d") || str.indexOf(' ') > 0 )){
             int index = str.indexOf(' ');
@@ -40,8 +46,8 @@ public class SignUpdateListener implements Listener{
 
     private void setPeopleInQueue(Arena arena, int playersInQueue,
                                   int neededPlayers, int maxPlayers) {
-        Set<ArenaCommandSign> signLocs = arenaSigns.getSafer(arena.getName());
-        if (signLocs == null || signLocs.isEmpty()){
+        ArenaCommandSign[] signLocs = arenaSigns.getSafe(arena.getName());
+        if (signLocs == null || signLocs.length == 0){
             return;
         }
         final String strcount;
@@ -62,8 +68,8 @@ public class SignUpdateListener implements Listener{
     }
 
     private void setMatchState(Arena arena, String state) {
-        Set<ArenaCommandSign> signLocs = arenaSigns.getSafer(arena.getName());
-        if (signLocs == null || signLocs.isEmpty()){
+        ArenaCommandSign[] signLocs = arenaSigns.getSafe(arena.getName());
+        if (signLocs == null || signLocs.length==0){
             return;
         }
         for (ArenaCommandSign l : signLocs){
@@ -115,7 +121,7 @@ public class SignUpdateListener implements Listener{
     public void updateAllSigns() {
     }
 
-    public MapOfSet<String, ArenaCommandSign> getStatusSigns() {
+    public MapOfTreeSet<String, ArenaCommandSign> getStatusSigns() {
         return arenaSigns;
     }
 

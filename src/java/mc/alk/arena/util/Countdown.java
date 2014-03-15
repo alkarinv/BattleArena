@@ -17,13 +17,14 @@ public class Countdown implements Runnable{
 		public boolean intervalTick(int secondsRemaining);
 	}
 
-	Long startTime, expectedEndTime;
-	int interval,seconds;
-	CountdownCallback callback;
+	final Long startTime, expectedEndTime;
+	final int interval;
+    final CountdownCallback callback;
+    final Plugin plugin;
 	Integer timerId;
-	Plugin plugin;
 	boolean cancelOnExpire = true;
 	boolean stop = false;
+    int seconds;
 
 	public Countdown(final Plugin plugin, Integer seconds, Integer interval, CountdownCallback callback){
 		this.interval = interval == null || interval <= 0 ? seconds : interval;
@@ -43,7 +44,8 @@ public class Countdown implements Runnable{
 		this.cancelOnExpire = cancel;
 	}
 
-	public void run() {
+	@Override
+    public void run() {
 		if (stop)
 			return;
 		final boolean continueOn = callback.intervalTick(seconds);
@@ -72,7 +74,7 @@ public class Countdown implements Runnable{
 	}
 
 	public Long getTimeRemaining(){
-		return expectedEndTime == null ? null : expectedEndTime - System.currentTimeMillis();
+		return expectedEndTime - System.currentTimeMillis();
 	}
 
 	public int getID(){

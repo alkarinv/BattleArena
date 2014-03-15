@@ -72,7 +72,7 @@ public class EventExecutor extends BAExecutor{
 	}
 
 	@MCCommand(cmds={"start"},admin=true,usage="start", order=2)
-	public boolean eventStart(CommandSender sender, EventParams eventParams, String[] args) {
+	public boolean eventStart(CommandSender sender, final EventParams eventParams, String[] args) {
 		Event event = controller.getOpenEvent(eventParams);
 		if (event == null){
 			return sendMessage(sender, "&cThere are no open events right now");

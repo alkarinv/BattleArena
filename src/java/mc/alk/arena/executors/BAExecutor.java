@@ -181,19 +181,19 @@ public class BAExecutor extends CustomCommandExecutor {
         return join(player, mp, args, false);
     }
 
-    public boolean join(ArenaPlayer player, MatchParams mp, String args[], boolean adminJoin) {
+    public boolean join(ArenaPlayer player, final MatchParams omp, String args[], boolean adminJoin) {
         /// Make sure we have Match Options
-        final MatchTransitions ops = mp.getTransitionOptions();
+        final MatchTransitions ops = omp.getTransitionOptions();
         if (ops == null) {
             return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix");}
 
         /// Check if this match type is disabled
-        if (isDisabled(player, mp) && !player.hasPermission(Permissions.ADMIN_NODE)) {
+        if (isDisabled(player, omp) && !player.hasPermission(Permissions.ADMIN_NODE)) {
             return true;}
 
         /// Check Perms
-        if (!adminJoin && !PermissionsUtil.hasMatchPerm(player, mp, "join")) {
-            return sendSystemMessage(player, "no_join_perms", mp.getCommand());}
+        if (!adminJoin && !PermissionsUtil.hasMatchPerm(player, omp, "join")) {
+            return sendSystemMessage(player, "no_join_perms", omp.getCommand());}
         /// Can the player add this match/event at this moment?
         if (!canJoin(player)) {
             return true;}
@@ -211,23 +211,23 @@ public class BAExecutor extends CustomCommandExecutor {
         /// Get or Make a team for the Player
         ArenaTeam t = teamc.getSelfFormedTeam(player);
         if (t == null) {
-            t = TeamController.createTeam(mp, player);}
+            t = TeamController.createTeam(omp, player);}
 
         if (!canJoin(t, true)) {
-            sendSystemMessage(player, "teammate_cant_join", mp.getName());
+            sendSystemMessage(player, "teammate_cant_join", omp.getName());
             return sendMessage(player, "&6/team leave: &cto leave the team");
         }
 
         JoinOptions jp;
         try {
-            jp = JoinOptions.parseOptions(mp, t, player,Arrays.copyOfRange(args, 1, args.length));
+            jp = JoinOptions.parseOptions(omp, t, player,Arrays.copyOfRange(args, 1, args.length));
         } catch (InvalidOptionException e) {
             return sendMessage(player, e.getMessage());
         } catch (Exception e) {
             Log.printStackTrace(e);
             return sendMessage(player, e.getMessage());
         }
-        mp = jp.getMatchParams();
+        MatchParams mp = jp.getMatchParams();
         /// Check to make sure at least one arena can be joined at some time
         Arena arena = ac.getArenaByMatchParams(mp, jp);
         if (arena == null) {
@@ -680,7 +680,7 @@ public class BAExecutor extends CustomCommandExecutor {
             Arena arena = eoo.getArena(params, null);
             if (arena == null){
                 return sendMessage(sender,"[BattleArena] auto args="+Arrays.toString(args) +
-                        " can't be started. Arena "+arena+" is not there or in use");
+                        " can't be started. Arena  is not there or in use");
             }
 
             ac.createAndAutoMatch(arena, eoo);
@@ -1002,7 +1002,6 @@ public class BAExecutor extends CustomCommandExecutor {
     public boolean _setGameOption(CommandSender sender, MatchParams params,
                                   Integer teamIndex, GameOption option, Object value) {
         try {
-            params = ParamController.getMatchParams(params);
             ParamAlterController.setGameOption(sender, params, teamIndex, option, value);
             if (value != null) {
                 sendMessage(sender, "&2Game options &6" + option + "&2 changed to &6" + value);
@@ -1029,7 +1028,6 @@ public class BAExecutor extends CustomCommandExecutor {
     public boolean _setGameStateOption(CommandSender sender, MatchParams params, Integer teamIndex,
                                        CompetitionState state, TransitionOption to, Object value) {
         try {
-            params = ParamController.getMatchParams(params);
             ParamAlterController.setGameOption(sender, params,teamIndex, state,to,value);
             if (value != null){
                 sendMessage(sender, "&2Game options &6"+state+"&2 added &6"+to +" " + value);

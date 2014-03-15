@@ -82,9 +82,11 @@ public abstract class AbstractTeam implements ArenaTeam{
 
 	@Override
     public void reset() {
+        players.clear();
 		deaths.clear();
 		kills.clear();
-		setAlive();
+        deadplayers.clear();
+        nameChanged = true;
 	}
 
 	protected String createName() {

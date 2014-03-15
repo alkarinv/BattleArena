@@ -64,10 +64,16 @@ public class GameManager implements PlayerHolder{
 
 	@Override
 	public void addArenaListener(ArenaListener arenaListener) {
+        methodController.addListener(arenaListener);
+    }
 
-	}
+    @Override
+    public boolean removeArenaListener(ArenaListener arenaListener) {
+        return methodController.removeListener(arenaListener);
+    }
 
-	@ArenaEventHandler(priority=EventPriority.HIGHEST)
+
+    @ArenaEventHandler(priority=EventPriority.HIGHEST)
 	public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
 		if (handled.contains(event.getPlayer()) && !event.isHandledQuit()){
 			ArenaPlayer player = event.getPlayer();

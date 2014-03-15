@@ -10,7 +10,7 @@ import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.ArenaEventMethod;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.MapOfConcurrentSkipList;
+import mc.alk.arena.util.MapOfTreeSet;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimingUtil;
 import mc.alk.arena.util.TimingUtil.TimingStat;
@@ -584,7 +584,7 @@ public class MethodController {
             HashMap<Type, BukkitEventHandler> types = gels.get(bp);
             for (BukkitEventHandler bel: types.values()){
                 if (bel.getSpecificPlayerListener() != null){
-                    MapOfConcurrentSkipList<String,RListener> lists2 = bel.getSpecificPlayerListener().getListeners();
+                    MapOfTreeSet<String,RListener> lists2 = bel.getSpecificPlayerListener().getListeners();
                     String str = MessageUtil.joinBukkitPlayers(bel.getSpecificPlayerListener().getPlayers(),", ");
                     String has = bel.hasListeners() ? "&2true" : "&cfalse";
                     if (!lists2.isEmpty())
@@ -602,7 +602,7 @@ public class MethodController {
                     }
                 }
                 if (bel.getSpecificArenaPlayerListener() != null){
-                    MapOfConcurrentSkipList<String,RListener> lists2 = bel.getSpecificArenaPlayerListener().getListeners();
+                    MapOfTreeSet<String,RListener> lists2 = bel.getSpecificArenaPlayerListener().getListeners();
                     String str = MessageUtil.joinBukkitPlayers(bel.getSpecificArenaPlayerListener().getPlayers(),", ");
                     String has = bel.hasListeners() ? "&2true" : "&cfalse";
                     if (!lists2.isEmpty())

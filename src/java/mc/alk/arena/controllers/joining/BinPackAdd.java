@@ -69,17 +69,25 @@ public class BinPackAdd extends AbstractJoinHandler {
         }
         /// So we couldnt add them to an existing team
         /// Can we add them to a new team
-        if (teams.size() < maxTeams){
+        if (teams.size() < maxTeams) {
+            Collection<ArenaPlayer> players = team.getPlayers();
+            /// Fill empty teams first
+            for (ArenaTeam t : teams) {
+                if (t.size() == 0 && players.size() == t.getMaxPlayers()){
+                    addToTeam(t,players);
+                    return new TeamJoinResult(TeamJoinStatus.ADDED_TO_EXISTING,t.getMinPlayers()-t.size(), t);
+                }
+            }
             ArenaTeam ct = TeamFactory.createCompositeTeam(teams.size(), matchParams);
             ct.addPlayers(team.getPlayers());
             team.setIndex(ct.getIndex());
-            if (ct.size() == ct.getMaxPlayers()){
+            if (ct.size() == ct.getMaxPlayers()) {
                 addTeam(ct);
-                return new TeamJoinResult(TeamJoinStatus.ADDED, ct.getMinPlayers() - ct.size(),ct);
+                return new TeamJoinResult(TeamJoinStatus.ADDED, ct.getMinPlayers() - ct.size(), ct);
             } else {
                 addTeam(ct);
                 return new TeamJoinResult(TeamJoinStatus.ADDED_STILL_NEEDS_PLAYERS,
-                        ct.getMinPlayers() - ct.size(),ct);
+                        ct.getMinPlayers() - ct.size(), ct);
             }
         }
 

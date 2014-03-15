@@ -22,103 +22,107 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  */
 public abstract class BaseEventListener implements Listener  {
-	final Class<? extends Event> bukkitEvent;
-	final EventPriority bukkitPriority;
-	static long total = 0;
-	static long count=0;
-	AtomicBoolean listening = new AtomicBoolean();
-	AtomicBoolean registered = new AtomicBoolean();
-	Integer timerid = null;
-	EventExecutor executor = null;
-	static TimingUtil timings;
+    final Class<? extends Event> bukkitEvent;
+    final EventPriority bukkitPriority;
+    static long total = 0;
+    static long count=0;
+    AtomicBoolean listening = new AtomicBoolean();
+    AtomicBoolean registered = new AtomicBoolean();
+    Integer timerid = null;
+    EventExecutor executor = null;
+    static TimingUtil timings;
 
-	public BaseEventListener(final Class<? extends Event> bukkitEvent, EventPriority bukkitPriority) {
-		if (Defaults.DEBUG_EVENTS) Log.info("Registering BAEventListener for type &5" + bukkitEvent.getSimpleName());
-		this.bukkitEvent = bukkitEvent;
-		this.bukkitPriority = bukkitPriority;
+    public BaseEventListener(final Class<? extends Event> bukkitEvent, EventPriority bukkitPriority) {
+        if (Defaults.DEBUG_EVENTS) Log.info("Registering BAEventListener for type &5" + bukkitEvent.getSimpleName());
+        this.bukkitEvent = bukkitEvent;
+        this.bukkitPriority = bukkitPriority;
     }
 
-	public Class<? extends Event> getEvent(){
-		return bukkitEvent;
-	}
+    public Class<? extends Event> getEvent(){
+        return bukkitEvent;
+    }
 
-	public void stopListening(){
-		listening.set(false);
+    public void stopListening(){
+        listening.set(false);
 
-		if (BattleArena.getSelf().isEnabled()){
-			final BaseEventListener bel = this;
-			if (timerid != null){
-				Bukkit.getScheduler().cancelTask(timerid);}
-			timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
-				@Override
-				public void run() {
-					if (registered.getAndSet(false)){
-						HandlerList.unregisterAll(bel);
-					}
-					timerid = null;
-				}
-			},600L);
-		}
-	}
+        if (BattleArena.getSelf().isEnabled()){
+            final BaseEventListener bel = this;
+            if (timerid != null){
+                Bukkit.getScheduler().cancelTask(timerid);}
+            timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+                @Override
+                public void run() {
+                    if (registered.getAndSet(false)){
+                        HandlerList.unregisterAll(bel);
+                    }
+                    timerid = null;
+                }
+            },600L);
+        }
+    }
 
-	public boolean isListening(){
-		return listening.get();
-	}
+    public boolean isListening(){
+        return listening.get();
+    }
 
-	public void startListening(){
+    public void startListening(){
         //noinspection PointlessBooleanExpression
         if (isListening() || Defaults.TESTSERVER)
-			return;
+            return;
 
-		listening.set(true);
-		if (timerid != null){
-			Bukkit.getScheduler().cancelTask(timerid);
-			timerid= null;
-		}
+        listening.set(true);
+        if (timerid != null){
+            Bukkit.getScheduler().cancelTask(timerid);
+            timerid= null;
+        }
 
-		if (executor == null){
-			if (Bukkit.getPluginManager().useTimings() || Defaults.DEBUG_TIMINGS){
+        if (executor == null){
+            if (Bukkit.getPluginManager().useTimings() || Defaults.DEBUG_TIMINGS){
                 if (timings == null) {
                     timings = new TimingUtil();}
                 executor = new EventExecutor() {
-					public void execute(final Listener listener, final Event event) throws EventException {
-						long startTime = System.nanoTime();
-						if (!isListening() ||
-								(event.getClass() != bukkitEvent &&
-								!bukkitEvent.isAssignableFrom(event.getClass()))){
-							return;}
-						TimingStat t = timings.getOrCreate(event.getClass().getSimpleName());
-                        invokeEvent(event);
-						t.count+=1;
-						t.totalTime += System.nanoTime() - startTime;
-					}
-				};
-			} else {
-				executor = new EventExecutor() {
-					public void execute(final Listener listener, final Event event) throws EventException {
-                        if (!isListening() ||
-								(event.getClass() != bukkitEvent &&
-								!bukkitEvent.isAssignableFrom(event.getClass()))){
-							return;}
+                    @Override
+                    public void execute(final Listener listener, final Event event) throws EventException {
+                        long startTime = System.nanoTime();
+                        if (!listening.get() || !bukkitEvent.isAssignableFrom(event.getClass())){
+                            return;}
+                        TimingStat t = timings.getOrCreate(event.getClass().getSimpleName());
+                        try{
+                            invokeEvent(event);
+                        }catch (Throwable e) {
+                            Log.printStackTrace(e);
+                        }
+                        t.count+=1;
+                        t.totalTime += System.nanoTime() - startTime;
+                    }
+                };
+            } else {
+                executor = new EventExecutor() {
+                    @Override
+                    public void execute(final Listener listener, final Event event) throws EventException {
+                        if (!listening.get() || !bukkitEvent.isAssignableFrom(event.getClass())){
+                            return;}
+                        try{
+                            invokeEvent(event);
+                        }catch (Throwable e) {
+                            Log.printStackTrace(e);
+                        }
+                    }
+                };
+            }
 
-						invokeEvent(event);
-					}
-				};
+        }
 
-			}
+        if (Defaults.TESTSERVER) return;
 
-		}
+        if (!registered.getAndSet(true)){
+            Bukkit.getPluginManager().registerEvent(bukkitEvent, this, bukkitPriority, executor,BattleArena.getSelf());
+        }
+    }
 
-		if (Defaults.TESTSERVER) return;
+    public abstract void invokeEvent(Event event);
 
-		if (!registered.getAndSet(true)){
-			Bukkit.getPluginManager().registerEvent(bukkitEvent, this, bukkitPriority, executor,BattleArena.getSelf());
-		}
-	}
+    public abstract boolean hasListeners();
 
-	public abstract void invokeEvent(Event event);
-
-	public abstract boolean hasListeners();
-
-	public abstract void removeAllListeners(RListener rl);
+    public abstract void removeAllListeners(RListener rl);
 }

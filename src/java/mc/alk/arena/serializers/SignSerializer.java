@@ -1,15 +1,15 @@
 package mc.alk.arena.serializers;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import mc.alk.arena.listeners.SignUpdateListener;
 import mc.alk.arena.objects.signs.ArenaCommandSign;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.MapOfTreeSet;
 import mc.alk.arena.util.SerializerUtil;
-
 import org.bukkit.configuration.ConfigurationSection;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class SignSerializer extends BaseConfig {
 	public void loadAll(SignUpdateListener sc){
@@ -40,7 +40,7 @@ public class SignSerializer extends BaseConfig {
 	}
 
 	public void saveAll(SignUpdateListener sc){
-		Map<String, Set<ArenaCommandSign>> statusSigns = sc.getStatusSigns();
+		MapOfTreeSet<String, ArenaCommandSign> statusSigns = sc.getStatusSigns();
 		for (String matches: statusSigns.keySet()){
 			Set<ArenaCommandSign> set = statusSigns.get(matches);
 			if (set == null)

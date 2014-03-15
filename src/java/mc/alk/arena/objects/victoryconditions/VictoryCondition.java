@@ -23,5 +23,4 @@ public abstract class VictoryCondition extends ChangeStateCondition  {
 		return "[VC "+this.getClass().getSimpleName()+" : " + id+"]";
 	}
 
-
 }

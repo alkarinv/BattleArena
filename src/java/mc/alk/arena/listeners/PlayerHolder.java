@@ -17,10 +17,17 @@ import org.bukkit.event.Listener;
 
 public interface PlayerHolder extends Listener, ArenaListener{
 	/**
-	 * Add an arena listener for this competition
-	 * @param arenaListener
+	 * Add an arena listener
+	 * @param arenaListener ArenaListener
 	 */
 	public void addArenaListener(ArenaListener arenaListener);
+
+    /**
+     * Remove an arena listener
+     * @param arenaListener ArenaListener
+     * @return boolean if found and removed
+     */
+    public boolean removeArenaListener(ArenaListener arenaListener);
 
 	public MatchParams getParams();
 

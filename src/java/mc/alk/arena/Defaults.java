@@ -90,8 +90,10 @@ public class Defaults {
 
 	/// SIGN OPTIONS
 	public static final String SIGN_PREFIX = "*";
+    public static boolean USE_SIGN_PERMS = false;
 
-	public static boolean ITEMS_IGNORE_STACKSIZE = true;
+
+    public static boolean ITEMS_IGNORE_STACKSIZE = true;
 	public static boolean ITEMS_UNSAFE_ENCHANTMENTS = true;
 
     /// DEBUG OPTIONS
@@ -129,4 +131,5 @@ public class Defaults {
 
 	public static final int MAIN_SPAWN = Integer.MAX_VALUE;
 	public static final int MAX_TEAMS = 1000;
+
 }

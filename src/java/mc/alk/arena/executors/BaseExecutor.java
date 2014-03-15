@@ -34,6 +34,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
             new HashMap<String,Map<String,TreeMap<Integer,MethodWrapper>>>();
 
     protected PriorityQueue<MethodWrapper> usage = new PriorityQueue<MethodWrapper>(2, new Comparator<MethodWrapper>(){
+        @Override
         public int compare(MethodWrapper mw1, MethodWrapper mw2) {
             MCCommand cmd1 = mw1.getCommand();
             MCCommand cmd2 = mw2.getCommand();
@@ -207,6 +208,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
         }
     }
 
+    @Override
     @SuppressWarnings("ConstantConditions")
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         TreeMap<Integer,MethodWrapper> methodmap = null;
@@ -362,7 +364,6 @@ public abstract class BaseExecutor implements ArenaExecutor{
                 } else if (Object[].class == clazz){
                     objs[objIndex] =args;
                 } else {
-                    String str = strIndex < args.length ? args[strIndex] : null;
                     objs[objIndex] = verifyArg(sender, clazz, command, args, strIndex, numUsedStrings);
                     if (objs[objIndex] == null){
                         throw new IllegalArgumentException("Argument " + args[strIndex] + " can not be null");
@@ -495,7 +496,7 @@ public abstract class BaseExecutor implements ArenaExecutor{
             MCCommand cmd = mw.getCommand();
             final String use = "&6/" + command.getName() +" " + mw.usage;
             if (cmd.op() && !sender.isOp())
-                continue;
+                onlyop.add(use);
             else if (cmd.admin() && !hasAdminPerms(sender))
                 continue;
             else if (!cmd.perm().isEmpty() && !sender.hasPermission(cmd.perm()))

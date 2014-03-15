@@ -1,8 +1,8 @@
 package mc.alk.arena.objects.signs;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.EventController;
-import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -46,15 +46,15 @@ public class ArenaCommandSign implements ConfigurationSerializable{
 
 	private void performMatchAction(ArenaPlayer player) {
 		BAExecutor executor = BattleArena.getBAExecutor();
-		String args[];
 		switch (command){
 		case JOIN:
-			args = new String[]{"add", options1};
-			executor.join(player, ParamController.copyParams(mp), args, true);
+			executor.join(player,
+                    mp,
+                    new String[]{"add", options1},
+                    !Defaults.USE_SIGN_PERMS);
 			break;
 		case LEAVE:
-//			args = new String[]{"leave", options1,options2};
-			executor.leave(player,mp,true);
+			executor.leave(player,mp, !Defaults.USE_SIGN_PERMS);
 			break;
 		case START:
 			break;
@@ -64,18 +64,17 @@ public class ArenaCommandSign implements ConfigurationSerializable{
 	private void performEventAction(ArenaPlayer player) {
 		EventParams ep = (EventParams)mp;
 		EventExecutor executor = EventController.getEventExecutor(ep.getType().getName());
-		String args[];
 		switch (command){
 		case JOIN:
-			args = new String[]{"add", options1};
-			executor.eventJoin(player, ep, args, true);
+			executor.eventJoin(player,
+                    ep,
+                    new String[]{"add", options1},
+                    !Defaults.USE_SIGN_PERMS);
 			break;
 		case LEAVE:
-//			args = new String[]{"leave", options1,options2};
-			executor.leave(player,ep,true);
+			executor.leave(player,ep,!Defaults.USE_SIGN_PERMS);
 			break;
 		case START:
-//			executor.start();
 			break;
 		}
 	}
