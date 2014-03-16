@@ -219,7 +219,7 @@ public class ArenaAlterController {
             } else {
                 region = WorldGuardController.createProtectedRegion(sender, id);
                 if (region != null) {
-                    sendMessage(sender,"&2Region "+region.getRegionID()+" added! ");
+                    sendMessage(sender,"&2Region "+region.getID()+" added! ");
                 } else {
                     sendMessage(sender,"&cRegion addition failed! ");
                     return false;

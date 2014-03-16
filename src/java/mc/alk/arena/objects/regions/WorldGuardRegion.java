@@ -1,18 +1,13 @@
 package mc.alk.arena.objects.regions;
 
-import java.util.Map;
-
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World;
+import java.util.Map;
 
 public class WorldGuardRegion implements ArenaRegion{
 	protected String regionName;
 
 	protected String regionWorld;
-
-	World world;
 
 	public WorldGuardRegion(){}
 
@@ -43,11 +38,12 @@ public class WorldGuardRegion implements ArenaRegion{
 				WorldGuardController.hasRegion(regionWorld, regionName);
 	}
 
-	public String getRegionID() {
+	@Override
+    public String getID() {
 		return regionName;
 	}
 
-	public void setRegionID(String regionName) {
+	public void setID(String regionName) {
 		this.regionName = regionName;
 	}
 
@@ -59,9 +55,8 @@ public class WorldGuardRegion implements ArenaRegion{
 		this.regionWorld = regionWorld;
 	}
 
-	public World getWorld(){
-		if (world == null){
-			world = Bukkit.getWorld(regionWorld);}
-		return world;
+	@Override
+    public String getWorld(){
+		return regionWorld;
 	}
 }

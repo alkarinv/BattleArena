@@ -1,10 +1,10 @@
 package mc.alk.arena.controllers.plugins;
 
 import mc.alk.arena.objects.exceptions.RegionNotFound;
+import mc.alk.arena.objects.regions.ArenaRegion;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.util.plugins.WorldEditUtil;
 import mc.alk.arena.util.plugins.WorldGuardUtil;
-
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -43,7 +43,7 @@ public class WorldGuardController {
 		return WorldGuardUtil.createProtectedRegion(sender, id)!=null;
 	}
 
-	public static boolean hasRegion(WorldGuardRegion region){
+	public static boolean hasRegion(ArenaRegion region){
 		return WorldGuardUtil.hasRegion(region);
 	}
 	public static boolean hasRegion(World world, String id){
@@ -71,8 +71,7 @@ public class WorldGuardController {
 	public static void clearRegion(WorldGuardRegion region) {
 		WorldGuardUtil.clearRegion(region);
 	}
-
-	public static boolean isLeavingArea(final Location from, final Location to, WorldGuardRegion region) {
+	public static boolean isLeavingArea(final Location from, final Location to, ArenaRegion region) {
 		return WorldGuardUtil.isLeavingArea(from , to , region);
 	}
 	public static boolean isLeavingArea(final Location from, final Location to, World w, String id) {

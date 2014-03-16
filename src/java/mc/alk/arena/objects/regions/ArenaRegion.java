@@ -4,4 +4,9 @@ import mc.alk.arena.objects.YamlSerializable;
 
 public interface ArenaRegion extends YamlSerializable{
 	public boolean valid();
+
+    public String getID();
+
+    public String getWorld();
+
 }

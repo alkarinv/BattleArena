@@ -35,15 +35,14 @@ public class TeleportLocationController {
 		src.setLocation(player.getLocation());
 		if (Defaults.DEBUG_TRACE)Log.info(" ########### @@ " + player.getCurLocation()  +"  -->  " + am.getTeam(player) );
 
-		TeleportDirection td = calcTeleportDirection(player, src,dest);
+		TeleportDirection td = calcTeleportDirection(src,dest);
 		ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(mp.getType(),player,team,src,dest,td);
 
 		movePlayer(player, apte, mp);
 	}
 
 	public static void teleportOut(PlayerHolder am, ArenaTeam team,
-			ArenaPlayer player, TransitionOptions mo, int teamIndex,
-			boolean insideArena, boolean onlyInMatch, boolean wipeInventory) {
+			ArenaPlayer player, TransitionOptions mo) {
         MatchParams mp = am.getParams();
 		Location loc;
 		ArenaLocation src = player.getCurLocation();
@@ -121,43 +120,40 @@ public class TeleportLocationController {
 		}
 	}
 
-	private static TeleportDirection calcTeleportDirection(ArenaPlayer player, ArenaLocation src, ArenaLocation dest) {
-		if (player.getCurLocation().getType() == LocationType.HOME){
+	private static TeleportDirection calcTeleportDirection(ArenaLocation src, ArenaLocation dest) {
+		if (src.getType() == LocationType.HOME){
 			return TeleportDirection.FIRSTIN;
-		} else if (player.getCurLocation().getType() == dest.getType()){
+		} else if (src.getType() == dest.getType()){
 			return TeleportDirection.RESPAWN;
 		}
 		return TeleportDirection.IN;
 	}
 
 	private static ArenaLocation getArenaLocation(PlayerHolder am, ArenaTeam team,
-			ArenaPlayer player, TransitionOptions mo, int teamIndex){
+			ArenaPlayer player, TransitionOptions tops, int teamIndex){
 		final MatchParams mp = am.getParams();
-		final boolean randomRespawn = mo.hasOption(TransitionOption.RANDOMRESPAWN);
+		final boolean randomRespawn = tops.hasOption(TransitionOption.RANDOMRESPAWN);
 		Location l;
-		final boolean teleportWaitRoom = mo.shouldTeleportWaitRoom();
-		final boolean teleportLobby = mo.shouldTeleportLobby();
-		final boolean teleportSpectate = mo.shouldTeleportSpectate();
 		final LocationType type;
 		final PlayerHolder ph;
-		if (Defaults.DEBUG_TRACE)Log.info(" teamindex = " + teamIndex +"   " + am.getClass().getSimpleName()  +"  " +am);
+		if (Defaults.DEBUG_TRACE)Log.info(" teamindex = " + teamIndex +"  " + am.getClass().getSimpleName()  +"  " +am);
 
-		if (teleportWaitRoom){
-			if (mo.hasOption(TransitionOption.TELEPORTMAINWAITROOM)){
+        if (tops.shouldTeleportWaitRoom()){
+			if (tops.hasOption(TransitionOption.TELEPORTMAINWAITROOM)){
 				teamIndex = Defaults.MAIN_SPAWN;}
 			ph = (am instanceof Match) ? ((Match)am).getArena().getWaitroom() : am;
 			type = LocationType.WAITROOM;
-			l = jitter(ph.getSpawn(teamIndex, randomRespawn),teamIndex);
-		} else if (teleportLobby){
-			if (mo.hasOption(TransitionOption.TELEPORTMAINLOBBY)){
+			l = ph.getSpawn(teamIndex, randomRespawn);
+		} else if (tops.shouldTeleportLobby()){
+			if (tops.hasOption(TransitionOption.TELEPORTMAINLOBBY)){
 				teamIndex = Defaults.MAIN_SPAWN;}
 			ph = RoomController.getLobby(mp.getType());
 			type = LocationType.LOBBY;
-			l = jitter(RoomController.getLobbySpawn(teamIndex,mp.getType(),randomRespawn),0);
-		} else if (teleportSpectate){
+			l = RoomController.getLobbySpawn(teamIndex,mp.getType(),randomRespawn);
+		} else if (tops.shouldTeleportSpectate()){
 			ph = (am instanceof Match) ? ((Match)am).getArena().getSpectatorRoom() : am;
 			type = LocationType.SPECTATE;
-			l = jitter(ph.getSpawn(teamIndex, randomRespawn),teamIndex);
+			l = ph.getSpawn(teamIndex, randomRespawn);
 		} else { // They should teleportIn, aka to the Arena
 			final Arena arena;
 			if (am instanceof Arena){
@@ -168,29 +164,13 @@ public class TeleportLocationController {
 			} else {
 				throw new IllegalStateException("[BA Error] Instance is " + am.getClass().getSimpleName());
 			}
-			ph = am;
+            boolean random = (player.getCurLocation().getType() == LocationType.HOME &&
+                    tops.hasOption(TransitionOption.RANDOMSPAWN));
+            ph = am;
 			type = LocationType.ARENA;
-			l = arena.getSpawn(teamIndex,false);
+			l = arena.getSpawn(teamIndex,random);
 		}
 		return new ArenaLocation(ph, l,type);
 	}
 
-	static Location jitter(final Location teamSpawn, int index) {
-		if (index == 0)
-			return teamSpawn;
-		index = index % 6;
-		Location loc = teamSpawn.clone();
-
-		switch(index){
-		case 0: break;
-		case 1: loc.setX(loc.getX()-1); break;
-		case 2:	loc.setX(loc.getX()+1); break;
-		case 3:	loc.setZ(loc.getZ()-1); break;
-		case 4:	loc.setZ(loc.getZ()+1); break;
-		case 5:
-			loc.setX(loc.getX() + rand.nextDouble()-0.5);
-			loc.setZ(loc.getZ() + rand.nextDouble()-0.5);
-		}
-		return loc;
-	}
 }

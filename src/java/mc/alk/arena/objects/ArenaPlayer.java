@@ -216,6 +216,9 @@ public class ArenaPlayer {
         this.arenaTeam = team;
     }
 
+    /**
+     * Sets the players oldLocation to the current spot ONLY if not already set
+     */
     public void markOldLocation(){
         if (oldLocation == null){
             oldLocation = getLocation();}

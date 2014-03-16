@@ -66,10 +66,6 @@ public class WorldGuardUtil {
         mc.alk.arena.util.plugins.WorldGuardUtil.clearRegion(world, id);
     }
 
-    public static boolean isLeavingArea(final Location from, final Location to, final WorldGuardRegion region) {
-        return mc.alk.arena.util.plugins.WorldGuardUtil.isLeavingArea(from, to, region);
-    }
-
     public static boolean isLeavingArea(final Location from, final Location to, final World w, String id) {
         return mc.alk.arena.util.plugins.WorldGuardUtil.isLeavingArea(from, to, w, id);
     }

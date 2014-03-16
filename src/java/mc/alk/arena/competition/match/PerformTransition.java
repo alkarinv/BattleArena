@@ -251,8 +251,7 @@ public class PerformTransition {
 
         /// Teleport out, need to do this at the end so that all the onCancel/onComplete options are completed first
         if (teleportOut ){ /// Lets not teleport people out who are already out(like dead ppl)
-            TeleportLocationController.teleportOut(am, team, player,mo, teamIndex,
-                    insideArena, onlyInMatch, wipeInventory);
+            TeleportLocationController.teleportOut(am, team, player,mo);
         }
         /// Restore their exp and items.. Has to happen AFTER teleport
         boolean restoreAll = mo.hasOption(TransitionOption.RESTOREALL);

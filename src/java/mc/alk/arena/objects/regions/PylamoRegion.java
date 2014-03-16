@@ -1,8 +1,8 @@
 package mc.alk.arena.objects.regions;
 
-import java.util.Map;
-
 import mc.alk.arena.controllers.plugins.PylamoController;
+
+import java.util.Map;
 
 public class PylamoRegion implements ArenaRegion{
 	String regionName;
@@ -28,10 +28,18 @@ public class PylamoRegion implements ArenaRegion{
 		regionName = id;
 	}
 
-	public String getID() {
+	@Override
+    public String getID() {
 		return regionName;
 	}
-	public boolean valid(){
+
+    @Override
+    public String getWorld() {
+        return null;
+    }
+
+    @Override
+    public boolean valid(){
 		return regionName != null && PylamoController.enabled();
 	}
 }

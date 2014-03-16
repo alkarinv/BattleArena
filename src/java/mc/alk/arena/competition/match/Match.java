@@ -91,7 +91,6 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 
@@ -200,7 +199,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         boolean noEnter = tops.hasAnyOption(TransitionOption.WGNOENTER);
         if (arena.hasRegion())
             WorldGuardController.setFlag(arena.getWorldGuardRegion(), "entry", !noEnter);
-        boolean noLeave = tops.hasAnyOption(TransitionOption.WGNOLEAVE);
 
         this.woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS) && params.getMaxTeamSize() >1 ||
                 tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS);
@@ -246,8 +244,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         events.addAll(Arrays.asList(ArenaPlayerLeaveEvent.class, PlayerRespawnEvent.class,
                 PlayerCommandPreprocessEvent.class, PlayerDeathEvent.class,
                 PlayerInteractEvent.class, ArenaPlayerDeathEvent.class, ArenaPlayerReadyEvent.class));
-        if (noLeave){
-            events.add(PlayerMoveEvent.class);}
         ListenerAdder.addListeners(this, tops);
         methodController.addSpecificEvents(this, events);
         EventManager.registerEvents(this, BattleArena.getSelf());

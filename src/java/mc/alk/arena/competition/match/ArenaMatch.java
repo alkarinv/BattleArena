@@ -5,7 +5,6 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeleportController;
-import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
 import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
 import mc.alk.arena.events.players.ArenaPlayerKillEvent;
@@ -34,13 +33,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -51,10 +48,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-/**
- * TODO transfer most of this into their own listeners
- * like ItemDropListener
- */
 public class ArenaMatch extends Match {
     static boolean disabledAllCommands;
     final static HashSet<String> disabledCommands = new HashSet<String>();
@@ -67,10 +60,6 @@ public class ArenaMatch extends Match {
         super(arena, mp,listeners);
     }
 
-    @ArenaEventHandler(priority=EventPriority.LOW, begin=MatchState.ONPRESTART, end=MatchState.ONSTART)
-    public void onPlayerMove2(PlayerMoveEvent e) {
-        e.setCancelled(true);
-    }
 
     @ArenaEventHandler(suppressCastWarnings=true,bukkitPriority=org.bukkit.event.EventPriority.MONITOR)
     public void onPlayerDeath(PlayerDeathEvent event) {
@@ -309,25 +298,6 @@ public class ArenaMatch extends Match {
                     tops.getOptions(MatchState.ONLEAVE).getTeleportToLoc() : oldlocs.get(p.getName());
             if (l != null)
                 event.setRespawnLocation(l);
-        }
-    }
-
-    @ArenaEventHandler(priority=EventPriority.HIGH)
-    public void onPlayerMove(PlayerMoveEvent event){
-        if (!event.isCancelled() && arena.hasRegion() &&
-                tops.hasInArenaOrOptionAt(state,TransitionOption.WGNOLEAVE) &&
-                WorldGuardController.hasWorldGuard()){
-            /// Did we actually even move
-            if (event.getFrom().getBlockX() != event.getTo().getBlockX()
-                    || event.getFrom().getBlockY() != event.getTo().getBlockY()
-                    || event.getFrom().getBlockZ() != event.getTo().getBlockZ()){
-                /// Now check world
-                World w = arena.getWorldGuardRegion().getWorld();
-                if (w==null || w.getUID() != event.getTo().getWorld().getUID())
-                    return;
-                if (WorldGuardController.isLeavingArea(event.getFrom(), event.getTo(),arena.getWorldGuardRegion())){
-                    event.setCancelled(true);}
-            }
         }
     }
 
