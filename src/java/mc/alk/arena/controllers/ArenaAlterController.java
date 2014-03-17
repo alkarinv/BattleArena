@@ -98,11 +98,7 @@ public class ArenaAlterController {
         public static Object getValue(ChangeType ct, int curIndex, String[] args) {
             String value = args[curIndex];
             switch (ct) {
-                case WAITROOM:
-                case SPECTATE:
-                case LOBBY:
                 case SPAWNLOC:
-                case VLOC:
                     try{
                         if (value.equalsIgnoreCase("spawn")) {
                             curIndex++;
@@ -111,6 +107,10 @@ public class ArenaAlterController {
                     } catch (Exception e){
                         /* do nothing*/
                     }
+                case WAITROOM:
+                case SPECTATE:
+                case LOBBY:
+                case VLOC:
                     Integer locindex = null;
                     try {
                         locindex = Integer.parseInt(value) - 1;
