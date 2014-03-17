@@ -3,7 +3,6 @@ package mc.alk.arena.controllers.containers;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
-import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
@@ -12,6 +11,7 @@ import mc.alk.arena.events.players.ArenaPlayerLeaveMatchEvent;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.PlayerHolder;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.LocationType;
@@ -22,12 +22,12 @@ import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PlayerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -129,12 +129,7 @@ public class GameManager implements PlayerHolder{
 	}
 
 	@Override
-	public Location getSpawn(int index, boolean random) {
-		return null;
-	}
-
-	@Override
-	public Location getSpawn(ArenaPlayer player, boolean random) {
+	public SpawnLocation getSpawn(int index, boolean random) {
 		return null;
 	}
 

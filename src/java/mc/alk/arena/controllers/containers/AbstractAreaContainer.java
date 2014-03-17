@@ -3,13 +3,13 @@ package mc.alk.arena.controllers.containers;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.PerformTransition;
-import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveLobbyEvent;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.PlayerHolder;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.ContainerState;
@@ -19,11 +19,12 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.TeamUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 
 import java.util.ArrayList;
@@ -60,10 +61,12 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
     final protected Set<String> players = new HashSet<String>();
 
     /** Spawn points */
-    final protected List<Location> spawns = new ArrayList<Location>();
+    final protected List<List<SpawnLocation>> spawns = new ArrayList<List<SpawnLocation>>();
+
+    protected List<SpawnLocation> allSpawns;
 
     /** Main Spawn is different than the normal spawns.  It is specified by Defaults.MAIN_SPAWN */
-    Location mainSpawn = null;
+    SpawnLocation mainSpawn = null;
 
     /** Our teams */
     final protected List<ArenaTeam> teams = Collections.synchronizedList(new ArrayList<ArenaTeam>());
@@ -190,33 +193,55 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
     }
 
     @Override
-    public Location getSpawn(int index, boolean random) {
+    public SpawnLocation getSpawn(int index, boolean random) {
         if (index == Defaults.MAIN_SPAWN)
-            return mainSpawn != null ? mainSpawn : (spawns.size()==1 ? spawns.get(0) : null);
+            return mainSpawn != null ? mainSpawn :
+                    (spawns.size()==1 ? spawns.get(0).get(0) : null);
         if (random){
-            return spawns.get(r.nextInt(spawns.size()));
-        } else{
-            return index >= spawns.size() ? spawns.get(index % spawns.size()) : spawns.get(index);
+            if (allSpawns == null) {
+                buildAllSpawns();}
+            return allSpawns ==null? null : allSpawns.get(r.nextInt(allSpawns.size()));
+        } else {
+            List<SpawnLocation> l = index >= spawns.size() ? spawns.get(index % spawns.size()) : spawns.get(index);
+            return l.get(r.nextInt(l.size()));
         }
     }
 
-    @Override
-    public Location getSpawn(ArenaPlayer player, boolean random) {
-        return null;
+    private void buildAllSpawns(){
+        if (spawns.isEmpty()){
+            return;
+        }
+        allSpawns = new ArrayList<SpawnLocation>();
+        for (List<SpawnLocation> spawn: spawns) {
+            allSpawns.addAll(spawn);
+        }
     }
 
     /**
      * Set the spawn location for the team with the given index
-     * @param index index of spawn
-     * @param loc location
+     * @param teamIndex index of which team to add this spawn to
+     * @param spawnIndex which spawn to set
+     * @param loc SpawnLocation
      */
-    public void setSpawnLoc(int index, Location loc) throws IllegalStateException{
-        if (index == Defaults.MAIN_SPAWN){
+    public void setSpawnLoc(int teamIndex, int spawnIndex, SpawnLocation loc) throws IllegalStateException{
+        if (teamIndex == Defaults.MAIN_SPAWN){
             mainSpawn = loc;
-        } else if (spawns.size() > index){
-            spawns.set(index, loc);
-        } else if (spawns.size() == index){
-            spawns.add(loc);
+        } else if (spawns.size() > teamIndex) {
+            List<SpawnLocation> list = spawns.get(teamIndex);
+            if (list.size() > spawnIndex) {
+                list.set(spawnIndex, loc);
+            } else if (list.size() == spawnIndex){
+                list.add(loc);
+            } else {
+                throw new IllegalStateException("You must set team spawn " + (list.size()+1) + " first");
+            }
+        } else if (spawns.size() == teamIndex) {
+            ArrayList<SpawnLocation> list = new ArrayList<SpawnLocation>();
+            if (list.size() < spawnIndex){
+                throw new IllegalStateException("You must set spawn #" + (list.size()+1) +
+                        " for the "+ TeamUtil.getTeamName(teamIndex)+" team first");}
+            list.add(loc);
+            spawns.add(list);
         } else {
             throw new IllegalStateException("You must set spawn " + (spawns.size()+1) + " first");
         }
@@ -225,10 +250,10 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
         return spawns.size() < index;
     }
 
-    public List<Location> getSpawns(){
+    public List<List<SpawnLocation>> getSpawns(){
         return spawns;
     }
-    public Location getMainSpawn(){
+    public SpawnLocation getMainSpawn(){
         return mainSpawn;
     }
 

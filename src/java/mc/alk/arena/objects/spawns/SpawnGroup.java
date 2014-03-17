@@ -27,13 +27,15 @@ public class SpawnGroup extends SpawnInstance implements Spawnable{
 		return name;
 	}
 
-	public void despawn() {
+	@Override
+    public void despawn() {
 		for (Spawnable spawn: spawns){
 			spawn.despawn();
 		}
 	}
 
-	public void spawn() {
+	@Override
+    public void spawn() {
 		for (Spawnable spawn: spawns){
 			spawn.spawn();
 		}

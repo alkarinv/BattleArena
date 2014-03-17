@@ -27,7 +27,7 @@ public class PlayerMoveListener implements ArenaListener{
     @ArenaEventHandler(priority=EventPriority.HIGH)
     public void onPlayerMove(PlayerMoveEvent event){
         if (!event.isCancelled() && w.getUID() == event.getTo().getWorld().getUID() &&
-                transitionOptions.hasInArenaOrOptionAt(match.getMatchState(),TransitionOption.WGNOLEAVE) &&
+                transitionOptions.hasInArenaOrOptionAt(match.getState(),TransitionOption.WGNOLEAVE) &&
                 WorldGuardController.hasWorldGuard()){
             /// Did we actually even move
             if (event.getFrom().getBlockX() != event.getTo().getBlockX()

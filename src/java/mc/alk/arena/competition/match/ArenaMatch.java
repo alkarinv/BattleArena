@@ -21,6 +21,7 @@ import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.DmgDeathUtil;
@@ -234,7 +235,7 @@ public class ArenaMatch extends Match {
             if (timer != null) {
                 Bukkit.getScheduler().cancelTask(timer);
             }
-            final Location loc;
+            final SpawnLocation loc;
             final ArenaTeam t = getTeam(p);
             if (mo.hasAnyOption(TransitionOption.TELEPORTLOBBY, TransitionOption.TELEPORTMAINLOBBY,
                     TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTMAINWAITROOM)) {
@@ -255,8 +256,12 @@ public class ArenaMatch extends Match {
                         public void run() {
                             Integer id = respawnTimer.remove(p.getName());
                             Bukkit.getScheduler().cancelTask(id);
-                            Location loc = getTeamSpawn(index, tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
-                            TeleportController.teleport(p.getPlayer(), loc);
+                            SpawnLocation loc = getTeamSpawn(index, tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
+                            TeleportController.teleport(p.getPlayer(), loc.getLocation());
+                            if (scoreboard != null && p.getPlayer().getScoreboard()!=null) {
+                                scoreboard.setScoreboard(p.getPlayer());
+                            }
+
                         }
                     }, mo.getRespawnTime() * 20);
                     respawnTimer.put(p.getName(), id);
@@ -265,11 +270,12 @@ public class ArenaMatch extends Match {
                 loc = getTeamSpawn(getTeam(p), randomRespawn);
             }
 
-            event.setRespawnLocation(loc);
+            event.setRespawnLocation(loc.getLocation());
             /// For some reason, the player from onPlayerRespawn Event isnt the one in the main thread, so we need to
             /// resync before doing any effects
             final Match am = this;
             Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+                @Override
                 public void run() {
                     ArenaTeam t = getTeam(p);
                     PerformTransition.transition(am, MatchState.ONDEATH, p, t, false);
@@ -358,9 +364,9 @@ public class ArenaMatch extends Match {
         ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
         Integer id = respawnTimer.remove(ap.getName());
         Bukkit.getScheduler().cancelTask(id);
-        Location loc = am.getSpawn(am.getTeam(ap).getIndex(),
+        SpawnLocation loc = am.getSpawn(am.getTeam(ap).getIndex(),
                 am.getParams().hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
-        TeleportController.teleport(ap, loc);
+        TeleportController.teleport(ap, loc.getLocation());
     }
 
     public static void signClick(PlayerInteractEvent event, PlayerHolder am) {

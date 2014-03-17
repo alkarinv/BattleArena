@@ -29,7 +29,6 @@ import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.matches.MatchTimerIntervalEvent;
 import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
-import mc.alk.arena.events.players.ArenaPlayerReadyEvent;
 import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.events.prizes.ArenaDrawersPrizeEvent;
 import mc.alk.arena.events.prizes.ArenaLosersPrizeEvent;
@@ -61,6 +60,7 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.NLives;
 import mc.alk.arena.objects.victoryconditions.NoTeamsLeft;
@@ -85,13 +85,8 @@ import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -240,12 +235,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
 
         /// Register the events we are listening to
-        ArrayList<Class<? extends Event>> events = new ArrayList<Class<? extends Event>>();
-        events.addAll(Arrays.asList(ArenaPlayerLeaveEvent.class, PlayerRespawnEvent.class,
-                PlayerCommandPreprocessEvent.class, PlayerDeathEvent.class,
-                PlayerInteractEvent.class, ArenaPlayerDeathEvent.class, ArenaPlayerReadyEvent.class));
         ListenerAdder.addListeners(this, tops);
-        methodController.addSpecificEvents(this, events);
+        methodController.addAllEvents(this);
         EventManager.registerEvents(this, BattleArena.getSelf());
         /// add a default objective
         defaultObjective = scoreboard.createObjective("default",
@@ -1335,16 +1326,16 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         return players;
     }
 
-    public Location getTeamSpawn(ArenaTeam team, boolean random){
+    public SpawnLocation getTeamSpawn(ArenaTeam team, boolean random){
         return random ? arena.getSpawn(-1,true): arena.getSpawn(team.getIndex(),false);
     }
-    public Location getTeamSpawn(int index, boolean random){
+    public SpawnLocation getTeamSpawn(int index, boolean random){
         return random ? arena.getSpawn(-1,true): arena.getSpawn(index,false);
     }
-    public Location getWaitRoomSpawn(ArenaTeam team, boolean random){
+    public SpawnLocation getWaitRoomSpawn(ArenaTeam team, boolean random){
         return random ? arena.getRandomWaitRoomSpawnLoc(): arena.getWaitRoomSpawnLoc(team.getIndex());
     }
-    public Location getWaitRoomSpawn(int index, boolean random){
+    public SpawnLocation getWaitRoomSpawn(int index, boolean random){
         return random ? arena.getRandomWaitRoomSpawnLoc(): arena.getWaitRoomSpawnLoc(index);
     }
 
@@ -1455,7 +1446,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         boolean inmatch = inMatch.contains(p.getName());
         final String pname = p.getDisplayName();
         boolean ready = true;
-        World w = arena.getSpawn(0,false).getWorld();
+        World w = arena.getSpawn(0,false).getLocation().getWorld();
         if (Defaults.DEBUG) System.out.println(p.getName()+"  online=" + online +" isready="+tops.playerReady(p,w));
         if (!online){
             t.sendToOtherMembers(p,"&4!!! &eYour teammate &6"+pname+"&e was killed for not being online");
@@ -1626,13 +1617,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     }
 
     @Override
-    public Location getSpawn(int index, boolean random) {
+    public SpawnLocation getSpawn(int index, boolean random) {
         return this.getTeamSpawn(index, random);
-    }
-
-    @Override
-    public Location getSpawn(ArenaPlayer player, boolean random) {
-        return player.getLocation();
     }
 
     @Override

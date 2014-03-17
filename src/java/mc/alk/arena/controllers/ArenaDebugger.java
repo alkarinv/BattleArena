@@ -1,6 +1,7 @@
 package mc.alk.arena.controllers;
 
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.util.TeamUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -65,20 +66,29 @@ public class ArenaDebugger {
 		if (sc != null){
 			sc.start();
 		}
-		List<Location> locs = arena.getSpawns();
+		List<List<SpawnLocation>> locs = arena.getSpawns();
 		if (locs != null){
 			for (int i=0;i<locs.size();i++){
-				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));}
+                for (SpawnLocation l : locs.get(i)){
+                    changeBlocks(player, l.getLocation(), TeamUtil.getTeamHead(i));
+                }
+            }
 		}
 		locs = arena.getWaitroom() != null ? arena.getWaitroom().getSpawns() : null;
 		if (locs != null){
-			for (int i=0;i<locs.size();i++){
-				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));}
+            for (int i=0;i<locs.size();i++){
+                for (SpawnLocation l : locs.get(i)){
+                    changeBlocks(player, l.getLocation(), TeamUtil.getTeamHead(i));
+                }
+            }
 		}
 		locs = arena.getSpectatorRoom() != null ? arena.getSpectatorRoom().getSpawns() : null;
 		if (locs != null){
-			for (int i=0;i<locs.size();i++){
-				changeBlocks(player, locs.get(i), TeamUtil.getTeamHead(i));}
+            for (int i=0;i<locs.size();i++){
+                for (SpawnLocation l : locs.get(i)){
+                    changeBlocks(player, l.getLocation(), TeamUtil.getTeamHead(i));
+                }
+            }
 		}
 	}
 

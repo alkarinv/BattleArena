@@ -1,9 +1,9 @@
 package mc.alk.arena.objects.events;
 
+import mc.alk.arena.objects.MatchState;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
-import mc.alk.arena.objects.MatchState;
 
 
 @Retention(RetentionPolicy.RUNTIME)
@@ -13,6 +13,7 @@ public @interface ArenaEventHandler {
 	EventPriority priority() default EventPriority.NORMAL;
 	boolean needsPlayer() default true;
 	String entityMethod() default "";
-	boolean suppressCastWarnings() default false;
+    boolean suppressCastWarnings() default false;
+    boolean suppressWarnings() default false;
 	org.bukkit.event.EventPriority bukkitPriority() default org.bukkit.event.EventPriority.HIGHEST;
 }

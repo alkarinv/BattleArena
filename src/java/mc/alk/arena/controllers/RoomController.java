@@ -7,7 +7,7 @@ import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
-import org.bukkit.Location;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,23 +66,23 @@ public enum RoomController {
         return lobby;
     }
 
-    public static void addLobby(ArenaType type, int index, Location location) {
+    public static void addLobby(ArenaType type, int index, int spawnIndex, SpawnLocation location) {
         RoomContainer room = INSTANCE.getOrCreate(type);
-        room.setSpawnLoc(index,location);
+        room.setSpawnLoc(index,spawnIndex, location);
     }
 
-    public static void addWaitRoom(Arena arena, int index, Location location) {
+    public static void addWaitRoom(Arena arena, int index, int spawnIndex, SpawnLocation location) {
         RoomContainer room = INSTANCE.getOrCreate(arena);
         if (arena.getWaitroom() == null)
             arena.setWaitRoom(room);
-        room.setSpawnLoc(index,location);
+        room.setSpawnLoc(index,spawnIndex, location);
     }
 
-    public static void addSpectate(Arena arena, int index, Location location) {
+    public static void addSpectate(Arena arena, int index, int spawnIndex, SpawnLocation location) {
         RoomContainer room = INSTANCE._getOrCreateSpectate(arena);
         if (arena.getSpectatorRoom() == null)
             arena.setSpectate(room);
-        room.setSpawnLoc(index,location);
+        room.setSpawnLoc(index,spawnIndex, location);
     }
 
     public static boolean hasLobby(ArenaType type) {
@@ -113,11 +113,11 @@ public enum RoomController {
         return INSTANCE._getOrCreateSpectate(arena);
     }
 
-    public static Location getLobbySpawn(int index, ArenaType type, boolean randomRespawn) {
+    public static SpawnLocation getLobbySpawn(int index, ArenaType type, boolean randomRespawn) {
         return INSTANCE.getSpawn(index,type, randomRespawn);
     }
 
-    private Location getSpawn(int index, ArenaType type, boolean randomRespawn) {
+    private SpawnLocation getSpawn(int index, ArenaType type, boolean randomRespawn) {
         RoomContainer lobby = lobbies.get(type);
         if (lobby == null)
             return null;

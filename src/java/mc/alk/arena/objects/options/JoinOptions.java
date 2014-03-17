@@ -7,6 +7,7 @@ import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
@@ -120,11 +121,14 @@ public class JoinOptions {
 					arenajoinloc.distance(joinedLocation) <= distance);
 		}
 
-		for (Location l : arena.getSpawns()){
-			if (l.getWorld().getUID() != wid)
-				return false;
-			if (l.distance(joinedLocation) <= distance)
-				return true;
+		for (List<SpawnLocation> list : arena.getSpawns()){
+            for (SpawnLocation l : list){
+                if (l.getLocation().getWorld().getUID() != wid)
+                    return false;
+                if (l.getLocation().distance(joinedLocation) <= distance)
+                    return true;
+
+            }
 		}
 		return false;
 	}
@@ -135,9 +139,11 @@ public class JoinOptions {
 		if (arenajoinloc != null){
 			return (wid == arenajoinloc.getWorld().getUID());}
 
-		for (Location l : arena.getSpawns()){
-			if (l.getWorld().getUID() != wid)
-				return false;
+		for (List<SpawnLocation> list : arena.getSpawns()){
+            for (SpawnLocation l : list){
+                if (l.getLocation().getWorld().getUID() != wid)
+                    return false;
+            }
 		}
 		return true;
 	}

@@ -18,6 +18,7 @@ import mc.alk.arena.objects.RegisteredCompetition;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.joining.WaitingObject;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
@@ -33,7 +34,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -366,7 +366,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
     public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, LocationType type, Integer spawnIndex) {
         if (spawnIndex < 1)
             spawnIndex=1;
-        final Location loc;
+        final SpawnLocation loc;
         switch(type){
             case ANY:
             case ARENA:
@@ -392,8 +392,9 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
         }
         if (loc ==null){
             return sendMessage(sender,"&2Spawn " + spawnIndex +" doesn't exist for " + type);}
-        TeleportController.teleport(sender, loc);
-        return sendMessage(sender,"&2Teleported to &6"+ type +" " + spawnIndex +" &2loc=&6"+SerializerUtil.getBlockLocString(loc));
+        TeleportController.teleport(sender, loc.getLocation());
+        return sendMessage(sender,"&2Teleported to &6"+ type +" " + spawnIndex +" &2loc=&6"+
+                SerializerUtil.getBlockLocString(loc.getLocation()));
     }
 
     @MCCommand(cmds={"giveArenaClass"}, admin=true)

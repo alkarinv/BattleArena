@@ -293,6 +293,7 @@ public class MethodController {
             boolean needsPlayer;
             final String entityMethod;
             boolean supressCastWarnings;
+            boolean suppressWarnings;
             mc.alk.arena.objects.events.EventPriority priority;
             org.bukkit.event.EventPriority bukkitPriority;
 
@@ -306,6 +307,7 @@ public class MethodController {
             needsPlayer = aeh.needsPlayer();
             entityMethod = aeh.entityMethod();
             supressCastWarnings = aeh.suppressCastWarnings();
+            suppressWarnings = aeh.suppressWarnings();
             bukkitPriority = aeh.bukkitPriority();
             priority = aeh.priority();
 
@@ -350,11 +352,24 @@ public class MethodController {
                 if (getPlayerMethod == null){
                     if (!playerMethods.isEmpty()){
                         if (playerMethods.size() > 1){
-                            System.err.println(alClass+". Method "+method.getName() +" has multiple methods that return a player");
-                            System.err.println(alClass+". Use @MatchEventHandler(entityMethod=\"methodWhichYouWantToUse\")");
-                            return;
+                            for (Method m : playerMethods){
+                                /// Use the default getPlayer
+                                if (m.getName().equals("getPlayer")){
+                                    System.out.println(alClass+". Method "+method.getName() +" has multiple methods that return a player");
+                                    System.out.println(alClass+". defaulting to getPlayer()");
+                                    System.out.println(alClass + ". To specify use @ArenaEventHandler(entityMethod=\"methodWhichYouWantToUse\")");
+                                    System.out.println(alClass+". to suppress this warning @ArenaEventHandler(suppressWarnings=true)");
+                                    getPlayerMethod = m;
+                                }
+                            }
+                            if (getPlayerMethod==null){
+                                System.err.println(alClass+". Method "+method.getName() +" has multiple methods that return a player");
+                                System.err.println(alClass+". Use @ArenaEventHandler(entityMethod=\"methodWhichYouWantToUse\")");
+                                return;
+                            }
+                        } else {
+                            getPlayerMethod = playerMethods.get(0);
                         }
-                        getPlayerMethod = playerMethods.get(0);
                     } else if (!entityMethods.isEmpty()){
                         if (bukkitEvent == EntityDeathEvent.class){
                             try {
@@ -388,11 +403,11 @@ public class MethodController {
                     System.err.println("[BattleArena] "+alClass+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
                             bukkitEvent.getCanonicalName()+"returns no player, and no entities. Class="+alClass);
                     return;
-                } else if (getLivingMethod != null && !supressCastWarnings){
+                } else if (getLivingMethod != null && !supressCastWarnings && !suppressWarnings){
                     if (!EntityDamageByEntityEvent.class.isAssignableFrom(bukkitEvent))
                         Log.warn("[BattleArena] Warning. "+alClass+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
                                 bukkitEvent.getCanonicalName()+" returns only a living entity. Cast to Player will be attempted at runtime");
-                } else if (getEntityMethod != null && !supressCastWarnings){
+                } else if (getEntityMethod != null && !supressCastWarnings && !suppressWarnings){
                     if (!EntityDamageByEntityEvent.class.isAssignableFrom(bukkitEvent))
                         Log.warn("[BattleArena] Warning. "+alClass+". Method "+method.getName() +" needs a player or team, but the bukkitEvent "+
                                 bukkitEvent.getCanonicalName()+" returns only an Entity. Cast to Player will be attempted at runtime");

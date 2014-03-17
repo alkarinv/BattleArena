@@ -11,18 +11,18 @@ import org.bukkit.event.block.BlockBreakEvent;
 
 public class BlockBreakListener implements ArenaListener{
 	MatchTransitions transitionOptions;
-	PlayerHolder match;
+	PlayerHolder holder;
 
-	public BlockBreakListener(PlayerHolder match){
-		this.transitionOptions = match.getParams().getTransitionOptions();
-		this.match = match;
+	public BlockBreakListener(PlayerHolder holder){
+		this.transitionOptions = holder.getParams().getTransitionOptions();
+		this.holder = holder;
 	}
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerBlockBreak(BlockBreakEvent event){
-		if (transitionOptions.hasInArenaOrOptionAt(match.getMatchState(), TransitionOption.BLOCKBREAKOFF)){
+		if (transitionOptions.hasInArenaOrOptionAt(holder.getState(), TransitionOption.BLOCKBREAKOFF)){
 			event.setCancelled(true);
-		} else if (transitionOptions.hasInArenaOrOptionAt(match.getMatchState(), TransitionOption.BLOCKBREAKON)){
+		} else if (transitionOptions.hasInArenaOrOptionAt(holder.getState(), TransitionOption.BLOCKBREAKON)){
 			event.setCancelled(false);
 		}
 	}

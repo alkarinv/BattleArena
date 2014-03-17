@@ -20,7 +20,7 @@ public class ItemDropListener implements ArenaListener{
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerDropItem(PlayerDropItemEvent event){
-		if (transitionOptions.hasInArenaOrOptionAt(match.getMatchState(), TransitionOption.ITEMDROPOFF)){
+		if (transitionOptions.hasInArenaOrOptionAt(match.getState(), TransitionOption.ITEMDROPOFF)){
 			event.setCancelled(true);}
 	}
 }

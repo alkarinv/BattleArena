@@ -1,6 +1,7 @@
 package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.plugin.updater.v1r6.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -15,9 +16,14 @@ public class Util {
 				System.out.println(ste);}
 	}
 
-	static public String getLocString(Location l){
-		return l.getWorld().getName() +"," + (int)l.getX() + "," + (int)l.getY() + "," + (int)l.getZ();
-	}
+    static public String getLocString(Location l){
+        return l.getWorld().getName() +"," + (int)l.getX() + "," + (int)l.getY() + "," + (int)l.getZ();
+    }
+
+    static public String getLocString(SpawnLocation l){
+        return l.getLocation().getWorld().getName() +"," + (int)l.getLocation().getX() +
+                "," + (int)l.getLocation().getY() + "," + (int)l.getLocation().getZ();
+    }
 
 	/**
 	 * Returns the version of craftbukkit

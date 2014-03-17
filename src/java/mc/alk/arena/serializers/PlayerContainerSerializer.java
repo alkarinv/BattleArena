@@ -1,16 +1,17 @@
 package mc.alk.arena.serializers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.spawns.FixedLocation;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.util.SerializerUtil;
-
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class PlayerContainerSerializer extends BaseConfig{
@@ -24,7 +25,7 @@ public class PlayerContainerSerializer extends BaseConfig{
 
 			for (int i = 0;i< strlocs.size();i++){
 				Location l = SerializerUtil.getLocation(strlocs.get(i));
-				RoomController.addLobby(params.getType(), i, l);
+				RoomController.addLobby(params.getType(), i,0, new FixedLocation(l));
 			}
 		}
 	}
@@ -35,15 +36,12 @@ public class PlayerContainerSerializer extends BaseConfig{
 		for (RoomContainer lobby: RoomController.getLobbies()){
 			HashMap<String, Object> amap = new HashMap<String, Object>();
 			/// Spawn locations
-			List<Location> locs = lobby.getSpawns();
-			if (locs != null){
-				List<String> strlocs =new ArrayList<String>();
-				for (Location l : locs){
-					strlocs.add(SerializerUtil.getLocString(l));}
-
-				amap.put("spawns", strlocs);
-			}
-			main.set(lobby.getParams().getType().getName(), amap);
+			List<List<SpawnLocation>> locs = lobby.getSpawns();
+			if (locs != null) {
+                Map<String, List<String>> strlocs =  SerializerUtil.createSaveableLocations(SerializerUtil.toMap(locs));
+                amap.put("spawns", strlocs);
+            }
+            main.set(lobby.getParams().getType().getName(), amap);
 		}
 		super.save();
 	}

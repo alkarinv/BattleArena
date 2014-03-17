@@ -20,10 +20,12 @@ import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.regions.PylamoRegion;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.Persist;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.Util;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -153,14 +155,14 @@ public class Arena extends AreaContainer {
 	 * private Arena onEnterWaitRoom events, calls onEnterWaitRoom for subclasses to be able to override
 	 */
 	void privateOnEnterWaitRoom(ArenaPlayer player, ArenaTeam team){
-		try{onEnterWaitRoom(player,team);}catch(Exception e){Log.printStackTrace(e);}
+		try{onEnterWaitRoom(player, team);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
 	 * private Arena onEnterWaitRoom events, calls onEnterWaitRoom for subclasses to be able to override
 	 */
 	void privateOnEnterSpectate(ArenaPlayer player, ArenaTeam team){
-		try{onEnterSpectate(player,team);}catch(Exception e){Log.printStackTrace(e);}
+		try{onEnterSpectate(player, team);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
@@ -168,7 +170,7 @@ public class Arena extends AreaContainer {
 	 * Happens when a player joins a team
 	 */
 	void privateOnJoin(ArenaPlayer player, ArenaTeam team){
-		try{onJoin(player,team);}catch(Exception e){Log.printStackTrace(e);}
+		try{onJoin(player, team);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
@@ -176,7 +178,7 @@ public class Arena extends AreaContainer {
 	 * Happens when a player leaves a team
 	 */
 	void privateOnLeave(ArenaPlayer player, ArenaTeam team){
-		try{onLeave(player,team);}catch(Exception e){Log.printStackTrace(e);}
+		try{onLeave(player, team);}catch(Exception e){Log.printStackTrace(e);}
 	}
 
 	/**
@@ -287,36 +289,11 @@ public class Arena extends AreaContainer {
     protected void onExit(ArenaPlayer player, ArenaTeam team) {}
 
 	/**
-	 * Returns the spawns
-	 * Deprecated use getSpawns()
-	 * @return Map
-	 */
-	@Deprecated
-	public Map<Integer, Location> getSpawnLocs(){
-		Map<Integer, Location> locs = new HashMap<Integer,Location>();
-		for (int i=0;i<this.getSpawns().size();i++){
-			locs.put(i, spawns.get(i));
-		}
-		return locs;
-	}
-
-	/**
-	 * Returns the spawn location of this index.
-	 * Deprecated, use getSpawn(index, random)
-	 * @param index index
-	 * @return location
-	 */
-	@Deprecated
-	public Location getSpawnLoc(int index){
-		return this.getSpawn(index, false);
-	}
-
-	/**
 	 * Returns the spawn location of this index
 	 * @param index index
 	 * @return location
 	 */
-	public Location getWaitRoomSpawnLoc(int index){
+	public SpawnLocation getWaitRoomSpawnLoc(int index){
 		return waitroom.getSpawn(index,false);
 	}
 
@@ -324,7 +301,7 @@ public class Arena extends AreaContainer {
 	 * returns a random spawn location
 	 * @return location
 	 */
-	public Location getRandomWaitRoomSpawnLoc(){
+	public SpawnLocation getRandomWaitRoomSpawnLoc(){
 		return waitroom.getSpawn(-1,true);
 	}
 
@@ -332,16 +309,17 @@ public class Arena extends AreaContainer {
 	 * Return the visitor location (if any)
 	 * @return location
 	 */
-	public Location getVisitorLoc(int index, boolean random) {
-		return visitorRoom != null ? visitorRoom.getSpawn(index, random) : null;}
+	public SpawnLocation getVisitorLoc(int teamIndex, boolean random) {
+		return visitorRoom != null ? visitorRoom.getSpawn(teamIndex,random) : null;}
 
 	/**
 	 * Set the wait room spawn location
-	 * @param index index of spawn
+     * @param teamIndex index of team
+     * @param spawnIndex index of spawn
 	 * @param loc location
 	 */
-	public void setWaitRoomSpawnLoc(int index, Location loc) {
-		waitroom.setSpawnLoc(index, loc);
+	public void setWaitRoomSpawnLoc(int teamIndex, int spawnIndex, SpawnLocation loc) {
+		waitroom.setSpawnLoc(teamIndex, spawnIndex, loc);
 	}
 
 	/**
@@ -381,7 +359,7 @@ public class Arena extends AreaContainer {
 	 * Return the waitroom spawn locations
 	 * @return list of location
 	 */
-	public List<Location> getWaitRoomSpawnLocs(){return waitroom != null ? waitroom.getSpawns() : null;}
+	public List<List<SpawnLocation>> getWaitRoomSpawnLocs(){return waitroom != null ? waitroom.getSpawns() : null;}
 
 	//	public Map<Integer, ItemSpawn> getItemSpawns() {return spawnsGroups;}
 
@@ -661,10 +639,12 @@ public class Arena extends AreaContainer {
         return reasons;
     }
 	public boolean withinDistance(Location location, double distance){
-		for (Location l: spawns){
-			if (location.getWorld().getUID() == l.getWorld().getUID() &&
-					location.distance(l) < distance)
-				return true;
+		for (List<SpawnLocation> list: spawns){
+            for (SpawnLocation l: list){
+                if (location.getWorld().getUID() == l.getLocation().getWorld().getUID() &&
+                        location.distance(l.getLocation()) < distance)
+                    return true;
+            }
 		}
 		return false;
 	}
@@ -738,8 +718,8 @@ public class Arena extends AreaContainer {
 
 		sb.append("&e #spawns:&6" +spawns.size() +"&e 1stSpawn:&6");
 		if (!spawns.isEmpty()){
-			Location l = spawns.get(0);
-			sb.append("["+l.getWorld().getName()+":"+l.getBlockX()+":"+l.getBlockY()+":"+l.getBlockZ()+"] ");
+			SpawnLocation l = spawns.get(0).get(0);
+			sb.append("["+ Util.getLocString(l)+"] ");
 		}
 		if (timedSpawns != null && !timedSpawns.isEmpty())
 			sb.append("&e#item/mob Spawns:&6" +timedSpawns.size());
@@ -786,7 +766,7 @@ public class Arena extends AreaContainer {
 		return LocationType.ARENA;
 	}
 
-	public List<Location> getVisitorLocs() {
+	public List<List<SpawnLocation>> getVisitorLocs() {
 		return visitorRoom!=null ? visitorRoom.getSpawns() : null;
 	}
 

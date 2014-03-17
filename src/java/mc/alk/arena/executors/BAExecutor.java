@@ -65,6 +65,7 @@ import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.pairs.GameOptionPair;
 import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.pairs.TransitionOptionTuple;
+import mc.alk.arena.objects.spawns.FixedLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
@@ -931,7 +932,7 @@ public class BAExecutor extends CustomCommandExecutor {
             return sendMessage(sender, "&cCouldn't create the arena " + name+ " of type " + ap.getType());
         }
 
-        arena.setSpawnLoc(0, sender.getLocation());
+        arena.setSpawnLoc(0,0, new FixedLocation(sender.getLocation()));
         ac.addArena(arena);
         ArenaControllerInterface aci = new ArenaControllerInterface(arena);
         aci.create();

@@ -2,6 +2,7 @@ package mc.alk.arena.controllers;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.controllers.plugins.McMMOController;
 import mc.alk.arena.controllers.plugins.TagAPIController;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.competition.BlockBreakListener;
@@ -46,6 +47,8 @@ public class ListenerAdder {
 			holder.addArenaListener(new ItemPickupListener(holder));}
         if (tops.hasAnyOption(TransitionOption.POTIONDAMAGEON)){
             holder.addArenaListener(new PotionListener(holder));}
+        if (McMMOController.enabled() && McMMOController.hasDisabledSkills()){
+            holder.addArenaListener(McMMOController.createNewListener());}
         if (tops.hasAnyOption(TransitionOption.WGNOLEAVE)) {
             ArenaRegion region = null;
             if (holder instanceof Match) {

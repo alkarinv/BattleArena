@@ -243,4 +243,5 @@ public class ArenaScoreboard implements SScoreboard {
     public void setPoints(ArenaObjective objective, ArenaPlayer player, int points) {
         objective.setPoints(player, points);
     }
+
 }

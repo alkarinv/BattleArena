@@ -13,11 +13,11 @@ import org.bukkit.event.entity.PotionSplashEvent;
 
 public class PotionListener implements ArenaListener{
 	MatchTransitions transitionOptions;
-	PlayerHolder match;
+	PlayerHolder holder;
 
 	public PotionListener(PlayerHolder match){
 		this.transitionOptions = match.getParams().getTransitionOptions();
-		this.match = match;
+		this.holder = match;
 	}
 
 	@ArenaEventHandler(needsPlayer=false)
@@ -27,8 +27,8 @@ public class PotionListener implements ArenaListener{
 		if (event.getEntity().getShooter() instanceof Player){
 			Player p = (Player) event.getEntity().getShooter();
 			ArenaPlayer ap = BattleArena.toArenaPlayer(p);
-			if (match.isHandled(ap) &&
-					transitionOptions.hasOptionAt(match.getMatchState(), TransitionOption.POTIONDAMAGEON)){
+			if (holder.isHandled(ap) &&
+					transitionOptions.hasOptionAt(holder.getState(), TransitionOption.POTIONDAMAGEON)){
 				event.setCancelled(false);
 			}
 		}

@@ -12,25 +12,25 @@ import mc.alk.arena.util.MessageUtil;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class PlayerTeleportListener implements ArenaListener{
-	MatchTransitions transitionOptions;
-	PlayerHolder match;
+	final MatchTransitions transitionOptions;
+    final PlayerHolder holder;
 
-	public PlayerTeleportListener(PlayerHolder match){
-		this.transitionOptions = match.getParams().getTransitionOptions();
-		this.match = match;
+	public PlayerTeleportListener(PlayerHolder holder){
+		this.transitionOptions = holder.getParams().getTransitionOptions();
+		this.holder = holder;
 	}
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerTeleport(PlayerTeleportEvent event){
 		if (event.isCancelled() || event.getPlayer().hasPermission(Permissions.TELEPORT_BYPASS_PERM))
 			return;
-		if (transitionOptions.hasInArenaOrOptionAt(match.getMatchState(),TransitionOption.NOTELEPORT)){
+		if (transitionOptions.hasInArenaOrOptionAt(holder.getState(), TransitionOption.NOTELEPORT)){
 			MessageUtil.sendMessage(event.getPlayer(), "&cTeleports are disabled in this arena");
 			event.setCancelled(true);
 			return;
 		}
 		if (event.getFrom().getWorld().getUID() != event.getTo().getWorld().getUID() &&
-				transitionOptions.hasInArenaOrOptionAt(match.getMatchState(),TransitionOption.NOWORLDCHANGE)){
+				transitionOptions.hasInArenaOrOptionAt(holder.getState(),TransitionOption.NOWORLDCHANGE)){
 			MessageUtil.sendMessage(event.getPlayer(), "&cWorldChanges are disabled in this arena");
 			event.setCancelled(true);
 		}

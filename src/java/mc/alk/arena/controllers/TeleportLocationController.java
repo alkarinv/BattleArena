@@ -14,6 +14,7 @@ import mc.alk.arena.objects.TeleportDirection;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import org.bukkit.Location;
@@ -50,7 +51,7 @@ public class TeleportLocationController {
 		if (mo.hasOption(TransitionOption.TELEPORTTO)){
 			loc = mo.getTeleportToLoc();
 		} else {
-			loc = player.getOldLocation();
+			loc = player.getOldLocation().getLocation();
 			/// TODO
 			/// This is a bit of a kludge, sometimes we are "teleporting them out"
 			/// when they are already out... so need to rethink how this can happen and should it
@@ -133,7 +134,7 @@ public class TeleportLocationController {
 			ArenaPlayer player, TransitionOptions tops, int teamIndex){
 		final MatchParams mp = am.getParams();
 		final boolean randomRespawn = tops.hasOption(TransitionOption.RANDOMRESPAWN);
-		Location l;
+        SpawnLocation l;
 		final LocationType type;
 		final PlayerHolder ph;
 		if (Defaults.DEBUG_TRACE)Log.info(" teamindex = " + teamIndex +"  " + am.getClass().getSimpleName()  +"  " +am);
@@ -170,7 +171,7 @@ public class TeleportLocationController {
 			type = LocationType.ARENA;
 			l = arena.getSpawn(teamIndex,random);
 		}
-		return new ArenaLocation(ph, l,type);
+		return new ArenaLocation(ph, l.getLocation(),type);
 	}
 
 }

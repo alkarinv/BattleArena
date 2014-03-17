@@ -141,19 +141,19 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
         ArenaOptionPair aop = new ArenaOptionPair();
         aop.ao = ct;
         if (ct == ChangeType.SPAWNLOC) {
-            Integer i = TeamUtil.getFromHumanTeamIndex(args[curIndex]);
-            if (i != null) {
-                numUsedStrings.set(1);
-                aop.value = i;
-                return aop;
+            aop.value = ChangeType.getValue(ct, curIndex, args);
+            if (aop.value == null){
+                throw new IllegalArgumentException(ChatColor.RED + "Option " + ct.name()+" couldn't parse value "+args[curIndex]);
             }
+            numUsedStrings.set(2);
+            return aop;
         }
         if (ct.hasValue() && args.length < curIndex+2){
             throw new IllegalArgumentException(ChatColor.RED + "Option " + ct.name()+" needs a value");
         }
         if (ct.hasValue()){
             try {
-                aop.value = ChangeType.getValue(ct, args[curIndex + 1]);
+                aop.value = ChangeType.getValue(ct, curIndex+1, args);
                 if (aop.value == null){
                     throw new IllegalArgumentException(ChatColor.RED + "Option " + ct.name()+" couldn't parse value "+args[curIndex+1]);
                 }

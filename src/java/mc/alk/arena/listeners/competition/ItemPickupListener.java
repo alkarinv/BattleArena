@@ -10,17 +10,17 @@ import mc.alk.arena.objects.options.TransitionOption;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 
 public class ItemPickupListener implements ArenaListener{
-	MatchTransitions transitionOptions;
-	PlayerHolder match;
+    final MatchTransitions transitionOptions;
+    final PlayerHolder holder;
 
-	public ItemPickupListener(PlayerHolder match){
-		this.transitionOptions = match.getParams().getTransitionOptions();
-		this.match = match;
+	public ItemPickupListener(PlayerHolder holder){
+		this.transitionOptions = holder.getParams().getTransitionOptions();
+		this.holder = holder;
 	}
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerItemPickupItem(PlayerPickupItemEvent event){
-		if (transitionOptions.hasInArenaOrOptionAt(match.getMatchState(), TransitionOption.ITEMPICKUPOFF)){
+		if (transitionOptions.hasInArenaOrOptionAt(holder.getState(), TransitionOption.ITEMPICKUPOFF)){
 			event.setCancelled(true);}
 	}
 }

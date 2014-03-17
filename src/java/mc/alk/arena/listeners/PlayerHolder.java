@@ -9,9 +9,8 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
-
-import org.bukkit.Location;
 import org.bukkit.event.Listener;
 
 
@@ -33,6 +32,11 @@ public interface PlayerHolder extends Listener, ArenaListener{
 
 	public CompetitionState getState();
 
+    /**
+     * Use getState instead
+     * @return MatchState
+     */
+    @Deprecated
 	public MatchState getMatchState();
 
 	public boolean isHandled(ArenaPlayer player);
@@ -41,9 +45,9 @@ public interface PlayerHolder extends Listener, ArenaListener{
 
 	public void callEvent(BAEvent event);
 
-	public Location getSpawn(int index, boolean random);
+	public SpawnLocation getSpawn(int index, boolean random);
 
-	public Location getSpawn(ArenaPlayer player, boolean random);
+//	public SpawnLocation getSpawn(ArenaPlayer player, boolean random);
 
 	public LocationType getLocationType();
 

@@ -24,6 +24,7 @@ import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.joining.MatchTeamQObject;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -34,7 +35,6 @@ import mc.alk.arena.util.TimeUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -506,12 +506,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
     }
 
     @Override
-    public Location getSpawn(int index, boolean random) {
-        return null;
-    }
-
-    @Override
-    public Location getSpawn(ArenaPlayer player, boolean random) {
+    public SpawnLocation getSpawn(int index, boolean random) {
         return null;
     }
 

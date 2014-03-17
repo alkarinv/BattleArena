@@ -22,7 +22,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 public class DamageListener implements ArenaListener{
 	MatchTransitions transitionOptions;
-	PlayerHolder match;
+	PlayerHolder holder;
     static IEventHelper handler;
 
     static {
@@ -41,16 +41,16 @@ public class DamageListener implements ArenaListener{
         }
     }
 
-    public DamageListener(PlayerHolder match){
-		this.transitionOptions = match.getParams().getTransitionOptions();
-		this.match = match;
+    public DamageListener(PlayerHolder holder){
+		this.transitionOptions = holder.getParams().getTransitionOptions();
+		this.holder = holder;
 	}
 
 	@ArenaEventHandler(suppressCastWarnings=true,priority=EventPriority.LOW)
 	public void onEntityDamageEvent(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player))
 			return;
-		final TransitionOptions to = transitionOptions.getOptions(match.getMatchState());
+		final TransitionOptions to = transitionOptions.getOptions(holder.getMatchState());
 		if (to == null)
 			return;
 		final PVPState pvp = to.getPVP();
@@ -71,13 +71,13 @@ public class DamageListener implements ArenaListener{
 		ArenaPlayer damager;
 		switch(pvp){
 		case ON:
-			ArenaTeam targetTeam = match.getTeam(target);
+			ArenaTeam targetTeam = holder.getTeam(target);
 			if (targetTeam == null || !targetTeam.hasAliveMember(target)) /// We dont care about dead players
 				return;
 			damager = DmgDeathUtil.getPlayerCause(damagerEntity);
 			if (damager == null){ /// damage from some source, its not pvp though. so we dont care
 				return;}
-			ArenaTeam t = match.getTeam(damager);
+			ArenaTeam t = holder.getTeam(damager);
 			if (t != null && t.hasMember(target)){ /// attacker is on the same team
 				event.setCancelled(true);
 			} else {/// different teams... lets make sure they can actually hit

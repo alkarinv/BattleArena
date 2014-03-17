@@ -11,18 +11,18 @@ import org.bukkit.event.block.BlockPlaceEvent;
 
 public class BlockPlaceListener implements ArenaListener{
 	MatchTransitions transitionOptions;
-	PlayerHolder match;
+	PlayerHolder holder;
 
-	public BlockPlaceListener(PlayerHolder match){
-		this.transitionOptions = match.getParams().getTransitionOptions();
-		this.match = match;
+	public BlockPlaceListener(PlayerHolder holder){
+		this.transitionOptions = holder.getParams().getTransitionOptions();
+		this.holder = holder;
 	}
 
 	@ArenaEventHandler(priority=EventPriority.HIGH)
 	public void onPlayerBlockPlace(BlockPlaceEvent event){
-		if (transitionOptions.hasInArenaOrOptionAt(match.getMatchState(), TransitionOption.BLOCKPLACEOFF)){
+		if (transitionOptions.hasInArenaOrOptionAt(holder.getState(), TransitionOption.BLOCKPLACEOFF)){
 			event.setCancelled(true);
-		} else if (transitionOptions.hasInArenaOrOptionAt(match.getMatchState(), TransitionOption.BLOCKPLACEON)){
+		} else if (transitionOptions.hasInArenaOrOptionAt(holder.getState(), TransitionOption.BLOCKPLACEON)){
 			event.setCancelled(false);
 		}
 	}

@@ -17,6 +17,8 @@ import mc.alk.arena.objects.options.GameOption;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.regions.PylamoRegion;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
+import mc.alk.arena.objects.spawns.FixedLocation;
+import mc.alk.arena.objects.spawns.SpawnIndex;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.PlayerContainerSerializer;
 import mc.alk.arena.util.Log;
@@ -93,21 +95,36 @@ public class ArenaAlterController {
             return sb.toString();
         }
 
-        public static Object getValue(ChangeType ct, String value) {
-            switch (ct){
+        public static Object getValue(ChangeType ct, int curIndex, String[] args) {
+            String value = args[curIndex];
+            switch (ct) {
                 case WAITROOM:
                 case SPECTATE:
                 case LOBBY:
                 case SPAWNLOC:
                 case VLOC:
-                    try{return Integer.parseInt(value) -1;}catch(Exception e){/* do nothing */}
-                    if (value.equalsIgnoreCase("main"))
-                        return Integer.MAX_VALUE;
-                    Integer locindex = TeamUtil.getFromHumanTeamIndex(value);
-                    if (locindex == null || locindex > Defaults.MAX_SPAWNS){
-                        return null;
+                    Integer locindex = null;
+                    try {
+                        locindex = Integer.parseInt(value) - 1;
+                    } catch (Exception e) {/* do nothing */}
+                    if (locindex == null && value.equalsIgnoreCase("main"))
+                        locindex = Integer.MAX_VALUE;
+                    if (locindex == null){
+                        locindex = TeamUtil.getFromHumanTeamIndex(value);
+                        if (locindex == null || locindex > Defaults.MAX_SPAWNS) {
+                            return null;
+                        }
                     }
-                    return locindex;
+
+                    if (args.length > curIndex+1){
+                        Integer spawnindex = TeamUtil.getFromHumanTeamIndex(args[curIndex+1]);
+                        if (spawnindex == null || spawnindex > Defaults.MAX_SPAWNS || spawnindex < 0) {
+                            return new SpawnIndex(locindex);
+                        }
+                        return new SpawnIndex(locindex,spawnindex);
+                    }
+
+                    return new SpawnIndex(locindex);
                 case TYPE:
                     return ArenaType.getType(value);
                 case ADDREGION:
@@ -150,11 +167,11 @@ public class ArenaAlterController {
 
         switch(ct){
             case TYPE: success = changeType(sender, arena, ac, (String) value); break;
-            case SPAWNLOC: success = changeSpawn(player, arena, ac, (Integer)value); break;
-            case VLOC: success = changeVisitorSpawn(player,arena,ac,(Integer)value); break;
-            case WAITROOM: success = changeWaitroomSpawn(player,arena,ac,(Integer)value); break;
-            case SPECTATE: success = changeSpectateSpawn(player,arena,ac,(Integer)value); break;
-            case LOBBY: success = changeLobbySpawn(player, params,(Integer)value); break;
+            case SPAWNLOC: success = changeSpawn(player, arena, ac, (SpawnIndex)value); break;
+            case VLOC: success = changeVisitorSpawn(player,arena,ac,(SpawnIndex)value); break;
+            case WAITROOM: success = changeWaitroomSpawn(player,arena,ac,(SpawnIndex)value); break;
+            case SPECTATE: success = changeSpectateSpawn(player,arena,ac,(SpawnIndex)value); break;
+            case LOBBY: success = changeLobbySpawn(player, params,(SpawnIndex)value); break;
             case ADDREGION: success = addWorldGuardRegion(player,arena); break;
             case ADDPYLAMOREGION: success = addPylamoRegion(player,arena); break;
             default:
@@ -261,16 +278,17 @@ public class ArenaAlterController {
     }
 
 
-    private static boolean changeSpawn(Player sender, Arena arena, BattleArenaController ac, Integer teamIndex) {
+    private static boolean changeSpawn(Player sender, Arena arena, BattleArenaController ac,
+                                       SpawnIndex index) {
         Location loc = sender.getLocation();
-        arena.setSpawnLoc(teamIndex,loc);
+        arena.setSpawnLoc(index.teamIndex,index.spawnIndex, new FixedLocation(loc));
         ac.updateArena(arena);
-        return sendMessage(sender,"&2 spawn &6"+ (teamIndex+1) +"&2 set to location=&6" + Util.getLocString(loc));
+        return sendMessage(sender,"&2 "+(getSpawnName(index.teamIndex)+" &2team spawn #&6"+(index.spawnIndex+1)+
+                "&2 set to location=&6" + Util.getLocString(loc)));
     }
 
     private static boolean changeWaitroomSpawn(Player sender, Arena arena,
-                                               BattleArenaController ac, Integer teamIndex) {
-        String locstr = teamIndex == Integer.MAX_VALUE ? "main" : (teamIndex+1)+"";
+                                               BattleArenaController ac,SpawnIndex index) {
         Location loc = sender.getLocation();
         MatchParams mp = ParamController.getMatchParams(arena.getArenaType());
         if (mp == null){
@@ -279,25 +297,29 @@ public class ArenaAlterController {
             RoomContainer room = RoomController.getOrCreateWaitroom(arena);
             arena.setWaitRoom(room);
         }
-        arena.setWaitRoomSpawnLoc(teamIndex,loc);
+        arena.setWaitRoomSpawnLoc(index.teamIndex,index.spawnIndex, new FixedLocation(loc));
         ac.updateArena(arena);
-        return sendMessage(sender,"&2waitroom &6" + locstr +"&2 set to location=&6" + Util.getLocString(loc));
+        return sendMessage(sender,"&2waitroom for the "+(getSpawnName(index.teamIndex)+" &2team. Spawn #&6"+(index.spawnIndex+1)+
+                "&2 set to location=&6" + Util.getLocString(loc)));
     }
 
-    private static boolean changeLobbySpawn(Player sender, MatchParams params, Integer teamIndex) {
-        String locstr = teamIndex == Integer.MAX_VALUE ? "main" : (teamIndex+1)+"";
+    private static String getSpawnName(int index){
+        return index == Integer.MAX_VALUE ? "main" : TeamUtil.getTeamName(index);
+    }
+
+    private static boolean changeLobbySpawn(Player sender, MatchParams params, SpawnIndex index) {
         Location loc = sender.getLocation();
-        RoomController.addLobby(params.getType(), teamIndex, loc);
+        RoomController.addLobby(params.getType(), index.teamIndex, index.spawnIndex, new FixedLocation(loc));
         PlayerContainerSerializer pcs = new PlayerContainerSerializer();
         pcs.setConfig(BattleArena.getSelf().getDataFolder().getPath()+"/saves/containers.yml");
         pcs.save();
-        return sendMessage(sender,"&2Lobby &6"+locstr +"&2 for&6 "+ params.getName() +" &2 set to location=&6" + Util.getLocString(loc));
+        return sendMessage(sender,"&2Lobby for the "+(getSpawnName(index.teamIndex)+" &2team. Spawn #&6"+(index.spawnIndex+1)+
+                "&2 set to location=&6" + Util.getLocString(loc)));
     }
 
 
     private static boolean changeSpectateSpawn(Player sender, Arena arena,
-                                               BattleArenaController ac, Integer teamIndex) {
-        String locstr = teamIndex == Integer.MAX_VALUE ? "main" : (teamIndex+1)+"";
+                                               BattleArenaController ac, SpawnIndex index) {
         Location loc = sender.getLocation();
         MatchParams mp = ParamController.getMatchParams(arena.getArenaType());
         if (mp == null){
@@ -306,20 +328,20 @@ public class ArenaAlterController {
             RoomContainer room = RoomController.getOrCreateSpectate(arena);
             arena.setSpectate(room);
         }
-        arena.getSpectatorRoom().setSpawnLoc(teamIndex,loc);
+        arena.getSpectatorRoom().setSpawnLoc(index.teamIndex,index.spawnIndex, new FixedLocation(loc));
         ac.updateArena(arena);
-        return sendMessage(sender,"&spectator room &6" + locstr +"&2 set to location=&6" + Util.getLocString(loc));
+        return sendMessage(sender,"&2spectator room #&6"+(index.teamIndex+1)+"&2. Spawn #&6"+(index.spawnIndex+1)+
+                "&2 set to location=&6" + Util.getLocString(loc));
     }
 
     private static boolean changeVisitorSpawn(Player sender, Arena arena,
-                                              BattleArenaController ac, Integer teamIndex) {
+                                              BattleArenaController ac, SpawnIndex index) {
         Location loc = sender.getLocation();
-        arena.setSpawnLoc(teamIndex,loc);
+        arena.setSpawnLoc(index.teamIndex,index.spawnIndex, new FixedLocation(loc));
         ac.updateArena(arena);
-        return sendMessage(sender,"&2Visitor team &6" + (teamIndex+1) +"&2 spawn set to location=&6" + Util.getLocString(loc));
+        return sendMessage(sender,"&2Visitor room #&6"+(index.teamIndex+1)+"&2. Spawn #&6"+(index.spawnIndex+1)+
+                "&2 set to location=&6" + Util.getLocString(loc));
     }
-
-
 
     private static boolean changeType(CommandSender sender, Arena arena, BattleArenaController ac, String value) {
         ArenaType t = ArenaType.fromString(value);
@@ -340,7 +362,7 @@ public class ArenaAlterController {
         p.setParent(parent);
         arena.setParams(p);
         BattleArenaController ac = BattleArena.getBAController();
-           BattleArena.saveArenas(arena.getArenaType().getPlugin());
+        BattleArena.saveArenas(arena.getArenaType().getPlugin());
         ac.updateArena(arena);
         return true;
     }

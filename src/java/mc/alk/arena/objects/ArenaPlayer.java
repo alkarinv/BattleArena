@@ -7,7 +7,9 @@ import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.meta.PlayerMetaData;
 import mc.alk.arena.objects.spawns.EntitySpawn;
+import mc.alk.arena.objects.spawns.FixedLocation;
 import mc.alk.arena.objects.spawns.SpawnInstance;
+import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.PermissionsUtil;
@@ -50,7 +52,7 @@ public class ArenaPlayer {
     ArenaClass currentClass;
 
     /** The players old location, from where they were first teleported*/
-    Location oldLocation;
+    SpawnLocation oldLocation;
 
     /** The players team, *this is not their self formed team* */
     ArenaTeam arenaTeam;
@@ -221,14 +223,14 @@ public class ArenaPlayer {
      */
     public void markOldLocation(){
         if (oldLocation == null){
-            oldLocation = getLocation();}
+            oldLocation = new FixedLocation(getLocation());}
     }
 
     public void clearOldLocation(){
         oldLocation = null;
     }
 
-    public Location getOldLocation(){
+    public SpawnLocation getOldLocation(){
         return oldLocation;
     }
 
