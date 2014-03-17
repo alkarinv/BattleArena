@@ -103,6 +103,14 @@ public class ArenaAlterController {
                 case LOBBY:
                 case SPAWNLOC:
                 case VLOC:
+                    try{
+                        if (value.equalsIgnoreCase("spawn")) {
+                            curIndex++;
+                            value = args[curIndex];
+                        }
+                    } catch (Exception e){
+                        /* do nothing*/
+                    }
                     Integer locindex = null;
                     try {
                         locindex = Integer.parseInt(value) - 1;
