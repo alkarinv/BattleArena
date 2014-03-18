@@ -12,7 +12,7 @@ import java.util.Set;
  * @author alkarin
  *
  */
-public class CompositeTeam extends AbstractTeam{
+class CompositeTeam extends AbstractTeam{
 	final Set<ArenaTeam> oldTeams = new HashSet<ArenaTeam>();
 
 	public CompositeTeam() {
@@ -103,5 +103,4 @@ public class CompositeTeam extends AbstractTeam{
 			t.clear();
 		}
 	}
-
 }

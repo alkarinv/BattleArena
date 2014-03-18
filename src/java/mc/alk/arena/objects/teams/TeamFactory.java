@@ -39,7 +39,4 @@ public class TeamFactory {
         return at;
     }
 
-    public static void setStringID(AbstractTeam team, String newID) {
-        team.strID = newID;
-    }
 }

@@ -176,5 +176,7 @@ public interface ArenaTeam {
 
     public int getIndex();
 
+    public void setIDString(String id);
+
 }
 

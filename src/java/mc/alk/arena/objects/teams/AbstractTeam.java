@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AbstractTeam implements ArenaTeam{
+abstract class AbstractTeam implements ArenaTeam{
 	static int count = 0;
 	final int id = count++; /// id
 
@@ -561,6 +561,11 @@ public abstract class AbstractTeam implements ArenaTeam{
     @Override
     public int getIndex() {
         return index;
+    }
+
+    @Override
+    public void setIDString(String id) {
+        this.strID = id;
     }
 }
 

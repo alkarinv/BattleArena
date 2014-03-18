@@ -1,4 +1,4 @@
-package mc.alk.arena.util.heroes;
+package mc.alk.arena.util.plugins.heroes;
 
 import mc.alk.arena.util.plugins.HeroesUtil;
 

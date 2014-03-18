@@ -276,17 +276,15 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
      * this should be done in a synchronous fashion
      */
     public void open(){
-        transitionTo(MatchState.ONOPEN);
-
         MatchOpenEvent event = new MatchOpenEvent(this);
-
         callEvent(event);
         if (event.isCancelled()){
             cancelMatch();
             return;
         }
-        updateBukkitEvents(MatchState.ONOPEN);
         arenaInterface.onOpen();
+        transitionTo(MatchState.ONOPEN);
+        updateBukkitEvents(MatchState.ONOPEN);
         onJoin(teams);
     }
 
@@ -522,7 +520,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
         transitionTo(MatchState.ONVICTORY);
         arenaInterface.onVictory(result);
-        /// Call the rest after a 2 tick wait to ensure the calling transitionMethods complete before the
+        /// Call the rest after a 2 tick wait to ensure the calling method complete before the
         /// victory conditions start rolling in
         currentTimer = Scheduler.scheduleSynchronousTask(plugin, new MatchVictory(this),(int)2L);
     }
@@ -1195,7 +1193,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         Integer nTeams = params.getMinTeams();
         if (!(vt instanceof DefinesNumTeams)){
             if (nTeams <= 0 || alwaysOpen){
-				/* do nothing.  They want this event to be open even with no teams*/
+                /* do nothing.  They want this event to be open even with no teams*/
             } else if (nTeams == 1){
                 addVictoryCondition(new NoTeamsLeft(this));
             } else {

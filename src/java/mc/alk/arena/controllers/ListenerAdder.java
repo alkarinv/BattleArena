@@ -25,26 +25,26 @@ import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
 
 public class ListenerAdder {
 
-	public static void addListeners(PlayerHolder holder, MatchTransitions tops) {
-		boolean needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
-		boolean woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS) && holder.getParams().getMaxTeamSize() >1 ||
-				tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS);
-		if (woolTeams){
-			holder.addArenaListener(new TeamHeadListener());}
-		if (needsDamageEvents){
-			holder.addArenaListener(new DamageListener(holder));}
-		if (tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE, TransitionOption.WGNOENTER)){
-			holder.addArenaListener(new PlayerTeleportListener(holder));}
-		if (tops.hasAnyOption(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF)){
-			holder.addArenaListener(new BlockBreakListener(holder));}
-		if (tops.hasAnyOption(TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF)){
-			holder.addArenaListener(new BlockPlaceListener(holder));}
-		if (tops.hasAnyOption(TransitionOption.ITEMDROPOFF)){
-			holder.addArenaListener(new ItemDropListener(holder));}
+    public static void addListeners(PlayerHolder holder, MatchTransitions tops) {
+        boolean needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
+        boolean woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS) && holder.getParams().getMaxTeamSize() >1 ||
+                tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS);
+        if (woolTeams){
+            holder.addArenaListener(new TeamHeadListener());}
+        if (needsDamageEvents){
+            holder.addArenaListener(new DamageListener(holder));}
+        if (tops.hasAnyOption(TransitionOption.NOTELEPORT, TransitionOption.NOWORLDCHANGE, TransitionOption.WGNOENTER)){
+            holder.addArenaListener(new PlayerTeleportListener(holder));}
+        if (tops.hasAnyOption(TransitionOption.BLOCKBREAKON,TransitionOption.BLOCKBREAKOFF)){
+            holder.addArenaListener(new BlockBreakListener(holder));}
+        if (tops.hasAnyOption(TransitionOption.BLOCKPLACEON,TransitionOption.BLOCKPLACEOFF)){
+            holder.addArenaListener(new BlockPlaceListener(holder));}
+        if (tops.hasAnyOption(TransitionOption.ITEMDROPOFF)){
+            holder.addArenaListener(new ItemDropListener(holder));}
         if (tops.hasAnyOption(TransitionOption.HUNGEROFF)){
             holder.addArenaListener(new HungerListener(holder));}
-		if (tops.hasAnyOption(TransitionOption.ITEMPICKUPOFF)){
-			holder.addArenaListener(new ItemPickupListener(holder));}
+        if (tops.hasAnyOption(TransitionOption.ITEMPICKUPOFF)){
+            holder.addArenaListener(new ItemPickupListener(holder));}
         if (tops.hasAnyOption(TransitionOption.POTIONDAMAGEON)){
             holder.addArenaListener(new PotionListener(holder));}
         if (McMMOController.enabled() && McMMOController.hasDisabledSkills()){
@@ -60,11 +60,11 @@ public class ListenerAdder {
                 holder.addArenaListener(new PlayerMoveListener(holder,region));
         }
         if (!ScoreboardFactory.hasBukkitScoreboard() &&
-				TagAPIController.enabled() && !tops.hasAnyOption(TransitionOption.NOTEAMNAMECOLOR)){
-			holder.addArenaListener(TagAPIController.getNewListener());}
+                TagAPIController.enabled() && !tops.hasAnyOption(TransitionOption.NOTEAMNAMECOLOR)){
+            holder.addArenaListener(TagAPIController.getNewListener());}
         if (Defaults.PLUGIN_ANTILOOT && tops.hasOptionAt(MatchState.ONDEATH,TransitionOption.CLEARINVENTORY)){
             holder.addArenaListener(new PreClearInventoryListener());
         }
-	}
+    }
 
 }

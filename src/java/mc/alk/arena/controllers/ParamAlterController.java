@@ -237,7 +237,7 @@ public class ParamAlterController {
                         sendMessage(sender, "&c[Info]&e This option will change after a restart");
                         break;
                     default:
-					/* do nothing */
+                    /* do nothing */
                 }
                 return true;
             } catch (Exception e) {

@@ -154,7 +154,7 @@ public enum TransitionOption{
                 return TransitionOption.WGRESETREGION;
             else if (str.equals("DISGUISEALL"))
                 return TransitionOption.DISGUISEALLAS;
-            else if (str.equals("COMMANDS"))
+            else if (str.equals("COMMANDS") || str.equals("COMMAND"))
                 return TransitionOption.DOCOMMANDS;
             else if (str.equals("CLASS"))
                 return TransitionOption.GIVECLASS;

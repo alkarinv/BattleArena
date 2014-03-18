@@ -1,5 +1,7 @@
 package mc.alk.arena.objects.arenas;
 
-public interface ArenaListener extends GameLogic{
+import mc.alk.arena.objects.GameLogic;
+
+public interface ArenaListener extends GameLogic {
 
 }

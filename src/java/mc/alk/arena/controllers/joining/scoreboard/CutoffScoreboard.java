@@ -8,7 +8,6 @@ import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
 import mc.alk.arena.objects.scoreboard.WaitingScoreboard;
-import mc.alk.arena.objects.teams.AbstractTeam;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.util.Countdown;
@@ -47,7 +46,7 @@ public class CutoffScoreboard implements WaitingScoreboard {
         }
         for (int i = 0; i <maxTeams && count < 15; i++) {
             ArenaTeam team = i < teams.size() ? teams.get(i) : TeamFactory.createCompositeTeam(i, params);
-            TeamFactory.setStringID((AbstractTeam) team, String.valueOf(team.getIndex()));
+            team.setIDString(String.valueOf(team.getIndex()));
             STeam t = scoreboard.addTeam(team);
             for (int j = 0; j < team.getMaxPlayers() && count < 15 && j < ppteam; j++) {
                 count++;
