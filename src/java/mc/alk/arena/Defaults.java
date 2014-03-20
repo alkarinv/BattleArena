@@ -77,8 +77,8 @@ public class Defaults {
 	public static boolean PLUGIN_MULTI_INV = false; /// workarounds for multiinv and tping
 	public static boolean PLUGIN_MULITVERSE_INV = false;
 	public static boolean PLUGIN_MULITVERSE_CORE = false;
-    /// Workaround for antiloot
-    public static boolean PLUGIN_ANTILOOT = false;
+
+    public static boolean PLUGIN_ANTILOOT = false; /// Workaround for antiloot
 
 	/// MISC OPTIONS
 	public static int NUM_INV_SAVES = 5; /// number of inventory saves

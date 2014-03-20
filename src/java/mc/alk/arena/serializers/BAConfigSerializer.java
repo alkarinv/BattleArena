@@ -24,9 +24,9 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.joining.ArenaMatchQueue;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.victoryconditions.Custom;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.FileUtil;
@@ -262,7 +262,7 @@ public class BAConfigSerializer extends BaseConfig{
                         continue;
                     }
                     try {
-                        TransitionOptions to = ConfigSerializer.getTransitionOptions(cs.getConfigurationSection(key));
+                        StateOptions to = ConfigSerializer.getTransitionOptions(cs.getConfigurationSection(key));
                         if (to != null){
                             OptionSetController.addOptionSet(key, to);}
                     } catch (Exception e) {
@@ -274,7 +274,7 @@ public class BAConfigSerializer extends BaseConfig{
         }
 
         try{
-            TransitionOptions tops = new TransitionOptions();
+            StateOptions tops = new StateOptions();
             tops.addOption(TransitionOption.STOREEXPERIENCE);
             tops.addOption(TransitionOption.STOREGAMEMODE);
             tops.addOption(TransitionOption.STOREHEROCLASS);
@@ -289,7 +289,7 @@ public class BAConfigSerializer extends BaseConfig{
             tops.addOption(TransitionOption.FLIGHTOFF);
             OptionSetController.addOptionSet("storeAll", tops);
 
-            tops = new TransitionOptions();
+            tops = new StateOptions();
             tops.addOption(TransitionOption.RESTOREEXPERIENCE);
             tops.addOption(TransitionOption.RESTOREGAMEMODE);
             tops.addOption(TransitionOption.RESTOREHEROCLASS);

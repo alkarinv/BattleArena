@@ -29,7 +29,7 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.messaging.EventMessageHandler;
-import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.tournament.Matchup;
@@ -209,6 +209,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
         return isOpen();
     }
 
+    @Override
     public abstract boolean canLeave(ArenaPlayer p);
 
     @Override
@@ -229,6 +230,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
     /**
      * Called when a player leaves minecraft.. we cant stop them so deal with it
      */
+    @Override
     public boolean leave(ArenaPlayer p) {
         ArenaTeam t = getTeam(p);
         p.removeCompetition(this);
@@ -362,6 +364,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
 
     public static class TeamSizeComparator implements Comparator<ArenaTeam>{
+        @Override
         public int compare(ArenaTeam arg0, ArenaTeam arg1) {
             if (arg0.size() == arg1.size() ) return 0;
             return (arg0.size() < arg1.size()) ? -1 : 1;
@@ -379,7 +382,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
             boolean rated = eventParams.isRated();
             sb.append(rated ? "&4Rated" : "&aUnrated").append("&e ").append(name).append(". ");
             sb.append("&e(&6").append(state).append("&e)");
-            sb.append("&eTeam size=").append(eventParams.getTeamSizeRange());
+            sb.append("&eTeam size=").append(eventParams.getTeamSizes());
             sb.append("&e Teams=&6 ").append(teams.size());
         }
         if (state == EventState.OPEN && joinHandler != null){
@@ -389,7 +392,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
     }
 
     public String getInfo() {
-        return TransitionOptions.getInfo(eventParams, eventParams.getName());
+        return StateOptions.getInfo(eventParams, eventParams.getName());
     }
 
     /**
@@ -440,6 +443,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
         return timer.getTimeRemaining();
     }
 
+    @Override
     public boolean intervalTick(int remaining){
         if (!isOpen())
             return false;

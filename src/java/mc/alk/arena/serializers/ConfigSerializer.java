@@ -17,7 +17,7 @@ import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.JoinType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.ConfigException;
@@ -26,8 +26,8 @@ import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
 import mc.alk.arena.objects.modules.ArenaModule;
 import mc.alk.arena.objects.modules.BrokenArenaModule;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.victoryconditions.OneTeamLeft;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.BTInterface;
@@ -157,7 +157,7 @@ public class ConfigSerializer extends BaseConfig{
         //noinspection UnusedAssignment
         List<String> modules = loadModules(cs, mp); /// load modules
 
-        MatchTransitions tops = loadTransitionOptions(cs, mp); /// load transition options
+        StateGraph tops = loadTransitionOptions(cs, mp); /// load transition options
         mp.setTransitionOptions(tops);
 
         mp.setParent(ParamController.getDefaultConfig());
@@ -200,16 +200,16 @@ public class ConfigSerializer extends BaseConfig{
     }
 
 
-    private static MatchTransitions loadTransitionOptions(ConfigurationSection cs, MatchParams mp)
+    private static StateGraph loadTransitionOptions(ConfigurationSection cs, MatchParams mp)
             throws InvalidOptionException {
-        MatchTransitions allTops = new MatchTransitions();
+        StateGraph allTops = new StateGraph();
         boolean found = false;
         /// Set all Transition Options
         for (CompetitionState transition : StateController.values()){
             /// OnCancel gets taken from onComplete and modified
             if (transition == MatchState.ONCANCEL)
                 continue;
-            TransitionOptions tops;
+            StateOptions tops;
             try{
                 tops = getTransitionOptions(cs.getConfigurationSection(transition.toString()));
                 /// check for the most common alternate spelling of onPrestart
@@ -233,7 +233,7 @@ public class ConfigSerializer extends BaseConfig{
                 if (allTops.hasOptionAt(MatchState.ONLEAVE, TransitionOption.CLEARINVENTORY)){
                     tops.addOption(TransitionOption.CLEARINVENTORY);
                 }
-                TransitionOptions cancelOps = new TransitionOptions(tops);
+                StateOptions cancelOps = new StateOptions(tops);
                 allTops.addTransitionOptions(MatchState.ONCANCEL, cancelOps);
                 if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
             } else if (transition == MatchState.ONLEAVE){
@@ -422,11 +422,11 @@ public class ConfigSerializer extends BaseConfig{
         return at;
     }
 
-    public static TransitionOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, IllegalArgumentException {
+    public static StateOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, IllegalArgumentException {
         if (cs == null )
             return null;
         Map<TransitionOption,Object> options = new EnumMap<TransitionOption,Object>(TransitionOption.class);
-        TransitionOptions tops = new TransitionOptions();
+        StateOptions tops = new StateOptions();
         if (cs.contains("options")){
             if (!cs.isList("options")) {
                 throw new InvalidOptionException("options: should be a list, instead it was '" + cs.getString("options", null) + "'");}
@@ -438,7 +438,7 @@ public class ConfigSerializer extends BaseConfig{
                 final String value = split.length > 1 ? split[1].trim() : null;
 
                 /// Check first to see if this option is actually a set of options
-                TransitionOptions optionSet = OptionSetController.getOptionSet(key);
+                StateOptions optionSet = OptionSetController.getOptionSet(key);
                 if (optionSet != null){
                     tops.addOptions(optionSet);
                     continue;
@@ -550,7 +550,7 @@ public class ConfigSerializer extends BaseConfig{
         return commands;
     }
 
-    private static void setPermissionSection(ConfigurationSection cs, String nodeString, TransitionOptions tops) throws InvalidOptionException {
+    private static void setPermissionSection(ConfigurationSection cs, String nodeString, StateOptions tops) throws InvalidOptionException {
         if (cs == null || !cs.contains(nodeString))
             return ;
         List<?> olist = cs.getList(nodeString);
@@ -688,8 +688,8 @@ public class ConfigSerializer extends BaseConfig{
 
         if (params.getNTeams() != null || params.getTeamSizes() != null) {
             ConfigurationSection cs = maincs.createSection("gameSize");
-            if (params.getNTeams() != null) cs.set("nTeams", params.getNTeamRange());
-            if (params.getTeamSizes() != null) cs.set("teamSize", params.getTeamSizeRange());
+            if (params.getNTeams() != null) cs.set("nTeams", params.getNTeams().toString());
+            if (params.getTeamSizes() != null) cs.set("teamSize", params.getTeamSizes().toString());
         }
 
         if (params.getNLives() != null) maincs.set("nLives", ArenaSize.toString(params.getNLives()));
@@ -777,10 +777,10 @@ public class ConfigSerializer extends BaseConfig{
             }
         }
 
-        MatchTransitions alltops = params.getTransitionOptions();
+        StateGraph alltops = params.getThisTransitionOptions();
         if (alltops != null) {
-            Map<CompetitionState, TransitionOptions> transitions =
-                    new TreeMap<CompetitionState, TransitionOptions>(new Comparator<CompetitionState>() {
+            Map<CompetitionState, StateOptions> transitions =
+                    new TreeMap<CompetitionState, StateOptions>(new Comparator<CompetitionState>() {
                         @Override
                         public int compare(CompetitionState o1, CompetitionState o2) {
                             return o1.globalOrdinal() - o2.globalOrdinal();
@@ -791,16 +791,16 @@ public class ConfigSerializer extends BaseConfig{
                 try {
                     if (ms == MatchState.ONCANCEL)
                         continue;
-                    TransitionOptions tops = transitions.get(ms);
+                    StateOptions tops = transitions.get(ms);
                     if (tops == null)
                         continue;
                     if (tops.getOptions() == null)
                         continue;
-                    tops = new TransitionOptions(tops); // make a copy so we can modify while saving
+                    tops = new StateOptions(tops); // make a copy so we can modify while saving
                     Map<TransitionOption, Object> ops = tops.getOptions();
                     List<String> list = new ArrayList<String>();
 
-                    for (Entry<String, TransitionOptions> entry : OptionSetController.getOptionSets().entrySet()) {
+                    for (Entry<String, StateOptions> entry : OptionSetController.getOptionSets().entrySet()) {
                         if (tops.containsAll(entry.getValue())) {
                             list.add(entry.getKey());
                             for (TransitionOption op : entry.getValue().getOptions().keySet()) {

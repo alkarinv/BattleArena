@@ -15,7 +15,7 @@ import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.regions.PylamoRegion;
@@ -26,6 +26,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.serializers.Persist;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.Util;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -571,48 +572,28 @@ public class Arena extends AreaContainer {
             spawnController.stop();}
     }
 
-    /**
-     * Checks to see whether this arena has paramaters that match the given matchparams
-     * @param matchParams params
-     * @param joinOptions JoinOptions
-     * @return true if arena matches the params && joinOptions
-     */
-    public boolean matches(final MatchParams matchParams, final JoinOptions joinOptions) {
-        return getParams().matches(matchParams) && matchesIgnoreSize(matchParams, joinOptions);
-    }
+    public boolean matches(final JoinOptions jp) {
+        Arena a = jp.getArena();
+        if (a != null && !a.matches(this))
+            return false;
+        MatchParams matchParams = jp.getMatchParams();
+        if (!matches(matchParams)) {
+            return false;
+        }
+        if (matchParams.hasOptionAt(MatchState.PREREQS, TransitionOption.WITHINDISTANCE)) {
+            if (!jp.nearby(this, matchParams.getDoubleOption(MatchState.PREREQS, TransitionOption.WITHINDISTANCE))) {
+                return false;
+            }
+        }
+        if (matchParams.hasOptionAt(MatchState.PREREQS, TransitionOption.SAMEWORLD)) {
+            if (!jp.sameWorld(this)) {
+                return false;
+            }
+        }
 
-    /**
-     * Checks to see whether this arena has paramaters that match the given matchparams
-     * @param matchParams MatchParams
-     * @param jp JoinOptions
-     * @return bool
-     */
-    public boolean matchesIgnoreSize(final MatchParams matchParams, final JoinOptions jp) {
-        if (this.getArenaType() != matchParams.getType())
-            return false;
-        //		if (!getParams().matches(matchParams))
-        //			return false;
-        final MatchTransitions tops = matchParams.getTransitionOptions();
-        if (tops == null)
-            return true;
-        if ((waitroom == null || !waitroom.hasSpawns()) && matchParams.needsWaitroom())
-            return false;
-        if ((spectate == null || !spectate.hasSpawns()) && matchParams.needsSpectate())
-            return false;
-        if (jp == null)
-            return true;
-        if (!jp.matches(this))
-            return false;
-        if (matchParams.hasOptionAt(MatchState.PREREQS,TransitionOption.WITHINDISTANCE)){
-            if (!jp.nearby(this,matchParams.getDoubleOption(MatchState.PREREQS, TransitionOption.WITHINDISTANCE))){
-                return false;}
-        }
-        if (matchParams.hasOptionAt(MatchState.PREREQS, TransitionOption.SAMEWORLD)){
-            if (!jp.sameWorld(this)){
-                return false;}
-        }
         return true;
     }
+
 
     @SuppressWarnings("SimplifiableIfStatement")
     public boolean matches(Arena arena) {
@@ -624,6 +605,24 @@ public class Arena extends AreaContainer {
             return false;
         return this.name.equals(arena.name);
     }
+
+    /**
+     * Checks to see whether this arena has paramaters that match the given matchparams
+     * @param params params
+     * @return true if arena matches the params
+     */
+    @SuppressWarnings("RedundantIfStatement")
+    public boolean matches(MatchParams params) {
+        if (!getParams().matches(params)) {
+            return false;}
+        if ((waitroom == null || !waitroom.hasSpawns()) && params.needsWaitroom())
+            return false;
+        if ((spectate == null || !spectate.hasSpawns()) && params.needsSpectate())
+            return false;
+        return true;
+    }
+
+
 
     public List<String> getInvalidMatchReasons(Arena arena) {
         List<String> reasons = new ArrayList<String>();
@@ -652,7 +651,7 @@ public class Arena extends AreaContainer {
     public List<String> getInvalidMatchReasons(MatchParams matchParams, JoinOptions jp) {
         List<String> reasons = new ArrayList<String>();
         reasons.addAll(getParams().getInvalidMatchReasons(matchParams));
-        final MatchTransitions tops = matchParams.getTransitionOptions();
+        final StateGraph tops = matchParams.getStateGraph();
         if (tops != null){
             if (matchParams.needsWaitroom() && (waitroom == null || !waitroom.hasSpawns()))
                 reasons.add("Needs a waitroom but none has been provided");
@@ -663,7 +662,10 @@ public class Arena extends AreaContainer {
         }
         if (jp == null)
             return reasons;
-        reasons.addAll(jp.getInvalidMatchReasons(this));
+
+        if (jp.getArena() != null ) {
+            reasons.addAll(this.getInvalidMatchReasons(jp.getArena()));
+        }
 
         if (matchParams.hasOptionAt(MatchState.PREREQS,TransitionOption.WITHINDISTANCE)){
             if (!jp.nearby(this,matchParams.getDoubleOption(MatchState.PREREQS,TransitionOption.WITHINDISTANCE))){
@@ -694,14 +696,19 @@ public class Arena extends AreaContainer {
     @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
     public String toDetailedString(){
         StringBuilder sb = new StringBuilder("&6" + name+" &e");
-        sb.append("&eTeamSizes=&6"+params.getTeamSizeRange() + " &eTypes=&6" +params.getType());
-        sb.append("&e, #Teams:&6"+params.getNTeamRange());
+        sb.append("&eTeamSizes=&6"+params.getTeamSizes() + " &eTypes=&6" +params.getType());
+        sb.append("&e, #Teams:&6"+params.getNTeams());
         sb.append("&e, #spawns:&6" +spawns.size() +"\n");
         sb.append("&eteamSpawnLocs=&b"+getSpawnLocationString()+"\n");
         if (waitroom != null) sb.append("&ewrSpawnLocs=&b"+waitroom.getSpawnLocationString()+"\n");
         if (spectate != null) sb.append("&espectateSpawnLocs=&b"+spectate.getSpawnLocationString()+"\n");
         if (timedSpawns != null){sb.append("&e#item/mob spawns:&6" +timedSpawns.size() +"\n");}
         return sb.toString();
+    }
+
+
+    private ChatColor getColor(Object o) {
+        return o == null ? ChatColor.GOLD : ChatColor.WHITE;
     }
 
     /**
@@ -712,17 +719,18 @@ public class Arena extends AreaContainer {
     public String toSummaryString(){
         StringBuilder sb = new StringBuilder("&4" + name);
         if (params != null){
-            sb.append("&e type=&6"+params.getType());
-            sb.append(" &eTeamSizes:&6"+params.getTeamSizeRange()+"&e, nTeams:&6"+params.getNTeamRange());
+//            sb.append("&2 type=&f").append(params.getType());
+            sb.append(" &2TeamSizes:" + getColor(params.getThisTeamSize()) + params.getTeamSizes() +
+                    "&2, nTeams:"+getColor(params.getThisNTeams()) + params.getNTeams());
         }
 
-        sb.append("&e #spawns:&6" +spawns.size() +"&e 1stSpawn:&6");
+        sb.append("&2 #spawns:&f" +spawns.size() +"&2 1stSpawn:&f");
         if (!spawns.isEmpty()){
             SpawnLocation l = spawns.get(0).get(0);
             sb.append("["+ Util.getLocString(l)+"] ");
         }
         if (timedSpawns != null && !timedSpawns.isEmpty())
-            sb.append("&e#item/mob Spawns:&6" +timedSpawns.size());
+            sb.append("&2#item/mob Spawns:&f" +timedSpawns.size());
         return sb.toString();
     }
 
@@ -823,24 +831,24 @@ public class Arena extends AreaContainer {
 
     public void setContainerState(ChangeType cs, ContainerState state) throws IllegalStateException{
         switch (cs){
-        case LOBBY:
-            RoomContainer lobby = getLobby();
-            if (lobby == null)
-                throw new IllegalStateException("Arena " + getName() +" does not have a Lobby");
-            lobby.setContainerState(state);
-            break;
-        case VLOC:
-            if (visitorRoom == null)
-                throw new IllegalStateException("Arena " + getName() +" does not have a visitorRoom");
-            visitorRoom.setContainerState(state);
-            break;
-        case WAITROOM:
-            if (waitroom == null)
-                throw new IllegalStateException("Arena " + getName() +" does not have a waitroom");
-            waitroom.setContainerState(state);
-            break;
-        default:
-            throw new IllegalStateException(cs +" can not be set to "+state);
+            case LOBBY:
+                RoomContainer lobby = getLobby();
+                if (lobby == null)
+                    throw new IllegalStateException("Arena " + getName() +" does not have a Lobby");
+                lobby.setContainerState(state);
+                break;
+            case VLOC:
+                if (visitorRoom == null)
+                    throw new IllegalStateException("Arena " + getName() +" does not have a visitorRoom");
+                visitorRoom.setContainerState(state);
+                break;
+            case WAITROOM:
+                if (waitroom == null)
+                    throw new IllegalStateException("Arena " + getName() +" does not have a waitroom");
+                waitroom.setContainerState(state);
+                break;
+            default:
+                throw new IllegalStateException(cs +" can not be set to "+state);
         }
     }
 

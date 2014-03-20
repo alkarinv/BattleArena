@@ -3,8 +3,11 @@ package mc.alk.arena.objects;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.arenas.ArenaType;
+import mc.alk.arena.objects.options.StateOptions;
+import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.util.MinMax;
+import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
@@ -32,7 +35,8 @@ public class ArenaParams {
 
     Integer forceStartTime;
 
-    MatchTransitions allTops;
+    StateGraph stateGraph;
+    StateGraph mergedStateGraph;
     String dbName;
 
     ArenaParams parent;
@@ -76,9 +80,9 @@ public class ArenaParams {
         this.forceStartTime = ap.forceStartTime;
         this.nLives = ap.nLives;
         this.displayName = ap.displayName;
-
-        if (ap.allTops != null)
-            this.allTops = new MatchTransitions(ap.allTops);
+        this.mergedStateGraph = null;
+        if (ap.stateGraph != null)
+            this.stateGraph = new StateGraph(ap.stateGraph);
         if (ap.nTeams != null)
             this.nTeams = new MinMax(ap.nTeams);
         if (ap.teamSize != null)
@@ -106,7 +110,7 @@ public class ArenaParams {
         if (this.arenaCooldown== null) this.arenaCooldown = parent.getArenaCooldown();
         if (this.allowedTeamSizeDifference== null) this.allowedTeamSizeDifference= parent.getAllowedTeamSizeDifference();
         if (this.displayName == null) this.displayName = parent.getDisplayName();
-        this.allTops = mergeChildWithParent(this, parent);
+        this.stateGraph = mergeChildWithParent(this, parent);
         if (this.nTeams == null && parent.getNTeams()!=null) this.nTeams = new MinMax(parent.getNTeams());
         if (this.teamSize == null && parent.getTeamSizes() !=null) this.teamSize = new MinMax(parent.getTeamSizes());
 
@@ -145,31 +149,33 @@ public class ArenaParams {
             }
             this.teamParams = tp;
         }
+        this.mergedStateGraph = this.stateGraph;
         this.parent = null;
     }
 
-    private MatchTransitions mergeChildWithParent(ArenaParams cap, ArenaParams pap) {
-        MatchTransitions mt = cap.allTops == null ? new MatchTransitions() : new MatchTransitions(cap.allTops);
+    private StateGraph mergeChildWithParent(ArenaParams cap, ArenaParams pap) {
+        StateGraph mt = cap.stateGraph == null ? new StateGraph() : new StateGraph(cap.stateGraph);
         if (pap != null) {
-            MatchTransitions.mergeChildWithParent(mt, mergeChildWithParent(pap, pap.parent));
+            StateGraph.mergeChildWithParent(mt, mergeChildWithParent(pap, pap.parent));
         }
         return mt;
     }
 
-    public MatchTransitions getTransitionOptions(){
-        return allTops != null ? allTops : (parent != null ? parent.getTransitionOptions() : null);
+    public StateGraph getThisTransitionOptions(){
+        return stateGraph;
     }
 
-    public void setTransitionOptions(MatchTransitions transitionOptions) {
-        this.allTops = transitionOptions;
+    public void setTransitionOptions(StateGraph transitionOptions) {
+        this.stateGraph = transitionOptions;
+        clearMerged();
     }
 
-    public String getTeamSizeRange() {
-        return teamSize != null ? teamSize.toString() : (parent != null ? parent.getTeamSizeRange() : "");
+    public MinMax getThisTeamSize() {
+        return teamSize;
     }
 
-    public String getNTeamRange() {
-        return nTeams != null ? nTeams.toString() : (parent != null ? parent.getNTeamRange() : "");
+    public MinMax getThisNTeams() {
+        return nTeams;
     }
 
     public String getPlayerRange() {
@@ -190,6 +196,10 @@ public class ArenaParams {
                 !getTeamSizes().intersect(params.getTeamSizes()));
     }
 
+    public boolean matches(final JoinOptions jo){
+        return this.matches(jo.getMatchParams());
+    }
+
     public boolean matches(final ArenaParams ap) {
         if (arenaType != null && ap.arenaType != null &&
                 arenaType.matches(ap.arenaType)){
@@ -204,34 +214,16 @@ public class ArenaParams {
         return false;
     }
 
-    public boolean matchesIgnoreNTeams(final ArenaParams ap) {
-        if (arenaType != null && ap.arenaType != null &&
-                arenaType.matches(ap.arenaType)){
-            MinMax ts = getTeamSizes();
-            if (ts == null)
-                return true;
-            MinMax ts2 = ap.getTeamSizes();
-            return ts2 == null ||  ts.intersect(ts2);
-        }
-        return false;
-    }
-
-    public boolean matchesIgnoreSizes(final ArenaParams ap) {
-        return arenaType != null && ap.arenaType != null &&
-                arenaType.matches(ap.arenaType);
-    }
-
-
     public Collection<String> getInvalidMatchReasons(ArenaParams ap) {
         List<String> reasons = new ArrayList<String>();
         if (arenaType == null) reasons.add("ArenaType is null");
         if (ap.arenaType == null) reasons.add("Passed params have an arenaType of null");
         else reasons.addAll(arenaType.getInvalidMatchReasons(ap.getType()));
         if (getNTeams() != null && ap.getNTeams() != null && !getNTeams().intersect(ap.getNTeams())){
-            reasons.add("Arena accepts nteams="+getNTeamRange()+". you requested "+ap.getNTeamRange());
+            reasons.add("Arena accepts nteams="+getNTeams()+". you requested "+ap.getNTeams());
         }
         if (getTeamSizes() != null && ap.getTeamSizes() != null && !getTeamSizes().intersect(ap.getTeamSizes())){
-            reasons.add("Arena accepts teamSize="+getNTeamRange()+". you requested "+ap.getNTeamRange());
+            reasons.add("Arena accepts teamSize="+getTeamSizes()+". you requested "+ap.getTeamSizes());
         }
         return reasons;
     }
@@ -308,35 +300,55 @@ public class ArenaParams {
     }
 
     public String toPrettyString() {
-        return  getDisplayName()+":"+arenaType+",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange();
+        return  getDisplayName()+":"+arenaType+",nteams="+getNTeams()+",teamSize="+getTeamSizes();
+    }
+
+    private ChatColor getColor(Object o) {
+        return o == null ? ChatColor.GOLD : ChatColor.WHITE;
     }
 
     public String toSummaryString() {
-        return  "&6"+name+":"+arenaType+",nteams="+getNTeamRange()+",teamSize="+getTeamSizeRange() +"\n"+
-                "&5forceStartTime="+getForceStartTime()+", timeUntilMatch="+getSecondsTillMatch() +
-                ", matchTime="+getMatchTime()+", secondsToLoot="+getSecondsToLoot()+"\n"+
-                "&crated="+rated+", nLives="+getNLives()+"&e";
+        return  "&2&f"+name+"&2:&f"+arenaType+
+                "&2,nteams="+getColor(nTeams) +getNTeams()+
+                "&2,teamSize="+getColor(teamSize)+getTeamSizes() +"\n"+
+                "&5forceStartTime="+getColor(forceStartTime)+getForceStartTime()+
+                "&5, timeUntilMatch="+getColor(secondsTillMatch)+getSecondsTillMatch() +
+                "&5, matchTime="+getColor(matchTime)+getMatchTime()+
+                "&5, secondsToLoot="+getColor(secondsToLoot)+getSecondsToLoot()+"\n"+
+                "&crated="+getColor(rated)+isRated()+"&c, nLives="+getColor(nLives)+getNLives()+"&e";
+    }
+
+    public String getOptionsSummaryString() {
+        return getStateGraph().getOptionString(stateGraph);
     }
 
     @Override
     public String toString(){
         return  name+":"+arenaType +",nteams="+
-                getNTeamRange()+",teamSize="+getTeamSizeRange() +" options=\n"+
-                (getTransitionOptions()==null ? "" : getTransitionOptions().getOptionString());
+                getNTeams()+",teamSize="+getTeamSizes() +" options=\n"+
+                (getThisTransitionOptions()==null ? "" : getThisTransitionOptions().getOptionString());
     }
 
     public boolean isDuelOnly() {
-        MatchTransitions tops = getTransitionOptions();
-        return tops != null && tops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.DUELONLY);
+        return getStateGraph().hasOptionAt(MatchState.DEFAULTS, TransitionOption.DUELONLY);
     }
 
     public boolean isAlwaysOpen(){
-        MatchTransitions tops = getTransitionOptions();
-        return tops != null && tops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN);
+        return getStateGraph().hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN);
     }
 
     public void setParent(ArenaParams parent) {
         this.parent=parent;
+        clearMerged();
+    }
+
+    protected void clearMerged() {
+        this.mergedStateGraph = null;
+        if (teamParams!=null) {
+            for (MatchParams mp: teamParams.values()){
+                mp.clearMerged();
+            }
+        }
     }
 
     public ArenaParams getParent() {
@@ -350,7 +362,6 @@ public class ArenaParams {
 
     @SuppressWarnings("ConstantConditions")
     public Integer getMaxTeamSize() {
-
         return teamSize != null ? teamSize.max : (parent != null ? parent.getMaxTeamSize() : null);
     }
 
@@ -454,9 +465,8 @@ public class ArenaParams {
         return teamSize != null ? teamSize.contains(i) : (parent != null && parent.matchesTeamSize(i));
     }
 
-    public boolean hasOptionAt(MatchState state, TransitionOption op) {
-        return ( ( getTransitionOptions() != null && getTransitionOptions().hasOptionAt(state, op) ||
-                ( parent != null && parent.hasOptionAt(state, op)) ));
+    public boolean hasOptionAt(CompetitionState state, TransitionOption op) {
+        return getStateGraph().hasOptionAt(state, op);
     }
 
     public boolean hasEntranceFee() {
@@ -468,22 +478,11 @@ public class ArenaParams {
     }
 
     public Double getDoubleOption(MatchState state, TransitionOption option){
-        MatchTransitions tops = getTransitionOptions();
-        if (tops != null){
-            Double value = tops.getDoubleOption(state,option);
-            if (value != null) {
-                return value;
-            } else if (parent != null){
-                return parent.getDoubleOption(state,option);
-            }
-        } else if (parent != null){
-            return parent.getDoubleOption(state, option);
-        }
-        return null;
+        return getStateGraph().getDoubleOption(state, option);
     }
+
     public boolean hasAnyOption(TransitionOption option) {
-        MatchTransitions tops = getTransitionOptions();
-        return (tops != null && tops.hasAnyOption(option)) || (parent != null && parent.hasAnyOption(option));
+        return getStateGraph().hasAnyOption(option);
     }
 
     public List<ItemStack> getWinnerItems() {
@@ -495,38 +494,25 @@ public class ArenaParams {
     }
 
     public List<ItemStack> getGiveItems(MatchState state) {
-        MatchTransitions tops = getTransitionOptions();
-        return (tops!=null && tops.hasOptionAt(state, TransitionOption.GIVEITEMS)) ?
-                tops.getOptions(state).getGiveItems() : (parent != null ? parent.getGiveItems(state) : null);
+        StateOptions tops = getStateOptions(state);
+        return (tops != null && tops.hasOption(TransitionOption.GIVEITEMS)) ? tops.getGiveItems() : null;
     }
 
     public List<PotionEffect> getEffects(MatchState state) {
-        MatchTransitions tops = getTransitionOptions();
-        return (tops!=null && tops.hasOptionAt(state, TransitionOption.ENCHANTS)) ?
-                tops.getOptions(state).getEffects() : (parent != null ? parent.getEffects(state) : null);
+        StateOptions tops = getStateOptions(state);
+        return (tops != null && tops.hasOption(TransitionOption.ENCHANTS)) ? tops.getEffects() : null;
     }
 
     public boolean needsWaitroom() {
-        return ( (allTops != null &&
-                getTransitionOptions().hasAnyOption(
-                        TransitionOption.TELEPORTMAINWAITROOM,TransitionOption.TELEPORTWAITROOM)) ||
-                (parent != null && parent.needsWaitroom())
-        );
+        return getStateGraph().hasAnyOption(TransitionOption.TELEPORTMAINWAITROOM, TransitionOption.TELEPORTWAITROOM);
     }
 
     public boolean needsSpectate() {
-        return ( (allTops != null &&
-                getTransitionOptions().hasAnyOption(TransitionOption.TELEPORTSPECTATE)) ||
-                (parent != null && parent.needsSpectate())
-        );
+        return getStateGraph().hasAnyOption(TransitionOption.TELEPORTSPECTATE);
     }
 
     public boolean needsLobby() {
-        return ( (allTops != null &&
-                getTransitionOptions().hasAnyOption(
-                        TransitionOption.TELEPORTMAINLOBBY,TransitionOption.TELEPORTLOBBY)) ||
-                (parent != null && parent.needsLobby())
-        );
+        return getStateGraph().hasAnyOption(TransitionOption.TELEPORTMAINLOBBY, TransitionOption.TELEPORTLOBBY);
     }
 
     public Boolean isWaitroomClosedWhenRunning(){
@@ -625,5 +611,26 @@ public class ArenaParams {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public StateGraph getTransitionOptions() {
+        return getStateGraph();
+    }
+
+    public StateGraph getStateGraph(){
+        if (mergedStateGraph != null)
+            return mergedStateGraph;
+        if (stateGraph == null && parent!=null) {
+            /// this is a bit hard to keep synced, but worth it for the speed improvements
+            mergedStateGraph = parent.getStateGraph();
+        } else {
+            mergedStateGraph = mergeChildWithParent(this, this.parent);
+        }
+
+        return mergedStateGraph;
+    }
+
+    public StateOptions getStateOptions(CompetitionState state) {
+        return getStateGraph().getOptions(state);
     }
 }

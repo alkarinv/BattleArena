@@ -7,7 +7,7 @@ import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.interfaces.ScoreTracker;
 import mc.alk.arena.util.ScoreMap;
-import mc.alk.scoreboardapi.api.SAPIFactory;
+import mc.alk.scoreboardapi.api.SAPI;
 import mc.alk.scoreboardapi.api.SEntry;
 import mc.alk.scoreboardapi.api.SObjective;
 import mc.alk.scoreboardapi.api.SScoreboard;
@@ -54,8 +54,8 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 			SAPIDisplaySlot slot, int priority, int points) {
 
 		o = (Defaults.TESTSERVER || !Defaults.USE_SCOREBOARD) ?
-                SAPIFactory.createSAPIObjective(id,displayName, criteria,slot, priority) :
-                SAPIFactory.createObjective(id,displayName, criteria,slot, priority);
+                SAPI.createSAPIObjective(id, displayName, criteria, slot, priority) :
+                SAPI.createObjective(id,displayName, criteria,slot, priority);
 		if (displayName != null){
 			setDisplayName(displayName);}
 	}

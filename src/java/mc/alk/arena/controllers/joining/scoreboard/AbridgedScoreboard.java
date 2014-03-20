@@ -84,4 +84,9 @@ public class AbridgedScoreboard implements WaitingScoreboard {
         scoreboard.removeEntry(t);
         return false;
     }
+
+    @Override
+    public ArenaScoreboard getScoreboard() {
+        return scoreboard;
+    }
 }

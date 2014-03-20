@@ -21,7 +21,7 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
-import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
@@ -119,7 +119,7 @@ public class GameManager implements PlayerHolder{
 	}
 
 	@Override
-	public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b) {
+	public boolean checkReady(ArenaPlayer player, ArenaTeam team, StateOptions mo, boolean b) {
 		return false;
 	}
 

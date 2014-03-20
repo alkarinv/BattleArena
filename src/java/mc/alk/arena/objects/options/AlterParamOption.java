@@ -6,7 +6,7 @@ import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.util.MinMax;
 
-public enum GameOption{
+public enum AlterParamOption {
     NLIVES ("nLives", true, false),
     TEAMSIZE("teamSize",true, false),
     NTEAMS("nTeams",true, false),
@@ -34,7 +34,7 @@ public enum GameOption{
 
     final boolean needsPlayer; /// whether we need a player
 
-    GameOption(String name, Boolean hasValue, Boolean needsPlayer){
+    AlterParamOption(String name, Boolean hasValue, Boolean needsPlayer){
         this.name = name;
         this.needsValue = hasValue;
         this.needsPlayer = needsPlayer;
@@ -47,26 +47,26 @@ public enum GameOption{
     @Override
     public String toString(){return name;}
 
-    public static GameOption fromString(String str){
+    public static AlterParamOption fromString(String str){
         str = str.toUpperCase();
         try {
-            return GameOption.valueOf(str);
+            return AlterParamOption.valueOf(str);
         } catch (IllegalArgumentException e){
             if (str.equalsIgnoreCase("secondsTillMatch") || str.equalsIgnoreCase("secondsUntilMatch"))
-                return GameOption.PRESTARTTIME;
+                return AlterParamOption.PRESTARTTIME;
             if (str.equalsIgnoreCase("secondsToLoot"))
-                return GameOption.VICTORYTIME;
+                return AlterParamOption.VICTORYTIME;
             if (str.equalsIgnoreCase("items"))
-                return GameOption.GIVEITEMS;
+                return AlterParamOption.GIVEITEMS;
             if (str.equalsIgnoreCase("waitroomClosedWhileRunning"))
-                return GameOption.CLOSEWAITROOMWHILERUNNING;
+                return AlterParamOption.CLOSEWAITROOMWHILERUNNING;
             if (str.equalsIgnoreCase("nConcurrentCompetitions"))
-                return GameOption.NCUMONCURRENTCOMPETITIONS;
+                return AlterParamOption.NCUMONCURRENTCOMPETITIONS;
             return null;
         }
     }
 
-    public static Object getValue(GameOption go, String value) {
+    public static Object getValue(AlterParamOption go, String value) {
         switch (go){
             case TEAMSIZE:
             case NTEAMS:

@@ -497,7 +497,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         return teams;
     }
 
-    public Arena getNextArena(MatchParams mp, JoinOptions jo) {
+    public Arena getNextArena(MatchParams mp) {
         synchronized (arenaqueue) {
             ArenaQueue aq = arenaqueue.get(mp.getType());
             if (aq == null)
@@ -505,7 +505,21 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
             for (Arena a : aq){
                 if (a.getArenaType() != mp.getType())
                     continue;
-                if (!a.valid() || !a.matches(mp, jo))
+                if (!a.valid() || !a.matches(mp))
+                    continue;
+                return a;
+            }
+        }
+        return null;
+    }
+
+    public Arena getNextArena(JoinOptions jo) {
+        synchronized (arenaqueue) {
+            ArenaQueue aq = arenaqueue.get(jo.getMatchParams().getType());
+            if (aq == null)
+                return null;
+            for (Arena a : aq){
+                if (!a.valid() || !a.matches(jo))
                     continue;
                 return a;
             }
@@ -524,7 +538,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
                 a = iter.next();
                 if (a.getArenaType() != mp.getType())
                     continue;
-                if (!a.valid() || !a.matches(mp, jo))
+                if (!a.valid() || !a.matches(jo))
                     continue;
                 iter.remove();
                 return a;

@@ -132,6 +132,8 @@ public class APIRegistrationController {
             return _registerCompetition(plugin, name, cmd, arenaClass, executor,
                     configFile, messageFile, defaultPluginConfigFile, defaultArenaFile);
         } catch (Exception e) {
+            Log.err("[BattleArena] could not register " + plugin.getName() +" "+name);
+            Log.err("[BattleArena] config " + configFile);
             Log.printStackTrace(e);
             return true;
         }
@@ -304,6 +306,7 @@ public class APIRegistrationController {
             if (!plugin.isEnabled()) /// lets not try to register plugins that aren't loaded
                 return;
             FileFilter fileFilter = new FileFilter() {
+                @Override
                 public boolean accept(File file) {return file.toString().matches(".*Config.yml$");}
             };
             if (!compDir.exists())

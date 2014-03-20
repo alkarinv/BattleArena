@@ -10,7 +10,7 @@ import mc.alk.arena.controllers.ArenaEditor.CurrentSelection;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.options.SpawnOptions;
-import mc.alk.arena.objects.pairs.GameOptionPair;
+import mc.alk.arena.objects.pairs.ParamAlterOptionPair;
 import mc.alk.arena.objects.pairs.TransitionOptionTuple;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.serializers.ArenaSerializer;
@@ -139,10 +139,10 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
     }
 
     @MCCommand(cmds = {}, admin = true, perm = "arena.alter")
-    public boolean arenaGeneric(CommandSender sender,CurrentSelection cs,  GameOptionPair gop) {
+    public boolean arenaGeneric(CommandSender sender,CurrentSelection cs,  ParamAlterOptionPair gop) {
         Arena arena = cs.getArena();
         try {
-            ArenaAlterController.setArenaOption(sender, arena, gop.gameOption, gop.value);
+            ArenaAlterController.setArenaOption(sender, arena, gop.alterParamOption, gop.value);
             return true;
         } catch (IllegalStateException e) {
             return sendMessage(sender, "&c" + e.getMessage());

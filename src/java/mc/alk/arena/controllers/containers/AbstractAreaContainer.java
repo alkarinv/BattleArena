@@ -18,7 +18,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
-import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamHandler;
@@ -188,8 +188,8 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
     }
 
     @Override
-    public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b) {
-        return params.getTransitionOptions().playerReady(player, null);
+    public boolean checkReady(ArenaPlayer player, ArenaTeam team, StateOptions mo, boolean b) {
+        return params.getStateGraph().playerReady(player, null);
     }
 
     @Override

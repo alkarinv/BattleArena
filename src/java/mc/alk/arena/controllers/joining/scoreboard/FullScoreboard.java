@@ -172,4 +172,9 @@ public class FullScoreboard implements WaitingScoreboard {
         scoreboard.removeEntry(t);
         return false;
     }
+
+    @Override
+    public ArenaScoreboard getScoreboard() {
+        return scoreboard;
+    }
 }

@@ -8,8 +8,8 @@ import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.joining.TeamJoinObject;
@@ -36,7 +36,7 @@ public class EventExecutor extends BAExecutor{
 
 	@MCCommand(cmds={"options"},admin=true, usage="options", order=2)
 	public boolean eventOptions(CommandSender sender,EventParams eventParams) {
-		MatchTransitions tops = eventParams.getTransitionOptions();
+		StateGraph tops = eventParams.getThisTransitionOptions();
         return sendMessage(sender, tops.getOptionString());
 	}
 
@@ -186,7 +186,7 @@ public class EventExecutor extends BAExecutor{
 		}
 
 		EventParams sq = event.getParams();
-		MatchTransitions tops = sq.getTransitionOptions();
+		StateGraph tops = sq.getThisTransitionOptions();
 		/// Perform is ready check
 		if(!tops.playerReady(p,null)){
 			String notReadyMsg = tops.getRequiredString(MessageHandler.getSystemMessage("need_the_following")+"\n");

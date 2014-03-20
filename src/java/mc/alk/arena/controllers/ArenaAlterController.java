@@ -13,7 +13,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
-import mc.alk.arena.objects.options.GameOption;
+import mc.alk.arena.objects.options.AlterParamOption;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.regions.PylamoRegion;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
@@ -143,10 +143,11 @@ public class ArenaAlterController {
         }
     }
 
-    public static boolean setArenaOption(CommandSender sender, Arena arena, GameOption go, Object value)
+    public static boolean setArenaOption(CommandSender sender, Arena arena, AlterParamOption go, Object value)
             throws IllegalStateException {
         MatchParams params = arena.getParams();
         ParamAlterController.setOption(sender, params, go, value);
+        RoomController.updateArenaParams(arena);
         ArenaSerializer.saveArenas(params.getType().getPlugin());
         return true;
     }
@@ -155,6 +156,7 @@ public class ArenaAlterController {
                                          TransitionOption op, Object value) throws IllegalStateException, InvalidOptionException {
         MatchParams params = arena.getParams();
         ParamAlterController.setOption(sender, params, state, op, value);
+        RoomController.updateArenaParams(arena);
         ArenaSerializer.saveArenas(params.getType().getPlugin());
         return true;
     }
@@ -265,11 +267,11 @@ public class ArenaAlterController {
             arena.setWorldGuardRegion(region);
             WorldGuardController.saveSchematic(sender, id);
             MatchParams mp = ParamController.getMatchParams(arena.getArenaType().getName());
-            if (mp != null && mp.getTransitionOptions().hasAnyOption(TransitionOption.WGNOENTER)){
+            if (mp != null && mp.getThisTransitionOptions().hasAnyOption(TransitionOption.WGNOENTER)){
                 WorldGuardController.trackRegion(w.getName(), id);
                 WorldGuardController.setFlag(region, "entry", false);
             }
-            if (mp != null && mp.getTransitionOptions().hasAnyOption(TransitionOption.WGNOLEAVE)){
+            if (mp != null && mp.getThisTransitionOptions().hasAnyOption(TransitionOption.WGNOLEAVE)){
                 WorldGuardController.trackRegion(w.getName(), id);
                 WorldGuardController.setFlag(region, "exit", false);
             }

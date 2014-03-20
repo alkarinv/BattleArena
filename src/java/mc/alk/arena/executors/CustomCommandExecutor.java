@@ -17,9 +17,9 @@ import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.options.GameOption;
+import mc.alk.arena.objects.options.AlterParamOption;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.pairs.GameOptionPair;
+import mc.alk.arena.objects.pairs.ParamAlterOptionPair;
 import mc.alk.arena.objects.pairs.TransitionOptionTuple;
 import mc.alk.arena.objects.teams.TeamIndex;
 import mc.alk.arena.util.MessageUtil;
@@ -74,7 +74,7 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
             return "<arena> ";
         } else if (ChangeType.class == clazz){
             return "<Arena | Lobby | Waitroom>";
-        } else if (GameOptionPair.class == clazz){
+        } else if (ParamAlterOptionPair.class == clazz){
             return "<GameOption> [value]";
         } else if (TransitionOptionTuple.class == clazz){
             return "<GameStage> <Option> [value]";
@@ -109,7 +109,7 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
             return verifyArena(clazz, string);
         } else if (ChangeType.class == clazz){
             return verifyChangeType(string);
-        } else if (GameOptionPair.class == clazz){
+        } else if (ParamAlterOptionPair.class == clazz){
             return verifyGameOption(sender,args,curIndex,numUsedStrings);
         } else if (TransitionOptionTuple.class == clazz){
             return verifyTransitionOptionTuple(sender, args, curIndex, numUsedStrings);
@@ -213,15 +213,15 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
         return top;
     }
 
-    private GameOptionPair verifyGameOption(CommandSender sender, String[] args, int curIndex, AtomicInteger numUsedStrings) {
-        GameOption go = GameOption.fromString(args[curIndex]);
+    private ParamAlterOptionPair verifyGameOption(CommandSender sender, String[] args, int curIndex, AtomicInteger numUsedStrings) {
+        AlterParamOption go = AlterParamOption.fromString(args[curIndex]);
         if (go==null)
-            throw new IllegalArgumentException(ChatColor.RED + "You need to specify a GameOption");
+            throw new IllegalArgumentException(ChatColor.RED + "You need to specify a AlterParamOption");
         if (go.needsPlayer() && !(sender instanceof Player))
             throw new IllegalArgumentException(ChatColor.RED + "You need to be online to change the option " + go.name());
 
-        GameOptionPair gop = new GameOptionPair();
-        gop.gameOption = go;
+        ParamAlterOptionPair gop = new ParamAlterOptionPair();
+        gop.alterParamOption = go;
         if (go.hasValue()){
             if (args.length < curIndex+2){
                 throw new IllegalArgumentException(ChatColor.RED + "Game Option "+ go.name()+" needs a value");
@@ -229,7 +229,7 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
             numUsedStrings.set(2);
 
             try {
-                gop.value = GameOption.getValue(go, args[curIndex + 1]);
+                gop.value = AlterParamOption.getValue(go, args[curIndex + 1]);
                 if (gop.value == null){
                     throw new IllegalArgumentException(ChatColor.RED + "Option " + go.name()+" couldn't parse value "+args[curIndex+1]);
                 }

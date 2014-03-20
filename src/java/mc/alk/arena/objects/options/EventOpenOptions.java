@@ -185,17 +185,17 @@ public class EventOpenOptions {
 		return params;
 	}
 
-	public Arena getArena(MatchParams mp, JoinOptions jp) throws InvalidOptionException{
+	public Arena getArena(MatchParams mp) throws InvalidOptionException{
 		BattleArenaController ac = BattleArena.getBAController();
-
-		Arena arena;
+//        MatchParams mp = jp.getMatchParams();
+        Arena arena;
 		boolean autoFindArena = false;
 		if (hasOption(EventOpenOption.ARENA)){
 			arena = (Arena) getOption(EventOpenOption.ARENA);
 		} else {
-			arena = ac.getArenaByMatchParams(mp,jp);
+			arena = ac.getArenaByMatchParams(mp);
 			if (arena == null){
-				Map<Arena,List<String>> reasons = ac.getNotMachingArenaReasons(mp,jp);
+				Map<Arena,List<String>> reasons = ac.getNotMachingArenaReasons(mp);
 				StringBuilder sb = new StringBuilder();
 				boolean first = true;
 				for (Arena a : reasons.keySet()){

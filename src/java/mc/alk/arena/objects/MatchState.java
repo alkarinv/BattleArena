@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author alkarin
  *
- * Enum of MatchTransitions, and MatchStates
+ * Enum of StateGraph, and MatchStates
  */
 public enum MatchState implements CompetitionState{
 	NONE("None"), DEFAULTS("defaults"),

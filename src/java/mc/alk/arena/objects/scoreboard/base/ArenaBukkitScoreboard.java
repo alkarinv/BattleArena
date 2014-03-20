@@ -36,8 +36,8 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
 
     public ArenaBukkitScoreboard(String scoreboardName, MatchParams params) {
         super(scoreboardName);
-        this.colorPlayerNames = Defaults.USE_COLORNAMES && (params.getTransitionOptions()!=null &&
-                !params.getTransitionOptions().hasAnyOption(TransitionOption.NOTEAMNAMECOLOR));
+        this.colorPlayerNames = Defaults.USE_COLORNAMES &&
+                (!params.getStateGraph().hasAnyOption(TransitionOption.NOTEAMNAMECOLOR));
         bboard = (BScoreboard) board;
     }
 

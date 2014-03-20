@@ -31,13 +31,17 @@ public class WaitingObject {
         }
     }
 
-    public boolean matches(QueueObject qo) {
-        return joinable &&
-                (arena != null ?
-                        arena.matches(qo.getMatchParams(), qo.getJoinOptions()) :
-                        params.matchesIgnoreNTeams(qo.getMatchParams()));
+//    public boolean matches(QueueObject qo) {
+//        return joinable &&
+//                (arena != null ?
+//                        arena.matches(qo.getMatchParams(), qo.getJoinOptions()) :
+//                        params.matchesIgnoreNTeams(qo.getMatchParams()));
+//    }
+public boolean matches(QueueObject qo) {
+        return joinable && (arena != null ?
+                        arena.matches(qo.getJoinOptions()) :
+                        params.matches(qo.getJoinOptions()));
     }
-
     public AbstractJoinHandler.TeamJoinResult join(TeamJoinObject qo) {
         return jh.joiningTeam(qo);
     }

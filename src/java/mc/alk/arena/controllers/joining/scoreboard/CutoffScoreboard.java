@@ -176,4 +176,9 @@ public class CutoffScoreboard implements WaitingScoreboard {
         scoreboard.removeEntry(t);
         return false;
     }
+
+    @Override
+    public ArenaScoreboard getScoreboard() {
+        return scoreboard;
+    }
 }

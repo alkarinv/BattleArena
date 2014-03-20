@@ -84,6 +84,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
     }
 
     /// Run is Thread Safe
+    @Override
     public void run() {
         running = true;
         Match match;
@@ -283,7 +284,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
 
         /// Add a default arena if they havent specified
         if (!tqo.getJoinOptions().hasArena()) {
-            tqo.getJoinOptions().setArena(getNextArena(tqo.getMatchParams(), tqo.getJoinOptions()));
+            tqo.getJoinOptions().setArena(getNextArena(tqo.getJoinOptions()));
         }
 
         /// We don't want them to add a queue if they can't fit
@@ -334,8 +335,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         }
         if (tqo.getJoinOptions().hasArena()) {
             Arena a = tqo.getJoinOptions().getArena();
-            if (a.getParams().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM) ||
-                    mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTMAINWAITROOM)) {
+            if (a.getParams().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM)) {
                 if (a.getWaitroom() == null) {
                     throw new IllegalStateException("&cWaitroom is not set for this arena");
                 }
@@ -371,26 +371,23 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
             for (Match match : matches) {
                 /// We dont want people joining in a non waitroom state
                 if (!match.canStillJoin()) {
+                    continue;}
+                if (!match.getParams().matches(tqo.getJoinOptions()) || !match.getArena().matches(tqo.getJoinOptions())) {
+                    continue;}
+                AbstractJoinHandler tjh = match.getTeamJoinHandler();
+                if (tjh == null)
                     continue;
-                }
-                if (match.getParams().matches(params)) {
-                    AbstractJoinHandler tjh = match.getTeamJoinHandler();
-                    if (tjh == null)
+                AbstractJoinHandler.TeamJoinResult tjr = tjh.joiningTeam(tqo);
+                switch (tjr.status) {
+                    case ADDED:
+                    case ADDED_TO_EXISTING:
+                    case ADDED_STILL_NEEDS_PLAYERS:
+                        jr.status = JoinResult.JoinStatus.ADDED_TO_EXISTING_MATCH;
+                        break;
+                    case CANT_FIT:
                         continue;
-                    if (!JoinOptions.matches(tqo.getJoinOptions(), match))
-                        continue;
-                    AbstractJoinHandler.TeamJoinResult tjr = tjh.joiningTeam(tqo);
-                    switch (tjr.status) {
-                        case ADDED:
-                        case ADDED_TO_EXISTING:
-                        case ADDED_STILL_NEEDS_PLAYERS:
-                            jr.status = JoinResult.JoinStatus.ADDED_TO_EXISTING_MATCH;
-                            break;
-                        case CANT_FIT:
-                            break;
-                    }
-                    return jr;
                 }
+                return jr;
             }
         }
         return jr;
@@ -426,19 +423,33 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         }
     }
 
-    public Arena getNextArena(MatchParams mp, JoinOptions jo) {
+    public Arena getNextArena(JoinOptions jo) {
+        if (fixedArenas.containsKey(jo.getMatchParams().getType()))
+            return fixedArenas.get(jo.getMatchParams().getType());
+        return amq.getNextArena(jo);
+    }
+
+    public Arena getNextArena(MatchParams mp) {
         if (fixedArenas.containsKey(mp.getType()))
             return fixedArenas.get(mp.getType());
-        return amq.getNextArena(mp, jo);
+        return amq.getNextArena(mp);
     }
 
     public Arena nextArenaByMatchParams(MatchParams mp){
-        return amq.getNextArena(mp,null);
+        return amq.getNextArena(mp);
     }
 
-    public Arena getArenaByMatchParams(MatchParams mp, JoinOptions jp) {
+    public Arena getArenaByMatchParams(MatchParams jp) {
         for (Arena a : allarenas.values()){
-            if (a.valid() && a.matches(mp,jp)){
+            if (a.valid() && a.matches(jp)){
+                return a;}
+        }
+        return null;
+    }
+
+    public Arena getArenaByMatchParams(JoinOptions jp) {
+        for (Arena a : allarenas.values()){
+            if (a.valid() && a.matches(jp)){
                 return a;}
         }
         return null;
@@ -447,20 +458,21 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
     public List<Arena> getArenas(MatchParams mp) {
         List<Arena> arenas = new ArrayList<Arena>();
         for (Arena a : allarenas.values()){
-            if (a.valid() && a.matches(mp,null)){
+            if (a.valid() && a.matches(mp)){
                 arenas.add(a);}
         }
         return arenas;
     }
 
-    public Arena getArenaByNearbyMatchParams(MatchParams mp, JoinOptions jp) {
+    public Arena getArenaByNearbyMatchParams(JoinOptions jp) {
         Arena possible = null;
+        MatchParams mp = jp.getMatchParams();
         int sizeDif = Integer.MAX_VALUE;
         int m1 = mp.getMinTeamSize();
         for (Arena a : allarenas.values()){
             if (a.getArenaType() != mp.getType() || !a.valid())
                 continue;
-            if (a.matchesIgnoreSize(mp,jp)){
+            if (a.matches(jp)){
                 return a;}
             int m2 = a.getParams().getMinTeamSize();
             if (m2 > m1 && m2 -m1 < sizeDif){
@@ -471,18 +483,39 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         return possible;
     }
 
-
-    public Map<Arena,List<String>> getNotMachingArenaReasons(MatchParams mp, JoinOptions jp) {
+    public Map<Arena,List<String>> getNotMachingArenaReasons(MatchParams mp) {
         Map<Arena,List<String>> reasons = new HashMap<Arena, List<String>>();
         for (Arena a : allarenas.values()){
             if (a.getArenaType() != mp.getType()){
                 continue;
             }
-            if (jp != null && !jp.matches(a))
-                continue;
             if (!a.valid()){
                 reasons.put(a, a.getInvalidReasons());}
-            if (!a.matches(mp,jp)){
+            if (!a.matches(mp)){
+                List<String> rs = reasons.get(a);
+                if (rs == null){
+                    reasons.put(a, a.getInvalidMatchReasons(mp,null));
+                } else {
+                    rs.addAll(a.getInvalidMatchReasons(mp,null));
+                }
+            }
+        }
+        return reasons;
+    }
+
+    public Map<Arena,List<String>> getNotMachingArenaReasons(JoinOptions jp) {
+        Map<Arena,List<String>> reasons = new HashMap<Arena, List<String>>();
+        MatchParams mp = jp.getMatchParams();
+        Arena wantedArena = jp.getArena();
+        for (Arena a : allarenas.values()){
+            if (wantedArena !=null && !a.matches(wantedArena)) {
+                continue;}
+            if (a.getArenaType() != mp.getType()){
+                continue;
+            }
+            if (!a.valid()){
+                reasons.put(a, a.getInvalidReasons());}
+            if (!a.matches(jp)){
                 List<String> rs = reasons.get(a);
                 if (rs == null){
                     reasons.put(a, a.getInvalidMatchReasons(mp, jp));
@@ -493,14 +526,6 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         }
         return reasons;
     }
-
-    //	/**
-    //	 * We dont care if they leave queues
-    //	 */
-    //	@Override
-    //	public boolean canLeave(ArenaPlayer p) {
-    //		return true;
-    //	}
 
     public boolean hasArenaSize(int i) {return getArenaBySize(i) != null;}
     public Arena getArenaBySize(int i) {

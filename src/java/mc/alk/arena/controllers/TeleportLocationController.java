@@ -12,8 +12,8 @@ import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.TeleportDirection;
 import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
@@ -25,7 +25,7 @@ public class TeleportLocationController {
 	static Random rand = new Random();
 
 	public static void teleport(PlayerHolder am, ArenaTeam team,
-			ArenaPlayer player, TransitionOptions mo, int teamIndex) {
+			ArenaPlayer player, StateOptions mo, int teamIndex) {
 		player.markOldLocation();
 		MatchParams mp = am.getParams();
 
@@ -43,7 +43,7 @@ public class TeleportLocationController {
 	}
 
 	public static void teleportOut(PlayerHolder am, ArenaTeam team,
-			ArenaPlayer player, TransitionOptions mo) {
+			ArenaPlayer player, StateOptions mo) {
         MatchParams mp = am.getParams();
 		Location loc;
 		ArenaLocation src = player.getCurLocation();
@@ -131,7 +131,7 @@ public class TeleportLocationController {
 	}
 
 	private static ArenaLocation getArenaLocation(PlayerHolder am, ArenaTeam team,
-			ArenaPlayer player, TransitionOptions tops, int teamIndex){
+			ArenaPlayer player, StateOptions tops, int teamIndex){
 		final MatchParams mp = am.getParams();
 		final boolean randomRespawn = tops.hasOption(TransitionOption.RANDOMRESPAWN);
         SpawnLocation l;

@@ -1,5 +1,6 @@
 package mc.alk.arena.objects.scoreboard;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -13,6 +14,7 @@ import mc.alk.scoreboardapi.api.STeam;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,16 +24,16 @@ public class ArenaScoreboard implements SScoreboard {
 
     public ArenaScoreboard(String scoreboardName) {
         this.board = (Defaults.TESTSERVER || !Defaults.USE_SCOREBOARD) ?
-                ScoreboardAPI.createSAPIScoreboard(scoreboardName) :
-                ScoreboardAPI.createScoreboard(scoreboardName);
+                ScoreboardAPI.createSAPIScoreboard(getPlugin(), scoreboardName) :
+                ScoreboardAPI.createScoreboard(getPlugin(), scoreboardName);
     }
 
     @SuppressWarnings({"unused"})
     @Deprecated
     public ArenaScoreboard(Match match, MatchParams params) {
         this.board = (Defaults.TESTSERVER || !Defaults.USE_SCOREBOARD) ?
-                ScoreboardAPI.createSAPIScoreboard(match.getName()) :
-                ScoreboardAPI.createScoreboard(match.getName());
+                ScoreboardAPI.createSAPIScoreboard(getPlugin(), match.getName()) :
+                ScoreboardAPI.createScoreboard(getPlugin(), match.getName());
     }
 
     public ArenaObjective createObjective(String id, String criteria, String displayName) {
@@ -176,6 +178,11 @@ public class ArenaScoreboard implements SScoreboard {
     @Override
     public void setEntryNameSuffix(SEntry e, String name) {
         board.setEntryNameSuffix(e, name);
+    }
+
+    @Override
+    public Plugin getPlugin() {
+        return BattleArena.getSelf();
     }
 
     public boolean setEntryNameSuffix(ArenaPlayer player, String name) {

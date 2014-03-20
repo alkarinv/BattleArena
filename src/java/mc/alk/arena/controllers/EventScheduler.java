@@ -77,7 +77,7 @@ public class EventScheduler implements Runnable, ArenaListener{
                             "  event" + event +"  args=" + Arrays.toString(args));
 				} else { /// normal match
 					EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null, params);
-					Arena arena = eoo.getArena(params, null);
+					Arena arena = eoo.getArena(params);
                     if (arena != null){
                         Match m = BattleArena.getBAController().createAndAutoMatch(arena, eoo);
                         m.addArenaListener(scheduler);

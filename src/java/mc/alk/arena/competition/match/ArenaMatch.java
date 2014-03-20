@@ -19,8 +19,8 @@ import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.CommandUtil;
@@ -43,10 +43,10 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ArenaMatch extends Match {
@@ -54,8 +54,8 @@ public class ArenaMatch extends Match {
     final static HashSet<String> disabledCommands = new HashSet<String>();
     final static HashSet<String> enabledCommands = new HashSet<String>();
 
-    final Map<String, Integer> deathTimer = new ConcurrentHashMap<String, Integer>();
-    final Map<String, Integer> respawnTimer = new ConcurrentHashMap<String, Integer>();
+    final Map<String, Integer> deathTimer = new HashMap<String, Integer>();
+    final Map<String, Integer> respawnTimer = new HashMap<String, Integer>();
 
     public ArenaMatch(Arena arena, MatchParams mp, Collection<ArenaListener> listeners) {
         super(arena, mp,listeners);
@@ -223,7 +223,7 @@ public class ArenaMatch extends Match {
         if (isWon()) {
             return;
         }
-        final TransitionOptions mo = tops.getOptions(MatchState.ONDEATH);
+        final StateOptions mo = tops.getOptions(MatchState.ONDEATH);
 
         if (mo == null)
             return;

@@ -15,11 +15,11 @@ import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.EffectUtil;
@@ -71,7 +71,7 @@ public class PerformTransition {
 
     static boolean transition(PlayerHolder am, final CompetitionState transition, ArenaTeam team, boolean onlyInMatch,
                               boolean performOncePerTransitionOptions) {
-        final TransitionOptions mo = am.getParams().getTransitionOptions().getOptions(transition);
+        final StateOptions mo = am.getParams().getStateOptions(transition);
         if (mo == null)
             return true;
         if (performOncePerTransitionOptions && (am instanceof ArenaController)){
@@ -103,25 +103,25 @@ public class PerformTransition {
         if (team != null && team.getIndex() != -1) {
             MatchParams mp = am.getParams().getTeamParams(team.getIndex());
             if (mp != null){
-                return transition(am, transition, player, team, onlyInMatch, mp.getTransitionOptions());}
+                return transition(am, transition, player, team, onlyInMatch, mp.getStateGraph());}
         }
-        return transition(am,transition,player,team,onlyInMatch,am.getParams().getTransitionOptions());
+        return transition(am,transition,player,team,onlyInMatch,am.getParams().getStateGraph());
 
     }
 
     @SuppressWarnings("ConstantConditions")
     private static boolean transition(final PlayerHolder am, final CompetitionState transition,
                                       final ArenaPlayer player, final ArenaTeam team, final boolean onlyInMatch,
-                                      MatchTransitions tops) {
+                                      StateGraph tops) {
         if (tops == null){
             return true;}
-        final TransitionOptions mo = tops.getOptions(transition);
+        final StateOptions mo = tops.getOptions(transition);
         if (mo == null){ /// no options
             return true;}
         if (Defaults.DEBUG_TRANSITIONS) Log.info("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
-                " ops="+am.getParams().getTransitionOptions().getOptions(transition)+" onlyInMatch="+onlyInMatch+
+                " ops="+am.getParams().getThisTransitionOptions().getOptions(transition)+" onlyInMatch="+onlyInMatch+
                 " inArena="+am.isHandled(player) + " dead="+player.isDead()+":"+player.getHealth()+" online="+player.isOnline()+" clearInv=" +
-                am.getParams().getTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
+                am.getParams().getThisTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
         final boolean insideArena = am.isHandled(player);
         final boolean teleportIn = mo.shouldTeleportIn();
         final boolean teleportRoom = mo.shouldTeleportWaitRoom() || mo.shouldTeleportLobby() || mo.shouldTeleportSpectate();
@@ -307,7 +307,7 @@ public class PerformTransition {
         InventoryUtil.addItemsToInventory(p.getPlayer(),items,woolTeams,color);
     }
 
-    private static ArenaClass getArenaClass(TransitionOptions mo, final int teamIndex) {
+    private static ArenaClass getArenaClass(StateOptions mo, final int teamIndex) {
         Map<Integer,ArenaClass> classes = mo.getClasses();
         if (classes == null)
             return null;
@@ -319,7 +319,7 @@ public class PerformTransition {
         return null;
     }
 
-    private static String getDisguise(TransitionOptions mo, final int teamIndex) {
+    private static String getDisguise(StateOptions mo, final int teamIndex) {
         Map<Integer,String> disguises = mo.getDisguises();
         if (disguises==null)
             return null;

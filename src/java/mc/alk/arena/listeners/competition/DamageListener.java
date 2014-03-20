@@ -3,12 +3,12 @@ package mc.alk.arena.listeners.competition;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.PVPState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
-import mc.alk.arena.objects.options.TransitionOptions;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
@@ -21,7 +21,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 public class DamageListener implements ArenaListener{
-	MatchTransitions transitionOptions;
+	StateGraph transitionOptions;
 	PlayerHolder holder;
     static IEventHelper handler;
 
@@ -42,7 +42,7 @@ public class DamageListener implements ArenaListener{
     }
 
     public DamageListener(PlayerHolder holder){
-		this.transitionOptions = holder.getParams().getTransitionOptions();
+		this.transitionOptions = holder.getParams().getStateGraph();
 		this.holder = holder;
 	}
 
@@ -50,7 +50,7 @@ public class DamageListener implements ArenaListener{
 	public void onEntityDamageEvent(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player))
 			return;
-		final TransitionOptions to = transitionOptions.getOptions(holder.getMatchState());
+		final StateOptions to = transitionOptions.getOptions(holder.getMatchState());
 		if (to == null)
 			return;
 		final PVPState pvp = to.getPVP();

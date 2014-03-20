@@ -3,7 +3,7 @@ package mc.alk.arena.listeners.competition;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -12,11 +12,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PotionSplashEvent;
 
 public class PotionListener implements ArenaListener{
-	MatchTransitions transitionOptions;
+	StateGraph transitionOptions;
 	PlayerHolder holder;
 
 	public PotionListener(PlayerHolder match){
-		this.transitionOptions = match.getParams().getTransitionOptions();
+		this.transitionOptions = match.getParams().getStateGraph();
 		this.holder = match;
 	}
 

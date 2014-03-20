@@ -5,7 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.util.CaseInsensitiveMap;
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ParamController {
     static final CaseInsensitiveMap<MatchParams> types = new CaseInsensitiveMap<MatchParams>();
-    static final Map<String, MatchTransitions> transitions = new ConcurrentHashMap<String, MatchTransitions>();
+    static final Map<String, StateGraph> transitions = new ConcurrentHashMap<String, StateGraph>();
     static final CaseInsensitiveMap<Set<String>> aliases = new CaseInsensitiveMap<Set<String>>();
 
     public static void addMatchParams(MatchParams matchParams) {
@@ -140,11 +140,11 @@ public class ParamController {
         return sb.toString();
     }
 
-//    public static void setTransitionOptions(ArenaParams params, MatchTransitions matchTransitions) {
+//    public static void setTransitionOptions(ArenaParams params, StateGraph matchTransitions) {
 //        transitions.put(params.getName(), matchTransitions);
 //    }
 //
-//    public static MatchTransitions getTransitionOptions(ArenaParams arenaParams) {
+//    public static StateGraph getThisTransitionOptions(ArenaParams arenaParams) {
 //        if (arenaParams.getName() == null)
 //            return null;
 //        return transitions.get(arenaParams.getName());

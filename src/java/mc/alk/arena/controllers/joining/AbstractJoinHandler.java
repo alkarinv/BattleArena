@@ -4,17 +4,19 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.controllers.joining.scoreboard.CutoffScoreboard;
 import mc.alk.arena.controllers.joining.scoreboard.FullScoreboard;
-import mc.alk.arena.objects.scoreboard.WaitingScoreboard;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.joining.JoinHandler;
 import mc.alk.arena.objects.joining.JoinResponseHandler;
 import mc.alk.arena.objects.joining.TeamJoinObject;
+import mc.alk.arena.objects.scoreboard.WaitingScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.Log;
+import mc.alk.scoreboardapi.api.SAPI;
+import mc.alk.scoreboardapi.api.SScoreboard;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -110,6 +112,13 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     public void setCompetition(Competition comp) {
         this.competition = comp;
     }
+
+    public void transferOldScoreboards(SScoreboard newScoreboard){
+        if (scoreboard == null)
+            return;
+        SAPI.transferOldScoreboards(scoreboard.getScoreboard(), newScoreboard);
+    }
+
 
     protected ArenaTeam addToPreviouslyLeftTeam(ArenaPlayer player) {
         for (ArenaTeam t: teams){

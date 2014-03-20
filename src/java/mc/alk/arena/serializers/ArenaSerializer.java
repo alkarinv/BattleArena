@@ -7,8 +7,8 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -342,7 +342,7 @@ public class ArenaSerializer extends BaseConfig{
         MatchParams mp = ParamController.getMatchParamCopy(arena.getArenaType().getName());
         if (mp == null)
             return;
-        MatchTransitions trans = mp.getTransitionOptions();
+        StateGraph trans = mp.getThisTransitionOptions();
         if (trans == null)
             return;
         WorldGuardController.setFlag(arena.getWorldGuardRegion(), "entry", !trans.hasAnyOption(TransitionOption.WGNOENTER));

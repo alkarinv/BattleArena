@@ -2,9 +2,9 @@ package mc.alk.arena.listeners;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.plugins.CombatTagInterface;
 import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.CombatTagInterface;
 import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.FactionsController;

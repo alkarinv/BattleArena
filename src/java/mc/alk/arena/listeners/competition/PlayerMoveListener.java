@@ -2,7 +2,7 @@ package mc.alk.arena.listeners.competition;
 
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.listeners.PlayerHolder;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
@@ -13,12 +13,12 @@ import org.bukkit.World;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 public class PlayerMoveListener implements ArenaListener{
-	MatchTransitions transitionOptions;
+	StateGraph transitionOptions;
 	PlayerHolder match;
     ArenaRegion region;
     final World w;
 	public PlayerMoveListener(PlayerHolder match, ArenaRegion region){
-		this.transitionOptions = match.getParams().getTransitionOptions();
+		this.transitionOptions = match.getParams().getStateGraph();
 		this.match = match;
         this.region = region;
         this.w = Bukkit.getWorld(region.getWorld());

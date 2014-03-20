@@ -44,10 +44,10 @@ import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.Duel;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.MatchTransitions;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -55,14 +55,14 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.Channel;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.options.EventOpenOptions;
-import mc.alk.arena.objects.options.GameOption;
+import mc.alk.arena.objects.options.AlterParamOption;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.options.TransitionOptions;
-import mc.alk.arena.objects.pairs.GameOptionPair;
+import mc.alk.arena.objects.pairs.ParamAlterOptionPair;
 import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.pairs.TransitionOptionTuple;
 import mc.alk.arena.objects.spawns.FixedLocation;
@@ -184,7 +184,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
     public boolean join(ArenaPlayer player, final MatchParams omp, String args[], boolean adminJoin) {
         /// Make sure we have Match Options
-        final MatchTransitions ops = omp.getTransitionOptions();
+        final StateGraph ops = omp.getStateGraph();
         if (ops == null) {
             return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix");}
 
@@ -230,17 +230,17 @@ public class BAExecutor extends CustomCommandExecutor {
         }
         MatchParams mp = jp.getMatchParams();
         /// Check to make sure at least one arena can be joined at some time
-        Arena arena = ac.getArenaByMatchParams(mp, jp);
+        Arena arena = ac.getArenaByMatchParams(jp);
         if (arena == null) {
             if (!jp.hasWantedTeamSize()) {
-                arena = ac.getArenaByNearbyMatchParams(mp, jp);
+                arena = ac.getArenaByNearbyMatchParams(jp);
                 if (arena != null) {
                     mp.setMinTeamSize(arena.getParams().getMinTeamSize());
                     mp.setMaxTeamSize(arena.getParams().getMaxTeamSize());
                 }
             }
             if (arena == null) {
-                Map<Arena, List<String>> reasons = ac.getNotMachingArenaReasons(mp, jp);
+                Map<Arena, List<String>> reasons = ac.getNotMachingArenaReasons(jp);
                 if (!reasons.isEmpty()) {
                     for (Arena a : reasons.keySet()) {
                         List<String> rs = reasons.get(a);
@@ -678,7 +678,7 @@ public class BAExecutor extends CustomCommandExecutor {
         try {
             EventOpenOptions eoo = EventOpenOptions.parseOptions(args, null,params);
 
-            Arena arena = eoo.getArena(params, null);
+            Arena arena = eoo.getArena(params);
             if (arena == null){
                 return sendMessage(sender,"[BattleArena] auto args="+Arrays.toString(args) +
                         " can't be started. Arena  is not there or in use");
@@ -692,9 +692,9 @@ public class BAExecutor extends CustomCommandExecutor {
                     "&2You have " + args[0] + "ed a &6" + params.getName()
                             + "&2 inside &6" + arena.getName()
                             + " &2TeamSize=&6"
-                            + arena.getParams().getTeamSizeRange()
+                            + arena.getParams().getTeamSizes()
                             + "&2 #Teams=&6"
-                            + arena.getParams().getNTeamRange()
+                            + arena.getParams().getNTeams()
                             + "&2 supporting " + maxPlayers + "&2 at &5"
                             + arena.getName());
         } catch (InvalidOptionException e) {
@@ -839,7 +839,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
     @MCCommand(cmds = { "info" }, exact = 1, usage = "info")
     public boolean arenaInfo(CommandSender sender, MatchParams mp) {
-        String info = TransitionOptions.getInfo(mp, mp.getName());
+        String info = StateOptions.getInfo(mp, mp.getName());
         return sendMessage(sender, info);
     }
 
@@ -969,9 +969,9 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     @MCCommand(cmds = { "setArenaOption", "alter", "edit" }, admin = true, perm = "arena.alter")
-    public boolean arenaSetOption(CommandSender sender, Arena arena, GameOptionPair gop) {
+    public boolean arenaSetOption(CommandSender sender, Arena arena, ParamAlterOptionPair gop) {
         try {
-            ArenaAlterController.setArenaOption(sender, arena, gop.gameOption, gop.value);
+            ArenaAlterController.setArenaOption(sender, arena, gop.alterParamOption, gop.value);
         } catch (IllegalStateException e) {
             return sendMessage(sender, "&c" + e.getMessage());
         }
@@ -991,17 +991,17 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     @MCCommand(cmds = { "setOption" }, admin = true, perm = "arena.alter")
-    public boolean setGameOption(CommandSender sender, MatchParams params, GameOptionPair gop) {
-        return _setGameOption(sender, params,null, gop.gameOption, gop.value);
+    public boolean setGameOption(CommandSender sender, MatchParams params, ParamAlterOptionPair gop) {
+        return _setGameOption(sender, params,null, gop.alterParamOption, gop.value);
     }
 
     @MCCommand(cmds = { "setOption" }, admin = true, perm = "arena.alter")
-    public boolean setGameOption(CommandSender sender, MatchParams params, TeamIndex index, GameOptionPair gop) {
-        return _setGameOption(sender, params,index.getInt(), gop.gameOption, gop.value);
+    public boolean setGameOption(CommandSender sender, MatchParams params, TeamIndex index, ParamAlterOptionPair gop) {
+        return _setGameOption(sender, params,index.getInt(), gop.alterParamOption, gop.value);
     }
 
     public boolean _setGameOption(CommandSender sender, MatchParams params,
-                                  Integer teamIndex, GameOption option, Object value) {
+                                  Integer teamIndex, AlterParamOption option, Object value) {
         try {
             ParamAlterController.setGameOption(sender, params, teamIndex, option, value);
             if (value != null) {
@@ -1035,8 +1035,8 @@ public class BAExecutor extends CustomCommandExecutor {
             } else {
                 sendMessage(sender, "&2Game options &6"+state+"&2 added &6"+to );
             }
-            MatchTransitions tops = params.getTransitionOptions();
-            TransitionOptions ops = tops.getOptions(state);
+            StateGraph tops = params.getThisTransitionOptions();
+            StateOptions ops = tops.getOptions(state);
             sendMessage(sender, "&2Options at &6"+state +"&2 now &6" + ops.toString());
         } catch (InvalidOptionException e) {
             sendMessage(sender, "&cCould not set game option " + state + " " + to);
@@ -1047,18 +1047,18 @@ public class BAExecutor extends CustomCommandExecutor {
 
     @MCCommand(cmds = { "showOptions" }, admin = true, perm = "arena.alter")
     public boolean showGameOptions(CommandSender sender, MatchParams params) {
-        MatchTransitions tops = params.getTransitionOptions();
+        StateGraph tops = params.getThisTransitionOptions();
         if (tops == null){
             return sendMessage(sender, "&2Options for "+params.getName() +" are empty");
         }
-        sendMessage(sender, "&2Options for &6"+params.getName() +" : " + params.getDisplayName());
+        sendMessage(sender, "&2Options for &f"+params.getName() +"&2 : " + params.getDisplayName());
         sendMessage(sender, params.toSummaryString());
         return sendMessage(sender, tops.getOptionString());
     }
 
     @MCCommand(cmds = { "showOptions" }, admin = true, perm = "arena.alter")
     public boolean showGameOptions(CommandSender sender, MatchParams params, Arena arena) {
-        MatchTransitions tops = arena.getParams().getTransitionOptions();
+        StateGraph tops = arena.getParams().getThisTransitionOptions();
         if (tops == null) {
             return sendMessage(sender, "&2Options for " + params.getName() + " are empty");
         }
@@ -1162,7 +1162,7 @@ public class BAExecutor extends CustomCommandExecutor {
                         "&4[Duel]&6"
                                 + player.getDisplayName()
                                 + " wasn't within "
-                                + d.getMatchParams().getTransitionOptions()
+                                + d.getMatchParams().getStateGraph()
                                 .getOptions(MatchState.PREREQS)
                                 .getWithinDistance()
                                 + "&c blocks of an arena");
@@ -1191,7 +1191,7 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     @MCCommand(cmds = { "duel", "d" }, helpOrder = 10)
-    public boolean duel(ArenaPlayer player, MatchParams mp, String args[]) {
+    public boolean duel(ArenaPlayer player, final MatchParams mp, String args[]) {
         if (!PermissionsUtil.hasMatchPerm(player, mp, "duel")) {
             return sendMessage(
                     player,
@@ -1234,7 +1234,7 @@ public class BAExecutor extends CustomCommandExecutor {
         }
         if (!duelOptions.matches(player, mp)) {
             return sendMessage(player, "&cYou need to be within &6"
-                    + mp.getTransitionOptions().getOptions(MatchState.PREREQS)
+                    + mp.getStateGraph().getOptions(MatchState.PREREQS)
                     .getWithinDistance() + "&c blocks of an arena");
         }
         // / Announce warnings
@@ -1249,13 +1249,13 @@ public class BAExecutor extends CustomCommandExecutor {
                         "&6"
                                 + ap.getDisplayName()
                                 + "&c needs to be within "
-                                + mp.getTransitionOptions()
+                                + mp.getStateGraph()
                                 .getOptions(MatchState.PREREQS)
                                 .getWithinDistance()
                                 + "&c blocks of an arena");
             }
 
-            final MatchTransitions ops = mp.getTransitionOptions();
+            final StateGraph ops = mp.getStateGraph();
             if (ops != null) {
                 ArenaTeam t = TeamController.createTeam(mp, ap);
                 // / Check ready
@@ -1310,11 +1310,8 @@ public class BAExecutor extends CustomCommandExecutor {
             if (!duelOptions.matches(ap, mp)) {
                 return sendMessage(
                         player,
-                        "&6"
-                                + ap.getDisplayName()
-                                + "&c needs to be within "
-                                + mp.getTransitionOptions()
-                                .getOptions(MatchState.PREREQS)
+                        "&6"+ ap.getDisplayName()+ "&c needs to be within "+
+                                mp.getStateGraph().getOptions(MatchState.PREREQS)
                                 .getWithinDistance());
             }
 
@@ -1341,9 +1338,9 @@ public class BAExecutor extends CustomCommandExecutor {
             mp.setRated(false);
 
         // / Check to make sure at least one arena can be joined at some time
-        Arena arena = ac.getArenaByMatchParams(mp, null);
+        Arena arena = ac.getArenaByMatchParams(mp);
         if (arena == null) {
-            Map<Arena, List<String>> reasons = ac.getNotMachingArenaReasons(mp, null);
+            Map<Arena, List<String>> reasons = ac.getNotMachingArenaReasons(mp);
             if (!reasons.isEmpty()) {
                 for (Arena a : reasons.keySet()) {
                     List<String> rs = reasons.get(a);
@@ -1353,7 +1350,7 @@ public class BAExecutor extends CustomCommandExecutor {
             }
             return sendSystemMessage(player, "valid_arena_not_built", mp.getName());
         }
-        final MatchTransitions ops = mp.getTransitionOptions();
+        final StateGraph ops = mp.getStateGraph();
         if (ops == null) {
             return sendMessage(player,
                     "&cThis match type has no valid options, contact an admin to fix ");
@@ -1610,7 +1607,7 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     public static boolean refundFee(MatchParams pi, ArenaTeam t) {
-        final MatchTransitions tops = pi.getTransitionOptions();
+        final StateGraph tops = pi.getStateGraph();
         if (tops.hasEntranceFee()) {
             Double fee = tops.getEntranceFee();
             if (fee == null || fee <= 0)

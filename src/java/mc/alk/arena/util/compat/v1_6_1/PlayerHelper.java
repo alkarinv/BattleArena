@@ -47,4 +47,5 @@ public class PlayerHelper implements IPlayerHelper{
 	public double getMaxHealth(Player player) {
 		return player.getMaxHealth();
 	}
+
 }

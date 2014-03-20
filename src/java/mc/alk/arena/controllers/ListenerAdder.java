@@ -17,7 +17,7 @@ import mc.alk.arena.listeners.competition.PotionListener;
 import mc.alk.arena.listeners.competition.PreClearInventoryListener;
 import mc.alk.arena.listeners.competition.TeamHeadListener;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.regions.ArenaRegion;
@@ -25,7 +25,7 @@ import mc.alk.arena.objects.scoreboard.ScoreboardFactory;
 
 public class ListenerAdder {
 
-    public static void addListeners(PlayerHolder holder, MatchTransitions tops) {
+    public static void addListeners(PlayerHolder holder, StateGraph tops) {
         boolean needsDamageEvents = tops.hasAnyOption(TransitionOption.PVPOFF,TransitionOption.PVPON,TransitionOption.INVINCIBLE);
         boolean woolTeams = tops.hasAnyOption(TransitionOption.WOOLTEAMS) && holder.getParams().getMaxTeamSize() >1 ||
                 tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS);

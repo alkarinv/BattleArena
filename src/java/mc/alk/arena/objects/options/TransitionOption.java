@@ -117,6 +117,8 @@ public enum TransitionOption{
 
     /// onJoin only options
     ALWAYSJOIN("alwaysJoin",false),					/// Allow players to add at any time
+
+    /// onComplete only options
     REJOIN("rejoin",false),							/// Rejoin players
 
     /// onSpawn Only Options

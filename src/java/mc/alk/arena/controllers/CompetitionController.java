@@ -8,61 +8,61 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CompetitionController {
-	static HashMap<String, Map<String, RegisteredCompetition>> registeredCompetitions =
-			new HashMap<String, Map<String, RegisteredCompetition>>();
+    static HashMap<String, Map<String, RegisteredCompetition>> registeredCompetitions =
+            new HashMap<String, Map<String, RegisteredCompetition>>();
 
-	public static Map<String,RegisteredCompetition> getOrCreate(String pluginName){
-		Map<String, RegisteredCompetition> comps = registeredCompetitions.get(pluginName);
-		if (comps == null){
-			comps = new HashMap<String, RegisteredCompetition>();
-			registeredCompetitions.put(pluginName, comps);
-		}
-		return comps;
-	}
+    public static Map<String,RegisteredCompetition> getOrCreate(String pluginName){
+        Map<String, RegisteredCompetition> comps = registeredCompetitions.get(pluginName);
+        if (comps == null){
+            comps = new HashMap<String, RegisteredCompetition>();
+            registeredCompetitions.put(pluginName, comps);
+        }
+        return comps;
+    }
 
-	public static void addRegisteredCompetition(RegisteredCompetition rc) {
-		String pluginName = rc.getPlugin().getName();
-		Map<String, RegisteredCompetition> comps = getOrCreate(pluginName);
-		comps.put(rc.getCompetitionName().toUpperCase(), rc);
-	}
+    public static void addRegisteredCompetition(RegisteredCompetition rc) {
+        String pluginName = rc.getPlugin().getName();
+        Map<String, RegisteredCompetition> comps = getOrCreate(pluginName);
+        comps.put(rc.getCompetitionName().toUpperCase(), rc);
+    }
 
-	public static RegisteredCompetition getCompetition(Plugin plugin, String name) {
-		String pluginName = plugin.getName();
-		Map<String, RegisteredCompetition> comps = registeredCompetitions.get(pluginName);
-		if (comps == null || comps.isEmpty())
-			return null;
-		return comps.get(name.toUpperCase());
-	}
+    public static RegisteredCompetition getCompetition(Plugin plugin, String name) {
+        String pluginName = plugin.getName();
+        Map<String, RegisteredCompetition> comps = registeredCompetitions.get(pluginName);
+        if (comps == null || comps.isEmpty())
+            return null;
+        return comps.get(name.toUpperCase());
+    }
 
-	public static RegisteredCompetition getCompetition(String name) {
-		name = name.toUpperCase();
-		for (String plugin : registeredCompetitions.keySet()){
-			Map<String, RegisteredCompetition> comps = registeredCompetitions.get(plugin);
-			if (comps == null || comps.isEmpty())
-				continue;
-			if (comps.containsKey(name))
-				return comps.get(name);
-		}
-		return null;
-	}
+    public static RegisteredCompetition getCompetition(String name) {
+        name = name.toUpperCase();
+        for (String plugin : registeredCompetitions.keySet()){
+            Map<String, RegisteredCompetition> comps = registeredCompetitions.get(plugin);
+            if (comps == null || comps.isEmpty())
+                continue;
+            if (comps.containsKey(name))
+                return comps.get(name);
+        }
+        return null;
+    }
 
-	public static boolean reloadCompetition(Plugin plugin, MatchParams mp) {
-		RegisteredCompetition rc = getCompetition(plugin,mp.getName());
-		if (rc == null)
-			return false;
+    public static boolean reloadCompetition(Plugin plugin, MatchParams mp) {
+        RegisteredCompetition rc = getCompetition(plugin,mp.getName());
+        if (rc == null)
+            return false;
 
-		rc.reload();
-		return true;
-	}
+        rc.reload();
+        return true;
+    }
 
-	public static void reloadCompetitions() {
-		for (String plugin : registeredCompetitions.keySet()){
-			Map<String, RegisteredCompetition> comps = registeredCompetitions.get(plugin);
-			if (comps == null || comps.isEmpty())
-				continue;
+    public static void reloadCompetitions() {
+        for (String plugin : registeredCompetitions.keySet()){
+            Map<String, RegisteredCompetition> comps = registeredCompetitions.get(plugin);
+            if (comps == null || comps.isEmpty())
+                continue;
             comps.values().iterator().next().reload(); /// we only need to reload once per plugin
-		}
-	}
+        }
+    }
 
     public static boolean hasPlugin(Plugin plugin) {
         return registeredCompetitions.containsKey(plugin.getName());

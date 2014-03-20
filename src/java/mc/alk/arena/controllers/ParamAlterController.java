@@ -7,13 +7,13 @@ import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.RegisteredCompetition;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
-import mc.alk.arena.objects.options.GameOption;
+import mc.alk.arena.objects.options.AlterParamOption;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
@@ -52,7 +52,7 @@ public class ParamAlterController {
         return tp;
     }
 
-    public static boolean setTeamParams(CommandSender sender, Integer teamIndex, MatchParams params, GameOption option,
+    public static boolean setTeamParams(CommandSender sender, Integer teamIndex, MatchParams params, AlterParamOption option,
                                         Object value) throws InvalidOptionException {
         RegisteredCompetition rc = CompetitionController.getCompetition(params.getName());
         if (rc == null){
@@ -64,7 +64,7 @@ public class ParamAlterController {
         return true;
     }
 
-    public static boolean setGameOption(CommandSender sender, MatchParams params, Integer teamIndex, GameOption option, Object value)
+    public static boolean setGameOption(CommandSender sender, MatchParams params, Integer teamIndex, AlterParamOption option, Object value)
             throws InvalidOptionException {
         RegisteredCompetition rc = CompetitionController.getCompetition(params.getName());
         if (rc == null){
@@ -103,7 +103,7 @@ public class ParamAlterController {
 
 
 
-    public static boolean setOption(CommandSender sender, MatchParams params, GameOption option, Object value)
+    public static boolean setOption(CommandSender sender, MatchParams params, AlterParamOption option, Object value)
             throws IllegalStateException {
         int iv;
         switch(option){
@@ -152,7 +152,10 @@ public class ParamAlterController {
 
         if (to.hasValue() && value == null)
             throw new InvalidOptionException("Transition Option " + to +" needs a value! " + to+"=<value>");
-        MatchTransitions tops = params.getTransitionOptions();
+        StateGraph tops = params.getThisTransitionOptions();
+        if (tops == null) {
+            tops = new StateGraph();
+        }
         if (to == TransitionOption.GIVEITEMS){
             if (!(sender instanceof Player)){
                 throw new InvalidOptionException("&cYou need to be in game to set this option");}
@@ -211,6 +214,7 @@ public class ParamAlterController {
         }
 
         tops.addTransitionOption(state, to, value);
+        params.setTransitionOptions(tops);
         return true;
     }
 
@@ -223,12 +227,12 @@ public class ParamAlterController {
         RegisteredCompetition rc = CompetitionController.getCompetition(params.getName());
         if (rc == null){
             return sendMessage(sender, "&cGame &6" + params.getName() +"&c not found!");}
-        GameOption go = GameOption.fromString(args[1]);
+        AlterParamOption go = AlterParamOption.fromString(args[1]);
 
         if (go != null){
             try {
                 deleteGameOption(go);
-                params.getTransitionOptions();
+                params.getThisTransitionOptions();
                 saveParamsAndUpdate(rc, params);
                 ParamController.addMatchParams(params);
                 sendMessage(sender, "&2Game option &6"+go.toString()+"&2 removed");
@@ -242,7 +246,7 @@ public class ParamAlterController {
                 return true;
             } catch (Exception e) {
                 Log.err(e.getMessage());
-                sendMessage(sender, "&cCould not renive game option &6" + args[1]);
+                sendMessage(sender, "&cCould not delete game option &6" + args[1]);
                 sendMessage(sender, e.getMessage());
                 return false;
             }
@@ -250,7 +254,7 @@ public class ParamAlterController {
         CompetitionState state = StateController.fromString(args[1]);
         if (state != null){
             if (args.length < 3){
-                MatchTransitions tops = params.getTransitionOptions();
+                StateGraph tops = params.getThisTransitionOptions();
                 tops.deleteOptions(state);
                 return  sendMessage(sender, "&2Options at &6"+state +"&2 are now empty");
             } else {
@@ -259,8 +263,8 @@ public class ParamAlterController {
                     deleteTransitionOption(state, key);
                     rc.saveParams(params);
                     sendMessage(sender, "&2Game option &6"+state +" "+key+" &2 removed");
-                    MatchTransitions tops = params.getTransitionOptions();
-                    TransitionOptions ops = tops.getOptions(state);
+                    StateGraph tops = params.getThisTransitionOptions();
+                    StateOptions ops = tops.getOptions(state);
                     if (ops == null){
                         sendMessage(sender, "&2Options at &6"+state +"&2 are empty");
                     } else {
@@ -281,11 +285,11 @@ public class ParamAlterController {
 
     private boolean deleteTransitionOption(CompetitionState state, String key) throws Exception{
         TransitionOption to = TransitionOption.fromString(key);
-        MatchTransitions tops = params.getTransitionOptions();
+        StateGraph tops = params.getThisTransitionOptions();
         return tops.removeTransitionOption(state,to);
     }
 
-    private boolean deleteGameOption(GameOption go) throws Exception {
+    private boolean deleteGameOption(AlterParamOption go) throws Exception {
         switch(go){
             case NLIVES: params.setNLives(null); break;
             case NTEAMS: params.setNTeams(null);  break;

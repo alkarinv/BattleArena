@@ -2,7 +2,7 @@ package mc.alk.arena.listeners.competition;
 
 import mc.alk.arena.Permissions;
 import mc.alk.arena.listeners.PlayerHolder;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
@@ -12,11 +12,11 @@ import mc.alk.arena.util.MessageUtil;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class PlayerTeleportListener implements ArenaListener{
-	final MatchTransitions transitionOptions;
+	final StateGraph transitionOptions;
     final PlayerHolder holder;
 
 	public PlayerTeleportListener(PlayerHolder holder){
-		this.transitionOptions = holder.getParams().getTransitionOptions();
+		this.transitionOptions = holder.getParams().getStateGraph();
 		this.holder = holder;
 	}
 

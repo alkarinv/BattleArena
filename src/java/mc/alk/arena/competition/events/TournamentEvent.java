@@ -22,8 +22,8 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.joining.MatchTeamQObject;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.JoinOptions;
-import mc.alk.arena.objects.options.TransitionOptions;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -81,7 +81,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         nrounds = -1;
         timeBetweenRounds = oParms.getTimeBetweenRounds();
         ChatColor color = MessageUtil.getFirstColor(mp.getPrefix());
-        mp.setTransitionOptions(mp.getTransitionOptions());
+        mp.setTransitionOptions(mp.getThisTransitionOptions());
         mp.setPrefix(color+"["+mp.getName() +" " + oParms.getName()+"]");
         mp.setCommand(oParms.getCommand());
         mp.setName(mp.getName()+" " + oParms.getName());
@@ -501,7 +501,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
     }
 
     @Override
-    public boolean checkReady(ArenaPlayer player, ArenaTeam team, TransitionOptions mo, boolean b) {
+    public boolean checkReady(ArenaPlayer player, ArenaTeam team, StateOptions mo, boolean b) {
         return false;
     }
 

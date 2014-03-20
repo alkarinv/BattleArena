@@ -3,7 +3,7 @@ package mc.alk.arena.util;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchTransitions;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamAppearance;
@@ -135,7 +135,7 @@ public class TeamUtil {
 
         boolean alwaysTeamNames = false;
         if (index != -1){
-            MatchTransitions tops = teamParams.getTransitionOptions();
+            StateGraph tops = teamParams.getStateGraph();
             team.setTeamChatColor(TeamUtil.getTeamChatColor(index));
             if (tops != null){
                 if (tops.hasAnyOption(TransitionOption.WOOLTEAMS) && teamParams.getMaxTeamSize() > 1 ||

@@ -85,10 +85,10 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
                 sendMessage(sender, "&cTournament teams must have a finite size. &eSetting to &6teamSize="+ep.getMinTeamSize());
                 ep.setMaxTeamSize(ep.getMinTeamSize());
             }
-            Arena arena = BattleArena.getBAController().getArenaByMatchParams(ep, null);
+            Arena arena = BattleArena.getBAController().getArenaByMatchParams(ep);
             if (arena == null){
                 sendMessage(sender, "&cThere is no arena that will fit these parameters. nTeams="+
-                        ep.getNTeamRange()+" teamSize="+ep.getTeamSizeRange());
+                        ep.getNTeams()+" teamSize="+ep.getTeamSizes());
             }
             openEvent(controller, event, ep, eoo);
         } catch (InvalidOptionException e) {
@@ -104,8 +104,8 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
         final int max = ep.getMaxPlayers();
         final String maxPlayers = max == ArenaSize.MAX ? "&6any&2 number of players" : max+"&2 players";
         sendMessage(sender,"&2You have "+eoo.getOpenCmd()+"ed a &6" + event.getDisplayName() +
-                " &2TeamSize=&6" + ep.getTeamSizeRange() +"&2 #Teams=&6"+
-                ep.getNTeamRange() +"&2 supporting "+maxPlayers);
+                " &2TeamSize=&6" + ep.getTeamSizes() +"&2 #Teams=&6"+
+                ep.getNTeams() +"&2 supporting "+maxPlayers);
         return event;
     }
 
