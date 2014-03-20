@@ -20,11 +20,11 @@ public class SpawnController {
 	static final boolean DEBUG_SPAWNS = false;
 	static CaseInsensitiveMap<SpawnInstance> allSpawns = new CaseInsensitiveMap<SpawnInstance>();
 
-	PriorityQueue<NextSpawn> spawnQ = null;
-	Plugin plugin = null;
+	PriorityQueue<NextSpawn> spawnQ;
+	Plugin plugin;
 
-	Map<Long, TimedSpawn> timedSpawns= null;
-	Integer timerId = null;
+	Map<Long, TimedSpawn> timedSpawns;
+	Integer timerId;
 
 	class NextSpawn{
 		TimedSpawn is;
@@ -62,7 +62,8 @@ public class SpawnController {
 			Plugin plugin = BattleArena.getSelf();
 			/// Create our Q, with a descending Comparator
 			spawnQ = new PriorityQueue<NextSpawn>(timedSpawns.size(), new Comparator<NextSpawn>(){
-				public int compare(NextSpawn o1, NextSpawn o2) {
+				@Override
+                public int compare(NextSpawn o1, NextSpawn o2) {
 					return (o1.timeToNext.compareTo(o2.timeToNext));
 				}
 			});
@@ -72,6 +73,8 @@ public class SpawnController {
 				long tts = is.getFirstSpawnTime();
 				if (tts == 0)
 					is.spawn();
+                if (is.getRespawnTime() <= 0){
+                    continue;}
 				NextSpawn ns = new NextSpawn(is, tts);
 				spawnQ.add(ns);
 			}
@@ -86,7 +89,8 @@ public class SpawnController {
 			this.nextTimeToSpawn = nextTimeToSpawn;
 		}
 
-		public void run() {
+		@Override
+        public void run() {
 			if (DEBUG_SPAWNS) Log.info("SpawnNextEvent::run " + nextTimeToSpawn);
 			TimeUtil.testClock();
 
@@ -105,12 +109,17 @@ public class SpawnController {
 					ns.is.spawn();
 					/// Now we have to add back the items we spawned into the Q with their original time lengths
 					ns.timeToNext = ns.is.getRespawnTime();
+                    if (ns.timeToNext <= 0) /// don't add back ones that won't respawn
+                        continue;
 					/// spawn time!!
 					spawnQ.add(ns);
 				}
 			}
 
-			nextTimeToSpawn = spawnQ.peek().timeToNext;
+			ns = spawnQ.peek();
+            if (ns == null){ /// we are out of spawns
+                return;}
+            nextTimeToSpawn = ns.timeToNext;
 			if (DEBUG_SPAWNS) Log.info("run SpawnNextEvent " + spawnQ.size() +"  next=" + nextTimeToSpawn);
 			timerId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new SpawnNextEvent(nextTimeToSpawn),
 					(long)(Defaults.TICK_MULT*nextTimeToSpawn*20));

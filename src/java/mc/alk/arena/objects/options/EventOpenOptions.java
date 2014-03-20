@@ -3,6 +3,7 @@ package mc.alk.arena.objects.options;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
@@ -60,18 +61,18 @@ public class EventOpenOptions {
 
 	int announceInterval = 0, secTillStart = -1;
 
-	public static EventOpenOptions parseOptions(String[] args, Set<Integer> ignoreArgs, MatchParams params)
+	public static EventOpenOptions parseOptions(String[] args, Set<Integer> ignoreArgs, final MatchParams params)
 			throws InvalidOptionException{
 		EventOpenOptions eoo = new EventOpenOptions();
         MatchParams mp = null;
         for (String op: args){
             if (op.equalsIgnoreCase("COPYPARAMS")) {
-                mp = new MatchParams(params);
+                mp = ParamController.copyParams(params);
                 mp.flatten();
                 break;
             }
         }
-		eoo.params = mp != null ? new MatchParams(mp) : new MatchParams(params.getType());
+		eoo.params = mp != null ? ParamController.copyParams(mp) : new MatchParams(params.getType());
 		Map<EventOpenOption,Object> ops = eoo.options;
 
 		eoo.params.setParent(params);

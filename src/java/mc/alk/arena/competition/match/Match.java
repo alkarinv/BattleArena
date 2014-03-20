@@ -204,8 +204,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         this.alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
         this.cancelExpLoss = tops.hasAnyOption(TransitionOption.NOEXPERIENCELOSS);
         this.matchResult = new MatchResult();
-        /// default Options
-        this.individualWins = tops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.INDIVIDUALWINS);
         /// preReq Options
         this.needsClearInventory = tops.hasOptionAt(MatchState.PREREQS, TransitionOption.CLEARINVENTORY);
         /// onComplete Options
@@ -219,6 +217,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         this.respawnsWithClass = tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWNWITHCLASS);
         this.alwaysOpen = params.isAlwaysOpen();
         this.neededTeams = alwaysOpen ? 0 : params.getMinTeams();
+
+        /// default Options
+        this.individualWins = tops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.INDIVIDUALWINS) || alwaysOpen;
 
         /// Set waitroom variables
         if (tops.hasAnyOption(TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTLOBBY,
@@ -1076,11 +1077,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         if (Defaults.DEBUG_TRACE) MessageUtil.sendMessage(player, " -onArenaPlayerLeaveEvent  t="+player.getTeam());
         if (!isHandled(player))
             return;
-        quitting(event, player);
-    }
-
-    private void quitting(ArenaPlayerLeaveEvent event, ArenaPlayer player) {
-        if (Defaults.DEBUG_TRACE) Log.info(player.getName() + " -quitting  t=" + player.getTeam());
         event.addMessage(MessageHandler.getSystemMessage("you_left_competition", this.params.getName()));
         if (params.hasOptionAt(MatchState.DEFAULTS, TransitionOption.DROPITEMS)) {
             InventoryUtil.dropItems(player.getPlayer());
@@ -1088,6 +1084,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
         ArenaTeam t = getTeam(player);
         PerformTransition.transition(this, MatchState.ONCANCEL, player, t, false);
+        matchPlayers.remove(player);
     }
 
     @Override

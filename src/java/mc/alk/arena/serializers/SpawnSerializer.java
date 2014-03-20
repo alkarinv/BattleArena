@@ -154,8 +154,8 @@ public class SpawnSerializer {
         List<String> spawnArgs = new ArrayList<String>();
         //		List<EditOption> optionArgs = new ArrayList<EditOption>();
         Integer fs = 0; /// first spawn time
-        Integer rs = 30; /// Respawn time
-        Integer ds = 0; /// Despawn time
+        Integer rs = -1; /// Respawn time
+        Integer ds = -1; /// Despawn time
         for (int i=1;i< args.length;i++){
             String arg = args[i];
             if (arg.contains("=")){

@@ -228,21 +228,24 @@ public class StateGraph {
             StateOptions to2 = subset.ops.get(ms);
             sb.append(ms).append(" -- ");
             sb.append(to.getOptionString(to2)).append("\n");
-            Map<Integer, ArenaClass> classes = to.getClasses();
+            Map<Integer, ArenaClass> classes = to2 != null && to2.getClasses() != null ?
+                    to2.getClasses() : to.getClasses();
             if (classes != null){
                 sb.append("             classes - ");
                 for (ArenaClass ac : classes.values()){
                     sb.append(" ").append(ac.getDisplayName());}
                 sb.append("\n");
             }
-            List<ItemStack> items = to.getGiveItems();
+            List<ItemStack> items = to2 != null && to2.getGiveItems() != null ?
+                    to2.getGiveItems() : to.getGiveItems();
             if (items != null){
                 sb.append("             items - ");
                 for (ItemStack item: items){
                     sb.append(" ").append(InventoryUtil.getItemString(item));}
                 sb.append("\n");
             }
-            items = to.getNeedItems();
+            items = to2 != null && to2.getNeedItems() != null ?
+                    to2.getNeedItems() : to.getNeedItems();
             if (items != null){
                 sb.append("             needitems - ");
                 for (ItemStack item: items){

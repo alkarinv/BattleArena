@@ -5,7 +5,8 @@ import org.bukkit.block.Block;
 
 
 public class BlockSpawn extends SpawnInstance{
-	Material mat;
+    Material mat;
+    Material despawnMat = Material.AIR;
 
 	public BlockSpawn(Block block, boolean setMaterial){
 		super(block.getLocation());
@@ -16,6 +17,11 @@ public class BlockSpawn extends SpawnInstance{
     public void setMaterial(Material mat) {
         this.mat = mat;
     }
+
+    public void setDespawnMaterial(Material mat) {
+        this.despawnMat = mat;
+    }
+
     @Override
     public void spawn() {
         Block b = getLocation().getBlock();
@@ -26,7 +32,7 @@ public class BlockSpawn extends SpawnInstance{
     @Override
 	public void despawn() {
         Block b = getLocation().getBlock();
-        b.setType(Material.AIR);
+        b.setType(despawnMat);
 	}
 
 	@Override
@@ -39,5 +45,9 @@ public class BlockSpawn extends SpawnInstance{
     }
     public Material getMaterial() {
         return mat;
+    }
+
+    public Material getDespawnMaterial() {
+        return despawnMat;
     }
 }

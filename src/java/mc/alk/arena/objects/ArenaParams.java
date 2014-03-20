@@ -47,6 +47,7 @@ public class ArenaParams {
     Integer arenaCooldown;
     Integer allowedTeamSizeDifference;
     Integer nLives;
+    Boolean removePlayersOnLeave;
 
     private Map<Integer, MatchParams> teamParams;
 
@@ -89,10 +90,12 @@ public class ArenaParams {
             this.teamSize = new MinMax(ap.teamSize);
         this.teamParams = ap.teamParams;
         this.parent = ap.parent;
+        this.removePlayersOnLeave = ap.removePlayersOnLeave;
     }
 
+    @SuppressWarnings("ConstantConditions")
     public void flatten() {
-        if (parent == null){
+        if (parent == null) {
             return;}
         if (this.arenaType == null) this.arenaType = parent.getType();
         if (this.rated == null) this.rated = parent.isRated();
@@ -101,21 +104,24 @@ public class ArenaParams {
         if (this.timeBetweenRounds == null) this.timeBetweenRounds = parent.getTimeBetweenRounds();
         if (this.secondsTillMatch == null) this.secondsTillMatch = parent.getSecondsTillMatch();
         if (this.matchTime == null) this.matchTime = parent.getMatchTime();
-        if (this.forceStartTime== null) this.forceStartTime = parent.getForceStartTime();
+        if (this.forceStartTime == null) this.forceStartTime = parent.getForceStartTime();
         if (this.secondsToLoot == null) this.secondsToLoot = parent.getSecondsToLoot();
         if (this.dbName == null) this.dbName = parent.getDBName();
         if (this.nLives == null) this.nLives = parent.getNLives();
-        if (this.closeWaitroomWhileRunning == null) this.closeWaitroomWhileRunning = parent.isWaitroomClosedWhenRunning();
+        if (this.removePlayersOnLeave == null) this.removePlayersOnLeave = parent.getRemovePlayersOnLeave();
+        if (this.closeWaitroomWhileRunning == null)
+            this.closeWaitroomWhileRunning = parent.isWaitroomClosedWhenRunning();
         if (this.cancelIfNotEnoughPlayers == null) this.cancelIfNotEnoughPlayers = parent.isCancelIfNotEnoughPlayers();
-        if (this.arenaCooldown== null) this.arenaCooldown = parent.getArenaCooldown();
-        if (this.allowedTeamSizeDifference== null) this.allowedTeamSizeDifference= parent.getAllowedTeamSizeDifference();
+        if (this.arenaCooldown == null) this.arenaCooldown = parent.getArenaCooldown();
+        if (this.allowedTeamSizeDifference == null)
+            this.allowedTeamSizeDifference = parent.getAllowedTeamSizeDifference();
         if (this.displayName == null) this.displayName = parent.getDisplayName();
         this.stateGraph = mergeChildWithParent(this, parent);
-        if (this.nTeams == null && parent.getNTeams()!=null) this.nTeams = new MinMax(parent.getNTeams());
-        if (this.teamSize == null && parent.getTeamSizes() !=null) this.teamSize = new MinMax(parent.getTeamSizes());
+        if (this.nTeams == null && parent.getNTeams() != null) this.nTeams = new MinMax(parent.getNTeams());
+        if (this.teamSize == null && parent.getTeamSizes() != null) this.teamSize = new MinMax(parent.getTeamSizes());
 
         if (this.teamParams != null && parent.getTeamParams() != null) {
-            HashMap<Integer,MatchParams> tp = new HashMap<Integer,MatchParams>(this.teamParams);
+            HashMap<Integer, MatchParams> tp = new HashMap<Integer, MatchParams>(this.teamParams);
             tp.putAll(parent.getTeamParams());
             this.parent = null;
             this.teamParams = null;
@@ -126,8 +132,8 @@ public class ArenaParams {
                 tp.put(e.getKey(), ap);
             }
             this.teamParams = tp;
-        } else if (parent.getTeamParams() != null){
-            HashMap<Integer,MatchParams> tp =  new HashMap<Integer,MatchParams>(parent.getTeamParams());
+        } else if (parent.getTeamParams() != null) {
+            HashMap<Integer, MatchParams> tp = new HashMap<Integer, MatchParams>(parent.getTeamParams());
             this.parent = null;
             this.teamParams = null;
             for (Entry<Integer, MatchParams> e : tp.entrySet()) {
@@ -137,8 +143,8 @@ public class ArenaParams {
                 tp.put(e.getKey(), ap);
             }
             this.teamParams = tp;
-        } else if (this.teamParams != null){
-            HashMap<Integer,MatchParams> tp =  new HashMap<Integer,MatchParams>(this.teamParams);
+        } else if (this.teamParams != null) {
+            HashMap<Integer, MatchParams> tp = new HashMap<Integer, MatchParams>(this.teamParams);
             this.parent = null;
             this.teamParams = null;
             for (Entry<Integer, MatchParams> e : tp.entrySet()) {
@@ -585,6 +591,14 @@ public class ArenaParams {
         return nLives == null && parent != null ? parent.getNLives() : nLives;
     }
 
+    public Boolean getRemovePlayersOnLeave() {
+        return removePlayersOnLeave == null && parent != null ? parent.getRemovePlayersOnLeave() : removePlayersOnLeave;
+    }
+
+    public void setRemovePlayersOnLeave(Boolean removePlayersOnLeave) {
+        this.removePlayersOnLeave = removePlayersOnLeave;
+    }
+
     public Map<Integer, MatchParams> getTeamParams() {
         return teamParams == null && parent != null ? parent.getTeamParams() : teamParams;
     }
@@ -633,4 +647,6 @@ public class ArenaParams {
     public StateOptions getStateOptions(CompetitionState state) {
         return getStateGraph().getOptions(state);
     }
+
+
 }

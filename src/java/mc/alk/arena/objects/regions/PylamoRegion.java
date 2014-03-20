@@ -34,7 +34,7 @@ public class PylamoRegion implements ArenaRegion{
 	}
 
     @Override
-    public String getWorld() {
+    public String getWorldName() {
         return null;
     }
 

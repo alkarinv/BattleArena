@@ -21,7 +21,7 @@ public class PlayerMoveListener implements ArenaListener{
 		this.transitionOptions = match.getParams().getStateGraph();
 		this.match = match;
         this.region = region;
-        this.w = Bukkit.getWorld(region.getWorld());
+        this.w = Bukkit.getWorld(region.getWorldName());
     }
 
     @ArenaEventHandler(priority=EventPriority.HIGH)

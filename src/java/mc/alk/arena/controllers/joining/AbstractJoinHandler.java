@@ -15,7 +15,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.Log;
-import mc.alk.scoreboardapi.api.SAPI;
+import mc.alk.scoreboardapi.api.SAPIFactory;
 import mc.alk.scoreboardapi.api.SScoreboard;
 
 import java.util.ArrayList;
@@ -116,9 +116,8 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     public void transferOldScoreboards(SScoreboard newScoreboard){
         if (scoreboard == null)
             return;
-        SAPI.transferOldScoreboards(scoreboard.getScoreboard(), newScoreboard);
+        SAPIFactory.transferOldScoreboards(scoreboard.getScoreboard(), newScoreboard);
     }
-
 
     protected ArenaTeam addToPreviouslyLeftTeam(ArenaPlayer player) {
         for (ArenaTeam t: teams){

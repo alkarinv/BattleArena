@@ -312,8 +312,8 @@ public class ArenaSerializer extends BaseConfig{
 
         if (arena.getParams().hasAnyOption(TransitionOption.ALWAYSOPEN)) {
             try {
-                mp = arena.getParams();
-                EventOpenOptions eoo = EventOpenOptions.parseOptions(new String[]{"COPYPARAMS"}, null, mp);
+                EventOpenOptions eoo = EventOpenOptions.parseOptions(
+                        new String[]{"COPYPARAMS"}, null, arena.getParams());
                 Arena a = bac.reserveArena(arena);
                 if (a == null){
                     Log.warn("&cArena &6"+arena.getName()+" &cwas set to always open but could not be reserved");
@@ -423,7 +423,7 @@ public class ArenaSerializer extends BaseConfig{
                     HashMap<String,Object> spawnmap = new HashMap<String,Object>();
                     for (Long key: timedSpawns.keySet() ){
                         TimedSpawn ts = timedSpawns.get(key);
-                        HashMap<String,Object> itemSpawnMap = saveSpawnable(key, ts);
+                        HashMap<String,Object> itemSpawnMap = saveSpawnable(ts);
                         spawnmap.put(key.toString(), itemSpawnMap);
                     }
                     amap.put("spawns", spawnmap);
@@ -509,6 +509,9 @@ public class ArenaSerializer extends BaseConfig{
             si = new BlockSpawn(loc.getBlock(),false);
             Material mat = Material.valueOf(cs.getString("spawn"));
             ((BlockSpawn)si).setMaterial(mat);
+            mat = Material.valueOf(cs.getString("despawnMaterial", "air"));
+            if (mat != null)
+                ((BlockSpawn)si).setDespawnMaterial(mat);
         }else if (cs.contains("type") && cs.getString("type").equalsIgnoreCase("chest")) {
             si = new ChestSpawn(loc.getBlock(), false);
             Material mat = Material.valueOf(cs.getString("spawn"));
@@ -537,7 +540,7 @@ public class ArenaSerializer extends BaseConfig{
         return new SpawnTime(is[0],is[1],is[2]);
     }
 
-    private static HashMap<String, Object> saveSpawnable(Long i, TimedSpawn ts) {
+    private static HashMap<String, Object> saveSpawnable(TimedSpawn ts) {
         HashMap<String, Object> spawnMap = new HashMap<String,Object>();
         SpawnInstance si = ts.getSpawn();
         String key = null;
@@ -564,6 +567,7 @@ public class ArenaSerializer extends BaseConfig{
         } else if (si instanceof BlockSpawn){
             BlockSpawn bs = (BlockSpawn) si;
             spawnMap.put("type", "block");
+            spawnMap.put("despawnMat", bs.getDespawnMaterial());
             key = bs.getMaterial().name();
         }
 

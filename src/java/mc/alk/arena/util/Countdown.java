@@ -33,8 +33,12 @@ public class Countdown implements Runnable{
 		final int rem = seconds % this.interval;
 		/// Lets get rid of the remainder first, so that the rest of the events
 		/// are a multiple of the timeInterval
-		final long time = (rem != 0? rem : this.interval) * 20L;
+		long time = (rem != 0? rem : this.interval) * 20L;
 		this.seconds = seconds - (rem != 0? rem : this.interval);
+        if (this.seconds < 0 ){
+            this.seconds = 0;
+            time = 0;
+        }
 		startTime = System.currentTimeMillis();
 		expectedEndTime = startTime + seconds*1000;
         this.timerId  = Scheduler.scheduleSynchronousTask(plugin, this, (int)(time * Defaults.TICK_MULT));

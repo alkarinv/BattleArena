@@ -43,7 +43,6 @@ public enum RoomController {
             if (arena.getWaitroom() == null) {
                 MatchParams mp = new MatchParams(arena.getArenaType());
                 mp.setParent(arena.getParams());
-                mp.flatten();
                 room = new RoomContainer("wr_" + arena.getName() + "", mp, LocationType.WAITROOM);
             } else {
                 room = arena.getWaitroom();
@@ -58,7 +57,6 @@ public enum RoomController {
         if (lobby == null) {
             MatchParams mp = new MatchParams(type);
             mp.setParent(ParamController.getMatchParams(type));
-            mp.flatten();
             lobby = new LobbyContainer("lb_" + type.getName(),
                     mp, LocationType.LOBBY);
             lobbies.put(type, lobby);
@@ -152,7 +150,7 @@ public enum RoomController {
         synchronized(INSTANCE.lobbies) {
             LobbyContainer lc = INSTANCE.lobbies.get(matchParams.getType());
             if (lc != null) {
-                lc.setParams(matchParams);
+                lc.getParams().setParent(matchParams);
             }
         }
     }
@@ -165,10 +163,7 @@ public enum RoomController {
         for (RoomContainer rc : rcs){
             if (rc == null)
                 continue;
-            MatchParams mp = new MatchParams(arenaParams.getType());
-            mp.setParent(arenaParams);
-            mp.flatten();
-            rc.setParams(mp);
+            rc.getParams().setParent(arenaParams);
         }
     }
 }

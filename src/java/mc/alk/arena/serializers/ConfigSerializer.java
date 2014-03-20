@@ -683,7 +683,7 @@ public class ConfigSerializer extends BaseConfig{
         }
 
         if (params.getPrefix() != null) maincs.set("prefix", params.getPrefix());
-        if (params.getDisplayName() != null) maincs.set("displayName", params.getDisplayName());
+        if (params.getThisDisplayName() != null) maincs.set("displayName", params.getThisDisplayName());
         if (params.getSignDisplayName() != null) maincs.set("signDisplayName", params.getSignDisplayName());
 
         if (params.getNTeams() != null || params.getTeamSizes() != null) {

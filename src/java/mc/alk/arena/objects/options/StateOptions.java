@@ -487,13 +487,14 @@ public class StateOptions {
     }
 
     private ChatColor getColor(TransitionOption v, StateOptions so) {
-        return so !=null && so.options.containsKey(v) ? ChatColor.GOLD : ChatColor.WHITE;
+        return so !=null && so.options.containsKey(v) ? ChatColor.WHITE : ChatColor.GOLD;
     }
     public String getOptionString(StateOptions so) {
         StringBuilder sb = new StringBuilder("[");
         boolean first = true;
         for (Entry<TransitionOption,Object> entry: options.entrySet()){
             if (!first) sb.append("&2, " );
+            first = false;
             sb.append(getColor(entry.getKey(), so).toString());
             sb.append(entry.getKey());
             Object value = so !=null && so.options.containsKey(entry.getKey()) ?
@@ -508,7 +509,6 @@ public class StateOptions {
                 }
                 sb.append(":").append(value);
             }
-            first = false;
         }
         sb.append("]");
         return sb.toString();

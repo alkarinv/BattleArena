@@ -140,16 +140,6 @@ public class ParamController {
         return sb.toString();
     }
 
-//    public static void setTransitionOptions(ArenaParams params, StateGraph matchTransitions) {
-//        transitions.put(params.getName(), matchTransitions);
-//    }
-//
-//    public static StateGraph getThisTransitionOptions(ArenaParams arenaParams) {
-//        if (arenaParams.getName() == null)
-//            return null;
-//        return transitions.get(arenaParams.getName());
-//    }
-
     public static EventParams getDefaultConfig() {
         return (EventParams) types.get(Defaults.DEFAULT_CONFIG_NAME);
     }

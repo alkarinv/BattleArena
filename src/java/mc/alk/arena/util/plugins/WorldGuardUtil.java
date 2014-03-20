@@ -85,7 +85,7 @@ public class WorldGuardUtil {
 	}
 
 	public static boolean hasRegion(ArenaRegion region){
-		return hasRegion(region.getWorld(),region.getID());
+		return hasRegion(region.getWorldName(),region.getID());
 	}
 
 	public static boolean hasRegion(World world, String id){
@@ -157,7 +157,7 @@ public class WorldGuardUtil {
 		}
 	}
 	public static boolean isLeavingArea(final Location from, final Location to, final ArenaRegion region) {
-		return isLeavingArea(from,to,Bukkit.getWorld(region.getWorld()),region.getID());
+		return isLeavingArea(from,to,Bukkit.getWorld(region.getWorldName()),region.getID());
 	}
 
 	public static boolean isLeavingArea(final Location from, final Location to, final World w,  String id) {
@@ -400,13 +400,13 @@ public class WorldGuardUtil {
 	}
 
 	public static boolean contains(Location location, WorldGuardRegion region) {
-		ProtectedRegion pr = getRegion(region.getWorld(),region.getID());
+		ProtectedRegion pr = getRegion(region.getWorldName(),region.getID());
         return pr != null &&
                 pr.contains(location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
 	public static boolean hasPlayer(String playerName, WorldGuardRegion region) {
-		ProtectedRegion pr = getRegion(region.getWorld(),region.getID());
+		ProtectedRegion pr = getRegion(region.getWorldName(),region.getID());
 		if (pr == null)
 			return true;
 		DefaultDomain dd = pr.getMembers();
@@ -417,7 +417,7 @@ public class WorldGuardUtil {
 	}
 
 	public static boolean trackRegion(ArenaRegion region) throws RegionNotFound {
-		return trackRegion(region.getWorld(), region.getID());
+		return trackRegion(region.getWorldName(), region.getID());
 	}
 
 	public static boolean trackRegion(String world, String id) throws RegionNotFound{

@@ -7,6 +7,6 @@ public interface ArenaRegion extends YamlSerializable{
 
     public String getID();
 
-    public String getWorld();
+    public String getWorldName();
 
 }

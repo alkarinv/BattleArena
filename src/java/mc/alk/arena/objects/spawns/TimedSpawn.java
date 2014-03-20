@@ -1,6 +1,9 @@
 package mc.alk.arena.objects.spawns;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.SerializerUtil;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 
 public class TimedSpawn implements Spawnable{
@@ -9,6 +12,7 @@ public class TimedSpawn implements Spawnable{
 	final int id = count++;
 
 	Long firstSpawnTime, respawnInterval, timeToDespawn;
+    BukkitTask despawnTimer;
 
 	public TimedSpawn(long firstSpawnTime, long respawnTime, long timeToDespawn, SpawnInstance sg){
 		this.firstSpawnTime = firstSpawnTime;
@@ -54,6 +58,17 @@ public class TimedSpawn implements Spawnable{
     @Override
     public void spawn() {
         sg.spawn();
+        if (timeToDespawn > 0){
+            if (despawnTimer != null)
+                despawnTimer.cancel();
+            despawnTimer = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    despawn();
+                }
+            }.runTaskLater(BattleArena.getSelf(),timeToDespawn*20L);
+
+        }
     }
 
     @Override

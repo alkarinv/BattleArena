@@ -56,7 +56,7 @@ public class WorldGuardRegion implements ArenaRegion{
 	}
 
 	@Override
-    public String getWorld(){
+    public String getWorldName(){
 		return regionWorld;
 	}
 }

@@ -4,14 +4,13 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.controllers.joining.AbstractJoinHandler;
-import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.containers.RoomContainer;
-import mc.alk.arena.listeners.custom.MethodController;
+import mc.alk.arena.controllers.joining.AbstractJoinHandler;
+import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.listeners.SignUpdateListener;
-import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.MatchParams;
@@ -22,15 +21,15 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.joining.ArenaMatchQueue;
+import mc.alk.arena.objects.joining.MatchTeamQObject;
+import mc.alk.arena.objects.joining.TeamJoinObject;
+import mc.alk.arena.objects.joining.WaitingObject;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.JoinResult;
-import mc.alk.arena.objects.joining.ArenaMatchQueue;
-import mc.alk.arena.objects.joining.MatchTeamQObject;
-import mc.alk.arena.objects.joining.TeamJoinObject;
-import mc.alk.arena.objects.joining.WaitingObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PlayerUtil;
@@ -140,23 +139,18 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
     public Match createAndAutoMatch(Arena arena, EventOpenOptions eoo)
             throws NeverWouldJoinException, IllegalStateException {
         MatchParams mp = eoo.getParams();
-        MatchParams oldArenaParams = new MatchParams(arena.getParams());
+        MatchParams oldArenaParams = arena.getParams();
 
         mp.setForceStartTime(eoo.getSecTillStart());
-        ArenaParams parent = mp.getParent();
-        mp.setParent(null);
-        mp.setParent(parent);
         /// Since we want people to add this event, add this arena as the next
         setFixedReservedArena(arena);
 
-        arena.setParams(mp);
         Match m = createMatch(arena,eoo);
         m.setOldArenaParams(oldArenaParams);
         saveStates(m,arena);
         arena.setAllContainerState(ContainerState.OPEN);
         m.setTimedStart(eoo.getSecTillStart(), eoo.getInterval());
         amq.incNumberOpenMatches(mp.getType());
-
 
         if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
             addAllOnline(m.getParams(), arena);}

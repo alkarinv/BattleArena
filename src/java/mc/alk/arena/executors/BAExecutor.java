@@ -1047,24 +1047,16 @@ public class BAExecutor extends CustomCommandExecutor {
 
     @MCCommand(cmds = { "showOptions" }, admin = true, perm = "arena.alter")
     public boolean showGameOptions(CommandSender sender, MatchParams params) {
-        StateGraph tops = params.getThisTransitionOptions();
-        if (tops == null){
-            return sendMessage(sender, "&2Options for "+params.getName() +" are empty");
-        }
         sendMessage(sender, "&2Options for &f"+params.getName() +"&2 : " + params.getDisplayName());
         sendMessage(sender, params.toSummaryString());
-        return sendMessage(sender, tops.getOptionString());
+        return sendMessage(sender, params.getOptionsSummaryString());
     }
 
     @MCCommand(cmds = { "showOptions" }, admin = true, perm = "arena.alter")
     public boolean showGameOptions(CommandSender sender, MatchParams params, Arena arena) {
-        StateGraph tops = arena.getParams().getThisTransitionOptions();
-        if (tops == null) {
-            return sendMessage(sender, "&2Options for " + params.getName() + " are empty");
-        }
-        sendMessage(sender, "&2Options for &6" + params.getName() + " : " + params.getDisplayName());
-        sendMessage(sender, params.toSummaryString());
-        return sendMessage(sender, tops.getOptionString());
+        sendMessage(sender, "&2Options for arena &f"+arena.getName() +"&2 : " + arena.getDisplayName());
+        sendMessage(sender, arena.getParams().toSummaryString());
+        return sendMessage(sender, arena.getParams().getOptionsSummaryString());
     }
 
     @MCCommand(cmds = { "deleteOption" }, admin = true, perm = "arena.alter")
