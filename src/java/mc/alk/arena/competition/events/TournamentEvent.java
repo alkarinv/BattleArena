@@ -4,6 +4,8 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.match.PerformTransition;
+import mc.alk.arena.controllers.BattleArenaController;
+import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.events.events.tournaments.TournamentRoundEvent;
@@ -12,7 +14,6 @@ import mc.alk.arena.events.matches.MatchCompletedEvent;
 import mc.alk.arena.events.matches.MatchCreatedEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionResult;
-import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.LocationType;
@@ -22,8 +23,9 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.joining.MatchTeamQObject;
-import mc.alk.arena.objects.options.StateOptions;
+import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -60,40 +62,39 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
     boolean preliminary_round = false;
     ArrayList<ArenaTeam> aliveTeams = new ArrayList<ArenaTeam>();
     ArrayList<ArenaTeam> competingTeams = new ArrayList<ArenaTeam>();
-    final EventParams oParms ; /// Our original default tourney params from the config
+    final EventParams singleGameParms; /// Our original default tourney params from the config
     Random rand = new Random();
     Integer curTimer = null;
     Map<Match, Matchup> matchups = Collections.synchronizedMap(new HashMap<Match,Matchup>());
     Set<Matchup> incompleteMatchups = new HashSet<Matchup>();
-    public TournamentEvent(EventParams params) {
+    final ArrayList<Round> rounds = new ArrayList<Round>(); /// The list of matchups for each round
+
+    public TournamentEvent(EventParams params, EventOpenOptions eoo) throws NeverWouldJoinException {
         super(params);
-        oParms = params;
+        singleGameParms = new EventParams(eoo.getParams());
         Bukkit.getPluginManager().registerEvents(this, BattleArena.getSelf());
+        timeBetweenRounds = params.getTimeBetweenRounds();
+        ChatColor color = MessageUtil.getFirstColor(singleGameParms.getPrefix());
+        params.setTeamSize(singleGameParms.getTeamSize());
+
+        String str = color + "[" + singleGameParms.getName() + " " + params.getName() + "]";
+        params.setPrefix(str);
+        singleGameParms.setPrefix(str);
+
+        str = singleGameParms.getName() + " " + params.getName();
+        params.setName(str);
+        singleGameParms.setName(str);
+        setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(params, this));
     }
 
-
     @Override
-    public void openEvent(EventParams mp) throws NeverWouldJoinException {
+    public void openEvent(){
+        super.openEvent();
         aliveTeams.clear();
         competingTeams.clear();
         rounds.clear();
         curRound = -1;
         nrounds = -1;
-        timeBetweenRounds = oParms.getTimeBetweenRounds();
-        ChatColor color = MessageUtil.getFirstColor(mp.getPrefix());
-        mp.setTransitionOptions(mp.getThisTransitionOptions());
-        mp.setPrefix(color+"["+mp.getName() +" " + oParms.getName()+"]");
-        mp.setCommand(oParms.getCommand());
-        mp.setName(mp.getName()+" " + oParms.getName());
-        mp.setTimeBetweenRounds(oParms.getTimeBetweenRounds());
-        mp.setSecondsTillMatch(oParms.getSecondsTillMatch());
-        mp.setSecondsToLoot(oParms.getSecondsToLoot());
-        TimeUtil.testClock();
-        super.openEvent(mp);
-
-        EventParams copy = new EventParams(mp);
-        copy.setMaxTeams(CompetitionSize.MAX);
-        this.setTeamJoinHandler(TeamJoinFactory.createTeamJoinHandler(copy, this));
         joinHandler.removeImproperTeams();
     }
 
@@ -115,8 +116,8 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         nrounds = calcNRounds(osize);
         final int minTeams = eventParams.getMinTeams();
         int roundteams = (int) Math.pow(minTeams, nrounds);
-        server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&e The " + oParms.getName() +
-                " tournament is starting!"));
+        server.broadcastMessage(Log.colorChat(eventParams.getPrefix()+"&e The " + singleGameParms.getName() +
+                " is starting!"));
 
         TreeMap<Double,ArenaTeam> sortTeams = new TreeMap<Double,ArenaTeam>(Collections.reverseOrder());
         StatController sc = new StatController(eventParams);
@@ -319,16 +320,17 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
                 loffset--;
                 hoffset++;
             }
+            EventParams sgp = ParamController.copyParams(singleGameParms);
             JoinOptions jo = new JoinOptions();
-            jo.setMatchParams(eventParams);
-            m = createMatchup(eventParams, newTeams, jo);
+            jo.setMatchParams(sgp);
+            m = createMatchup(sgp, newTeams, jo);
             tr.addMatchup(m);
             incompleteMatchups.add(m);
         }
     }
 
-    private Matchup createMatchup(EventParams eventParams, Collection<ArenaTeam> teams, JoinOptions jo){
-        Matchup m = new Matchup(eventParams,teams, jo);
+    private Matchup createMatchup(EventParams matchupParams, Collection<ArenaTeam> teams, JoinOptions jo){
+        Matchup m = new Matchup(matchupParams,teams, jo);
         Collection<ArenaListener> li = methodController.getArenaListeners() != null ?
                 new ArrayList<ArenaListener>(methodController.getArenaListeners()) : new ArrayList<ArenaListener>();
         for (ArenaListener al : li){
@@ -354,8 +356,9 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
                 newTeams.add(aliveTeams.get(size-1-index));
             }
             JoinOptions jo = new JoinOptions();
-            jo.setMatchParams(eventParams);
-            m = createMatchup(eventParams, newTeams, jo);
+            EventParams sgp = ParamController.copyParams(singleGameParms);
+            jo.setMatchParams(sgp);
+            m = createMatchup(sgp, newTeams, jo);
             tr.addMatchup(m);
             incompleteMatchups.add(m);
         }
@@ -367,6 +370,8 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         if (curRound <0 || state == EventState.CLOSED){
             return false;}
         announceRound();
+        final BattleArenaController ac = BattleArena.getBAController();
+
         Plugin plugin = BattleArena.getSelf();
         /// Section to start the match
         curTimer = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
@@ -515,4 +520,44 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         return LocationType.ARENA;
     }
 
+
+    /**
+     * Show Results from the previous Event
+     * @return result
+     */
+    public String getResultString() {
+        StringBuilder sb = new StringBuilder();
+        if (rounds.isEmpty()){
+            return "&eThere are no results yet";
+        }
+        if (!isFinished() && !isClosed()){
+            sb.append("&eEvent is still &6").append(state).append("\n");
+        }
+
+        //		boolean useRounds = rounds.size() > 1 || isTourney;
+        boolean useRounds = rounds.size() > 1;
+        for (int r = 0;r<rounds.size();r++){
+            Round round = rounds.get(r);
+            if (useRounds) sb.append("&5***&4 Round ").append(r + 1).append("&5 ***\n");
+            //			boolean useMatchups = curRound.getMatchups().size() > 1 || isTourney;
+            boolean useMatchups = round.getMatchups().size() > 1;
+            for (Matchup m: round.getMatchups()){
+                if (useMatchups) sb.append("&4Matchup :");
+                CompetitionResult result = m.getResult();
+                if (result == null || result.getVictors() == null){
+                    for (ArenaTeam t: m.getTeams()){
+                        sb.append(t.getTeamSummary()).append(" "); }
+                    sb.append("\n");
+                } else {
+                    sb.append(result.toPrettyString()).append("\n");}
+            }
+        }
+
+        return sb.toString();
+    }
+
+    @Override
+    public String getInfo() {
+        return StateOptions.getInfo(singleGameParms, singleGameParms.getName());
+    }
 }

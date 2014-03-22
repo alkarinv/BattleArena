@@ -2,7 +2,6 @@ package mc.alk.arena.serializers;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.events.TournamentEvent;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.EventController;
@@ -24,8 +23,9 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.joining.ArenaMatchQueue;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.AnnouncementOptions.AnnouncementOption;
-import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.DuelOptions;
+import mc.alk.arena.objects.options.EventOpenOptions;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.victoryconditions.Custom;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
@@ -140,12 +140,12 @@ public class BAConfigSerializer extends BaseConfig{
         try {
             mp = cs.loadMatchParams();
             EventParams ep = new EventParams(mp);
-            TournamentEvent tourney = new TournamentEvent(ep);
-            EventController.addEvent(tourney);
+            ep.setParent(ParamController.getMatchParams(Defaults.DEFAULT_CONFIG_NAME));
+            EventOpenOptions.parseOptions(new String[]{}, null, ep);
             try{
                 EventExecutor executor = new TournamentExecutor();
                 BattleArena.getSelf().getCommand("tourney").setExecutor(executor);
-                EventController.addEventExecutor(tourney.getParams(), executor);
+                EventController.addEventExecutor("tourney", "tourney", executor);
                 ParamController.addMatchParams(ep);
             } catch (Exception e){
                 Log.err("Tourney could not be added");
@@ -221,7 +221,7 @@ public class BAConfigSerializer extends BaseConfig{
         defaults.setTeamRating(false);
         defaults.setUseTrackerMessages(true);
         defaults.setNLives(1);
-        defaults.setTeamSizes(new MinMax(1,ArenaSize.MAX));
+        defaults.setTeamSize(new MinMax(1, ArenaSize.MAX));
         defaults.setNTeams(new MinMax(2,ArenaSize.MAX));
         defaults.setArenaCooldown(cs.getInt("arenaCooldown",1));
         defaults.setAllowedTeamSizeDifference(cs.getInt("allowedTeamSizeDifference",1));

@@ -3,7 +3,6 @@ package mc.alk.arena.competition.events;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.joining.AbstractJoinHandler;
@@ -32,12 +31,11 @@ import mc.alk.arena.objects.messaging.EventMessageHandler;
 import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.tournament.Matchup;
-import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.util.Countdown;
 import mc.alk.arena.util.Countdown.CountdownCallback;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimeUtil;
 import org.bukkit.entity.Player;
@@ -47,7 +45,6 @@ import org.bukkit.event.HandlerList;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -59,46 +56,35 @@ import java.util.Set;
 public abstract class Event extends Competition implements CountdownCallback, ArenaListener {
     final String name; /// Name of this event
 
-    BattleArenaController ac; /// The BattleArenaController for adding removing matches
+    EventParams eventParams; /// The parameters for this event
 
-    EventMessager mc = null; /// Our message handler
+    EventMessager mc; /// Our message handler
 
-    EventParams eventParams= null; /// The parameters for this event
-
-    Countdown timer = null; /// Timer till Event starts, think about moving this to executor, or eventcontroller
-
-    final ArrayList<Round> rounds = new ArrayList<Round>(); /// The list of matchups for each round
+    Countdown timer; /// Timer till Event starts
 
     AbstractJoinHandler joinHandler; /// Specify how teams are allocated
 
-    EventState state = null; /// The current state of this event
+    EventState state; /// The current state of this event
 
     /// When did each transition occur
-    final Map<EventState, Long> times = Collections.synchronizedMap(new EnumMap<EventState,Long>(EventState.class));
+    final Map<EventState, Long> times = new EnumMap<EventState,Long>(EventState.class);
 
     /**
      * Create our event from the specified paramaters
      * @param params EventParams
      */
-    public Event(EventParams params) {
+    public Event(EventParams params) throws NeverWouldJoinException {
+        this.eventParams = params;
         transitionTo(EventState.CLOSED);
-        setParamInst(params);
-        this.ac = BattleArena.getBAController();
         this.name = params.getName();
+        joinHandler = TeamJoinFactory.createTeamJoinHandler(params, this);
+        if (mc == null)
+            mc = new EventMessager(this);
+        mc.setMessageHandler(new EventMessageImpl(this));
     }
 
     public void openEvent() {
-        try {
-            openEvent(eventParams);
-        } catch (NeverWouldJoinException e) {
-            Log.printStackTrace(e);
-        }
-    }
-
-    public void openEvent(EventParams params) throws NeverWouldJoinException {
-        setParamInst(params);
         teams.clear();
-        joinHandler = TeamJoinFactory.createTeamJoinHandler(params, this);
         EventOpenEvent event = new EventOpenEvent(this);
         callEvent(event);
         if (event.isCancelled())
@@ -106,33 +92,27 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
         stopTimer();
         transitionTo(EventState.OPEN);
-
         mc.sendEventOpenMsg();
     }
 
-    public void autoEvent(EventParams params,int secondsTillStart,int announcementInterval) throws NeverWouldJoinException {
-        openEvent(params);
+    public void autoEvent(){
+        openEvent();
         TimeUtil.testClock();
-        mc.sendCountdownTillEvent(secondsTillStart);
-        timer = new Countdown(BattleArena.getSelf(),secondsTillStart, announcementInterval, this);
+        mc.sendCountdownTillEvent(eventParams.getSecondsTillStart());
+        timer = new Countdown(BattleArena.getSelf(),(long)eventParams.getSecondsTillStart(),
+                (long)eventParams.getAnnouncementInterval(), this);
     }
 
     public void addAllOnline() {
         Player[] online = ServerUtil.getOnlinePlayers();
 
         for (Player p: online){
+            if (PermissionsUtil.isAdmin(p)) { /// skip admins (they are doin' importantz thingz)
+                continue;}
             ArenaTeam t = TeamController.createTeam(eventParams, BattleArena.toArenaPlayer(p));
             TeamJoinObject tqo = new TeamJoinObject(t,eventParams,null);
             this.joining(tqo);
         }
-    }
-
-    public void setParamInst(EventParams eventParams) {
-        if (this.eventParams != eventParams)
-            this.eventParams = new EventParams(eventParams);
-        if (mc == null)
-            mc = new EventMessager(this);
-        mc.setMessageHandler(new EventMessageImpl(this));
     }
 
     public void startEvent() {
@@ -273,15 +253,6 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
         return teams.add(team);
     }
 
-//	public void addedTeam(Player p){
-//		ArenaPlayer ap = BattleArena.toArenaPlayer(p);
-//		Team t = TeamController.getTeam(ap);
-//		if (t == null){
-//			t = TeamController.createTeam(ap);
-//		}
-//		addedTeam(t);
-//	}
-
     /**
      * Called when a team wants to add
      * @param tqo TeamJoinObject that is joining
@@ -362,6 +333,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
         return mc.getMessageHandler();
     }
 
+    public abstract String getResultString();
 
     public static class TeamSizeComparator implements Comparator<ArenaTeam>{
         @Override
@@ -382,7 +354,7 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
             boolean rated = eventParams.isRated();
             sb.append(rated ? "&4Rated" : "&aUnrated").append("&e ").append(name).append(". ");
             sb.append("&e(&6").append(state).append("&e)");
-            sb.append("&eTeam size=").append(eventParams.getTeamSizes());
+            sb.append("&eTeam size=").append(eventParams.getTeamSize());
             sb.append("&e Teams=&6 ").append(teams.size());
         }
         if (state == EventState.OPEN && joinHandler != null){
@@ -393,41 +365,6 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
 
     public String getInfo() {
         return StateOptions.getInfo(eventParams, eventParams.getName());
-    }
-
-    /**
-     * Show Results from the previous Event
-     * @return result
-     */
-    public String getResultString() {
-        StringBuilder sb = new StringBuilder();
-        if (rounds.isEmpty()){
-            return "&eThere are no results yet";
-        }
-        if (!isFinished() && !isClosed()){
-            sb.append("&eEvent is still &6").append(state).append("\n");
-        }
-
-        //		boolean useRounds = rounds.size() > 1 || isTourney;
-        boolean useRounds = rounds.size() > 1;
-        for (int r = 0;r<rounds.size();r++){
-            Round round = rounds.get(r);
-            if (useRounds) sb.append("&5***&4 Round ").append(r + 1).append("&5 ***\n");
-            //			boolean useMatchups = curRound.getMatchups().size() > 1 || isTourney;
-            boolean useMatchups = round.getMatchups().size() > 1;
-            for (Matchup m: round.getMatchups()){
-                if (useMatchups) sb.append("&4Matchup :");
-                CompetitionResult result = m.getResult();
-                if (result == null || result.getVictors() == null){
-                    for (ArenaTeam t: m.getTeams()){
-                        sb.append(t.getTeamSummary()).append(" "); }
-                    sb.append("\n");
-                } else {
-                    sb.append(result.toPrettyString()).append("\n");}
-            }
-        }
-
-        return sb.toString();
     }
 
     public boolean canLeaveTeam(ArenaPlayer p) {return canLeave(p);}

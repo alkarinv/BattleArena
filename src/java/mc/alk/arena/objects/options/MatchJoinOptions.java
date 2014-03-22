@@ -95,6 +95,6 @@ public class MatchJoinOptions {
 
 		/// Team size
 		if (hasOption(MatchJoinOption.TEAMSIZE)){
-			mp.setTeamSizes((MinMax)getOption(MatchJoinOption.TEAMSIZE));}
+			mp.setTeamSize((MinMax) getOption(MatchJoinOption.TEAMSIZE));}
 	}
 }

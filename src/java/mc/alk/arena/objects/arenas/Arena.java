@@ -696,7 +696,7 @@ public class Arena extends AreaContainer {
     @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
     public String toDetailedString(){
         StringBuilder sb = new StringBuilder("&6" + name+" &e");
-        sb.append("&eTeamSizes=&6"+params.getTeamSizes() + " &eTypes=&6" +params.getType());
+        sb.append("&eTeamSizes=&6"+params.getTeamSize() + " &eTypes=&6" +params.getType());
         sb.append("&e, #Teams:&6"+params.getNTeams());
         sb.append("&e, #spawns:&6" +spawns.size() +"\n");
         sb.append("&eteamSpawnLocs=&b"+getSpawnLocationString()+"\n");
@@ -720,7 +720,7 @@ public class Arena extends AreaContainer {
         StringBuilder sb = new StringBuilder("&4" + name);
         if (params != null){
 //            sb.append("&2 type=&f").append(params.getType());
-            sb.append(" &2TeamSizes:" + getColor(params.getThisTeamSize()) + params.getTeamSizes() +
+            sb.append(" &2TeamSizes:" + getColor(params.getThisTeamSize()) + params.getTeamSize() +
                     "&2, nTeams:"+getColor(params.getThisNTeams()) + params.getNTeams());
         }
 

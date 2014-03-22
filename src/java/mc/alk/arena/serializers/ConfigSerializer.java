@@ -334,7 +334,7 @@ public class ConfigSerializer extends BaseConfig{
 
         /// Number of teams and team sizes
         if (!isArena || (cs != null && cs.contains("teamSize"))) {
-            mp.setTeamSizes(MinMax.valueOf(cs.getString("teamSize", "1+")));
+            mp.setTeamSize(MinMax.valueOf(cs.getString("teamSize", "1+")));
         }
         if (!isArena || (cs != null && cs.contains("nTeams"))) {
             mp.setNTeams(MinMax.valueOf(cs.getString("nTeams", "2+")));
@@ -686,10 +686,10 @@ public class ConfigSerializer extends BaseConfig{
         if (params.getThisDisplayName() != null) maincs.set("displayName", params.getThisDisplayName());
         if (params.getSignDisplayName() != null) maincs.set("signDisplayName", params.getSignDisplayName());
 
-        if (params.getNTeams() != null || params.getTeamSizes() != null) {
+        if (params.getNTeams() != null || params.getTeamSize() != null) {
             ConfigurationSection cs = maincs.createSection("gameSize");
             if (params.getNTeams() != null) cs.set("nTeams", params.getNTeams().toString());
-            if (params.getTeamSizes() != null) cs.set("teamSize", params.getTeamSizes().toString());
+            if (params.getTeamSize() != null) cs.set("teamSize", params.getTeamSize().toString());
         }
 
         if (params.getNLives() != null) maincs.set("nLives", ArenaSize.toString(params.getNLives()));

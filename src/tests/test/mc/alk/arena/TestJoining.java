@@ -94,7 +94,7 @@ public class TestJoining extends TestCase{
 
     public void testJoining() throws Exception {
         MatchParams mp = Helper.loadParams(dir + "/test_files/competitions/ArenaConfig.yml", plugin, "Arena");
-        mp.setTeamSize(1);
+        mp.setTeamSizezzz(1);
         mp.setNTeams(new MinMax(2));
         long millisRemaining = 1000;
         int seconds = (int) (millisRemaining / 1000);
@@ -108,7 +108,7 @@ public class TestJoining extends TestCase{
 
     public void testFixed_stillTime2() throws Exception {
         MatchParams mp = Helper.loadParams(dir + "/test_files/competitions/ArenaConfig.yml", plugin, "Arena");
-        mp.setTeamSize(1);
+        mp.setTeamSizezzz(1);
         mp.setNTeams(new MinMax(2));
         long millisRemaining = 1000;
         int seconds = (int) (millisRemaining / 1000);

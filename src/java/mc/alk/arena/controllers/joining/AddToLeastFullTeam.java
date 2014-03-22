@@ -102,25 +102,26 @@ public class AddToLeastFullTeam extends AbstractJoinHandler {
             ct.setCurrentParams(tqo.getMatchParams());
             ct.addPlayers(team.getPlayers());
             team.setIndex(ct.getIndex());
-            if (ct.size() >= ct.getMinPlayers()){
+            if (ct.size() <= ct.getMaxPlayers()){
                 addTeam(ct);
-                return new TeamJoinResult(TeamJoinStatus.ADDED, ct.getMinPlayers() - ct.size(),ct);
-            } else {
-                addTeam(ct);
-                return new TeamJoinResult(TeamJoinStatus.ADDED_STILL_NEEDS_PLAYERS, ct.getMinPlayers() - ct.size(),ct);
+                if (ct.size() >= ct.getMinPlayers()) {
+                    return new TeamJoinResult(TeamJoinStatus.ADDED, ct.getMinPlayers() - ct.size(), ct);
+                } else {
+                    return new TeamJoinResult(TeamJoinStatus.ADDED_STILL_NEEDS_PLAYERS,
+                            ct.getMinPlayers() - ct.size(), ct);
+                }
             }
-        } else {
-            /// Try to fit them with an existing team
-            List<ArenaTeam> sortedBySize = new ArrayList<ArenaTeam>(teams);
-            Collections.sort(sortedBySize, new TeamSizeComparator());
-            for (ArenaTeam baseTeam : sortedBySize){
-                TeamJoinResult tjr = teamFits(baseTeam, team);
-                if (tjr != CANTFIT)
-                    return tjr;
-            }
-            /// sorry peeps.. full up
-            return CANTFIT;
         }
+        /// Try to fit them with an existing team
+        List<ArenaTeam> sortedBySize = new ArrayList<ArenaTeam>(teams);
+        Collections.sort(sortedBySize, new TeamSizeComparator());
+        for (ArenaTeam baseTeam : sortedBySize){
+            TeamJoinResult tjr = teamFits(baseTeam, team);
+            if (tjr != CANTFIT)
+                return tjr;
+        }
+        /// sorry peeps.. full up
+        return CANTFIT;
     }
 
     private TeamJoinResult teamFits(ArenaTeam baseTeam, ArenaTeam team) {

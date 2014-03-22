@@ -18,6 +18,7 @@ import mc.alk.arena.objects.RegisteredCompetition;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.joining.WaitingObject;
+import mc.alk.arena.objects.spawns.SpawnIndex;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.ExpUtil;
@@ -350,39 +351,40 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
     }
 
     @MCCommand(cmds={"tp"}, admin=true)
-    public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, Integer spawnIndex) {
-        return teleportToSpawn(sender,arena,LocationType.ARENA, spawnIndex);
+    public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, SpawnIndex index) {
+        return teleportToSpawn(sender,arena,LocationType.ARENA, index);
     }
 
     @MCCommand(cmds={"tp"}, admin=true)
-    public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, String type, Integer spawnIndex) {
+    public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, String type, SpawnIndex index) {
         try{
-            return teleportToSpawn(sender,arena,LocationType.valueOf(type.toUpperCase()), spawnIndex);
+            return teleportToSpawn(sender,arena,LocationType.valueOf(type.toUpperCase()), index);
         } catch (IllegalArgumentException e){
             return sendMessage(sender,"&c" + e.getMessage());
         }
     }
 
-    public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, LocationType type, Integer spawnIndex) {
-        if (spawnIndex < 1)
-            spawnIndex=1;
+    public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, LocationType type, SpawnIndex index) {
         final SpawnLocation loc;
         switch(type){
             case ANY:
             case ARENA:
-                loc = arena.getSpawn(spawnIndex-1, false);
+                loc = arena.getSpawn(index.teamIndex, index.spawnIndex);
                 break;
             case WAITROOM:
-                loc = arena.getWaitroom()!= null ? arena.getWaitroom().getSpawn(spawnIndex-1, false) : null;
+                loc = arena.getWaitroom()!= null ?
+                        arena.getWaitroom().getSpawn(index.teamIndex, index.spawnIndex) : null;
                 break;
             case HOME:
                 loc = sender.getOldLocation();
                 break;
             case LOBBY:
-                loc = arena.getLobby()!= null ? arena.getLobby().getSpawn(spawnIndex-1, false) : null;
+                loc = arena.getLobby()!= null ?
+                        arena.getLobby().getSpawn(index.teamIndex, index.spawnIndex) : null;
                 break;
             case SPECTATE:
-                loc = arena.getSpectatorRoom()!= null ? arena.getSpectatorRoom().getSpawn(spawnIndex-1, false) : null;
+                loc = arena.getSpectatorRoom()!= null ?
+                        arena.getSpectatorRoom().getSpawn(index.teamIndex, index.spawnIndex) : null;
                 break;
             case NONE:
             case COURTYARD:
@@ -391,9 +393,9 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
                 break;
         }
         if (loc ==null){
-            return sendMessage(sender,"&2Spawn " + spawnIndex +" doesn't exist for " + type);}
+            return sendMessage(sender,"&2Spawn " + index.teamIndex +" "+ index.spawnIndex +"doesn't exist for " + type);}
         TeleportController.teleport(sender, loc.getLocation());
-        return sendMessage(sender,"&2Teleported to &6"+ type +" " + spawnIndex +" &2loc=&6"+
+        return sendMessage(sender,"&2Teleported to &6"+ type +" " + index.teamIndex+" "+index.spawnIndex +" &2loc=&6"+
                 SerializerUtil.getBlockLocString(loc.getLocation()));
     }
 

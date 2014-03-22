@@ -364,7 +364,7 @@ public class ArenaAlterController {
         return sendMessage(sender,"&2Altered arena type to &6" + value);
     }
 
-    public static boolean restoreDefaultArenaOptions(Arena arena) {
+    public static boolean restoreDefaultArenaOptions(Arena arena, boolean save) {
         MatchParams ap = arena.getParams();
         MatchParams p = new MatchParams(ap.getType());
         MatchParams parent = ParamController.getMatchParams(ap.getType());
@@ -372,7 +372,8 @@ public class ArenaAlterController {
         p.setParent(parent);
         arena.setParams(p);
         BattleArenaController ac = BattleArena.getBAController();
-        BattleArena.saveArenas(arena.getArenaType().getPlugin());
+        if (save)
+            BattleArena.saveArenas(arena.getArenaType().getPlugin());
         ac.updateArena(arena);
         return true;
     }
@@ -380,7 +381,7 @@ public class ArenaAlterController {
     public static boolean restoreDefaultArenaOptions(MatchParams params) {
         BattleArenaController ac = BattleArena.getBAController();
         for (Arena a : ac.getArenas(params)){
-            restoreDefaultArenaOptions(a);
+            restoreDefaultArenaOptions(a, false);
         }
         BattleArena.saveArenas(params.getType().getPlugin());
         return true;

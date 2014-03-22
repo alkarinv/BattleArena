@@ -207,6 +207,11 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
         }
     }
 
+    public SpawnLocation getSpawn(int teamIndex, int spawnIndex) {
+        List<SpawnLocation> l = teamIndex >= spawns.size() ? null : spawns.get(teamIndex);
+        return l==null || spawnIndex >= l.size() ? null : l.get(spawnIndex);
+    }
+
     private void buildAllSpawns(){
         if (spawns.isEmpty()){
             return;

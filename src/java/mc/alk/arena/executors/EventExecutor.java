@@ -8,8 +8,8 @@ import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.EventParams;
-import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.exceptions.InvalidEventException;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.joining.TeamJoinObject;
@@ -100,11 +100,6 @@ public class EventExecutor extends BAExecutor{
 		}
 	}
 
-	@MCCommand(cmds={"announce"},admin=true,usage="announce")
-	public boolean eventAnnounce(CommandSender sender,String[] args) {
-		return true;
-	}
-
 	@MCCommand(cmds={"info"},usage="info", order=2)
 	public boolean eventInfo(CommandSender sender, EventParams eventParams){
 		Event event = findUnique(sender, eventParams);
@@ -146,7 +141,8 @@ public class EventExecutor extends BAExecutor{
 	@Override
 	@MCCommand(cmds={"join"})
 	public boolean join(ArenaPlayer player, MatchParams mp, String args[]) {
-		if (mp instanceof EventParams){
+        //noinspection SimplifiableIfStatement
+        if (mp instanceof EventParams){
 			return eventJoin(player, (EventParams)mp, args);}
 		return true; /// awkward, how did they get here???
 	}
@@ -186,7 +182,7 @@ public class EventExecutor extends BAExecutor{
 		}
 
 		EventParams sq = event.getParams();
-		StateGraph tops = sq.getThisTransitionOptions();
+		StateGraph tops = sq.getTransitionOptions();
 		/// Perform is ready check
 		if(!tops.playerReady(p,null)){
 			String notReadyMsg = tops.getRequiredString(MessageHandler.getSystemMessage("need_the_following")+"\n");
@@ -242,10 +238,8 @@ public class EventExecutor extends BAExecutor{
 	@MCCommand(cmds={"teams"}, usage="teams", admin=true, order=2)
 	public boolean eventTeams(CommandSender sender, EventParams eventParams) {
 		Event event = findUnique(sender, eventParams);
-		if (event == null){
-			return true;}
-		return eventTeams(sender, event);
-	}
+        return event == null || eventTeams(sender, event);
+    }
 
 	private boolean eventTeams(CommandSender sender, Event event) {
 		StringBuilder sb = new StringBuilder();
@@ -287,31 +281,17 @@ public class EventExecutor extends BAExecutor{
 		return sendMessage(sender,"&eResults for the &6" + event.getDisplayName() + "&e\n" + sb.toString());
 	}
 
-	public static boolean checkOpenOptions(Event event, MatchParams mp, EventOpenOptions eoo) throws InvalidEventException {
-		if (mp == null){
-			throw new InvalidEventException("&cMatch params were null");
-		}
-		final String cmd = mp.getCommand();
-		if (event.isRunning() || event.isOpen()){
-			throw new InvalidEventException("&cA "+cmd+" is already &6" + event.getState());
-		}
-		return true;
-	}
-
-	public static void openEvent(BAEventController controller, Event te, EventParams ep, EventOpenOptions eoo) throws InvalidOptionException, InvalidEventException{
-		eoo.updateParams(ep);
-		te.setSilent(eoo.isSilent());
-		controller.addOpenEvent(te);
-		if (eoo.hasOption(EventOpenOption.AUTO)){
-			ep.setSecondsTillStart(eoo.getSecTillStart());
-			ep.setAnnouncementInterval(eoo.getInterval());
-			te.autoEvent(ep, eoo.getSecTillStart(), eoo.getInterval());
-		} else {
-			te.openEvent(ep);
-		}
-		if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
-			te.addAllOnline();}
-	}
-
+    protected void openEvent(Event event, EventOpenOptions eoo) throws InvalidEventException {
+        if (eoo.hasOption(EventOpenOption.SILENT)){
+            event.setSilent(true);}
+        controller.addOpenEvent(event);
+        if (eoo.hasOption(EventOpenOption.AUTO)) {
+            event.autoEvent();
+        } else {
+            event.openEvent();
+        }
+        if (eoo.hasOption(EventOpenOption.FORCEJOIN)){
+            event.addAllOnline();}
+    }
 
 }

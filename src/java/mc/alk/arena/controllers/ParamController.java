@@ -162,5 +162,10 @@ public class ParamController {
         }
     }
 
+    public static EventParams copyParams(EventParams params) {
+        return new EventParams(params);
+
+    }
+
 
 }

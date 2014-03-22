@@ -16,6 +16,7 @@ public class EventParams extends MatchParams{
 		super(mp);
 	}
 
+    @Override
     public void copy(ArenaParams ap){
         if (this == ap)
             return;
@@ -46,15 +47,15 @@ public class EventParams extends MatchParams{
 	}
 
 	public Integer getSecondsTillStart() {
-		return secondsTillStart;
-	}
+        return secondsTillStart ==null && eparent!=null ? eparent.getSecondsTillStart() : secondsTillStart;
+    }
 
 	public void setSecondsTillStart(Integer secondsTillStart) {
 		this.secondsTillStart = secondsTillStart;
-	}
+    }
 
 	public Integer getAnnouncementInterval() {
-		return announcementInterval;
+        return announcementInterval ==null && eparent!=null ? eparent.getAnnouncementInterval() : announcementInterval;
 	}
 
 	public void setAnnouncementInterval(Integer announcementInterval) {
@@ -76,11 +77,7 @@ public class EventParams extends MatchParams{
 	@Override
 	public void setParent(ArenaParams parent) {
 		super.setParent(parent);
-		if (parent instanceof EventParams){
-			this.eparent = (EventParams) parent;}
-		else
-			this.eparent = null;
-
+        this.eparent = (parent instanceof EventParams) ? (EventParams) parent : null;
 	}
 
 }

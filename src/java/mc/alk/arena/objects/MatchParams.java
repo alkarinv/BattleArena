@@ -46,6 +46,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
         super(mp);
     }
 
+    @Override
     public void copy(ArenaParams ap){
         if (this==ap)
             return;
@@ -108,6 +109,7 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
 
     public void setCommand(String str){cmd = str;}
 
+    @Override
     public int compareTo(MatchParams other) {
         Integer hash = this.hashCode();
         return hash.compareTo(other.hashCode());
@@ -219,15 +221,9 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
     @Override
     public void setParent(ArenaParams parent) {
         super.setParent(parent);
-        if (parent != null && parent instanceof MatchParams){
-            this.mparent = (MatchParams) parent;}
-        else
-            this.mparent = null;
+        this.mparent = (parent instanceof MatchParams) ? (MatchParams) parent : null;
     }
 
-    public boolean hasQueue() {
-        return true;
-    }
 
     public GameManager getGameManager() {
         return GameManager.getGameManager(this);

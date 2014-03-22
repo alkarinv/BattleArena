@@ -20,6 +20,7 @@ import java.util.Set;
 public class EventOpenOptions {
 	public static enum EventOpenOption{
 		TEAMSIZE, NTEAMS,
+        MAXTEAMS,
 		SILENT,
 		RATED,UNRATED,
 		FORCEJOIN,
@@ -106,6 +107,7 @@ public class EventOpenOptions {
 			case TEAMSIZE:{
 				try{
 					obj = MinMax.valueOf(val);
+                    eoo.getParams().setTeamSize((MinMax) obj);
 				}catch (Exception e){
 					throw new InvalidOptionException("&cCouldnt parse teamSize &6"+val+" &e needs an int or range. &68, 2+, 2-10, etc");
 				}
@@ -114,6 +116,7 @@ public class EventOpenOptions {
 			case NTEAMS: {
 				try{
 					obj = MinMax.valueOf(val);
+                    eoo.getParams().setNTeams((MinMax)obj);
 				}catch (Exception e){
 					throw new InvalidOptionException("&cCouldnt parse nTeams &6"+val+" &e needs an int or range. &68, 2+, 2-10, etc");
 				}
@@ -140,7 +143,7 @@ public class EventOpenOptions {
 				ops.put(to, obj);
 		}
 //		if (!ops.containsKey(EventOpenOption.TEAMSIZE)){
-//			params.setTeamSizes(new MinMax(1));
+//			params.setTeamSize(new MinMax(1));
 //			ops.put(EventOpenOption.TEAMSIZE, new MinMax(1));
 //		}
 //		if (!ops.containsKey(EventOpenOption.NTEAMS)){
@@ -179,7 +182,7 @@ public class EventOpenOptions {
 
 		/// Team size
 		if (hasOption(EventOpenOption.TEAMSIZE)){
-			mp.setTeamSizes((MinMax)getOption(EventOpenOption.TEAMSIZE));}
+			mp.setTeamSize((MinMax) getOption(EventOpenOption.TEAMSIZE));}
 	}
 
 	public MatchParams getParams() {

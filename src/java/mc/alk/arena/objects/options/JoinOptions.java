@@ -96,7 +96,7 @@ public class JoinOptions {
 
 //    public boolean matches(MatchParams params) {
 ////		return ArenaSize.matchesNTeams(nTeams, params.getNTeams());
-//        return ArenaSize.lower(teamSize, params.getTeamSizes());
+//        return ArenaSize.lower(teamSize, params.getTeamSize());
 //    }
 //
 //    public static boolean matches(JoinOptions jo, Match match) {

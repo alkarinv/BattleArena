@@ -63,34 +63,41 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
             sendMessage(sender,"&cCommand: &6/tourney <open|auto> <matchType> [options...]");
             return null;
         }
-
+        eventParams = ParamController.copyParams(eventParams);
         EventOpenOptions eoo;
-        EventParams ep = new EventParams(mp);
+        MatchParams sgp;
         try {
             HashSet<Integer> ignoreArgs = new HashSet<Integer>(Arrays.asList(1)); /// ignore the matchType argument
-            eoo = EventOpenOptions.parseOptions(args,ignoreArgs, ep);
-            event = new TournamentEvent(eventParams);
-            checkOpenOptions(event,ep , eoo);
+            eoo = EventOpenOptions.parseOptions(args,ignoreArgs, mp);
+            sgp = eoo.getParams(); /// single game params
+            event = new TournamentEvent(eventParams,eoo);
 
-            if (!isPowerOfTwo(ep.getMinTeams())){
-                sendMessage(sender, "&cTournament nteams has to be a power of 2! like 2,4,8,16,etc");
+            if (!isPowerOfTwo(sgp.getMinTeams())){
+                sendMessage(sender, "&cTournament nteams has to be a power of 2! like 2,4,8,16,etc. You have "+
+                        sgp.getMinTeams());
                 sendMessage(sender, "&c/tourney auto <type> nTeams=2");
                 return null;
             }
-            if (ep.getMaxTeams().equals(ArenaSize.MAX) || !ep.getMinTeams().equals(ep.getMaxTeams())){
-                sendMessage(sender, "&cNumber of tournament teams must not be a range. Setting to &6teamSize="+ep.getMinTeams());
-                ep.setMaxTeams(ep.getMinTeams());
+            if (!isPowerOfTwo(sgp.getMinTeamSize())){
+                sendMessage(sender, "&cTournament teamSize has to be a power of 2! like 1,2,4,8,16,etc. You have "+
+                        sgp.getMinTeamSize());
+                sendMessage(sender, "&c/tourney auto <type> teamSize=1");
+                return null;
             }
-            if (ep.getMaxTeamSize().equals(ArenaSize.MAX) || !ep.getMaxTeamSize().equals(ep.getMinTeamSize())){
-                sendMessage(sender, "&cTournament teams must have a finite size. &eSetting to &6teamSize="+ep.getMinTeamSize());
-                ep.setMaxTeamSize(ep.getMinTeamSize());
+            if (sgp.getMaxTeams().equals(ArenaSize.MAX) || !sgp.getMinTeams().equals(sgp.getMaxTeams())){
+                sendMessage(sender, "&cNumber of tournament teams must not be a range. Setting to &6nTeam="+sgp.getMinTeams());
+                sgp.setMaxTeams(sgp.getMinTeams());
             }
-            Arena arena = BattleArena.getBAController().getArenaByMatchParams(ep);
+            if (sgp.getMaxTeamSize().equals(ArenaSize.MAX) || !sgp.getMaxTeamSize().equals(sgp.getMinTeamSize())){
+                sendMessage(sender, "&cTournament teams must have a finite size. &eSetting to &6teamSize=" + sgp.getMinTeamSize());
+                sgp.setMaxTeamSize(sgp.getMinTeamSize());
+            }
+            Arena arena = BattleArena.getBAController().getArenaByMatchParams(sgp);
             if (arena == null){
-                sendMessage(sender, "&cThere is no arena that will fit these parameters. nTeams="+
-                        ep.getNTeams()+" teamSize="+ep.getTeamSizes());
+                sendMessage(sender, "&cThere is no arena that will fit these parameters. nTeams=" +
+                        sgp.getNTeams() + " teamSize=" + sgp.getTeamSize());
             }
-            openEvent(controller, event, ep, eoo);
+            openEvent(event,eoo);
         } catch (InvalidOptionException e) {
             sendMessage(sender, e.getMessage());
             return null;
@@ -101,11 +108,11 @@ public class TournamentExecutor extends EventExecutor implements CommandExecutor
             Log.printStackTrace(e);
             return null;
         }
-        final int max = ep.getMaxPlayers();
+        final int max = eventParams.getMaxPlayers();
         final String maxPlayers = max == ArenaSize.MAX ? "&6any&2 number of players" : max+"&2 players";
         sendMessage(sender,"&2You have "+eoo.getOpenCmd()+"ed a &6" + event.getDisplayName() +
-                " &2TeamSize=&6" + ep.getTeamSizes() +"&2 #Teams=&6"+
-                ep.getNTeams() +"&2 supporting "+maxPlayers);
+                " &2TeamSize=&6" + sgp.getTeamSize() +"&2 #Teams=&6"+
+                sgp.getNTeams() +"&2 supporting "+maxPlayers);
         return event;
     }
 

@@ -11,7 +11,7 @@ public class TestParams extends BATest {
 	public void testFlatten() throws Exception {
         MatchParams mp = loadParams("Arena", "/ArenaConfig.yml");
         mp.setNTeams(new MinMax(2,2));
-        mp.setTeamSizes(new MinMax(2, 2));
+        mp.setTeamSize(new MinMax(2, 2));
         mp.setNLives(3);
         mp.setMatchTime(37);
         assert(mp.getMinTeams()==2);
@@ -22,7 +22,7 @@ public class TestParams extends BATest {
         assertNotNull(arena);
         MatchParams ap = arena.getParams();
         ap.setNTeams(new MinMax(3, 5));
-        ap.setTeamSizes(new MinMax(3, 5));
+        ap.setTeamSize(new MinMax(3, 5));
         ap.setParent(mp);
         ap.setNLives(null);
         ap.setMatchTime(null);

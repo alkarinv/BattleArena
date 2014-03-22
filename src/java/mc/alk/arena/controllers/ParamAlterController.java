@@ -110,7 +110,7 @@ public class ParamAlterController {
             case NLIVES: params.setNLives((Integer)value); break;
             case NTEAMS: params.setNTeams((MinMax) value);  break;
             case FORCESTARTTIME: params.setForceStartTime((Integer) value);  break;
-            case TEAMSIZE: params.setTeamSizes((MinMax) value);  break;
+            case TEAMSIZE: params.setTeamSize((MinMax) value);  break;
             case PREFIX: params.setPrefix((String)value); break;
             case SIGNDISPLAYNAME: params.setSignDisplayName((String)value); break;
             case DISPLAYNAME: params.setDisplayName((String)value); break;
@@ -293,7 +293,7 @@ public class ParamAlterController {
         switch(go){
             case NLIVES: params.setNLives(null); break;
             case NTEAMS: params.setNTeams(null);  break;
-            case TEAMSIZE: params.setTeamSizes(null);  break;
+            case TEAMSIZE: params.setTeamSize(null);  break;
             case PREFIX: params.setPrefix(null); break;
             case SIGNDISPLAYNAME: params.setSignDisplayName(null); break;
             case COMMAND: params.setCommand(null); break;

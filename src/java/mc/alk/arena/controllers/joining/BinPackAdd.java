@@ -81,13 +81,14 @@ public class BinPackAdd extends AbstractJoinHandler {
             ArenaTeam ct = TeamFactory.createCompositeTeam(teams.size(), matchParams);
             ct.addPlayers(team.getPlayers());
             team.setIndex(ct.getIndex());
-            if (ct.size() == ct.getMaxPlayers()) {
+            if (ct.size() <= ct.getMaxPlayers()){
                 addTeam(ct);
-                return new TeamJoinResult(TeamJoinStatus.ADDED, ct.getMinPlayers() - ct.size(), ct);
-            } else {
-                addTeam(ct);
-                return new TeamJoinResult(TeamJoinStatus.ADDED_STILL_NEEDS_PLAYERS,
-                        ct.getMinPlayers() - ct.size(), ct);
+                if (ct.size() >= ct.getMinPlayers()) {
+                    return new TeamJoinResult(TeamJoinStatus.ADDED, ct.getMinPlayers() - ct.size(), ct);
+                } else {
+                    return new TeamJoinResult(TeamJoinStatus.ADDED_STILL_NEEDS_PLAYERS,
+                            ct.getMinPlayers() - ct.size(), ct);
+                }
             }
         }
 

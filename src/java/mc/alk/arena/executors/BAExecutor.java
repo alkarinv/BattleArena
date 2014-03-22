@@ -646,8 +646,10 @@ public class BAExecutor extends CustomCommandExecutor {
                 return sendMessage(sender, "&e team size " + args[length - 1]
                         + " is not a number");
             }
-        mp.setTeamSize(teamSize);
-        return getTop(sender, x, mp);
+        MatchParams top = new MatchParams(mp.getType());
+        top.setParent(mp);
+        top.setTeamSize(teamSize);
+        return getTop(sender, x, top);
     }
 
     public boolean getTop(CommandSender sender, int x, MatchParams mp) {
@@ -692,7 +694,7 @@ public class BAExecutor extends CustomCommandExecutor {
                     "&2You have " + args[0] + "ed a &6" + params.getName()
                             + "&2 inside &6" + arena.getName()
                             + " &2TeamSize=&6"
-                            + arena.getParams().getTeamSizes()
+                            + arena.getParams().getTeamSize()
                             + "&2 #Teams=&6"
                             + arena.getParams().getNTeams()
                             + "&2 supporting " + maxPlayers + "&2 at &5"
@@ -1067,10 +1069,10 @@ public class BAExecutor extends CustomCommandExecutor {
         return true;
     }
 
-    @MCCommand(cmds = { "restoreDefaultOptions" }, admin = true, perm = "arena.alter")
+    @MCCommand(cmds = { "restoreDefaultArenaOptions" }, admin = true, perm = "arena.alter")
     public boolean restoreDefaultOptions(CommandSender sender, Arena arena) {
         try {
-            ArenaAlterController.restoreDefaultArenaOptions(arena);
+            ArenaAlterController.restoreDefaultArenaOptions(arena, true);
         } catch (IllegalStateException e) {
             return sendMessage(sender, "&c" + e.getMessage());
         }

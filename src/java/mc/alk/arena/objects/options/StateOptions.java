@@ -217,7 +217,7 @@ public class StateOptions {
             List<ItemStack> items = getNeedItems();
             hasSomething = true;
             for (ItemStack is : items){
-                sb.append("&5 - &6"+ is.getAmount() +" " + is.getData());
+                sb.append("&5 - &6").append(is.getAmount()).append(" ").append(is.getData());
             }
         }
         if (options.containsKey(TransitionOption.NOINVENTORY)){
@@ -227,7 +227,7 @@ public class StateOptions {
         if (options.containsKey(TransitionOption.GAMEMODE)){
             hasSomething = true;
             GameMode gm = getGameMode();
-            sb.append("&5 - &6GameMode="+gm.toString());
+            sb.append("&5 - &6GameMode=").append(gm.toString());
         }
         if (needsArmor()){
             hasSomething = true;
@@ -235,7 +235,7 @@ public class StateOptions {
         }
         if (options.containsKey(TransitionOption.LEVELRANGE)){
             MinMax mm = (MinMax) options.get(TransitionOption.LEVELRANGE);
-            sb.append("&a - lvl="+mm.toString());
+            sb.append("&a - lvl=").append(mm.toString());
         }
         return hasSomething ? sb.toString() : null;
     }
@@ -250,7 +250,7 @@ public class StateOptions {
                 int amountInInventory =InventoryUtil.getItemAmountFromInventory(inv, is);
                 if (amountInInventory < is.getAmount()){
                     int needed = amountInInventory - is.getAmount();
-                    sb.append("&5 - &e"+needed +" " + is.getType() + "\n");
+                    sb.append("&5 - &e").append(needed).append(" ").append(is.getType()).append("\n");
                     isReady = false;
                 }
             }
@@ -258,7 +258,7 @@ public class StateOptions {
         if (options.containsKey(TransitionOption.GAMEMODE)){
             GameMode gm = getGameMode();
             if (p.getPlayer().getGameMode() != gm){
-                sb.append("&5 -&e a &6You need to be in &c"+gm+"&e mode \n");
+                sb.append("&5 -&e a &6You need to be in &c").append(gm).append("&e mode \n");
                 isReady = false;
             }
         }
@@ -290,7 +290,7 @@ public class StateOptions {
         if (options.containsKey(TransitionOption.LEVELRANGE)){
             MinMax mm = (MinMax) options.get(TransitionOption.LEVELRANGE);
             if (!mm.contains(p.getLevel())){
-                sb.append("&a - lvl="+mm.toString());
+                sb.append("&a - lvl=").append(mm.toString());
                 isReady = false;
             }
         }
@@ -309,15 +309,15 @@ public class StateOptions {
         }
         if (hasExperience()){
             hasSomething = true;
-            sb.append("&5 - &2" + getExperience()+" experience");
+            sb.append("&5 - &2").append(getExperience()).append(" experience");
         }
         if (hasMoney()){
             hasSomething = true;
-            sb.append("&5 - &6" + getMoney()+" " + Defaults.MONEY_STR);
+            sb.append("&5 - &6").append(getMoney()).append(" ").append(Defaults.MONEY_STR);
         }
         if (poolMoney != null){
             hasSomething = true;
-            sb.append("&5 - &6" + poolMoney+" " + Defaults.MONEY_STR);
+            sb.append("&5 - &6").append(poolMoney).append(" ").append(Defaults.MONEY_STR);
         }
 
         if (getGiveItems() != null){
@@ -325,20 +325,20 @@ public class StateOptions {
             List<ItemStack> items = getGiveItems();
             ArmorLevel lvl = InventoryUtil.hasArmorSet(items);
             if (lvl != null){
-                sb.append("&5 - &a"+ lvl.toString() +" ARMOR");
+                sb.append("&5 - &a").append(lvl.toString()).append(" ARMOR");
             }
             for (ItemStack is : items){
                 if (lvl != null && InventoryUtil.sameMaterial(lvl,is))
                     continue;
                 String enchanted = !is.getEnchantments().isEmpty() ? " &4Enchanted ": "";
-                sb.append("&5 - &a"+ is.getAmount() +enchanted + is.getType().toString() );
+                sb.append("&5 - &a").append(is.getAmount()).append(enchanted).append(is.getType().toString());
             }
         }
         if (hasEffects()){
             hasSomething = true;
             for (PotionEffect ewa : getEffects()){
                 if (ewa != null)
-                    sb.append("&5 - &b"+ EffectUtil.getCommonName(ewa));
+                    sb.append("&5 - &b").append(EffectUtil.getCommonName(ewa));
             }
         }
 
@@ -425,7 +425,7 @@ public class StateOptions {
 
     public static String getInfo(MatchParams sq, String name) {
         StringBuilder sb = new StringBuilder();
-        StateGraph at = sq.getThisTransitionOptions();
+        StateGraph at = sq.getTransitionOptions();
         String required = at.getRequiredString(null);
         String prestart = at.getGiveString(MatchState.ONPRESTART);
         String start = at.getGiveString(MatchState.ONSTART);
@@ -435,8 +435,9 @@ public class StateOptions {
         String participantPrizes = at.getGiveString(MatchState.PARTICIPANTS);
         boolean rated = sq.isRated();
         String teamSizes = ArenaSize.rangeString(sq.getMinTeamSize(), sq.getMaxTeamSize());
-        sb.append("&eThis is "+ (rated? "a &4Rated" : "an &aUnrated") +"&e "+name+". " );
-        sb.append("&eTeam size=&6" + teamSizes);
+        sb.append("&eThis is ").append(rated ? "a &4Rated" : "an &aUnrated").
+                append("&e ").append(name).append(". ");
+        sb.append("&eTeam size=&6").append(teamSizes);
         sb.append("\n&eRequirements to Join:");
         sb.append(required==null? "&aNone" : required);
         if (prestart != null || start !=null || onspawn != null){
@@ -447,7 +448,7 @@ public class StateOptions {
         }
         sb.append("\n&ePrize for &5winning&e a match:");
         if (participantPrizes != null){
-            sb.append("\n&ePrize for &6participation:&e "+participantPrizes);}
+            sb.append("\n&ePrize for &6participation:&e ").append(participantPrizes);}
         sb.append(prizes==null? "&aNone" : prizes);
         if (firstPlacePrizes != null){
             sb.append("\n&ePrize for getting &b1st &eplace:");

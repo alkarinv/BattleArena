@@ -1,12 +1,11 @@
 package mc.alk.arena.controllers;
 
-import java.util.HashMap;
-
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.executors.EventExecutor;
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.teams.ArenaTeam;
+
+import java.util.HashMap;
 
 
 public class EventController {
@@ -37,9 +36,9 @@ public class EventController {
 		}
 	}
 
-	public static void addEventExecutor(EventParams eventParams, EventExecutor executor) {
-		registeredExecutors.put(eventParams.getName().toLowerCase(), executor);
-		registeredExecutors.put(eventParams.getCommand().toLowerCase(),executor);
+	public static void addEventExecutor(String name, String command, EventExecutor executor) {
+		registeredExecutors.put(name.toLowerCase(), executor);
+		registeredExecutors.put(command.toLowerCase(),executor);
 	}
 
 	public static EventExecutor getEventExecutor(Event event){

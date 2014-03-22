@@ -118,7 +118,7 @@ public class ArenaParams {
         if (this.displayName == null) this.displayName = parent.getDisplayName();
         this.stateGraph = mergeChildWithParent(this, parent);
         if (this.nTeams == null && parent.getNTeams() != null) this.nTeams = new MinMax(parent.getNTeams());
-        if (this.teamSize == null && parent.getTeamSizes() != null) this.teamSize = new MinMax(parent.getTeamSizes());
+        if (this.teamSize == null && parent.getTeamSize() != null) this.teamSize = new MinMax(parent.getTeamSize());
 
         if (this.teamParams != null && parent.getTeamParams() != null) {
             HashMap<Integer, MatchParams> tp = new HashMap<Integer, MatchParams>(this.teamParams);
@@ -198,8 +198,8 @@ public class ArenaParams {
             return false;
         if (getNTeams() != null && params.getNTeams() != null && !getNTeams().intersect(params.getNTeams())) {
             return false;}
-        return (this.getTeamSizes() != null && params.getTeamSizes() != null &&
-                !getTeamSizes().intersect(params.getTeamSizes()));
+        return (this.getTeamSize() != null && params.getTeamSize() != null &&
+                !getTeamSize().intersect(params.getTeamSize()));
     }
 
     public boolean matches(final JoinOptions jo){
@@ -207,17 +207,15 @@ public class ArenaParams {
     }
 
     public boolean matches(final ArenaParams ap) {
-        if (arenaType != null && ap.arenaType != null &&
-                arenaType.matches(ap.arenaType)){
-            MinMax nt = getNTeams();
-            MinMax ts = getTeamSizes();
-            if (nt == null || ts == null)
-                return true;
-            MinMax nt2 = ap.getNTeams();
-            MinMax ts2 = ap.getTeamSizes();
-            return nt2 == null || ts2 == null || nt.intersect(nt2) && ts.intersect(ts2);
-        }
-        return false;
+        if (arenaType != null && ap.arenaType != null && !arenaType.matches(ap.arenaType)) {
+            return false;}
+        MinMax nt = getNTeams();
+        MinMax nt2 = ap.getNTeams();
+        if (nt != null && nt2 != null && !nt.intersect(nt2)){
+            return false;}
+        MinMax ts = getTeamSize();
+        MinMax ts2 = ap.getTeamSize();
+        return !(ts != null && ts2 != null && !ts.intersect(ts2));
     }
 
     public Collection<String> getInvalidMatchReasons(ArenaParams ap) {
@@ -226,10 +224,10 @@ public class ArenaParams {
         if (ap.arenaType == null) reasons.add("Passed params have an arenaType of null");
         else reasons.addAll(arenaType.getInvalidMatchReasons(ap.getType()));
         if (getNTeams() != null && ap.getNTeams() != null && !getNTeams().intersect(ap.getNTeams())){
-            reasons.add("Arena accepts nteams="+getNTeams()+". you requested "+ap.getNTeams());
+            reasons.add("Arena accepts numTeams="+getNTeams()+". you requested "+ap.getNTeams());
         }
-        if (getTeamSizes() != null && ap.getTeamSizes() != null && !getTeamSizes().intersect(ap.getTeamSizes())){
-            reasons.add("Arena accepts teamSize="+getTeamSizes()+". you requested "+ap.getTeamSizes());
+        if (getTeamSize() != null && ap.getTeamSize() != null && !getTeamSize().intersect(ap.getTeamSize())){
+            reasons.add("Arena accepts teamSize="+ getTeamSize()+". you requested "+ap.getTeamSize());
         }
         return reasons;
     }
@@ -306,7 +304,7 @@ public class ArenaParams {
     }
 
     public String toPrettyString() {
-        return  getDisplayName()+":"+arenaType+",nteams="+getNTeams()+",teamSize="+getTeamSizes();
+        return  getDisplayName()+":"+arenaType+",numTeams="+getNTeams()+",teamSize="+ getTeamSize();
     }
 
     private ChatColor getColor(Object o) {
@@ -315,8 +313,8 @@ public class ArenaParams {
 
     public String toSummaryString() {
         return  "&2&f"+name+"&2:&f"+arenaType+
-                "&2,nteams="+getColor(nTeams) +getNTeams()+
-                "&2,teamSize="+getColor(teamSize)+getTeamSizes() +"\n"+
+                "&2,numTeams="+getColor(nTeams) +getNTeams()+
+                "&2,teamSize="+getColor(teamSize)+ getTeamSize() +"\n"+
                 "&5forceStartTime="+getColor(forceStartTime)+getForceStartTime()+
                 "&5, timeUntilMatch="+getColor(secondsTillMatch)+getSecondsTillMatch() +
                 "&5, matchTime="+getColor(matchTime)+getMatchTime()+
@@ -330,8 +328,8 @@ public class ArenaParams {
 
     @Override
     public String toString(){
-        return  name+":"+arenaType +",nteams="+
-                getNTeams()+",teamSize="+getTeamSizes() +" options=\n"+
+        return  name+":"+arenaType +",numTeams="+
+                getNTeams()+",teamSize="+ getTeamSize() +" options=\n"+
                 (getThisTransitionOptions()==null ? "" : getThisTransitionOptions().getOptionString());
     }
 
@@ -383,7 +381,7 @@ public class ArenaParams {
 
     public Integer getMaxPlayers() {
         MinMax nt = getNTeams();
-        MinMax ts = getTeamSizes();
+        MinMax ts = getTeamSize();
         if (nt==null || ts == null)
             return null;
         return nt.max == ArenaSize.MAX || ts.max == ArenaSize.MAX ? ArenaSize.MAX : nt.max * ts.max;
@@ -391,25 +389,15 @@ public class ArenaParams {
 
     public Integer getMinPlayers() {
         MinMax nt = getNTeams();
-        MinMax ts = getTeamSizes();
+        MinMax ts = getTeamSize();
         if (nt==null || ts == null)
             return null;
         return nt.min == ArenaSize.MAX || ts.min == ArenaSize.MAX ? ArenaSize.MAX : nt.min * ts.min;
     }
 
-    public void setTeamSize(Integer n) {
-        if (n == null){
-            teamSize = null;
-        } else {
-            if (teamSize == null){
-                teamSize = new MinMax(n);
-            } else {
-                teamSize.min = n;
-                teamSize.max = n;
-            }
-        }
+    public void setNTeams(int size) {
+        setNTeams(new MinMax(size));
     }
-
     public void setNTeams(MinMax mm) {
         if (mm == null){
             nTeams = null;
@@ -433,11 +421,13 @@ public class ArenaParams {
     /**
      * @return MinMax representing the team sizes
      */
-    public MinMax getTeamSizes(){
-        return teamSize != null ? teamSize : (parent != null ? parent.getTeamSizes() : null);
+    public MinMax getTeamSize(){
+        return teamSize != null ? teamSize : (parent != null ? parent.getTeamSize() : null);
     }
-
-    public void setTeamSizes(MinMax mm) {
+    public void setTeamSize(int size) {
+        setTeamSize(new MinMax(size));
+    }
+    public void setTeamSize(MinMax mm) {
         if (mm == null){
             teamSize = null;
         } else {

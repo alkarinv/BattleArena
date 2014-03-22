@@ -412,7 +412,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
                 if (resetParams){
                     mf.params = ParamController.copyParams(mf.params);
                     mf.params.setNTeams(new MinMax(0, ArenaSize.MAX));
-                    mf.params.setTeamSizes(new MinMax(0, ArenaSize.MAX));
+                    mf.params.setTeamSize(new MinMax(0, ArenaSize.MAX));
                 }
                 finds.add(mf);
             }
@@ -536,8 +536,6 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
             Arena a;
             while(iter.hasNext()){
                 a = iter.next();
-                if (a.getArenaType() != mp.getType())
-                    continue;
                 if (!a.valid() || !a.matches(jo))
                     continue;
                 iter.remove();
@@ -784,7 +782,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
     class AnnounceInterval {
         AnnounceInterval(final ArenaMatchQueue amq, final WaitingObject wo, IdTime idt, final long timeMillis){
             final Countdown c = new Countdown(BattleArena.getSelf(),
-                    (int) timeMillis/1000, 30, new Countdown.CountdownCallback(){
+                    timeMillis/1000, 30L, new Countdown.CountdownCallback(){
                 @Override
                 public boolean intervalTick(int secondsRemaining) {
                     if (secondsRemaining > 0 || secondsRemaining < 0){

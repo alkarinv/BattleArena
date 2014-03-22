@@ -219,7 +219,7 @@ public class ArenaSerializer extends BaseConfig{
         /// Get from the "old" way of specifying teamSize and nTeams
         if (cs.contains("teamSize")) {
             MinMax mm = MinMax.valueOf(cs.getString("teamSize"));
-            mp.setTeamSizes(mm);
+            mp.setTeamSize(mm);
         }
         if (cs.contains("nTeams")) {
             MinMax mm = MinMax.valueOf(cs.getString("nTeams"));
