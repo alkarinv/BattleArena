@@ -21,7 +21,8 @@ public class Log {
 			else
 				System.out.println(colorChat(msg));
 		}
-	}
+        NotifierUtil.notify("info", msg);
+    }
 
 	public static void warn(String msg){
 		if (msg == null) return;
@@ -33,6 +34,7 @@ public class Log {
             else
                 System.out.println(colorChat(msg));
         }
+        NotifierUtil.notify("warn", msg);
 	}
 
 	public static void err(String msg){

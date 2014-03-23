@@ -74,11 +74,11 @@ public class TimedSpawn implements Spawnable{
 
     @Override
 	public String toString() {
-        return "[TimedSpawn " + id + " loc=" + SerializerUtil.getLocString(sg.getLocation()) + " s=" + sg + " fs=" +
+        return "[" + id + " loc=" + SerializerUtil.getBlockLocString(sg.getLocation()) + " s=" + sg + " fs=" +
                 firstSpawnTime + " rs=" + respawnInterval + " ds=" + timeToDespawn+"]";
     }
     public String getDisplayName() {
-        return "["+ sg+" loc=" + SerializerUtil.getLocString(sg.getLocation()) + " fs=" +
+        return "["+ sg+" loc=" + SerializerUtil.getBlockLocString(sg.getLocation()) + " fs=" +
                 firstSpawnTime + " rs=" + respawnInterval + " ds=" + timeToDespawn+"]";
     }
 }
