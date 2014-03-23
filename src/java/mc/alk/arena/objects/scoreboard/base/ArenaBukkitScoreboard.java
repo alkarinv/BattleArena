@@ -10,6 +10,7 @@ import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.scoreboardapi.api.SObjective;
+import mc.alk.scoreboardapi.api.SScoreboard;
 import mc.alk.scoreboardapi.api.STeam;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
 import mc.alk.scoreboardapi.scoreboard.bukkit.BScoreboard;
@@ -167,5 +168,10 @@ public class ArenaBukkitScoreboard extends ArenaScoreboard{
     @Override
     public String toString(){
         return getPrintString();
+    }
+
+    @Override
+    public SScoreboard getBScoreboard() {
+        return this.bboard;
     }
 }

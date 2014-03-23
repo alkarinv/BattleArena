@@ -152,14 +152,14 @@ public class ArenaMatch extends Match {
             timer = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
                 @Override
                 public void run() {
-                    PerformTransition.transition(am, MatchState.ONCOMPLETE, target, t, true);
+                    am.performTransition(MatchState.ONCOMPLETE, target, t, true);
                     checkAndHandleIfTeamDead(t);
                 }
             }, 15*20L);
             deathTimer.put(target.getName(), timer);
         }
         if (exiting){
-            PerformTransition.transition(this, MatchState.ONCOMPLETE, target, t, true);
+            performTransition(MatchState.ONCOMPLETE, target, t, true);
             checkAndHandleIfTeamDead(t);
         }
     }
@@ -201,8 +201,8 @@ public class ArenaMatch extends Match {
     //				callEvent(new ArenaPlayerKillEvent(killer,killT,ap));
     //			}
     //		}
-    //		PerformTransition.transition(this, MatchState.ONDEATH, ap, targetTeam , false);
-    //		PerformTransition.transition(this, MatchState.ONDEATH, ap, targetTeam , false);
+    //		TransitionController.transition(this, MatchState.ONDEATH, ap, targetTeam , false);
+    //		TransitionController.transition(this, MatchState.ONDEATH, ap, targetTeam , false);
     //
     //		EffectUtil.deEnchantAll(target);
     //		target.closeInventory();
@@ -210,7 +210,7 @@ public class ArenaMatch extends Match {
     //		target.setHealth(target.getMaxHealth());
     //		if (!exiting){
     //			final int teamIndex = indexOf(targetTeam);
-    //			final Location l = PerformTransition.jitter(getTeamSpawn(teamIndex,false),rand.nextInt(targetTeam.size()));
+    //			final Location l = TransitionController.jitter(getTeamSpawn(teamIndex,false),rand.nextInt(targetTeam.size()));
     //			TeleportController.teleportPlayer(target, l, false, true);
     //		}
     //	}
@@ -273,13 +273,13 @@ public class ArenaMatch extends Match {
             event.setRespawnLocation(loc.getLocation());
             /// For some reason, the player from onPlayerRespawn Event isnt the one in the main thread, so we need to
             /// resync before doing any effects
-            final Match am = this;
+            final ArenaMatch am = this;
             Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
                 @Override
                 public void run() {
                     ArenaTeam t = getTeam(p);
-                    PerformTransition.transition(am, MatchState.ONDEATH, p, t, false);
-                    PerformTransition.transition(am, MatchState.ONSPAWN, p, t, false);
+                    am.performTransition(MatchState.ONDEATH, p, t, false);
+                    am.performTransition(MatchState.ONSPAWN, p, t, false);
                     if (respawnsWithClass) {
                         ArenaClass ac = null;
                         if (p.getPreferredClass() != null) {

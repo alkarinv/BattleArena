@@ -67,6 +67,7 @@ public class MethodController {
     final Object owner;
     final BAEventCaller baexecutor;
     static TimingUtil timings;
+    MatchState curState = MatchState.NONE;
 
     public MethodController(Object owner){
         if (Defaults.DEBUG_EVENTS) controllers.add(this);
@@ -134,6 +135,16 @@ public class MethodController {
         for (ArenaPlayer ap: players){
             strplayers.add(ap.getName());}
         updateEvents(listener, matchState,strplayers);
+    }
+
+    public void updateEventsRange(ArenaListener listener, MatchState beginState, MatchState endState, List<String> players) {
+        for (MatchState ms : MatchState.values()){
+            if (ms.ordinal() < beginState.ordinal())
+                continue;
+            if (ms.ordinal() > endState.ordinal())
+                break;
+            updateEvents(listener,ms, players);
+        }
     }
 
     public void updateEvents(ArenaListener listener, MatchState matchState, List<String> players) {
@@ -434,7 +445,7 @@ public class MethodController {
                 mths.add(new ArenaEventMethod(method, bukkitEvent,getPlayerMethod,
                         beginState, endState,cancelState, priority, bukkitPriority, baEvent ));
             } else {
-                if (beginState == MatchState.NONE) beginState = MatchState.ONOPEN;
+                if (beginState == MatchState.NONE) beginState = MatchState.ONCREATE;
                 if (endState == MatchState.NONE) endState = MatchState.ONFINISH;
                 if (cancelState == MatchState.NONE) cancelState = MatchState.ONCANCEL;
                 mths.add(new ArenaEventMethod(method, bukkitEvent,beginState,

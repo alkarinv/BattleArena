@@ -1,7 +1,8 @@
-package mc.alk.arena.competition.match;
+package mc.alk.arena.competition;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.ArenaController;
 import mc.alk.arena.controllers.MoneyController;
@@ -41,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class PerformTransition {
+public class TransitionController {
 
     /**
      * Perform a transition
@@ -50,7 +51,7 @@ public class PerformTransition {
      * @param teams: which teams to affect
      * @param onlyInMatch: only perform the actions on people still in the arena match
      */
-    public static void transition(Match am, CompetitionState transition, Collection<ArenaTeam> teams, boolean onlyInMatch){
+    public static void transition(PlayerHolder am, CompetitionState transition, Collection<ArenaTeam> teams, boolean onlyInMatch){
         if (teams == null)
             return;
         boolean first = true;
@@ -187,7 +188,7 @@ public class PerformTransition {
             if (mo.getDisguiseAllAs() != null) {DisguiseInterface.disguisePlayer(p, mo.getDisguiseAllAs());}
             if (mo.getMoney() != null) {MoneyController.add(player.getName(), mo.getMoney());}
             if (mo.hasOption(TransitionOption.POOLMONEY) && am instanceof Match) {
-                prizeMoney = ((Match)am).prizePoolMoney * mo.getDouble(TransitionOption.POOLMONEY) /
+                prizeMoney = ((Match)am).getPrizePoolMoney() * mo.getDouble(TransitionOption.POOLMONEY) /
                         team.size();
                 if (prizeMoney >= 0){
                     MoneyController.add(player.getName(), prizeMoney);

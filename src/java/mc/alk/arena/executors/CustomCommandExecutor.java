@@ -21,6 +21,7 @@ import mc.alk.arena.objects.options.AlterParamOption;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.ParamAlterOptionPair;
 import mc.alk.arena.objects.pairs.TransitionOptionTuple;
+import mc.alk.arena.objects.spawns.SpawnIndex;
 import mc.alk.arena.objects.teams.TeamIndex;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.ServerUtil;
@@ -80,6 +81,8 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
             return "<GameStage> <Option> [value]";
         } else if (TeamIndex.class == clazz){
             return "<team>";
+        } else if (SpawnIndex.class == clazz){
+            return "<team> [spawn #]";
         } else if (MatchParams.class == clazz){
             return "";
         } else if (EventParams.class == clazz){
@@ -117,9 +120,25 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
             return verifyArenaOptionPair(sender, args, curIndex, numUsedStrings);
         } else if (TeamIndex.class == clazz){
             return verifyTeamIndex(string);
+        } else if (SpawnIndex.class == clazz){
+            return verifySpawnIndex(args, curIndex, numUsedStrings);
         }
-
         return super.verifyArg(sender, clazz, command, args, curIndex, numUsedStrings);
+    }
+
+    private SpawnIndex verifySpawnIndex(String[] args, int curIndex, AtomicInteger numUsedStrings) {
+        Integer ti = TeamUtil.getFromHumanTeamIndex(args[curIndex]);
+        if (ti == null) {
+            throw new IllegalArgumentException(ChatColor.RED + "SpawnIndex for team &6" + args[curIndex] + "&c isn't valid");
+        }
+        if (args.length > curIndex+1){
+            Integer ti2 = TeamUtil.getFromHumanTeamIndex(args[curIndex+1]);
+            if (ti2 !=null) {
+                numUsedStrings.set(2);
+                return new SpawnIndex(ti, ti2);
+            }
+        }
+        return new SpawnIndex(ti);
     }
 
     private TeamIndex verifyTeamIndex(String string) {

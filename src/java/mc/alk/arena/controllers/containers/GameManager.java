@@ -2,7 +2,7 @@ package mc.alk.arena.controllers.containers;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.match.PerformTransition;
+import mc.alk.arena.competition.TransitionController;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
@@ -78,13 +78,13 @@ public class GameManager implements PlayerHolder{
 		if (handled.contains(event.getPlayer()) && !event.isHandledQuit()){
 			ArenaPlayer player = event.getPlayer();
 			ArenaTeam t = getTeam(player);
-			PerformTransition.transition(this, MatchState.ONCANCEL, player, t, false);
+			TransitionController.transition(this, MatchState.ONCANCEL, player, t, false);
 		}
 	}
 
 	private void quitting(ArenaPlayer player){
 		if (handled.remove(player)){
-			PerformTransition.transition(this, MatchState.ONLEAVE, player, null, false);
+			TransitionController.transition(this, MatchState.ONLEAVE, player, null, false);
 			updateBukkitEvents(MatchState.ONLEAVE, player);
 			player.reset(); /// reset their isReady status, chosen class, etc.
 		}
@@ -94,7 +94,7 @@ public class GameManager implements PlayerHolder{
 		List<ArenaPlayer> col = new ArrayList<ArenaPlayer>(handled);
 		for (ArenaPlayer player: col){
 			ArenaTeam t = getTeam(player);
-			PerformTransition.transition(this, MatchState.ONCANCEL, player, t, false);
+			TransitionController.transition(this, MatchState.ONCANCEL, player, t, false);
 		}
 	}
 
@@ -146,7 +146,7 @@ public class GameManager implements PlayerHolder{
 	@Override
 	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
 		if (handled.add(player)){
-			PerformTransition.transition(this, MatchState.ONENTER, player, null, false);
+			TransitionController.transition(this, MatchState.ONENTER, player, null, false);
 			updateBukkitEvents(MatchState.ONENTER, player);
 			if (EssentialsController.enabled())
 				BAPlayerListener.setBackLocation(player.getName(),

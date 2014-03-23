@@ -37,7 +37,7 @@ public class ArenaParams {
 
     StateGraph stateGraph;
     StateGraph mergedStateGraph;
-    String dbName;
+    String tableName;
 
     ArenaParams parent;
     MinMax nTeams;
@@ -72,7 +72,7 @@ public class ArenaParams {
         this.timeBetweenRounds = ap.timeBetweenRounds;
         this.secondsTillMatch = ap.secondsTillMatch;
         this.secondsToLoot = ap.secondsToLoot;
-        this.dbName = ap.dbName;
+        this.tableName = ap.tableName;
         this.closeWaitroomWhileRunning = ap.closeWaitroomWhileRunning;
         this.cancelIfNotEnoughPlayers= ap.cancelIfNotEnoughPlayers;
         this.arenaCooldown = ap.arenaCooldown;
@@ -106,7 +106,7 @@ public class ArenaParams {
         if (this.matchTime == null) this.matchTime = parent.getMatchTime();
         if (this.forceStartTime == null) this.forceStartTime = parent.getForceStartTime();
         if (this.secondsToLoot == null) this.secondsToLoot = parent.getSecondsToLoot();
-        if (this.dbName == null) this.dbName = parent.getDBName();
+        if (this.tableName == null) this.tableName = parent.getDBTableName();
         if (this.nLives == null) this.nLives = parent.getNLives();
         if (this.removePlayersOnLeave == null) this.removePlayersOnLeave = parent.getRemovePlayersOnLeave();
         if (this.closeWaitroomWhileRunning == null)
@@ -287,12 +287,12 @@ public class ArenaParams {
                 (parent != null ? parent.getTimeBetweenRounds() : null);
     }
 
-    public void setDBName(String dbName) {
-        this.dbName = dbName;
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
-    public String getDBName(){
-        return dbName != null ? dbName :
-                (parent != null ? parent.getDBName() : null);
+    public String getDBTableName(){
+        return tableName != null ? tableName :
+                (parent != null ? parent.getDBTableName() : null);
     }
 
     public String getName() {

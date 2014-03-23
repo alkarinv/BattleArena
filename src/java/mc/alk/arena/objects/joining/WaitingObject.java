@@ -4,10 +4,12 @@ import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.options.TransitionOption;
 
 import java.util.Collection;
 
@@ -80,5 +82,14 @@ public boolean matches(QueueObject qo) {
 
     public String toString() {
         return "[WO " + (arena != null ? arena.getName() : "") + params.getDisplayName() + "]";
+    }
+
+    public boolean createsOnJoin() {
+        Arena a = originalQueuedObject.getArena();
+        if (a != null) {
+            return a.getParams().hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN) ||
+                    params.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN);
+        }
+        return params.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTIN);
     }
 }

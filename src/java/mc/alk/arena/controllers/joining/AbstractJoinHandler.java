@@ -116,7 +116,9 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     public void transferOldScoreboards(SScoreboard newScoreboard){
         if (scoreboard == null)
             return;
-        SAPIFactory.transferOldScoreboards(scoreboard.getScoreboard(), newScoreboard);
+        SAPIFactory.transferOldScoreboards(
+                scoreboard.getScoreboard()!=null ? scoreboard.getScoreboard().getBScoreboard() : scoreboard.getScoreboard()
+                , newScoreboard);
     }
 
     protected ArenaTeam addToPreviouslyLeftTeam(ArenaPlayer player) {

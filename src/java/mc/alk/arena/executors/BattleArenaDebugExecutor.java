@@ -350,12 +350,12 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
         return sendMessage(sender,"&2Player's exp set to " + exp );
     }
 
-    @MCCommand(cmds={"tp"}, admin=true)
+    @MCCommand(cmds={"tp"}, admin=true, order=337)
     public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, SpawnIndex index) {
         return teleportToSpawn(sender,arena,LocationType.ARENA, index);
     }
 
-    @MCCommand(cmds={"tp"}, admin=true)
+    @MCCommand(cmds={"tp"}, admin=true, order=338)
     public boolean teleportToSpawn(ArenaPlayer sender, Arena arena, String type, SpawnIndex index) {
         try{
             return teleportToSpawn(sender,arena,LocationType.valueOf(type.toUpperCase()), index);
@@ -393,9 +393,10 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
                 break;
         }
         if (loc ==null){
-            return sendMessage(sender,"&2Spawn " + index.teamIndex +" "+ index.spawnIndex +"doesn't exist for " + type);}
+            return sendMessage(sender,"&2Spawn " + (index.teamIndex +1)+" "+ (index.spawnIndex+1) +" doesn't exist for " +
+                    (arena !=null ? arena.getName() : "") + " " + type);}
         TeleportController.teleport(sender, loc.getLocation());
-        return sendMessage(sender,"&2Teleported to &6"+ type +" " + index.teamIndex+" "+index.spawnIndex +" &2loc=&6"+
+        return sendMessage(sender,"&2Teleported to &6"+ type +" " + (index.teamIndex+1)+" "+(index.spawnIndex+1) +" &2loc=&6"+
                 SerializerUtil.getBlockLocString(loc.getLocation()));
     }
 

@@ -294,14 +294,15 @@ public class ConfigSerializer extends BaseConfig{
     }
 
 
-    private static void loadBTOptions(ConfigurationSection cs, MatchParams mp, boolean isArena) throws ConfigException {
+    private static void loadBTOptions(ConfigurationSection cs, MatchParams mp, boolean isNonBaseConfig) throws ConfigException {
         if (cs.contains("tracking")){
             cs = cs.getConfigurationSection("tracking");}
 
         /// TeamJoinResult in tracking for this match type
         String dbName = (cs.contains("database")) ? cs.getString("database",null) : cs.getString("db",null);
+        if (dbName == null) cs.getString("dbTableName", null);
         if (dbName != null){
-            mp.setDBName(dbName);
+            mp.setTableName(dbName);
             if (StatController.enabled()){
                 try{
                     if (!BTInterface.addBTI(mp)){
@@ -316,7 +317,7 @@ public class ConfigSerializer extends BaseConfig{
         } else {
             mp.setUseTrackerPvP(cs.getBoolean("useTrackerPvP", false));
         }
-        if (!isArena || cs.contains("useTrackerMessages"))
+        if (!isNonBaseConfig || cs.contains("useTrackerMessages"))
             mp.setUseTrackerMessages(cs.getBoolean("useTrackerMessages", false));
         if (cs.contains("teamRating")){
             mp.setTeamRating(cs.getBoolean("teamRating",false));}
@@ -672,12 +673,12 @@ public class ConfigSerializer extends BaseConfig{
      * so for now, its a variable
      * @param params MatchParams
      * @param maincs ConfigurationSection to use
-     * @param isArena isArena
+     * @param isNonBaseConfig isNonBaseConfig
      */
-    public static void saveParams(MatchParams params, ConfigurationSection maincs, boolean isArena){
+    public static void saveParams(MatchParams params, ConfigurationSection maincs, boolean isNonBaseConfig){
         ArenaParams parent = params.getParent();
         params.setParent(null); /// set the parent to null so we aren't grabbing options from the parent
-        if (!isArena){
+        if (!isNonBaseConfig){
             maincs.set("name", params.getName());
             maincs.set("command", params.getCommand());
         }
@@ -706,14 +707,14 @@ public class ConfigSerializer extends BaseConfig{
             if (params.getIntervalTime() != null) cs.set("matchUpdateInterval", params.getIntervalTime());
         }
         if (params.isRated() != null ||
-                params.getDBName() != null || params.getUseTrackerMessages() != null) {
+                params.getDBTableName() != null || params.getUseTrackerMessages() != null) {
             ConfigurationSection cs = maincs.createSection("tracking");
-            if (params.getDBName() != null) cs.set("database", params.getDBName());
+            if (params.getDBTableName() != null) cs.set("dbTableName", params.getDBTableName());
             if (params.isRated() != null) cs.set("rated", params.isRated());
             if (params.getUseTrackerMessages() != null) cs.set("useTrackerMessages", params.getUseTrackerMessages());
         }
 
-        if (!isArena && params.getType() != null){
+        if (!isNonBaseConfig && params.getType() != null){
             maincs.set("arenaType", params.getType().getName());
             try{
                 maincs.set("arenaClass", ArenaType.getArenaClass(params.getType()).getSimpleName());

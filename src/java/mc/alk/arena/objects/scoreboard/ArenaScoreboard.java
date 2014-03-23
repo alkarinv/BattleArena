@@ -251,4 +251,7 @@ public class ArenaScoreboard implements SScoreboard {
         objective.setPoints(player, points);
     }
 
+    public SScoreboard getBScoreboard() {
+        return null;
+    }
 }

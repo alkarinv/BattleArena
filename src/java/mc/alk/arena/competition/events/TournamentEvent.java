@@ -3,7 +3,7 @@ package mc.alk.arena.competition.events;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.competition.match.PerformTransition;
+import mc.alk.arena.competition.TransitionController;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.StatController;
@@ -154,7 +154,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
         startRound();
     }
 
-    @ArenaEventHandler(begin = MatchState.ONCREATE, end = MatchState.ONOPEN)
+    @ArenaEventHandler(end = MatchState.ONOPEN)
     public void onMatchCreatedEvent(MatchCreatedEvent event) {
         Matchup matchup = (((MatchTeamQObject) event.getOriginalObject().getOriginalQueuedObject()).getMatchup());
         matchups.put(event.getMatch(), matchup);
@@ -214,8 +214,8 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
                 CompetitionResult result = new MatchResult();
                 result.setVictors(victors);
                 setEventResult(result,true);
-                PerformTransition.transition(am, MatchState.FIRSTPLACE, victors,false);
-                PerformTransition.transition(am, MatchState.PARTICIPANTS, losers,false);
+                TransitionController.transition(am, MatchState.FIRSTPLACE, victors, false);
+                TransitionController.transition(am, MatchState.PARTICIPANTS, losers, false);
                 eventCompleted();
             } else {
                 callEvent(new TournamentRoundEvent(this, curRound));
@@ -525,6 +525,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
      * Show Results from the previous Event
      * @return result
      */
+    @Override
     public String getResultString() {
         StringBuilder sb = new StringBuilder();
         if (rounds.isEmpty()){

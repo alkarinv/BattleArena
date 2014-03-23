@@ -51,13 +51,13 @@ public class BTInterface {
 	public static TrackerInterface getInterface(MatchParams sq){
 		if (sq == null)
 			return null;
-		final String db = sq.getDBName();
+		final String db = sq.getDBTableName();
 		return db == null ? null : btis.get(db);
 	}
 	public static boolean hasInterface(MatchParams mp){
 		if (mp == null)
 			return false;
-		final String db = mp.getDBName();
+		final String db = mp.getDBTableName();
 		return db != null && btis.containsKey(db);
 	}
 
@@ -110,7 +110,7 @@ public class BTInterface {
 	public static boolean addBTI(MatchParams pi) {
 		if (battleTracker == null)
 			return false;
-		final String dbName = pi.getDBName();
+		final String dbName = pi.getDBTableName();
 		if (Defaults.DEBUG) Log.info("adding BTI for " + pi +"  " + dbName);
 		TrackerInterface bti = btis.get(dbName);
 		if (bti == null){

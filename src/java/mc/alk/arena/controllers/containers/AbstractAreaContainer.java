@@ -2,7 +2,7 @@ package mc.alk.arena.controllers.containers;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.match.PerformTransition;
+import mc.alk.arena.competition.TransitionController;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
@@ -137,9 +137,9 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
     protected void doTransition(MatchState state, ArenaPlayer player, ArenaTeam team, boolean onlyInMatch){
         if (player != null){
-            PerformTransition.transition(this, state, player,team, onlyInMatch);
+            TransitionController.transition(this, state, player, team, onlyInMatch);
         } else {
-            PerformTransition.transition(this, state, team, onlyInMatch);
+            TransitionController.transition(this, state, team, onlyInMatch);
         }
     }
 

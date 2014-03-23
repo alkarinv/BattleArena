@@ -115,6 +115,24 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
         }
     }
 
+    /**
+     * Add an arena listener for this competition
+     * @param arenaListener ArenaListener
+     */
+    @Override
+    public void addArenaListener(ArenaListener arenaListener){
+        methodController.addListener(arenaListener);
+    }
+
+    /**
+     * Remove an arena listener for this competition
+     * @param arenaListener ArenaListener
+     */
+    @Override
+    public boolean removeArenaListener(ArenaListener arenaListener){
+        return methodController.removeListener(arenaListener);
+    }
+
     public void startEvent() {
         List<ArenaTeam> improper = joinHandler.removeImproperTeams();
         for (ArenaTeam t: improper){

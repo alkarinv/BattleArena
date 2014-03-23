@@ -2,7 +2,7 @@ package mc.alk.arena.objects.arenas;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.competition.match.PerformTransition;
+import mc.alk.arena.competition.TransitionController;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.SpawnController;
@@ -862,7 +862,7 @@ public class Arena extends AreaContainer {
      * @param player the player to perform the transition on
      */
     protected void performTransition(CompetitionTransition transition, ArenaPlayer player) {
-        PerformTransition.transition((match != null ? match : this), transition, player, player.getTeam(), false);
+        TransitionController.transition((match != null ? match : this), transition, player, player.getTeam(), false);
     }
 
     /**
@@ -871,6 +871,6 @@ public class Arena extends AreaContainer {
      * @param team the team to perform the transition on
      */
     protected void performTransition(CompetitionTransition transition, ArenaTeam team) {
-        PerformTransition.transition((match != null ? match : this), transition, team, false);
+        TransitionController.transition((match != null ? match : this), transition, team, false);
     }
 }

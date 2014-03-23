@@ -21,7 +21,9 @@ public enum AlterParamOption {
     COMMAND("command",true, false),
     SIGNDISPLAYNAME("signDisplayName",true, false),
     DISPLAYNAME("displayName",true, false),
+    DATABASE("db",true, false),
     RATED("rated",true, false),
+    USETRACKERMESSAGES("useTrackerMessages",true, false),
     GIVEITEMS("giveItems",true, false),
     ALLOWEDTEAMSIZEDIFFERENCE("allowedTeamSizeDifference",true,false),
     CLOSEWAITROOMWHILERUNNING("closeWaitroomWhileRunning", true,false),
@@ -60,6 +62,8 @@ public enum AlterParamOption {
                 return AlterParamOption.VICTORYTIME;
             if (str.equalsIgnoreCase("items"))
                 return AlterParamOption.GIVEITEMS;
+            if (str.equalsIgnoreCase("db") || str.equalsIgnoreCase("dbTableName"))
+                return AlterParamOption.DATABASE;
             if (str.equalsIgnoreCase("waitroomClosedWhileRunning"))
                 return AlterParamOption.CLOSEWAITROOMWHILERUNNING;
             if (str.equalsIgnoreCase("nConcurrentCompetitions"))
@@ -87,6 +91,7 @@ public enum AlterParamOption {
                 return ConfigSerializer.toNonNegativeSize(value, 1);
             case PREFIX:
             case COMMAND:
+            case DATABASE:
             case DISPLAYNAME:
             case SIGNDISPLAYNAME:
                 return value;
@@ -97,6 +102,7 @@ public enum AlterParamOption {
             case CANCELIFNOTENOUGHPLAYERS:
             case CLOSEWAITROOMWHILERUNNING:
             case RATED:
+            case USETRACKERMESSAGES:
                 return Boolean.valueOf(value);
             default:
                 break;

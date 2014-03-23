@@ -7,6 +7,7 @@ import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.joining.JoinResponseHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -129,23 +130,18 @@ public abstract class Competition implements JoinResponseHandler, PlayerHolder, 
 			addArenaListener(tl);}
 	}
 
-	/**
-	 * Add an arena listener for this competition
-	 * @param arenaListener ArenaListener
-	 */
-	@Override
-    public void addArenaListener(ArenaListener arenaListener){
-		methodController.addListener(arenaListener);
-	}
+    protected void performTransition(MatchState state, ArenaPlayer player,
+                                     ArenaTeam team, boolean onlyInMatch){
+        TransitionController.transition(this, state, player, team, onlyInMatch);
+    }
 
-	/**
-	 * Remove an arena listener for this competition
-	 * @param arenaListener ArenaListener
-	 */
-	@Override
-    public boolean removeArenaListener(ArenaListener arenaListener){
-		return methodController.removeListener(arenaListener);
-	}
+    protected void performTransition(MatchState state, ArenaTeam team, boolean onlyInMatch){
+        TransitionController.transition(this, state, team, onlyInMatch);
+    }
+
+    protected void performTransition(MatchState state, Collection<ArenaTeam> teams, boolean onlyInMatch){
+        TransitionController.transition(this, state, teams, onlyInMatch);
+    }
 
 	/**
 	 * Get the team that this player is inside of

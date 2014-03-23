@@ -29,6 +29,7 @@ import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.pairs.JoinResult;
+import mc.alk.arena.objects.pairs.JoinResult.JoinStatus;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.CommandUtil;
 import mc.alk.arena.util.Countdown;
@@ -280,7 +281,8 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
                 /// find an arena for these teams
                 Arena arena = reserveNextArena(o.getParams(), qo.getJoinOptions());
                 if (arena == null){  /// No arena found
-                    break;}
+                    break;
+                }
                 /// create the match
                 mf = createFoundMatch(jr, o, arena);
                 iter.remove();
@@ -292,9 +294,23 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
                 try {
                     o = new WaitingObject(qo);
                     o.join(qo);
-                    entered = true;
-                    joinHandlers.add(o);
-                    jr.status = JoinResult.JoinStatus.ADDED_TO_QUEUE;
+//                    if (o.createsOnJoin()){
+                    if (false){
+                        /// find an arena for these teams
+                        Arena arena = reserveNextArena(o.getParams(), qo.getJoinOptions());
+                        if (arena == null){  /// No arena found
+                            jr.status = JoinStatus.NOT_OPEN;
+                            return jr;
+                        }
+                        mf = createFoundMatch(jr, o, arena);
+                        entered = true;
+                        joinHandlers.add(o);
+                        mf.startMatch();
+                    } else {
+                        entered = true;
+                        joinHandlers.add(o);
+                        jr.status = JoinResult.JoinStatus.ADDED_TO_QUEUE;
+                    }
                 } catch (NeverWouldJoinException e) {
                     e.printStackTrace();
                 }

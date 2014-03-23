@@ -107,7 +107,10 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         @Override
         public void run() {
             openMatch(match);
-            match.run();
+//            if (match.getTeamJoinHandler() == null ||
+//                    match.getTeamJoinHandler().hasEnough(match.getParams().getAllowedTeamSizeDifference())) {
+                match.run();
+//            }
         }
     }
 
@@ -119,7 +122,6 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
             @Override
             public void run() {
                 openMatch(arenaMatch);
-//                amq.fillMatch(arenaMatch);
             }
         });
         return arenaMatch;
@@ -317,6 +319,9 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
             case ERROR:
             case ADDED_TO_EXISTING_MATCH:
             case STARTED_NEW_GAME:
+                return jr;
+            case NOTOPEN:
+            case CANT_FIT:
                 return jr;
             default:
                 break;

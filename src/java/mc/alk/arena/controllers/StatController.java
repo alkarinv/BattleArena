@@ -74,7 +74,7 @@ public class StatController {
 
 	public static ArenaStat loadRecord(MatchParams mp, ArenaTeam t) {
 		if (!enabled || mp == null) return BLANK_STAT;
-		return BTInterface.loadRecord(mp.getDBName(),t);
+		return BTInterface.loadRecord(mp.getDBTableName(),t);
 	}
 
 	public ArenaStat loadRecord(ArenaPlayer ap) {
@@ -83,7 +83,7 @@ public class StatController {
 
 	public static ArenaStat loadRecord(MatchParams mp, ArenaPlayer ap) {
 		if (!enabled) return BLANK_STAT;
-		return BTInterface.loadRecord(mp.getDBName(),ap);
+		return BTInterface.loadRecord(mp.getDBTableName(),ap);
 	}
 
 	public void resetStats() {
