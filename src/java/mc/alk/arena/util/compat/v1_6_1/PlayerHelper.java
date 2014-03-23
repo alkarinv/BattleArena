@@ -48,4 +48,5 @@ public class PlayerHelper implements IPlayerHelper{
 		return player.getMaxHealth();
 	}
 
+
 }

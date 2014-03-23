@@ -2,6 +2,7 @@ package mc.alk.arena.objects.spawns;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.util.SerializerUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -60,7 +61,7 @@ public class TimedSpawn implements Spawnable{
         sg.spawn();
         if (timeToDespawn > 0){
             if (despawnTimer != null)
-                despawnTimer.cancel();
+                Bukkit.getScheduler().cancelTask(despawnTimer.getTaskId());
             despawnTimer = new BukkitRunnable() {
                 @Override
                 public void run() {

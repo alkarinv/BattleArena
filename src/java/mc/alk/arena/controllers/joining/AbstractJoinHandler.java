@@ -15,6 +15,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamHandler;
 import mc.alk.arena.util.Log;
+import mc.alk.scoreboardapi.api.SAPI;
 import mc.alk.scoreboardapi.api.SAPIFactory;
 import mc.alk.scoreboardapi.api.SScoreboard;
 
@@ -76,7 +77,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         this.maxTeams = params.getMaxTeams();
 
         setCompetition(competition);
-        if (Defaults.USE_SCOREBOARD)
+        if (Defaults.USE_SCOREBOARD && SAPI.hasBukkitScoreboard())
             initWaitingScoreboard();
     }
 

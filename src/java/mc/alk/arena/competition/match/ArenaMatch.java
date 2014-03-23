@@ -258,7 +258,7 @@ public class ArenaMatch extends Match {
                             Bukkit.getScheduler().cancelTask(id);
                             SpawnLocation loc = getTeamSpawn(index, tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
                             TeleportController.teleport(p.getPlayer(), loc.getLocation());
-                            if (scoreboard != null && p.getPlayer().getScoreboard()!=null) {
+                            if (scoreboard != null && !scoreboard.hasThisScoreboard(p.getPlayer())) {
                                 scoreboard.setScoreboard(p.getPlayer());
                             }
 

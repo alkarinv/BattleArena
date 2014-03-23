@@ -185,6 +185,11 @@ public class ArenaScoreboard implements SScoreboard {
         return BattleArena.getSelf();
     }
 
+    @Override
+    public boolean hasThisScoreboard(Player player) {
+        return board.hasThisScoreboard(player);
+    }
+
     public boolean setEntryNameSuffix(ArenaPlayer player, String name) {
         return board.setEntryNameSuffix(player.getName(), name);
     }
