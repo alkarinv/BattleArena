@@ -134,7 +134,16 @@ public class StateGraph {
         return hasOptionAt((CompetitionState) state, option);
     }
 
-	public boolean hasOptionIn(MatchState beginState, MatchState endState, StateOption option) {
+    /**
+     *      * Use the newer more generic
+     * public boolean hasOptionAt(CompetitionState state, StateOption option) {
+     */
+    @Deprecated
+    public boolean hasOptionAt(MatchState state, TransitionOption option) {
+        return hasOptionAt((CompetitionState) state, option);
+    }
+
+    public boolean hasOptionIn(MatchState beginState, MatchState endState, StateOption option) {
 		List<MatchState> states = MatchState.getStates(beginState, endState);
 		for (MatchState state : states){
 			StateOptions tops = ops.get(state);
