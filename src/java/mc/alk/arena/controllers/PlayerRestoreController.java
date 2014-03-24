@@ -10,6 +10,7 @@ import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
+import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.Util;
 import org.bukkit.Bukkit;
@@ -234,7 +235,7 @@ public class PlayerRestoreController {
             public void run() {
                 Player pl = ServerUtil.findPlayerExact(name);
                 if (pl != null){
-                    PlayerStoreController.setGameMode(pl, gm);}
+                    PlayerUtil.setGameMode(pl, gm);}
             }
         });
     }

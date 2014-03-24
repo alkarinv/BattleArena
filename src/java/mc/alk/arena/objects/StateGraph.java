@@ -117,6 +117,12 @@ public class StateGraph {
 		return tops == null ? hasOptionAt(MatchState.INARENA,option) : tops.hasOption(option);
 	}
 
+    /**
+     * Return whether the given state is found with the given option
+     * @param state CompetitionState
+     * @param option StateOption
+     * @return true or false
+     */
 	public boolean hasOptionAt(CompetitionState state, StateOption option) {
 		StateOptions tops = ops.get(state);
 		return tops != null && tops.hasOption(option);

@@ -1,171 +1,122 @@
 package mc.alk.arena.controllers;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.PlayerSave;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
-import mc.alk.arena.serializers.InventorySerializer;
 import mc.alk.arena.util.EffectUtil;
-import mc.alk.arena.util.ExpUtil;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
-import mc.alk.arena.util.PermissionsUtil;
-import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
 public class PlayerStoreController {
     static final PlayerStoreController INSTANCE = new PlayerStoreController();
-    /// TODO since the number of things I am storing is so large now, this might be a good time to refactor these
-    /// into something a bit cleaner
-    final HashMap <String, Integer> expmap = new HashMap<String,Integer>();
-    final HashMap <String, Double> healthmap = new HashMap<String,Double>();
-    final HashMap <String, Integer> healthpmap = new HashMap<String,Integer>();
-    final HashMap <String, Integer> hungermap = new HashMap<String,Integer>();
-    final HashMap <String, Integer> magicmap = new HashMap<String,Integer>();
-    final HashMap <String, Integer> magicpmap = new HashMap<String,Integer>();
-    final HashMap <String, PInv> itemmap = new HashMap<String,PInv>();
-    final HashMap <String, PInv> matchitemmap = new HashMap<String,PInv>();
-    final HashMap <String, GameMode> gamemode = new HashMap<String,GameMode>();
-    final HashMap <String, Collection<PotionEffect>> effects = new HashMap<String,Collection<PotionEffect>>();
-    final HashMap <String, Boolean> godmode = new HashMap<String,Boolean>();
-    final HashMap <String, Boolean> flight = new HashMap<String,Boolean>();
-    final HashMap <String, String> arenaclass = new HashMap<String,String>();
-    final HashMap <String, String> oldTeam = new HashMap<String,String>();
 
-    @SuppressWarnings("deprecation")
+    final HashMap<String, PlayerSave> saves = new HashMap<String, PlayerSave>();
+
+    private PlayerSave getOrCreateSave(final ArenaPlayer player) {
+        PlayerSave save = saves.get(player.getName());
+        if (save !=null)
+            return save;
+        save = new PlayerSave(player);
+        saves.put(player.getName(), save);
+        return save;
+    }
+
+    private PlayerSave getSave(final ArenaPlayer player) {
+        return saves.get(player.getName());
+    }
+    private static boolean restoreable(ArenaPlayer p) {
+        return (p.isOnline() && !p.isDead());
+    }
+
     public void storeExperience(ArenaPlayer player) {
-        Player p = player.getPlayer();
-        int exp = ExpUtil.getTotalExperience(p);
-        final String name = p.getName();
-        if (exp == 0)
-            return;
-        if (expmap.containsKey(name)){
-            exp += expmap.get(name);}
-        expmap.put(name, exp);
-        ExpUtil.setTotalExperience(p, 0);
-        try{p.updateInventory();} catch(Exception e){/* do nothing */}
+        getOrCreateSave(player).storeExperience();
     }
 
     public void restoreExperience(ArenaPlayer p) {
-        if (!expmap.containsKey(p.getName()))
+        PlayerSave save = getSave(p);
+        if (save == null || save.getExp()==null)
             return;
-        Integer exp = expmap.remove(p.getName());
-        if (p.isOnline() && !p.isDead()){
-            ExpUtil.setTotalExperience(p.getPlayer(), exp);
+        if (restoreable(p)){
+            save.restoreExperience();
         } else {
-            BAPlayerListener.restoreExpOnReenter(p.getName(), exp);
+            BAPlayerListener.restoreExpOnReenter(p.getName(), save.removeExperience());
         }
     }
 
     public void storeHealth(ArenaPlayer player) {
-        if (healthmap.containsKey(player.getName()))
-            return;
-        double health = player.getHealth();
-        if (Defaults.DEBUG_STORAGE) Log.info("storing health=" + health+" for player=" + player.getName());
-        healthmap.put(player.getName(), health);
+        getOrCreateSave(player).storeHealth();
     }
 
     public void restoreHealth(ArenaPlayer p) {
-        if (!healthmap.containsKey(p.getName()))
+        PlayerSave save = getSave(p);
+        if (save == null || save.getHealth()==null)
             return;
-        Double val = healthmap.remove(p.getName());
-        if (val == null || val <= 0)
-            return;
-        if (Defaults.DEBUG_STORAGE) Log.info("restoring health=" + val+" for player=" + p.getName());
-        if (p.isOnline() && !p.isDead()){
-            p.setHealth(val);
+        if (restoreable(p)){
+            save.restoreHealth();
         } else {
-            BAPlayerListener.restoreHealthOnReenter(p.getName(), val);
+            BAPlayerListener.restoreHealthOnReenter(p.getName(), save.removeHealth());
         }
     }
 
     public void storeHunger(ArenaPlayer player) {
-        if (hungermap.containsKey(player.getName()))
-            return;
-
-        hungermap.put(player.getName(), player.getFoodLevel());
+        getOrCreateSave(player).storeHunger();
     }
 
     public void restoreHunger(ArenaPlayer p) {
-        if (!hungermap.containsKey(p.getName()))
+        PlayerSave save = getSave(p);
+        if (save == null || save.getHunger()==null)
             return;
-        Integer val = hungermap.remove(p.getName());
-        if (val == null || val <= 0)
-            return;
-        if (p.isOnline() && !p.isDead()){
-            p.getPlayer().setFoodLevel(val);
+        if (restoreable(p)){
+            save.restoreHunger();
         } else {
-            BAPlayerListener.restoreHungerOnReenter(p.getName(), val);
+            BAPlayerListener.restoreHungerOnReenter(p.getName(), save.removeHunger());
         }
     }
 
     public void storeEffects(ArenaPlayer player) {
-        if (effects.containsKey(player.getName()))
-            return;
-        Collection<PotionEffect> c = player.getPlayer().getActivePotionEffects();
-        if (c == null || c.isEmpty())
-            return;
-        effects.put(player.getName(), c);
+        getOrCreateSave(player).storeEffects();
     }
 
     public void restoreEffects(ArenaPlayer p) {
-        if (!effects.containsKey(p.getName()))
+        PlayerSave save = getSave(p);
+        if (save == null || save.getEffects()==null)
             return;
-        Collection<PotionEffect> c = effects.remove(p.getName());
-        if (p.isOnline() && !p.isDead()) {
-            EffectUtil.enchantPlayer(p.getPlayer(), c);
+        if (restoreable(p)){
+            save.restoreEffects();
         } else {
-            BAPlayerListener.restoreEffectsOnReenter(p.getName(), c);
+            BAPlayerListener.restoreEffectsOnReenter(p.getName(), save.removeEffects());
         }
     }
 
 
     public void storeMagic(ArenaPlayer player) {
-        if (!HeroesController.enabled())
-            return;
-        final String name = player.getName();
-        if (magicmap.containsKey(name))
-            return;
-
-        Integer val = HeroesController.getMagicLevel(player.getPlayer());
-        if (val == null)
-            return;
-        magicmap.put(name, val);
+        getOrCreateSave(player).storeMagic();
     }
 
     public void restoreMagic(ArenaPlayer p) {
-        if (!magicmap.containsKey(p.getName()))
+        PlayerSave save = getSave(p);
+        if (save == null || save.getMagic()==null)
             return;
-        Integer val = magicmap.remove(p.getName());
-        if (val == null)
-            return;
-        if (p.isOnline() && !p.isDead()){
-            HeroesController.setMagicLevel(p.getPlayer(), val);
+        if (restoreable(p)){
+            save.restoreMagic();
         } else {
-            BAPlayerListener.restoreMagicOnReenter(p.getName(), val);
+            BAPlayerListener.restoreMagicOnReenter(p.getName(), save.removeMagic());
         }
     }
 
 
     public void storeItems(ArenaPlayer player) {
-        final String name= player.getName();
-        if (Defaults.DEBUG_STORAGE) Log.info("storing items for = " + name +" contains=" + itemmap.containsKey(name));
-        if (itemmap.containsKey(name))
-            return;
-        InventoryUtil.closeInventory(player.getPlayer());
-        final PInv pinv = new PInv(player.getInventory());
-        itemmap.put(name, pinv);
-        InventorySerializer.saveInventory(name,pinv);
+        getOrCreateSave(player).storeItems();
     }
 
     /**
@@ -174,37 +125,39 @@ public class PlayerStoreController {
      * @param player ArenaPlayer
      */
     public void storeMatchItems(ArenaPlayer player) {
-        final String name= player.getName();
-        if (Defaults.DEBUG_STORAGE) Log.info("storing in match items for = " + name +" contains=" + matchitemmap.containsKey(name));
-        InventoryUtil.closeInventory(player.getPlayer());
-        final PInv pinv = new PInv(player.getInventory());
-        if (matchitemmap.put(name, pinv) != null){
-            /// on the first entry, lets log that to disk
-            InventorySerializer.saveInventory(name,pinv);
-        }
-        BAPlayerListener.restoreMatchItemsOnReenter(name, pinv);
+        getOrCreateSave(player).storeMatchItems();
     }
 
-    public void clearMatchItems(ArenaPlayer player) {
-        final String name= player.getName();
-        matchitemmap.remove(name);
-        BAPlayerListener.removeMatchItems(name);
+    public void clearMatchItems(ArenaPlayer p) {
+        PlayerSave save = getSave(p);
+        if (save == null || save.getMatchItems()==null)
+            return;
+        if (restoreable(p)){
+            save.removeMatchItems();
+        }
     }
 
     public void restoreItems(ArenaPlayer p) {
-        if (Defaults.DEBUG_STORAGE)  Log.info("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
-        final PInv pinv = itemmap.remove(p.getName());
-        if (pinv == null)
+//        if (Defaults.DEBUG_STORAGE)  Log.info("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
+        PlayerSave save = getSave(p);
+        if (save == null || save.getItems()==null)
             return;
-        setInventory(p, pinv);
+        if (restoreable(p)){
+            save.restoreItems();
+        } else {
+            BAPlayerListener.restoreItemsOnReenter(p.getName(), save.removeItems());
+        }
     }
 
     public void restoreMatchItems(ArenaPlayer p){
-        if (Defaults.DEBUG_STORAGE)  Log.info("   "+p.getName()+" psc matchitemmap=" + matchitemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
-        final PInv pinv = matchitemmap.remove(p.getName());
-        if (pinv == null)
+        PlayerSave save = getSave(p);
+        if (save == null || save.getMatchItems()==null)
             return;
-        setMatchInventory(p, pinv);
+        if (restoreable(p)){
+            save.restoreMatchItems();
+        } else {
+            BAPlayerListener.restoreItemsOnReenter(p.getName(), save.removeMatchItems());
+        }
     }
 
 
@@ -226,55 +179,46 @@ public class PlayerStoreController {
         }
     }
 
-    public void storeGamemode(ArenaPlayer p) {
-        if (gamemode.containsKey(p.getName()))
-            return;
-        if (Defaults.DEBUG_STORAGE)  Log.info("storing gamemode " + p.getName() +" " + p.getPlayer().getGameMode());
-
-        PermissionsUtil.givePlayerInventoryPerms(p);
-        gamemode.put(p.getName(), p.getPlayer().getGameMode());
-    }
-
-    public void storeGodmode(ArenaPlayer p) {
-        if (!EssentialsController.enabled() || godmode.containsKey(p.getName())){
-            return;
-        }
-        if (Defaults.DEBUG_STORAGE)  Log.info("storing godmode " + p.getName() +" " + p.getPlayer().getGameMode());
-        Boolean b = EssentialsController.isGod(p);
-        if (b)
-            godmode.put(p.getName(), true);
+    public void storeFlight(ArenaPlayer p) {
+        getOrCreateSave(p).storeFlight();
     }
 
     public void restoreFlight(ArenaPlayer p) {
-        if (!p.isOnline() || !flight.containsKey(p.getName()))
+        PlayerSave save = getSave(p);
+        if (save == null || save.getFlight()==null)
             return;
-        EssentialsController.setFlight(p.getPlayer(), flight.get(p.getName()));
+        if (restoreable(p)){
+            save.restoreFlight();
+        }
     }
 
-    public void storeFlight(ArenaPlayer p) {
-        if (!EssentialsController.enabled() || flight.containsKey(p.getName())){
-            return;
-        }
-        if (Defaults.DEBUG_STORAGE)  Log.info("storing flight " + p.getName() +" " + p.getPlayer().getGameMode());
-        Boolean b = EssentialsController.isFlying(p);
-        if (b)
-            flight.put(p.getName(), true);
+
+    public void storeGodmode(ArenaPlayer p) {
+        getOrCreateSave(p).storeGodmode();
     }
 
     public void restoreGodmode(ArenaPlayer p) {
-        if (!p.isOnline() || !godmode.containsKey(p.getName()))
+        PlayerSave save = getSave(p);
+        if (save == null || save.getGodmode()==null)
             return;
-        EssentialsController.setGod(p.getPlayer(), godmode.get(p.getName()));
+        if (restoreable(p)){
+            save.restoreGodmode();
+        }
+    }
+
+
+    public void storeGamemode(ArenaPlayer p) {
+        getOrCreateSave(p).storeGamemode();
     }
 
     public void restoreGamemode(ArenaPlayer p) {
-        GameMode gm = gamemode.remove(p.getName());
-        if (gm == null)
+        PlayerSave save = getSave(p);
+        if (save == null || save.getGamemode()==null)
             return;
-        if (!p.isOnline() || p.isDead()){
-            BAPlayerListener.restoreGameModeOnEnter(p.getName(), gm);
+        if (restoreable(p)){
+            save.restoreGamemode();
         } else {
-            setGameMode(p.getPlayer(), gm);
+            BAPlayerListener.restoreGameModeOnEnter(p.getName(), save.removeGamemode());
         }
     }
 
@@ -283,15 +227,6 @@ public class PlayerStoreController {
             InventoryUtil.clearInventory(player.getPlayer());
         }else{
             BAPlayerListener.clearInventoryOnReenter(player.getName());
-        }
-
-    }
-
-    public static void setGameMode(Player p, GameMode gm){
-        if (Defaults.DEBUG_STORAGE)  Log.info("set gamemode " + p.getName() +" " + p.isOnline()+":"+p.isDead() +" gm=" +gm +"  " + p.getGameMode());
-        if (gm != null && gm != p.getGameMode()){
-            PermissionsUtil.givePlayerInventoryPerms(p);
-            p.getPlayer().setGameMode(gm);
         }
     }
 
@@ -319,24 +254,16 @@ public class PlayerStoreController {
     }
 
     public void storeHeroClass(ArenaPlayer player) {
-        if (!HeroesController.enabled())
-            return;
-        final String name = player.getName();
-        if (arenaclass.containsKey(name))
-            return;
-        String heroClass = HeroesController.getHeroClassName(player.getPlayer());
-        if (heroClass == null)
-            return;
-        arenaclass.put(name, heroClass);
+        getOrCreateSave(player).storeArenaClass();
     }
 
     public void restoreHeroClass(ArenaPlayer p) {
-        if (!HeroesController.enabled())
+        PlayerSave save = getSave(p);
+        if (save == null || save.getArenaClass()==null)
             return;
-        String heroClass = arenaclass.remove(p.getName());
-        if (heroClass == null)
-            return;
-        HeroesController.setHeroClass(p.getPlayer(), heroClass);
+        if (restoreable(p)){
+            save.restoreArenaClass();
+        }
     }
 
     public void cancelExpLoss(ArenaPlayer p, boolean cancel) {

@@ -294,7 +294,7 @@ public class ArenaSerializer extends BaseConfig{
                 TimedSpawn s;
                 try {
                     s = parseSpawnable(scs);
-                } catch (IllegalArgumentException e) {
+                } catch (Exception e) {
                     Log.printStackTrace(e);
                     continue;
                 }
@@ -509,7 +509,7 @@ public class ArenaSerializer extends BaseConfig{
             si = new BlockSpawn(loc.getBlock(),false);
             Material mat = Material.valueOf(cs.getString("spawn"));
             ((BlockSpawn)si).setMaterial(mat);
-            mat = Material.valueOf(cs.getString("despawnMaterial", "air"));
+            mat = Material.valueOf(cs.getString("despawnMaterial", "AIR"));
             if (mat != null)
                 ((BlockSpawn)si).setDespawnMaterial(mat);
         }else if (cs.contains("type") && cs.getString("type").equalsIgnoreCase("chest")) {
