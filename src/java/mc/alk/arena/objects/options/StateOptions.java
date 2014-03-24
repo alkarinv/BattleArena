@@ -10,6 +10,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.PVPState;
 import mc.alk.arena.objects.StateGraph;
+import mc.alk.arena.objects.StateOption;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.InventoryUtil;
@@ -23,23 +24,25 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import static mc.alk.arena.objects.options.TransitionOption.*;
+
 
 @SuppressWarnings("unchecked")
 public class StateOptions {
 
-    Map<TransitionOption,Object> options;
+    Map<StateOption,Object> options;
 
     public StateOptions() {}
     public StateOptions(StateOptions o) {
         if (o == null)
             return;
-        if (o.options != null) this.options = new EnumMap<TransitionOption,Object>(o.options);
+        if (o.options != null) this.options = new HashMap<StateOption,Object>(o.options);
     }
 
     public void addOptions(StateOptions optionSet) {
@@ -48,122 +51,125 @@ public class StateOptions {
         addOptions(optionSet.options);
     }
 
-    public void addOptions(Map<TransitionOption,Object> options) {
+    public void addOptions(Map<StateOption,Object> options) {
         if (this.options==null)
-            this.options = new EnumMap<TransitionOption,Object>(options);
+            this.options = new HashMap<StateOption,Object>(options);
         else
             this.options.putAll(options);
     }
 
     public void setOptions(Set<String> options) {
-        this.options =new EnumMap<TransitionOption,Object>(TransitionOption.class);
+        this.options =new HashMap<StateOption,Object>();
         for (String s: options){
-            this.options.put(TransitionOption.valueOf(s),null);
+            StateOption so = valueOf(s);
+            if (so==null)
+                continue;
+            this.options.put(so,null);
         }
     }
 
-    public void setOptions(Map<TransitionOption,Object> options) {
-        this.options =new EnumMap<TransitionOption,Object>(options);
+    public void setOptions(Map<StateOption,Object> options) {
+        this.options =new HashMap<StateOption,Object>(options);
     }
 
     public List<ItemStack> getGiveItems() {
-        Object o = options.get(TransitionOption.GIVEITEMS);
+        Object o = options.get(GIVEITEMS);
         return o == null ? null : (List<ItemStack>) o;
     }
 
     public List<ItemStack> getNeedItems() {
-        Object o = options.get(TransitionOption.NEEDITEMS);
+        Object o = options.get(NEEDITEMS);
         return o == null ? null : (List<ItemStack>) o;
     }
 
     public List<PotionEffect> getEffects(){
-        Object o = options.get(TransitionOption.ENCHANTS);
+        Object o = options.get(ENCHANTS);
         return o == null ? null : (List<PotionEffect>) o;
     }
     private boolean hasEffects() {return getEffects() != null;}
-    public boolean clearInventory() {return options.containsKey(TransitionOption.CLEARINVENTORY);}
-    public boolean needsArmor() {return options.containsKey(TransitionOption.NEEDARMOR);}
-    public boolean needsItems() {return options.containsKey(TransitionOption.NEEDITEMS);}
+    public boolean clearInventory() {return options.containsKey(CLEARINVENTORY);}
+    public boolean needsArmor() {return options.containsKey(NEEDARMOR);}
+    public boolean needsItems() {return options.containsKey(NEEDITEMS);}
     public boolean hasItems() {
-        return options.containsKey(TransitionOption.NEEDITEMS) ||
-                options.containsKey(TransitionOption.GIVEITEMS);}
+        return options.containsKey(NEEDITEMS) ||
+                options.containsKey(GIVEITEMS);}
     public boolean hasGiveItems() {
-        return  options.containsKey(TransitionOption.GIVEITEMS);}
+        return  options.containsKey(GIVEITEMS);}
 
     public boolean shouldTeleportLobby() {
-        return options.containsKey(TransitionOption.TELEPORTLOBBY) ||
-                options.containsKey(TransitionOption.TELEPORTMAINLOBBY);
+        return options.containsKey(TELEPORTLOBBY) ||
+                options.containsKey(TELEPORTMAINLOBBY);
     }
     public boolean shouldTeleportWaitRoom() {
-        return options.containsKey(TransitionOption.TELEPORTWAITROOM) ||
-                options.containsKey(TransitionOption.TELEPORTMAINWAITROOM);
+        return options.containsKey(TELEPORTWAITROOM) ||
+                options.containsKey(TELEPORTMAINWAITROOM);
     }
 
     public boolean shouldTeleportSpectate() {
-        return options.containsKey(TransitionOption.TELEPORTSPECTATE);
+        return options.containsKey(TELEPORTSPECTATE);
     }
 
-    public boolean shouldTeleportIn() {return options.containsKey(TransitionOption.TELEPORTIN);}
+    public boolean shouldTeleportIn() {return options.containsKey(TELEPORTIN);}
     public boolean teleportsIn() {return shouldTeleportIn() || shouldTeleportWaitRoom();}
 
     public boolean shouldTeleportOut() {
-        return options.containsKey(TransitionOption.TELEPORTOUT) ||
-                options.containsKey(TransitionOption.TELEPORTTO);
+        return options.containsKey(TELEPORTOUT) ||
+                options.containsKey(TELEPORTTO);
     }
 
-    public boolean blockBreakOff() {return options.containsKey(TransitionOption.BLOCKBREAKOFF);}
-    public boolean blockPlaceOff() {return options.containsKey(TransitionOption.BLOCKPLACEOFF);}
+    public boolean blockBreakOff() {return options.containsKey(BLOCKBREAKOFF);}
+    public boolean blockPlaceOff() {return options.containsKey(BLOCKPLACEOFF);}
 
-    public Double getHealth() {return getDouble(TransitionOption.HEALTH);}
-    public Double getHealthP() {return getDouble(TransitionOption.HEALTHP);}
-    public Integer getHunger() {return getInt(TransitionOption.HUNGER);}
-    public Integer getMagic() { return getInt(TransitionOption.MAGIC);}
-    public Integer getMagicP() { return getInt(TransitionOption.MAGICP);}
-    public Double getWithinDistance() {return getDouble(TransitionOption.WITHINDISTANCE);}
-    public GameMode getGameMode() {return getGameMode(TransitionOption.GAMEMODE);}
+    public Double getHealth() {return getDouble(HEALTH);}
+    public Double getHealthP() {return getDouble(HEALTHP);}
+    public Integer getHunger() {return getInt(HUNGER);}
+    public Integer getMagic() { return getInt(MAGIC);}
+    public Integer getMagicP() { return getInt(MAGICP);}
+    public Double getWithinDistance() {return getDouble(WITHINDISTANCE);}
+    public GameMode getGameMode() {return getGameMode(GAMEMODE);}
     public List<CommandLineString> getDoCommands() {
-        final Object o = options.get(TransitionOption.DOCOMMANDS);
+        final Object o = options.get(DOCOMMANDS);
         return o == null ? null : (List<CommandLineString>) o;
     }
 
-    public Integer getInt(TransitionOption option){
+    public Integer getInt(StateOption option){
         final Object o = options.get(option);
         return o == null ? null : (Integer) o;
     }
 
-    public Double getDouble(TransitionOption option){
+    public Double getDouble(StateOption option){
         final Object o = options.get(option);
         return o == null ? null : (Double) o;
     }
 
-    public Float getFloat(TransitionOption option){
+    public Float getFloat(StateOption option){
         final Object o = options.get(option);
         return o == null ? null : (Float) o;
     }
 
-    public String getString(TransitionOption option){
+    public String getString(StateOption option){
         final Object o = options.get(option);
         return o == null ? null : (String) o;
     }
 
-    public GameMode getGameMode(TransitionOption option){
+    public GameMode getGameMode(StateOption option){
         final Object o = options.get(option);
         return o == null ? null : (GameMode) o;
     }
 
-    public Double getMoney(){return getDouble(TransitionOption.MONEY);}
+    public Double getMoney(){return getDouble(MONEY);}
     public boolean hasMoney(){
-        Double d = getDouble(TransitionOption.MONEY);
+        Double d = getDouble(MONEY);
         return d != null && d > 0;
     }
-    public Float getFlightSpeed(){return getFloat(TransitionOption.FLIGHTSPEED);}
-    public Integer getInvulnerable(){return getInt(TransitionOption.INVULNERABLE);}
-    public Integer getRespawnTime(){return getInt(TransitionOption.RESPAWNTIME);}
-    public Integer getExperience(){return getInt(TransitionOption.EXPERIENCE);}
-    public boolean hasExperience(){return options.containsKey(TransitionOption.EXPERIENCE);}
+    public Float getFlightSpeed(){return getFloat(FLIGHTSPEED);}
+    public Integer getInvulnerable(){return getInt(INVULNERABLE);}
+    public Integer getRespawnTime(){return getInt(RESPAWNTIME);}
+    public Integer getExperience(){return getInt(EXPERIENCE);}
+    public boolean hasExperience(){return options.containsKey(EXPERIENCE);}
 
-    public String getDisguiseAllAs() {return getString(TransitionOption.DISGUISEALLAS);}
-    public Boolean undisguise() {return options.containsKey(TransitionOption.UNDISGUISE);}
+    public String getDisguiseAllAs() {return getString(DISGUISEALLAS);}
+    public Boolean undisguise() {return options.containsKey(UNDISGUISE);}
 
     public boolean playerReady(ArenaPlayer p, World w) {
         if (p==null || !p.isOnline() || p.isDead() || p.getPlayer().isSleeping())
@@ -180,17 +186,17 @@ public class StateOptions {
         if (MobArenaInterface.hasMobArena() && MobArenaInterface.insideMobArena(p)){
             return false;
         }
-        if (options.containsKey(TransitionOption.GAMEMODE)){
+        if (options.containsKey(GAMEMODE)){
             GameMode gm = getGameMode();
             if (p.getPlayer().getGameMode() != gm){
                 return false;}
         }
 
-        if (options.containsKey(TransitionOption.NOINVENTORY)){
+        if (options.containsKey(NOINVENTORY)){
             if (InventoryUtil.hasAnyItem(p.getPlayer()))
                 return false;
         }
-        if (options.containsKey(TransitionOption.SAMEWORLD) && w!=null){
+        if (options.containsKey(SAMEWORLD) && w!=null){
             if (p.getLocation().getWorld().getUID() != w.getUID())
                 return false;
         }
@@ -198,8 +204,8 @@ public class StateOptions {
             if (!InventoryUtil.hasArmor(p.getPlayer()))
                 return false;
         }
-        if (options.containsKey(TransitionOption.LEVELRANGE)){
-            MinMax mm = (MinMax) options.get(TransitionOption.LEVELRANGE);
+        if (options.containsKey(LEVELRANGE)){
+            MinMax mm = (MinMax) options.get(LEVELRANGE);
             if (!mm.contains(p.getLevel()))
                 return false;
         }
@@ -220,11 +226,11 @@ public class StateOptions {
                 sb.append("&5 - &6").append(is.getAmount()).append(" ").append(is.getData());
             }
         }
-        if (options.containsKey(TransitionOption.NOINVENTORY)){
+        if (options.containsKey(NOINVENTORY)){
             hasSomething = true;
             sb.append("&5 - &6Clear Inventory");
         }
-        if (options.containsKey(TransitionOption.GAMEMODE)){
+        if (options.containsKey(GAMEMODE)){
             hasSomething = true;
             GameMode gm = getGameMode();
             sb.append("&5 - &6GameMode=").append(gm.toString());
@@ -233,8 +239,8 @@ public class StateOptions {
             hasSomething = true;
             sb.append("&5 - &6Armor");
         }
-        if (options.containsKey(TransitionOption.LEVELRANGE)){
-            MinMax mm = (MinMax) options.get(TransitionOption.LEVELRANGE);
+        if (options.containsKey(LEVELRANGE)){
+            MinMax mm = (MinMax) options.get(LEVELRANGE);
             sb.append("&a - lvl=").append(mm.toString());
         }
         return hasSomething ? sb.toString() : null;
@@ -255,20 +261,20 @@ public class StateOptions {
                 }
             }
         }
-        if (options.containsKey(TransitionOption.GAMEMODE)){
+        if (options.containsKey(GAMEMODE)){
             GameMode gm = getGameMode();
             if (p.getPlayer().getGameMode() != gm){
                 sb.append("&5 -&e a &6You need to be in &c").append(gm).append("&e mode \n");
                 isReady = false;
             }
         }
-        if (options.containsKey(TransitionOption.NOINVENTORY)){
+        if (options.containsKey(NOINVENTORY)){
             if (InventoryUtil.hasAnyItem(p.getPlayer())){
                 sb.append("&5 -&e a &6Clear Inventory\n");
                 isReady = false;
             }
         }
-        if (options.containsKey(TransitionOption.SAMEWORLD) && w!=null){
+        if (options.containsKey(SAMEWORLD) && w!=null){
             if (p.getLocation().getWorld().getUID() != w.getUID()){
                 sb.append("&5 -&c Not in same world\n");
                 isReady = false;
@@ -287,8 +293,8 @@ public class StateOptions {
             }
         }
 
-        if (options.containsKey(TransitionOption.LEVELRANGE)){
-            MinMax mm = (MinMax) options.get(TransitionOption.LEVELRANGE);
+        if (options.containsKey(LEVELRANGE)){
+            MinMax mm = (MinMax) options.get(LEVELRANGE);
             if (!mm.contains(p.getLevel())){
                 sb.append("&a - lvl=").append(mm.toString());
                 isReady = false;
@@ -346,58 +352,58 @@ public class StateOptions {
     }
 
     public PVPState getPVP() {
-        if (options.containsKey(TransitionOption.PVPON)){
+        if (options.containsKey(PVPON)){
             return PVPState.ON;
-        } else if (options.containsKey(TransitionOption.PVPOFF)){
+        } else if (options.containsKey(PVPOFF)){
             return PVPState.OFF;
-        } else if (options.containsKey(TransitionOption.INVINCIBLE)){
+        } else if (options.containsKey(INVINCIBLE)){
             return PVPState.INVINCIBLE;
         }
         return null;
     }
 
     public boolean respawn() {
-        return options.containsKey(TransitionOption.RESPAWN);
+        return options.containsKey(RESPAWN);
     }
     public boolean randomRespawn() {
-        return options.containsKey(TransitionOption.RANDOMRESPAWN) ||
-                options.containsKey(TransitionOption.RANDOMSPAWN);
+        return options.containsKey(RANDOMRESPAWN) ||
+                options.containsKey(RANDOMSPAWN);
     }
 
     public boolean deEnchant() {
-        return options.containsKey(TransitionOption.DEENCHANT);
+        return options.containsKey(DEENCHANT);
     }
 
     public boolean woolTeams() {
-        return options.containsKey(TransitionOption.WOOLTEAMS) || options.containsKey(TransitionOption.ALWAYSWOOLTEAMS);
+        return options.containsKey(WOOLTEAMS) || options.containsKey(ALWAYSWOOLTEAMS);
     }
-    public Map<TransitionOption,Object> getOptions() {
+    public Map<StateOption,Object> getOptions() {
         return options;
     }
     public boolean shouldClearRegion() {
-        return options.containsKey(TransitionOption.WGCLEARREGION);
+        return options.containsKey(WGCLEARREGION);
     }
 
-    public void addOption(TransitionOption option) throws InvalidOptionException {
-        if (option.hasValue()) throw new InvalidOptionException("TransitionOption needs a value!");
+    public void addOption(StateOption option) throws InvalidOptionException {
+        if (option.hasValue()) throw new InvalidOptionException("StateOption needs a value!");
         addOption(option, null);
     }
 
-    public void addOption(TransitionOption option, Object value) throws InvalidOptionException {
-        if (option.hasValue() && value==null) throw new InvalidOptionException("TransitionOption needs a value!");
+    public void addOption(StateOption option, Object value) throws InvalidOptionException {
+        if (option.hasValue() && value==null) throw new InvalidOptionException("StateOption needs a value!");
         if (options==null){
-            options = new EnumMap<TransitionOption,Object>(TransitionOption.class);}
+            options = new HashMap<StateOption,Object>();}
         options.put(option,value);
     }
 
-    public boolean hasOption(TransitionOption op) {
+    public boolean hasOption(StateOption op) {
         return options != null && options.containsKey(op);
     }
 
-    public boolean hasAnyOption(TransitionOption... ops) {
+    public boolean hasAnyOption(StateOption... ops) {
         if (options == null)
             return false;
-        for (TransitionOption op: ops){
+        for (StateOption op: ops){
             if (options.containsKey(op))
                 return true;
         }
@@ -409,7 +415,7 @@ public class StateOptions {
             return false;
         if (tops.options == null)
             return true;
-        for (TransitionOption op: tops.options.keySet()){
+        for (StateOption op: tops.options.keySet()){
             if (!options.containsKey(op)){
                 return false;
             }
@@ -419,13 +425,13 @@ public class StateOptions {
         return true;
     }
 
-    public Object removeOption(TransitionOption op) {
+    public Object removeOption(StateOption op) {
         return options != null ? options.remove(op) : null;
     }
 
     public static String getInfo(MatchParams sq, String name) {
         StringBuilder sb = new StringBuilder();
-        StateGraph at = sq.getTransitionOptions();
+        StateGraph at = sq.getStateOptions();
         String required = at.getRequiredString(null);
         String prestart = at.getGiveString(MatchState.ONPRESTART);
         String start = at.getGiveString(MatchState.ONSTART);
@@ -459,41 +465,41 @@ public class StateOptions {
     }
 
     public Map<Integer, ArenaClass> getClasses(){
-        Object o = options.get(TransitionOption.GIVECLASS);
+        Object o = options.get(GIVECLASS);
         return o == null ? null : (Map<Integer, ArenaClass>) o;
     }
 
     public Map<Integer, String> getDisguises(){
-        Object o = options.get(TransitionOption.GIVEDISGUISE);
+        Object o = options.get(GIVEDISGUISE);
         return o == null ? null : (Map<Integer, String>) o;
     }
 
 
     public List<String> getAddPerms() {
-        final Object o = options.get(TransitionOption.ADDPERMS);
+        final Object o = options.get(ADDPERMS);
         return o == null ? null : (List<String>) o;
     }
 
     /// TODO, not sure this will work properly, I really want to remove those perms that were added in another section!!
     public List<String> getRemovePerms() {
-        final Object o = options.get(TransitionOption.ADDPERMS);
+        final Object o = options.get(ADDPERMS);
         return o == null ? null : (List<String>) o;
     }
 
-    public Location getTeleportToLoc() {return returnLoc(TransitionOption.TELEPORTTO);}
+    public Location getTeleportToLoc() {return returnLoc(TELEPORTTO);}
 
-    private Location returnLoc(TransitionOption to){
+    private Location returnLoc(StateOption to){
         final Object o = options.get(to);
         return o == null ? null : (Location) o;
     }
 
-    private ChatColor getColor(TransitionOption v, StateOptions so) {
+    private ChatColor getColor(StateOption v, StateOptions so) {
         return so !=null && so.options.containsKey(v) ? ChatColor.WHITE : ChatColor.GOLD;
     }
     public String getOptionString(StateOptions so) {
         StringBuilder sb = new StringBuilder("[");
         boolean first = true;
-        for (Entry<TransitionOption,Object> entry: options.entrySet()){
+        for (Entry<StateOption,Object> entry: options.entrySet()){
             if (!first) sb.append("&2, " );
             first = false;
             sb.append(getColor(entry.getKey(), so).toString());
@@ -502,11 +508,11 @@ public class StateOptions {
                     so.options.get(entry.getKey()) :
                     entry.getValue();
             if (value != null){
-                switch(entry.getKey()){
-                    case GIVECLASS:
-                    case ENCHANTS:
-                    case GIVEDISGUISE:
-                        continue;
+                StateOption i = entry.getKey();
+                if (i.equals(TransitionOption.GIVECLASS) ||
+                        i.equals(TransitionOption.ENCHANTS) ||
+                        i.equals(TransitionOption.GIVEDISGUISE)) {
+                    continue;
                 }
                 sb.append(":").append(value);
             }

@@ -93,7 +93,7 @@ public class EntitySpawn extends SpawnInstance{
 
 	@Override
 	public String toString(){
-		return "[EntitySpawn "+et +":" + number+"]";
+		return "[ES "+et +":" + number+"]";
 	}
 }
 

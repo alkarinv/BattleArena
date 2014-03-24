@@ -1,12 +1,12 @@
 package mc.alk.arena.objects.options;
 
 import mc.alk.arena.controllers.ArenaClassController;
+import mc.alk.arena.objects.StateOption;
 import mc.alk.arena.util.EffectUtil;
 import mc.alk.arena.util.MinMax;
-
 import org.bukkit.GameMode;
 
-public enum TransitionOption{
+public enum TransitionOption implements StateOption {
     /// Default only Options
     DUELONLY ("duelOnly", false),					/// DEFAULTS only: this game type is duel only
     ALWAYSOPEN("alwaysOpen", false),				/// DEFAULTS only: this game is always open to joins

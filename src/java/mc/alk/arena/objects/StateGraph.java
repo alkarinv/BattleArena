@@ -5,7 +5,6 @@ import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.InventoryUtil;
-import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
@@ -22,7 +21,7 @@ import java.util.Set;
 
 public class StateGraph {
 	final Map<CompetitionState,StateOptions> ops = new HashMap<CompetitionState,StateOptions>();
-	Set<TransitionOption> allops;
+	Set<StateOption> allops;
 
 	public StateGraph() {}
 	public StateGraph(StateGraph o) {
@@ -35,12 +34,12 @@ public class StateGraph {
 		return ops;
 	}
 
-	public void addTransitionOptions(CompetitionState ms, StateOptions tops) {
+	public void addStateOptions(CompetitionState ms, StateOptions tops) {
 		ops.put(ms, tops);
 		allops = null;
 	}
 
-	public void addTransitionOption(MatchState state, TransitionOption option) throws InvalidOptionException {
+	public void addStateOption(MatchState state, StateOption option) throws InvalidOptionException {
 		StateOptions tops = ops.get(state);
 		if (tops == null){
 			tops = new StateOptions();
@@ -50,7 +49,7 @@ public class StateGraph {
         allops = null;
 	}
 
-	public void addTransitionOption(CompetitionState state, TransitionOption option, Object value) throws InvalidOptionException {
+	public void addStateOption(CompetitionState state, StateOption option, Object value) throws InvalidOptionException {
 		StateOptions tops = ops.get(state);
 		if (tops == null){
 			tops = new StateOptions();
@@ -60,12 +59,12 @@ public class StateGraph {
         allops = null;
 	}
 
-	public boolean removeTransitionOption(CompetitionState state, TransitionOption option) {
+	public boolean removeStateOption(CompetitionState state, StateOption option) {
 		StateOptions tops = ops.get(state);
 		return tops != null && tops.removeOption(option) != null;
 	}
 
-	public void removeTransitionOptions(CompetitionState ms) {
+	public void removeStateOptions(CompetitionState ms) {
 		ops.remove(ms);
         allops = null;
 	}
@@ -74,30 +73,30 @@ public class StateGraph {
 		if (allops != null){
             allops.clear();
         } else {
-            allops = new HashSet<TransitionOption>();
+            allops = new HashSet<StateOption>();
         }
         for (StateOptions top: ops.values()){
 			allops.addAll(top.getOptions().keySet());
 		}
 	}
 
-	public boolean hasAnyOption(TransitionOption option) {
+	public boolean hasAnyOption(StateOption option) {
         if (allops == null)
             calculateAllOptions();
 		return allops.contains(option);
 	}
 
-	public boolean hasAnyOption(TransitionOption... options) {
+	public boolean hasAnyOption(StateOption... options) {
         if (allops == null)
             calculateAllOptions();
-		for (TransitionOption op: options){
+		for (StateOption op: options){
 			if (allops.contains(op))
 				return true;
 		}
 		return false;
 	}
 
-	public CompetitionState getMatchState(TransitionOption option) {
+	public CompetitionState getCompetitionState(StateOption option) {
 		for (CompetitionState state: ops.keySet()){
 			StateOptions tops = ops.get(state);
 			if (tops.hasOption(option))
@@ -106,36 +105,36 @@ public class StateGraph {
 		return null;
 	}
 
-	public boolean hasAllOptions(TransitionOption... options) {
-		Set<TransitionOption> ops = new HashSet<TransitionOption>(Arrays.asList(options));
+	public boolean hasAllOptions(StateOption... options) {
+		Set<StateOption> ops = new HashSet<StateOption>(Arrays.asList(options));
         if (allops == null)
             calculateAllOptions();
         return allops.containsAll(ops);
 	}
 
-	public boolean hasInArenaOrOptionAt(CompetitionState state, TransitionOption option) {
+	public boolean hasInArenaOrOptionAt(CompetitionState state, StateOption option) {
 		StateOptions tops = ops.get(state);
 		return tops == null ? hasOptionAt(MatchState.INARENA,option) : tops.hasOption(option);
 	}
 
-	public boolean hasOptionAt(CompetitionState state, TransitionOption option) {
+	public boolean hasOptionAt(CompetitionState state, StateOption option) {
 		StateOptions tops = ops.get(state);
 		return tops != null && tops.hasOption(option);
 	}
 
     /**
      * Use the newer more generic
-     * public boolean hasOptionAt(CompetitionState state, TransitionOption option) {
+     * public boolean hasOptionAt(CompetitionState state, StateOption option) {
      * @param state MatchState
-     * @param option TransitionOption
+     * @param option StateOption
      * @return true or false
      */
     @Deprecated
-    public boolean hasOptionAt(MatchState state, TransitionOption option) {
+    public boolean hasOptionAt(MatchState state, StateOption option) {
         return hasOptionAt((CompetitionState) state, option);
     }
 
-	public boolean hasOptionIn(MatchState beginState, MatchState endState, TransitionOption option) {
+	public boolean hasOptionIn(MatchState beginState, MatchState endState, StateOption option) {
 		List<MatchState> states = MatchState.getStates(beginState, endState);
 		for (MatchState state : states){
 			StateOptions tops = ops.get(state);
@@ -145,9 +144,8 @@ public class StateGraph {
 		return false;
 	}
 
-	@SuppressWarnings("SimplifiableConditionalExpression")
     public boolean needsClearInventory() {
-		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).clearInventory() : false;
+		return ops.containsKey(MatchState.PREREQS) && ops.get(MatchState.PREREQS).clearInventory();
 	}
 
 	public String getRequiredString(String header) {
@@ -210,9 +208,6 @@ public class StateGraph {
             return o1.globalOrdinal() - o2.globalOrdinal();
         }
     }
-    private ChatColor getColor(Object o) {
-        return o == null ? ChatColor.GOLD : ChatColor.WHITE;
-    }
     public String getOptionString(StateGraph subset) {
         if (subset == null) {
             subset = new StateGraph();
@@ -260,7 +255,7 @@ public class StateGraph {
         return getOptionString(null);
     }
 
-	public Double getDoubleOption(MatchState state, TransitionOption option) {
+	public Double getDoubleOption(MatchState state, StateOption option) {
 		StateOptions tops = getOptions(state);
 		return tops == null ? null : tops.getDouble(option);
 	}

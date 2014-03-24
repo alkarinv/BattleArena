@@ -18,6 +18,7 @@ import mc.alk.arena.objects.JoinType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.StateGraph;
+import mc.alk.arena.objects.StateOption;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.exceptions.ConfigException;
@@ -46,7 +47,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -224,7 +224,7 @@ public class ConfigSerializer extends BaseConfig{
                 continue;
             }
             if (tops == null){
-                allTops.removeTransitionOptions(transition);
+                allTops.removeStateOptions(transition);
                 continue;}
             found = true;
             if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + transition +" "+tops);
@@ -234,7 +234,7 @@ public class ConfigSerializer extends BaseConfig{
                     tops.addOption(TransitionOption.CLEARINVENTORY);
                 }
                 StateOptions cancelOps = new StateOptions(tops);
-                allTops.addTransitionOptions(MatchState.ONCANCEL, cancelOps);
+                allTops.addStateOptions(MatchState.ONCANCEL, cancelOps);
                 if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
             } else if (transition == MatchState.ONLEAVE){
                 if (tops.hasOption(TransitionOption.TELEPORTOUT)){
@@ -246,17 +246,17 @@ public class ConfigSerializer extends BaseConfig{
                     tops.addOption(TransitionOption.DUELONLY);}
             }
 
-            allTops.addTransitionOptions(transition,tops);
+            allTops.addStateOptions(transition, tops);
         }
         if (allTops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN))
-            allTops.addTransitionOption(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN);
+            allTops.addStateOption(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN);
         /// By Default if they respawn in the arena.. people must want infinite lives
         if (mp.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RESPAWN) && !cs.contains("nLives")){
             mp.setNLives(Integer.MAX_VALUE);
         }
         /// start auto setting this option, as really thats what they want
         if (mp.getNLives() != null && mp.getNLives() > 1){
-            allTops.addTransitionOption(MatchState.ONDEATH, TransitionOption.RESPAWN);}
+            allTops.addStateOption(MatchState.ONDEATH, TransitionOption.RESPAWN);}
         if (!found && allTops.getAllOptions().isEmpty())
             return null;
         return allTops;
@@ -426,7 +426,7 @@ public class ConfigSerializer extends BaseConfig{
     public static StateOptions getTransitionOptions(ConfigurationSection cs) throws InvalidOptionException, IllegalArgumentException {
         if (cs == null )
             return null;
-        Map<TransitionOption,Object> options = new EnumMap<TransitionOption,Object>(TransitionOption.class);
+        Map<StateOption,Object> options = new HashMap<StateOption,Object>();
         StateOptions tops = new StateOptions();
         if (cs.contains("options")){
             if (!cs.isList("options")) {
@@ -798,44 +798,36 @@ public class ConfigSerializer extends BaseConfig{
                     if (tops.getOptions() == null)
                         continue;
                     tops = new StateOptions(tops); // make a copy so we can modify while saving
-                    Map<TransitionOption, Object> ops = tops.getOptions();
+                    Map<StateOption, Object> ops = new TreeMap<StateOption, Object>(tops.getOptions());
                     List<String> list = new ArrayList<String>();
 
                     for (Entry<String, StateOptions> entry : OptionSetController.getOptionSets().entrySet()) {
                         if (tops.containsAll(entry.getValue())) {
                             list.add(entry.getKey());
-                            for (TransitionOption op : entry.getValue().getOptions().keySet()) {
+                            for (StateOption op : entry.getValue().getOptions().keySet()) {
                                 ops.remove(op);
                             }
                         }
                     }
                     /// transition map
                     Map<String, Object> tmap = new LinkedHashMap<String, Object>();
-                    ops = new TreeMap<TransitionOption, Object>(ops); /// try to maintain some ordering
-                    for (TransitionOption to : ops.keySet()) {
+                    ops = new TreeMap<StateOption, Object>(ops); /// try to maintain some ordering
+                    for (StateOption to : ops.keySet()) {
                         try {
                             String s;
-                            switch (to) {
-                                case NEEDITEMS:
-                                    tmap.put(to.toString(), getItems(tops.getNeedItems()));
-                                    continue;
-                                case GIVEITEMS:
-                                    tmap.put(to.toString(), getItems(tops.getGiveItems()));
-                                    continue;
-                                case GIVECLASS:
-                                    tmap.put(to.toString(), getArenaClasses(tops.getClasses()));
-                                    continue;
-                                case ENCHANTS:
-                                    tmap.put(to.toString(), getEnchants(tops.getEffects()));
-                                    continue;
-                                case DOCOMMANDS:
-                                    tmap.put(to.toString(), getDoCommandsStringList(tops.getDoCommands()));
-                                    continue;
-                                case TELEPORTTO:
-                                    tmap.put(to.toString(), SerializerUtil.getLocString(tops.getTeleportToLoc()));
-                                    continue;
-                                default:
-                                    break;
+//                            switch (to) {
+                            if (to.equals(TransitionOption.NEEDITEMS)) {
+                                tmap.put(to.toString(), getItems(tops.getNeedItems()));
+                            } else if (to.equals(TransitionOption.GIVEITEMS)) {
+                                tmap.put(to.toString(), getItems(tops.getGiveItems()));
+                            } else if (to.equals(TransitionOption.GIVECLASS)) {
+                                tmap.put(to.toString(), getArenaClasses(tops.getClasses()));
+                            } else if (to.equals(TransitionOption.ENCHANTS)) {
+                                tmap.put(to.toString(), getEnchants(tops.getEffects()));
+                            } else if (to.equals(TransitionOption.DOCOMMANDS)) {
+                                tmap.put(to.toString(), getDoCommandsStringList(tops.getDoCommands()));
+                            } else if (to.equals(TransitionOption.TELEPORTTO)){
+                                tmap.put(to.toString(), SerializerUtil.getLocString(tops.getTeleportToLoc()));
                             }
                             Object value = ops.get(to);
                             if (value == null) {

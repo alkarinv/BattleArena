@@ -172,7 +172,7 @@ public class EventExecutor extends BAExecutor{
 		}
 
 		EventParams sq = event.getParams();
-		StateGraph tops = sq.getTransitionOptions();
+		StateGraph tops = sq.getStateOptions();
 		/// Perform is ready check
 		if(!tops.playerReady(p,null)){
 			String notReadyMsg = tops.getRequiredString(MessageHandler.getSystemMessage("need_the_following")+"\n");

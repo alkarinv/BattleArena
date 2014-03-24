@@ -465,6 +465,10 @@ public class ArenaParams {
         return getStateGraph().hasOptionAt(state, op);
     }
 
+    public boolean hasOptionAt(CompetitionState state, StateOption op) {
+        return getStateGraph().hasOptionAt(state, op);
+    }
+
     public boolean hasEntranceFee() {
         return hasOptionAt(MatchState.PREREQS,TransitionOption.MONEY);
     }
@@ -617,7 +621,7 @@ public class ArenaParams {
         this.displayName = displayName;
     }
 
-    public StateGraph getTransitionOptions() {
+    public StateGraph getStateOptions() {
         return getStateGraph();
     }
 

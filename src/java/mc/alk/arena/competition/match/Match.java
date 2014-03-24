@@ -201,7 +201,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
                 tops.hasAnyOption(TransitionOption.ALWAYSWOOLTEAMS);
         this.armorTeams = tops.hasAnyOption(TransitionOption.ARMORTEAMS);
 
-        tinState = tops.getMatchState(TransitionOption.TELEPORTIN);
+        tinState = tops.getCompetitionState(TransitionOption.TELEPORTIN);
         this.spawnsRandom = tinState != null && tops.hasOptionAt(tinState, TransitionOption.RANDOMSPAWN);
         this.alwaysTeamNames = tops.hasAnyOption(TransitionOption.ALWAYSTEAMNAMES);
         this.cancelExpLoss = tops.hasAnyOption(TransitionOption.NOEXPERIENCELOSS);

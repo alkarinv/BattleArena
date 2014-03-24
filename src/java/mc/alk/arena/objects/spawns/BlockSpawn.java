@@ -37,7 +37,7 @@ public class BlockSpawn extends SpawnInstance{
 
 	@Override
 	public String toString(){
-		return "[BlockSpawn "+mat.name()+"]";
+		return "[BS "+mat.name()+"]";
 	}
 
     public Block getBlock() {

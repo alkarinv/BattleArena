@@ -78,7 +78,7 @@ public class TimedSpawn implements Spawnable{
                 firstSpawnTime + " rs=" + respawnInterval + " ds=" + timeToDespawn+"]";
     }
     public String getDisplayName() {
-        return "["+ sg+" loc=" + SerializerUtil.getBlockLocString(sg.getLocation()) + " fs=" +
-                firstSpawnTime + " rs=" + respawnInterval + " ds=" + timeToDespawn+"]";
+        return "&e["+ sg+" loc=&6" + SerializerUtil.getBlockLocString(sg.getLocation()) + "&e fs=&5" +
+                firstSpawnTime + "&6 rs=" + respawnInterval + "&7 ds=" + timeToDespawn+"]";
     }
 }

@@ -191,11 +191,11 @@ public class ParamAlterController {
                 ));
         if ((state == MatchState.ONPRESTART || state == MatchState.ONSTART || state == MatchState.ONJOIN) &&
                 tpOps.contains(to)){
-            tops.removeTransitionOption(MatchState.ONPRESTART, to);
-            tops.removeTransitionOption(MatchState.ONSTART, to);
-            tops.removeTransitionOption(MatchState.ONJOIN, to);
+            tops.removeStateOption(MatchState.ONPRESTART, to);
+            tops.removeStateOption(MatchState.ONSTART, to);
+            tops.removeStateOption(MatchState.ONJOIN, to);
             for (TransitionOption op: tpOps){
-                tops.removeTransitionOption(state, op);}
+                tops.removeStateOption(state, op);}
         }
         if (state == MatchState.DEFAULTS){
             if (to == TransitionOption.WGNOENTER){
@@ -214,10 +214,10 @@ public class ParamAlterController {
         if ((state == MatchState.ONPRESTART || state == MatchState.ONJOIN) &&
                 tpOps.contains(to) && to!=TransitionOption.TELEPORTIN &&
                 !tops.hasOptionAt(MatchState.ONPRESTART,TransitionOption.TELEPORTIN)){
-            tops.addTransitionOption(MatchState.ONSTART, TransitionOption.TELEPORTIN);
+            tops.addStateOption(MatchState.ONSTART, TransitionOption.TELEPORTIN);
         }
 
-        tops.addTransitionOption(state, to, value);
+        tops.addStateOption(state, to, value);
         params.setTransitionOptions(tops);
         return true;
     }
@@ -290,7 +290,7 @@ public class ParamAlterController {
     private boolean deleteTransitionOption(CompetitionState state, String key) throws Exception{
         TransitionOption to = TransitionOption.fromString(key);
         StateGraph tops = params.getThisTransitionOptions();
-        return tops.removeTransitionOption(state,to);
+        return tops.removeStateOption(state, to);
     }
 
     private boolean deleteGameOption(AlterParamOption go) throws Exception {

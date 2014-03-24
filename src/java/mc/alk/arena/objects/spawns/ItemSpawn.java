@@ -35,7 +35,7 @@ public class ItemSpawn extends SpawnInstance{
 
 	@Override
 	public String toString(){
-		return "[ItemSpawn "+InventoryUtil.getItemString(is)+"]";
+		return "[IS "+InventoryUtil.getItemString(is)+"]";
 	}
 
 
