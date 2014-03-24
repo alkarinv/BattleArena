@@ -82,11 +82,11 @@ public class ArenaEditor implements Listener{
         TimedSpawn ts = SpawnSerializer.createTimedSpawn(bs, cs.listeningOptions);
 
         a.addTimedSpawn(cs.listeningIndex,ts);
-        cs.listeningIndex = null;
-        cs.listeningOptions = null;
         BattleArena.getBAController().updateArena(a);
         ArenaSerializer.saveArenas(a.getArenaType().getPlugin());
         MessageUtil.sendMessage(event.getPlayer(), "&2Added block spawn &6"+ ts +"&2 to index=&5"+cs.listeningIndex);
+        cs.listeningIndex = null;
+        cs.listeningOptions = null;
     }
 
     void startListening() {
