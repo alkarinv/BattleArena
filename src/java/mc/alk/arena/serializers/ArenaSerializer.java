@@ -567,7 +567,7 @@ public class ArenaSerializer extends BaseConfig{
         } else if (si instanceof BlockSpawn){
             BlockSpawn bs = (BlockSpawn) si;
             spawnMap.put("type", "block");
-            spawnMap.put("despawnMat", bs.getDespawnMaterial());
+            spawnMap.put("despawnMat", (bs.getDespawnMaterial()!=null ? bs.getDespawnMaterial().name() : "AIR"));
             key = bs.getMaterial().name();
         }
 
