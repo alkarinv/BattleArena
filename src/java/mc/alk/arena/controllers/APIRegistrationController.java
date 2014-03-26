@@ -15,7 +15,7 @@ import mc.alk.arena.serializers.ConfigSerializer;
 import mc.alk.arena.serializers.MessageSerializer;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
-import mc.alk.plugin.updater.v1r6.FileUpdater;
+import mc.alk.plugin.updater.FileUpdater;
 import mc.alk.plugin.updater.PluginUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;

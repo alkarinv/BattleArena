@@ -58,7 +58,7 @@ import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.plugin.updater.v1r6.FileUpdater;
+import mc.alk.plugin.updater.FileUpdater;
 import mc.alk.plugin.updater.PluginUpdater;
 import mc.battleplugins.api.BattlePluginsAPI;
 import org.bukkit.Bukkit;
