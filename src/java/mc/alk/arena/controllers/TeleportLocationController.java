@@ -59,7 +59,6 @@ public class TeleportLocationController {
 				loc = src.getLocation();
 			}
 		}
-		player.clearOldLocation();
 		if (loc == null){
 			Log.err(BattleArena.getNameAndVersion()+" Teleporting to a null location!  teleportTo=" + mo.hasOption(TransitionOption.TELEPORTTO));
 		}
@@ -67,10 +66,12 @@ public class TeleportLocationController {
 		ArenaLocation dest = new ArenaLocation(AbstractAreaContainer.HOMECONTAINER, loc,type);
 		ArenaPlayerTeleportEvent apte = new ArenaPlayerTeleportEvent(am.getParams().getType(),
 				player,team,src,dest,TeleportDirection.OUT);
-		movePlayer(player, apte,mp);
+		if (movePlayer(player, apte,mp)){
+            player.clearOldLocation();
+        }
 	}
 
-	private static void movePlayer(ArenaPlayer player, ArenaPlayerTeleportEvent apte, MatchParams mp) {
+	private static boolean movePlayer(ArenaPlayer player, ArenaPlayerTeleportEvent apte, MatchParams mp) {
 		PlayerHolder src = apte.getSrcLocation().getPlayerHolder();
 		PlayerHolder dest = apte.getDestLocation().getPlayerHolder();
 		TeleportDirection td = apte.getDirection();
@@ -83,6 +84,7 @@ public class TeleportLocationController {
 		case FIRSTIN:
 			mp.getGameManager().onPreJoin(player,apte);
 			dest.onPreJoin(player, apte);
+            break;
 		case IN:
 			src.onPreLeave(player, apte);
 			dest.onPreEnter(player, apte);
@@ -96,8 +98,8 @@ public class TeleportLocationController {
 			break;
 		}
 		dest.callEvent(apte);
-		if (!TeleportController.teleport(player, apte.getDestLocation().getLocation(), true) &&
-				player.isOnline() && !player.isDead() && !Defaults.DEBUG_VIRTUAL){
+        boolean success = TeleportController.teleport(player, apte.getDestLocation().getLocation(), true);
+		if (!success && player.isOnline() && !player.isDead() && !Defaults.DEBUG_VIRTUAL){
 			Log.err("[BA Warning] couldn't teleport "+player.getName()+" srcLoc="+apte.getSrcLocation() +" destLoc=" + apte.getDestLocation());
 		}
 		player.setCurLocation(apte.getDestLocation());
@@ -107,6 +109,7 @@ public class TeleportLocationController {
 		case FIRSTIN:
 			mp.getGameManager().onPostJoin(player,apte);
 			dest.onPostJoin(player, apte);
+            break;
 		case IN:
 			src.onPostLeave(player, apte);
 			dest.onPostEnter(player, apte);
@@ -119,7 +122,8 @@ public class TeleportLocationController {
 		default:
 			break;
 		}
-	}
+        return success;
+    }
 
 	private static TeleportDirection calcTeleportDirection(ArenaLocation src, ArenaLocation dest) {
 		if (src.getType() == LocationType.HOME){

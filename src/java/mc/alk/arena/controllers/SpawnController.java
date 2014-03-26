@@ -1,7 +1,6 @@
 package mc.alk.arena.controllers;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.spawns.SpawnInstance;
 import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.util.CaseInsensitiveMap;
@@ -122,7 +121,7 @@ public class SpawnController {
             nextTimeToSpawn = ns.timeToNext;
 			if (DEBUG_SPAWNS) Log.info("run SpawnNextEvent " + spawnQ.size() +"  next=" + nextTimeToSpawn);
 			timerId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new SpawnNextEvent(nextTimeToSpawn),
-					(long)(Defaults.TICK_MULT*nextTimeToSpawn*20));
+                    nextTimeToSpawn*20);
 		}
 	}
 

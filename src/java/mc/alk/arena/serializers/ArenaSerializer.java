@@ -7,14 +7,12 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.ArenaParams;
-import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.MatchParams;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.arenas.Persistable;
-import mc.alk.arena.objects.exceptions.InvalidOptionException;
-import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.exceptions.RegionNotFound;
 import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -321,9 +319,7 @@ public class ArenaSerializer extends BaseConfig{
                     eoo.setSecTillStart(0);
                     bac.createAndAutoMatch(arena, eoo);
                 }
-            } catch (NeverWouldJoinException e) {
-                e.printStackTrace();
-            } catch (InvalidOptionException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -465,8 +461,6 @@ public class ArenaSerializer extends BaseConfig{
         if (log)
             Log.info(plugin.getName() + " Saving arenas " + StringUtils.join(saved,",") +" to " +
                     f.getPath() + " configSection="+config.getCurrentPath()+"." + config.getName());
-
-        //		SerializerUtil.expandMapIntoConfig(maincs, map);
     }
 
 
@@ -509,7 +503,12 @@ public class ArenaSerializer extends BaseConfig{
             si = new BlockSpawn(loc.getBlock(),false);
             Material mat = Material.valueOf(cs.getString("spawn"));
             ((BlockSpawn)si).setMaterial(mat);
-            mat = Material.valueOf(cs.getString("despawnMaterial", "AIR"));
+            try {
+                mat = Material.valueOf(cs.getString("despawnMaterial", "AIR"));
+            } catch (Exception e) {
+                Log.err("Error setting despawnMaterial. " +e.getMessage());
+                mat = Material.AIR;
+            }
             if (mat != null)
                 ((BlockSpawn)si).setDespawnMaterial(mat);
         }else if (cs.contains("type") && cs.getString("type").equalsIgnoreCase("chest")) {

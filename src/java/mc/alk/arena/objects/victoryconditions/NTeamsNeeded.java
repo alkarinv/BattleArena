@@ -21,7 +21,8 @@ public class NTeamsNeeded extends VictoryCondition implements DefinesNumTeams{
 		this.neededTeams = new MinMax(nTeams);
 	}
 
-	public MinMax getNeededNumberOfTeams(){
+	@Override
+    public MinMax getNeededNumberOfTeams(){
 		return neededTeams;
 	}
 

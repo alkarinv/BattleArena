@@ -59,7 +59,7 @@ import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.plugin.updater.v1r6.FileUpdater;
-import mc.alk.plugin.updater.v1r6.PluginUpdater;
+import mc.alk.plugin.updater.PluginUpdater;
 import mc.battleplugins.api.BattlePluginsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -246,9 +246,6 @@ public class BattleArena extends JavaPlugin {
                 sfs.loadContainerStates(arenaController.getArenas());
 
                 arenaControllerSerializer.load();
-
-                /// Start listening for players queuing into matches
-                new Thread(arenaController).start();
 
                 /// Load up our signs
                 signSerializer.setConfig(dir.getPath() + "/saves/signs.yml");

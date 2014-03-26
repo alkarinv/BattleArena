@@ -24,7 +24,7 @@ public class SerializerUtil {
             for (Integer key: mlocs.keySet()) {
                 ArrayList<String> list = new ArrayList<String>();
                 for (SpawnLocation l : mlocs.get(key)) {
-                    String s = Util.getLocString(l);
+                    String s = getLocString(l);
                     list.add(s);
                 }
                 locations.put(key + "", list);

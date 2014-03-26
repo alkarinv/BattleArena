@@ -25,6 +25,8 @@ public enum AlterParamOption {
     RATED("rated",true, false),
     USETRACKERMESSAGES("useTrackerMessages",true, false),
     GIVEITEMS("giveItems",true, false),
+    NEEDITEMS("needItems",true, false),
+    TAKEITEMS("takeItems",true, false),
     ALLOWEDTEAMSIZEDIFFERENCE("allowedTeamSizeDifference",true,false),
     CLOSEWAITROOMWHILERUNNING("closeWaitroomWhileRunning", true,false),
     CANCELIFNOTENOUGHPLAYERS("cancelIfNotEnoughPlayers", true,false)

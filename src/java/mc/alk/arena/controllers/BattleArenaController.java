@@ -2,13 +2,12 @@ package mc.alk.arena.controllers;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.containers.GameManager;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.controllers.joining.AbstractJoinHandler;
-import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
+import mc.alk.arena.events.matches.MatchOpenEvent;
 import mc.alk.arena.listeners.SignUpdateListener;
 import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -20,6 +19,7 @@ import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.ArenaEventHandler;
+import mc.alk.arena.objects.exceptions.MatchCreationException;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.joining.ArenaMatchQueue;
 import mc.alk.arena.objects.joining.MatchTeamQObject;
@@ -30,12 +30,15 @@ import mc.alk.arena.objects.options.EventOpenOptions.EventOpenOption;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.pairs.JoinResult;
+import mc.alk.arena.objects.pairs.JoinResult.JoinStatus;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.ServerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 import java.util.ArrayList;
@@ -44,20 +47,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class BattleArenaController implements Runnable, ArenaListener, Listener{
+public class BattleArenaController implements ArenaListener, Listener{
 
     private boolean stop = false;
-    private boolean running = false;
 
     final private Set<Match> running_matches = Collections.synchronizedSet(new CopyOnWriteArraySet<Match>());
-    final private Map<ArenaType,LinkedList<Match>> unfilled_matches = Collections.synchronizedMap(new ConcurrentHashMap<ArenaType,LinkedList<Match>>());
+    final private Map<ArenaType,List<Match>> unfilled_matches =new HashMap<ArenaType,List<Match>>();
     private Map<String, Arena> allarenas = new ConcurrentHashMap<String, Arena>();
     final private Map<ArenaType,OldLobbyState> oldLobbyState = new HashMap<ArenaType,OldLobbyState>();
     private final ArenaMatchQueue amq = new ArenaMatchQueue();
@@ -82,49 +84,23 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         this.signUpdateListener = signUpdateListener;
     }
 
-    /// Run is Thread Safe
-    @Override
-    public void run() {
-        running = true;
-        Match match;
-        while (!stop){
-            match = amq.getArenaMatch();
-            if (match != null){
-                Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new OpenAndStartMatch(match));
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onMatchOpenEvent(MatchOpenEvent event) {
+        Match match = event.getMatch();
+        match.addArenaListener(this);
+        synchronized (running_matches) {
+            running_matches.add(match);
+        }
+        if (match.isJoinablePostCreate()){
+            List<Match> matches = unfilled_matches.get(match.getParams().getType());
+            if (matches == null) {
+                matches = new CopyOnWriteArrayList<Match>();
+                unfilled_matches.put(match.getParams().getType(), matches);
             }
+            matches.add(0, match);
+        } else {
+            removeFixedReservedArena(match.getArena());
         }
-        running = false;
-    }
-
-    /**
-     * opens and starts the match
-     */
-    private class OpenAndStartMatch implements Runnable{
-        Match match;
-        public OpenAndStartMatch(Match match){
-            this.match = match;
-        }
-        @Override
-        public void run() {
-            openMatch(match);
-//            if (match.getTeamJoinHandler() == null ||
-//                    match.getTeamJoinHandler().hasEnough(match.getParams().getAllowedTeamSizeDifference())) {
-                match.run();
-//            }
-        }
-    }
-
-    public Match createMatch(Arena arena, EventOpenOptions eoo) throws NeverWouldJoinException {
-        final ArenaMatch arenaMatch = new ArenaMatch(arena, eoo.getParams(),null);
-        AbstractJoinHandler jh = TeamJoinFactory.createTeamJoinHandler(eoo.getParams(), arenaMatch);
-        arenaMatch.hookTeamJoinHandler(jh);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
-            @Override
-            public void run() {
-                openMatch(arenaMatch);
-            }
-        });
-        return arenaMatch;
     }
 
     private void setFixedReservedArena(Arena arena) {
@@ -139,7 +115,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
     }
 
     public Match createAndAutoMatch(Arena arena, EventOpenOptions eoo)
-            throws NeverWouldJoinException, IllegalStateException {
+            throws NeverWouldJoinException, IllegalStateException, MatchCreationException {
         MatchParams mp = eoo.getParams();
         MatchParams oldArenaParams = arena.getParams();
 
@@ -147,7 +123,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         /// Since we want people to add this event, add this arena as the next
         setFixedReservedArena(arena);
 
-        Match m = createMatch(arena,eoo);
+        Match m = amq.createMatch(arena, eoo);
         m.setOldArenaParams(oldArenaParams);
         saveStates(m,arena);
         arena.setAllContainerState(ContainerState.OPEN);
@@ -182,24 +158,6 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         }
     }
 
-    private void openMatch(Match match){
-        match.addArenaListener(this);
-        synchronized(running_matches){
-            running_matches.add(match);
-        }
-
-        match.open();
-        if (match.isJoinablePostCreate()){
-            LinkedList<Match> matches = unfilled_matches.get(match.getParams().getType());
-            if (matches == null){
-                matches = new LinkedList<Match>();
-                unfilled_matches.put(match.getParams().getType(), matches);
-            }
-            matches.addFirst(match);
-        } else {
-            removeFixedReservedArena(match.getArena());
-        }
-    }
 
     private void restoreStates(Match am, Arena arena){
         if (arena == null)
@@ -302,7 +260,7 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
             Log.info(" Join status = " + jr.status + "    " + tqo.getTeam() + "   " + tqo.getTeam().getId() + " --"
                     + ", haslobby=" + mp.needsLobby() + "  ,wr=" + (mp.hasOptionAt(MatchState.ONJOIN, TransitionOption.TELEPORTWAITROOM)) + "  " +
                     "   --- hasArena=" + tqo.getJoinOptions().hasArena());
-        if (tqo.getJoinOptions().hasArena()) {
+        if (tqo.getJoinOptions().hasArena() && !(jr.status == JoinStatus.STARTED_NEW_GAME)) {
             Arena a = tqo.getJoinOptions().getArena();
             if (!(a.getParams().hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN) ||
                     a.getParams().hasOptionAt(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN)) &&
@@ -363,31 +321,29 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
             return jr;
         }
         MatchParams params = tqo.getMatchParams();
-        synchronized (unfilled_matches) {
-            List<Match> matches = unfilled_matches.get(params.getType());
-            if (matches == null)
-                return jr;
-            for (Match match : matches) {
-                /// We dont want people joining in a non waitroom state
-                if (!match.canStillJoin()) {
-                    continue;}
-                if (!match.getParams().matches(tqo.getJoinOptions()) || !match.getArena().matches(tqo.getJoinOptions())) {
-                    continue;}
-                AbstractJoinHandler tjh = match.getTeamJoinHandler();
-                if (tjh == null)
+        List<Match> matches = unfilled_matches.get(params.getType());
+        if (matches == null)
+            return jr;
+        for (Match match : matches) {
+            /// We dont want people joining in a non waitroom state
+            if (!match.canStillJoin()) {
+                continue;}
+            if (!match.getParams().matches(tqo.getJoinOptions()) || !match.getArena().matches(tqo.getJoinOptions())) {
+                continue;}
+            AbstractJoinHandler tjh = match.getTeamJoinHandler();
+            if (tjh == null)
+                continue;
+            AbstractJoinHandler.TeamJoinResult tjr = tjh.joiningTeam(tqo);
+            switch (tjr.status) {
+                case ADDED:
+                case ADDED_TO_EXISTING:
+                case ADDED_STILL_NEEDS_PLAYERS:
+                    jr.status = JoinResult.JoinStatus.ADDED_TO_EXISTING_MATCH;
+                    break;
+                case CANT_FIT:
                     continue;
-                AbstractJoinHandler.TeamJoinResult tjr = tjh.joiningTeam(tqo);
-                switch (tjr.status) {
-                    case ADDED:
-                    case ADDED_TO_EXISTING:
-                    case ADDED_STILL_NEEDS_PLAYERS:
-                        jr.status = JoinResult.JoinStatus.ADDED_TO_EXISTING_MATCH;
-                        break;
-                    case CANT_FIT:
-                        continue;
-                }
-                return jr;
             }
+            return jr;
         }
         return jr;
     }
@@ -539,11 +495,9 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
         synchronized(running_matches){
             running_matches.remove(am);
         }
-        synchronized(unfilled_matches){
-            List<Match> matches = unfilled_matches.get(am.getParams().getType());
-            if (matches != null){
-                matches.remove(am);
-            }
+        List<Match> matches = unfilled_matches.get(am.getParams().getType());
+        if (matches != null){
+            matches.remove(am);
         }
     }
 
@@ -570,9 +524,6 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
     public void resume() {
         stop = false;
         amq.resume();
-        if (!running){
-            new Thread(this).start();
-        }
     }
 
     public boolean cancelMatch(Arena arena) {
@@ -658,7 +609,6 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
 
     public String toStringQueuesAndMatches(){
         StringBuilder sb = new StringBuilder();
-        sb.append(amq.toStringReadyMatches());
         sb.append("------ running  matches -------\n");
         synchronized(running_matches){
             for (Match am : running_matches)
@@ -741,15 +691,13 @@ public class BattleArenaController implements Runnable, ArenaListener, Listener{
 
     public boolean forceStart(MatchParams mp, boolean respectMinimumPlayers) {
         boolean started = false;
-        if (!unfilled_matches.isEmpty()) {
-            synchronized (unfilled_matches) {
-                List<Match> matches = unfilled_matches.get(mp.getType());
-                if (matches != null){
-                    for (Match match : matches) {
-                        if (match.isTimedStart()){
-                            match.setTimedStart(0,0); /// start now! :)
-                            started = true;
-                        }
+        synchronized (unfilled_matches) {
+            List<Match> matches = unfilled_matches.get(mp.getType());
+            if (matches != null){
+                for (Match match : matches) {
+                    if (match.isTimedStart()){
+                        match.setTimedStart(0,0); /// start now! :)
+                        started = true;
                     }
                 }
             }

@@ -2,7 +2,7 @@ package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.spawns.SpawnLocation;
-import mc.alk.plugin.updater.v1r6.Version;
+import mc.alk.plugin.updater.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 

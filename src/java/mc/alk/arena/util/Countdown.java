@@ -1,6 +1,5 @@
 package mc.alk.arena.util;
 
-import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.Scheduler;
 import org.bukkit.plugin.Plugin;
 
@@ -47,7 +46,7 @@ public class Countdown implements Runnable{
         }
         startTime = System.currentTimeMillis();
         expectedEndTime = startTime + seconds*1000;
-        this.timerId  = Scheduler.scheduleSynchronousTask(plugin, this, (int)(time * Defaults.TICK_MULT));
+        this.timerId  = Scheduler.scheduleSynchronousTask(plugin, this, (int)(time));
     }
 
     public void setCancelOnExpire(boolean cancel){
@@ -65,7 +64,7 @@ public class Countdown implements Runnable{
         TimeUtil.testClock();
         if (!stop && (seconds > 0 || !cancelOnExpire)){
             timerId  = Scheduler.scheduleSynchronousTask(plugin, this,
-                    (long) (interval * 20L * Defaults.TICK_MULT));
+                    interval * 20L);
         }
         seconds -= interval;
     }

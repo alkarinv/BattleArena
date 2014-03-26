@@ -341,18 +341,26 @@ public class InventoryUtil {
 		return mat != null ? mat.getId() : -1;
 	}
 
-	public static boolean hasItem(Player p, ItemStack itemType) {
+	public static boolean hasItem(Player p, ItemStack item) {
 		PlayerInventory inv = p.getInventory();
 		for (ItemStack is : inv.getContents()){
-			if (is != null && is.getType() == itemType.getType()){
+			if (is != null && is.getType() == item.getType()){
 				return true;}
 		}
 		for (ItemStack is : inv.getArmorContents()){
-			if (is != null && is.getType() == itemType.getType()){
+			if (is != null && is.getType() == item.getType()){
 				return true;}
 		}
 		return false;
 	}
+
+    public static boolean hasAllItems(Player p, List<ItemStack> items) {
+        for (ItemStack is : items){
+            if (!hasItem(p,is))
+                return false;
+        }
+        return true;
+    }
 
 	public static boolean hasAnyItem(Player p) {
 		PlayerInventory inv = p.getInventory();

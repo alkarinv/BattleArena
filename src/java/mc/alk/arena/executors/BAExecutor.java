@@ -11,7 +11,6 @@ import mc.alk.arena.controllers.ArenaAlterController.ArenaOptionPair;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.BAEventController;
-import mc.alk.arena.controllers.plugins.CombatTagInterface;
 import mc.alk.arena.controllers.CompetitionController;
 import mc.alk.arena.controllers.DuelController;
 import mc.alk.arena.controllers.EventController;
@@ -27,6 +26,7 @@ import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.controllers.joining.AbstractJoinHandler;
 import mc.alk.arena.controllers.messaging.MessageHandler;
+import mc.alk.arena.controllers.plugins.CombatTagInterface;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.plugins.MobArenaInterface;
@@ -44,10 +44,11 @@ import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.Duel;
-import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.PlayerSave;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -55,21 +56,23 @@ import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.Channel;
-import mc.alk.arena.objects.options.StateOptions;
+import mc.alk.arena.objects.options.AlterParamOption;
 import mc.alk.arena.objects.options.DuelOptions;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.options.EventOpenOptions;
-import mc.alk.arena.objects.options.AlterParamOption;
 import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.TransitionOption;
-import mc.alk.arena.objects.pairs.ParamAlterOptionPair;
 import mc.alk.arena.objects.pairs.JoinResult;
+import mc.alk.arena.objects.pairs.ParamAlterOptionPair;
 import mc.alk.arena.objects.pairs.TransitionOptionTuple;
 import mc.alk.arena.objects.spawns.FixedLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.FormingTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 import mc.alk.arena.objects.teams.TeamIndex;
+import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
@@ -83,6 +86,7 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -1577,27 +1581,100 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     public boolean checkAndRemoveFee(MatchParams pi, ArenaTeam t) {
-        if (pi.hasEntranceFee()) {
+        boolean takesFee = pi.hasEntranceFee();
+        boolean needsItems = pi.hasOptionAt(MatchState.PREREQS, TransitionOption.NEEDITEMS);
+        boolean takesItems = pi.hasOptionAt(MatchState.PREREQS, TransitionOption.TAKEITEMS);
+        if (takesFee) {
             Double fee = pi.getEntranceFee();
-            if (fee == null || fee <= 0)
-                return true;
-            boolean hasEnough = true;
-            for (ArenaPlayer player : t.getPlayers()) {
-                boolean has = MoneyController.hasEnough(player.getName(), fee);
-                hasEnough &= has;
-                if (!has)
-                    sendMessage(player, "&eYou need &6" + fee + "&e to compete");
+            if (fee != null) {
+
+                boolean hasEnough = true;
+                for (ArenaPlayer player : t.getPlayers()) {
+                    boolean has = MoneyController.hasEnough(player.getName(), fee);
+                    hasEnough &= has;
+                    if (!has)
+                        sendMessage(player, "&eYou need &6" + fee + "&e to compete");
+                }
+                if (!hasEnough) {
+                    if (t.size() > 1)
+                        t.sendMessage("&eYour team does not have enough money to compete");
+                    return false;
+                }
             }
-            if (!hasEnough) {
-                t.sendMessage("&eYour team does not have enough money to compete");
-                return false;
+        }
+        if (needsItems) {
+            List<ItemStack> fee = pi.getStateOptions().getNeedItems(MatchState.PREREQS);
+            if (fee != null){
+                boolean hasEnough = true;
+
+                for (ArenaPlayer player : t.getPlayers()) {
+                    boolean has = InventoryUtil.hasAllItems(player.getPlayer(),fee);
+                    hasEnough &= has;
+                    if (!has) {
+                        sendMessage(player, "&eYou don't have all the needed items to compete");
+                        for (ItemStack is: fee) {
+                            sendMessage(player, "&c- &e" + InventoryUtil.getItemString(is));}
+                    }
+                }
+                if (!hasEnough) {
+                    if (t.size() > 1)
+                        t.sendMessage("&eYour team does not have all the items to compete");
+                    return false;
+                }
             }
-            for (ArenaPlayer player : t.getPlayers()) {
-                MoneyController.subtract(player.getName(), fee);
-                sendMessage(player, "&6" + fee+ " has been subtracted from your account");
+        }
+        if (takesItems) {
+            List<ItemStack> fee = pi.getStateOptions().getTakeItems(MatchState.PREREQS);
+            if (fee != null){
+                boolean hasEnough = true;
+
+                for (ArenaPlayer player : t.getPlayers()) {
+                    boolean has = InventoryUtil.hasAllItems(player.getPlayer(),fee);
+                    hasEnough &= has;
+                    if (!has) {
+                        sendMessage(player, "&eYou don't have all the needed items to compete");
+                        for (ItemStack is: fee) {
+                            sendMessage(player, "&c- &e" + InventoryUtil.getItemString(is));}
+                    }
+                }
+                if (!hasEnough) {
+                    if (t.size() > 1)
+                    t.sendMessage("&eYour team does not have all the items to compete");
+                    return false;
+                }
+            }
+        }
+        /// Take the requirements
+
+        if (takesFee){
+            Double fee = pi.getEntranceFee();
+            if (fee != null){
+                for (ArenaPlayer player : t.getPlayers()) {
+                    getOrCreateJoinReqs(player).setMoney(fee);
+                    MoneyController.subtract(player.getName(), fee);
+                    sendMessage(player, "&6" + fee + " has been subtracted from your account");
+                }
+            }
+        }
+        if (takesItems) {
+            List<ItemStack> fee = pi.getStateOptions().getTakeItems(MatchState.PREREQS);
+            if (fee != null){
+                for (ArenaPlayer player : t.getPlayers()) {
+                    getOrCreateJoinReqs(player).setItems(new PInv(fee));
+                    InventoryUtil.removeItems(player.getInventory(), fee);
+                }
             }
         }
         return true;
+    }
+
+    private PlayerSave getOrCreateJoinReqs(ArenaPlayer player){
+        PlayerSave ps = player.getMetaData().getJoinRequirements();
+        if (ps == null) {
+            ps = new PlayerSave(player);
+            player.getMetaData().setJoinRequirements(ps);
+        }
+        return ps;
     }
 
     public static boolean refundFee(MatchParams pi, ArenaTeam t) {

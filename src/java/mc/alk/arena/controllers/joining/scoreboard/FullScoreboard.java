@@ -31,7 +31,7 @@ public class FullScoreboard implements WaitingScoreboard {
     ArenaScoreboard scoreboard;
     ArenaObjective ao;
     final int minTeams;
-
+    Countdown countdown;
     public FullScoreboard(MatchParams params, List<ArenaTeam> teams) {
         scoreboard = ScoreboardFactory.createScoreboard(String.valueOf(this.hashCode()), params);
         ao = scoreboard.createObjective("waiting",
@@ -52,18 +52,7 @@ public class FullScoreboard implements WaitingScoreboard {
                 params.getForceStartTime() != ArenaSize.MAX
                 && !params.getMaxPlayers().equals(params.getMinPlayers())
                 ){
-            new Countdown(BattleArena.getSelf(), params.getForceStartTime(),1,
-                    new CountdownCallback(){
-                        @Override
-                        public boolean intervalTick(int remaining) {
-                            if (remaining == 0){
-                                ao.setDisplayNameSuffix("");
-                            } else {
-                                ao.setDisplayNameSuffix(" &e("+remaining+")");
-                            }
-                            return true;
-                        }
-                    });
+            countdown = new Countdown(BattleArena.getSelf(), params.getForceStartTime(),1,new DisplayCountdown());
         }
     }
 
@@ -176,5 +165,26 @@ public class FullScoreboard implements WaitingScoreboard {
     @Override
     public ArenaScoreboard getScoreboard() {
         return scoreboard;
+    }
+
+
+    class DisplayCountdown implements CountdownCallback {
+        @Override
+        public boolean intervalTick(int secondsRemaining) {
+            if (secondsRemaining == 0){
+                ao.setDisplayNameSuffix("");
+            } else {
+                ao.setDisplayNameSuffix(" &e("+secondsRemaining+")");
+            }
+            return true;
+        }
+    }
+
+    @Override
+    public void setRemainingSeconds(int seconds) {
+        if (countdown !=null){
+            countdown.stop();
+        }
+        countdown = new Countdown(BattleArena.getSelf(), seconds,1,new DisplayCountdown());
     }
 }

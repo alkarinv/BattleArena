@@ -8,7 +8,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.joining.JoinHandler;
-import mc.alk.arena.objects.joining.JoinResponseHandler;
 import mc.alk.arena.objects.joining.TeamJoinObject;
 import mc.alk.arena.objects.scoreboard.WaitingScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
@@ -24,13 +23,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
     public static final TeamJoinResult CANTFIT = new TeamJoinResult(TeamJoinStatus.CANT_FIT,-1,null);
 
     final MatchParams matchParams;
 
-    final List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
+    final List<ArenaTeam> teams = new CopyOnWriteArrayList<ArenaTeam>();
 
     final int minTeams,maxTeams;
 
@@ -53,6 +53,22 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         addTeam(ct);
         ct.addPlayer(player);
         addToTeam(ct, player);
+    }
+
+    public void useWaitingScoreboard(){
+        if (scoreboard==null)
+            return;
+        for (ArenaTeam at: teams){
+            for (ArenaPlayer ap: at.getPlayers()){
+                scoreboard.getScoreboard().setScoreboard(ap.getPlayer());
+            }
+        }
+    }
+
+    public void setWaitingScoreboardTime(int seconds) {
+        if (scoreboard==null)
+            return;
+        scoreboard.setRemainingSeconds(seconds);
     }
 
 
@@ -127,8 +143,10 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
             if (t.hasLeft(player)){
                 t.addPlayer(player);
                 nPlayers++;
-                JoinResponseHandler jh = competition != null ? competition : scoreboard;
-                if (jh != null) jh.addedToTeam(t,player);
+                if (competition!=null)
+                    competition.addedToTeam(t,player);
+                if (scoreboard!=null)
+                    scoreboard.addedToTeam(t,player);
                 return t;
             }
         }
@@ -143,8 +161,10 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
             ap.setTeam(team);
         }
         nPlayers+=players.size();
-        JoinResponseHandler jh = competition != null ? competition : scoreboard;
-        if (jh != null) jh.addedToTeam(team, players);
+        if (competition!=null)
+            competition.addedToTeam(team,players);
+        if (scoreboard!=null)
+            scoreboard.addedToTeam(team,players);
     }
 
     @Override
@@ -152,8 +172,10 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         team.addPlayer(player);
         player.setTeam(team);
         nPlayers++;
-        JoinResponseHandler jh = competition != null ? competition : scoreboard;
-        if (jh !=null) jh.addedToTeam(team,player);
+        if (competition!=null)
+            competition.addedToTeam(team,player);
+        if (scoreboard!=null)
+            scoreboard.addedToTeam(team,player);
         return true;
     }
 
@@ -162,8 +184,10 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         team.removePlayer(player);
         player.setTeam(null);
         nPlayers--;
-        JoinResponseHandler jh = competition != null ? competition : scoreboard;
-        if (jh != null) jh.removedFromTeam(team,player);
+        if (competition!=null)
+            competition.removedFromTeam(team, player);
+        if (scoreboard!=null)
+            scoreboard.removedFromTeam(team,player);
         return true;
     }
 
@@ -185,8 +209,11 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         nPlayers+=team.size();
         team.setIndex(teams.size());
         teams.add(team);
-        JoinResponseHandler jh = competition != null ? competition : scoreboard;
-        return jh != null && jh.addedTeam(team);
+        if (competition!=null)
+            competition.addedTeam(team);
+        if (scoreboard!=null)
+            scoreboard.addedTeam(team);
+        return true;
     }
 
     public abstract TeamJoinResult joiningTeam(TeamJoinObject tqo);
@@ -204,7 +231,8 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
                 t.removePlayer(p);
                 if (competition!=null) {
                     competition.removedFromTeam(t,p);
-                } else if (scoreboard != null ) {
+                }
+                if (scoreboard != null ) {
                     scoreboard.removedFromTeam(t,p);
                 }
                 return true;
@@ -237,10 +265,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         return improper;
     }
 
-    @SuppressWarnings("ConstantConditions")
     public boolean hasEnough(int allowedTeamSizeDifference){
-        if (teams ==null)
-            return false;
         final int teamssize = teams.size();
         if (teamssize < minTeams)
             return false;
@@ -278,6 +303,17 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         /// we can't add a team.. and all teams are full
         return true;
     }
+
+    public boolean isEmpty() {
+        if (teams.isEmpty())
+            return true;
+        for (ArenaTeam t: teams){
+            if (t.size() != 0){
+                return false;}
+        }
+        return true;
+    }
+
     public List<ArenaTeam> getTeams() {
         return teams;
     }

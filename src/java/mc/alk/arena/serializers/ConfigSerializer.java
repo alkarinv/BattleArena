@@ -527,6 +527,17 @@ public class ConfigSerializer extends BaseConfig{
         }
 
         try{
+            List<ItemStack> items = InventoryUtil.getItemList(cs,"takeItems");
+            if (items!=null && !items.isEmpty()) {
+                tops.addOption(TransitionOption.TAKEITEMS,items);
+            } else {
+                options.remove(TransitionOption.TAKEITEMS);}
+        } catch (Exception e){
+            Log.err("Error setting the value of takeItems ");
+            Log.printStackTrace(e);
+        }
+
+        try{
             List<PotionEffect> effects = getEffectList(cs, "enchants");
             if (effects!=null && !effects.isEmpty())
                 tops.addOption(TransitionOption.ENCHANTS, effects);
@@ -820,6 +831,8 @@ public class ConfigSerializer extends BaseConfig{
                                 tmap.put(to.toString(), getItems(tops.getNeedItems()));
                             } else if (to.equals(TransitionOption.GIVEITEMS)) {
                                 tmap.put(to.toString(), getItems(tops.getGiveItems()));
+                            } else if (to.equals(TransitionOption.TAKEITEMS)) {
+                                tmap.put(to.toString(), getItems(tops.getTakeItems()));
                             } else if (to.equals(TransitionOption.GIVECLASS)) {
                                 tmap.put(to.toString(), getArenaClasses(tops.getClasses()));
                             } else if (to.equals(TransitionOption.ENCHANTS)) {
@@ -828,14 +841,15 @@ public class ConfigSerializer extends BaseConfig{
                                 tmap.put(to.toString(), getDoCommandsStringList(tops.getDoCommands()));
                             } else if (to.equals(TransitionOption.TELEPORTTO)){
                                 tmap.put(to.toString(), SerializerUtil.getLocString(tops.getTeleportToLoc()));
-                            }
-                            Object value = ops.get(to);
-                            if (value == null) {
-                                s = to.toString();
                             } else {
-                                s = to.toString() + "=" + value.toString();
+                                Object value = ops.get(to);
+                                if (value == null) {
+                                    s = to.toString();
+                                } else {
+                                    s = to.toString() + "=" + value.toString();
+                                }
+                                list.add(s);
                             }
-                            list.add(s);
                         } catch (Exception e) {
                             Log.err("[BA Error] couldn't save " + to);
                             Log.printStackTrace(e);

@@ -223,12 +223,12 @@ public class JoinOptions {
             ops.put(jo, obj);
         }
         if (arena != null){
+            mp.setParent(arena.getParams());
             if ((!arena.matches(jos))){
                 throw new InvalidOptionException("&cThe arena &6" +arena.getName() +
                         "&c doesn't match your add requirements. "  +
                         StringUtils.join( arena.getInvalidMatchReasons(mp, jos), '\n'));
             }
-            mp.setParent(arena.getParams());
         }
         MinMax mm = null;
         try{mm = MinMax.valueOf(lastArg);} catch (Exception e){/* do nothing */}

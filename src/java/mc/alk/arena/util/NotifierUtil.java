@@ -1,14 +1,19 @@
 package mc.alk.arena.util;
 
+import mc.alk.arena.competition.Competition;
+import mc.alk.arena.objects.MessageListener;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class NotifierUtil {
-	public static Map<String,Set<String>> listeners = new ConcurrentHashMap<String,Set<String>>();
+    public static Map<String,Set<String>> listeners = new ConcurrentHashMap<String,Set<String>>();
+    public static Map<Integer,List<MessageListener>> compListeners = new ConcurrentHashMap<Integer, List<MessageListener>>();
 
 	public static void notify(String type, String msg) {
         if (listeners.get(type)== null)
@@ -59,5 +64,23 @@ public class NotifierUtil {
 		return listeners.containsKey(type) && !listeners.get(type).isEmpty();
 	}
 
+
+    public static void notify(Competition c, String msg) {
+        List<MessageListener> list = compListeners.get(c.getID());
+        if (list == null)
+            return;
+        for (MessageListener ml : list){
+            ml.receiveMessage(msg);
+        }
+    }
+
+    public static void addMatchListener(Competition c, MessageListener l ){
+        List<MessageListener> list = compListeners.get(c.getID());
+        if (list == null) {
+            list = new ArrayList<MessageListener>();
+            compListeners.put(c.getID(), list);
+        }
+        list.add(l);
+    }
 
 }

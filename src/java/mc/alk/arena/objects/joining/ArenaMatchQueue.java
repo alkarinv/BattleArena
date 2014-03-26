@@ -5,9 +5,11 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.competition.match.ArenaMatch;
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.Scheduler;
+import mc.alk.arena.controllers.joining.AbstractJoinHandler;
+import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.matches.MatchCreatedEvent;
@@ -16,17 +18,21 @@ import mc.alk.arena.events.players.ArenaPlayerEnterQueueEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveQueueEvent;
 import mc.alk.arena.executors.BAExecutor;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.CompetitionSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.PlayerSave;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.ArenaEventHandler;
+import mc.alk.arena.objects.exceptions.MatchCreationException;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
+import mc.alk.arena.objects.options.EventOpenOptions;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.pairs.JoinResult;
 import mc.alk.arena.objects.pairs.JoinResult.JoinStatus;
@@ -78,7 +84,6 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
 
     final private Map<ArenaType, ArenaQueue> arenaqueue = new ConcurrentHashMap<ArenaType, ArenaQueue>();
 
-    final LinkedList<Match> ready_matches = new LinkedList<Match>();
     final Map<ArenaType,LinkedList<FoundMatch>> delayedReadyMatches = new HashMap<ArenaType, LinkedList<FoundMatch>>();
     final private Map<ArenaType, Integer> runningMatchTypes = Collections.synchronizedMap(new HashMap<ArenaType, Integer>());
 
@@ -105,6 +110,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         return inQueueForArena.containsKey(arena) ? inQueueForArena.get(arena) : 0;
     }
 
+
     public enum QueueType{
         GAME,ARENA
     }
@@ -118,48 +124,51 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         public Arena arena;
         public WaitingObject wo;
         MatchParams params;
+        public AbstractJoinHandler joinHandler;
 
-        public void startMatch() {
+        public Match startMatch() {
             incNumberOpenMatches(params.getType());
-            removeTimer(wo); /// get rid of any timers
+            if (wo != null)
+                removeTimer(wo); /// get rid of any timers
+            final Match m = new ArenaMatch(arena, params, wo != null ? wo.getArenaListeners() : null);
+            final boolean hasJoinHandler = joinHandler != null && joinHandler.getTeams() != null;
+            final boolean timedStart = wo != null && wo.createsOnJoin() && wo.getParams().getForceStartTime() > 0;
+            if (hasJoinHandler) {
+                m.hookTeamJoinHandler(joinHandler);}
+            MatchCreatedEvent mce = new MatchCreatedEvent(m, wo);
+            m.callEvent(mce);
+
+            if (hasJoinHandler) {
+                addCompetition(joinHandler,m);}
+
+            m.open();
+            if (timedStart){
+                m.setTimedStart(wo.getParams().getForceStartTime(), 30);}
+
             Scheduler.scheduleSynchronousTask(new Runnable() {
                 @Override
                 public void run() {
-                    final Match m = new ArenaMatch(arena, params, wo.getArenaListeners());
-                    m.hookTeamJoinHandler(wo.jh);
-                    ready_matches.add(m);
-                    for (ArenaTeam t : wo.jh.getTeams()) {
-                        for (ArenaPlayer ap : t.getPlayers()) {
-                            ap.addCompetition(m);
-                            removeFromQueue(ap, false);
-                        }
-                    }
-                    MatchCreatedEvent mce = new MatchCreatedEvent(m, wo);
-                    m.callEvent(mce);
-                }
-            });
-        }
-    }
+                    if (hasJoinHandler) {
+                        removeFromQueue(joinHandler);}
 
-    public Match getArenaMatch() {
-        lock.lock();
-        try{
-            while (ready_matches.isEmpty())
-                empty.awaitNanos(30000000); /// Technically this could wait forever, but just in case.. check occasionally
-            Match m = null;
-            synchronized(ready_matches){
-                if (!suspend.get() && !ready_matches.isEmpty()){
-                    m = ready_matches.removeFirst();
+                    if (!timedStart){ /// Start now
+                        m.run();}
+                }
+
+            });
+            return m;
+        }
+
+        private void addCompetition(AbstractJoinHandler joinHandler, Match m) {
+            for (ArenaTeam t : joinHandler.getTeams()) {
+                for (ArenaPlayer ap : t.getPlayers()) {
+                    ap.addCompetition(m);
                 }
             }
-            return m;
-        } catch(InterruptedException e) {
-            System.err.println("InterruptedException caught");
-        } finally{
-            lock.unlock();
         }
-        return null;
+
     }
+
 
     public void add(Arena arena) {
         synchronized(arenaqueue) {
@@ -294,18 +303,16 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
                 try {
                     o = new WaitingObject(qo);
                     o.join(qo);
-//                    if (o.createsOnJoin()){
-                    if (false){
+                    if (o.createsOnJoin()){
                         /// find an arena for these teams
-                        Arena arena = reserveNextArena(o.getParams(), qo.getJoinOptions());
+                        Arena arena = getStartImmediately(o);
                         if (arena == null){  /// No arena found
-                            jr.status = JoinStatus.NOT_OPEN;
+                            jr.status = JoinStatus.ERROR;
                             return jr;
                         }
                         mf = createFoundMatch(jr, o, arena);
-                        entered = true;
-                        joinHandlers.add(o);
                         mf.startMatch();
+                        return jr;
                     } else {
                         entered = true;
                         joinHandlers.add(o);
@@ -344,8 +351,28 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
             }
         }
         if (mf != null) {
-            addReadyMatch(mf);        }
+            addReadyMatch(mf);}
         return jr;
+    }
+
+
+    public Match createMatch(Arena arena, EventOpenOptions eoo) throws MatchCreationException, NeverWouldJoinException {
+        FoundMatch mf;
+        mf = new FoundMatch();
+        mf.arena = arena;
+        mf.params = eoo.getParams();
+        Match arenaMatch = mf.startMatch();
+        AbstractJoinHandler jh = TeamJoinFactory.createTeamJoinHandler(eoo.getParams(), arenaMatch);
+        arenaMatch.hookTeamJoinHandler(jh);
+        return arenaMatch;
+    }
+
+    private Arena getStartImmediately(WaitingObject o) {
+        /// do we still have room for another match
+        if (getNumberOpenMatches(o.getParams().getType()) >= o.getParams().getNConcurrentCompetitions()) {
+            return null;
+        }
+        return reserveNextArena(o.getParams(), o.getJoinOptions());
     }
 
     /**
@@ -357,6 +384,14 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
     public boolean leave(ArenaPlayer player) {
         WaitingObject tjh = removeFromQueue(player, true);
         return tjh != null;
+    }
+
+    private void removeFromQueue(AbstractJoinHandler joinHandler) {
+        for (ArenaTeam t : joinHandler.getTeams()) {
+            for (ArenaPlayer ap : t.getPlayers()) {
+                removeFromQueue(ap, false);
+            }
+        }
     }
 
     private WaitingObject removeFromQueue(ArenaPlayer player, boolean leaveJoinHandler) {
@@ -385,7 +420,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         mf.arena = arena;
         mf.wo = o;
         mf.params = o.getParams();
-
+        mf.joinHandler = o.jh;
         if (jr != null){
             jr.status = JoinResult.JoinStatus.STARTED_NEW_GAME;
             jr.params = o.getParams();
@@ -473,13 +508,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
 
     public  Collection<ArenaTeam> purgeQueue(){
         List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
-        synchronized(ready_matches){
-            for (Match m: ready_matches){
-                teams.addAll(m.getTeams());
-                m.cancelMatch();
-            }
-            ready_matches.clear();
-        }
+
         Map<ArenaPlayer, WaitingObject> players = new HashMap<ArenaPlayer, WaitingObject>();
         synchronized(delayedReadyMatches){
             for (List<FoundMatch> list : delayedReadyMatches.values()){
@@ -585,17 +614,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
 
     @Override
     public String toString(){
-        return queuesToString() + toStringArenas() + toStringReadyMatches();
-    }
-
-    public String toStringReadyMatches(){
-        StringBuilder sb = new StringBuilder();
-        sb.append("------ ready matches ------- \n");
-        synchronized(ready_matches){
-            for (Match am : ready_matches){
-                sb.append(am).append("\n");}
-        }
-        return sb.toString();
+        return queuesToString() + toStringArenas();
     }
 
     public String toStringArenas(){
@@ -746,7 +765,16 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
     public void onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event) {
         WaitingObject wo = removeFromQueue(event.getPlayer(), true);
         if (wo != null) {
+            ArenaPlayer ap = event.getPlayer();
             event.addMessage(MessageHandler.getSystemMessage("you_left_queue", wo.getParams().getName()));
+            /// They are inbetween.. but let match handle
+            if (ap.getCompetition()!=null && ap.getCompetition() instanceof Match){
+                return;
+            }
+            PlayerSave ps = ap.getMetaData().getJoinRequirements();
+            if (ps!=null){
+                new PlayerStoreController(ps).restoreAll(event.getPlayer());
+            }
         }
     }
 
@@ -824,11 +852,14 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
         IdTime idt = forceTimers.get(wo);
         return idt != null && System.currentTimeMillis() - idt.time >= 0;
     }
-    private void removeTimer(WaitingObject wo){
+
+    private Long removeTimer(WaitingObject wo){
         IdTime idt = forceTimers.remove(wo);
         if (idt != null && idt.c != null){
             idt.c.stop();
+            return idt.time - System.currentTimeMillis();
         }
+        return null;
     }
 
     private IdTime updateTimer(final WaitingObject to) {

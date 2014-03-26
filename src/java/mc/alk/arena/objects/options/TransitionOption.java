@@ -16,6 +16,7 @@ public enum TransitionOption implements StateOption {
     NEEDARMOR ("needArmor",false),					/// PREREQ only: player needs armor to add the match
     NOINVENTORY("noInventory",false),				/// PREREQ only: player needs to have no inventory to add
     NEEDITEMS ("needItems",false),					/// PREREQ only: player needs the following items to add
+    TAKEITEMS ("takeItems",false),					/// PREREQ only: player needs the following items to add (items removed)
     SAMEWORLD("sameWorld",false),					/// PREREQ only: player can only add from the same world
     WITHINDISTANCE("withinDistance",true),			/// PREREQ only: player needs to be within the following distance to add
     LEVELRANGE("levelRange",true),					/// =<range>: PREREQ only: player needs to be within the given range
@@ -143,6 +144,7 @@ public enum TransitionOption implements StateOption {
     @Override
     public String toString(){return name;}
 
+    @Override
     public boolean hasValue(){return hasValue;}
 
     public static TransitionOption fromString(String str){

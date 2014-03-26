@@ -82,6 +82,11 @@ public class StateOptions {
         return o == null ? null : (List<ItemStack>) o;
     }
 
+    public List<ItemStack> getTakeItems() {
+        Object o = options.get(TAKEITEMS);
+        return o == null ? null : (List<ItemStack>) o;
+    }
+
     public List<PotionEffect> getEffects(){
         Object o = options.get(ENCHANTS);
         return o == null ? null : (List<PotionEffect>) o;

@@ -25,14 +25,15 @@ public class BlockSpawn extends SpawnInstance{
     @Override
     public void spawn() {
         Block b = getLocation().getBlock();
-        if (b.getType() != mat)
+        if (mat != null && b.getType() != mat)
             b.setType(mat);
     }
 
     @Override
 	public void despawn() {
         Block b = getLocation().getBlock();
-        b.setType(despawnMat);
+        if (despawnMat!=null)
+            b.setType(despawnMat);
 	}
 
 	@Override

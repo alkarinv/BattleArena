@@ -10,4 +10,7 @@ public interface IPlayerHelper {
 
 	double getMaxHealth(Player player);
 
+    Object getScoreboard(Player player);
+
+    void setScoreboard(Player player, Object scoreboard);
 }

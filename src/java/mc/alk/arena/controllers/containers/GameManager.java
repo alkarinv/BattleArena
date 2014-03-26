@@ -3,6 +3,7 @@ package mc.alk.arena.controllers.containers;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.competition.TransitionController;
+import mc.alk.arena.controllers.PlayerStoreController;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
@@ -146,6 +147,7 @@ public class GameManager implements PlayerHolder{
 	@Override
 	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
 		if (handled.add(player)){
+            PlayerStoreController.getPlayerStoreController().storeScoreboard(player);
 			TransitionController.transition(this, MatchState.ONENTER, player, null, false);
 			updateBukkitEvents(MatchState.ONENTER, player);
 			if (EssentialsController.enabled())
@@ -155,15 +157,12 @@ public class GameManager implements PlayerHolder{
 			PlayerUtil.setGameMode(player.getPlayer(), GameMode.SURVIVAL);
 			EssentialsController.setGod(player.getPlayer(), false);
             callEvent(new ArenaPlayerEnterMatchEvent(player, player.getTeam()));
-
-			player.getMetaData().setJoining(true);
 		}
 	}
 
 	@Override
 	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
 		player.getMetaData().setJoining(false);
-
     }
 
 	@Override
@@ -176,7 +175,7 @@ public class GameManager implements PlayerHolder{
         callEvent(new ArenaPlayerLeaveMatchEvent(player,player.getTeam()));
 		if (EssentialsController.enabled())
 			BAPlayerListener.setBackLocation(player.getName(), null);
-
+        PlayerStoreController.getPlayerStoreController().restoreScoreboard(player);
 	}
 
 	@Override

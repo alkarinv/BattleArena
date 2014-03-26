@@ -160,9 +160,10 @@ public class ParamAlterController {
         if (tops == null) {
             tops = new StateGraph();
         }
-        if (to == TransitionOption.GIVEITEMS){
-            if (!(sender instanceof Player)){
-                throw new InvalidOptionException("&cYou need to be in game to set this option");}
+        if (to == TransitionOption.GIVEITEMS || to == TransitionOption.TAKEITEMS || to == TransitionOption.NEEDITEMS) {
+            if (!(sender instanceof Player)) {
+                throw new InvalidOptionException("&cYou need to be in game to set this option");
+            }
             value = InventoryUtil.getItemList((Player) sender);
         } else if (to == TransitionOption.ENCHANTS){
             List<PotionEffect> list = tops.hasOptionAt(state, to) ?

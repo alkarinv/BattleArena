@@ -2,7 +2,7 @@ package mc.alk.arena.controllers;
 
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.Util;
-import mc.alk.plugin.updater.v1r6.Version;
+import mc.alk.plugin.updater.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;

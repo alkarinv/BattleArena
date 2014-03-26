@@ -1,7 +1,6 @@
 package mc.alk.arena.util;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.messaging.MessageHandler;
 import org.bukkit.Bukkit;
 
@@ -28,7 +27,7 @@ public class TimeUtil {
                 double mult = millis/elapsedTime;
                 if (mult < 0.2){
                 	mult = 0.2;}
-                Defaults.TICK_MULT = Math.min(mult,1);
+//                Defaults.TICK_MULT = Math.min(mult,1);
 //                MatchMessageImpl.sendMessage(null, ChatColor.GRAY + "[BattleArena] multiplier: " + mult + "x");
             }
         };

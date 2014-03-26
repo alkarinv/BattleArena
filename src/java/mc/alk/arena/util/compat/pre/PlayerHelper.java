@@ -77,7 +77,17 @@ public class PlayerHelper implements IPlayerHelper{
 		}
 	}
 
-	public Integer getAmount(EntityRegainHealthEvent event) {
+    @Override
+    public Object getScoreboard(Player player) {
+        return null;
+    }
+
+    @Override
+    public void setScoreboard(Player player, Object scoreboard) {
+        /* do nothing */
+    }
+
+    public Integer getAmount(EntityRegainHealthEvent event) {
 		try {
 			return new Integer((Integer)getAmount.invoke(event, blankArgs));
 		} catch (Exception e) {

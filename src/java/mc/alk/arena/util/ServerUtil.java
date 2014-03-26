@@ -1,7 +1,7 @@
 package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
-import mc.alk.plugin.updater.v1r6.Version;
+import mc.alk.plugin.updater.Version;
 import mc.alk.virtualPlayer.VirtualPlayers;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
@@ -29,10 +29,12 @@ public class ServerUtil {
 		if (name == null)
 			return null;
 		Player foundPlayer = Bukkit.getPlayer(name);
-		if (foundPlayer != null)
-			return foundPlayer;
-
-		Player[] online = Bukkit.getOnlinePlayers();
+        if (foundPlayer != null) {
+            return foundPlayer;}
+        if (Defaults.DEBUG_VIRTUAL){foundPlayer = VirtualPlayers.getPlayer(name);}
+        if (foundPlayer != null) {
+            return foundPlayer;}
+        Player[] online = Bukkit.getOnlinePlayers();
 		if (Defaults.DEBUG_VIRTUAL){online = VirtualPlayers.getOnlinePlayers();}
 
 		for (Player player : online) {

@@ -5,7 +5,7 @@ import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.util.compat.IPlayerHelper;
-import mc.alk.plugin.updater.v1r6.Version;
+import mc.alk.plugin.updater.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
@@ -33,6 +33,7 @@ public class PlayerUtil {
             Log.printStackTrace(e);
         }
     }
+
 
     public static int getHunger(final Player player) {
         return player.getFoodLevel();
@@ -126,4 +127,11 @@ public class PlayerUtil {
     }
 
 
+    public static Object getScoreboard(Player player) {
+        return handler.getScoreboard(player);
+    }
+
+    public static void setScoreboard(Player player, Object scoreboard) {
+        handler.setScoreboard(player, scoreboard);
+    }
 }

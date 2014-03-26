@@ -2,13 +2,13 @@ package mc.alk.arena.util.compat.v1_6_1;
 
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.util.compat.IPlayerHelper;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
+import org.bukkit.scoreboard.Scoreboard;
 
 public class PlayerHelper implements IPlayerHelper{
 
@@ -47,6 +47,16 @@ public class PlayerHelper implements IPlayerHelper{
 	public double getMaxHealth(Player player) {
 		return player.getMaxHealth();
 	}
+
+    @Override
+    public Object getScoreboard(Player player) {
+        return player.getScoreboard();
+    }
+
+    @Override
+    public void setScoreboard(Player player, Object scoreboard) {
+        player.setScoreboard((Scoreboard) scoreboard);
+    }
 
 
 }

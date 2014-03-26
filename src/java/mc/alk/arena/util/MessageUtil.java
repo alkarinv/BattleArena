@@ -145,6 +145,10 @@ public class MessageUtil {
 	}
 
     public static void broadcastMessage(String message) {
-        Bukkit.broadcastMessage(message);
+        try {
+            Bukkit.broadcastMessage(message);
+        } catch (Throwable e){
+            /* do nothing. This has thrown concurrent errors before*/
+        }
     }
 }

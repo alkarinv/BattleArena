@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.9.7.4.8</version>
+    <version>3.9.7.5</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -43,7 +43,7 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattlePluginUpdater</artifactId>
-            <version>1.3.2</version>
+            <version>1.4.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -225,6 +225,10 @@
                               <relocation>
                                   <pattern>mc.battleplugins.api</pattern>
                                   <shadedPattern>mc.alk.mc.battleplugins.api</shadedPattern>
+                              </relocation>
+                               <relocation>
+                                  <pattern>mc.alk.plugin.updater</pattern>
+                                  <shadedPattern>mc.alk.mc.updater</shadedPattern>
                               </relocation>
                           </relocations>
 

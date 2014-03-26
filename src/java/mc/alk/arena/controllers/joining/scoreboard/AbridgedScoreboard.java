@@ -89,4 +89,9 @@ public class AbridgedScoreboard implements WaitingScoreboard {
     public ArenaScoreboard getScoreboard() {
         return scoreboard;
     }
+
+    @Override
+    public void setRemainingSeconds(int seconds) {
+
+    }
 }

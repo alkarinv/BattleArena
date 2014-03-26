@@ -171,7 +171,7 @@ public class StateGraph {
 		return ops.containsKey(MatchState.PREREQS) ? ops.get(MatchState.PREREQS).getNotReadyMsg(p,w,header): null;
 	}
 
-	public String getGiveString(MatchState ms) {
+	public String getGiveString(CompetitionState ms) {
 		return ops.containsKey(ms) ? ops.get(ms).getPrizeMsg(null): null;
 	}
 
@@ -191,6 +191,17 @@ public class StateGraph {
 		return !ops.containsKey(MatchState.PREREQS) || ops.get(MatchState.PREREQS).playerReady(p, w);
 	}
 
+    public List<ItemStack> getNeedItems(CompetitionState state){
+        return ops.containsKey(state) ? ops.get(state).getNeedItems(): null;
+    }
+
+    public List<ItemStack> getTakeItems(CompetitionState state){
+        return ops.containsKey(state) ? ops.get(state).getTakeItems(): null;
+    }
+
+    public List<ItemStack> getGiveItems(CompetitionState state){
+        return ops.containsKey(state) ? ops.get(state).getGiveItems(): null;
+    }
 	public boolean teamReady(ArenaTeam t, World w) {
 		StateOptions to = ops.get(MatchState.PREREQS);
 		if (to == null)
@@ -216,6 +227,7 @@ public class StateGraph {
 		}
 		return list;
 	}
+
 
     class CStateComparator implements Comparator<CompetitionState> {
         @Override

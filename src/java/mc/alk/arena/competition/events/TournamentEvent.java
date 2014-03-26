@@ -382,7 +382,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
                     ac.addMatchup(new MatchTeamQObject(m));
                 }
             }
-        }, (long) (timeBetweenRounds * 20L * Defaults.TICK_MULT));
+        }, timeBetweenRounds * 20L);
         return true;
     }
 

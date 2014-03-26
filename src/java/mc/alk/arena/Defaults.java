@@ -1,7 +1,7 @@
 package mc.alk.arena;
 
-import mc.alk.plugin.updater.v1r6.PluginUpdater.AnnounceUpdateOption;
-import mc.alk.plugin.updater.v1r6.PluginUpdater.UpdateOption;
+import mc.alk.plugin.updater.PluginUpdater.AnnounceUpdateOption;
+import mc.alk.plugin.updater.PluginUpdater.UpdateOption;
 import org.bukkit.Material;
 
 import java.io.File;
@@ -14,7 +14,6 @@ public class Defaults {
 
     public static boolean REPORT_ERRORS = false;
 
-	public static double TICK_MULT = 1.0;
 	public static String MONEY_STR = "Gold";
 	public static boolean MONEY_SET = false;
     public static final double DEFAULT_ELO = 1250.0;

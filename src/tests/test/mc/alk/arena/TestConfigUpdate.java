@@ -5,7 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.serializers.YamlFileUpdater;
 import mc.alk.arena.util.Log;
 import mc.alk.plugin.updater.v1r6.FileUpdater;
-import mc.alk.plugin.updater.v1r6.Version;
+import mc.alk.plugin.updater.Version;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;

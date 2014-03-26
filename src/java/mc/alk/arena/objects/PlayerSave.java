@@ -1,6 +1,7 @@
 package mc.alk.arena.objects;
 
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.MoneyController;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.listeners.BAPlayerListener;
@@ -46,6 +47,8 @@ public class PlayerSave {
     Boolean flight;
     String arenaClass;
     String oldTeam;
+    private Object scoreboard;
+    Double money;
 
     public PlayerSave(ArenaPlayer player) {
         this.player = player;
@@ -167,21 +170,30 @@ public class PlayerSave {
         this.oldTeam = oldTeam;
     }
 
+    public Double getMoney() {
+        return money;
+    }
+
+    public void setMoney(Double money) {
+        this.money = money;
+    }
+
 
     public PInv getMatchItems() {
         return matchItems;
     }
 
-    public void storeExperience() {
+    public int storeExperience() {
         Player p = player.getPlayer();
         int exp = ExpUtil.getTotalExperience(p);
         if (exp == 0)
-            return;
+            return 0;
         experience = experience == null ? exp : experience + exp;
         ExpUtil.setTotalExperience(p, 0);
         try {
             p.updateInventory();
         } catch (Exception e) {/* do nothing */}
+        return exp;
     }
 
     public void restoreExperience() {
@@ -286,6 +298,7 @@ public class PlayerSave {
     }
 
     public void restoreItems() {
+        //        if (Defaults.DEBUG_STORAGE)  Log.info("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
         if (items ==null)
             return;
         InventoryUtil.addToInventory(player.getPlayer(), items);
@@ -324,12 +337,10 @@ public class PlayerSave {
         return ret;
     }
 
-
     public void storeGamemode() {
+//        if (Defaults.DEBUG_STORAGE)  Log.info("storing gamemode " + p.getName() +" " + p.getPlayer().getGameMode());
         if (gamemode !=null)
             return;
-//        if (Defaults.DEBUG_STORAGE)  Log.info("storing gamemode " + p.getName() +" " + p.getPlayer().getGameMode());
-
         PermissionsUtil.givePlayerInventoryPerms(player.getPlayer());
         gamemode = player.getPlayer().getGameMode();
     }
@@ -392,5 +403,28 @@ public class PlayerSave {
         if (!HeroesController.enabled() || arenaClass==null)
             return;
         HeroesController.setHeroClass(player.getPlayer(), arenaClass);
+    }
+
+    public void storeScoreboard() {
+        if (scoreboard != null)
+            return;
+        scoreboard = PlayerUtil.getScoreboard(player.getPlayer());
+    }
+
+    public Object getScoreboard() {
+        return scoreboard;
+    }
+
+    public void restoreScoreboard() {
+        if (scoreboard==null)
+            return;
+        PlayerUtil.setScoreboard(player.getPlayer(), scoreboard);
+    }
+
+    public void restoreMoney() {
+        if (money == null)
+            return;
+        MoneyController.add(player.getName(), money);
+        money = null;
     }
 }

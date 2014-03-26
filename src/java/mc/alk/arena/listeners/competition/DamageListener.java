@@ -14,7 +14,7 @@ import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.Util;
 import mc.alk.arena.util.compat.IEventHelper;
-import mc.alk.plugin.updater.v1r6.Version;
+import mc.alk.plugin.updater.Version;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;

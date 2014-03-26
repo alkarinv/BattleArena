@@ -21,6 +21,11 @@ public class PlayerStoreController {
     static final PlayerStoreController INSTANCE = new PlayerStoreController();
 
     final HashMap<String, PlayerSave> saves = new HashMap<String, PlayerSave>();
+    public PlayerStoreController(){}
+
+    public PlayerStoreController(PlayerSave save) {
+        saves.put(save.getName(), save);
+    }
 
     private PlayerSave getOrCreateSave(final ArenaPlayer player) {
         PlayerSave save = saves.get(player.getName());
@@ -31,6 +36,39 @@ public class PlayerStoreController {
         return save;
     }
 
+    /**
+     * Warning, money is not stored here.. but will be restored with restoreAll if set separately
+     * @param player ArenaPlayer
+     */
+    public void storeAll(final ArenaPlayer player) {
+        storeEffects(player);
+        storeExperience(player);
+        storeFlight(player);
+        storeGamemode(player);
+        storeHealth(player);
+        storeHeroClass(player);
+        storeHunger(player);
+        storeItems(player);
+        storeMagic(player);
+        storeMatchItems(player);
+        storeScoreboard(player);
+    }
+
+    public void restoreAll(final ArenaPlayer player) {
+        restoreEffects(player);
+        restoreExperience(player);
+        restoreFlight(player);
+        restoreGamemode(player);
+        restoreHealth(player);
+        restoreHeroClass(player);
+        restoreHunger(player);
+        restoreItems(player);
+        restoreMagic(player);
+        restoreMoney(player);
+        restoreMatchItems(player);
+        restoreScoreboard(player);
+    }
+
     private PlayerSave getSave(final ArenaPlayer player) {
         return saves.get(player.getName());
     }
@@ -38,8 +76,8 @@ public class PlayerStoreController {
         return (p.isOnline() && !p.isDead());
     }
 
-    public void storeExperience(ArenaPlayer player) {
-        getOrCreateSave(player).storeExperience();
+    public int storeExperience(ArenaPlayer player) {
+        return getOrCreateSave(player).storeExperience();
     }
 
     public void restoreExperience(ArenaPlayer p) {
@@ -98,6 +136,13 @@ public class PlayerStoreController {
         }
     }
 
+    public void restoreMoney(ArenaPlayer p) {
+        PlayerSave save = getSave(p);
+        if (save == null || save.getMoney()==null)
+            return;
+        save.restoreMoney();
+    }
+
 
     public void storeMagic(ArenaPlayer player) {
         getOrCreateSave(player).storeMagic();
@@ -138,7 +183,6 @@ public class PlayerStoreController {
     }
 
     public void restoreItems(ArenaPlayer p) {
-//        if (Defaults.DEBUG_STORAGE)  Log.info("   "+p.getName()+" psc contains=" + itemmap.containsKey(p.getName()) +"  dead=" + p.isDead()+" online=" + p.isOnline());
         PlayerSave save = getSave(p);
         if (save == null || save.getItems()==null)
             return;
@@ -284,5 +328,18 @@ public class PlayerStoreController {
         }
     }
 
+
+    public void storeScoreboard(ArenaPlayer player) {
+        getOrCreateSave(player).storeScoreboard();
+    }
+
+    public void restoreScoreboard(ArenaPlayer player) {
+        PlayerSave save = getSave(player);
+        if (save == null || save.getScoreboard()==null)
+            return;
+        if (restoreable(player)){
+            save.restoreScoreboard();
+        }
+    }
 
 }
