@@ -146,7 +146,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     /// These get used enough or are useful enough that i'm making variables even though they can be found in match options
     final boolean needsClearInventory, clearsInventory, clearsInventoryOnDeath;
     final boolean keepsInventory;
-    final boolean respawns;
+    boolean respawns;
     final boolean spawnsRandom;
     final boolean woolTeams, armorTeams;
     final boolean alwaysTeamNames;
@@ -167,6 +167,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     @SuppressWarnings("unchecked")
     public Match(Arena arena, MatchParams matchParams, Collection<ArenaListener> listeners) {
+        transitionTo(MatchState.ONCREATE);
+
         if (Defaults.DEBUG) System.out.println("ArenaMatch::" + params);
         params = ParamController.copyParams(matchParams);
         params.setName(this.getName());
@@ -255,7 +257,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
                     new ContainerState(ContainerState.AreaContainerState.CLOSED,
                             "&cA match is already in progress in arena " + arena.getName()));
         }
-        transitionTo(MatchState.ONCREATE);
         updateBukkitEvents(MatchState.ONCREATE);
     }
 
@@ -451,6 +452,11 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             arenaInterface.onStart();
             List<ArenaTeam> net = getNonEmptyTeams();
             try{mc.sendOnStartMsg(net);}catch(Exception e){Log.printStackTrace(e);}
+            if (Defaults.USE_SCOREBOARD){
+                for (ArenaPlayer ap : inGamePlayers){
+                    scoreboard.setScoreboard(ap.getPlayer());
+                }
+            }
         }
         checkEnoughTeams(competingTeams, neededTeams);
     }
@@ -843,9 +849,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
         if (Defaults.DEBUG_TRACE) Log.trace(this, player.getName() + "   !!!!&4playerLeaving  "+removed+" t=" + player.getTeam());
         if (removed){
-            if (player.getName().equalsIgnoreCase("p1")){
-                Log.debug("");
-            }
             updateBukkitEvents(MatchState.ONLEAVE,player);
             arenaInterface.onLeave(player,player.getTeam());
         }
@@ -1196,26 +1199,24 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         /// Add a default number of teams unless the specified victory condition handles it
         Integer nTeams = params.getMinTeams();
         if (!(vt instanceof DefinesNumTeams)){
-            if (!hasVictoryConditionType(DefinesNumTeams.class)){
-                if (nTeams <= 0 || alwaysOpen){
+            if (nTeams <= 0 || alwaysOpen){
                 /* do nothing.  They want this event to be open even with no teams*/
-                } else if (nTeams == 1){
-                    addVictoryCondition(new NoTeamsLeft(this));
-                } else {
-                    addVictoryCondition(new OneTeamLeft(this));
-                }
+            } else if (nTeams == 1){
+                addVictoryCondition(new NoTeamsLeft(this));
+            } else {
+                addVictoryCondition(new OneTeamLeft(this));
             }
         }
         addVictoryCondition(vt);
     }
 
-    private boolean hasVictoryConditionType(Class<?> vcClass) {
-        for (VictoryCondition vc : vcs){
-            if (vcClass.isAssignableFrom(vc.getClass()))
-                return true;
-        }
-        return false;
-    }
+//    private boolean hasVictoryConditionType(Class<?> vcClass) {
+//        for (VictoryCondition vc : vcs){
+//            if (vcClass.isAssignableFrom(vc.getClass()))
+//                return true;
+//        }
+//        return false;
+//    }
 
     /**
      * Add Another victory condition to this match
@@ -1229,6 +1230,9 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             neededTeams = Math.max(neededTeams, ((DefinesNumTeams)victoryCondition).getNeededNumberOfTeams().max);}
         if (victoryCondition instanceof DefinesNumLivesPerPlayer){
             nLivesPerPlayer = Math.max(nLivesPerPlayer, ((DefinesNumLivesPerPlayer)victoryCondition).getLivesPerPlayer());
+            if (nLivesPerPlayer > 1){
+                respawns=true;
+            }
             for (ArenaPlayer ap : inGamePlayers){
                 if (nLivesPerPlayer != 1 && nLivesPerPlayer != ArenaSize.MAX) {
                     ap.getMetaData().setLivesLeft(nLivesPerPlayer);
@@ -1421,14 +1425,6 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         GameManager gm = GameManager.getGameManager(params);
         boolean b = gm.isHandled(player);
         return isInMatch(player) || b;
-    }
-
-    @Deprecated
-    /**
-     * use isHandled instead
-     */
-    public boolean insideArena(ArenaPlayer p){
-        return isHandled(p);
     }
 
 

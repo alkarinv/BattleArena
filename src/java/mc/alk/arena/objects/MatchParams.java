@@ -236,6 +236,4 @@ public class MatchParams extends ArenaParams implements Comparable<MatchParams>{
     public Boolean isTeamRating(){
         return useBTTeamRating != null ? useBTTeamRating : (mparent!= null ? mparent.isTeamRating() : null);
     }
-
-
 }

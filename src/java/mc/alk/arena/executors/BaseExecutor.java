@@ -26,7 +26,7 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class BaseExecutor implements ArenaExecutor{
-    public static final String version = "2.0.1";
+    public static final String version = "2.1.0";
     static final boolean DEBUG = false;
     private HashMap<String,TreeMap<Integer,MethodWrapper>> methods =
             new HashMap<String,TreeMap<Integer,MethodWrapper>>();

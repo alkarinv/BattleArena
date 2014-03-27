@@ -3,7 +3,6 @@ package mc.alk.arena.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,20 +69,6 @@ public class ScoreMap<K> extends ConcurrentHashMap<K,Integer> {
 			col.add(entry.getKey());
 		}
 		return map;
-	}
-
-	@Deprecated
-	public synchronized List<K> getOldRankings() {
-		ArrayList<K> ts = new ArrayList<K>(keySet());
-		Collections.sort(ts, new Comparator<K>(){
-			@Override
-			public int compare(K arg0, K arg1) {
-				Integer k1 = getPoints(arg0);
-				Integer k2 = getPoints(arg1);
-				return k1.compareTo(k2);
-			}
-		});
-		return ts;
 	}
 
 

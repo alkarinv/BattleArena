@@ -128,27 +128,6 @@ public class StateGraph {
 		return tops != null && tops.hasOption(option);
 	}
 
-    /**
-     * Use the newer more generic
-     * public boolean hasOptionAt(CompetitionState state, StateOption option) {
-     * @param state MatchState
-     * @param option StateOption
-     * @return true or false
-     */
-    @Deprecated
-    public boolean hasOptionAt(MatchState state, StateOption option) {
-        return hasOptionAt((CompetitionState) state, option);
-    }
-
-    /**
-     *      * Use the newer more generic
-     * public boolean hasOptionAt(CompetitionState state, StateOption option) {
-     */
-    @Deprecated
-    public boolean hasOptionAt(MatchState state, TransitionOption option) {
-        return hasOptionAt((CompetitionState) state, option);
-    }
-
     public boolean hasOptionIn(MatchState beginState, MatchState endState, StateOption option) {
 		List<MatchState> states = MatchState.getStates(beginState, endState);
 		for (MatchState state : states){

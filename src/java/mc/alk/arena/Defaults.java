@@ -98,7 +98,7 @@ public class Defaults {
     /// DEBUG OPTIONS
 	public static final boolean DEBUG = false;
 	public static final boolean DEBUGQ = false;
-	public static final boolean DEBUG_TRACE = false;
+	public static final boolean DEBUG_TRACE = true;
 	public static final boolean DEBUG_EVENTS = false;
 	public static final boolean DEBUG_TEVENTS = false;
 	public static final boolean DEBUG_DAMAGE = false;

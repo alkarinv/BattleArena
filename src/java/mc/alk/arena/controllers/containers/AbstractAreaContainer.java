@@ -96,6 +96,10 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
         methodController.updateEvents(MatchState.ONLEAVE, player);
     }
 
+    protected void playerJoining(ArenaPlayer player){
+        methodController.updateEvents(MatchState.ONENTER, player);
+    }
+
     protected void updateBukkitEvents(MatchState matchState,ArenaPlayer player){
         methodController.updateEvents(matchState, player);
     }
@@ -110,7 +114,8 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
         teams.add(team);
         teamIndexes.put(team, teams.size());
         for (ArenaPlayer ap: team.getPlayers()){
-            players.add(ap.getName());}
+            doTransition(MatchState.ONJOIN, ap,team, true);
+        }
 
         return true;
     }

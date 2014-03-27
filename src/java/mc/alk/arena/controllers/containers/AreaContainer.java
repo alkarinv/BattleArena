@@ -36,25 +36,6 @@ public class AreaContainer extends AbstractAreaContainer{
     }
 
     @Override
-    public boolean teamJoining(ArenaTeam team) {
-        super.teamJoining(team);
-        for (ArenaPlayer ap: team.getPlayers()){
-            playerJoining(ap,team);}
-        return true;
-    }
-
-    protected boolean playerJoining(ArenaPlayer player, ArenaTeam team){
-        doTransition(MatchState.ONJOIN, player,team, true);
-        return true;
-    }
-
-    @Override
-    public void playerLeaving(ArenaPlayer ap){
-
-    }
-
-
-    @Override
     public LocationType getLocationType() {
         return LocationType.LOBBY;
     }
@@ -97,6 +78,7 @@ public class AreaContainer extends AbstractAreaContainer{
 
     @Override
     public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+        onPostEnter(player,apte);
     }
 
     @Override
@@ -117,8 +99,9 @@ public class AreaContainer extends AbstractAreaContainer{
 
     @Override
     public void onPostEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-        players.add(player.getName());
-        updateBukkitEvents(MatchState.ONENTER,player);
+        if (players.add(player.getName())){
+            updateBukkitEvents(MatchState.ONENTER,player);
+        }
     }
 
     @Override

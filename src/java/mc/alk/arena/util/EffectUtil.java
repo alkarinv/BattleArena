@@ -1,5 +1,6 @@
 package mc.alk.arena.util;
 
+import mc.alk.arena.Defaults;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -65,10 +66,15 @@ public class EffectUtil {
 
 	public static void enchantPlayer(Player player, Collection<PotionEffect> ewas){
 		for (PotionEffect ewa : ewas){
-			if (player.hasPotionEffect(ewa.getType())){
-				player.removePotionEffect(ewa.getType());
-			}
-			player.addPotionEffect(ewa);
+            try {
+                if (player.hasPotionEffect(ewa.getType())) {
+                    player.removePotionEffect(ewa.getType());
+                }
+                player.addPotionEffect(ewa);
+            } catch (Exception e ){
+                if (!Defaults.DEBUG_VIRTUAL)
+                    Log.printStackTrace(e);
+            }
 		}
 	}
 

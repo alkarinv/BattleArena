@@ -17,6 +17,7 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.Util;
 import org.bukkit.Location;
 
 import java.util.Random;
@@ -141,8 +142,12 @@ public class TeleportLocationController {
         SpawnLocation l;
 		final LocationType type;
 		final PlayerHolder ph;
-		if (Defaults.DEBUG_TRACE)Log.info(" teamindex = " + teamIndex +"  " + am.getClass().getSimpleName()  +"  " +am);
-
+		if (Defaults.DEBUG_TRACE)Log.info(" team=" + team+" teamindex = " + teamIndex +"  " + am.getClass().getSimpleName()  +"  " +am);
+        if (teamIndex == -1){
+            Log.err("Team index for " + am +" team="+team+" " + teamIndex+" was -1");
+            Util.printStackTrace();
+            teamIndex=0;
+        }
         if (tops.shouldTeleportWaitRoom()){
 			if (tops.hasOption(TransitionOption.TELEPORTMAINWAITROOM)){
 				teamIndex = Defaults.MAIN_SPAWN;}

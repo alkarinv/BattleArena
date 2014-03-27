@@ -79,7 +79,6 @@ public class WorldGuardController {
 	}
 
 	public static boolean setWorldGuard(Plugin plugin) {
-        mc.alk.arena.util.WorldGuardUtil.setWorldGuard(plugin);
 		hasWorldGuard = WorldGuardUtil.setWorldGuard(plugin);
 		return hasWorldGuard;
 	}

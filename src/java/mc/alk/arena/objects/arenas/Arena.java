@@ -393,16 +393,6 @@ public class Arena extends AreaContainer {
     /**
      * Set the worldguard region for this arena (only available with worldguard)
      * @param regionWorld World name
-     * Deprecated: use setWorldGuardRegion instead
-     */
-    @Deprecated
-    public void addWorldGuardRegion(String regionWorld, String regionName) {
-        wgRegion = new WorldGuardRegion(regionWorld, regionName);
-    }
-
-    /**
-     * Set the worldguard region for this arena (only available with worldguard)
-     * @param regionWorld World name
      * @param regionName region name
      */
     public void setWorldGuardRegion(String regionWorld, String regionName) {
