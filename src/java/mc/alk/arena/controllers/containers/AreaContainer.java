@@ -10,6 +10,7 @@ import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.Log;
 import mc.alk.arena.util.Util;
 import org.bukkit.Material;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -76,6 +77,33 @@ public class AreaContainer extends AbstractAreaContainer{
         return !spawns.isEmpty();
     }
 
+    private boolean addPlayer(ArenaPlayer player) {
+        boolean added = false;
+        synchronized (this) {
+            if(players.add(player.getName())){
+                added = true;}
+        }
+        if (Defaults.DEBUG_TRACE) Log.info(player.getName() + "   !!!&2add  " + added + " t=" + player.getTeam());
+        if (added){
+            updateBukkitEvents(MatchState.ONENTER, player);
+        }
+        return added;
+    }
+
+    private boolean removePlayer(ArenaPlayer player) {
+        boolean removed = false;
+
+        synchronized (this) {
+            if (players.remove(player.getName())){
+                removed = true;
+            }
+        }
+        if (Defaults.DEBUG_TRACE) Log.info(player.getName() + "   !!!&4removed  " + removed + " t=" + player.getTeam());
+        if (removed){
+            updateBukkitEvents(MatchState.ONLEAVE, player);
+        }
+        return removed;
+    }
     @Override
     public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
         onPostEnter(player,apte);
@@ -83,6 +111,7 @@ public class AreaContainer extends AbstractAreaContainer{
 
     @Override
     public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+        addPlayer(player);
     }
 
     @Override
@@ -99,15 +128,12 @@ public class AreaContainer extends AbstractAreaContainer{
 
     @Override
     public void onPostEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-        if (players.add(player.getName())){
-            updateBukkitEvents(MatchState.ONENTER,player);
-        }
+        addPlayer(player);
     }
 
     @Override
     public void onPreLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
-        updateBukkitEvents(MatchState.ONLEAVE,player);
-        players.remove(player.getName());
+        removePlayer(player);
     }
 
     @Override
