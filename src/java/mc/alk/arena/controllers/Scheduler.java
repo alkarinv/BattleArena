@@ -30,8 +30,8 @@ public class Scheduler {
                 clazz = Class.forName("mc.alk.arena.util.compat.pre.SchedulerHelper");
             } else {
                 Version v = new Version(version);
-                if (v.compareTo("v1_6_1") >= 0){
-                    clazz = Class.forName("mc.alk.arena.util.compat.v1_6_1.SchedulerHelper");
+                if (v.compareTo("v1_6_R1") >= 0){
+                    clazz = Class.forName("mc.alk.arena.util.compat.v1_6_R1.SchedulerHelper");
                 } else {
                     clazz = Class.forName("mc.alk.arena.util.compat.pre.SchedulerHelper");
                 }

@@ -2,7 +2,7 @@ package mc.alk.arena.executors;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.competition.events.Event;
-import mc.alk.arena.competition.events.TournamentEvent;
+import mc.alk.arena.competition.events.tournament.TournamentEvent;
 import mc.alk.arena.controllers.BAEventController.SizeEventPair;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaSize;

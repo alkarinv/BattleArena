@@ -21,7 +21,6 @@ public enum MatchState implements CompetitionState{
 	ONCOMPLETE ("onComplete"), ONCANCEL ("onCancel"), ONFINISH("onFinish"),
 	ONSPAWN ("onSpawn"), ONDEATH ("onDeath"),
 	WINNERS ("winners"), DRAWERS ("drawers"), LOSERS ("losers"),
-	FIRSTPLACE ("firstPlace"), PARTICIPANTS("participants"),
 	ONMATCHINTERVAL("onMatchInterval"), ONMATCHTIMEEXPIRED("onMatchTimeExpired"),
 	ONCOUNTDOWNTOEVENT("onCountdownToEvent"),
 	ONENTERQUEUE("onEnterQueue")

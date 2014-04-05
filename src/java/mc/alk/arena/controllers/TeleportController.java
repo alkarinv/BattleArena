@@ -10,6 +10,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
+import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.ServerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -32,7 +33,7 @@ import java.util.UUID;
 
 
 public class TeleportController implements Listener{
-    final static Set<String> teleporting = Collections.synchronizedSet(new HashSet<String>());
+    final static Set<UUID> teleporting = Collections.synchronizedSet(new HashSet<UUID>());
     private final int TELEPORT_FIX_DELAY = 15; // ticks
 
     public static boolean teleport(final Player player, final Location location) {
@@ -45,9 +46,9 @@ public class TeleportController implements Listener{
 
     public static boolean teleport(final ArenaPlayer arenaPlayer, final Location location, boolean giveBypassPerms) {
         Player player = arenaPlayer.getPlayer();
-        if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getName());
+        if (Defaults.DEBUG_TRACE) Log.info("BattleArena beginning teleport player=" + player.getDisplayName());
         try {
-            teleporting.add(player.getName());
+            teleporting.add(arenaPlayer.getID());
             player.setVelocity(new Vector(0, Defaults.TELEPORT_Y_VELOCITY, 0));
             player.setFallDistance(0);
             Location loc = location.clone();
@@ -91,26 +92,24 @@ public class TeleportController implements Listener{
             Location nl = new Location(w, loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
             if (!player.teleport(nl, PlayerTeleportEvent.TeleportCause.PLUGIN) ||
                     (Defaults.DEBUG_VIRTUAL && !player.isOnline())) {
-                BAPlayerListener.teleportOnReenter(player.getName(), nl, player.getLocation());
+                BAPlayerListener.teleportOnReenter(BattleArena.toArenaPlayer(player), nl, player.getLocation());
                 //noinspection PointlessBooleanExpression,ConstantConditions
-                if (!Defaults.DEBUG_VIRTUAL)
-                    Log.warn("[BattleArena] Couldnt teleport player=" + player.getName() + " loc=" + nl);
                 return false;
             }
             arenaPlayer.spawnMobs();
 
             /// Handle the /back command from Essentials
             if (EssentialsController.enabled()) {
-                Location l = BAPlayerListener.getBackLocation(player.getName());
+                Location l = BAPlayerListener.getBackLocation(player);
                 if (l != null) {
                     EssentialsController.setBackLocation(player.getName(), l);
                 }
             }
 
-            if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getName());
+            if (Defaults.DEBUG_TRACE) Log.info("BattleArena ending teleport player=" + player.getDisplayName());
         } catch (Exception e) {
             if (!Defaults.DEBUG_VIRTUAL) {
-                Log.err("[BA Error] teleporting player=" + player.getName() + " to " + location + " " + giveBypassPerms);
+                Log.err("[BA Error] teleporting player=" + player.getDisplayName() + " to " + location + " " + giveBypassPerms);
                 Log.printStackTrace(e);
             }
             return false;
@@ -126,17 +125,17 @@ public class TeleportController implements Listener{
 	 */
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void onPlayerTeleport(PlayerTeleportEvent event){
-		if (teleporting.remove(event.getPlayer().getName())){
+		if (teleporting.remove(PlayerUtil.getID(event.getPlayer()))){
 			event.setCancelled(false);
             if (Defaults.ENABLE_TELEPORT_FIX){
-				invisbleTeleportWorkaround(event.getPlayer().getName());
+				invisbleTeleportWorkaround(event.getPlayer());
 			}
 		}
 	}
 
 	///TODO remove these work around teleport hacks when bukkit fixes the invisibility on teleport issue
 	/// modified from the teleportFix2 found online
-	private void invisbleTeleportWorkaround(final String playerName) {
+	private void invisbleTeleportWorkaround(final Player player) {
 		final Server server = Bukkit.getServer();
 		final Plugin plugin = BattleArena.getSelf();
 		final int visibleDistance = server.getViewDistance() * 16;
@@ -144,8 +143,7 @@ public class TeleportController implements Listener{
 		server.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			@Override
 			public void run() {
-				final Player player = ServerUtil.findPlayer(playerName);
-				if (player == null || !player.isOnline())
+				if (!player.isOnline())
 					return;
 				// Refresh nearby clients
 				final List<Player> nearby = getPlayersWithinDistance(player, visibleDistance);

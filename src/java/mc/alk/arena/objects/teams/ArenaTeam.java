@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 
 public interface ArenaTeam {
 
@@ -117,7 +118,7 @@ public interface ArenaTeam {
 
 	public boolean hasTeam(ArenaTeam team);
 
-	public String getTeamInfo(Set<String> insideMatch);
+	public String getTeamInfo(Set<UUID> insideMatch);
 
 	public String getTeamSummary();
 

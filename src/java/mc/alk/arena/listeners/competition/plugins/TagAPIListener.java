@@ -7,6 +7,7 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.PlayerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ import org.kitteh.tag.AsyncPlayerReceiveNameTagEvent;
 import org.kitteh.tag.TagAPI;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -24,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public enum TagAPIListener implements Listener, ArenaListener {
 	INSTANCE;
 
-	final Map<String, ChatColor> playerName = new ConcurrentHashMap<String,ChatColor>();
+	final Map<UUID, ChatColor> playerName = new ConcurrentHashMap<UUID,ChatColor>();
 
 	public static void enable() {
 		Bukkit.getPluginManager().registerEvents(INSTANCE, BattleArena.getSelf());
@@ -36,11 +38,11 @@ public enum TagAPIListener implements Listener, ArenaListener {
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onNameTag(AsyncPlayerReceiveNameTagEvent event) {
-		final String name = event.getNamedPlayer().getName();
-		if (playerName.containsKey(name)){
-			event.setTag(playerName.get(name) + name);
-		}
-	}
+        final UUID id = PlayerUtil.getID(event.getNamedPlayer());
+        if (playerName.containsKey(id)) {
+            event.setTag(playerName.get(id) + event.getPlayer().getName());
+        }
+    }
 
 	@ArenaEventHandler
 	public void onArenaPlayerEnterEvent(ArenaPlayerEnterMatchEvent event){
@@ -48,7 +50,7 @@ public enum TagAPIListener implements Listener, ArenaListener {
 		if (!player.isOnline() || !BattleArena.getSelf().isEnabled())
 			return;
 		ArenaTeam team = event.getPlayer().getTeam();
-		playerName.put(player.getName(), team.getTeamChatColor());
+		playerName.put(PlayerUtil.getID(player), team.getTeamChatColor());
 		try{
 			TagAPI.refreshPlayer(player);
 		} catch (ClassCastException e){
@@ -67,7 +69,7 @@ public enum TagAPIListener implements Listener, ArenaListener {
 		Player player = event.getPlayer().getPlayer();
 		if (!player.isOnline() || !BattleArena.getSelf().isEnabled())
 			return;
-		if (playerName.remove(player.getName()) != null){
+		if (playerName.remove(PlayerUtil.getID(player)) != null){
 			try{
 				TagAPI.refreshPlayer(player);
 			} catch (ClassCastException e){

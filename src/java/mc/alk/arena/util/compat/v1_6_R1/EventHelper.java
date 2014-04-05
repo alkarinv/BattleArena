@@ -1,4 +1,4 @@
-package mc.alk.arena.util.compat.v1_6_1;
+package mc.alk.arena.util.compat.v1_6_R1;
 
 import mc.alk.arena.util.compat.IEventHelper;
 import org.bukkit.event.entity.EntityDamageEvent;

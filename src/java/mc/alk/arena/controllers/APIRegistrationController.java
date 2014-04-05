@@ -295,7 +295,7 @@ public class APIRegistrationController {
         final File compDir;
         final File arenaFile;
 
-        public DelayedRegistrationHandler(JavaPlugin plugin, File compDir, File arenaFile) {
+        DelayedRegistrationHandler(JavaPlugin plugin, File compDir, File arenaFile) {
             this.plugin = plugin;
             this.compDir = compDir;
             this.arenaFile = arenaFile;
@@ -322,7 +322,6 @@ public class APIRegistrationController {
                         null /*executor*/, configFile, msgFile, null,arenaFile)){
                     Log.err("[BattleArena] Unable to load custom competition " + n);
                 }
-
             }
         }
     }

@@ -6,7 +6,6 @@ import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.signs.ArenaCommandSign;
-import mc.alk.arena.objects.signs.ArenaCommandSign.ARENA_COMMAND;
 import mc.alk.arena.objects.signs.ArenaStatusSign;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -40,12 +39,7 @@ public class SignUtil {
 		}
 
 		try {
-            return new ArenaCommandSign(
-                    sign.getLocation(),
-                    mp,
-                    ARENA_COMMAND.valueOf(MessageUtil.decolorChat(lines[1]).toUpperCase().trim()),
-                    MessageUtil.decolorChat(lines[2]),
-                    MessageUtil.decolorChat(lines[3]));
+            return ArenaCommandSign.create(sign.getLocation(),mp,lines);
         } catch (Exception e){
 			return null;
 		}

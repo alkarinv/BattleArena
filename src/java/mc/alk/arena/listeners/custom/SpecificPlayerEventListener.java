@@ -7,6 +7,7 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfTreeSet;
+import mc.alk.arena.util.PlayerUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -17,6 +18,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.UUID;
 
 
 /**
@@ -26,8 +28,8 @@ import java.util.Collection;
  */
 class SpecificPlayerEventListener extends BaseEventListener {
     /** map of player to listeners listening for that player */
-    final protected MapOfTreeSet<String,RListener> listeners =
-            new MapOfTreeSet<String,RListener>(RListener.class,
+    final protected MapOfTreeSet<UUID,RListener> listeners =
+            new MapOfTreeSet<UUID,RListener>(RListener.class,
                     new RListenerPriorityComparator());
 
     /** The method which will return a Player if invoked */
@@ -58,7 +60,7 @@ class SpecificPlayerEventListener extends BaseEventListener {
      * Get the map of players to listeners
      * @return players
      */
-    public MapOfTreeSet<String,RListener> getListeners(){
+    public MapOfTreeSet<UUID,RListener> getListeners(){
         return listeners;
     }
 
@@ -66,7 +68,7 @@ class SpecificPlayerEventListener extends BaseEventListener {
      * Returns the players being listened for in this event
      * @return players
      */
-    public Collection<String> getPlayers(){
+    public Collection<UUID> getPlayers(){
         return listeners.keySet();
     }
 
@@ -75,10 +77,10 @@ class SpecificPlayerEventListener extends BaseEventListener {
      * @param rl RListener
      * @param players the players
      */
-    public void addListener(RListener rl, Collection<String> players) {
+    public void addListener(RListener rl, Collection<UUID> players) {
         if (Defaults.DEBUG_EVENTS) Log.info("--adding listener   players="+players+" listener="+rl + "  " +
                 ((players != null && rl.isSpecificPlayerMethod()) ? " MatchListener" : " SpecificPlayerListener" ));
-        for (String player: players){
+        for (UUID player: players){
             addSPListener(player, rl);}
     }
 
@@ -87,10 +89,10 @@ class SpecificPlayerEventListener extends BaseEventListener {
      * @param rl RListener
      * @param players the players
      */
-    public synchronized void removeListener(RListener rl, Collection<String> players) {
+    public synchronized void removeListener(RListener rl, Collection<UUID> players) {
         if (Defaults.DEBUG_EVENTS) System.out.println("    removing listener  player="+players+"   listener="+rl);
 
-        for (String player: players){
+        for (UUID player: players){
             removeSPListener(player, rl);}
     }
 
@@ -98,7 +100,7 @@ class SpecificPlayerEventListener extends BaseEventListener {
     public synchronized void removeAllListeners(RListener rl) {
         if (Defaults.DEBUG_EVENTS) System.out.println("    removing all listeners  listener="+rl);
         synchronized(listeners){
-            for (String name : listeners.keySet()){
+            for (UUID name : listeners.keySet()){
                 listeners.remove(name, rl);
             }
         }
@@ -109,7 +111,7 @@ class SpecificPlayerEventListener extends BaseEventListener {
      * @param p player
      * @param spl RListener
      */
-    public void addSPListener(String p, RListener spl) {
+    public void addSPListener(UUID p, RListener spl) {
         if (!isListening()){
             startListening();}
         listeners.add(p,spl);
@@ -121,7 +123,7 @@ class SpecificPlayerEventListener extends BaseEventListener {
      * @param spl RListener
      * @return player was removed from collection
      */
-    public boolean removeSPListener(String p, RListener spl) {
+    public boolean removeSPListener(UUID p, RListener spl) {
         final boolean removed = listeners.remove(p,spl);
         if (removed && !hasListeners() && isListening()){
             stopListening();}
@@ -158,7 +160,7 @@ class SpecificPlayerEventListener extends BaseEventListener {
     }
 
     private void doMethods(final Event event, final Player p) {
-        RListener[] lmethods = listeners.getSafe(p.getName());
+        RListener[] lmethods = listeners.getSafe(PlayerUtil.getID(p));
         if (lmethods == null){
             return;}
         /// For each of the splisteners methods that deal with this BukkitEvent
@@ -175,24 +177,27 @@ class SpecificPlayerEventListener extends BaseEventListener {
     }
 
     private void doEntityDeathEvent(EntityDeathEvent event) {
-        if (event.getEntity() instanceof Player && listeners.containsKey(((Player)event.getEntity()).getName()) ){
+        if (event.getEntity() instanceof Player &&
+                listeners.containsKey(PlayerUtil.getID(((Player)event.getEntity()))) ){
             doMethods(event, (Player) event.getEntity());
             return;
         }
         ArenaPlayer ap = DmgDeathUtil.getPlayerCause(event.getEntity().getLastDamageCause());
         if (ap == null)
             return;
-        if (listeners.containsKey(ap.getName())){
+        if (listeners.containsKey(ap.getID())){
             doMethods(event, ap.getPlayer());
         }
     }
 
     private void doEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
-        if (event.getEntity() instanceof Player && listeners.containsKey(((Player)event.getEntity()).getName()) ){
+        if (event.getEntity() instanceof Player &&
+                listeners.containsKey(PlayerUtil.getID(((Player)event.getEntity())) )){
             doMethods(event, (Player) event.getEntity());
             return;
         }
-        if (event.getDamager() instanceof Player && listeners.containsKey(((Player)event.getDamager()).getName())){
+        if (event.getDamager() instanceof Player &&
+                listeners.containsKey(PlayerUtil.getID(((Player)event.getDamager())))){
             doMethods(event, (Player) event.getDamager());
             return;
         }

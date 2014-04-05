@@ -21,7 +21,6 @@ import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.TeamController;
-import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.controllers.joining.AbstractJoinHandler;
@@ -82,7 +81,6 @@ import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.TimeUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -104,7 +102,6 @@ import java.util.Set;
  *
  */
 public class BAExecutor extends CustomCommandExecutor {
-    Map<String, Location> visitors = new HashMap<String, Location>();
     Set<String> disabled = new HashSet<String>();
 
     final TeamController teamc;
@@ -187,6 +184,19 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     public boolean join(ArenaPlayer player, final MatchParams omp, String args[], boolean adminJoin) {
+        JoinOptions jp;
+        try {
+            jp = JoinOptions.parseOptions(omp, player,Arrays.copyOfRange(args, 1, args.length));
+        } catch (InvalidOptionException e) {
+            return sendMessage(player, e.getMessage());
+        } catch (Exception e) {
+            Log.printStackTrace(e);
+            return sendMessage(player, e.getMessage());
+        }
+        return join(player, omp, jp, adminJoin);
+    }
+
+    public boolean join(ArenaPlayer player, final MatchParams omp, JoinOptions jp, boolean adminJoin) {
         /// Make sure we have Match Options
         final StateGraph ops = omp.getStateGraph();
         if (ops == null) {
@@ -223,15 +233,6 @@ public class BAExecutor extends CustomCommandExecutor {
             return sendMessage(player, "&6/team leave: &cto leave the team");
         }
 
-        JoinOptions jp;
-        try {
-            jp = JoinOptions.parseOptions(omp, t, player,Arrays.copyOfRange(args, 1, args.length));
-        } catch (InvalidOptionException e) {
-            return sendMessage(player, e.getMessage());
-        } catch (Exception e) {
-            Log.printStackTrace(e);
-            return sendMessage(player, e.getMessage());
-        }
         MatchParams mp = jp.getMatchParams();
         /// Check to make sure at least one arena can be joined at some time
         Arena arena = ac.getArenaByMatchParams(jp);
@@ -345,6 +346,7 @@ public class BAExecutor extends CustomCommandExecutor {
 
         return true;
     }
+
 
     public static String constructMessage(MatchParams mp, long millisRemaining, int playersInQ, Integer position) {
         StringBuilder msg = new StringBuilder();
@@ -877,18 +879,18 @@ public class BAExecutor extends CustomCommandExecutor {
         String value = args[0];
         String pname = p.getName();
         if (value.equalsIgnoreCase("leave")) {
-            if (visitors.containsKey(pname)) {
-                Location loc = visitors.get(pname);
-                TeleportController.teleport(p, loc);
-                visitors.remove(pname);
-                sendMessage(sender, ChatColor.YELLOW
-                        + "You have stopped watching the Arena");
-                return true;
-            } else {
-                sendMessage(sender, ChatColor.YELLOW
-                        + "You aren't waching an Arena");
-                return true;
-            }
+//            if (visitors.containsKey(pname)) {
+//                Location loc = visitors.get(pname);
+//                TeleportController.teleport(p, loc);
+//                visitors.remove(pname);
+//                sendMessage(sender, ChatColor.YELLOW
+//                        + "You have stopped watching the Arena");
+//                return true;
+//            } else {
+//                sendMessage(sender, ChatColor.YELLOW
+//                        + "You aren't waching an Arena");
+//                return true;
+//            }
         } else {
             Arena arena = ac.getArena(value.toLowerCase());
             if (arena == null) {
@@ -966,34 +968,17 @@ public class BAExecutor extends CustomCommandExecutor {
 
     @MCCommand(cmds = { "setArenaOption", "alter", "edit" }, admin = true, perm = "arena.alter")
     public boolean arenaSetOption(CommandSender sender, Arena arena, ArenaOptionPair aop) {
-        try {
-            ArenaAlterController.setArenaOption(sender, arena, aop.ao, aop.value);
-        } catch (IllegalStateException e) {
-            return sendMessage(sender, "&c" + e.getMessage());
-        }
-        return true;
+        return ArenaEditorExecutor.setArenaOption(sender, arena, aop);
     }
 
     @MCCommand(cmds = { "setArenaOption", "alter", "edit" }, admin = true, perm = "arena.alter")
     public boolean arenaSetOption(CommandSender sender, Arena arena, ParamAlterOptionPair gop) {
-        try {
-            ArenaAlterController.setArenaOption(sender, arena, gop.alterParamOption, gop.value);
-        } catch (IllegalStateException e) {
-            return sendMessage(sender, "&c" + e.getMessage());
-        }
-        return true;
+        return ArenaEditorExecutor.setArenaOption(sender, arena, gop);
     }
 
     @MCCommand(cmds = { "setArenaOption", "alter", "edit" }, admin = true, perm = "arena.alter")
     public boolean arenaSetOption(CommandSender sender, Arena arena, TransitionOptionTuple top) {
-        try {
-            ArenaAlterController.setArenaOption(sender, arena, top.state, top.op, top.value);
-        } catch (IllegalStateException e) {
-            return sendMessage(sender, "&c" + e.getMessage());
-        } catch (InvalidOptionException e) {
-            return sendMessage(sender, "&c" + e.getMessage());
-        }
-        return true;
+        return ArenaEditorExecutor.setArenaOption(sender, arena, top);
     }
 
     @MCCommand(cmds = { "setOption" }, admin = true, perm = "arena.alter")
@@ -1482,7 +1467,7 @@ public class BAExecutor extends CustomCommandExecutor {
             return false;
         }
         /// Inside the queue waiting for a match?
-        if (InArenaListener.inQueue(player.getName())){
+        if (InArenaListener.inQueue(player.getID())){
             sendMessage(player, "&eYou are in the queue.");
             if (showMessages)
                 sendMessage(player, "&eType &6/arena leave");

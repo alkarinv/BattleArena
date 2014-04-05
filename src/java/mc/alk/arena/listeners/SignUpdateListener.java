@@ -1,6 +1,5 @@
 package mc.alk.arena.listeners;
 
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.events.matches.MatchFinishedEvent;
 import mc.alk.arena.events.matches.MatchStartEvent;
 import mc.alk.arena.events.players.ArenaPlayerEnterQueueEvent;
@@ -19,13 +18,14 @@ import java.util.Comparator;
 
 public class SignUpdateListener implements Listener{
     MapOfTreeSet<String,ArenaCommandSign> arenaSigns =
-            new MapOfTreeSet<String, ArenaCommandSign>(ArenaCommandSign.class, new ArenaCommandSignPriorityComparator());
-    public static class ArenaCommandSignPriorityComparator implements Comparator<ArenaCommandSign> {
-        @Override
-        public int compare(ArenaCommandSign o1, ArenaCommandSign o2) {
-            return o1.hashCode() - o2.hashCode();
-        }
-    }
+            new MapOfTreeSet<String, ArenaCommandSign>(ArenaCommandSign.class, new Comparator<ArenaCommandSign>(){
+                @Override
+                public int compare(ArenaCommandSign o1, ArenaCommandSign o2) {
+                    return o1.hashCode() - o2.hashCode();
+                }
+            });
+
+
     private String getMatchState(String str){
         if (str != null && (str.startsWith("\\d") || str.indexOf(' ') > 0 )){
             int index = str.indexOf(' ');
@@ -112,7 +112,7 @@ public class SignUpdateListener implements Listener{
     public void addSign(ArenaCommandSign acs) {
         if (acs.getSign() == null || acs.getOption1() == null){
             return;}
-        Arena a = BattleArena.getBAController().getArena(acs.getOption1());
+        Arena a = acs.getArena();
         if (a == null)
             return;
         arenaSigns.add(a.getName(), acs);

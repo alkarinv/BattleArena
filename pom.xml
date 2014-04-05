@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.9.7.5.5</version>
+    <version>3.9.7.5.7</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -61,13 +61,13 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattleTracker</artifactId>
-            <version>2.5.8.5</version>
+            <version>2.5.8.8</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.7.2-R0.1-SNAPSHOT</version>
+            <version>1.7.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -97,7 +97,7 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>VirtualPlayers</artifactId>
-            <version>1.5.5.2</version>
+            <version>1.5.7</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

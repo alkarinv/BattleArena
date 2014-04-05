@@ -2,11 +2,13 @@ package mc.alk.arena.controllers;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.events.players.ArenaPlayerClassSelectedEvent;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.objects.ArenaClass;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.options.TransitionOption;
@@ -19,7 +21,6 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.TimeUtil;
-import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -31,12 +32,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ArenaClassController {
     final static HashMap<String,ArenaClass> classes = new HashMap<String,ArenaClass>();
     /** How much time since they last changed classes*/
-    final static Map<String, Long> userClassSwitchTime = new ConcurrentHashMap<String, Long>();
+    final static Map<UUID, Long> userClassSwitchTime = new ConcurrentHashMap<UUID, Long>();
 
     static {
         classes.put(ArenaClass.CHOSEN_CLASS.getName().toUpperCase(), ArenaClass.CHOSEN_CLASS);
@@ -122,9 +124,8 @@ public class ArenaClassController {
             MessageUtil.sendSystemMessage(p, "class_you_are_already", ac.getDisplayName());
             return false;
         }
-        String playerName = p.getName();
-        if(userClassSwitchTime.containsKey(playerName)) {
-            long t = (Defaults.TIME_BETWEEN_CLASS_CHANGE * 1000) - (System.currentTimeMillis() - userClassSwitchTime.get(playerName));
+        if(userClassSwitchTime.containsKey(ap.getID())) {
+            long t = (Defaults.TIME_BETWEEN_CLASS_CHANGE * 1000) - (System.currentTimeMillis() - userClassSwitchTime.get(ap.getID()));
             if (t > 0){
                 MessageUtil.sendSystemMessage(p, "class_wait_time", TimeUtil.convertMillisToString(t));
                 return false;
@@ -132,7 +133,7 @@ public class ArenaClassController {
         }
         MatchParams mp = am != null ? am.getParams() : null;
 
-        userClassSwitchTime.put(playerName, System.currentTimeMillis());
+        userClassSwitchTime.put(ap.getID(), System.currentTimeMillis());
         /// check to see if they have a team head
         ArenaTeam at = ap.getTeam();
         boolean woolTeams = ((at != null && at.getIndex() != -1) && p.getInventory().getHelmet() != null &&
@@ -171,8 +172,8 @@ public class ArenaClassController {
         /// Regive class/items
         ArenaClassController.giveClass(ap, ac);
         ap.setPreferredClass(ac);
-        if (mp != null){
-            MatchState state = am.getMatchState();
+        if (mp != null && am != null){
+            CompetitionState state = am.getState();
             ArenaTeam team = am.getTeam(ap);
             int teamIndex = team == null ? -1 : team.getIndex();
             Color color = armorTeams && teamIndex != -1 ? TeamUtil.getTeamColor(teamIndex) : null;

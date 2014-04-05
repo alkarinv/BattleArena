@@ -6,7 +6,6 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.exceptions.InvalidOptionException;
 import mc.alk.arena.objects.spawns.SpawnLocation;
-import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.MinMax;
 import mc.alk.arena.util.PermissionsUtil;
@@ -20,7 +19,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public class JoinOptions {
-
 
     public static enum JoinOption{
         ARENA("<arena>",false), TEAM("<team>",false),
@@ -73,36 +71,6 @@ public class JoinOptions {
         joinTime = System.currentTimeMillis();
     }
 
-//    public boolean matches(Arena arena) {
-//        if (options.containsKey(JoinOption.ARENA)){
-//            Arena a = (Arena) options.get(JoinOption.ARENA);
-//            return a == null || arena.matches(a);
-//        }
-//        return true;
-//    }
-//
-//    public Collection<String> getInvalidMatchReasons(Arena arena) {
-//        List<String> reasons = new ArrayList<String>();
-//        if (options.containsKey(JoinOption.ARENA)) {
-//            Arena a = (Arena) options.get(JoinOption.ARENA);
-//            if (a == null) {
-//                reasons.add(" arena " + arena + " is null");
-//            } else if (!arena.matches(a)) {
-//                reasons.addAll(arena.getInvalidMatchReasons(a));
-//            }
-//        }
-//        return reasons;
-//    }
-
-//    public boolean matches(MatchParams params) {
-////		return ArenaSize.matchesNTeams(nTeams, params.getNTeams());
-//        return ArenaSize.lower(teamSize, params.getTeamSize());
-//    }
-//
-//    public static boolean matches(JoinOptions jo, Match match) {
-//        return jo==null || (jo.matches(match.getArena()) && jo.matches(match.getParams()));
-//    }
-
     public void setJoinLocation(Location joinLocation) {
         this.joinedLocation = joinLocation;
     }
@@ -144,14 +112,15 @@ public class JoinOptions {
         return true;
     }
 
-    public static JoinOptions parseOptions(final MatchParams omp, ArenaTeam t, ArenaPlayer player, String[] args)
+    public static JoinOptions parseOptions(final MatchParams omp, ArenaPlayer player, String[] args)
             throws InvalidOptionException, NumberFormatException{
         JoinOptions jos = new JoinOptions();
         MatchParams mp = new MatchParams(omp.getType());
         mp.setParent(omp);
         jos.setMatchParams(mp);
         jos.setJoinTime(System.currentTimeMillis());
-        jos.joinedLocation = player.getLocation();
+        if (player != null)
+            jos.joinedLocation = player.getLocation();
         Map<JoinOption,Object> ops = jos.options;
         Arena arena = null;
         String lastArg = args.length > 0 ? args[args.length-1] : "";
@@ -183,7 +152,7 @@ public class JoinOptions {
             }
             Integer teamIndex = TeamUtil.getFromHumanTeamIndex(op);
             if (teamIndex != null){
-                if (!PermissionsUtil.hasTeamPerm(player, mp,teamIndex)){
+                if (player != null && !PermissionsUtil.hasTeamPerm(player, mp,teamIndex)){
                     throw new InvalidOptionException("&cYou don't have permissions to add this team");}
                 ops.put(JoinOption.TEAM, teamIndex);
                 continue;
@@ -260,16 +229,6 @@ public class JoinOptions {
         return sb.toString();
     }
 
-//	public boolean hasTeamSize(){
-//		if (options.containsKey(JoinOption.WANTEDTEAMSIZE)){
-//			return ((WantedTeamSizePair)options.get(JoinOption.WANTEDTEAMSIZE)).manuallySet;}
-//		return false;
-//	}
-//
-//	public Integer getTeamSize(){
-//		return ((WantedTeamSizePair)options.get(JoinOption.WANTEDTEAMSIZE)).size;
-//	}
-
     public boolean hasWantedTeamSize() {
         return options.containsKey(JoinOption.WANTEDTEAMSIZE);
     }
@@ -306,4 +265,27 @@ public class JoinOptions {
     public void setMatchParams(MatchParams matchParams) {
         this.params = matchParams;
     }
+
+    @Override
+    public JoinOptions clone() {
+        JoinOptions jo = new JoinOptions();
+        jo.options.putAll(this.options);
+        jo.joinedLocation = this.joinedLocation;
+        jo.params = this.params;
+        jo.teamSize = this.teamSize;
+        jo.joinTime = this.joinTime;
+        return jo;
+    }
+
+    public void setPlayer(ArenaPlayer player) throws InvalidOptionException {
+        this.joinedLocation = player.getLocation();
+        this.joinTime = System.currentTimeMillis();
+        Object teamIndex = options.get(JoinOption.TEAM);
+        if (teamIndex != null){
+            if (!PermissionsUtil.hasTeamPerm(player, getMatchParams(),(Integer) teamIndex)){
+                throw new InvalidOptionException("&cYou don't have permissions to add this team");}
+        }
+
+    }
+
 }

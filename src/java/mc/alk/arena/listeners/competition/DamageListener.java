@@ -29,8 +29,8 @@ public class DamageListener implements ArenaListener{
         Class<?>[] args = {};
         try {
             Version version = Util.getCraftBukkitVersion();
-            if (version.compareTo("v1_6_1") >= 0){
-                final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_6_1.EventHelper");
+            if (version.compareTo("v1_6_R1") >= 0){
+                final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_6_R1.EventHelper");
                 handler = (IEventHelper) clazz.getConstructor(args).newInstance((Object[])args);
             } else {
                 final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.pre.EventHelper");

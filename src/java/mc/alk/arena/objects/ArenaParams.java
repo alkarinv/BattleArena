@@ -477,7 +477,7 @@ public class ArenaParams {
         return getDoubleOption(MatchState.PREREQS, TransitionOption.MONEY);
     }
 
-    public Double getDoubleOption(MatchState state, TransitionOption option){
+    public Double getDoubleOption(CompetitionState state, TransitionOption option){
         return getStateGraph().getDoubleOption(state, option);
     }
 
@@ -493,12 +493,12 @@ public class ArenaParams {
         return getGiveItems(MatchState.LOSERS);
     }
 
-    public List<ItemStack> getGiveItems(MatchState state) {
+    public List<ItemStack> getGiveItems(CompetitionState state) {
         StateOptions tops = getStateOptions(state);
         return (tops != null && tops.hasOption(TransitionOption.GIVEITEMS)) ? tops.getGiveItems() : null;
     }
 
-    public List<PotionEffect> getEffects(MatchState state) {
+    public List<PotionEffect> getEffects(CompetitionState state) {
         StateOptions tops = getStateOptions(state);
         return (tops != null && tops.hasOption(TransitionOption.ENCHANTS)) ? tops.getEffects() : null;
     }

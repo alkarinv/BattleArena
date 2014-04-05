@@ -300,7 +300,7 @@ public class ConfigSerializer extends BaseConfig{
 
         /// TeamJoinResult in tracking for this match type
         String dbName = (cs.contains("database")) ? cs.getString("database",null) : cs.getString("db",null);
-        if (dbName == null) cs.getString("dbTableName", null);
+        if (dbName == null) dbName = cs.getString("dbTableName", null);
         if (dbName != null){
             mp.setTableName(dbName);
             if (StatController.enabled()){
@@ -327,7 +327,6 @@ public class ConfigSerializer extends BaseConfig{
         if (cs.contains("rated"))
             mp.setRated(cs.getBoolean("rated", true));
     }
-
 
     private static void loadGameSize(ConfigurationSection cs, MatchParams mp, boolean isArena) {
         if (cs.contains("gameSize") || isArena){

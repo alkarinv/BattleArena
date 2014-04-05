@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 abstract class AbstractTeam implements ArenaTeam{
 	static int count = 0;
@@ -120,7 +121,7 @@ abstract class AbstractTeam implements ArenaTeam{
 		Set<Player> ps = new HashSet<Player>();
 
 		for (ArenaPlayer ap: players){
-			Player p = ServerUtil.findPlayerExact(ap.getName());
+			Player p = ServerUtil.findPlayer(ap.getID());
 			if (p != null)
 				ps.add(p);
 		}
@@ -335,7 +336,7 @@ abstract class AbstractTeam implements ArenaTeam{
 	}
 
     @Override
-    public String getTeamInfo(Set<String> insideMatch){
+    public String getTeamInfo(Set<UUID> insideMatch){
 		StringBuilder sb = new StringBuilder("&eTeam: ");
 		if (displayName != null) sb.append(displayName);
 		sb.append(" ").append(isDead() ? "&4dead" : "&aalive").append("&e, ");
@@ -344,7 +345,7 @@ abstract class AbstractTeam implements ArenaTeam{
 			sb.append("&6").append(p.getName());
 			boolean isAlive = hasAliveMember(p);
 			boolean online = p.isOnline();
-			final String inmatch = insideMatch == null? "": ((insideMatch.contains(p.getName())) ? "&e(in)" : "&4(out)");
+			final String inmatch = insideMatch == null? "": ((insideMatch.contains(p.getID())) ? "&e(in)" : "&4(out)");
 			final int k = kills.containsKey(p) ? kills.get(p) : 0;
 			final int d = deaths.containsKey(p) ? deaths.get(p) : 0;
 			sb.append("&e(&c").append(k).append("&e,&7").append(d).append("&e)");

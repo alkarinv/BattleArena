@@ -1,12 +1,15 @@
 package mc.alk.arena.serializers;
 
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerRestoreController;
 import mc.alk.arena.listeners.BAPlayerListener;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.SerializerUtil;
+import mc.alk.arena.util.Util;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -15,10 +18,12 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 
 public class ArenaControllerSerializer extends BaseConfig{
@@ -46,19 +51,23 @@ public class ArenaControllerSerializer extends BaseConfig{
 					System.err.println("Couldnt load the player " + name +" when reading tpOnReenter inside arenaplayers.yml");
 					continue;
 				}
-				BAPlayerListener.teleportOnReenter(name, loc,null);
+                UUID id = Util.fromString(name);
+                ArenaPlayer ap = PlayerController.toArenaPlayer(id);
+                BAPlayerListener.teleportOnReenter(ap, loc,null);
 			}
 		}
 
-		cs = config.getConfigurationSection("dieOnReenter");
-		if (cs != null){
-			BAPlayerListener.killAllOnReenter(cs.getKeys(false));
-		}
 		cs = config.getConfigurationSection("clearInventoryOnReenter");
-		if (cs != null){
-			//			BAPlayerListener.clearInventory.addAll(cs.getKeys(false));
-			BAPlayerListener.clearInventoryOnReenter(cs.getKeys(false));
-		}
+		if (cs != null) {
+            //			BAPlayerListener.clearInventory.addAll(cs.getKeys(false));
+            Collection<String> strs = cs.getKeys(false);
+
+            for (String s : strs){
+                UUID id = Util.fromString(s);
+                BAPlayerListener.clearInventoryOnReenter(PlayerController.toArenaPlayer(id));
+            }
+
+        }
 
 		cs = config.getConfigurationSection("restoreGameModeOnReenter");
 		if (cs != null){
@@ -81,7 +90,8 @@ public class ArenaControllerSerializer extends BaseConfig{
 					continue;
 				}
 
-				BAPlayerListener.restoreGameModeOnEnter(name, gm);
+                UUID id = Util.fromString(name);
+				BAPlayerListener.restoreGameModeOnEnter(PlayerController.toArenaPlayer(id), gm);
 			}
 		}
 		cs = config.getConfigurationSection("restoreInv");
@@ -89,7 +99,8 @@ public class ArenaControllerSerializer extends BaseConfig{
 			for (String name: cs.getKeys(false)){
 				ConfigurationSection pcs = cs.getConfigurationSection(name);
 				PInv pinv = getInventory(pcs);
-				BAPlayerListener.restoreItemsOnReenter(name, pinv);
+                UUID id = Util.fromString(name);
+                BAPlayerListener.restoreItemsOnReenter(PlayerController.toArenaPlayer(id), pinv);
 			}
 		}
 	}
@@ -133,53 +144,53 @@ public class ArenaControllerSerializer extends BaseConfig{
 
 	@Override
 	public void save(){
-		Map<String, PlayerRestoreController> prcs =
-				new HashMap<String,PlayerRestoreController>(BAPlayerListener.getPlayerRestores());
+		Map<UUID, PlayerRestoreController> prcs =
+				new HashMap<UUID,PlayerRestoreController>(BAPlayerListener.getPlayerRestores());
 
-		Map<String,Location> playerLocs = new HashMap<String,Location>();
-		List<String> dieOnReenter = new ArrayList<String>();
-		List<String> clearInventoryReenter = new ArrayList<String>();
-		Map<String,GameMode> gameModes = new HashMap<String,GameMode>();
-		Map<String, PInv> items = new HashMap<String,PInv>();
+		Map<UUID,Location> playerLocs = new HashMap<UUID,Location>();
+		List<UUID> dieOnReenter = new ArrayList<UUID>();
+		List<UUID> clearInventoryReenter = new ArrayList<UUID>();
+		Map<UUID,GameMode> gameModes = new HashMap<UUID,GameMode>();
+		Map<UUID, PInv> items = new HashMap<UUID,PInv>();
 
 		for (PlayerRestoreController prc: prcs.values()){
-			final String name = prc.getName();
+			final UUID id = prc.getUUID();
 			if (prc.getTeleportLocation() != null)
-				playerLocs.put(name, prc.getTeleportLocation());
+				playerLocs.put(id, prc.getTeleportLocation());
 			if (prc.getKill())
-				dieOnReenter.add(name);
+				dieOnReenter.add(id);
 			if (prc.getClearInventory())
-				clearInventoryReenter.add(name);
+				clearInventoryReenter.add(id);
 			if (prc.getGamemode()!=null)
-				gameModes.put(name, prc.getGamemode());
+				gameModes.put(id, prc.getGamemode());
 			if (prc.getItem() != null){
-				items.put(name, prc.getItem());}
+				items.put(id, prc.getItem());}
 		}
 
 		ConfigurationSection cs = config.createSection("tpOnReenter");
-		for (String player : playerLocs.keySet()){
-			ConfigurationSection pc = cs.createSection(player);
+		for (UUID player : playerLocs.keySet()){
+			ConfigurationSection pc = cs.createSection(player.toString());
 			Location loc = playerLocs.get(player);
 			pc.set("loc", SerializerUtil.getLocString(loc));
 		}
 
 		cs = config.createSection("dieOnReenter");
-		for (String player : dieOnReenter){
-			cs.createSection(player);}
+		for (UUID player : dieOnReenter){
+			cs.createSection(player.toString());}
 
 		cs = config.createSection("clearInventoryOnReenter");
-		for (String player : clearInventoryReenter){
-			cs.createSection(player);}
+		for (UUID player : clearInventoryReenter){
+			cs.createSection(player.toString());}
 
 		cs = config.createSection("restoreGameModeOnReenter");
-		for (Entry<String,GameMode> entry: gameModes.entrySet()){
-			ConfigurationSection pc = cs.createSection(entry.getKey());
+		for (Entry<UUID,GameMode> entry: gameModes.entrySet()){
+			ConfigurationSection pc = cs.createSection(entry.getKey().toString());
 			pc.set("gamemode", entry.getValue().toString());
 		}
 
 		cs = config.createSection("restoreInv");
-		for (String name: items.keySet()){
-			ConfigurationSection pcs = cs.createSection(name);
+		for (UUID name: items.keySet()){
+			ConfigurationSection pcs = cs.createSection(name.toString());
 			PInv inv = items.get(name);
 			List<String> stritems = new ArrayList<String>();
 			for (ItemStack is : inv.armor){

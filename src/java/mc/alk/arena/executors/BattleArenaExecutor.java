@@ -17,6 +17,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
@@ -31,7 +32,8 @@ public class BattleArenaExecutor extends CustomCommandExecutor{
 
 	@MCCommand(cmds={"listInv"}, admin=true)
 	public boolean listSaves(CommandSender sender, OfflinePlayer p) {
-		Collection<String> dates = InventorySerializer.getDates(p.getName());
+		Collection<String> dates = InventorySerializer.getDates(p);
+
 		if (dates == null){
 			return sendMessage(sender, "There are no inventory saves for this player");
 		}
@@ -47,7 +49,7 @@ public class BattleArenaExecutor extends CustomCommandExecutor{
 	public boolean listSave(CommandSender sender, OfflinePlayer p, Integer index) {
 		if (index < 0 || index > Defaults.NUM_INV_SAVES){
 			return sendMessage(sender,"&c index must be between 1-"+Defaults.NUM_INV_SAVES);}
-		PInv pinv = InventorySerializer.getInventory(p.getName(), index-1);
+		PInv pinv = InventorySerializer.getInventory(p, index-1);
 		if (pinv == null)
 			return sendMessage(sender, "&cThis index doesn't have an inventory!");
 		sendMessage(sender, "&6" + p.getName() +" inventory at save " + index);
@@ -67,19 +69,30 @@ public class BattleArenaExecutor extends CustomCommandExecutor{
 		return true;
 	}
 
-	@MCCommand(cmds={"restoreInv"}, admin=true)
-	public boolean restoreInv(CommandSender sender, ArenaPlayer p, Integer index) {
+	@MCCommand(cmds={"giveInv"}, admin=true)
+	public boolean restoreInv(CommandSender sender, ArenaPlayer p, Integer index, Player other) {
 		if (index < 0 || index > Defaults.NUM_INV_SAVES){
 			return sendMessage(sender,"&c index must be between 1-"+Defaults.NUM_INV_SAVES);}
-		if (InventorySerializer.restoreInventory(p,index-1)){
-			return sendMessage(sender, "&2Player inventory restored");
+		if (InventorySerializer.giveInventory(p, index - 1, other)){
+			return sendMessage(sender, "&2Player inventory given to " + other.getDisplayName());
 		} else {
-			return sendMessage(sender, "&cPlayer inventory could not be restored");
+			return sendMessage(sender, "&cPlayer inventory could not be given to " + other.getDisplayName());
 		}
 	}
 
+    @MCCommand(cmds={"restoreInv"}, admin=true)
+    public boolean restoreInv(CommandSender sender, ArenaPlayer p, Integer index) {
+        if (index < 0 || index > Defaults.NUM_INV_SAVES){
+            return sendMessage(sender,"&c index must be between 1-"+Defaults.NUM_INV_SAVES);}
+        if (InventorySerializer.giveInventory(p, index - 1, p.getPlayer())){
+            return sendMessage(sender, "&2Player inventory restored");
+        } else {
+            return sendMessage(sender, "&cPlayer inventory could not be restored");
+        }
+    }
 
-	@MCCommand(cmds={"version"}, admin=true)
+
+    @MCCommand(cmds={"version"}, admin=true)
 	public boolean showVersion(CommandSender sender, String[] args) {
 		sendMessage(sender, "&6"+BattleArena.getNameAndVersion());
 		if (args.length > 1 && args[1].equalsIgnoreCase("all")) {
@@ -126,6 +139,8 @@ public class BattleArenaExecutor extends CustomCommandExecutor{
 		Set<ArenaClass> classes = ArenaClassController.getClasses();
 		sendMessage(sender, "&2Registered classes");
 		for (ArenaClass ac: classes){
+            if (ac.equals(ArenaClass.CHOSEN_CLASS) || ac.equals(ArenaClass.SELF_CLASS))
+                continue;
 			sendMessage(sender, "&6"+ac.getName()+"&2 : " + ac.getDisplayName());
 		}
 		return true;

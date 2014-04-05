@@ -93,10 +93,8 @@ public class BAEventController implements Listener{
 	public boolean hasOpenEvent(EventParams eventParam) {
 		final String key = getKey(eventParam);
 		Map<EventState,List<Event>> events = allEvents.get(key);
-		if (events == null)
-			return false;
-		return events.get(EventState.OPEN) != null;
-	}
+        return events != null && events.get(EventState.OPEN) != null;
+    }
 
 	private String getKey(final Event event){
 		return getKey(event.getParams());

@@ -39,7 +39,7 @@ public class StateGraph {
 		allops = null;
 	}
 
-	public void addStateOption(MatchState state, StateOption option) throws InvalidOptionException {
+	public void addStateOption(CompetitionState state, StateOption option) throws InvalidOptionException {
 		StateOptions tops = ops.get(state);
 		if (tops == null){
 			tops = new StateOptions();
@@ -261,7 +261,7 @@ public class StateGraph {
         return getOptionString(null);
     }
 
-	public Double getDoubleOption(MatchState state, StateOption option) {
+	public Double getDoubleOption(CompetitionState state, StateOption option) {
 		StateOptions tops = getOptions(state);
 		return tops == null ? null : tops.getDouble(option);
 	}

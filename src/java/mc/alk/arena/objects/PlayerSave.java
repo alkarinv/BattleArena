@@ -20,6 +20,7 @@ import org.bukkit.potion.PotionEffect;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.UUID;
 
 /**
  * @author alkarin
@@ -191,6 +192,7 @@ public class PlayerSave {
         experience = experience == null ? exp : experience + exp;
         ExpUtil.setTotalExperience(p, 0);
         try {
+            //noinspection deprecation
             p.updateInventory();
         } catch (Exception e) {/* do nothing */}
         return exp;
@@ -294,7 +296,7 @@ public class PlayerSave {
 //        if (Defaults.DEBUG_STORAGE) Log.info("storing items for = " + name +" contains=" + itemmap.containsKey(name));
         InventoryUtil.closeInventory(player.getPlayer());
         items = new PInv(player.getInventory());
-        InventorySerializer.saveInventory(player.getName(), items);
+        InventorySerializer.saveInventory(player.getID(), items);
     }
 
     public void restoreItems() {
@@ -312,16 +314,16 @@ public class PlayerSave {
     }
 
     public void storeMatchItems() {
-        final String name= player.getName();
+        final UUID id = player.getID();
 //        if (Defaults.DEBUG_STORAGE) Log.info("storing in match items for = " + name +" contains=" + matchitemmap.containsKey(name));
         InventoryUtil.closeInventory(player.getPlayer());
         final PInv pinv = new PInv(player.getInventory());
-        if (matchItems == null){
+        if (matchItems == null) {
             /// on the first entry, lets log that to disk
-            InventorySerializer.saveInventory(name,pinv);
+            InventorySerializer.saveInventory(id, pinv);
         }
         matchItems = pinv;
-        BAPlayerListener.restoreMatchItemsOnReenter(name, pinv);
+        BAPlayerListener.restoreMatchItemsOnReenter(player, pinv);
     }
 
     public void restoreMatchItems() {
@@ -426,5 +428,9 @@ public class PlayerSave {
             return;
         MoneyController.add(player.getName(), money);
         money = null;
+    }
+
+    public UUID getID() {
+        return player.getID();
     }
 }

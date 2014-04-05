@@ -56,15 +56,15 @@ import java.util.Set;
 public abstract class Event extends Competition implements CountdownCallback, ArenaListener {
     final String name; /// Name of this event
 
-    EventParams eventParams; /// The parameters for this event
+    protected EventParams eventParams; /// The parameters for this event
 
     EventMessager mc; /// Our message handler
 
     Countdown timer; /// Timer till Event starts
 
-    AbstractJoinHandler joinHandler; /// Specify how teams are allocated
+    protected AbstractJoinHandler joinHandler; /// Specify how teams are allocated
 
-    EventState state; /// The current state of this event
+    protected EventState state; /// The current state of this event
 
     /// When did each transition occur
     final Map<EventState, Long> times = new EnumMap<EventState,Long>(EventState.class);

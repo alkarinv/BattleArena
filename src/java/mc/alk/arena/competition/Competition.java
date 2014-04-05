@@ -1,9 +1,9 @@
 package mc.alk.arena.competition;
 
-import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.events.CompetitionEvent;
 import mc.alk.arena.listeners.PlayerHolder;
+import mc.alk.arena.listeners.custom.MethodController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.MatchParams;
@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -31,7 +32,7 @@ public abstract class Competition implements JoinResponseHandler, PlayerHolder, 
 	protected List<ArenaTeam> teams = new CopyOnWriteArrayList<ArenaTeam>();
 
 //	/** Players that have left the match */
-	protected final Set<String> leftPlayers = Collections.synchronizedSet(new HashSet<String>());
+	protected final Set<UUID> leftPlayers = Collections.synchronizedSet(new HashSet<UUID>());
 
 	static int count =0;
 
@@ -80,7 +81,7 @@ public abstract class Competition implements JoinResponseHandler, PlayerHolder, 
 	 * @return whether the player has left or not
 	 */
 	public boolean playerLeft(ArenaPlayer player) {
-		return leftPlayers.contains(player.getName());
+		return leftPlayers.contains(player.getID());
 	}
 
 	/**

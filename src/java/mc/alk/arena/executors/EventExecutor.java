@@ -193,7 +193,7 @@ public class EventExecutor extends BAExecutor{
 		/// Check any options specified in the add
 		JoinOptions jp;
 		try {
-			jp = JoinOptions.parseOptions(sq,t, p, Arrays.copyOfRange(args, 1, args.length));
+			jp = JoinOptions.parseOptions(sq, p, Arrays.copyOfRange(args, 1, args.length));
 		} catch (InvalidOptionException e) {
 			return sendMessage(p, e.getMessage());
 		} catch (Exception e){

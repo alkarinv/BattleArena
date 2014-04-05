@@ -8,4 +8,6 @@ import org.bukkit.Location;
  */
 public interface SpawnLocation extends YamlSerializable {
     public Location getLocation();
+    public Location getUpperCorner();
+    public Location getLowerCorner();
 }

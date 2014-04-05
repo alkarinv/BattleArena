@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 
 public enum TeamController implements Listener {
@@ -26,7 +27,7 @@ public enum TeamController implements Listener {
 	static final boolean DEBUG = false;
 
 	/** Teams that are created through players wanting to be teams up, or an admin command */
-	final Map<String, ArenaTeam> selfFormedTeams = Collections.synchronizedMap(new HashMap<String, ArenaTeam>());
+	final Map<UUID, ArenaTeam> selfFormedTeams = Collections.synchronizedMap(new HashMap<UUID, ArenaTeam>());
 
 	/** Teams that are still being created, these aren't "real" teams yet */
 	final Set<FormingTeam> formingTeams = Collections.synchronizedSet(new HashSet<FormingTeam>());
@@ -37,14 +38,14 @@ public enum TeamController implements Listener {
 	 * @return Team
 	 */
 	public static ArenaTeam getTeam(ArenaPlayer player) {
-		ArenaTeam at = INSTANCE.selfFormedTeams.get(player.getName());
+		ArenaTeam at = INSTANCE.selfFormedTeams.get(player.getID());
         if (at == null && HeroesController.enabled())
             return HeroesController.getTeam(player.getPlayer());
         return at;
     }
 
     public boolean inSelfFormedTeam(ArenaPlayer player){
-        return (INSTANCE.selfFormedTeams.containsKey(player.getName()) ||
+        return (INSTANCE.selfFormedTeams.containsKey(player.getID()) ||
                 (HeroesController.enabled() && HeroesController.getTeam(player.getPlayer() )!=null));
     }
 
@@ -57,13 +58,13 @@ public enum TeamController implements Listener {
     }
 
 	public boolean removeSelfFormedTeam(ArenaTeam team) {
-        List<String> l = new ArrayList<String>();
-        for (Map.Entry<String, ArenaTeam> entry : selfFormedTeams.entrySet()) {
+        List<UUID> l = new ArrayList<UUID>();
+        for (Map.Entry<UUID, ArenaTeam> entry : selfFormedTeams.entrySet()) {
             if (entry.getValue().equals(team)){
                 l.add(entry.getKey());
             }
         }
-        for (String p: l) {
+        for (UUID p: l) {
             selfFormedTeams.remove(p);
         }
         return !l.isEmpty();
@@ -71,7 +72,7 @@ public enum TeamController implements Listener {
 
 	public void addSelfFormedTeam(ArenaTeam team) {
         for (ArenaPlayer ap: team.getPlayers()){
-            selfFormedTeams.put(ap.getName(), team);
+            selfFormedTeams.put(ap.getID(), team);
         }
 	}
 

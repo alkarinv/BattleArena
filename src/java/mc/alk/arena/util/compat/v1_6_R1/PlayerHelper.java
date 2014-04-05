@@ -1,14 +1,17 @@
-package mc.alk.arena.util.compat.v1_6_1;
+package mc.alk.arena.util.compat.v1_6_R1;
 
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.util.compat.IPlayerHelper;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.scoreboard.Scoreboard;
+
+import java.util.UUID;
 
 public class PlayerHelper implements IPlayerHelper{
 
@@ -56,6 +59,11 @@ public class PlayerHelper implements IPlayerHelper{
     @Override
     public void setScoreboard(Player player, Object scoreboard) {
         player.setScoreboard((Scoreboard) scoreboard);
+    }
+
+    @Override
+    public UUID getID(OfflinePlayer player) {
+        return new UUID(0, player.getName().hashCode());
     }
 
 

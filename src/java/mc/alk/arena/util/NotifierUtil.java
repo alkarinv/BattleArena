@@ -8,18 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class NotifierUtil {
-    public static Map<String,Set<String>> listeners = new ConcurrentHashMap<String,Set<String>>();
+    public static Map<String,Set<UUID>> listeners = new ConcurrentHashMap<String,Set<UUID>>();
     public static Map<Integer,List<MessageListener>> compListeners = new ConcurrentHashMap<Integer, List<MessageListener>>();
 
 	public static void notify(String type, String msg) {
         if (listeners.get(type)== null)
             return;
-		for (String name: listeners.get(type)){
-			Player p = ServerUtil.findPlayerExact(name);
+		for (UUID name: listeners.get(type)){
+			Player p = ServerUtil.findPlayer(name);
 			if (p== null || !p.isOnline())
 				continue;
 			MessageUtil.sendMessage(p, msg);
@@ -34,8 +35,8 @@ public class NotifierUtil {
 			sb.append(e.toString());
 		}
 		String msg = sb.toString();
-        for (String name: listeners.get(type)){
-			Player p = ServerUtil.findPlayerExact(name);
+        for (UUID name: listeners.get(type)){
+			Player p = ServerUtil.findPlayer(name);
 			if (p== null || !p.isOnline())
 				continue;
 			MessageUtil.sendMessage(p, msg);
@@ -43,18 +44,19 @@ public class NotifierUtil {
 	}
 
 	public static void addListener(Player player, String type) {
-		Set<String> players = listeners.get(type);
+		Set<UUID> players = listeners.get(type);
 		if (players == null){
-			players = new CopyOnWriteArraySet<String>();
+			players = new CopyOnWriteArraySet<UUID>();
 			listeners.put(type, players);
 		}
-		players.add(player.getName());
+		players.add(PlayerUtil.getID(player));
+
 	}
 
 	public static void removeListener(Player player, String type) {
-		Set<String> players = listeners.get(type);
+		Set<UUID> players = listeners.get(type);
 		if (players != null){
-			players.remove(player.getName());
+			players.remove(PlayerUtil.getID(player));
 			if (players.isEmpty())
 				listeners.remove(type);
 		}

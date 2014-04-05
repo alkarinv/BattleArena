@@ -2,6 +2,7 @@ package mc.alk.arena.listeners.competition.plugins;
 
 
 import mc.alk.arena.listeners.competition.InArenaListener;
+import mc.alk.arena.util.PlayerUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -13,7 +14,7 @@ public enum FactionsListener implements Listener{
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onFactionLoss(FactionsEventPowerChange event){
-		if (InArenaListener.inArena(event.getUPlayer().getName())){
+		if (InArenaListener.inArena(PlayerUtil.getID(event.getUPlayer().getPlayer()))){
 			event.setCancelled(true);}
 	}
 

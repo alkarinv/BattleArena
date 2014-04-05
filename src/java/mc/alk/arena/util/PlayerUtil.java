@@ -3,27 +3,38 @@ package mc.alk.arena.util;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.HeroesController;
+import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CommandLineString;
 import mc.alk.arena.util.compat.IPlayerHelper;
 import mc.alk.plugin.updater.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.UUID;
 
 public class PlayerUtil {
     static IPlayerHelper handler = null;
 
+    /**
+     * 1.7.5 -> v1_7_R2
+     */
     static {
         Class<?>[] args = {};
         try {
             Method m = Player.class.getMethod("getHealth");
             Version version = Util.getCraftBukkitVersion();
-            if (m.getReturnType() == double.class || version.compareTo("v1_6_1") >= 0){
-                final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_6_1.PlayerHelper");
+            /// Bukkit doesn't seem to have UUID conversion yet, hold off a bit
+//            if (m.getReturnType() == double.class || version.compareTo("v1_7_R2") >= 0) {
+//                final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_7_R2.PlayerHelper");
+//                handler = (IPlayerHelper) clazz.getConstructor(args).newInstance((Object[]) args);
+//            } else
+            if (m.getReturnType() == double.class || version.compareTo("v1_6_R1") >= 0){
+                final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_6_R1.PlayerHelper");
                 handler = (IPlayerHelper) clazz.getConstructor(args).newInstance((Object[])args);
             } else {
                 final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.pre.PlayerHelper");
@@ -133,5 +144,28 @@ public class PlayerUtil {
 
     public static void setScoreboard(Player player, Object scoreboard) {
         handler.setScoreboard(player, scoreboard);
+    }
+
+    public static UUID getID(ArenaPlayer player) {
+        return handler.getID(player.getPlayer());
+    }
+
+    public static UUID getID(OfflinePlayer player) {
+        return handler.getID(player);
+    }
+
+    public static UUID getID(Player player) {
+        return handler.getID(player);
+    }
+
+    public static UUID getID(CommandSender sender)
+    {
+        if (sender instanceof ArenaPlayer){
+            return handler.getID(((ArenaPlayer)sender).getPlayer());
+        } else if (sender instanceof Player){
+            return handler.getID((Player) sender);
+        } else {
+            return new UUID(0, sender.getName().hashCode());
+        }
     }
 }

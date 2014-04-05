@@ -22,15 +22,13 @@ import org.bukkit.inventory.PlayerInventory;
 
 import java.util.List;
 import java.util.Stack;
+import java.util.UUID;
 
 
 public class ArenaPlayer {
     static int count = 0;
 
     final int id=count++;
-
-    /** Player name, needed if Player is not available or null */
-    final String name;
 
     /** The bukkit player, refreshed with each new event having the player */
     Player player;
@@ -66,15 +64,19 @@ public class ArenaPlayer {
     boolean isReady;
 
     final PlayerMetaData meta = new PlayerMetaData();
+    final UUID uuid;
 
     public ArenaPlayer(Player player) {
         this.player = player;
-        this.name = player.getName();
-        reset();
+        this.uuid = PlayerUtil.getID(this);
+    }
+
+    public ArenaPlayer(UUID id) {
+        this.uuid = id;
     }
 
     public String getName() {
-        return name;
+        return player.getName();
     }
 
     public void reset() {
@@ -283,4 +285,7 @@ public class ArenaPlayer {
         return "[" + this.getName() + "]";
     }
 
+    public UUID getID() {
+        return uuid;
+    }
 }

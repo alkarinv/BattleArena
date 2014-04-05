@@ -14,7 +14,7 @@ import org.bukkit.plugin.Plugin;
 import java.util.Set;
 
 public class StatController {
-	static boolean enabled = false;
+	static boolean enabled;
 	final MatchParams mp;
 	public static final BlankArenaStat BLANK_STAT = BlankArenaStat.BLANK_STAT;
 

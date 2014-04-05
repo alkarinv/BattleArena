@@ -9,6 +9,7 @@ import mc.alk.arena.objects.spawns.TimedSpawn;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.arena.serializers.SpawnSerializer;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.PlayerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.block.Chest;
@@ -20,11 +21,12 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 public class ArenaEditor implements Listener{
     int nListening=0;
     Integer timerID;
-    HashMap<String, CurrentSelection> selections = new HashMap<String,CurrentSelection>();
+    HashMap<UUID, CurrentSelection> selections = new HashMap<UUID,CurrentSelection>();
 
     public class CurrentSelection  {
         public long lastUsed;
@@ -63,10 +65,10 @@ public class ArenaEditor implements Listener{
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getClickedBlock() == null || !selections.containsKey(event.getPlayer().getName())) {
+        if (event.getClickedBlock() == null || !selections.containsKey(PlayerUtil.getID(event.getPlayer()))) {
             return;
         }
-        CurrentSelection cs = selections.get(event.getPlayer().getName());
+        CurrentSelection cs = selections.get(PlayerUtil.getID(event.getPlayer()));
         if (cs.listeningIndex == null || cs.getArena() == null)
             return;
         if (event.getPlayer().getGameMode()== GameMode.CREATIVE && (
@@ -109,18 +111,19 @@ public class ArenaEditor implements Listener{
 
 
     public void setCurrentArena(CommandSender p, Arena arena) {
-        if (selections.containsKey(p.getName())) {
-            CurrentSelection cs = selections.get(p.getName());
+        UUID id = PlayerUtil.getID(p);
+        if (selections.containsKey(id)) {
+            CurrentSelection cs = selections.get(id);
             cs.setLastUsed(System.currentTimeMillis());
             cs.setArena(arena);
         } else {
             CurrentSelection cs = new CurrentSelection(System.currentTimeMillis(), arena);
-            selections.put(p.getName(), cs);
+            selections.put(id, cs);
         }
     }
 
     public Arena getArena(CommandSender p) {
-        CurrentSelection cs = selections.get(p.getName());
+        CurrentSelection cs = selections.get(PlayerUtil.getID(p));
         if (cs == null)
             return null;
         return cs.arena;
@@ -128,6 +131,6 @@ public class ArenaEditor implements Listener{
 
 
     public CurrentSelection getCurrentSelection(CommandSender sender) {
-        return selections.get(sender.getName());
+        return selections.get(PlayerUtil.getID(sender));
     }
 }

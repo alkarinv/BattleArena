@@ -1,11 +1,13 @@
-package mc.alk.arena.objects.tournament;
+package mc.alk.arena.competition.events.tournament;
+
+import mc.alk.arena.objects.Matchup;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 
-public class Round {
+class Round {
 	int round;
 	List<Matchup> matchups = new CopyOnWriteArrayList<Matchup>();
 	public Round(int round) {

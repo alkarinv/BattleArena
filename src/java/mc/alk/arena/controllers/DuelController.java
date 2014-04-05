@@ -10,14 +10,14 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.Duel;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.Matchup;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
+import mc.alk.arena.objects.joining.MatchTeamQObject;
 import mc.alk.arena.objects.options.DuelOptions.DuelOption;
 import mc.alk.arena.objects.options.JoinOptions;
-import mc.alk.arena.objects.joining.MatchTeamQObject;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.tournament.Matchup;
 import mc.alk.arena.util.MessageUtil;
 
 import java.util.ArrayList;
@@ -27,11 +27,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DuelController implements ArenaListener{
 	List<Duel> formingDuels = new CopyOnWriteArrayList<Duel>();
-	HashMap<String, Long> rejectTimers = new HashMap<String,Long>();
+	HashMap<UUID, Long> rejectTimers = new HashMap<UUID,Long>();
 	HashMap<Matchup,Duel> ongoingDuels = new HashMap<Matchup,Duel>();
 	Map<Match, Matchup> matchups = Collections.synchronizedMap(new HashMap<Match,Matchup>());
 
@@ -155,7 +156,7 @@ public class DuelController implements ArenaListener{
 		Duel d = getChallengedDuel(player);
 		if (d != null){
 			formingDuels.remove(d);
-			rejectTimers.put(player.getName(), System.currentTimeMillis());
+			rejectTimers.put(player.getID(), System.currentTimeMillis());
 		}
 		return d;
 	}
@@ -202,11 +203,11 @@ public class DuelController implements ArenaListener{
 
 
 	public Long getLastRejectTime(ArenaPlayer ap) {
-		Long t = rejectTimers.get(ap.getName());
+		Long t = rejectTimers.get(ap.getID());
 		if (t == null)
 			return null;
 		if (Defaults.DUEL_CHALLENGE_INTERVAL*1000 < System.currentTimeMillis() - t){
-			rejectTimers.remove(ap.getName());}
+			rejectTimers.remove(ap.getID());}
 		return t;
 	}
 

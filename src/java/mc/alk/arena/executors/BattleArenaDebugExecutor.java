@@ -341,7 +341,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
     @MCCommand(cmds={"hasPerm"}, admin=true)
     public boolean hasPerm(CommandSender sender, String perm, Player p) {
-        return sendMessage(sender, "Player " + p.getName() +"  hasPerm " + perm +" " +p.hasPermission(perm));
+        return sendMessage(sender, "Player " + p.getDisplayName() +"  hasPerm " + perm +" " +p.hasPermission(perm));
     }
 
     @MCCommand(cmds={"setexp"}, op=true)
@@ -419,34 +419,37 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
     public boolean addNotifyListener(CommandSender sender, Player player, String type, Boolean enable) {
         if (enable){
             NotifierUtil.addListener(player, type);
-            if (!sender.getName().equals(player.getName()))sendMessage(player,"&2 "+player.getName()+" &6now listening &2to " + type+" debugging messages");
+            if (!sender.getName().equals(player.getName()))sendMessage(player,"&2 "+
+                    player.getDisplayName()+" &6now listening &2to " + type+" debugging messages");
             return sendMessage(sender,"&2 "+player.getName()+" &6now listening &2to " + type+" debugging messages");
         } else {
             NotifierUtil.removeListener(player, type);
-            if (!sender.getName().equals(player.getName()))sendMessage(player,"&2 "+player.getName()+" &cstopped listening&2 to " + type+" debugging messages");
-            return sendMessage(sender,"&2 "+player.getName()+" &cstopped listening&2 to " + type+" debugging messages");
+            if (!sender.getName().equals(player.getName()))sendMessage(player,"&2 "+
+                    player.getDisplayName()+" &cstopped listening&2 to " + type+" debugging messages");
+            return sendMessage(sender,"&2 "+player.getDisplayName()+
+                    " &cstopped listening&2 to " + type+" debugging messages");
         }
     }
 
     @MCCommand(cmds={"giveArenaAdminPerms"}, op=true)
     public boolean giveArenaAdminPerms(CommandSender sender, Player player, Boolean enable) {
         if (!PermissionsUtil.giveAdminPerms(player,enable)){
-            return sendMessage(sender,"&cCouldn't change the admin perms of &6"+player.getName());}
+            return sendMessage(sender,"&cCouldn't change the admin perms of &6"+player.getDisplayName());}
         if (enable){
-            return sendMessage(sender,"&2 "+player.getName()+" &6now has&2 admin perms");
+            return sendMessage(sender,"&2 "+player.getDisplayName()+" &6now has&2 admin perms");
         } else {
-            return sendMessage(sender,"&2 "+player.getName()+" &4no longer has&2 admin perms");
+            return sendMessage(sender,"&2 "+player.getDisplayName()+" &4no longer has&2 admin perms");
         }
     }
 
     @MCCommand(cmds={"giveWGPerms"}, op=true)
     public boolean giveWorldGuardPerms(CommandSender sender, Player player, Boolean enable) {
         if (!PermissionsUtil.giveWGPerms(player,enable)){
-            return sendMessage(sender,"&cCouldn't change the admin perms of &6"+player.getName());}
+            return sendMessage(sender,"&cCouldn't change the admin perms of &6"+player.getDisplayName());}
         if (enable){
-            return sendMessage(sender,"&2 "+player.getName()+" &6now has&2 wg perms");
+            return sendMessage(sender,"&2 "+player.getDisplayName()+" &6now has&2 wg perms");
         } else {
-            return sendMessage(sender,"&2 "+player.getName()+" &4no longer has&2 wg perms");
+            return sendMessage(sender,"&2 "+player.getDisplayName()+" &4no longer has&2 wg perms");
         }
     }
 
@@ -549,7 +552,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
     public boolean showScoreboard(CommandSender sender, Player player) {
         Scoreboard sc = player.getScoreboard();
         if (sc == null)
-            return sendMessage(sender, "&4Scoreboard for " + player.getName() +" is null");
+            return sendMessage(sender, "&4Scoreboard for " + player.getDisplayName() +" is null");
         sendMessage(sender, "&4Scoreboard &f" + sc.hashCode());
         sendMessage(sender, "&e -- Teams -- ");
         Collection<OfflinePlayer> ops = sc.getPlayers();

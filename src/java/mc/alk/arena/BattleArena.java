@@ -12,6 +12,7 @@ import mc.alk.arena.controllers.EventScheduler;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.RoomController;
+import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.executors.ArenaEditorExecutor;
@@ -58,6 +59,7 @@ import mc.alk.arena.util.FileLogger;
 import mc.alk.arena.util.FileUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.PlayerUtil;
 import mc.alk.plugin.updater.FileUpdater;
 import mc.alk.plugin.updater.PluginUpdater;
 import mc.battleplugins.api.BattlePluginsAPI;
@@ -230,7 +232,7 @@ public class BattleArena extends JavaPlugin {
         /// Load Competitions and Arenas after everything is loaded (plugins and worlds)
         /// Other plugins using BattleArena are going to be registering
         /// Lets hold off on loading the scheduled events until those plugins have registered
-        Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+        Scheduler.scheduleSynchronousTask(this, new Runnable() {
             @Override
             public void run() {
                 baConfigSerializer.loadVictoryConditions();
@@ -475,7 +477,7 @@ public class BattleArena extends JavaPlugin {
      * @return true or false: whether they are in inside an arena
      */
     public static boolean inArena(Player player) {
-        return InArenaListener.inArena(player.getName());
+        return InArenaListener.inArena(PlayerUtil.getID(player));
     }
 
     /**
@@ -485,7 +487,7 @@ public class BattleArena extends JavaPlugin {
      * @return true or false: whether they are in inside an arena
      */
     public static boolean inArena(ArenaPlayer player) {
-        return InArenaListener.inArena(player.getName());
+        return InArenaListener.inArena(player.getID());
     }
 
     /**

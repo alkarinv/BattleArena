@@ -60,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -78,7 +79,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
 
     final List<WaitingObject> joinHandlers = new LinkedList<WaitingObject>();
     final Map<WaitingObject, IdTime> forceTimers = Collections.synchronizedMap(new HashMap<WaitingObject, IdTime>());
-    final protected Map<String, WaitingObject> inQueue = new HashMap<String, WaitingObject>();
+    final protected Map<UUID, WaitingObject> inQueue = new HashMap<UUID, WaitingObject>();
 
     final protected MethodController methodController = new MethodController("QC");
 
@@ -344,7 +345,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
 
             for (ArenaTeam t: qo.getTeams()){
                 for (ArenaPlayer ap: t.getPlayers()) {
-                    inQueue.put(ap.getName(), o);
+                    inQueue.put(ap.getID(), o);
                     callEvent(new ArenaPlayerEnterQueueEvent(ap,t,qo,jr));
                 }
                 methodController.updateEvents(MatchState.ONENTER, t.getPlayers());
@@ -395,7 +396,7 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
     }
 
     private WaitingObject removeFromQueue(ArenaPlayer player, boolean leaveJoinHandler) {
-        WaitingObject wo = inQueue.remove(player.getName());
+        WaitingObject wo = inQueue.remove(player.getID());
         if (wo != null) {
             if (leaveJoinHandler) {
                 wo.jh.leave(player);
@@ -486,16 +487,16 @@ public class ArenaMatchQueue implements ArenaListener, Listener {
 
 
     public boolean isInQue(ArenaPlayer p) {
-        return inQueue.containsKey(p.getName());
+        return inQueue.containsKey(p.getID());
     }
 
-    public boolean isInQue(String name) {
-        return inQueue.containsKey(name);
+    public boolean isInQue(UUID id) {
+        return inQueue.containsKey(id);
     }
 
 
     public WaitingObject getQueueObject(ArenaPlayer p) {
-        return inQueue.get(p.getName());
+        return inQueue.get(p.getID());
     }
 
     public void stop() {

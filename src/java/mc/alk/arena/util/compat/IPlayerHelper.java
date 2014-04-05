@@ -1,6 +1,9 @@
 package mc.alk.arena.util.compat;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+
+import java.util.UUID;
 
 public interface IPlayerHelper {
 
@@ -13,4 +16,6 @@ public interface IPlayerHelper {
     Object getScoreboard(Player player);
 
     void setScoreboard(Player player, Object scoreboard);
+
+    UUID getID(OfflinePlayer player);
 }

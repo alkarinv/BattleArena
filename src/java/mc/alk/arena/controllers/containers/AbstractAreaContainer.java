@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler{
@@ -58,7 +59,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
     private final MethodController methodController;
 
-    final protected Set<String> players = new HashSet<String>();
+    final protected Set<UUID> players = new HashSet<UUID>();
 
     /** Spawn points */
     final protected List<List<SpawnLocation>> spawns = new ArrayList<List<SpawnLocation>>();
@@ -132,7 +133,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
     @EventHandler
     public void _onArenaPlayerLeaveEvent(ArenaPlayerLeaveEvent event){
-        if (players.remove(event.getPlayer().getName())){
+        if (players.remove(event.getPlayer().getID())){
             updateBukkitEvents(MatchState.ONLEAVE, event.getPlayer());
             callEvent(new ArenaPlayerLeaveLobbyEvent(event.getPlayer(),event.getTeam()));
             event.addMessage(MessageHandler.getSystemMessage("you_left_competition", this.params.getName()));
@@ -155,7 +156,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
     @Override
     public boolean leave(ArenaPlayer p) {
-        return players.remove(p.getName());
+        return players.remove(p.getID());
     }
 
     @Override
@@ -184,7 +185,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
     @Override
     public boolean isHandled(ArenaPlayer player) {
-        return players.contains(player.getName());
+        return players.contains(player.getID());
     }
 
     @Override

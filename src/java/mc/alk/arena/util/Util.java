@@ -6,6 +6,8 @@ import mc.alk.plugin.updater.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
+import java.util.UUID;
+
 public class Util {
 
 	static public void printStackTrace(){
@@ -46,4 +48,13 @@ public class Util {
     public static String toString(Object o) {
         return o == null ? null : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
     }
+
+    public static UUID fromString(String name){
+        try {
+            return UUID.fromString(name);
+        } catch (Exception e) {
+            return new UUID(0, name.hashCode());
+        }
+    }
+
 }

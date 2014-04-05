@@ -11,7 +11,6 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
-import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -24,10 +23,13 @@ import org.bukkit.potion.PotionEffect;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 
 public class PlayerRestoreController {
-    final String name;
+    final UUID uuid;
+    final ArenaPlayer player;
+
     boolean kill;
     boolean clearInventory;
     int clearWool = -1; /// -1, or positive with wool color
@@ -51,8 +53,9 @@ public class PlayerRestoreController {
     String message;
     boolean deEnchant;
 
-    public PlayerRestoreController(String name) {
-        this.name = name;
+    public PlayerRestoreController(ArenaPlayer player) {
+        this.uuid = player.getID();
+        this.player = player;
     }
 
     public synchronized boolean handle(final Player p, PlayerRespawnEvent event) {
@@ -124,9 +127,10 @@ public class PlayerRestoreController {
         final Collection<PotionEffect> efs = effects;
         effects = null;
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+        Scheduler.scheduleSynchronousTask(new Runnable() {
+            @Override
             public void run() {
-                Player pl = ServerUtil.findPlayerExact(name);
+                Player pl = player.regetPlayer();
                 if (pl != null) {
                     try {
                         EffectUtil.enchantPlayer(pl, efs);
@@ -140,8 +144,9 @@ public class PlayerRestoreController {
         final List<ItemStack> items = removeItems;
         removeItems=null;
         Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+            @Override
             public void run() {
-                Player pl = ServerUtil.findPlayerExact(name);
+                Player pl = player.regetPlayer();
                 if (pl != null){
                     PlayerStoreController.removeItems(BattleArena.toArenaPlayer(pl), items);
                 }
@@ -153,8 +158,9 @@ public class PlayerRestoreController {
         final PInv items = matchItems;
         matchItems=null;
         Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+            @Override
             public void run() {
-                Player pl = ServerUtil.findPlayerExact(name);
+                Player pl = player.regetPlayer();
                 if (pl != null){
                     ArenaPlayer ap = PlayerController.toArenaPlayer(pl);
                     PlayerStoreController.setInventory(ap, items);
@@ -167,10 +173,11 @@ public class PlayerRestoreController {
         final PInv items = item;
         item=null;
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+        Scheduler.scheduleSynchronousTask(new Runnable() {
+            @Override
             public void run() {
-                Player pl = ServerUtil.findPlayerExact(name);
-                if (pl != null){
+                Player pl = player.regetPlayer();
+                if (pl != null) {
                     ArenaPlayer ap = PlayerController.toArenaPlayer(pl);
                     PlayerStoreController.setInventory(ap, items);
                 }
@@ -181,10 +188,11 @@ public class PlayerRestoreController {
     private void handleMagic() {
         final int val = magic;
         magic = null;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+        Scheduler.scheduleSynchronousTask(new Runnable() {
+            @Override
             public void run() {
-                Player pl = ServerUtil.findPlayerExact(name);
-                if (pl != null){
+                Player pl = player.regetPlayer();
+                if (pl != null) {
                     HeroesController.setMagicLevel(pl, val);
                 }
             }
@@ -194,11 +202,13 @@ public class PlayerRestoreController {
     private void handleHunger() {
         final int val = hunger;
         hunger = null;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+        Scheduler.scheduleSynchronousTask(new Runnable() {
+            @Override
             public void run() {
-                Player pl = ServerUtil.findPlayerExact(name);
-                if (pl != null){
-                    BattleArena.toArenaPlayer(pl).setFoodLevel(val);}
+                Player pl = player.regetPlayer();
+                if (pl != null) {
+                    BattleArena.toArenaPlayer(pl).setFoodLevel(val);
+                }
             }
         });
     }
@@ -206,11 +216,13 @@ public class PlayerRestoreController {
     private void handleHealth() {
         final Double val = health;
         health = null;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+        Scheduler.scheduleSynchronousTask(new Runnable() {
+            @Override
             public void run() {
-                Player pl = ServerUtil.findPlayerExact(name);
-                if (pl != null){
-                    BattleArena.toArenaPlayer(pl).setHealth(val);}
+                Player pl = player.regetPlayer();
+                if (pl != null) {
+                    BattleArena.toArenaPlayer(pl).setHealth(val);
+                }
             }
         });
     }
@@ -218,11 +230,13 @@ public class PlayerRestoreController {
     private void handleExp() {
         final int val = exp;
         exp = null;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+        Scheduler.scheduleSynchronousTask(new Runnable() {
+            @Override
             public void run() {
-                Player pl = ServerUtil.findPlayerExact(name);
-                if (pl != null){
-                    ExpUtil.setTotalExperience(pl, val);}
+                Player pl = player.regetPlayer();
+                if (pl != null) {
+                    ExpUtil.setTotalExperience(pl, val);
+                }
             }
         });
     }
@@ -230,12 +244,13 @@ public class PlayerRestoreController {
     private void handleGameMode() {
         final GameMode gm = gamemode;
         gamemode = null;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+        Scheduler.scheduleSynchronousTask(new Runnable() {
             @Override
             public void run() {
-                Player pl = ServerUtil.findPlayerExact(name);
-                if (pl != null){
-                    PlayerUtil.setGameMode(pl, gm);}
+                Player pl = player.regetPlayer();
+                if (pl != null) {
+                    PlayerUtil.setGameMode(pl, gm);
+                }
             }
         });
     }
@@ -246,11 +261,11 @@ public class PlayerRestoreController {
         teleportLocation = null;
         if (loc != null){
             if (event == null){
-                Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+                Scheduler.scheduleSynchronousTask(new Runnable() {
                     @Override
                     public void run() {
-                        Player pl = ServerUtil.findPlayerExact(name);
-                        if (pl != null){
+                        Player pl = player.regetPlayer();
+                        if (pl != null) {
                             TeleportController.teleport(pl, loc);
                         } else {
                             Util.printStackTrace();
@@ -267,7 +282,7 @@ public class PlayerRestoreController {
                     Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
                         @Override
                         public void run() {
-                            Player pl = ServerUtil.findPlayerExact(name);
+                            Player pl = player.regetPlayer();
                             if (pl != null){
                                 if (pl.getLocation().getWorld().getUID()!=loc.getWorld().getUID() ||
                                         pl.getLocation().distanceSquared(loc) > 100){
@@ -281,7 +296,7 @@ public class PlayerRestoreController {
                 }
             }
         } else { /// this is bad, how did they get a null tp loc
-            Log.err(name + " respawn loc =null");
+            Log.err(player.getName() + " respawn loc =null");
         }
     }
 
@@ -301,7 +316,7 @@ public class PlayerRestoreController {
     }
 
     private void handleClearInventory(Player p) {
-        Log.warn("[BattleArena] clearing inventory for quitting during a match " + p.getName());
+        Log.warn("[BattleArena] clearing inventory for quitting during a match " + PlayerUtil.getID(p));
         InventoryUtil.clearInventory(p);
     }
 
@@ -390,9 +405,9 @@ public class PlayerRestoreController {
     public Location getTeleportLocation() {
         return teleportLocation;
     }
-    public String getName(){
-        return name;
-    }
+//    public String getName(){
+//        return player.getName();
+//    }
 
     public boolean getKill() {
         return kill;
@@ -460,5 +475,9 @@ public class PlayerRestoreController {
 
     public void enchant(Collection<PotionEffect> effects) {
         this.effects = effects;
+    }
+
+    public UUID getUUID() {
+        return player.getID();
     }
 }

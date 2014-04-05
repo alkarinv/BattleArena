@@ -1,11 +1,7 @@
-package mc.alk.arena.objects.tournament;
+package mc.alk.arena.objects;
 
 import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.CompetitionResult;
-import mc.alk.arena.objects.MatchParams;
-import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.options.JoinOptions;

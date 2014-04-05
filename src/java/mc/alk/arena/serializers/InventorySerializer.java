@@ -8,7 +8,9 @@ import mc.alk.arena.util.InventoryUtil;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.KeyValue;
 import mc.alk.arena.util.Log;
+import mc.alk.arena.util.PlayerUtil;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -24,43 +26,46 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TimerTask;
+import java.util.UUID;
 
 public class InventorySerializer {
 
-	public static List<String> getDates(final String name){
-		BaseConfig serializer = getSerializer(name);
-		if (serializer == null)
-			return null;
-		PriorityQueue<Long> dates = new PriorityQueue<Long>(Defaults.NUM_INV_SAVES, Collections.reverseOrder());
-		Set<String> keys = serializer.config.getKeys(false);
+	public static List<String> getDates(final OfflinePlayer player) {
+        UUID id = PlayerUtil.getID(player);
+        BaseConfig serializer = getSerializer(id);
+        if (serializer == null)
+            return null;
+        PriorityQueue<Long> dates = new PriorityQueue<Long>(Defaults.NUM_INV_SAVES, Collections.reverseOrder());
+        Set<String> keys = serializer.config.getKeys(false);
 
-		DateFormat format = DateFormat.getDateTimeInstance( DateFormat.LONG, DateFormat.LONG);
+        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
 
-		for (String key: keys){
-			ConfigurationSection cs = serializer.config.getConfigurationSection(key);
-			if (cs == null)
-				continue;
-			String strdate = cs.getString("storedDate");
-			Date date;
-			try {
-				date = format.parse(strdate);
-			} catch (ParseException e) {
-				Log.printStackTrace(e);
-				continue;
-			}
-			dates.add(date.getTime());
-		}
-		List<String> strdates = new ArrayList<String>();
-		for (Long l: dates){
-			strdates.add(format.format(l));
-		}
-		return strdates;
-	}
+        for (String key : keys) {
+            ConfigurationSection cs = serializer.config.getConfigurationSection(key);
+            if (cs == null)
+                continue;
+            String strdate = cs.getString("storedDate");
+            Date date;
+            try {
+                date = format.parse(strdate);
+            } catch (ParseException e) {
+                Log.printStackTrace(e);
+                continue;
+            }
+            dates.add(date.getTime());
+        }
+        List<String> strdates = new ArrayList<String>();
+        for (Long l : dates) {
+            strdates.add(format.format(l));
+        }
+        return strdates;
+    }
 
-	public static PInv getInventory(final String name, int index){
+	public static PInv getInventory(final OfflinePlayer player, int index){
 		if (index < 0 || index >= Defaults.NUM_INV_SAVES){
 			return null;}
-		BaseConfig serializer = getSerializer(name);
+        UUID id = PlayerUtil.getID(player);
+		BaseConfig serializer = getSerializer(id);
 		if (serializer == null)
 			return null;
 		PriorityQueue<KeyValue<Long,PInv>> dates =
@@ -97,13 +102,13 @@ public class InventorySerializer {
 		return null;
 	}
 
-	public static void saveInventory(final String name, final PInv pinv) {
+	public static void saveInventory(final UUID id, final PInv pinv) {
 		if (Defaults.NUM_INV_SAVES <= 0){
 			return;}
         Scheduler.scheduleAsynchronousTask(new TimerTask(){
 			@Override
 			public void run() {
-				BaseConfig serializer = getSerializer(name);
+				BaseConfig serializer = getSerializer(id);
 				if (serializer == null)
 					return;
 				Date now = new Date();
@@ -131,28 +136,28 @@ public class InventorySerializer {
 		}, 0);
 	}
 
-	private static BaseConfig getSerializer(String name) {
+	private static BaseConfig getSerializer(UUID id) {
 		BaseConfig bs = new BaseConfig();
-		File dir = new File(BattleArena.getSelf().getDataFolder()+"/inventories/");
+		File dir = new File(BattleArena.getSelf().getDataFolder()+"/saves/inventories/");
 		if (!dir.exists()){
-			try {dir.mkdirs();}catch (Exception e){}
+			try {dir.mkdirs();}catch (Exception e){/* do nothing */}
 			}
-		return bs.setConfig(dir.getPath()+"/"+name+".yml") ? bs : null;
+		return bs.setConfig(dir.getPath()+"/"+id+".yml") ? bs : null;
 	}
 
 	@SuppressWarnings("deprecation")
-	public static boolean restoreInventory(ArenaPlayer player, Integer index) {
-		PInv pinv = getInventory(player.getName(), index);
+	public static boolean giveInventory(ArenaPlayer player, Integer index, Player other) {
+		PInv pinv = getInventory(player.getPlayer(), index);
 		if (pinv == null)
 			return false;
-		Player p = player.getPlayer();
+
 		for (ItemStack is: pinv.armor){
-			InventoryUtil.addItemToInventory(p, is);
+			InventoryUtil.addItemToInventory(other, is);
 		}
 		for (ItemStack is: pinv.contents){
-			InventoryUtil.addItemToInventory(p, is);
+			InventoryUtil.addItemToInventory(other, is);
 		}
-		try{p.updateInventory();} catch(Exception e){ /// yes this has thrown errors on me before
+		try{other.updateInventory();} catch(Exception e){ /// yes this has thrown errors on me before
 			return false; /// do I really want to return false? do I care if this doesnt go through?
 		}
 		return true;

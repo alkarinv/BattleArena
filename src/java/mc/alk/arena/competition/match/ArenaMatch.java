@@ -4,6 +4,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.RoomController;
+import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.TeleportController;
 import mc.alk.arena.events.matches.MatchPlayersReadyEvent;
 import mc.alk.arena.events.players.ArenaPlayerDeathEvent;
@@ -28,6 +29,7 @@ import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
+import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.scoreboardapi.api.SEntry;
 import org.bukkit.Bukkit;
@@ -47,6 +49,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 
 public class ArenaMatch extends Match {
@@ -54,8 +57,8 @@ public class ArenaMatch extends Match {
     final static HashSet<String> disabledCommands = new HashSet<String>();
     final static HashSet<String> enabledCommands = new HashSet<String>();
 
-    final Map<String, Integer> deathTimer = new HashMap<String, Integer>();
-    final Map<String, Integer> respawnTimer = new HashMap<String, Integer>();
+    final Map<UUID, Integer> deathTimer = new HashMap<UUID, Integer>();
+    final Map<UUID, Integer> respawnTimer = new HashMap<UUID, Integer>();
 
     public ArenaMatch(Arena arena, MatchParams mp, Collection<ArenaListener> listeners) {
         super(arena, mp,listeners);
@@ -145,18 +148,18 @@ public class ArenaMatch extends Match {
             /// We can't let them just sit on the respawn screen... schedule them to lose
             /// We will cancel this onRespawn
             final ArenaMatch am = this;
-            Integer timer = deathTimer.get(target.getName());
+            Integer timer = deathTimer.get(target.getID());
             if (timer != null){
                 Bukkit.getScheduler().cancelTask(timer);
             }
-            timer = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable(){
+            timer = Scheduler.scheduleSynchronousTask(new Runnable(){
                 @Override
                 public void run() {
                     am.performTransition(MatchState.ONCOMPLETE, target, t, true);
                     checkAndHandleIfTeamDead(t);
                 }
             }, 15*20L);
-            deathTimer.put(target.getName(), timer);
+            deathTimer.put(target.getID(), timer);
         }
         if (exiting){
             performTransition(MatchState.ONCOMPLETE, target, t, true);
@@ -231,7 +234,7 @@ public class ArenaMatch extends Match {
         if (respawns) {
             final boolean randomRespawn = mo.randomRespawn();
             /// Lets cancel our death respawn timer
-            Integer timer = deathTimer.get(p.getName());
+            Integer timer = deathTimer.get(p.getID());
             if (timer != null) {
                 Bukkit.getScheduler().cancelTask(timer);
             }
@@ -251,10 +254,10 @@ public class ArenaMatch extends Match {
                 }
                 /// Should we respawn the player to the team spawn after a certain amount of time
                 if (mo.hasOption(TransitionOption.RESPAWNTIME)) {
-                    int id = Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+                    int id = Scheduler.scheduleSynchronousTask(new Runnable() {
                         @Override
                         public void run() {
-                            Integer id = respawnTimer.remove(p.getName());
+                            Integer id = respawnTimer.remove(p.getID());
                             Bukkit.getScheduler().cancelTask(id);
                             SpawnLocation loc = getTeamSpawn(index, tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
                             TeleportController.teleport(p.getPlayer(), loc.getLocation());
@@ -264,7 +267,7 @@ public class ArenaMatch extends Match {
 
                         }
                     }, mo.getRespawnTime() * 20);
-                    respawnTimer.put(p.getName(), id);
+                    respawnTimer.put(p.getID(), id);
                 }
             } else {
                 loc = getTeamSpawn(getTeam(p), randomRespawn);
@@ -274,7 +277,7 @@ public class ArenaMatch extends Match {
             /// For some reason, the player from onPlayerRespawn Event isnt the one in the main thread, so we need to
             /// resync before doing any effects
             final ArenaMatch am = this;
-            Bukkit.getScheduler().scheduleSyncDelayedTask(BattleArena.getSelf(), new Runnable() {
+            Scheduler.scheduleSynchronousTask(new Runnable() {
                 @Override
                 public void run() {
                     ArenaTeam t = getTeam(p);
@@ -352,7 +355,7 @@ public class ArenaMatch extends Match {
                 event.getClickedBlock().getType().equals(Material.WALL_SIGN)){ /// Only checking for signs
             //			signClick(event,this);
         } else { /// its a ready block
-            if (respawnTimer.containsKey(event.getPlayer().getName())){
+            if (respawnTimer.containsKey(PlayerUtil.getID(event.getPlayer()))){
                 respawnClick(event,this,respawnTimer);
             } else {
                 readyClick(event);
@@ -360,9 +363,9 @@ public class ArenaMatch extends Match {
         }
     }
 
-    public static void respawnClick(PlayerInteractEvent event, PlayerHolder am, Map<String,Integer> respawnTimer) {
+    public static void respawnClick(PlayerInteractEvent event, PlayerHolder am, Map<UUID,Integer> respawnTimer) {
         ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
-        Integer id = respawnTimer.remove(ap.getName());
+        Integer id = respawnTimer.remove(ap.getID());
         Bukkit.getScheduler().cancelTask(id);
         SpawnLocation loc = am.getSpawn(am.getTeam(ap).getIndex(),
                 am.getParams().hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));

@@ -48,10 +48,10 @@ public class BTInterface {
 	public Stat loadRecord(TrackerInterface bti, ArenaTeam t){
 		try{return bti.loadRecord(t.getBukkitPlayers());} catch(Exception e){Log.printStackTrace(e);return null;}
 	}
-	public static TrackerInterface getInterface(MatchParams sq){
-		if (sq == null)
+	public static TrackerInterface getInterface(MatchParams mp){
+		if (mp == null)
 			return null;
-		final String db = sq.getDBTableName();
+		final String db = mp.getDBTableName();
 		return db == null ? null : btis.get(db);
 	}
 	public static boolean hasInterface(MatchParams mp){

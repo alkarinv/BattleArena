@@ -3,7 +3,6 @@ package mc.alk.arena.util;
 import mc.alk.arena.Defaults;
 import mc.alk.plugin.updater.Version;
 import mc.alk.virtualPlayer.VirtualPlayers;
-import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -11,10 +10,37 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.Set;
+import java.util.UUID;
 
 
 public class ServerUtil {
 
+    /**
+     * The safe method to specify we want a player who is currently online
+     * @param name
+     * @return
+     */
+    public static Player findOnlinePlayer(String name) {
+        return findPlayer(name);
+    }
+
+    public static Player findPlayer(UUID id) {
+        if (id == null)
+            return null;
+        try {
+            Player player = Bukkit.getPlayer(id);
+            if (player != null)
+                return player;
+            if (Defaults.DEBUG_VIRTUAL) {
+                return VirtualPlayers.getPlayer(id);
+            }
+        } catch (Throwable e){
+            /* do nothing, craftbukkit version is not great enough */
+        }
+        return null;
+    }
+
+    @Deprecated
 	public static Player findPlayerExact(String name) {
 		if (name == null)
 			return null;
@@ -25,6 +51,7 @@ public class ServerUtil {
 		return null;
 	}
 
+    @Deprecated
 	public static Player findPlayer(String name) {
 		if (name == null)
 			return null;
@@ -55,6 +82,7 @@ public class ServerUtil {
 		return foundPlayer;
 	}
 
+    @Deprecated
 	public static OfflinePlayer findOfflinePlayer(String name) {
 		OfflinePlayer p = findPlayer(name);
 		if (p != null){
@@ -73,9 +101,7 @@ public class ServerUtil {
 
 	public static Player[] getOnlinePlayers() {
 		if (Defaults.DEBUG_VIRTUAL){
-			Player[] online = VirtualPlayers.getOnlinePlayers();
-			Player[] realonline = Bukkit.getOnlinePlayers();
-			return (Player[]) ArrayUtils.addAll(online,realonline);
+			return VirtualPlayers.getOnlinePlayers();
 		} else {
 			return Bukkit.getOnlinePlayers();
 		}
@@ -117,5 +143,6 @@ public class ServerUtil {
 			return new Version(version);
 		}
 	}
+
 
 }

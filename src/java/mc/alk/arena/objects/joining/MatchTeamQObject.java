@@ -2,7 +2,7 @@ package mc.alk.arena.objects.joining;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.tournament.Matchup;
+import mc.alk.arena.objects.Matchup;
 
 import java.util.Collection;
 import java.util.List;

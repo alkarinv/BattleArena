@@ -151,7 +151,7 @@ public class GameManager implements PlayerHolder{
 			TransitionController.transition(this, MatchState.ONENTER, player, null, false);
 			updateBukkitEvents(MatchState.ONENTER, player);
 			if (EssentialsController.enabled())
-				BAPlayerListener.setBackLocation(player.getName(),
+				BAPlayerListener.setBackLocation(player,
 						EssentialsController.getBackLocation(player.getName()));
 			// When teleporting in for the first time defaults
 			PlayerUtil.setGameMode(player.getPlayer(), GameMode.SURVIVAL);
@@ -174,7 +174,7 @@ public class GameManager implements PlayerHolder{
 		this.quitting(player);
         callEvent(new ArenaPlayerLeaveMatchEvent(player,player.getTeam()));
 		if (EssentialsController.enabled())
-			BAPlayerListener.setBackLocation(player.getName(), null);
+			BAPlayerListener.setBackLocation(player, null);
         PlayerStoreController.getPlayerStoreController().restoreScoreboard(player);
 	}
 

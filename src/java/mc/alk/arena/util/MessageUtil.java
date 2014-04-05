@@ -133,17 +133,6 @@ public class MessageUtil {
 		return sb.toString();
 	}
 
-	public static String joinBukkitPlayers(Collection<String> players, String joinStr){
-		StringBuilder sb = new StringBuilder();
-		boolean first = true;
-		for (String p: players){
-			if (!first) sb.append(joinStr);
-			else first = false;
-			sb.append(p);
-		}
-		return sb.toString();
-	}
-
     public static void broadcastMessage(String message) {
         try {
             Bukkit.broadcastMessage(message);

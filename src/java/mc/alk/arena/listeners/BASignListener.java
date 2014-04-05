@@ -10,6 +10,7 @@ import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.SignUtil;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -21,8 +22,13 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class BASignListener implements Listener{
     SignUpdateListener sul;
+    Map<String, ArenaCommandSign> signLocs = new HashMap<String, ArenaCommandSign>();
+
     public BASignListener(SignUpdateListener sul){
         this.sul = sul;
     }
@@ -39,14 +45,21 @@ public class BASignListener implements Listener{
         if (PermissionsUtil.isAdmin(event.getPlayer()) && (event.getAction() ==Action.LEFT_CLICK_BLOCK)){
             return;}
 
-        if (event.getClickedBlock().getState() instanceof Sign){
-            String[] lines = ((Sign)event.getClickedBlock().getState()).getLines();
-            if (!lines[0].startsWith("&") && !lines[0].startsWith("[") && !lines[0].startsWith("§")){
-                return;}
-            ArenaCommandSign acs = SignUtil.getArenaCommandSign(((Sign)event.getClickedBlock().getState()),
-                    ((Sign)event.getClickedBlock().getState()).getLines());
-            if (acs == null){
-                return;}
+        if (event.getClickedBlock().getState() instanceof Sign) {
+            String[] lines = ((Sign) event.getClickedBlock().getState()).getLines();
+            if (!lines[0].startsWith("&") && !lines[0].startsWith("[") && !lines[0].startsWith("§")) {
+                return;
+            }
+            ArenaCommandSign acs = signLocs.get(getKey(event.getClickedBlock().getLocation()));
+            if (acs == null) {
+                acs = SignUtil.getArenaCommandSign(((Sign) event.getClickedBlock().getState()),
+                        ((Sign) event.getClickedBlock().getState()).getLines());
+                if (acs != null){
+                    signLocs.put(getKey(event.getClickedBlock().getLocation()), acs);}
+            }
+            if (acs == null) {
+                return;
+            }
             event.setCancelled(true);
             sul.addSign(acs);
             acs.performAction(PlayerController.toArenaPlayer(event.getPlayer()));
@@ -140,16 +153,22 @@ public class BASignListener implements Listener{
                         acs.getMatchParams().getColor()+acs.getMatchParams().getCommand().toLowerCase()+"&0]");
             }
             event.setLine(0, str);
-            String cmd = acs.getCommand().toString();
+            String cmd = acs.getCommand();
             cmd = Character.toUpperCase(cmd.charAt(0)) + cmd.substring(1);
             event.setLine(1, MessageUtil.colorChat(ChatColor.GREEN+cmd.toLowerCase()) );
             MessageUtil.sendMessage(event.getPlayer(), "&2Arena command sign created");
             sul.addSign(acs);
+            signLocs.put(getKey(acs.getLocation()), acs);
         } catch (Exception e){
             MessageUtil.sendMessage(event.getPlayer(), "&cError creating Arena Command Sign");
             Log.printStackTrace(e);
             cancelSignPlace(event,block);
         }
+    }
+
+    private String getKey(Location location) {
+        return location.getWorld().getName()+":"+location.getBlockX()+":"+
+                location.getBlockY()+":"+location.getBlockZ();
     }
 
     private void makeArenaStatusSign(SignChangeEvent event, ArenaStatusSign acs, String[] lines) {

@@ -1,11 +1,13 @@
-package mc.alk.arena.competition.events;
+package mc.alk.arena.competition.events.tournament;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.TransitionController;
+import mc.alk.arena.competition.events.Event;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
+import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.StatController;
 import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.events.events.tournaments.TournamentRoundEvent;
@@ -19,6 +21,8 @@ import mc.alk.arena.objects.EventState;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.Matchup;
+import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
@@ -29,8 +33,6 @@ import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.tournament.Matchup;
-import mc.alk.arena.objects.tournament.Round;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
 import mc.alk.arena.util.TimeUtil;
@@ -214,8 +216,8 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
                 CompetitionResult result = new MatchResult();
                 result.setVictors(victors);
                 setEventResult(result,true);
-                TransitionController.transition(am, MatchState.FIRSTPLACE, victors, false);
-                TransitionController.transition(am, MatchState.PARTICIPANTS, losers, false);
+                TransitionController.transition(am, TournamentTransition.FIRSTPLACE, victors, false);
+                TransitionController.transition(am, TournamentTransition.PARTICIPANTS, losers, false);
                 eventCompleted();
             } else {
                 callEvent(new TournamentRoundEvent(this, curRound));
@@ -374,11 +376,11 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
 
         Plugin plugin = BattleArena.getSelf();
         /// Section to start the match
-        curTimer = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+        curTimer = Scheduler.scheduleSynchronousTask(plugin, new Runnable() {
             @Override
             public void run() {
                 Round tr = rounds.get(curRound);
-                for (Matchup m: tr.getMatchups()){
+                for (Matchup m : tr.getMatchups()) {
                     ac.addMatchup(new MatchTeamQObject(m));
                 }
             }
@@ -559,6 +561,17 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
 
     @Override
     public String getInfo() {
-        return StateOptions.getInfo(singleGameParms, singleGameParms.getName());
+        StringBuilder sb = new StringBuilder();
+        StateGraph so = singleGameParms.getStateOptions();
+        sb.append(StateOptions.getInfo(singleGameParms, singleGameParms.getName()));
+        String firstPlacePrizes = so.getGiveString(TournamentTransition.FIRSTPLACE);
+        String participantPrizes = so.getGiveString(TournamentTransition.PARTICIPANTS);
+        if (participantPrizes != null){
+            sb.append("\n&ePrize for &6participation:&e ").append(participantPrizes);}
+        if (firstPlacePrizes != null){
+            sb.append("\n&ePrize for getting &b1st &eplace:");
+            sb.append(firstPlacePrizes);
+        }
+        return sb.toString();
     }
 }

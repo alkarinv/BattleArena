@@ -81,7 +81,7 @@ public boolean matches(QueueObject qo) {
     }
 
     public String toString() {
-        return "[WO " + (arena != null ? arena.getName() : "") + params.getDisplayName() + "]";
+        return "[WO " + (arena != null ? arena.getName() : "") + " " + params.getDisplayName() + "]";
     }
 
     public boolean createsOnJoin() {

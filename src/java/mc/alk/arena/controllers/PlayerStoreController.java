@@ -1,5 +1,6 @@
 package mc.alk.arena.controllers;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
@@ -16,23 +17,24 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 public class PlayerStoreController {
     static final PlayerStoreController INSTANCE = new PlayerStoreController();
 
-    final HashMap<String, PlayerSave> saves = new HashMap<String, PlayerSave>();
+    final HashMap<UUID, PlayerSave> saves = new HashMap<UUID, PlayerSave>();
     public PlayerStoreController(){}
 
     public PlayerStoreController(PlayerSave save) {
-        saves.put(save.getName(), save);
+        saves.put(save.getID(), save);
     }
 
     private PlayerSave getOrCreateSave(final ArenaPlayer player) {
-        PlayerSave save = saves.get(player.getName());
+        PlayerSave save = saves.get(player.getID());
         if (save !=null)
             return save;
         save = new PlayerSave(player);
-        saves.put(player.getName(), save);
+        saves.put(player.getID(), save);
         return save;
     }
 
@@ -70,7 +72,7 @@ public class PlayerStoreController {
     }
 
     private PlayerSave getSave(final ArenaPlayer player) {
-        return saves.get(player.getName());
+        return saves.get(player.getID());
     }
     private static boolean restoreable(ArenaPlayer p) {
         return (p.isOnline() && !p.isDead());
@@ -87,7 +89,7 @@ public class PlayerStoreController {
         if (restoreable(p)){
             save.restoreExperience();
         } else {
-            BAPlayerListener.restoreExpOnReenter(p.getName(), save.removeExperience());
+            BAPlayerListener.restoreExpOnReenter(p, save.removeExperience());
         }
     }
 
@@ -102,7 +104,7 @@ public class PlayerStoreController {
         if (restoreable(p)){
             save.restoreHealth();
         } else {
-            BAPlayerListener.restoreHealthOnReenter(p.getName(), save.removeHealth());
+            BAPlayerListener.restoreHealthOnReenter(p, save.removeHealth());
         }
     }
 
@@ -117,7 +119,7 @@ public class PlayerStoreController {
         if (restoreable(p)){
             save.restoreHunger();
         } else {
-            BAPlayerListener.restoreHungerOnReenter(p.getName(), save.removeHunger());
+            BAPlayerListener.restoreHungerOnReenter(p, save.removeHunger());
         }
     }
 
@@ -132,7 +134,7 @@ public class PlayerStoreController {
         if (restoreable(p)){
             save.restoreEffects();
         } else {
-            BAPlayerListener.restoreEffectsOnReenter(p.getName(), save.removeEffects());
+            BAPlayerListener.restoreEffectsOnReenter(p, save.removeEffects());
         }
     }
 
@@ -155,7 +157,7 @@ public class PlayerStoreController {
         if (restoreable(p)){
             save.restoreMagic();
         } else {
-            BAPlayerListener.restoreMagicOnReenter(p.getName(), save.removeMagic());
+            BAPlayerListener.restoreMagicOnReenter(p, save.removeMagic());
         }
     }
 
@@ -189,7 +191,7 @@ public class PlayerStoreController {
         if (restoreable(p)){
             save.restoreItems();
         } else {
-            BAPlayerListener.restoreItemsOnReenter(p.getName(), save.removeItems());
+            BAPlayerListener.restoreItemsOnReenter(p, save.removeItems());
         }
     }
 
@@ -200,7 +202,7 @@ public class PlayerStoreController {
         if (restoreable(p)){
             save.restoreMatchItems();
         } else {
-            BAPlayerListener.restoreItemsOnReenter(p.getName(), save.removeMatchItems());
+            BAPlayerListener.restoreItemsOnReenter(p, save.removeMatchItems());
         }
     }
 
@@ -210,7 +212,7 @@ public class PlayerStoreController {
         if (p.isOnline() && !p.isDead()){
             InventoryUtil.addToInventory(p.getPlayer(), pinv);
         } else {
-            BAPlayerListener.restoreItemsOnReenter(p.getName(), pinv);
+            BAPlayerListener.restoreItemsOnReenter(p, pinv);
         }
     }
 
@@ -219,7 +221,7 @@ public class PlayerStoreController {
         if (p.isOnline() && !p.isDead()){
             InventoryUtil.addToInventory(p.getPlayer(), pinv);
         } else {
-            BAPlayerListener.restoreItemsOnReenter(p.getName(), pinv);
+            BAPlayerListener.restoreItemsOnReenter(p, pinv);
         }
     }
 
@@ -262,7 +264,7 @@ public class PlayerStoreController {
         if (restoreable(p)){
             save.restoreGamemode();
         } else {
-            BAPlayerListener.restoreGameModeOnEnter(p.getName(), save.removeGamemode());
+            BAPlayerListener.restoreGameModeOnEnter(p, save.removeGamemode());
         }
     }
 
@@ -270,7 +272,7 @@ public class PlayerStoreController {
         if (player.isOnline()){
             InventoryUtil.clearInventory(player.getPlayer());
         }else{
-            BAPlayerListener.clearInventoryOnReenter(player.getName());
+            BAPlayerListener.clearInventoryOnReenter(player);
         }
     }
 
@@ -324,7 +326,7 @@ public class PlayerStoreController {
         try{ EffectUtil.deEnchantAll(p);} catch (Exception e){/* do nothing */}
         HeroesController.deEnchant(p);
         if (!p.isOnline() || p.isDead()){
-            BAPlayerListener.deEnchantOnEnter(p.getName());
+            BAPlayerListener.deEnchantOnEnter(BattleArena.toArenaPlayer(p));
         }
     }
 

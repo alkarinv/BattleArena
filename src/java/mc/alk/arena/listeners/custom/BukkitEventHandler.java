@@ -8,7 +8,7 @@ import org.bukkit.event.Event;
 
 import java.util.Collection;
 import java.util.Set;
-
+import java.util.UUID;
 
 
 /**
@@ -59,7 +59,7 @@ class BukkitEventHandler {
      * @param rl RListener
      * @param players the players
      */
-    public void addListener(RListener rl, Collection<String> players) {
+    public void addListener(RListener rl, Collection<UUID> players) {
         if (players != null && rl.isSpecificPlayerMethod()){
             if (rl.isSpecificArenaPlayerMethod()){
                 sapl.addListener(rl, players);
@@ -81,7 +81,7 @@ class BukkitEventHandler {
      * @param rl RListener
      * @param players the players
      */
-    public void removeListener(RListener rl, Collection<String> players) {
+    public void removeListener(RListener rl, Collection<UUID> players) {
         if (players != null && rl.isSpecificPlayerMethod()){
             if (rl.isSpecificArenaPlayerMethod()){
                 sapl.removeListener(rl, players);

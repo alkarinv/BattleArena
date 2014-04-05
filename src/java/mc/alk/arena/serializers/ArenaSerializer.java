@@ -5,6 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
+import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.ArenaParams;
 import mc.alk.arena.objects.MatchParams;
@@ -199,7 +200,7 @@ public class ArenaSerializer extends BaseConfig{
         }
     }
 
-    public static Arena loadArena(Plugin plugin, BattleArenaController bac, ConfigurationSection cs) {
+    public static Arena loadArena(Plugin plugin, final BattleArenaController bac, ConfigurationSection cs) {
         String name = cs.getName().toLowerCase();
 
         ArenaType atype = ArenaType.fromString(cs.getString("type"));
@@ -229,7 +230,7 @@ public class ArenaSerializer extends BaseConfig{
             return null;
         }
 
-        Arena arena = ArenaType.createArena(name, mp,false);
+        final Arena arena = ArenaType.createArena(name, mp,false);
         if (arena == null){
             Log.err("Couldnt load the Arena " + name);
             return null;
@@ -309,20 +310,24 @@ public class ArenaSerializer extends BaseConfig{
         bac.addArena(arena);
 
         if (arena.getParams().hasAnyOption(TransitionOption.ALWAYSOPEN)) {
-            try {
-                EventOpenOptions eoo = EventOpenOptions.parseOptions(
-                        new String[]{"COPYPARAMS"}, null, arena.getParams());
-                Arena a = bac.reserveArena(arena);
-                if (a == null){
-                    Log.warn("&cArena &6"+arena.getName()+" &cwas set to always open but could not be reserved");
-                } else{
-                    eoo.setSecTillStart(0);
-                    bac.createAndAutoMatch(arena, eoo);
+            Scheduler.scheduleSynchronousTask(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        EventOpenOptions eoo = EventOpenOptions.parseOptions(
+                                new String[]{"COPYPARAMS"}, null, arena.getParams());
+                        Arena a = bac.reserveArena(arena);
+                        if (a == null) {
+                            Log.warn("&cArena &6" + arena.getName() + " &cwas set to always open but could not be reserved");
+                        } else {
+                            eoo.setSecTillStart(0);
+                            bac.createAndAutoMatch(arena, eoo);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            });
         }
         return arena;
     }

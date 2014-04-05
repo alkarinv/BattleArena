@@ -60,7 +60,7 @@ public class RegisteredCompetition {
 	}
 
 	private void reloadExecutors(){
-		/* TODO allow them to switch from duel, to JoinPhase, Queue without a restart */
+		/* TODO allow them to switch executors restart */
 	}
 
 	private void reloadArenas(){

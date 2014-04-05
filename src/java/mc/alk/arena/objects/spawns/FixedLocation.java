@@ -32,4 +32,16 @@ public class FixedLocation extends Location implements SpawnLocation{
     public Object objectToYaml() throws SerializationException {
         return null;
     }
+
+    @Override
+    public Location getUpperCorner() {
+        return this;
+    }
+
+    @Override
+    public Location getLowerCorner() {
+        return this;
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package mc.alk.arena.listeners;
 
+import mc.alk.arena.BattleArena;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.PlayerController;
@@ -11,8 +12,10 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.regions.WorldGuardRegion;
 import mc.alk.arena.util.InventoryUtil.PInv;
 import mc.alk.arena.util.MessageUtil;
+import mc.alk.arena.util.PlayerUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -27,7 +30,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.UUID;
 
 
 /**
@@ -36,7 +39,7 @@ import java.util.Set;
  *
  */
 public class BAPlayerListener implements Listener  {
-	static final HashMap<String,PlayerRestoreController> restore = new HashMap<String,PlayerRestoreController>();
+	static final HashMap<UUID,PlayerRestoreController> restore = new HashMap<UUID,PlayerRestoreController>();
 	final BattleArenaController bac;
 
 	public BAPlayerListener(BattleArenaController bac){
@@ -51,9 +54,10 @@ public class BAPlayerListener implements Listener  {
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerRespawn(PlayerRespawnEvent event){
-        if (restore.containsKey(event.getPlayer().getName())){
-			if (!restore.get(event.getPlayer().getName()).handle(event.getPlayer(),event)){
-				restore.remove(event.getPlayer().getName());
+        UUID id = PlayerUtil.getID(event.getPlayer());
+        if (restore.containsKey(id)){
+			if (!restore.get(id).handle(event.getPlayer(),event)){
+				restore.remove(id);
 			}
 		}
 	}
@@ -64,10 +68,13 @@ public class BAPlayerListener implements Listener  {
 	 */
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerDeath(PlayerDeathEvent event){
-		if (!EssentialsController.enabled() || !PlayerController.hasArenaPlayer(event.getEntity())||
-				!restore.containsKey(event.getEntity().getName()))
+		if (!EssentialsController.enabled() || !PlayerController.hasArenaPlayer(event.getEntity()))
 			return;
-		PlayerRestoreController prc = getOrCreateRestorer(event.getEntity().getName());
+        ArenaPlayer ap = BattleArena.toArenaPlayer(event.getEntity());
+        if (!restore.containsKey(ap.getID()))
+                return;
+
+        PlayerRestoreController prc = getOrCreateRestorer(ap);
 		Location loc = prc.getBackLocation();
 		if (loc != null){
 			EssentialsController.setBackLocation(event.getEntity().getName(), loc);
@@ -84,13 +91,15 @@ public class BAPlayerListener implements Listener  {
 		aple.callEvent();
 	}
 
-	private static PlayerRestoreController getOrCreateRestorer(final String name){
-		if (restore.containsKey(name)){
-            return restore.get(name);}
-		PlayerRestoreController prc = new PlayerRestoreController(name);
-		restore.put(name, prc);
-		return prc;
-	}
+	private static PlayerRestoreController getOrCreateRestorer(ArenaPlayer player) {
+        final UUID id = player.getID();
+        if (restore.containsKey(id)) {
+            return restore.get(id);
+        }
+        PlayerRestoreController prc = new PlayerRestoreController(player);
+        restore.put(id, prc);
+        return prc;
+    }
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerTeleport(PlayerTeleportEvent event){
@@ -105,100 +114,101 @@ public class BAPlayerListener implements Listener  {
 		}
 	}
 
-	public static void killOnReenter(String playerName) {
-		getOrCreateRestorer(playerName).setKill(true);
+	public static void killOnReenter(ArenaPlayer player) {
+		getOrCreateRestorer(player).setKill(true);
 	}
 
-	public static void clearInventoryOnReenter(String playerName) {
-		getOrCreateRestorer(playerName).setClearInventory(true);
+	public static void clearInventoryOnReenter(ArenaPlayer player) {
+		getOrCreateRestorer(player).setClearInventory(true);
 	}
 
-	public static void teleportOnReenter(String playerName, Location destloc, Location lastloc) {
-		PlayerRestoreController prc = getOrCreateRestorer(playerName);
+	public static void teleportOnReenter(ArenaPlayer player, Location destloc, Location lastloc) {
+		PlayerRestoreController prc = getOrCreateRestorer(player);
 		prc.setTp(destloc);
 		prc.setLastLocs(lastloc);
 	}
 
-	public static void addMessageOnReenter(String playerName, String message) {
-		getOrCreateRestorer(playerName).setMessage(message);
+	public static void addMessageOnReenter(ArenaPlayer player, String message) {
+		getOrCreateRestorer(player).setMessage(message);
 	}
 
-	public static void restoreExpOnReenter(String playerName, Integer val) {
-		getOrCreateRestorer(playerName).addExp(val);
+	public static void restoreExpOnReenter(ArenaPlayer player, Integer val) {
+		getOrCreateRestorer(player).addExp(val);
 	}
 
-	public static void restoreItemsOnReenter(String playerName, PInv pinv) {
-		getOrCreateRestorer(playerName).setItem(pinv);
+	public static void restoreItemsOnReenter(ArenaPlayer player, PInv pinv) {
+		getOrCreateRestorer(player).setItem(pinv);
 	}
 
-	public static void restoreMatchItemsOnReenter(String playerName, PInv pinv) {
-		getOrCreateRestorer(playerName).setMatchItems(pinv);
+	public static void restoreMatchItemsOnReenter(ArenaPlayer player, PInv pinv) {
+		getOrCreateRestorer(player).setMatchItems(pinv);
 	}
 
-	public static void removeMatchItems(String playerName) {
-		getOrCreateRestorer(playerName).removeMatchItems();
+	public static void removeMatchItems(ArenaPlayer player) {
+		getOrCreateRestorer(player).removeMatchItems();
 	}
 
-	public static void clearWoolOnReenter(String playerName, int color) {
-		getOrCreateRestorer(playerName).setClearWool(color);
+	public static void clearWoolOnReenter(ArenaPlayer player, int color) {
+		getOrCreateRestorer(player).setClearWool(color);
 	}
 
-	public static void restoreGameModeOnEnter(String playerName, GameMode gamemode) {
-		getOrCreateRestorer(playerName).setGamemode(gamemode);
+	public static void restoreGameModeOnEnter(ArenaPlayer player, GameMode gamemode) {
+		getOrCreateRestorer(player).setGamemode(gamemode);
 	}
 
 	public static void removeItemOnEnter(ArenaPlayer p, ItemStack is) {
-		getOrCreateRestorer(p.getName()).addRemoveItem(is);
+		getOrCreateRestorer(p).addRemoveItem(is);
 	}
 
 	public static void removeItemsOnEnter(ArenaPlayer p, List<ItemStack> itemsToRemove) {
-		getOrCreateRestorer(p.getName()).addRemoveItem(itemsToRemove);
+		getOrCreateRestorer(p).addRemoveItem(itemsToRemove);
 	}
 
-	public static void restoreHealthOnReenter(String playerName, Double val) {
-		getOrCreateRestorer(playerName).setHealth(val);
+	public static void restoreHealthOnReenter(ArenaPlayer player, Double val) {
+		getOrCreateRestorer(player).setHealth(val);
 	}
 
-	public static void restoreHungerOnReenter(String playerName, Integer val) {
-		getOrCreateRestorer(playerName).setHunger(val);
+	public static void restoreHungerOnReenter(ArenaPlayer player, Integer val) {
+		getOrCreateRestorer(player).setHunger(val);
 	}
 
-	public static void restoreMagicOnReenter(String playerName, Integer val) {
-		getOrCreateRestorer(playerName).setMagic(val);
+	public static void restoreMagicOnReenter(ArenaPlayer player, Integer val) {
+		getOrCreateRestorer(player).setMagic(val);
 	}
 
-	public static void deEnchantOnEnter(String playerName) {
-		getOrCreateRestorer(playerName).deEnchant();
+	public static void deEnchantOnEnter(ArenaPlayer player) {
+		getOrCreateRestorer(player).deEnchant();
 	}
-    public static void restoreEffectsOnReenter(String playerName, Collection<PotionEffect> c) {
-        getOrCreateRestorer(playerName).enchant(c);
+    public static void restoreEffectsOnReenter(ArenaPlayer player, Collection<PotionEffect> c) {
+        getOrCreateRestorer(player).enchant(c);
     }
 
-    public static void killAllOnReenter(Set<String> keys) {
-		if (keys==null)
-			return;
-		for (String name: keys){
-			BAPlayerListener.killOnReenter(name);}
-	}
+//    public static void killAllOnReenter(Set<String> keys) {
+//		if (keys==null)
+//			return;
+//		for (String name: keys){
+//			BAPlayerListener.killOnReenter(name);}
+//	}
 
-	public static void clearInventoryOnReenter(Set<String> keys) {
-		if (keys==null)
-			return;
-		for (String name: keys){
-			BAPlayerListener.clearInventoryOnReenter(name);}
-	}
+//	public static void clearInventoryOnReenter(Set<String> keys) {
+//		if (keys==null)
+//			return;
+//		for (String name: keys){
+//			BAPlayerListener.clearInventoryOnReenter(name);}
+//	}
 
-	public static Map<String, PlayerRestoreController> getPlayerRestores() {
+	public static Map<UUID, PlayerRestoreController> getPlayerRestores() {
 		return restore;
 	}
 
-	public static void setBackLocation(String playerName, Location location) {
-		getOrCreateRestorer(playerName).setBackLocation(location);
+	public static void setBackLocation(ArenaPlayer player, Location location) {
+		getOrCreateRestorer(player).setBackLocation(location);
 	}
 
-	public static Location getBackLocation(String playerName) {
-		return restore.containsKey(playerName) ? restore.get(playerName).getBackLocation() : null;
-	}
+	public static Location getBackLocation(Player player) {
+        UUID id = PlayerUtil.getID(player);
+        return restore.containsKey(id) ? restore.get(id).getBackLocation() : null;
+    }
 
 
 }

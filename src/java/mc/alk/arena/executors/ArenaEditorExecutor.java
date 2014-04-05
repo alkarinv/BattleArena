@@ -128,32 +128,28 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
     }
 
     @MCCommand(cmds = {}, admin = true, perm = "arena.alter")
-    public boolean arenaGeneric(CommandSender sender,CurrentSelection cs,  ArenaOptionPair aop) {
-        Arena arena = cs.getArena();
-        try {
-            ArenaAlterController.setArenaOption(sender, arena, aop.ao, aop.value);
-            return true;
-        } catch (IllegalStateException e) {
-            return sendMessage(sender, "&c" + e.getMessage());
-        }
+    public boolean arenaGeneric(CommandSender sender, CurrentSelection cs, ArenaOptionPair aop) {
+        return ArenaEditorExecutor.setArenaOption(sender, cs.getArena(), aop);
     }
 
     @MCCommand(cmds = {}, admin = true, perm = "arena.alter")
     public boolean arenaGeneric(CommandSender sender,CurrentSelection cs,  ParamAlterOptionPair gop) {
-        Arena arena = cs.getArena();
-        try {
-            ArenaAlterController.setArenaOption(sender, arena, gop.alterParamOption, gop.value);
-            return true;
-        } catch (IllegalStateException e) {
-            return sendMessage(sender, "&c" + e.getMessage());
-        }
+        return ArenaEditorExecutor.setArenaOption(sender, cs.getArena(), gop);
     }
 
     @MCCommand(cmds = {}, admin = true, perm = "arena.alter")
     public boolean arenaGeneric(CommandSender sender,CurrentSelection cs,  TransitionOptionTuple top) {
-        Arena arena = cs.getArena();
+        return ArenaEditorExecutor.setArenaOption(sender, cs.getArena(), top);
+    }
+
+    public static boolean setArenaOption(CommandSender sender, Arena arena, TransitionOptionTuple top) {
         try {
             ArenaAlterController.setArenaOption(sender, arena, top.state, top.op, top.value);
+            if (top.value != null) {
+                sendMessage(sender, "&2Arena "+arena.getDisplayName()+" options &6" + top.op + "&2 changed to &6" + top.value);
+            } else {
+                sendMessage(sender, "&2Arena "+arena.getDisplayName()+" options &6" + top.op + "&2 changed");
+            }
             return true;
         } catch (IllegalStateException e) {
             return sendMessage(sender, "&c" + e.getMessage());
@@ -161,6 +157,35 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
             return sendMessage(sender, "&c" + e.getMessage());
         }
     }
+
+    public static boolean setArenaOption(CommandSender sender,Arena arena, ArenaOptionPair aop){
+        try {
+            ArenaAlterController.setArenaOption(sender, arena, aop.ao, aop.value);
+            if (aop.value != null) {
+                sendMessage(sender, "&2Arena "+arena.getDisplayName()+" options &6" + aop.ao + "&2 changed to &6" + aop.value);
+            } else {
+                sendMessage(sender, "&2Arena "+arena.getDisplayName()+" options &6" + aop.ao + "&2 changed");
+            }
+            return true;
+        } catch (IllegalStateException e) {
+            return sendMessage(sender, "&c" + e.getMessage());
+        }
+    }
+
+    public static boolean setArenaOption(CommandSender sender,Arena arena,  ParamAlterOptionPair gop){
+        try {
+            ArenaAlterController.setArenaOption(sender, arena, gop.alterParamOption, gop.value);
+            if (gop.value != null) {
+                sendMessage(sender, "&2Arena "+arena.getDisplayName()+" options &6" + gop.alterParamOption.name() + "&2 changed to &6" + gop.value);
+            } else {
+                sendMessage(sender, "&2Arena "+arena.getDisplayName()+" options &6" + gop.alterParamOption.name() + "&2 changed");
+            }
+            return true;
+        } catch (IllegalStateException e) {
+            return sendMessage(sender, "&c" + e.getMessage());
+        }
+    }
+
 
     @MCCommand(cmds={"hidespawns"}, admin=true, usage="hidespawns")
     public boolean arenaHideSpawns(Player sender, CurrentSelection cs) {

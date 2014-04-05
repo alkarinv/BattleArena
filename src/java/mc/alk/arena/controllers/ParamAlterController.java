@@ -161,7 +161,7 @@ public class ParamAlterController {
             tops = new StateGraph();
         }
         if (to == TransitionOption.GIVEITEMS || to == TransitionOption.TAKEITEMS || to == TransitionOption.NEEDITEMS) {
-            if (!(sender instanceof Player)) {
+            if (sender == null || !(sender instanceof Player)) {
                 throw new InvalidOptionException("&cYou need to be in game to set this option");
             }
             value = InventoryUtil.getItemList((Player) sender);

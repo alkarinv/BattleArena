@@ -36,7 +36,7 @@ class SpecificArenaPlayerEventListener extends SpecificPlayerEventListener{
 	}
 
 	private void doMethods(Event event, final ArenaPlayer p) {
-        RListener[] lmethods = listeners.getSafe(p.getName());
+        RListener[] lmethods = listeners.getSafe(p.getID());
         if (lmethods == null){
             return;}
 		/// For each of the splisteners methods that deal with this BukkitEvent

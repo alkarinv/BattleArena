@@ -434,18 +434,16 @@ public class StateOptions {
         return options != null ? options.remove(op) : null;
     }
 
-    public static String getInfo(MatchParams sq, String name) {
+    public static String getInfo(MatchParams mp, String name) {
         StringBuilder sb = new StringBuilder();
-        StateGraph at = sq.getStateOptions();
-        String required = at.getRequiredString(null);
-        String prestart = at.getGiveString(MatchState.ONPRESTART);
-        String start = at.getGiveString(MatchState.ONSTART);
-        String onspawn = at.getGiveString(MatchState.ONSPAWN);
-        String prizes = at.getGiveString(MatchState.WINNERS);
-        String firstPlacePrizes = at.getGiveString(MatchState.FIRSTPLACE);
-        String participantPrizes = at.getGiveString(MatchState.PARTICIPANTS);
-        boolean rated = sq.isRated();
-        String teamSizes = ArenaSize.rangeString(sq.getMinTeamSize(), sq.getMaxTeamSize());
+        StateGraph sg = mp.getStateOptions();
+        String required = sg.getRequiredString(null);
+        String prestart = sg.getGiveString(MatchState.ONPRESTART);
+        String start = sg.getGiveString(MatchState.ONSTART);
+        String onspawn = sg.getGiveString(MatchState.ONSPAWN);
+        String prizes = sg.getGiveString(MatchState.WINNERS);
+        boolean rated = mp.isRated();
+        String teamSizes = ArenaSize.rangeString(mp.getMinTeamSize(), mp.getMaxTeamSize());
         sb.append("&eThis is ").append(rated ? "a &4Rated" : "an &aUnrated").
                 append("&e ").append(name).append(". ");
         sb.append("&eTeam size=&6").append(teamSizes);
@@ -457,15 +455,8 @@ public class StateOptions {
             if (start != null) sb.append(start);
             if (onspawn != null) sb.append(onspawn);
         }
-        sb.append("\n&ePrize for &5winning&e a match:");
-        if (participantPrizes != null){
-            sb.append("\n&ePrize for &6participation:&e ").append(participantPrizes);}
+        sb.append("\n&ePrize for &5winning&e a game:");
         sb.append(prizes==null? "&aNone" : prizes);
-        if (firstPlacePrizes != null){
-            sb.append("\n&ePrize for getting &b1st &eplace:");
-            sb.append(firstPlacePrizes);
-        }
-
         return sb.toString();
     }
 

@@ -2,6 +2,7 @@ package mc.alk.arena.controllers;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.ServerUtil;
 import org.bukkit.entity.Player;
 
@@ -11,9 +12,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public final class PlayerController {
-	private static HashMap<String,ArenaPlayer> players = new HashMap<String,ArenaPlayer>();
+	private static HashMap<UUID,ArenaPlayer> players = new HashMap<UUID,ArenaPlayer>();
 
 	/**
 	 * wrap a player into an ArenaPlayer
@@ -21,7 +23,7 @@ public final class PlayerController {
 	 * @return ArenaPlayer
 	 */
 	public static ArenaPlayer toArenaPlayer(Player player){
-		ArenaPlayer ap = players.get(player.getName());
+		ArenaPlayer ap = players.get(PlayerUtil.getID(player));
 		if (Defaults.DEBUG_VIRTUAL) {
 			Player p2 = ServerUtil.findPlayerExact(player.getName());
 			if (p2 != null)
@@ -29,16 +31,32 @@ public final class PlayerController {
 		}
 		if (ap == null){
 			ap = new ArenaPlayer(player);
-			players.put(player.getName(), ap);
+			players.put(ap.getID(), ap);
 		} else{
 			ap.setPlayer(player);
 		}
 		return ap;
 	}
-
-    public static ArenaPlayer getArenaPlayer(String playerName) {
-        return players.get(playerName);
+    public static ArenaPlayer toArenaPlayer(UUID id){
+        ArenaPlayer ap = players.get(id);
+        Player player = ServerUtil.findPlayer(id);
+        if (Defaults.DEBUG_VIRTUAL && player == null) {
+            Player p2 = ServerUtil.findPlayer(id);
+            if (p2 != null)
+                player = p2;
+        }
+        if (ap == null){
+            ap = player == null ? new ArenaPlayer(id) : new ArenaPlayer(player);
+            players.put(ap.getID(), ap);
+        } else if (player != null) {
+            ap.setPlayer(player);
+        }
+        return ap;
     }
+//
+//    public static ArenaPlayer getArenaPlayer(String playerName) {
+//        return players.get(playerName);
+//    }
 
 	/**
 	 * Returns the ArenaPlayer for the given player
@@ -46,11 +64,11 @@ public final class PlayerController {
 	 * @return player if found, null otherwise
 	 */
 	public static ArenaPlayer getArenaPlayer(Player player){
-		return players.get(player.getName());
+		return players.get(PlayerUtil.getID(player));
 	}
 
 	public static boolean hasArenaPlayer(Player player){
-		return players.containsKey(player.getName());
+		return players.containsKey(PlayerUtil.getID(player));
 	}
 
 	public static List<ArenaPlayer> toArenaPlayerList(Collection<Player> players){
@@ -81,7 +99,14 @@ public final class PlayerController {
 		return players;
 	}
 
-	public static void clearArenaPlayers(){
+    public static List<Player> UUIDToPlayerList(Collection<UUID> uuids) {
+        List<Player> players = new ArrayList<Player>(uuids.size());
+        for (UUID id : uuids)
+            players.add(ServerUtil.findPlayer(id));
+        return players;
+    }
+
+    public static void clearArenaPlayers(){
 		players.clear();
 	}
 }
