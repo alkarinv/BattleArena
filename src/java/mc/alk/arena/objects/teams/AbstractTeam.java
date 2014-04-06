@@ -7,7 +7,6 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.stats.ArenaStat;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.ServerUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -121,7 +120,7 @@ abstract class AbstractTeam implements ArenaTeam{
 		Set<Player> ps = new HashSet<Player>();
 
 		for (ArenaPlayer ap: players){
-			Player p = ServerUtil.findPlayer(ap.getID());
+			Player p = ap.getPlayer();
 			if (p != null)
 				ps.add(p);
 		}

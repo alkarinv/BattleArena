@@ -17,8 +17,8 @@ public class ServerUtil {
 
     /**
      * The safe method to specify we want a player who is currently online
-     * @param name
-     * @return
+     * @param name Name of the player to find
+     * @return Player or null
      */
     public static Player findOnlinePlayer(String name) {
         return findPlayer(name);
@@ -36,6 +36,8 @@ public class ServerUtil {
             }
         } catch (Throwable e){
             /* do nothing, craftbukkit version is not great enough */
+            Log.err("Craftbukkit version does not have find player by UUID yet.");
+            Log.printStackTrace(e);
         }
         return null;
     }

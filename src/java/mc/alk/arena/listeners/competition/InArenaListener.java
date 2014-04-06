@@ -6,6 +6,7 @@ import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveMatchEvent;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PlayerUtil;
+import mc.alk.arena.util.ServerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -65,6 +66,14 @@ public enum InArenaListener implements Listener {
 
     public static boolean inQueue(UUID id) {
         return BattleArena.getBAController().getArenaMatchQueue().isInQue(id);
+    }
+    @Deprecated
+    /**
+     * Will be switching over to using UUID
+     */
+    public static boolean inQueue(String name) {
+        Player p = ServerUtil.findOnlinePlayer(name);
+        return p != null && BattleArena.getBAController().getArenaMatchQueue().isInQue(PlayerUtil.getID(p));
     }
 
     public static void addListener(Listener listener){
