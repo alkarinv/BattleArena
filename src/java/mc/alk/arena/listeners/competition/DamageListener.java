@@ -50,7 +50,7 @@ public class DamageListener implements ArenaListener{
 	public void onEntityDamageEvent(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player))
 			return;
-		final StateOptions to = transitionOptions.getOptions(holder.getMatchState());
+		final StateOptions to = transitionOptions.getOptions(holder.getState());
 		if (to == null)
 			return;
 		final PVPState pvp = to.getPVP();
@@ -64,6 +64,7 @@ public class DamageListener implements ArenaListener{
 			event.setCancelled(true);
 			return;
 		}
+
 		if (!(event instanceof EntityDamageByEntityEvent)){
 			return;}
 

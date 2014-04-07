@@ -1290,6 +1290,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     @Override
     public MatchState getState() {return state;}
+
     @Override
     public MatchState getMatchState(){return state;}
 

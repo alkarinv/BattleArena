@@ -8,11 +8,20 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
 
 public class MatchFindCurrentLeaderEvent extends MatchEvent {
 	final List<ArenaTeam> teams;
 	MatchResult result = new MatchResult();
 	final boolean matchEnding;
+
+    public MatchFindCurrentLeaderEvent(Match match) {
+        this(match, match.getTeams(), false);
+    }
+
+    public MatchFindCurrentLeaderEvent(Match match, List<ArenaTeam> teams) {
+        this(match, teams, false);
+    }
 
 	public MatchFindCurrentLeaderEvent(Match match, List<ArenaTeam> teams, boolean matchEnding) {
 		super(match);
@@ -58,4 +67,8 @@ public class MatchFindCurrentLeaderEvent extends MatchEvent {
 	public boolean isMatchEnding(){
 		return matchEnding;
 	}
+
+    public SortedMap<Integer,Collection<ArenaTeam>> getRanking() {
+        return result.getRanking();
+    }
 }

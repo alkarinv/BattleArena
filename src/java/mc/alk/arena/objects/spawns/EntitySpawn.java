@@ -7,6 +7,7 @@ import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Tameable;
+import org.bukkit.entity.Wolf;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -76,9 +77,14 @@ public class EntitySpawn extends SpawnInstance{
 
 	public void setOwner(AnimalTamer tamer){
 		for (LivingEntity id: uids){
-			if (!id.isDead() && id instanceof Tameable){
-				((Tameable)id).setTamed(true);
-				((Tameable)id).setOwner(tamer);
+			if (!id.isDead()){
+                if (id instanceof Tameable){
+                    ((Tameable)id).setTamed(true);
+                    ((Tameable)id).setOwner(tamer);
+                }
+                if (id instanceof Wolf){
+                    ((Wolf)id).setSitting(false);
+                }
 			}
 		}
 	}

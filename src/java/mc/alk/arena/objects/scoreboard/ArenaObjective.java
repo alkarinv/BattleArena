@@ -162,7 +162,8 @@ public class ArenaObjective implements SObjective, ScoreTracker{
 				}
 			}
 		}
-		return result;
+        result.setRanking(ranks);
+        return result;
 	}
 
 	public Integer setPoints(ArenaPlayer p, int points) {

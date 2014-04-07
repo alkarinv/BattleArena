@@ -4,6 +4,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.SortedMap;
 
 
 /**
@@ -59,4 +60,8 @@ public interface CompetitionResult{
     public boolean hasVictor();
 
     public WinLossDraw getResult();
+
+    public SortedMap<Integer, Collection<ArenaTeam>> getRanking();
+
+    public void setRanking(SortedMap<Integer, Collection<ArenaTeam>> ranks);
 }

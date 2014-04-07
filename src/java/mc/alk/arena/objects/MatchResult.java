@@ -5,6 +5,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedMap;
 
 /**
  * @author alkarin
@@ -14,6 +15,7 @@ public class MatchResult implements CompetitionResult {
     Set<ArenaTeam> losers = new HashSet<ArenaTeam>();
     Set<ArenaTeam> drawers = new HashSet<ArenaTeam>();
     WinLossDraw wld = WinLossDraw.UNKNOWN;
+    SortedMap<Integer, Collection<ArenaTeam>> ranks;
 
     public MatchResult(){}
     public MatchResult(CompetitionResult r) {
@@ -146,5 +148,15 @@ public class MatchResult implements CompetitionResult {
     @Override
     public WinLossDraw getResult(){
         return wld;
+    }
+
+    @Override
+    public SortedMap<Integer, Collection<ArenaTeam>> getRanking() {
+        return ranks;
+    }
+
+    @Override
+    public void setRanking(SortedMap<Integer, Collection<ArenaTeam>> ranks) {
+        this.ranks = ranks;
     }
 }
