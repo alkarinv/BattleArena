@@ -8,6 +8,7 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamAppearance;
 import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -53,7 +54,11 @@ public class TeamUtil {
 		return index != null && index < teamHeads.size() ? teamHeads.get(index).getColor() : Color.WHITE;
 	}
 
-	public static void setTeamHead(final int index, ArenaPlayer player) {
+    public static DyeColor getDyeColor(Integer index){
+        return index != null && index < teamHeads.size() ? teamHeads.get(index).getDyeColor() : DyeColor.WHITE;
+    }
+
+    public static void setTeamHead(final int index, ArenaPlayer player) {
 		setTeamHead(getTeamHead(index),player);
 	}
 

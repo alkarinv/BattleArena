@@ -11,7 +11,7 @@ public class Countdown implements Runnable{
         /**
          *
          * @param secondsRemaining how many seconds are still left
-         * @return whether to cancel
+         * @return whether to cancel. Return true to continue, false to stop
          */
         public boolean intervalTick(int secondsRemaining);
     }

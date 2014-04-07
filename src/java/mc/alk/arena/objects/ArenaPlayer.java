@@ -16,6 +16,7 @@ import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.ServerUtil;
 import org.bukkit.Location;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.PlayerInventory;
@@ -65,6 +66,8 @@ public class ArenaPlayer {
 
     final PlayerMetaData meta = new PlayerMetaData();
     final UUID uuid;
+
+    LivingEntity curTarget;
 
     public ArenaPlayer(Player player) {
         this.player = player;
@@ -262,7 +265,7 @@ public class ArenaPlayer {
                 es.setLocation(this.getLocation());
                 es.spawn();
                 if (es instanceof EntitySpawn) {
-                    ((EntitySpawn) es).setOwner(getPlayer());
+                    ((EntitySpawn) es).setOwner(this);
                 }
             }
         }
@@ -287,5 +290,17 @@ public class ArenaPlayer {
 
     public UUID getID() {
         return uuid;
+    }
+
+    public void setTarget(LivingEntity entity) {
+        curTarget = entity;
+        for (SpawnInstance es: mobs){
+            if (es instanceof EntitySpawn) {
+                ((EntitySpawn) es).setTarget(entity);
+            }
+        }
+    }
+    public LivingEntity getTarget() {
+        return curTarget;
     }
 }

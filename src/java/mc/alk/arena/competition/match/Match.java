@@ -845,6 +845,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         }
         if (Defaults.DEBUG_TRACE) Log.trace(this, player.getName() + "   !!!!&4playerLeaving  "+removed+" t=" + player.getTeam());
         if (removed){
+            player.despawnMobs();
             updateBukkitEvents(MatchState.ONLEAVE,player);
             arenaInterface.onLeave(player,player.getTeam());
         }
