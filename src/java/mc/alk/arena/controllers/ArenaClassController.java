@@ -59,6 +59,10 @@ public class ArenaClassController {
     }
 
     public static void giveClass(ArenaPlayer player, ArenaClass ac, Color color) {
+        ArenaClass oldClass = player.getCurrentClass();
+        if (oldClass != null){
+            player.despawnMobs();
+        }
         if (HeroesController.enabled())
             ac = giveHeroClass(player,ac);
         try{if (ac.getItems() != null)

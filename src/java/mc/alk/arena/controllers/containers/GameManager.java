@@ -147,6 +147,7 @@ public class GameManager implements PlayerHolder{
 	@Override
 	public void onPreJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
 		if (handled.add(player)){
+            if (Defaults.DEBUG_TRACE) Log.trace(-1, player.getName() + "   &5GM !!!!&2onPreJoin  t=" + player.getTeam());
             PlayerStoreController.getPlayerStoreController().storeScoreboard(player);
 			TransitionController.transition(this, MatchState.ONENTER, player, null, false);
 			updateBukkitEvents(MatchState.ONENTER, player);
@@ -162,11 +163,13 @@ public class GameManager implements PlayerHolder{
 
 	@Override
 	public void onPostJoin(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+        if (Defaults.DEBUG_TRACE) Log.trace(-1, player.getName() + "   &5GM !!!!&2onPostJoin  t=" + player.getTeam());
 		player.getMetaData().setJoining(false);
     }
 
 	@Override
 	public void onPreQuit(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+        if (Defaults.DEBUG_TRACE) Log.trace(-1, player.getName() + "   &5GM !!!!&4onPreQuit  t=" + player.getTeam());
 	}
 
 	@Override
@@ -176,6 +179,7 @@ public class GameManager implements PlayerHolder{
 		if (EssentialsController.enabled())
 			BAPlayerListener.setBackLocation(player, null);
         PlayerStoreController.getPlayerStoreController().restoreScoreboard(player);
+        if (Defaults.DEBUG_TRACE) Log.trace(-1, player.getName() + "   &5GM !!!!&4onPostQuit  t=" + player.getTeam());
 	}
 
 	@Override
@@ -184,6 +188,7 @@ public class GameManager implements PlayerHolder{
 
 	@Override
 	public void onPostEnter(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+        if (Defaults.DEBUG_TRACE) Log.trace(-1, player.getName() + "   &5GM !!!!&fonPostEnter  t=" + player.getTeam());
 	}
 
 	@Override
@@ -192,6 +197,7 @@ public class GameManager implements PlayerHolder{
 
 	@Override
 	public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte) {
+        if (Defaults.DEBUG_TRACE) Log.trace(-1, player.getName() + "   &5GM !!!!&8onPostLeave  t=" + player.getTeam());
 	}
 
 	public boolean hasPlayer(ArenaPlayer player) {

@@ -1,7 +1,6 @@
 package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.competition.Competition;
 import org.bukkit.Bukkit;
 
 import java.util.logging.Logger;
@@ -74,8 +73,8 @@ public class Log {
 			NotifierUtil.notify("errors", e);}
 	}
 
-    public static void trace(Competition c, String msg) {
+    public static void trace(int id, String msg) {
         info(msg);
-        NotifierUtil.notify(c, colorChat(msg));
+        NotifierUtil.notify(id, colorChat(msg));
     }
 }

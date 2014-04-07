@@ -80,7 +80,8 @@ public class EntitySpawn extends SpawnInstance{
     public void despawn() {
         for (LivingEntity id: uids){
             if (!id.isDead()){
-                id.remove();}
+                id.remove();
+            }
         }
         uids.clear();
     }

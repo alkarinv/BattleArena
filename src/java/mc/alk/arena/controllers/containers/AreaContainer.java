@@ -85,7 +85,7 @@ public class AreaContainer extends AbstractAreaContainer{
             if(players.add(player.getID())){
                 added = true;}
         }
-        if (Defaults.DEBUG_TRACE) Log.info(player.getName() + "   !!!&2add  " + added + " t=" + player.getTeam());
+        if (Defaults.DEBUG_TRACE) Log.trace(1111, getName()+"  "+player.getName() + "   !!!&2add  " + added + " t=" + player.getTeam());
         if (added){
             updateBukkitEvents(MatchState.ONENTER, player);
         }
@@ -100,7 +100,7 @@ public class AreaContainer extends AbstractAreaContainer{
                 removed = true;
             }
         }
-        if (Defaults.DEBUG_TRACE) Log.info(player.getName() + "   !!!&4removed  " + removed + " t=" + player.getTeam());
+        if (Defaults.DEBUG_TRACE) Log.trace(1111, getName()+"  "+ player.getName() + "   !!!&4removed  " + removed + " t=" + player.getTeam());
         if (removed){
             updateBukkitEvents(MatchState.ONLEAVE, player);
         }

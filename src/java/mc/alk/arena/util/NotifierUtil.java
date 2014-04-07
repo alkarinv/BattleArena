@@ -1,6 +1,5 @@
 package mc.alk.arena.util;
 
-import mc.alk.arena.competition.Competition;
 import mc.alk.arena.objects.MessageListener;
 import org.bukkit.entity.Player;
 
@@ -67,8 +66,8 @@ public class NotifierUtil {
 	}
 
 
-    public static void notify(Competition c, String msg) {
-        List<MessageListener> list = compListeners.get(c.getID());
+    public static void notify(int id, String msg) {
+        List<MessageListener> list = compListeners.get(id);
         if (list == null)
             return;
         for (MessageListener ml : list){
@@ -76,11 +75,11 @@ public class NotifierUtil {
         }
     }
 
-    public static void addMatchListener(Competition c, MessageListener l ){
-        List<MessageListener> list = compListeners.get(c.getID());
+    public static void addMatchListener(int id, MessageListener l ){
+        List<MessageListener> list = compListeners.get(id);
         if (list == null) {
             list = new ArrayList<MessageListener>();
-            compListeners.put(c.getID(), list);
+            compListeners.put(id, list);
         }
         list.add(l);
     }

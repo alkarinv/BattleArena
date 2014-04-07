@@ -100,6 +100,7 @@ public class ArenaMatch extends Match {
         boolean exiting = event.isExiting() || !respawns || nDeaths >= nLivesPerPlayer;
         event.setExiting(exiting);
         final boolean trueDeath = event.getPlayerDeathEvent() != null;
+        /// Set their number of lives left on the scoreboard "if" it's not infinite or 1
         if (nLivesPerPlayer != ArenaSize.MAX) {
             int curLives = nLivesPerPlayer - nDeaths;
             SEntry e = scoreboard.getEntry(target.getPlayer());

@@ -259,14 +259,14 @@ public class ArenaPlayer {
     }
 
     public void spawnMobs(){
-        if (mobs != null){
-            for (SpawnInstance es: mobs){
-                es.despawn();
-                es.setLocation(this.getLocation());
-                es.spawn();
-                if (es instanceof EntitySpawn) {
-                    ((EntitySpawn) es).setOwner(this);
-                }
+        if (mobs == null) {
+            return;}
+        for (SpawnInstance es: mobs){
+            es.despawn();
+            es.setLocation(this.getLocation());
+            es.spawn();
+            if (es instanceof EntitySpawn) {
+                ((EntitySpawn) es).setOwner(this);
             }
         }
     }
@@ -294,12 +294,16 @@ public class ArenaPlayer {
 
     public void setTarget(LivingEntity entity) {
         curTarget = entity;
+        if (mobs == null) {
+            return;
+        }
         for (SpawnInstance es: mobs){
             if (es instanceof EntitySpawn) {
                 ((EntitySpawn) es).setTarget(entity);
             }
         }
     }
+
     public LivingEntity getTarget() {
         return curTarget;
     }

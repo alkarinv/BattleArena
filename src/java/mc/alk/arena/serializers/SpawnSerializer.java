@@ -31,7 +31,7 @@ public class SpawnSerializer {
 
 	public void setConfig(File f){
 		this.f = f;
-		config = new YamlConfiguration();
+        config = new YamlConfiguration();
 		loadAll();
 	}
 
@@ -197,8 +197,8 @@ public class SpawnSerializer {
         if (fs < 0)
             fs = 0;
         if (rs <= 0)
-            rs = 1;
-        long ds = (Integer) (so.options.containsKey(SpawnOption.DESPAWN) ? so.options.get(SpawnOption.DESPAWN) : 0);
+            rs = -1;
+        long ds = (Integer) (so.options.containsKey(SpawnOption.DESPAWN) ? so.options.get(SpawnOption.DESPAWN) : -1);
         return new TimedSpawn(fs,rs,ds,si);
     }
 }
