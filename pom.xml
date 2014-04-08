@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.9.7.6.3</version>
+    <version>3.9.7.6.10</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -49,7 +49,7 @@
         <dependency>
             <groupId>mc.battleplugins</groupId>
             <artifactId>BattlePluginsAPI</artifactId>
-            <version>1.0.5</version>
+            <version>1.0.6</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -167,6 +167,13 @@
             <version>0.4</version>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>unknown.plugins</groupId>
+            <artifactId>VanishNoPacket</artifactId>
+            <version>3.18.10</version>
+            <scope>provided</scope>
+        </dependency>
         <!-- test dependencies -->
     </dependencies>
     <!-- How we will compile the plugin -->
@@ -221,16 +228,16 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                          <relocations>
-                              <relocation>
-                                  <pattern>mc.battleplugins.api</pattern>
-                                  <shadedPattern>mc.alk.mc.battleplugins.api</shadedPattern>
-                              </relocation>
-                               <relocation>
-                                  <pattern>mc.alk.plugin.updater</pattern>
-                                  <shadedPattern>mc.alk.mc.updater</shadedPattern>
-                              </relocation>
-                          </relocations>
+                            <relocations>
+                                <relocation>
+                                    <pattern>mc.battleplugins.api</pattern>
+                                    <shadedPattern>mc.alk.mc.battleplugins.api</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>mc.alk.plugin.updater</pattern>
+                                    <shadedPattern>mc.alk.mc.updater</shadedPattern>
+                                </relocation>
+                            </relocations>
 
                             <artifactSet>
                                 <includes>

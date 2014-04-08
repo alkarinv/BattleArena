@@ -5,7 +5,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.PlayerSave;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.spawns.SpawnLocation;
-import mc.alk.arena.util.PlayerUtil;
 
 import java.util.HashMap;
 import java.util.Map;
