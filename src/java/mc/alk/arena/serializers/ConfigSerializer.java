@@ -6,7 +6,7 @@ import mc.alk.arena.controllers.ArenaClassController;
 import mc.alk.arena.controllers.ModuleController;
 import mc.alk.arena.controllers.OptionSetController;
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.controllers.StateController;
 import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import mc.alk.arena.objects.ArenaClass;
@@ -158,7 +158,7 @@ public class ConfigSerializer extends BaseConfig{
         List<String> modules = loadModules(cs, mp); /// load modules
 
         StateGraph tops = loadTransitionOptions(cs, mp); /// load transition options
-        mp.setTransitionOptions(tops);
+        mp.setStateGraph(tops);
 
         mp.setParent(ParamController.getDefaultConfig());
         if (!isNonBaseConfig){
@@ -303,7 +303,7 @@ public class ConfigSerializer extends BaseConfig{
         if (dbName == null) dbName = cs.getString("dbTableName", null);
         if (dbName != null){
             mp.setTableName(dbName);
-            if (StatController.enabled()){
+            if (TrackerController.enabled()){
                 try{
                     if (!BTInterface.addBTI(mp)){
                         Log.err("Couldn't add tracker interface");}
@@ -788,7 +788,7 @@ public class ConfigSerializer extends BaseConfig{
             }
         }
 
-        StateGraph alltops = params.getThisTransitionOptions();
+        StateGraph alltops = params.getThisStateGraph();
         if (alltops != null) {
             Map<CompetitionState, StateOptions> transitions =
                     new TreeMap<CompetitionState, StateOptions>(new Comparator<CompetitionState>() {

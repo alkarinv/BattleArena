@@ -3,7 +3,7 @@ package mc.alk.arena.listeners;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.MoneyController;
-import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.controllers.plugins.CombatTagInterface;
 import mc.alk.arena.controllers.plugins.DisguiseInterface;
 import mc.alk.arena.controllers.plugins.EssentialsController;
@@ -13,6 +13,7 @@ import mc.alk.arena.controllers.plugins.McMMOController;
 import mc.alk.arena.controllers.plugins.MobArenaInterface;
 import mc.alk.arena.controllers.plugins.PylamoController;
 import mc.alk.arena.controllers.plugins.TagAPIController;
+import mc.alk.arena.controllers.plugins.VanishNoPacketInterface;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.messaging.AnnouncementOptions;
 import mc.alk.arena.objects.messaging.plugins.HerochatPlugin;
@@ -20,6 +21,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
+
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -71,6 +73,8 @@ public class BAPluginListener implements Listener {
 			loadWorldEdit();
 		else if (event.getPlugin().getName().equalsIgnoreCase("WorldGuard"))
 			loadWorldGuard();
+        else if (event.getPlugin().getName().equalsIgnoreCase("VanishNoPacket"))
+            loadVanishNoPacket();
         else if (event.getPlugin().getName().equalsIgnoreCase("Vault"))
             loadVault();
         else
@@ -95,16 +99,17 @@ public class BAPluginListener implements Listener {
 		loadTagAPI();
 		loadWorldEdit();
 		loadWorldGuard();
+		loadVanishNoPacket();
 		loadVault();
         loadOthers();
     }
 
 
 	public void loadBattleTracker(){
-		if (!StatController.enabled()){
+		if (!TrackerController.enabled()){
 			Plugin plugin = Bukkit.getPluginManager().getPlugin("BattleTracker");
 			if (plugin != null) {
-				StatController.setPlugin(plugin);
+				TrackerController.setPlugin(plugin);
 			} else {
 				Log.info("[BattleArena] BattleTracker not detected, not tracking wins");
 			}
@@ -274,6 +279,16 @@ public class BAPluginListener implements Listener {
 			if (plugin != null) {
 				TagAPIController.setEnable(true);
 				Log.info("[BattleArena] TagAPI detected. Implementing Team colored player names");
+			}
+		}
+	}
+
+	public void loadVanishNoPacket() {
+		if (!VanishNoPacketInterface.enabled()) {
+			Plugin plugin = Bukkit.getPluginManager().getPlugin("VanishNoPacket");
+			if (plugin != null) {
+				VanishNoPacketInterface.setPlugin(plugin);
+				Log.info("[BattleArena] VanishNoPacket detected. Invisibility fix is disabled for vanished players not in an arena");
 			}
 		}
 	}

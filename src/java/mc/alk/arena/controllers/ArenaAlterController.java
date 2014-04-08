@@ -9,6 +9,7 @@ import mc.alk.arena.controllers.plugins.PylamoController;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaType;
@@ -267,11 +268,11 @@ public class ArenaAlterController {
             arena.setWorldGuardRegion(region);
             WorldGuardController.saveSchematic(sender, id);
             MatchParams mp = ParamController.getMatchParams(arena.getArenaType().getName());
-            if (mp != null && mp.getThisTransitionOptions().hasAnyOption(TransitionOption.WGNOENTER)){
+            if (mp != null && mp.getThisStateGraph().hasAnyOption(TransitionOption.WGNOENTER)){
                 WorldGuardController.trackRegion(w.getName(), id);
                 WorldGuardController.setFlag(region, "entry", false);
             }
-            if (mp != null && mp.getThisTransitionOptions().hasAnyOption(TransitionOption.WGNOLEAVE)){
+            if (mp != null && mp.getThisStateGraph().hasAnyOption(TransitionOption.WGNOLEAVE)){
                 WorldGuardController.trackRegion(w.getName(), id);
                 WorldGuardController.setFlag(region, "exit", false);
             }
@@ -297,22 +298,6 @@ public class ArenaAlterController {
                 "&2 set to location=&6" + Util.getLocString(loc)));
     }
 
-    private static boolean changeWaitroomSpawn(Player sender, Arena arena,
-                                               BattleArenaController ac,SpawnIndex index) {
-        Location loc = sender.getLocation();
-        MatchParams mp = ParamController.getMatchParams(arena.getArenaType());
-        if (mp == null){
-            throw new IllegalStateException("MatchParams for " + arena.getArenaType() +" could not be found");}
-        if (arena.getWaitroom() == null){
-            RoomContainer room = RoomController.getOrCreateWaitroom(arena);
-            arena.setWaitRoom(room);
-        }
-        arena.setWaitRoomSpawnLoc(index.teamIndex,index.spawnIndex, new FixedLocation(loc));
-        ac.updateArena(arena);
-        return sendMessage(sender,"&2waitroom for the "+(getSpawnName(index.teamIndex)+" &2team. Spawn #&6"+(index.spawnIndex+1)+
-                "&2 set to location=&6" + Util.getLocString(loc)));
-    }
-
     private static String getSpawnName(int index){
         return index == Integer.MAX_VALUE ? "main" : TeamUtil.getTeamName(index);
     }
@@ -321,24 +306,27 @@ public class ArenaAlterController {
         Location loc = sender.getLocation();
         RoomController.addLobby(params.getType(), index.teamIndex, index.spawnIndex, new FixedLocation(loc));
         PlayerContainerSerializer pcs = new PlayerContainerSerializer();
-        pcs.setConfig(BattleArena.getSelf().getDataFolder().getPath()+"/saves/containers.yml");
+        pcs.setConfig(BattleArena.getSelf().getDataFolder().getPath()+"/watchers/containers.yml");
         pcs.save();
         return sendMessage(sender,"&2Lobby for the "+(getSpawnName(index.teamIndex)+" &2team. Spawn #&6"+(index.spawnIndex+1)+
                 "&2 set to location=&6" + Util.getLocString(loc)));
     }
 
+    private static boolean changeWaitroomSpawn(Player sender, Arena arena,
+                                               BattleArenaController ac,SpawnIndex index) {
+        Location loc = sender.getLocation();
+        RoomContainer rc = RoomController.getOrCreateRoom(arena, LocationType.WAITROOM);
+        rc.setSpawnLoc(index.teamIndex,index.spawnIndex, new FixedLocation(loc));
+        ac.updateArena(arena);
+        return sendMessage(sender,"&2waitroom for the "+(getSpawnName(index.teamIndex)+" &2team. Spawn #&6"+(index.spawnIndex+1)+
+                "&2 set to location=&6" + Util.getLocString(loc)));
+    }
 
     private static boolean changeSpectateSpawn(Player sender, Arena arena,
                                                BattleArenaController ac, SpawnIndex index) {
         Location loc = sender.getLocation();
-        MatchParams mp = ParamController.getMatchParams(arena.getArenaType());
-        if (mp == null){
-            throw new IllegalStateException("MatchParams for " + arena.getArenaType() +" could not be found");}
-        if (arena.getSpectatorRoom() == null){
-            RoomContainer room = RoomController.getOrCreateSpectate(arena);
-            arena.setSpectate(room);
-        }
-        arena.getSpectatorRoom().setSpawnLoc(index.teamIndex,index.spawnIndex, new FixedLocation(loc));
+        RoomContainer rc = RoomController.getOrCreateRoom(arena, LocationType.SPECTATE);
+        rc.setSpawnLoc(index.teamIndex,index.spawnIndex, new FixedLocation(loc));
         ac.updateArena(arena);
         return sendMessage(sender,"&2spectator room #&6"+(index.teamIndex+1)+"&2. Spawn #&6"+(index.spawnIndex+1)+
                 "&2 set to location=&6" + Util.getLocString(loc));
@@ -347,7 +335,8 @@ public class ArenaAlterController {
     private static boolean changeVisitorSpawn(Player sender, Arena arena,
                                               BattleArenaController ac, SpawnIndex index) {
         Location loc = sender.getLocation();
-        arena.setSpawnLoc(index.teamIndex,index.spawnIndex, new FixedLocation(loc));
+        RoomContainer rc = RoomController.getOrCreateRoom(arena, LocationType.VISITOR);
+        rc.setSpawnLoc(index.teamIndex,index.spawnIndex, new FixedLocation(loc));
         ac.updateArena(arena);
         return sendMessage(sender,"&2Visitor room #&6"+(index.teamIndex+1)+"&2. Spawn #&6"+(index.spawnIndex+1)+
                 "&2 set to location=&6" + Util.getLocString(loc));

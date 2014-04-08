@@ -193,7 +193,7 @@ public class DuelOptions {
 	}
 
 	public boolean matches(ArenaPlayer player, MatchParams mp) {
-		if (mp.getThisTransitionOptions().hasOptionAt(MatchState.PREREQS, TransitionOption.WITHINDISTANCE)){
+		if (mp.getThisStateGraph().hasOptionAt(MatchState.PREREQS, TransitionOption.WITHINDISTANCE)){
 			Double distance = mp.getStateGraph().getOptions(MatchState.PREREQS).getWithinDistance();
 			if (options.containsKey(DuelOption.ARENA) ){
 				Arena arena = (Arena) options.get(DuelOption.ARENA);

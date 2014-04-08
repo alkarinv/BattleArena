@@ -171,7 +171,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
         } else if (args.length > 3 && args[3].equals("parent")){
             return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams().getParent(), ToStringStyle.MULTI_LINE_STYLE)+"");
         } else if (args.length > 3 && args[3].equals("transitions")){
-            return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams().getThisTransitionOptions(), ToStringStyle.MULTI_LINE_STYLE)+"");
+            return sendMessage(sender, new ReflectionToStringBuilder(arena.getParams().getThisStateGraph(), ToStringStyle.MULTI_LINE_STYLE)+"");
         } else if (args.length > 2 && args[2].equals("waitroom")){
             return sendMessage(sender, new ReflectionToStringBuilder(arena.getWaitroom(), ToStringStyle.MULTI_LINE_STYLE)+"");
         }  else if (args.length > 2 && args[2].equals("params")){
@@ -187,7 +187,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
         if (m == null){
             return sendMessage(sender, "&cMatch not currently running in arena " + arena.getName());}
         if (vars.length > 2 && vars[2].equals("transitions")){
-            return sendMessage(sender, m.getParams().getThisTransitionOptions().getOptionString());
+            return sendMessage(sender, m.getParams().getThisStateGraph().getOptionString());
         }
 
         if (vars.length > 2){
@@ -226,7 +226,7 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
             return sendMessage(sender, "&cThere is no lobby for &6" + type.getName());}
         ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(lobby, ToStringStyle.MULTI_LINE_STYLE);
         sendMessage(sender, rtsb.toString());
-        rtsb = new ReflectionToStringBuilder(lobby.getParams().getThisTransitionOptions(), ToStringStyle.MULTI_LINE_STYLE);
+        rtsb = new ReflectionToStringBuilder(lobby.getParams().getThisStateGraph(), ToStringStyle.MULTI_LINE_STYLE);
         return sendMessage(sender, rtsb.toString());
     }
 

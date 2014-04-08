@@ -1,7 +1,7 @@
 package mc.alk.arena.objects;
 
 import mc.alk.arena.competition.Competition;
-import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.controllers.containers.AreaContainer;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.objects.arenas.Arena;
@@ -277,7 +277,7 @@ public class ArenaPlayer {
 
 
     public ArenaStat getStat(MatchParams type) {
-        return StatController.loadRecord(type, this);
+        return TrackerController.loadRecord(type, this);
     }
 
     public Player regetPlayer() {

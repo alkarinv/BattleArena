@@ -5,6 +5,7 @@ import mc.alk.arena.Defaults;
 import mc.alk.arena.Permissions;
 import mc.alk.arena.controllers.plugins.CombatTagInterface;
 import mc.alk.arena.controllers.plugins.EssentialsController;
+import mc.alk.arena.controllers.plugins.VanishNoPacketInterface;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.util.InventoryUtil;
@@ -12,6 +13,7 @@ import mc.alk.arena.util.Log;
 import mc.alk.arena.util.PermissionsUtil;
 import mc.alk.arena.util.PlayerUtil;
 import mc.alk.arena.util.ServerUtil;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
@@ -31,10 +33,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-
 public class TeleportController implements Listener{
     final static Set<UUID> teleporting = Collections.synchronizedSet(new HashSet<UUID>());
-    private final int TELEPORT_FIX_DELAY = 15; // ticks
+    private static final int TELEPORT_FIX_DELAY = 15; // ticks
 
     public static boolean teleport(final Player player, final Location location) {
         return teleport(BattleArena.toArenaPlayer(player), location, false);
@@ -168,6 +169,11 @@ public class TeleportController implements Listener{
 		for (Player player : players) {
 			if (!player.isOnline())
 				continue;
+			if (VanishNoPacketInterface.isVanished(player)) {
+				if (!BattleArena.inArena(player))
+					continue;
+				VanishNoPacketInterface.toggleVanish(player);
+			}
 			if (visible){
 				tpedPlayer.showPlayer(player);
 				player.showPlayer(tpedPlayer);

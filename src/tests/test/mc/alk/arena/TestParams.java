@@ -54,7 +54,7 @@ public class TestParams extends BATest {
         apc = ParamController.copyParams(a);
         apc.setName(this.getName());
         apc.flatten();
-//        this.tops = params.getThisTransitionOptions();
+//        this.tops = params.getThisStateGraph();
         MatchParams a2 = arena.getParams();
         MatchParams b2 = ParamController.getMatchParamCopy(arena.getArenaType());
 

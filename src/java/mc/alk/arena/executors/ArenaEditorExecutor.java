@@ -160,12 +160,8 @@ public class ArenaEditorExecutor extends CustomCommandExecutor {
 
     public static boolean setArenaOption(CommandSender sender,Arena arena, ArenaOptionPair aop){
         try {
+            /// all of the messages are handled inside of setArenaOption
             ArenaAlterController.setArenaOption(sender, arena, aop.ao, aop.value);
-            if (aop.value != null) {
-                sendMessage(sender, "&2Arena "+arena.getDisplayName()+" options &6" + aop.ao + "&2 changed to &6" + aop.value);
-            } else {
-                sendMessage(sender, "&2Arena "+arena.getDisplayName()+" options &6" + aop.ao + "&2 changed");
-            }
             return true;
         } catch (IllegalStateException e) {
             return sendMessage(sender, "&c" + e.getMessage());

@@ -1,4 +1,4 @@
-package mc.alk.arena.controllers;
+package mc.alk.arena.controllers.plugins;
 
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
@@ -13,12 +13,12 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.Set;
 
-public class StatController {
+public class TrackerController {
 	static boolean enabled;
 	final MatchParams mp;
 	public static final BlankArenaStat BLANK_STAT = BlankArenaStat.BLANK_STAT;
 
-	public StatController(MatchParams mp) {
+	public TrackerController(MatchParams mp) {
 		this.mp = mp;
 	}
 

@@ -1,6 +1,6 @@
 package mc.alk.arena.controllers.messaging;
 
-import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.messaging.Message;
@@ -26,7 +26,7 @@ import java.util.Set;
 public class MessageFormatter{
 	final String[] searchList;
 	final String[] replaceList;
-	final StatController sc;
+	final TrackerController sc;
 
 	final Set<MessageOption> ops;
 	final Message msg;
@@ -45,7 +45,7 @@ public class MessageFormatter{
 		tns = new HashMap<Integer,TeamNames>(nTeams);
 		this.mp = mp;
 		typeName = mp.getType().getName();
-		sc = new StatController(mp);
+		sc = new TrackerController(mp);
 		this.impl = impl;
 	}
 

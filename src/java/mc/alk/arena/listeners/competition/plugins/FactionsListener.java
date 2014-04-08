@@ -1,20 +1,21 @@
 package mc.alk.arena.listeners.competition.plugins;
 
 
+import com.massivecraft.factions.event.FactionsEventPowerChange;
 import mc.alk.arena.listeners.competition.InArenaListener;
 import mc.alk.arena.util.PlayerUtil;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-
-import com.massivecraft.factions.event.FactionsEventPowerChange;
 
 public enum FactionsListener implements Listener{
 	INSTANCE;
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onFactionLoss(FactionsEventPowerChange event){
-		if (InArenaListener.inArena(PlayerUtil.getID(event.getUPlayer().getPlayer()))){
+        Player p = event.getUPlayer().getPlayer(); /// Annoyingly this has been null at times
+		if (p != null && InArenaListener.inArena(PlayerUtil.getID(p))){
 			event.setCancelled(true);}
 	}
 

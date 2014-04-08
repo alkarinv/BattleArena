@@ -1,7 +1,7 @@
 package mc.alk.arena.objects.victoryconditions;
 
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
 import mc.alk.arena.events.players.ArenaPlayerKillEvent;
 import mc.alk.arena.objects.WinLossDraw;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.TreeMap;
 public class AllKills extends VictoryCondition implements ScoreTracker {
     final ArenaObjective kills;
-    final StatController sc;
+    final TrackerController sc;
     final ConfigurationSection section;
 
     public AllKills(Match match, ConfigurationSection section) {
@@ -31,7 +31,7 @@ public class AllKills extends VictoryCondition implements ScoreTracker {
                 SAPIDisplaySlot.SIDEBAR, 60);
         boolean isRated = match.getParams().isRated();
         boolean soloRating = !match.getParams().isTeamRating();
-        sc = (isRated && soloRating) ? new StatController(match.getParams()): null;
+        sc = (isRated && soloRating) ? new TrackerController(match.getParams()): null;
     }
 
     @ArenaEventHandler(priority=EventPriority.LOW)

@@ -45,8 +45,7 @@ public enum HeroesListener implements Listener {
 	public void cancelExperienceLoss(ExperienceChangeEvent event) {
 		if (event.isCancelled())
 			return;
-		final String name = event.getHero().getName();
-		if (cancelExpLoss.contains(name)){
+		if (cancelExpLoss.contains(PlayerUtil.getID(event.getHero().getPlayer()))){
 			event.setCancelled(true);
 		}
 	}

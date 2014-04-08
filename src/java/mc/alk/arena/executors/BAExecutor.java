@@ -2,7 +2,6 @@ package mc.alk.arena.executors;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
-import mc.alk.arena.Permissions;
 import mc.alk.arena.competition.Competition;
 import mc.alk.arena.competition.events.Event;
 import mc.alk.arena.competition.match.Match;
@@ -19,8 +18,9 @@ import mc.alk.arena.controllers.ParamAlterController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.RoomController;
-import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.controllers.TeamController;
+import mc.alk.arena.controllers.WatchController;
 import mc.alk.arena.controllers.containers.LobbyContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.controllers.joining.AbstractJoinHandler;
@@ -107,12 +107,14 @@ public class BAExecutor extends CustomCommandExecutor {
     final TeamController teamc;
     final EventController ec;
     final DuelController dc;
+    final WatchController watchController;
 
     public BAExecutor() {
         super();
         this.ec = BattleArena.getEventController();
         this.teamc = BattleArena.getTeamController();
         this.dc = BattleArena.getDuelController();
+        this.watchController = BattleArena.getSelf().getWatchController();
     }
 
     @MCCommand(cmds = { "enable" }, admin = true, perm = "arena.enable", usage = "enable")
@@ -175,7 +177,7 @@ public class BAExecutor extends CustomCommandExecutor {
     public boolean arenaCheckArenaTypes(CommandSender sender) {
         String types = ArenaType.getValidList();
         sendMessage(sender, "&e valid types are = &6" + types);
-        return sendMessage(sender,"&5Enabled types = &6 "+ ParamController.getAvaibleTypes(disabled));
+        return sendMessage(sender, "&5Enabled types = &6 " + ParamController.getAvaibleTypes(disabled));
     }
 
     @MCCommand(cmds = { "join", "j" }, usage = "add [options]", helpOrder = 1)
@@ -203,11 +205,11 @@ public class BAExecutor extends CustomCommandExecutor {
             return sendMessage(player,"&cThis match type has no valid options, contact an admin to fix");}
 
         /// Check if this match type is disabled
-        if (isDisabled(player, omp) && !player.hasPermission(Permissions.ADMIN_NODE)) {
+        if (isDisabled(player.getPlayer(), omp) && !PermissionsUtil.isAdmin(player.getPlayer())) {
             return true;}
 
         /// Check Perms
-        if (!adminJoin && !PermissionsUtil.hasMatchPerm(player, omp, "join")) {
+        if (!adminJoin && !PermissionsUtil.hasMatchPerm(player.getPlayer(), omp, "join")) {
             return sendSystemMessage(player, "no_join_perms", omp.getCommand());}
         /// Can the player add this match/event at this moment?
         if (!canJoin(player)) {
@@ -405,14 +407,14 @@ public class BAExecutor extends CustomCommandExecutor {
         return msg.toString();
     }
 
-    protected boolean isDisabled(ArenaPlayer player, MatchParams mp) {
+    protected boolean isDisabled(CommandSender sender, MatchParams mp) {
         if (disabled.contains(mp.getName())) {
-            sendSystemMessage(player, "match_disabled", mp.getName());
+            sendSystemMessage(sender, "match_disabled", mp.getName());
             final String enabled = ParamController.getAvaibleTypes(disabled);
             if (enabled.isEmpty()) {
-                return sendSystemMessage(player, "all_disabled");
+                return sendSystemMessage(sender, "all_disabled");
             } else {
-                return sendSystemMessage(player, "currently_enabled", enabled);
+                return sendSystemMessage(sender, "currently_enabled", enabled);
             }
         }
         return false;
@@ -460,7 +462,8 @@ public class BAExecutor extends CustomCommandExecutor {
 
 
     public boolean leave(ArenaPlayer p, MatchParams mp, boolean adminLeave) {
-        if (!adminLeave && !p.hasPermission("arena.leave") && !PermissionsUtil.hasMatchPerm(p,mp,"leave"))
+        if (!adminLeave && !p.hasPermission("arena.leave") &&
+                !PermissionsUtil.hasMatchPerm(p.getPlayer(),mp,"leave"))
             return true;
 
         ArenaPlayerLeaveEvent event = new ArenaPlayerLeaveEvent(p, p.getTeam(),
@@ -487,8 +490,7 @@ public class BAExecutor extends CustomCommandExecutor {
     // }
 
     @MCCommand(cmds = { "cancel" }, admin = true, usage = "cancel <arenaname or player>")
-    public boolean arenaCancel(CommandSender sender, MatchParams params,
-                               String[] args) {
+    public boolean arenaCancel(CommandSender sender, MatchParams params,String[] args) {
         if (args.length > 1 && args[1].equalsIgnoreCase("all")) {
             return cancelAll(sender);}
         List<Match> matches = ac.getRunningMatches(params);
@@ -585,11 +587,11 @@ public class BAExecutor extends CustomCommandExecutor {
 
     @MCCommand(cmds = { "resetElo" }, op = true, usage = "resetElo")
     public boolean resetElo(CommandSender sender, MatchParams mp) {
-        if (!StatController.hasInterface(mp)) {
+        if (!TrackerController.hasInterface(mp)) {
             return sendMessage(sender,
                     "&eThere is no tracking for " + mp.getName());
         }
-        StatController sc = new StatController(mp);
+        TrackerController sc = new TrackerController(mp);
         sc.resetStats();
         return sendMessage(sender, mp.getPrefix() + " &2Elo's and stats for &6"
                 + mp.getName() + "&2 now reset");
@@ -598,11 +600,11 @@ public class BAExecutor extends CustomCommandExecutor {
     @MCCommand(cmds = { "setRating" }, admin = true, usage = "setRating <player> <rating>")
     public boolean setElo(CommandSender sender, MatchParams mp,
                           OfflinePlayer player, int rating) {
-        if (!StatController.hasInterface(mp)) {
+        if (!TrackerController.hasInterface(mp)) {
             return sendMessage(sender,
                     "&eThere is no tracking for " + mp.getName());
         }
-        StatController sc = new StatController(mp);
+        TrackerController sc = new TrackerController(mp);
         if (sc.setRating(player, rating))
             return sendMessage(sender, "&6" + player.getName()
                     + "&e now has &6" + rating + "&e rating");
@@ -612,11 +614,11 @@ public class BAExecutor extends CustomCommandExecutor {
 
     @MCCommand(cmds = { "rank" }, helpOrder = 3)
     public boolean rank(Player sender, MatchParams mp) {
-        if (!StatController.hasInterface(mp)) {
+        if (!TrackerController.hasInterface(mp)) {
             return sendMessage(sender,
                     "&cThere is no tracking for &6" + mp.getName());
         }
-        StatController sc = new StatController(mp);
+        TrackerController sc = new TrackerController(mp);
         String rankMsg = sc.getRankMessage(sender);
         return MessageUtil.sendMessage(sender, rankMsg);
     }
@@ -624,11 +626,11 @@ public class BAExecutor extends CustomCommandExecutor {
     @MCCommand(cmds = { "rank" }, helpOrder = 4)
     public boolean rankOther(CommandSender sender, MatchParams mp,
                              OfflinePlayer player) {
-        if (!StatController.hasInterface(mp)) {
+        if (!TrackerController.hasInterface(mp)) {
             return sendMessage(sender,
                     "&cThere is no tracking for " + mp.getName());
         }
-        StatController sc = new StatController(mp);
+        TrackerController sc = new TrackerController(mp);
         String rankMsg = sc.getRankMessage(player);
         return MessageUtil.sendMessage(sender, rankMsg);
     }
@@ -662,7 +664,7 @@ public class BAExecutor extends CustomCommandExecutor {
         if (x < 1 || x > 100) {
             x = 5;
         }
-        if (!StatController.hasInterface(mp)) {
+        if (!TrackerController.hasInterface(mp)) {
             return sendMessage(sender,
                     "&eThere is no tracking for " + mp.getName());
         }
@@ -676,7 +678,7 @@ public class BAExecutor extends CustomCommandExecutor {
                 + "&e " + teamSizeStr;
         final String bodyMsg = "&e#{rank}&4 {name} - {wins}:{losses}&6[{ranking}]";
 
-        StatController sc = new StatController(mp);
+        TrackerController sc = new TrackerController(mp);
         sc.printTopX(sender, x, mp.getMinTeamSize(), headerMsg, bodyMsg);
         return true;
     }
@@ -865,54 +867,34 @@ public class BAExecutor extends CustomCommandExecutor {
         return true;
     }
 
-    public boolean watch(CommandSender sender, String args[]) {
-        if (args.length != 1) {
-            sendMessage(sender, ChatColor.YELLOW + "Usage: /watch <arena name>");
-            sendMessage(sender, ChatColor.YELLOW
-                    + "Usage: /watch leave : to exit");
-            return true;
+    @MCCommand(cmds = {"watch"}, subCmds = {"leave"})
+    public boolean watchLeave(ArenaPlayer sender) {
+        if (!watchController.hasWatcher(sender)){
+            return sendMessage(sender,"&cYou aren't watching any arenas");
         }
-        if (!(sender instanceof Player))
-            return true;
-        Player p = (Player) sender;
+        watchController.leave(sender);
+        return sendMessage(sender,"&eYou stopped watching");
+    }
 
-        String value = args[0];
-        String pname = p.getName();
-        if (value.equalsIgnoreCase("leave")) {
-//            if (visitors.containsKey(pname)) {
-//                Location loc = visitors.get(pname);
-//                TeleportController.teleport(p, loc);
-//                visitors.remove(pname);
-//                sendMessage(sender, ChatColor.YELLOW
-//                        + "You have stopped watching the Arena");
-//                return true;
-//            } else {
-//                sendMessage(sender, ChatColor.YELLOW
-//                        + "You aren't waching an Arena");
-//                return true;
-//            }
-        } else {
-            Arena arena = ac.getArena(value.toLowerCase());
-            if (arena == null) {
-                sendMessage(sender, ChatColor.YELLOW
-                        + "That arena doesnt exist!");
-                return true;
-            }
-            // if (arena.getVisitorLoc() == null){
-            // sendMessage(sender,ChatColor.YELLOW +
-            // "That arena doesnt allow visitors!");
-            // return true;
-            // }
-            // if (visitors.containsKey(pname)){
-            // /// Already have their old location.. dont store it
-            // } else {
-            // visitors.put(pname, p.getLocation());
-            // }
-            // TeleportController.teleport(p, arena.getVisitorLoc());
-            // sendMessage(sender,ChatColor.YELLOW + "You are now watching " +
-            // arena.getName() +" /watch leave : to leave");
+    @MCCommand(cmds = {"watch"})
+    public boolean watch(ArenaPlayer sender, MatchParams mp, Arena arena) {
+        if (!PermissionsUtil.hasMatchPerm(sender.getPlayer(), mp, "watch")) {
+            return sendMessage(sender,
+                    "&cYou don't have permission to watch a &6"+ mp.getCommand());
         }
-        return true;
+        if (isDisabled(sender.getPlayer(), mp)) {
+            return true;}
+        if (!canJoin(sender))
+            return true;
+        if (arena.getVisitorLocs() == null){
+            return sendMessage(sender,ChatColor.YELLOW + "That arena doesnt allow visitors!");
+        }
+        if (watchController.watch(sender, arena)){
+            return sendMessage(sender,ChatColor.YELLOW + "You are now watching " +
+                    arena.getName() +" /watch leave : to leave");
+        } else {
+            return sendMessage(sender,ChatColor.RED + "You can't watch at this time");
+        }
     }
 
     @MCCommand(cmds = { "create" }, admin = true, perm = "arena.create", usage = "create <arena name>")
@@ -950,7 +932,7 @@ public class BAExecutor extends CustomCommandExecutor {
         sendMessage(sender, "&2You have created the arena &6" + arena);
         sendMessage(sender,"&2A spawn point has been created where you are standing");
         sendMessage(sender,"&2You can add/change spawn points using &6/arena alter "
-                        + arena.getName() + " <1,2,...,x : which spawn>");
+                + arena.getName() + " <1,2,...,x : which spawn>");
         BattleArena.saveArenas(arena.getArenaType().getPlugin());
         return BattleArena.getSelf().getArenaEditorExecutor().arenaSelect(sender, arena);
     }
@@ -1026,7 +1008,7 @@ public class BAExecutor extends CustomCommandExecutor {
             } else {
                 sendMessage(sender, "&2Game options &6"+state+"&2 added &6"+to );
             }
-            StateGraph tops = params.getThisTransitionOptions();
+            StateGraph tops = params.getThisStateGraph();
             StateOptions ops = tops.getOptions(state);
             sendMessage(sender, "&2Options at &6"+state +"&2 now &6" + ops.toString());
         } catch (InvalidOptionException e) {
@@ -1044,7 +1026,7 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     @MCCommand(cmds = { "showOptions" }, admin = true, perm = "arena.alter")
-    public boolean showGameOptions(CommandSender sender, MatchParams params, Arena arena) {
+    public boolean showGameOptions(CommandSender sender, Arena arena) {
         sendMessage(sender, "&2Options for arena &f"+arena.getName() +"&2 : " + arena.getDisplayName());
         sendMessage(sender, arena.getParams().toSummaryString());
         return sendMessage(sender, arena.getParams().getOptionsSummaryString());
@@ -1175,12 +1157,12 @@ public class BAExecutor extends CustomCommandExecutor {
 
     @MCCommand(cmds = { "duel", "d" }, helpOrder = 10)
     public boolean duel(ArenaPlayer player, final MatchParams mp, String args[]) {
-        if (!PermissionsUtil.hasMatchPerm(player, mp, "duel")) {
+        if (!PermissionsUtil.hasMatchPerm(player.getPlayer(), mp, "duel")) {
             return sendMessage(
                     player,
                     "&cYou don't have permission to duel in a &6"+ mp.getCommand());
         }
-        if (isDisabled(player, mp)) {
+        if (isDisabled(player.getPlayer(), mp)) {
             return true;
         }
 
@@ -1253,7 +1235,7 @@ public class BAExecutor extends CustomCommandExecutor {
                 return sendMessage(player, "&4[Duel] &6" + ap.getDisplayName()
                         + "&c already has been challenged!");
             }
-            if (!PermissionsUtil.hasMatchPerm(ap, mp, "duel")) {
+            if (!PermissionsUtil.hasMatchPerm(ap.getPlayer(), mp, "duel")) {
                 return sendMessage(player,
                         "&6" + ap.getDisplayName()
                                 + "&c doesn't have permission to duel in a &6"
@@ -1295,7 +1277,7 @@ public class BAExecutor extends CustomCommandExecutor {
                         player,
                         "&6"+ ap.getDisplayName()+ "&c needs to be within "+
                                 mp.getStateGraph().getOptions(MatchState.PREREQS)
-                                .getWithinDistance());
+                                        .getWithinDistance());
             }
 
             if (wager != null) {
@@ -1624,7 +1606,7 @@ public class BAExecutor extends CustomCommandExecutor {
                 }
                 if (!hasEnough) {
                     if (t.size() > 1)
-                    t.sendMessage("&eYour team does not have all the items to compete");
+                        t.sendMessage("&eYour team does not have all the items to compete");
                     return false;
                 }
             }

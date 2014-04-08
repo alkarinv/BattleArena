@@ -2,7 +2,7 @@ package mc.alk.arena.util;
 
 import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.PlayerController;
-import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.WinLossDraw;
@@ -178,19 +178,19 @@ public class BTInterface {
 	public static ArenaStat loadRecord(String dbName, ArenaPlayer ap) {
 		TrackerInterface ti = btis.get(dbName);
 		if (ti == null)
-			return StatController.BLANK_STAT;
+			return TrackerController.BLANK_STAT;
 		Stat st = null;
 		try{st = ti.loadPlayerRecord(ap.getName());}catch(Exception e){Log.printStackTrace(e);}
-		return st == null ? StatController.BLANK_STAT : new TrackerArenaStat(dbName, st);
+		return st == null ? TrackerController.BLANK_STAT : new TrackerArenaStat(dbName, st);
 	}
 
 	public static ArenaStat loadRecord(String dbName, ArenaTeam t) {
 		TrackerInterface ti = btis.get(dbName);
 		if (ti == null)
-			return StatController.BLANK_STAT;
+			return TrackerController.BLANK_STAT;
 		Stat st = null;
 		try{st = ti.loadRecord(t.getBukkitPlayers());}catch(Exception e){Log.printStackTrace(e);}
-		return st == null ? StatController.BLANK_STAT : new TrackerArenaStat(dbName, st);
+		return st == null ? TrackerController.BLANK_STAT : new TrackerArenaStat(dbName, st);
 	}
 
 	public String getRankMessage(OfflinePlayer player) {

@@ -13,6 +13,7 @@ import mc.alk.arena.events.players.ArenaPlayerTeleportEvent;
 import mc.alk.arena.listeners.BAPlayerListener;
 import mc.alk.arena.listeners.PlayerHolder;
 import mc.alk.arena.listeners.custom.MethodController;
+import mc.alk.arena.objects.ArenaLocation;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.LocationType;
@@ -211,5 +212,9 @@ public class GameManager implements PlayerHolder{
 			}
 		}
 	}
+
+    public void setTeleportTime(ArenaPlayer player, ArenaLocation location){
+
+    }
 
 }

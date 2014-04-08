@@ -120,9 +120,9 @@ public class TransitionController {
         if (mo == null){ /// no options
             return true;}
         if (Defaults.DEBUG_TRANSITIONS) Log.info("-- transition "+am.getClass().getSimpleName()+"  " + transition + " p= " +player.getName() +
-                " ops="+am.getParams().getThisTransitionOptions().getOptions(transition)+" onlyInMatch="+onlyInMatch+
+                " ops="+am.getParams().getThisStateGraph().getOptions(transition)+" onlyInMatch="+onlyInMatch+
                 " inArena="+am.isHandled(player) + " dead="+player.isDead()+":"+player.getHealth()+" online="+player.isOnline()+" clearInv=" +
-                am.getParams().getThisTransitionOptions().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
+                am.getParams().getThisStateGraph().hasOptionAt(transition, TransitionOption.CLEARINVENTORY));
         final boolean insideArena = am.isHandled(player);
         final boolean teleportIn = mo.shouldTeleportIn();
         final boolean teleportRoom = mo.shouldTeleportWaitRoom() || mo.shouldTeleportLobby() || mo.shouldTeleportSpectate();

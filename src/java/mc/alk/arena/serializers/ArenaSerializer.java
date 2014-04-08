@@ -6,8 +6,11 @@ import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.Scheduler;
+import mc.alk.arena.controllers.containers.AreaContainer;
+import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.controllers.plugins.WorldGuardController;
 import mc.alk.arena.objects.ArenaParams;
+import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.Arena;
@@ -238,51 +241,31 @@ public class ArenaSerializer extends BaseConfig{
 
 
         /// Spawns
-        ConfigurationSection loccs = cs.getConfigurationSection("locations");
-        Map<Integer, List<SpawnLocation>> locs = SerializerUtil.parseLocations(loccs);
+        Map<Integer, List<SpawnLocation>> locs =
+                SerializerUtil.parseLocations(cs.getConfigurationSection("locations"));
         if (locs != null){
-            for (Entry<Integer, List<SpawnLocation>> entry: locs.entrySet()) {
-                try {
-                    List<SpawnLocation> list = entry.getValue();
-                    for (int i = 0; i <list.size(); i++){
-                        arena.setSpawnLoc(entry.getKey(), i, list.get(i));
-                    }
-                } catch (IllegalStateException e) {
-                    Log.printStackTrace(e);
-                }
-            }
+            setSpawns(arena,locs);
         }
 
         /// Wait room spawns
-        loccs = cs.getConfigurationSection("waitRoomLocations");
-        locs = SerializerUtil.parseLocations(loccs);
+        locs = SerializerUtil.parseLocations(cs.getConfigurationSection("waitRoomLocations"));
         if (locs != null){
-            for (Entry<Integer, List<SpawnLocation>> entry: locs.entrySet()) {
-                try {
-                    List<SpawnLocation> list = entry.getValue();
-                    for (int i = 0; i <list.size(); i++){
-                        RoomController.addWaitRoom(arena, entry.getKey(), i, list.get(i));
-                    }
-                } catch (IllegalStateException e) {
-                    Log.printStackTrace(e);
-                }
-            }
+            RoomContainer rc = RoomController.getOrCreateRoom(arena,LocationType.WAITROOM);
+            setSpawns(rc, locs);
         }
 
-        /// Wait room spawns
-        loccs = cs.getConfigurationSection("spectateLocations");
-        locs = SerializerUtil.parseLocations(loccs);
+        /// Spectate spawns
+        locs = SerializerUtil.parseLocations(cs.getConfigurationSection("spectateLocations"));
         if (locs != null){
-            for (Entry<Integer, List<SpawnLocation>> entry: locs.entrySet()) {
-                try {
-                    List<SpawnLocation> list = entry.getValue();
-                    for (int i = 0; i <list.size(); i++){
-                        RoomController.addSpectate(arena, entry.getKey(), i, list.get(i));
-                    }
-                } catch (IllegalStateException e) {
-                    Log.printStackTrace(e);
-                }
-            }
+            RoomContainer rc = RoomController.getOrCreateRoom(arena,LocationType.SPECTATE);
+            setSpawns(rc, locs);
+        }
+
+        /// Visitor spawns
+        locs = SerializerUtil.parseLocations(cs.getConfigurationSection("visitorLocations"));
+        if (locs != null) {
+            RoomContainer rc = RoomController.getOrCreateRoom(arena,LocationType.VISITOR);
+            setSpawns(rc, locs);
         }
 
         /// Item/mob/group spawns
@@ -332,6 +315,19 @@ public class ArenaSerializer extends BaseConfig{
         return arena;
     }
 
+    private static void setSpawns(AreaContainer rc, Map<Integer, List<SpawnLocation>> locs) {
+        for (Entry<Integer, List<SpawnLocation>> entry: locs.entrySet()) {
+            try {
+                List<SpawnLocation> list = entry.getValue();
+                for (int i = 0; i <list.size(); i++){
+                    rc.setSpawnLoc(entry.getKey(), i, list.get(i));
+                }
+            } catch (IllegalStateException e) {
+                Log.printStackTrace(e);
+            }
+        }
+    }
+
     private static void updateRegions(Arena arena) {
         if (!WorldGuardController.hasWorldGuard())
             return;
@@ -343,7 +339,7 @@ public class ArenaSerializer extends BaseConfig{
         MatchParams mp = ParamController.getMatchParamCopy(arena.getArenaType().getName());
         if (mp == null)
             return;
-        StateGraph trans = mp.getThisTransitionOptions();
+        StateGraph trans = mp.getThisStateGraph();
         if (trans == null)
             return;
         WorldGuardController.setFlag(arena.getWorldGuardRegion(), "entry", !trans.hasAnyOption(TransitionOption.WGNOENTER));
@@ -381,42 +377,24 @@ public class ArenaSerializer extends BaseConfig{
                 amap.put("type", at.getName());
 
                 /// Spawn locations
-                Map<Integer, List<SpawnLocation>> mlocs = SerializerUtil.toMap(arena.getSpawns());
-                SpawnLocation mainSpawn = arena.getMainSpawn();
-                if (mlocs != null || mainSpawn != null){
-                    Map<String,List<String>> locations = SerializerUtil.createSaveableLocations(mlocs);
-                    if (mainSpawn!=null) {
-                        ArrayList<String> list = new ArrayList<String>();
-                        list.add(SerializerUtil.getLocString(mainSpawn));
-                        locations.put(String.valueOf(Defaults.MAIN_SPAWN),list);
-                    }
-                    amap.put("locations", locations);
-                }
+                Map<String, List<String>> locs = SerializerUtil.toSpawnMap(arena);
+                if (locs != null){
+                    amap.put("locations", locs);}
 
                 /// Wait room spawns
-                Map<Integer, List<SpawnLocation>> llocs = SerializerUtil.toMap(arena.getWaitRoomSpawnLocs());
-                mainSpawn = (arena.getWaitroom() != null ? arena.getWaitroom().getMainSpawn() : null);
-                if (llocs!= null || mainSpawn != null) {
-                    Map<String,List<String>> locations = SerializerUtil.createSaveableLocations(llocs);
-                    if (mainSpawn != null) {
-                        ArrayList<String> list = new ArrayList<String>();
-                        list.add(SerializerUtil.getLocString(mainSpawn));
-                        locations.put(String.valueOf(Defaults.MAIN_SPAWN),list);
-                    }
+                locs = SerializerUtil.toSpawnMap(arena.getWaitroom());
+                if (locs != null) {
+                    amap.put("waitRoomLocations", locs);}
 
-                    amap.put("waitRoomLocations", locations);
-                }
                 /// spectate locations
-//                llocs = arena.getSpectatorRoom() != null ? arena.getSpectatorRoom().getSpawns() : null;
-//                if (llocs!= null){
-//                    mlocs = new HashMap<Integer,Location>();
-//                    for (int i=0;i<llocs.size();i++){
-//                        if (llocs.get(i) != null)
-//                            mlocs.put(i, llocs.get(i));
-//                    }
-//                    HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
-//                    amap.put("spectateLocations", locations);
-//                }
+                locs = SerializerUtil.toSpawnMap(arena.getSpectatorRoom());
+                if (locs != null) {
+                    amap.put("spectateLocations", locs);}
+
+                /// Visitor locations
+                locs = SerializerUtil.toSpawnMap(arena.getVisitorRoom());
+                if (locs != null) {
+                    amap.put("visitorLocations", locs);}
 
                 /// Timed spawns
                 Map<Long, TimedSpawn> timedSpawns = arena.getTimedSpawns();
@@ -429,18 +407,6 @@ public class ArenaSerializer extends BaseConfig{
                     }
                     amap.put("spawns", spawnmap);
                 }
-
-                /// Visitor room spawns
-//                llocs = arena.getVisitorLocs();
-//                if (llocs!= null){
-//                    mlocs = new HashMap<Integer,Location>();
-//                    for (int i=0;i<llocs.size();i++){
-//                        if (llocs.get(i) != null)
-//                            mlocs.put(i, llocs.get(i));
-//                    }
-//                    HashMap<String,String> locations = SerializerUtil.createSaveableLocations(mlocs);
-//                    amap.put("waitRoomLocations", locations);
-//                }
 
                 Map<String,Object> persisted = Persistable.objectsToYamlMap(arena, Arena.class);
                 if (persisted != null && !persisted.isEmpty()){
@@ -460,7 +426,6 @@ public class ArenaSerializer extends BaseConfig{
                 if (arenaname != null){
                     transfer(config, "arenas."+arenaname, "brokenArenas."+arenaname);
                 }
-
             }
         }
         if (log)

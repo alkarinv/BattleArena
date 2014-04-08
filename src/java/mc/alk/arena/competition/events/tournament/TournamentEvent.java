@@ -8,7 +8,7 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.Scheduler;
-import mc.alk.arena.controllers.StatController;
+import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.controllers.joining.TeamJoinFactory;
 import mc.alk.arena.events.events.tournaments.TournamentRoundEvent;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
@@ -122,7 +122,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
                 " is starting!"));
 
         TreeMap<Double,ArenaTeam> sortTeams = new TreeMap<Double,ArenaTeam>(Collections.reverseOrder());
-        StatController sc = new StatController(eventParams);
+        TrackerController sc = new TrackerController(eventParams);
 
         for (ArenaTeam t: teams) {
             if (t.size() <= 0) {
@@ -402,7 +402,7 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
                 t.sendMessage("&4["+strround+"]&e You have a &5bye&e this round");
             }
         }
-        StatController sc = new StatController(eventParams);
+        TrackerController sc = new TrackerController(eventParams);
         final String prefix = eventParams.getPrefix();
         if (tr.getMatchups().size() <= 8){
             for (Matchup m: tr.getMatchups()){

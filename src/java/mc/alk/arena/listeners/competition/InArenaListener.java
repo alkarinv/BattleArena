@@ -2,6 +2,7 @@ package mc.alk.arena.listeners.competition;
 
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.Defaults;
+import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.events.players.ArenaPlayerEnterMatchEvent;
 import mc.alk.arena.events.players.ArenaPlayerLeaveMatchEvent;
 import mc.alk.arena.util.Log;
@@ -19,26 +20,33 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public enum InArenaListener implements Listener {
     INSTANCE;
 
     final Set<UUID> inArena = Collections.synchronizedSet(new HashSet<UUID>());
     final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
-    boolean registered = false;
-
+    AtomicBoolean registered = new AtomicBoolean();
+    AtomicBoolean listening = new AtomicBoolean();
+    Integer timerid = null;
 
     @EventHandler
     public void onArenaPlayerEnterEvent(ArenaPlayerEnterMatchEvent event){
         if (Defaults.DEBUG_TRACE)Log.info( "  - onArenaPlayerEnterEvent " + event.getPlayer().getName());
+        inArena.add(event.getPlayer().getID());
+        if (listening.getAndSet(true))
+            return;
+        if (!registered.getAndSet(true)){
+            if (timerid != null){
+                Bukkit.getScheduler().cancelTask(timerid);
+                timerid= null;
+            }
 
-        if (!registered){
-            registered = true;
             for (Listener l: listeners){
                 Bukkit.getPluginManager().registerEvents(l, BattleArena.getSelf());
             }
         }
-        inArena.add(event.getPlayer().getID());
     }
 
     @EventHandler
@@ -46,10 +54,20 @@ public enum InArenaListener implements Listener {
         if (Defaults.DEBUG_TRACE)Log.info( "  - onArenaPlayerLeaveEvent " + event.getPlayer().getName());
 
         if (inArena.remove(event.getPlayer().getID()) && inArena.isEmpty()){
-            registered = false;
-            for (Listener l: listeners){
-                HandlerList.unregisterAll(l);
-            }
+            listening.set(false);
+            if (timerid != null){
+                Scheduler.cancelTask(timerid);}
+            timerid = Scheduler.scheduleSynchronousTask(new Runnable(){
+                @Override
+                public void run() {
+                    if (registered.getAndSet(false)){
+                        for (Listener l: listeners){
+                            HandlerList.unregisterAll(l);
+                        }
+                    }
+                    timerid = null;
+                }
+            },600L);
         }
     }
 

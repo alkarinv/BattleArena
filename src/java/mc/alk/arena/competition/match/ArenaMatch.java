@@ -25,6 +25,8 @@ import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.CommandUtil;
+import mc.alk.arena.util.Countdown;
+import mc.alk.arena.util.Countdown.CountdownCallback;
 import mc.alk.arena.util.DmgDeathUtil;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MessageUtil;
@@ -241,6 +243,7 @@ public class ArenaMatch extends Match {
             }
             final SpawnLocation loc;
             final ArenaTeam t = getTeam(p);
+            /// We respawn them to a different location
             if (mo.hasAnyOption(TransitionOption.TELEPORTLOBBY, TransitionOption.TELEPORTMAINLOBBY,
                     TransitionOption.TELEPORTWAITROOM, TransitionOption.TELEPORTMAINWAITROOM)) {
                 final int index = t.getIndex();
@@ -254,22 +257,46 @@ public class ArenaMatch extends Match {
                     loc = this.getWaitRoomSpawn(index, randomRespawn);
                 }
                 /// Should we respawn the player to the team spawn after a certain amount of time
-                if (mo.hasOption(TransitionOption.RESPAWNTIME)) {
-                    int id = Scheduler.scheduleSynchronousTask(new Runnable() {
+                Integer respawnTime = mo.getInt(TransitionOption.RESPAWNTIME);
+                if (respawnTime==null)
+                    respawnTime = 15;
+                final Integer finalRespawnTime = respawnTime;
+                if (scoreboard != null) {
+                    new Countdown(BattleArena.getSelf(), finalRespawnTime, 1, new CountdownCallback() {
                         @Override
-                        public void run() {
-                            Integer id = respawnTimer.remove(p.getID());
-                            Bukkit.getScheduler().cancelTask(id);
-                            SpawnLocation loc = getTeamSpawn(index, tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
-                            TeleportController.teleport(p.getPlayer(), loc.getLocation());
-                            if (scoreboard != null && !scoreboard.hasThisScoreboard(p.getPlayer())) {
+                        public boolean intervalTick(int secondsRemaining) {
+                            if (!scoreboard.hasThisScoreboard(p.getPlayer())) {
                                 scoreboard.setScoreboard(p.getPlayer());
                             }
-
+                            SEntry e = scoreboard.getEntry(p.getPlayer());
+                            if (e != null) {
+                                /// Either set the seconds remaining, or back to the current lives
+                                if (secondsRemaining > 0) {
+                                    scoreboard.setEntryNameSuffix(e, "&e(" + secondsRemaining + ")");
+                                } else {
+                                    Integer curLives  = nLivesPerPlayer - t.getNDeaths(p);
+                                    String s = (nLivesPerPlayer != ArenaSize.MAX && curLives != 1) ?
+                                            "&4(" + curLives + ")" : "";
+                                    scoreboard.setEntryNameSuffix(e, s);
+                                }
+                            }
+                            return true;
                         }
-                    }, mo.getRespawnTime() * 20);
-                    respawnTimer.put(p.getID(), id);
+                    });
                 }
+
+                int id = Scheduler.scheduleSynchronousTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        Integer id = respawnTimer.remove(p.getID());
+                        Bukkit.getScheduler().cancelTask(id);
+                        SpawnLocation loc = getTeamSpawn(index, tops.hasOptionAt(MatchState.ONSPAWN, TransitionOption.RANDOMRESPAWN));
+                        TeleportController.teleport(p.getPlayer(), loc.getLocation());
+
+                    }
+                }, respawnTime * 20);
+                respawnTimer.put(p.getID(), id);
+
             } else {
                 loc = getTeamSpawn(getTeam(p), randomRespawn);
             }
@@ -345,9 +372,9 @@ public class ArenaMatch extends Match {
     private void playerInteract(PlayerInteractEvent event){
         if (event.getClickedBlock() == null ||
                 !(event.getClickedBlock().getType().equals(Material.SIGN) ||
-                event.getClickedBlock().getType().equals(Material.WALL_SIGN) ||
-                event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)
-        )) {
+                        event.getClickedBlock().getType().equals(Material.WALL_SIGN) ||
+                        event.getClickedBlock().getType().equals(Defaults.READY_BLOCK)
+                )) {
             return;
         }
 

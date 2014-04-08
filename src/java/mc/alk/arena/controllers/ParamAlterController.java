@@ -156,7 +156,7 @@ public class ParamAlterController {
 
         if (to.hasValue() && value == null)
             throw new InvalidOptionException("Transition Option " + to +" needs a value! " + to+"=<value>");
-        StateGraph tops = params.getThisTransitionOptions();
+        StateGraph tops = params.getThisStateGraph();
         if (tops == null) {
             tops = new StateGraph();
         }
@@ -219,7 +219,7 @@ public class ParamAlterController {
         }
 
         tops.addStateOption(state, to, value);
-        params.setTransitionOptions(tops);
+        params.setStateGraph(tops);
         return true;
     }
 
@@ -237,7 +237,7 @@ public class ParamAlterController {
         if (go != null){
             try {
                 deleteGameOption(go);
-                params.getThisTransitionOptions();
+                params.getThisStateGraph();
                 saveParamsAndUpdate(rc, params);
                 ParamController.addMatchParams(params);
                 sendMessage(sender, "&2Game option &6"+go.toString()+"&2 removed");
@@ -259,7 +259,7 @@ public class ParamAlterController {
         CompetitionState state = StateController.fromString(args[1]);
         if (state != null){
             if (args.length < 3){
-                StateGraph tops = params.getThisTransitionOptions();
+                StateGraph tops = params.getThisStateGraph();
                 tops.deleteOptions(state);
                 return  sendMessage(sender, "&2Options at &6"+state +"&2 are now empty");
             } else {
@@ -268,7 +268,7 @@ public class ParamAlterController {
                     deleteTransitionOption(state, key);
                     rc.saveParams(params);
                     sendMessage(sender, "&2Game option &6"+state +" "+key+" &2 removed");
-                    StateGraph tops = params.getThisTransitionOptions();
+                    StateGraph tops = params.getThisStateGraph();
                     StateOptions ops = tops.getOptions(state);
                     if (ops == null){
                         sendMessage(sender, "&2Options at &6"+state +"&2 are empty");
@@ -290,7 +290,7 @@ public class ParamAlterController {
 
     private boolean deleteTransitionOption(CompetitionState state, String key) throws Exception{
         TransitionOption to = TransitionOption.fromString(key);
-        StateGraph tops = params.getThisTransitionOptions();
+        StateGraph tops = params.getThisStateGraph();
         return tops.removeStateOption(state, to);
     }
 

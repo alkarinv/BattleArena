@@ -314,33 +314,12 @@ public class Arena extends AreaContainer {
         return visitorRoom != null ? visitorRoom.getSpawn(teamIndex,random) : null;}
 
     /**
-     * Set the wait room spawn location
-     * @param teamIndex index of team
-     * @param spawnIndex index of spawn
-     * @param loc location
-     */
-    public void setWaitRoomSpawnLoc(int teamIndex, int spawnIndex, SpawnLocation loc) {
-        waitroom.setSpawnLoc(teamIndex, spawnIndex, loc);
-    }
-
-    /**
      * Return the spot where players need to add close to
      * @return location
      */
     public Location getJoinLocation() {
         return joinloc;
     }
-
-    //	/**
-    //	 * Set a visitor spawn location
-    //	 * @param loc
-    //	 */
-    //	public void setVisitorLoc(int index, Location loc) {
-    //		if (visitorRoom == null){
-    //			this.visitorRoom = new RoomContainer(ParamController.getMatchParams(getArenaType().getName()),
-    //					LocationType.VISITORROOM);}
-    //		this.visitorRoom.setSpawnLoc(index, loc);
-    //	}
 
     /**
      * Set the name of this arena
@@ -361,8 +340,6 @@ public class Arena extends AreaContainer {
      * @return list of location
      */
     public List<List<SpawnLocation>> getWaitRoomSpawnLocs(){return waitroom != null ? waitroom.getSpawns() : null;}
-
-    //	public Map<Integer, ItemSpawn> getItemSpawns() {return spawnsGroups;}
 
     /**
      * Get the type of this arena
@@ -743,7 +720,7 @@ public class Arena extends AreaContainer {
         this.waitroom = waitroom;
     }
 
-    public void setSpectate(RoomContainer spectate) {
+    public void setSpectatorRoom(RoomContainer spectate) {
         this.spectate = spectate;
     }
 
@@ -751,6 +728,14 @@ public class Arena extends AreaContainer {
         return waitroom;
     }
 
+
+    public RoomContainer getVisitorRoom() {
+        return visitorRoom;
+    }
+
+    public void setVisitorRoom(RoomContainer rc) {
+        this.visitorRoom = rc;
+    }
     public RoomContainer getSpectatorRoom() {
         return spectate;
     }
@@ -863,4 +848,6 @@ public class Arena extends AreaContainer {
     protected void performTransition(CompetitionTransition transition, ArenaTeam team) {
         TransitionController.transition((match != null ? match : this), transition, team, false);
     }
+
+
 }

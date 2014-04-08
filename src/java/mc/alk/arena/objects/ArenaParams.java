@@ -3,8 +3,8 @@ package mc.alk.arena.objects;
 import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.objects.arenas.ArenaType;
-import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.JoinOptions;
+import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.util.MinMax;
 import org.bukkit.ChatColor;
@@ -167,12 +167,12 @@ public class ArenaParams {
         return mt;
     }
 
-    public StateGraph getThisTransitionOptions(){
+    public StateGraph getThisStateGraph(){
         return stateGraph;
     }
 
-    public void setTransitionOptions(StateGraph transitionOptions) {
-        this.stateGraph = transitionOptions;
+    public void setStateGraph(StateGraph stateGraph) {
+        this.stateGraph = stateGraph;
         clearMerged();
     }
 
@@ -256,6 +256,7 @@ public class ArenaParams {
     public void setRated(boolean rated) {
         this.rated = rated;
     }
+
     public Boolean isRated(){
         return rated != null ? rated : (parent != null ? parent.isRated() : null);
     }
@@ -330,7 +331,7 @@ public class ArenaParams {
     public String toString(){
         return  name+":"+arenaType +",numTeams="+
                 getNTeams()+",teamSize="+ getTeamSize() +" options=\n"+
-                (getThisTransitionOptions()==null ? "" : getThisTransitionOptions().getOptionString());
+                (getThisStateGraph()==null ? "" : getThisStateGraph().getOptionString());
     }
 
     public boolean isDuelOnly() {

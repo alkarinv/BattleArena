@@ -1,7 +1,6 @@
 package mc.alk.arena.objects.arenas;
 
 import mc.alk.arena.controllers.ParamController;
-import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.util.CaseInsensitiveMap;
 import mc.alk.arena.util.Log;
@@ -176,10 +175,6 @@ public class ArenaType implements Comparable<ArenaType>{
 			arena.setName(arenaName);
 			arenaParams.setParent(ParamController.getMatchParams(arenaParams));
 			arena.setParams(arenaParams);
-			if (RoomController.hasWaitroom(arena))
-				arena.setWaitRoom(RoomController.getWaitroom(arena));
-			if (RoomController.getSpectate(arena) != null)
-				arena.setSpectate(RoomController.getSpectate(arena));
 			if (init)
 				arena.privateInit();
 			return arena;

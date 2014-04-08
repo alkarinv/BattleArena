@@ -1,6 +1,8 @@
 package mc.alk.arena.util;
 
+import mc.alk.arena.Defaults;
 import mc.alk.arena.controllers.BukkitInterface;
+import mc.alk.arena.controllers.containers.AreaContainer;
 import mc.alk.arena.objects.spawns.FixedLocation;
 import mc.alk.arena.objects.spawns.SpawnLocation;
 import org.bukkit.Location;
@@ -28,6 +30,24 @@ public class SerializerUtil {
                     list.add(s);
                 }
                 locations.put(key + "", list);
+            }
+        }
+        return locations;
+    }
+
+
+    public static Map<String, List<String>> toSpawnMap(AreaContainer rc) {
+        if (rc == null)
+            return null;
+        Map<String,List<String>> locations = null;
+        Map<Integer, List<SpawnLocation>> spawns = toMap(rc.getSpawns());
+        SpawnLocation mainSpawn = rc.getMainSpawn();
+        if (spawns != null || mainSpawn != null){
+             locations = createSaveableLocations(spawns);
+            if (mainSpawn!=null) {
+                ArrayList<String> list = new ArrayList<String>();
+                list.add(SerializerUtil.getLocString(mainSpawn));
+                locations.put(String.valueOf(Defaults.MAIN_SPAWN),list);
             }
         }
         return locations;

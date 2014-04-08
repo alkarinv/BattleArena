@@ -152,7 +152,7 @@ public class JoinOptions {
             }
             Integer teamIndex = TeamUtil.getFromHumanTeamIndex(op);
             if (teamIndex != null){
-                if (player != null && !PermissionsUtil.hasTeamPerm(player, mp,teamIndex)){
+                if (player != null && !PermissionsUtil.hasTeamPerm(player.getPlayer(), mp,teamIndex)){
                     throw new InvalidOptionException("&cYou don't have permissions to add this team");}
                 ops.put(JoinOption.TEAM, teamIndex);
                 continue;
@@ -282,7 +282,7 @@ public class JoinOptions {
         this.joinTime = System.currentTimeMillis();
         Object teamIndex = options.get(JoinOption.TEAM);
         if (teamIndex != null){
-            if (!PermissionsUtil.hasTeamPerm(player, getMatchParams(),(Integer) teamIndex)){
+            if (!PermissionsUtil.hasTeamPerm(player.getPlayer(), getMatchParams(),(Integer) teamIndex)){
                 throw new InvalidOptionException("&cYou don't have permissions to add this team");}
         }
 

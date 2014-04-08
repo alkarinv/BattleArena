@@ -36,7 +36,7 @@ public class EventExecutor extends BAExecutor{
 
 	@MCCommand(cmds={"options"},admin=true, usage="options", order=2)
 	public boolean eventOptions(CommandSender sender,EventParams eventParams) {
-		StateGraph tops = eventParams.getThisTransitionOptions();
+		StateGraph tops = eventParams.getThisStateGraph();
         return sendMessage(sender, tops.getOptionString());
 	}
 
@@ -144,11 +144,11 @@ public class EventExecutor extends BAExecutor{
 	}
 
 	public boolean eventJoin(ArenaPlayer p, EventParams eventParams, String[] args, boolean adminCommand) {
-		if (!adminCommand && !PermissionsUtil.hasMatchPerm(p, eventParams, "join")){
+		if (!adminCommand && !PermissionsUtil.hasMatchPerm(p.getPlayer(), eventParams, "join")){
 			sendSystemMessage(p,"no_join_perms", eventParams.getCommand());
 			return false;
 		}
-		if (isDisabled(p, eventParams)){
+		if (isDisabled(p.getPlayer(), eventParams)){
 			return true;}
 		Event event = controller.getOpenEvent(eventParams);
 

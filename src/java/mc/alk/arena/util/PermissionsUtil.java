@@ -58,17 +58,17 @@ public class PermissionsUtil {
 		return hasVaultPerms && VaultPermUtil.giveWorldGuardPerms(player, enable);
 	}
 
-	public static boolean hasTeamPerm(ArenaPlayer player, MatchParams mp, Integer teamIndex) {
-		return player.hasPermission("arena.add.team.all") ||
-				player.hasPermission("arena.add."+mp.getName().toLowerCase()+".team.all") ||
-				player.hasPermission("arena.add."+mp.getCommand().toLowerCase()+".team."+(teamIndex+1));
+	public static boolean hasTeamPerm(CommandSender sender, MatchParams mp, Integer teamIndex) {
+		return sender.hasPermission("arena.add.team.all") ||
+				sender.hasPermission("arena.add."+mp.getName().toLowerCase()+".team.all") ||
+				sender.hasPermission("arena.add."+mp.getCommand().toLowerCase()+".team."+(teamIndex+1));
 	}
 
-	public static boolean hasMatchPerm(ArenaPlayer player , MatchParams mp, String perm) {
-		return player.hasPermission("arena."+mp.getName().toLowerCase()+"."+perm) ||
-				player.hasPermission("arena."+mp.getCommand().toLowerCase()+"."+perm) ||
-				player.hasPermission("arena."+perm+"."+mp.getName().toLowerCase()) ||
-				player.hasPermission("arena."+perm+"."+mp.getCommand().toLowerCase());
+	public static boolean hasMatchPerm(CommandSender sender, MatchParams mp, String perm) {
+		return sender.hasPermission("arena."+mp.getName().toLowerCase()+"."+perm) ||
+                sender.hasPermission("arena."+mp.getCommand().toLowerCase()+"."+perm) ||
+                sender.hasPermission("arena."+perm+"."+mp.getName().toLowerCase()) ||
+                sender.hasPermission("arena."+perm+"."+mp.getCommand().toLowerCase());
 	}
 
 }

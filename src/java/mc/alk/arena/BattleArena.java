@@ -15,6 +15,7 @@ import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.TeleportController;
+import mc.alk.arena.controllers.WatchController;
 import mc.alk.arena.executors.ArenaEditorExecutor;
 import mc.alk.arena.executors.BAExecutor;
 import mc.alk.arena.executors.BASchedulerExecutor;
@@ -93,6 +94,7 @@ public class BattleArena extends JavaPlugin {
     private final BAPluginListener pluginListener = new BAPluginListener();
     private final SignUpdateListener signUpdateListener = new SignUpdateListener();
     private final BASignListener signListener = new BASignListener(signUpdateListener);
+    private final WatchController watchController = new WatchController();
 
     private ArenaControllerSerializer arenaControllerSerializer;
     private static final BAConfigSerializer baConfigSerializer = new BAConfigSerializer();
@@ -302,8 +304,20 @@ public class BattleArena extends JavaPlugin {
         new APIRegistrationController().update(plugin, bukkitId, file, updateOption, announceOption);
     }
 
+    /**
+     * Return the BattlePluginsAPI used by BattleArena
+     * @return BattlePluginsAPI
+     */
     public BattlePluginsAPI getBattlePluginsAPI() {
         return bpapi;
+    }
+
+    /**
+     * Return the watch controller
+     * @return WatchController
+     */
+    public WatchController getWatchController() {
+        return watchController;
     }
 
     /**
