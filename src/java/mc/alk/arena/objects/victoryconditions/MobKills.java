@@ -114,12 +114,7 @@ public class MobKills extends VictoryCondition implements ScoreTracker{
 
 	@ArenaEventHandler(priority = EventPriority.LOW)
 	public void onFindCurrentLeader(MatchFindCurrentLeaderEvent event) {
-		Collection<ArenaTeam> leaders = mkills.getTeamLeaders();
-		if (leaders.size() > 1){
-			event.setCurrentDrawers(leaders);
-		} else {
-			event.setCurrentLeaders(leaders);
-		}
+        event.setResult(mkills.getMatchResult(match));
 	}
 
 	@Override

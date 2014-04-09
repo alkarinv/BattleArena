@@ -46,16 +46,7 @@ public class PlayerKills extends VictoryCondition implements ScoreTracker{
 
     @ArenaEventHandler(priority = EventPriority.LOW)
     public void onFindCurrentLeader(MatchFindCurrentLeaderEvent event) {
-        if (event.isMatchEnding()){
-            event.setResult(kills.getMatchResult(match));
-        } else {
-            Collection<ArenaTeam> leaders = kills.getLeaders();
-            if (leaders.size() > 1){
-                event.setCurrentDrawers(leaders);
-            } else {
-                event.setCurrentLeaders(leaders);
-            }
-        }
+        event.setResult(kills.getMatchResult(match));
     }
 
     @Override
