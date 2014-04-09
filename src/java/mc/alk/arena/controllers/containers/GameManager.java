@@ -19,6 +19,7 @@ import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.StateOption;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.arenas.ArenaType;
 import mc.alk.arena.objects.events.ArenaEventHandler;
@@ -107,7 +108,7 @@ public class GameManager implements PlayerHolder{
 
 	@Override
 	public CompetitionState getState() {
-		return null;
+		return MatchState.NONE;
 	}
 
 	@Override
@@ -201,7 +202,12 @@ public class GameManager implements PlayerHolder{
         if (Defaults.DEBUG_TRACE) Log.trace(-1, player.getName() + "   &5GM !!!!&8onPostLeave  t=" + player.getTeam());
 	}
 
-	public boolean hasPlayer(ArenaPlayer player) {
+    @Override
+    public boolean hasOption(StateOption option) {
+        return params.hasOptionAt(getState(), option);
+    }
+
+    public boolean hasPlayer(ArenaPlayer player) {
 		return handled.contains(player);
 	}
 

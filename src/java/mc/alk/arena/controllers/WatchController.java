@@ -1,6 +1,6 @@
 package mc.alk.arena.controllers;
 
-import mc.alk.arena.controllers.containers.AreaContainer;
+import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.PlayerSave;
 import mc.alk.arena.objects.arenas.Arena;
@@ -17,7 +17,7 @@ public class WatchController{
     Map<UUID, PlayerSave> watchers = new HashMap<UUID, PlayerSave>();
 
     public boolean watch(ArenaPlayer player, Arena arena) {
-        AreaContainer rc = arena.getVisitorRoom();
+        RoomContainer rc = arena.getVisitorRoom();
         if (rc == null || rc.getSpawns() == null || rc.getSpawn(0,0) == null)
             return false;
         SpawnLocation l = rc.getSpawn(0, 0);

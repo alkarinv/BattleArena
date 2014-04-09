@@ -205,48 +205,57 @@ public class ConfigSerializer extends BaseConfig{
         StateGraph allTops = new StateGraph();
         boolean found = false;
         /// Set all Transition Options
-        for (CompetitionState transition : StateController.values()){
+        for (CompetitionState cstate : StateController.values()){
             /// OnCancel gets taken from onComplete and modified
-            if (transition == MatchState.ONCANCEL)
+            if (cstate == MatchState.ONCANCEL)
                 continue;
             StateOptions tops;
             try{
-                tops = getTransitionOptions(cs.getConfigurationSection(transition.toString()));
+                tops = getTransitionOptions(cs.getConfigurationSection(cstate.toString()));
                 /// check for the most common alternate spelling of onPrestart
                 /// also check for the old version of winners (winner)
-                if (tops == null && transition == MatchState.ONPRESTART){
+                if (tops == null && cstate == MatchState.ONPRESTART){
                     tops = getTransitionOptions(cs.getConfigurationSection("onPrestart"));}
-                else if (tops == null && transition == MatchState.WINNERS){
+                else if (tops == null && cstate == MatchState.WINNERS){
                     tops = getTransitionOptions(cs.getConfigurationSection("winner"));}
+                /// Merge any previous options
+                StateOptions prevOptions = allTops.getOptions(cstate);
+                if (prevOptions != null) {
+                    if (tops == null){
+                        tops = prevOptions;
+                    }else {
+                        tops.addOptions(prevOptions.getOptions());
+                    }
+                }
             } catch (Exception e){
-                Log.err("Invalid Option was not added!!! transition= " + transition);
+                Log.err("Invalid Option was not added!!! transition= " + cstate);
                 Log.printStackTrace(e);
                 continue;
             }
             if (tops == null){
-                allTops.removeStateOptions(transition);
+                allTops.removeStateOptions(cstate);
                 continue;}
             found = true;
-            if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + transition +" "+tops);
+            if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + cstate +" "+tops);
 
-            if (transition == MatchState.ONCOMPLETE){
+            if (cstate == MatchState.ONCOMPLETE){
                 if (allTops.hasOptionAt(MatchState.ONLEAVE, TransitionOption.CLEARINVENTORY)){
                     tops.addOption(TransitionOption.CLEARINVENTORY);
                 }
                 StateOptions cancelOps = new StateOptions(tops);
                 allTops.addStateOptions(MatchState.ONCANCEL, cancelOps);
                 if (Defaults.DEBUG_TRACE) Log.info("[ARENA] transition= " + MatchState.ONCANCEL +" "+cancelOps);
-            } else if (transition == MatchState.ONLEAVE){
+            } else if (cstate == MatchState.ONLEAVE){
                 if (tops.hasOption(TransitionOption.TELEPORTOUT)){
                     tops.removeOption(TransitionOption.TELEPORTOUT);
                     Log.warn("You should never use the option teleportOut inside of onLeave!");
                 }
-            } else if (transition == MatchState.DEFAULTS){
+            } else if (cstate == MatchState.DEFAULTS){
                 if (cs.getBoolean("duelOnly", false)){ /// for backwards compatibility
                     tops.addOption(TransitionOption.DUELONLY);}
             }
-
-            allTops.addStateOptions(transition, tops);
+            splitOptions(allTops, cstate, tops);
+            allTops.addStateOptions(cstate, tops);
         }
         if (allTops.hasOptionAt(MatchState.DEFAULTS, TransitionOption.ALWAYSOPEN))
             allTops.addStateOption(MatchState.ONJOIN, TransitionOption.ALWAYSJOIN);
@@ -260,6 +269,35 @@ public class ConfigSerializer extends BaseConfig{
         if (!found && allTops.getAllOptions().isEmpty())
             return null;
         return allTops;
+    }
+
+    private static void splitOptions(StateGraph allTops, CompetitionState state, StateOptions tops) {
+        if ( !(state instanceof MatchState) || !(state == MatchState.ONOPEN ||
+                state == MatchState.ONPRESTART || state == MatchState.ONSTART || state == MatchState.ONVICTORY))
+            return;
+        MatchState other=null;
+        List<StateOption> add = new ArrayList<StateOption>();
+        for (StateOption op : tops.getOptions().keySet()) {
+            MatchState o = ((MatchState) state).getCorrectState(op);
+            if (!o.equals(state)) {
+                if (other == null)
+                    other = o;
+                add.add(op);
+            }
+        }
+        if (!add.isEmpty()) {
+            StateOptions newTops = new StateOptions();
+            for (StateOption op : add) {
+                Object o = tops.removeOption(op);
+                try {
+                    newTops.addOption(op,o);
+                } catch (InvalidOptionException e) {
+                    e.printStackTrace();
+                }
+            }
+            allTops.addStateOptions(other, newTops);
+        }
+
     }
 
     private static void loadAnnouncementsOptions(ConfigurationSection cs, MatchParams mp) {

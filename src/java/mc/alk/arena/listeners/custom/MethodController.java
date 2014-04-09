@@ -1,7 +1,6 @@
 package mc.alk.arena.listeners.custom;
 
 import mc.alk.arena.Defaults;
-import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.events.BAEvent;
 import mc.alk.arena.listeners.custom.RListener.RListenerPriorityComparator;
 import mc.alk.arena.objects.ArenaPlayer;
@@ -13,7 +12,6 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.util.Log;
 import mc.alk.arena.util.MapOfTreeSet;
 import mc.alk.arena.util.MessageUtil;
-import mc.alk.arena.util.ServerUtil;
 import mc.alk.arena.util.TimingUtil;
 import mc.alk.arena.util.TimingUtil.TimingStat;
 import mc.alk.arena.util.Util;
@@ -615,13 +613,15 @@ public class MethodController {
             for (BukkitEventHandler bel: types.values()){
                 if (bel.getSpecificPlayerListener() != null){
                     MapOfTreeSet<UUID,RListener> lists2 = bel.getSpecificPlayerListener().getListeners();
-                    String str = StringUtils.join(PlayerController.UUIDToPlayerList(bel.getSpecificPlayerListener().getPlayers()), ", ");
+//                    String str = StringUtils.join(PlayerController.UUIDToPlayerList(bel.getSpecificPlayerListener().getPlayers()), ", ");
+                    String str = StringUtils.join(bel.getSpecificPlayerListener().getPlayers(), ", ");
                     String has = bel.hasListeners() ? "&2true" : "&cfalse";
                     if (!lists2.isEmpty())
                         MessageUtil.sendMessage(sender, "---- Event &e" +
                                 bel.getSpecificPlayerListener().getEvent().getSimpleName() + "&e:" + has + "&e, players=" + str);
                     for (UUID id : lists2.keySet()) {
-                        Player p = ServerUtil.findPlayer(id);
+//                        Player p = ServerUtil.findPlayer(id);
+                        Player p = null;
                         if (limitToPlayer != null && (p != null && !p.getName().equalsIgnoreCase(limitToPlayer)))
                             continue;
                         Collection<RListener> rls = lists2.get(id);
@@ -634,13 +634,17 @@ public class MethodController {
                 }
                 if (bel.getSpecificArenaPlayerListener() != null){
                     MapOfTreeSet<UUID,RListener> lists2 = bel.getSpecificArenaPlayerListener().getListeners();
-                    String str = StringUtils.join(PlayerController.UUIDToPlayerList(bel.getSpecificArenaPlayerListener().getPlayers()), ", ");
+//                    String str = StringUtils.join(PlayerController.UUIDToPlayerList(bel.getSpecificArenaPlayerListener().getPlayers()), ", ");
+                    String str = StringUtils.join(bel.getSpecificArenaPlayerListener().getPlayers(), ", ");
+
                     String has = bel.hasListeners() ? "&2true" : "&cfalse";
                     if (!lists2.isEmpty())
                         MessageUtil.sendMessage(sender, "---- ArenaPlayerEvent &e" +
                                 bel.getSpecificArenaPlayerListener().getEvent().getSimpleName() + "&e:" + has + "&e, players=" + str);
                     for (UUID id : lists2.keySet()){
-                        Player p = ServerUtil.findPlayer(id);
+//                        Player p = ServerUtil.findPlayer(id);
+                        Player p = null;
+
                         if (limitToPlayer != null && (p != null && !p.getName().equalsIgnoreCase(limitToPlayer)))
                             continue;
                         Collection<RListener> rls = lists2.get(id);

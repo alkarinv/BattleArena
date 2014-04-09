@@ -8,8 +8,8 @@ import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.BattleArenaController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.Scheduler;
-import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.controllers.joining.TeamJoinFactory;
+import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.events.events.tournaments.TournamentRoundEvent;
 import mc.alk.arena.events.matches.MatchCancelledEvent;
 import mc.alk.arena.events.matches.MatchCompletedEvent;
@@ -521,7 +521,6 @@ public class TournamentEvent extends Event implements Listener, ArenaListener {
     public LocationType getLocationType() {
         return LocationType.ARENA;
     }
-
 
     /**
      * Show Results from the previous Event

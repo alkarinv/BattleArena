@@ -16,6 +16,7 @@ import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.StateOption;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.options.StateOptions;
@@ -190,7 +191,7 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
     @Override
     public CompetitionState getState() {
-        return null;
+        return MatchState.NONE;
     }
 
     @Override
@@ -328,5 +329,10 @@ public abstract class AbstractAreaContainer implements PlayerHolder, TeamHandler
 
     public String getContainerMessage() {
         return state.getMsg();
+    }
+
+    @Override
+    public boolean hasOption(StateOption option) {
+        return getParams().hasOptionAt(getState(),option);
     }
 }

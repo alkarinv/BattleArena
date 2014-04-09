@@ -2,21 +2,17 @@ package mc.alk.arena.listeners.competition;
 
 import mc.alk.arena.Permissions;
 import mc.alk.arena.listeners.PlayerHolder;
-import mc.alk.arena.objects.StateGraph;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.EventPriority;
 import mc.alk.arena.objects.options.TransitionOption;
 import mc.alk.arena.util.MessageUtil;
-
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class PlayerTeleportListener implements ArenaListener{
-	final StateGraph transitionOptions;
     final PlayerHolder holder;
 
 	public PlayerTeleportListener(PlayerHolder holder){
-		this.transitionOptions = holder.getParams().getStateGraph();
 		this.holder = holder;
 	}
 
@@ -24,13 +20,13 @@ public class PlayerTeleportListener implements ArenaListener{
 	public void onPlayerTeleport(PlayerTeleportEvent event){
 		if (event.isCancelled() || event.getPlayer().hasPermission(Permissions.TELEPORT_BYPASS_PERM))
 			return;
-		if (transitionOptions.hasInArenaOrOptionAt(holder.getState(), TransitionOption.NOTELEPORT)){
+		if (holder.hasOption(TransitionOption.NOTELEPORT)){
 			MessageUtil.sendMessage(event.getPlayer(), "&cTeleports are disabled in this arena");
 			event.setCancelled(true);
 			return;
 		}
 		if (event.getFrom().getWorld().getUID() != event.getTo().getWorld().getUID() &&
-				transitionOptions.hasInArenaOrOptionAt(holder.getState(),TransitionOption.NOWORLDCHANGE)){
+				holder.hasOption(TransitionOption.NOWORLDCHANGE)){
 			MessageUtil.sendMessage(event.getPlayer(), "&cWorldChanges are disabled in this arena");
 			event.setCancelled(true);
 		}

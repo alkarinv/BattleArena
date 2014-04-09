@@ -493,6 +493,7 @@ public class StateOptions {
         return so !=null && so.options.containsKey(v) ? ChatColor.WHITE : ChatColor.GOLD;
     }
     public String getOptionString(StateOptions so) {
+        if (options == null) return "[SO empty]";
         StringBuilder sb = new StringBuilder("[");
         boolean first = true;
         for (Entry<StateOption,Object> entry: options.entrySet()){

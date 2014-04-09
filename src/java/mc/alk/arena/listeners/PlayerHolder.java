@@ -7,6 +7,7 @@ import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.LocationType;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.StateOption;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.options.StateOptions;
 import mc.alk.arena.objects.spawns.SpawnLocation;
@@ -69,4 +70,10 @@ public interface PlayerHolder extends Listener, ArenaListener{
 
 	public void onPostLeave(ArenaPlayer player, ArenaPlayerTeleportEvent apte);
 
+    /**
+     * Checks the current CompetitionState for the given option
+     * @param option the option to check for
+     * @return true if the current CompetitionState has the specified options or false otherwise
+     */
+    boolean hasOption(StateOption option);
 }

@@ -1,6 +1,7 @@
 package mc.alk.arena.objects;
 
 import mc.alk.arena.controllers.StateController;
+import mc.alk.arena.objects.options.TransitionOption;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,14 +11,18 @@ import java.util.List;
  *
  * Enum of StateGraph, and MatchStates
  */
-public enum MatchState implements CompetitionState{
+public enum MatchState implements CompetitionTransition{
 	NONE("None"), DEFAULTS("defaults"),
 	ONENTER("onEnter"), ONLEAVE("onLeave"), //ONENTERWAITROOM("onEnterWaitRoom"),
 	ONENTERARENA("onEnterArena"), ONLEAVEARENA("onLeaveArena"), //ONENTERWAITROOM("onEnterWaitRoom"),
 	INQUEUE("inQueue"),INCOURTYARD("inCourtyard"),
-	INLOBBY("inLobby"), INWAITROOM("inWaitroom"),INARENA("inArena"),INSPECTATE("inSpectate"),
-    ONCREATE("onCreate"),PREREQS ("preReqs"), ONJOIN ("onJoin"), ONOPEN("onOpen"),
-	ONBEGIN("onBegin"), ONPRESTART ("onPreStart"), ONSTART ("onStart"), ONVICTORY ("onVictory"),
+	INLOBBY("inLobby"), INWAITROOM("inWaitroom"),INSPECTATE("inSpectate"),
+    INARENA("inArena"),
+    ONCREATE("onCreate"),PREREQS ("preReqs"), ONJOIN ("onJoin"), INJOIN("inJoin"),
+    ONOPEN("onOpen"), INOPEN("inOpen"),ONBEGIN("onBegin"),
+    ONPRESTART ("onPreStart"), INPRESTART("inPrestart"),
+    ONSTART ("onStart"), INSTART("inStart"),
+    ONVICTORY ("onVictory"), INVICTORY("inVictory"),
 	ONCOMPLETE ("onComplete"), ONCANCEL ("onCancel"), ONFINISH("onFinish"),
 	ONSPAWN ("onSpawn"), ONDEATH ("onDeath"),
 	WINNERS ("winners"), DRAWERS ("drawers"), LOSERS ("losers"),
@@ -71,5 +76,106 @@ public enum MatchState implements CompetitionState{
 		}
 		return list;
 	}
+
+    public MatchState getCorrectState(StateOption option){
+        if (!(option instanceof TransitionOption))
+            return this;
+        TransitionOption op = (TransitionOption) option;
+        switch (this){
+            case NONE:
+                break;
+            case DEFAULTS:
+                break;
+            case ONENTER:
+                break;
+            case ONLEAVE:
+                break;
+            case ONENTERARENA:
+                break;
+            case ONLEAVEARENA:
+                break;
+            case INQUEUE:
+                break;
+            case INCOURTYARD:
+                break;
+            case INLOBBY:
+                break;
+            case INWAITROOM:
+                break;
+            case INSPECTATE:
+                break;
+            case INARENA:
+                break;
+            case ONCREATE:
+                break;
+            case PREREQS:
+                break;
+            case ONJOIN:
+                if (op.isState())
+                    return INOPEN;
+                break;
+            case INJOIN:
+                break;
+            case ONOPEN:
+                if (op.isState())
+                    return INOPEN;
+                break;
+            case INOPEN:
+                if (op.isTransition())
+                    return INOPEN;
+                break;
+            case ONBEGIN:
+                break;
+            case ONPRESTART:
+                if (op.isState())
+                    return INPRESTART;
+                break;
+            case INPRESTART:
+                if (op.isTransition())
+                    return ONPRESTART;
+                break;
+            case ONSTART:
+                if (op.isState())
+                    return INSTART;
+                break;
+            case INSTART:
+                if (op.isTransition())
+                    return ONSTART;
+                break;
+            case ONVICTORY:
+                if (op.isState())
+                    return INVICTORY;
+                break;
+            case INVICTORY:
+                if (op.isTransition())
+                    return ONVICTORY;
+                break;
+            case ONCOMPLETE:
+                break;
+            case ONCANCEL:
+                break;
+            case ONFINISH:
+                break;
+            case ONSPAWN:
+                break;
+            case ONDEATH:
+                break;
+            case WINNERS:
+                break;
+            case DRAWERS:
+                break;
+            case LOSERS:
+                break;
+            case ONMATCHINTERVAL:
+                break;
+            case ONMATCHTIMEEXPIRED:
+                break;
+            case ONCOUNTDOWNTOEVENT:
+                break;
+            case ONENTERQUEUE:
+                break;
+        }
+        return this;
+    }
 
 }

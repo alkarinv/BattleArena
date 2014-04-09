@@ -46,6 +46,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchResult;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.StateGraph;
+import mc.alk.arena.objects.StateOption;
 import mc.alk.arena.objects.WinLossDraw;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaControllerInterface;
@@ -285,6 +286,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
         arenaInterface.onOpen();
         transitionTo(MatchState.ONOPEN);
         updateBukkitEvents(MatchState.ONOPEN);
+        transitionTo(MatchState.INOPEN);
         onJoin(teams);
     }
 
@@ -365,15 +367,15 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     }
 
     private void preStartMatch() {
-        if (state == MatchState.ONCANCEL || state.ordinal() >= MatchState.ONPRESTART.ordinal())
+        if (state == MatchState.ONCANCEL || state.ordinal() >= MatchState.INPRESTART.ordinal())
             return; /// If the match was cancelled, or we are already prestarted dont proceed
         if (Defaults.DEBUG) System.out.println("ArenaMatch::startMatch()");
         transitionTo(MatchState.ONPRESTART);
-
         updateBukkitEvents(MatchState.ONPRESTART);
+        transitionTo(MatchState.INPRESTART);
         callEvent(new MatchPrestartEvent(this,teams));
 
-        preStartTeams(teams,true);
+        preStartTeams(teams, true);
         arenaInterface.onPrestart();
 
         new Countdown(BattleArena.getSelf(), params.getSecondsTillMatch(), 1,
@@ -408,7 +410,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
      * If the match is already in the preStart phase, just start it
      */
     public void start() {
-        if (state != MatchState.ONPRESTART)
+        if (state != MatchState.INPRESTART)
             return;
         if (currentTimer != null){
             Bukkit.getScheduler().cancelTask(currentTimer);}
@@ -445,7 +447,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             MatchStartEvent event= new MatchStartEvent(this,teams);
             updateBukkitEvents(MatchState.ONSTART);
             callEvent(event);
-            performTransition(state, competingTeams, true);
+            performTransition(MatchState.ONSTART, competingTeams, true);
             arenaInterface.onStart();
             List<ArenaTeam> net = getNonEmptyTeams();
             try{mc.sendOnStartMsg(net);}catch(Exception e){Log.printStackTrace(e);}
@@ -456,6 +458,12 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             }
         }
         checkEnoughTeams(competingTeams, neededTeams);
+        transitionTo(MatchState.INSTART);
+    }
+
+    @Override
+    public boolean hasOption(StateOption option) {
+        return params.getStateGraph().hasInArenaOrOptionAt(state, option);
     }
 
     private boolean checkEnoughTeams(List<ArenaTeam> competingTeams, int neededTeams) {
@@ -528,6 +536,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             return;
         }
         transitionTo(MatchState.ONVICTORY);
+        transitionTo(MatchState.INVICTORY);
         arenaInterface.onVictory(result);
         /// Call the rest after a 2 tick wait to ensure the calling method complete before the
         /// victory conditions start rolling in
@@ -1285,8 +1294,8 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
 
     public boolean isEnding() {return isWon() || isFinished();}
     public boolean isFinished() {return state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
-    public boolean isWon() {return state == MatchState.ONVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
-    public boolean isStarted() {return state == MatchState.ONSTART;}
+    public boolean isWon() {return state == MatchState.INVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
+    public boolean isStarted() {return state == MatchState.INSTART;}
     public boolean isInWaitRoomState() {return state.ordinal() < MatchState.ONSTART.ordinal();}
 
     @Override

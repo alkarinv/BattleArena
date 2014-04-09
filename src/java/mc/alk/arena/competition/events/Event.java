@@ -24,6 +24,7 @@ import mc.alk.arena.objects.CompetitionResult;
 import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.EventParams;
 import mc.alk.arena.objects.EventState;
+import mc.alk.arena.objects.StateOption;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.joining.TeamJoinObject;
@@ -503,4 +504,8 @@ public abstract class Event extends Competition implements CountdownCallback, Ar
         }
     }
 
+    @Override
+    public boolean hasOption(StateOption option) {
+        return getParams().hasOptionAt(state, option);
+    }
 }
