@@ -458,7 +458,7 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
             }
         }
         checkEnoughTeams(competingTeams, neededTeams);
-        transitionTo(MatchState.INSTART);
+        transitionTo(MatchState.INGAME);
     }
 
     @Override
@@ -1295,14 +1295,17 @@ public abstract class Match extends Competition implements Runnable, ArenaContro
     public boolean isEnding() {return isWon() || isFinished();}
     public boolean isFinished() {return state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
     public boolean isWon() {return state == MatchState.INVICTORY || state == MatchState.ONCOMPLETE || state == MatchState.ONCANCEL;}
-    public boolean isStarted() {return state == MatchState.INSTART;}
+    public boolean isStarted() {return state == MatchState.INGAME;}
     public boolean isInWaitRoomState() {return state.ordinal() < MatchState.ONSTART.ordinal();}
 
     @Override
     public MatchState getState() {return state;}
 
     @Override
-    public MatchState getMatchState(){return state;}
+    public MatchState getMatchState(){
+        /// For backward compatibility, get rid of this as soon as possible
+        return state == MatchState.INGAME ? MatchState.ONSTART : state;
+    }
 
     @Override
     protected void transitionTo(CompetitionState state){

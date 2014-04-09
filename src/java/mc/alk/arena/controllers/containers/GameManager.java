@@ -113,7 +113,7 @@ public class GameManager implements PlayerHolder{
 
 	@Override
 	public MatchState getMatchState() {
-		return null;
+		return MatchState.NONE;
 	}
 
 	@Override

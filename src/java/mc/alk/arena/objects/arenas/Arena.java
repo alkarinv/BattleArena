@@ -1,14 +1,15 @@
 package mc.alk.arena.objects.arenas;
 
 import mc.alk.arena.BattleArena;
-import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.competition.TransitionController;
+import mc.alk.arena.competition.match.Match;
 import mc.alk.arena.controllers.ArenaAlterController.ChangeType;
 import mc.alk.arena.controllers.RoomController;
 import mc.alk.arena.controllers.SpawnController;
 import mc.alk.arena.controllers.containers.AreaContainer;
 import mc.alk.arena.controllers.containers.RoomContainer;
 import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.CompetitionState;
 import mc.alk.arena.objects.CompetitionTransition;
 import mc.alk.arena.objects.ContainerState;
 import mc.alk.arena.objects.LocationType;
@@ -457,11 +458,22 @@ public class Arena extends AreaContainer {
     }
 
     /**
+     * Use the more generic getState instead
      * Get the current state of the match
      * @return current match state
      */
     @Override
+    @Deprecated
     public MatchState getMatchState(){
+        return match.getMatchState();
+    }
+
+    @Override
+    /**
+     * Get the current state of the match
+     * @return current match state
+     */
+    public CompetitionState getState(){
         return match.getState();
     }
 

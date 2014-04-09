@@ -58,9 +58,13 @@ public enum AlterParamOption {
         } catch (IllegalArgumentException e){
             if (str.equalsIgnoreCase("secondsTillMatch") || str.equalsIgnoreCase("secondsUntilMatch"))
                 return AlterParamOption.PRESTARTTIME;
+            if (str.equalsIgnoreCase("gameTime"))
+                return AlterParamOption.MATCHTIME;
             if (str.equalsIgnoreCase("numTeams"))
                 return AlterParamOption.NTEAMS;
             if (str.equalsIgnoreCase("secondsToLoot"))
+                return AlterParamOption.VICTORYTIME;
+            if (str.equalsIgnoreCase("victoryTime"))
                 return AlterParamOption.VICTORYTIME;
             if (str.equalsIgnoreCase("items"))
                 return AlterParamOption.GIVEITEMS;

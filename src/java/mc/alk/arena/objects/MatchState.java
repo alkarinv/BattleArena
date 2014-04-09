@@ -21,7 +21,7 @@ public enum MatchState implements CompetitionTransition{
     ONCREATE("onCreate"),PREREQS ("preReqs"), ONJOIN ("onJoin"), INJOIN("inJoin"),
     ONOPEN("onOpen"), INOPEN("inOpen"),ONBEGIN("onBegin"),
     ONPRESTART ("onPreStart"), INPRESTART("inPrestart"),
-    ONSTART ("onStart"), INSTART("inStart"),
+    ONSTART ("onStart"), INGAME("inGame"),
     ONVICTORY ("onVictory"), INVICTORY("inVictory"),
 	ONCOMPLETE ("onComplete"), ONCANCEL ("onCancel"), ONFINISH("onFinish"),
 	ONSPAWN ("onSpawn"), ONDEATH ("onDeath"),
@@ -38,6 +38,7 @@ public enum MatchState implements CompetitionTransition{
 		this.name = name;
         this.globalOrdinal = StateController.register(this);
     }
+
 	@Override
 	public String toString(){
 		return name;
@@ -54,7 +55,8 @@ public enum MatchState implements CompetitionTransition{
 			return MatchState.valueOf(str);
 		} catch (Exception e){
 			if (str.equals("ONCOUNTDOWNTOEVENT")) return ONCOUNTDOWNTOEVENT;
-			else if (str.equals("WINNER")) return WINNERS;
+            else if (str.equals("WINNER")) return WINNERS;
+            else if (str.equals("INSTART")) return INGAME;
 			return null;
 		}
 	}
@@ -136,9 +138,9 @@ public enum MatchState implements CompetitionTransition{
                 break;
             case ONSTART:
                 if (op.isState())
-                    return INSTART;
+                    return INGAME;
                 break;
-            case INSTART:
+            case INGAME:
                 if (op.isTransition())
                     return ONSTART;
                 break;
