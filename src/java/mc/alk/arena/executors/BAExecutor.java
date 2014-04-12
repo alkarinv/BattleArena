@@ -877,6 +877,14 @@ public class BAExecutor extends CustomCommandExecutor {
     }
 
     @MCCommand(cmds = {"watch"})
+    public boolean watch(ArenaPlayer sender, MatchParams mp, ArenaPlayer player) {
+        if (player.getCompetition()==null || !(player.getCompetition() instanceof Match)) {
+            return sendMessage(sender, "&cThat player is not in a game");
+        }
+        return watch(sender,mp, ((Match)player.getCompetition()).getArena());
+    }
+
+    @MCCommand(cmds = {"watch"})
     public boolean watch(ArenaPlayer sender, MatchParams mp, Arena arena) {
         if (!PermissionsUtil.hasMatchPerm(sender.getPlayer(), mp, "watch")) {
             return sendMessage(sender,

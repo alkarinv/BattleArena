@@ -65,8 +65,13 @@ public class DamageListener implements ArenaListener{
                 }
             }
             if (target != null && damagerEntity instanceof LivingEntity) {
-                if (damager == null || damager.getTeam()==null || target.getTeam()==null ||
-                        !target.getTeam().equals(damager.getTeam()))
+                if ((target.getTarget() == null || target.getTarget().isDead()) &&
+                        (damager == null ||
+                                damager.getTeam()==null ||
+                                target.getTeam()==null ||
+                                !target.getTeam().equals(damager.getTeam())
+                        )
+                        )
                 target.setTarget((LivingEntity) damagerEntity);
             }
         }

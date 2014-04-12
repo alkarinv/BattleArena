@@ -180,6 +180,11 @@ public class ParamAlterController {
                     tops.getOptions(state).getClasses() : new HashMap<Integer, ArenaClass>();
             map.put(ArenaClass.DEFAULT, (ArenaClass) value);
             value = map;
+        } else if (to == TransitionOption.TELEPORTTO){
+            if (sender == null || !(sender instanceof Player)) {
+                throw new InvalidOptionException("&cYou need to be in game to set this option");
+            }
+            value = ((Player) sender).getLocation();
         }
 
         /// For teleport options, remove them from other places where they just dont make sense

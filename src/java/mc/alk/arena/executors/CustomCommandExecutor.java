@@ -201,12 +201,22 @@ public abstract class CustomCommandExecutor extends BaseExecutor{
         if (to == null){
             throw new IllegalArgumentException(ChatColor.RED + "Couldn't recognize option " + args[curIndex+1]);
         }
-        if (to.hasValue() && args.length < curIndex+3){
-            throw new IllegalArgumentException(ChatColor.RED + "Option " + to.name()+" needs a value");
-        }
         TransitionOptionTuple top = new TransitionOptionTuple();
         top.op = to;
         top.state = stage;
+        if (to.hasValue() && args.length < curIndex+3){
+            /// Special exceptions
+            if (to == TransitionOption.TELEPORTTO){
+                if (!(sender instanceof Player)){
+                    throw new IllegalArgumentException(ChatColor.RED + "You need to be online to change the option " +
+                            to.name());}
+                top.value = ((Player) sender).getLocation();
+                return top;
+            } else {
+                throw new IllegalArgumentException(ChatColor.RED + "Option " + to.name()+" needs a value");
+            }
+
+        }
         if (to == TransitionOption.GIVEITEMS && !(sender instanceof Player)){
             throw new IllegalArgumentException(ChatColor.RED + "You need to be online to change the option " +
                     to.name());}
