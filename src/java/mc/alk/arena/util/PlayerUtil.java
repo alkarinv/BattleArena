@@ -21,19 +21,17 @@ public class PlayerUtil {
     static IPlayerHelper handler = null;
 
     /**
-     * 1.7.5 -> v1_7_R2
+     * 1.7.8 -> v1_7_R3
      */
     static {
         Class<?>[] args = {};
         try {
             Method m = Player.class.getMethod("getHealth");
             Version version = Util.getCraftBukkitVersion();
-            /// Bukkit doesn't seem to have UUID conversion yet, hold off a bit
-//            if (m.getReturnType() == double.class || version.compareTo("v1_7_R2") >= 0) {
-//                final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_7_R2.PlayerHelper");
-//                handler = (IPlayerHelper) clazz.getConstructor(args).newInstance((Object[]) args);
-//            } else
-            if (m.getReturnType() == double.class || version.compareTo("v1_6_R1") >= 0){
+            if (version.compareTo("v1_7_R3") >= 0) {
+                final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_7_R3.PlayerHelper");
+                handler = (IPlayerHelper) clazz.getConstructor(args).newInstance((Object[]) args);
+            } else if (m.getReturnType() == double.class || version.compareTo("v1_6_R1") >= 0){
                 final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.v1_6_R1.PlayerHelper");
                 handler = (IPlayerHelper) clazz.getConstructor(args).newInstance((Object[])args);
             } else {
@@ -42,6 +40,12 @@ public class PlayerUtil {
             }
         } catch (Exception e) {
             Log.printStackTrace(e);
+            try {
+                final Class<?> clazz = Class.forName("mc.alk.arena.util.compat.pre.PlayerHelper");
+                handler = (IPlayerHelper) clazz.getConstructor(args).newInstance((Object[])args);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
         }
     }
 

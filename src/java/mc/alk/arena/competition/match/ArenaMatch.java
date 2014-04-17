@@ -16,7 +16,6 @@ import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.ArenaSize;
 import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.StateOption;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.events.ArenaEventHandler;
@@ -156,14 +155,14 @@ public class ArenaMatch extends Match {
             if (timer != null){
                 Bukkit.getScheduler().cancelTask(timer);
             }
-            timer = Scheduler.scheduleSynchronousTask(new Runnable(){
-                @Override
-                public void run() {
-                    am.performTransition(MatchState.ONCOMPLETE, target, t, true);
-                    checkAndHandleIfTeamDead(t);
-                }
-            }, 15*20L);
-            deathTimer.put(target.getID(), timer);
+//            timer = Scheduler.scheduleSynchronousTask(new Runnable(){
+//                @Override
+//                public void run() {
+//                    am.performTransition(MatchState.ONCOMPLETE, target, t, true);
+//                    checkAndHandleIfTeamDead(t);
+//                }
+//            }, 15*20L);
+//            deathTimer.put(target.getID(), timer);
         }
         if (exiting){
             performTransition(MatchState.ONCOMPLETE, target, t, true);

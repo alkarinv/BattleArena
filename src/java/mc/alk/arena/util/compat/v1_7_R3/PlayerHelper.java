@@ -1,4 +1,4 @@
-package mc.alk.arena.util.compat.v1_7_R2;
+package mc.alk.arena.util.compat.v1_7_R3;
 
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.util.compat.IPlayerHelper;
