@@ -217,7 +217,7 @@ public class BattleArena extends JavaPlugin {
         arenaEditorExecutor = new ArenaEditorExecutor();
         /// Set our commands
         getCommand("watch").setExecutor(commandExecutor);
-        getCommand("team").setExecutor(new TeamExecutor(commandExecutor));
+        getCommand("arenateam").setExecutor(new TeamExecutor(commandExecutor));
         getCommand("arenaAlter").setExecutor(arenaEditorExecutor);
         getCommand("battleArena").setExecutor(new BattleArenaExecutor());
         getCommand("battleArenaDebug").setExecutor(new BattleArenaDebugExecutor());

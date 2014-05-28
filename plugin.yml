@@ -9,8 +9,8 @@ author: alkarin
 softdepend: [BattleTracker, Essentials, Herochat, Heroes, IcePvPControl, Factions, GroupManager, mcMMO, MultiInv, Multiworld, Multiverse-Core, Multiverse-Inventories, PvPToggle, PvPTime, PvPTimer, SimpleClans, TagAPI, Towny, WorldEdit, WorldGuard, VanishNoPackes, Vault]
 
 commands:
-    team:
-        aliases: [arenateam]
+    arenateam:
+        aliases: [team,at]
         description: Team commands
         usage: Problem loading plugin, please send errors on startup to alkarin_v
     arena:
