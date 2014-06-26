@@ -6,7 +6,7 @@ import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 public class TeamJoinObject extends QueueObject{
 	final ArenaTeam team;
@@ -45,7 +45,7 @@ public class TeamJoinObject extends QueueObject{
 	}
 
 	@Override
-	public Collection<ArenaTeam> getTeams() {
+	public List<ArenaTeam> getTeams() {
 		ArrayList<ArenaTeam> teams = new ArrayList<ArenaTeam>(1);
 		teams.add(team);
 		return teams;

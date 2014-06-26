@@ -1,10 +1,9 @@
 package mc.alk.arena.objects.joining;
 
 import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.Matchup;
+import mc.alk.arena.objects.teams.ArenaTeam;
 
-import java.util.Collection;
 import java.util.List;
 
 public class MatchTeamQObject extends QueueObject{
@@ -47,7 +46,7 @@ public class MatchTeamQObject extends QueueObject{
 	}
 
 	@Override
-	public Collection<ArenaTeam> getTeams() {
+	public List<ArenaTeam> getTeams() {
 		return matchup.getTeams();
 	}
 
