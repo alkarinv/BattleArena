@@ -6,7 +6,7 @@ import mc.alk.arena.objects.MatchParams;
 import mc.alk.arena.objects.exceptions.NeverWouldJoinException;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
-import java.util.Collection;
+import java.util.List;
 
 public class TeamJoinFactory {
 
@@ -18,13 +18,13 @@ public class TeamJoinFactory {
 		return createTeamJoinHandler(params,competition,null);
 	}
 
-    public static AbstractJoinHandler createTeamJoinHandler(MatchParams params, Collection<ArenaTeam> teams) throws NeverWouldJoinException {
+    public static AbstractJoinHandler createTeamJoinHandler(MatchParams params, List<ArenaTeam> teams) throws NeverWouldJoinException {
         AbstractJoinHandler as = createTeamJoinHandler(params, null, teams);
         return as;
     }
 
 	public static AbstractJoinHandler createTeamJoinHandler(MatchParams params, Competition competition,
-			Collection<ArenaTeam> teams) throws NeverWouldJoinException {
+			List<ArenaTeam> teams) throws NeverWouldJoinException {
 		if (params.getMaxTeams() <= Defaults.MAX_TEAMS ){
 			return new AddToLeastFullTeam(params, competition, teams);	/// lets try and add players to all players first
 		} else { /// finite team size

@@ -31,6 +31,7 @@ import mc.alk.arena.util.SerializerUtil;
 import mc.alk.arena.util.TeamUtil;
 import mc.alk.arena.util.TimingUtil;
 import mc.alk.arena.util.TimingUtil.TimingStat;
+import mc.alk.profiling.Profiler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -485,6 +486,8 @@ public class BattleArenaDebugExecutor extends CustomCommandExecutor{
 
     @MCCommand(cmds={"timings"}, admin=true)
     public boolean showTimings(CommandSender sender, String[] args) {
+        Profiler.printTimings();
+
         boolean useMs = !(args.length >1 && args[1].equalsIgnoreCase("ns"));
         List<TimingUtil> timers = TimingUtil.getTimers();
         if (timers == null){

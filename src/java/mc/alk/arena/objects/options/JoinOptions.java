@@ -153,7 +153,7 @@ public class JoinOptions {
             Integer teamIndex = TeamUtil.getFromHumanTeamIndex(op);
             if (teamIndex != null){
                 if (player != null && !PermissionsUtil.hasTeamPerm(player.getPlayer(), mp,teamIndex)){
-                    throw new InvalidOptionException("&cYou don't have permissions to add this team");}
+                    throw new InvalidOptionException("&cYou don't have permissions to join this team");}
                 ops.put(JoinOption.TEAM, teamIndex);
                 continue;
             }

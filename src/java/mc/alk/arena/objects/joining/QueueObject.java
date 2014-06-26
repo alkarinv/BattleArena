@@ -7,7 +7,6 @@ import mc.alk.arena.objects.arenas.ArenaListener;
 import mc.alk.arena.objects.options.JoinOptions;
 import mc.alk.arena.objects.teams.ArenaTeam;
 
-import java.util.Collection;
 import java.util.List;
 
 public abstract class QueueObject {
@@ -41,7 +40,7 @@ public abstract class QueueObject {
 
 	public abstract int size();
 
-	public abstract Collection<ArenaTeam> getTeams();
+	public abstract List<ArenaTeam> getTeams();
 
 	public abstract boolean hasTeam(ArenaTeam team);
 

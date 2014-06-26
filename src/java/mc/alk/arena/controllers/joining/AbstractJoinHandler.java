@@ -87,17 +87,17 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
         public int getRemaining(){return remaining;}
     }
 
-    public AbstractJoinHandler(MatchParams params, Competition competition) {
+    public AbstractJoinHandler(MatchParams params, Competition competition, List<ArenaTeam> teams) {
         this.matchParams = params;
         this.minTeams = params.getMinTeams();
         this.maxTeams = params.getMaxTeams();
 
         setCompetition(competition);
         if (Defaults.USE_SCOREBOARD && SAPI.hasBukkitScoreboard())
-            initWaitingScoreboard();
+            initWaitingScoreboard(teams);
     }
 
-    private void initWaitingScoreboard() {
+    private void initWaitingScoreboard(List<ArenaTeam> startingTeams) {
         List<ArenaTeam> teams = new ArrayList<ArenaTeam>();
         try {
             if (maxTeams <= 16) {
@@ -118,7 +118,7 @@ public abstract class AbstractJoinHandler implements JoinHandler, TeamHandler {
                     return;
                 }
             }
-        }catch(Throwable e) {
+        } catch (Throwable e) {
             Log.printStackTrace(e);
         }
         scoreboard = new CutoffScoreboard(matchParams, teams);

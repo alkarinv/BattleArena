@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleArena</artifactId>
     <packaging>jar</packaging>
-    <version>3.9.7.8.1</version>
+    <version>3.9.7.9</version>
     <name>BattleArena</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -42,6 +42,12 @@
         <!-- Dependencies that have maven repos -->
         <dependency>
             <groupId>mc.alk</groupId>
+            <artifactId>BattleProfiler</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>mc.alk</groupId>
             <artifactId>BattlePluginUpdater</artifactId>
             <version>1.4.1</version>
             <scope>compile</scope>
@@ -55,7 +61,7 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattleScoreboardAPI</artifactId>
-            <version>1.1.8.4</version>
+            <version>1.1.8.4.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -253,6 +259,7 @@
                                     <artifact>mc.alk:BattleScoreboardAPI</artifact>
                                     <includes>
                                         <include>mc/alk/scoreboardapi/**</include>
+                                        <include>mc/alk/profiling/**</include>
                                     </includes>
 
                                 </filter>

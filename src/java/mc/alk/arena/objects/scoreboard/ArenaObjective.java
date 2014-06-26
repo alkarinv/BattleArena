@@ -357,4 +357,9 @@ public class ArenaObjective implements SObjective, ScoreTracker{
             ((BObjective) o).setDisplayName(displayNamePrefix, displayName,displayNameSuffix, team);
         }
     }
+
+    @Override
+    public void initPoints(List<SEntry> entries, List<Integer> points) {
+        o.initPoints(entries, points);
+    }
 }

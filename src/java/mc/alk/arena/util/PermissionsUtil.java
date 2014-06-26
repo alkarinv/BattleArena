@@ -59,9 +59,10 @@ public class PermissionsUtil {
 	}
 
 	public static boolean hasTeamPerm(CommandSender sender, MatchParams mp, Integer teamIndex) {
-		return sender.hasPermission("arena.add.team.all") ||
-				sender.hasPermission("arena.add."+mp.getName().toLowerCase()+".team.all") ||
-				sender.hasPermission("arena.add."+mp.getCommand().toLowerCase()+".team."+(teamIndex+1));
+		return sender.hasPermission("arena.join.team.all") ||
+				sender.hasPermission("arena.join."+mp.getName().toLowerCase()+".team.all") ||
+                sender.hasPermission("arena.join."+mp.getName().toLowerCase()+".team."+(teamIndex+1)) ||
+				sender.hasPermission("arena.join."+mp.getCommand().toLowerCase()+".team."+(teamIndex+1));
 	}
 
 	public static boolean hasMatchPerm(CommandSender sender, MatchParams mp, String perm) {

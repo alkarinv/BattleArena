@@ -18,7 +18,6 @@ import mc.alk.arena.controllers.ParamAlterController;
 import mc.alk.arena.controllers.ParamController;
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.RoomController;
-import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.controllers.TeamController;
 import mc.alk.arena.controllers.WatchController;
 import mc.alk.arena.controllers.containers.LobbyContainer;
@@ -29,6 +28,7 @@ import mc.alk.arena.controllers.plugins.CombatTagInterface;
 import mc.alk.arena.controllers.plugins.EssentialsController;
 import mc.alk.arena.controllers.plugins.HeroesController;
 import mc.alk.arena.controllers.plugins.MobArenaInterface;
+import mc.alk.arena.controllers.plugins.TrackerController;
 import mc.alk.arena.events.arenas.ArenaCreateEvent;
 import mc.alk.arena.events.arenas.ArenaDeleteEvent;
 import mc.alk.arena.events.players.ArenaPlayerJoinEvent;
@@ -214,7 +214,6 @@ public class BAExecutor extends CustomCommandExecutor {
         /// Can the player add this match/event at this moment?
         if (!canJoin(player)) {
             return true;}
-
         /// Call the joining event
         ArenaPlayerJoinEvent event = new ArenaPlayerJoinEvent(player);
         event.callEvent();
@@ -345,7 +344,6 @@ public class BAExecutor extends CustomCommandExecutor {
             default:
                 break;
         }
-
         return true;
     }
 

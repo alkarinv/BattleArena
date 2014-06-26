@@ -16,7 +16,6 @@ import mc.alk.arena.util.TeamUtil;
 import mc.alk.scoreboardapi.api.SEntry;
 import mc.alk.scoreboardapi.api.STeam;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
-import org.bukkit.Bukkit;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,6 +44,7 @@ public class CutoffScoreboard implements WaitingScoreboard {
             ppteam = 15 / maxTeams;
         }
         for (int i = 0; i <maxTeams && count < 15; i++) {
+//            Log.debug("&4i = " + i);
             ArenaTeam team = i < teams.size() ? teams.get(i) : TeamFactory.createCompositeTeam(i, params);
             team.setIDString(String.valueOf(team.getIndex()));
             STeam t = scoreboard.addTeam(team);
@@ -116,7 +116,7 @@ public class CutoffScoreboard implements WaitingScoreboard {
         String dis = "- " + name + " -" + team.getTeamChatColor() + TeamUtil.getTeamChatColor(index);
         SEntry e = scoreboard.getEntry(dis);
         if (e == null) {
-            e = scoreboard.createEntry(Bukkit.getOfflinePlayer(dis), dis);
+            e = scoreboard.createEntry(OfflinePlayerTeams.getOfflinePlayer(dis), dis);
             ao.addEntry(e, points);
         } else {
             ao.setPoints(e, points);

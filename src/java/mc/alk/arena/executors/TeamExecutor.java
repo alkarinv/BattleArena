@@ -41,7 +41,7 @@ public class TeamExecutor extends CustomCommandExecutor {
 		return sendMessage(sender,sb.toString());
 	}
 
-	@MCCommand(cmds={"add"}, usage="add", perm="arena.team.add")
+	@MCCommand(cmds={"join"}, usage="join", perm="arena.team.join")
 	public boolean teamJoin(ArenaPlayer player) {
 
 		ArenaTeam t = teamc.getSelfFormedTeam(player);

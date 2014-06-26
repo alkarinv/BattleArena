@@ -9,6 +9,7 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * When there is an infinite number of teams
@@ -18,9 +19,9 @@ import java.util.Collection;
 public class BinPackAdd extends AbstractJoinHandler {
     boolean full = false;
 
-    public BinPackAdd(MatchParams params, Competition competition, Collection<ArenaTeam> newTeams)
+    public BinPackAdd(MatchParams params, Competition competition, List<ArenaTeam> newTeams)
             throws NeverWouldJoinException {
-        super(params, competition);
+        super(params, competition, newTeams);
         if (newTeams != null){
             for (ArenaTeam at : newTeams) {
                 addTeam(at);

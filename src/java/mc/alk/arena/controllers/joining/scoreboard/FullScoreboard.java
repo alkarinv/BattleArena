@@ -16,8 +16,8 @@ import mc.alk.arena.util.TeamUtil;
 import mc.alk.scoreboardapi.api.SEntry;
 import mc.alk.scoreboardapi.api.STeam;
 import mc.alk.scoreboardapi.scoreboard.SAPIDisplaySlot;
-import org.bukkit.Bukkit;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -32,6 +32,8 @@ public class FullScoreboard implements WaitingScoreboard {
     ArenaObjective ao;
     final int minTeams;
     Countdown countdown;
+
+
     public FullScoreboard(MatchParams params, List<ArenaTeam> teams) {
         scoreboard = ScoreboardFactory.createScoreboard(String.valueOf(this.hashCode()), params);
         ao = scoreboard.createObjective("waiting",
@@ -39,15 +41,19 @@ public class FullScoreboard implements WaitingScoreboard {
         ao.setDisplayTeams(false);
         minTeams = params.getMinTeams();
         int maxTeams = params.getMaxTeams();
+//        HashMap<ArenaTeam, STeam> teamMap = new HashMap<ArenaTeam, STeam>();
+        List<ArenaTeam> ateams = new ArrayList<ArenaTeam>();
+        List<STeam> steams = new ArrayList<STeam>();
         for (int i = 0; i < maxTeams; i++) {
             ArenaTeam team = i < teams.size() ? teams.get(i) : TeamFactory.createCompositeTeam(i, params);
 
             team.setIDString(String.valueOf(team.getIndex()));
             STeam t = scoreboard.addTeam(team);
-            for (int j = 0; j < team.getMaxPlayers(); j++) {
-                addPlaceholder(team, t, i >= minTeams);
-            }
+//            teamMap.put(team, t);
+            steams.add(t);
+            ateams.add(team);
         }
+        addPlaceholders(ateams, steams, minTeams); /// half
         if (params.getForceStartTime() >0 &&
                 params.getForceStartTime() != ArenaSize.MAX
                 && !params.getMaxPlayers().equals(params.getMinPlayers())
@@ -56,50 +62,78 @@ public class FullScoreboard implements WaitingScoreboard {
         }
     }
 
+    private void addPlaceholders(List<ArenaTeam> ateams, List<STeam> steams, int minTeams) {
+        List<SEntry> es = new ArrayList<SEntry>();
+        List<Integer> points = new ArrayList<Integer>();
+        for (int i=0;i < ateams.size();i++) {
+            ArenaTeam at = ateams.get(i);
+            STeam st = steams.get(i);
+            for (int j = 0; j < ateams.get(i).getMaxPlayers(); j++) {
+                TempEntry te = createEntry(at, st, j >= minTeams);
+                SEntry e = scoreboard.getEntry(te.name);
+                if (e == null) {
+                    e = scoreboard.createEntry(OfflinePlayerTeams.getOfflinePlayer(te.name), te.name);
+                }
+                te.r.addLast(e);
+                es.add(e);
+                points.add(te.points);
+                st.addPlayer(e.getOfflinePlayer(), Integer.MIN_VALUE);
+            }
+        }
 
+        scoreboard.initPoints(ao, es, points);
+    }
 
     private int getReqSize(int teamIndex) {
         return reqPlaceHolderPlayers.containsKey(teamIndex) ?
                 reqPlaceHolderPlayers.get(teamIndex).size() : 0;
     }
 
-
-    private void addPlaceholder(ArenaTeam team, STeam t, boolean optionalTeam) {
+    private class TempEntry{
         String name;
-
-        LinkedList<SEntry> r;
-        int index;
         int points;
+        LinkedList<SEntry> r;
+    }
+
+    private TempEntry createEntry(ArenaTeam team, STeam t, boolean optionalTeam){
+        TempEntry te = new TempEntry();
+        String name;
+        int index;
         if (!optionalTeam && getReqSize(team.getIndex()) < team.getMinPlayers()) {
-            r = reqPlaceHolderPlayers.get(team.getIndex());
-            if (r == null) {
-                r = new LinkedList<SEntry>();
-                reqPlaceHolderPlayers.put(team.getIndex(), r);
+            te.r = reqPlaceHolderPlayers.get(team.getIndex());
+            if (te.r == null) {
+                te.r = new LinkedList<SEntry>();
+                reqPlaceHolderPlayers.put(team.getIndex(), te.r);
             }
             name = "needed";
-            points = 1;
-            index = r.size();
+            te.points = 1;
+            index = te.r.size();
         } else {
-            r = opPlaceHolderPlayers.get(team.getIndex());
-            if (r == null) {
-                r = new LinkedList<SEntry>();
-                opPlaceHolderPlayers.put(team.getIndex(), r);
+            te.r = opPlaceHolderPlayers.get(team.getIndex());
+            if (te.r == null) {
+                te.r = new LinkedList<SEntry>();
+                opPlaceHolderPlayers.put(team.getIndex(), te.r);
             }
             name = "open";
-            points = 0;
-            index = optionalTeam ? r.size() : team.getMinPlayers() + r.size();
+            te.points = 0;
+            index = optionalTeam ? te.r.size() : team.getMinPlayers() + te.r.size();
         }
 
-        String dis = "- " + name + " -" + team.getTeamChatColor() + TeamUtil.getTeamChatColor(index);
-        SEntry e = scoreboard.getEntry(dis);
+        te.name = "- " + name + " -" + team.getTeamChatColor() + TeamUtil.getTeamChatColor(index);
+        return te;
+    }
+
+    private void addPlaceholder(ArenaTeam team, STeam t, boolean optionalTeam) {
+        TempEntry te = createEntry(team, t, optionalTeam);
+        SEntry e = scoreboard.getEntry(te.name);
         if (e == null) {
-            e = scoreboard.createEntry(Bukkit.getOfflinePlayer(dis), dis);
-            ao.addEntry(e, points);
+            e = scoreboard.createEntry(OfflinePlayerTeams.getOfflinePlayer(te.name), te.name);
+            ao.addEntry(e, te.points);
         } else {
-            ao.setPoints(e, points);
+            ao.setPoints(e, te.points);
         }
 
-        r.addLast(e);
+        te.r.addLast(e);
         t.addPlayer(e.getOfflinePlayer());
     }
 

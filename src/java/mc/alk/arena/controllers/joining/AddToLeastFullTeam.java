@@ -14,15 +14,14 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.teams.TeamFactory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 public class AddToLeastFullTeam extends AbstractJoinHandler {
 
-    public AddToLeastFullTeam(MatchParams params, Competition competition, Collection<ArenaTeam> newTeams)
+    public AddToLeastFullTeam(MatchParams params, Competition competition, List<ArenaTeam> newTeams)
             throws NeverWouldJoinException{
-        super(params,competition);
+        super(params,competition, newTeams);
         if (minTeams == ArenaSize.MAX || maxTeams == ArenaSize.MAX)
             throw new NeverWouldJoinException("If you add players by adding them to the next team in the list, there must be a finite number of players");
         /// Lets add in all our teams first

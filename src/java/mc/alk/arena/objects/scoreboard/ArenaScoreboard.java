@@ -259,4 +259,8 @@ public class ArenaScoreboard implements SScoreboard {
     public SScoreboard getBScoreboard() {
         return null;
     }
+
+    public void initPoints(ArenaObjective objective, List<SEntry> es, List<Integer> points) {
+        objective.initPoints(es, points);
+    }
 }
