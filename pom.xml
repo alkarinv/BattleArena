@@ -40,12 +40,13 @@
     <!-- Dependencies -->
     <dependencies>
         <!-- Dependencies that have maven repos -->
-        <dependency>
+<!--        <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattleProfiler</artifactId>
             <version>1.0</version>
             <scope>compile</scope>
         </dependency>
+		-->
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattlePluginUpdater</artifactId>
@@ -259,7 +260,7 @@
                                     <artifact>mc.alk:BattleScoreboardAPI</artifact>
                                     <includes>
                                         <include>mc/alk/scoreboardapi/**</include>
-                                        <include>mc/alk/profiling/**</include>
+<!--                                        <include>mc/alk/profiling/**</include>-->
                                     </includes>
 
                                 </filter>
